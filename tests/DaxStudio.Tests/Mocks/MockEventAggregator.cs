@@ -16,17 +16,22 @@ namespace DaxStudio.Tests.Mocks
 
         public void Publish(object message, Action<System.Action> marshal)
         {
-            throw new NotImplementedException();
+            // do nothing
         }
 
         public void Subscribe(object subscriber)
         {
-            throw new NotImplementedException();
+            // do nothing
         }
 
         public void Unsubscribe(object subscriber)
         {
-            throw new NotImplementedException();
+            // do nothing
+        }
+
+        public void PublishOnUIThread(object message)
+        {
+            // do nothing
         }
     }
 }

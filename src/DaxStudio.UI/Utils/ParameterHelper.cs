@@ -12,7 +12,7 @@ namespace DaxStudio.UI.Utils
             document.AppendText(paramXml);
         }
 
-        private static string GetParameterXml(QueryInfo queryInfo)
+        public static string GetParameterXml(QueryInfo queryInfo)
         {
             if (queryInfo.Parameters.Count == 0) return string.Empty;
 
@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Utils
             {
                 sbParams.Append("  <Parameter>\n");
                 sbParams.AppendFormat("    <Name>{0}</Name>\n", p.Value.Name);
-                sbParams.AppendFormat("    <Value xsi:type=\"xsd: string\">{0}</Value>\n", p.Value.Value);
+                sbParams.AppendFormat("    <Value xsi:type=\"xsd:{0}\">{1}</Value>\n", p.Value.TypeName, p.Value.Value);
                 sbParams.Append("  </Parameter>\n");
             }
             sbParams.Append("</Parameters>");

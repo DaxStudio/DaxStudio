@@ -11,7 +11,13 @@ namespace DaxStudio.QueryTrace
         {
             xlAmo.TraceEvent trc = new xlAmo.TraceEvent(eventClass);
             trc.Columns.Add(xlAmo.TraceColumn.EventClass);
-            trc.Columns.Add(xlAmo.TraceColumn.EventSubclass);
+
+            if (eventClass != xlAmo.TraceEventClass.DirectQueryEnd && eventClass != xlAmo.TraceEventClass.Error)
+            {
+                // DirectQuery doesn't have subclasses
+                trc.Columns.Add(xlAmo.TraceColumn.EventSubclass);
+            }
+
             trc.Columns.Add(xlAmo.TraceColumn.TextData);
             trc.Columns.Add(xlAmo.TraceColumn.CurrentTime);
             if (eventClass == xlAmo.TraceEventClass.QueryEnd)

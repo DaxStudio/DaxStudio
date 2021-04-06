@@ -60,7 +60,7 @@ namespace DaxStudio.UI.Model
                         var isSessionsDmv = dq.Contains(Common.Constants.SessionsDmv, StringComparison.OrdinalIgnoreCase);
 
 
-                        using (var dataReader = runner.ExecuteDataReaderQuery(dq))
+                        using (var dataReader = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
                         {
                             if (dataReader != null)
                             {

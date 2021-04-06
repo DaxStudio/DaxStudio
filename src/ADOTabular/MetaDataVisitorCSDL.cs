@@ -1218,7 +1218,7 @@ namespace ADOTabular
                 PRODUCT_TYPE = productInfo.Type,
                 PRODUCT_NAME = productInfo.Name
             };
-            AdomdDataReader result = _conn.ExecuteReader("SELECT * FROM $SYSTEM.MDSCHEMA_FUNCTIONS");
+            AdomdDataReader result = _conn.ExecuteReader("SELECT * FROM $SYSTEM.MDSCHEMA_FUNCTIONS",null);
             while (result.Read()) {
                 // Filters only DAX functions
                 int? origin = GetInt(result, result.GetOrdinal("ORIGIN"));
@@ -1341,7 +1341,7 @@ namespace ADOTabular
             const string QUERY_REMAP_COLUMNS = @"SELECT COLUMN_ID AS COLUMN_ID, ATTRIBUTE_NAME AS COLUMN_NAME FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS WHERE COLUMN_TYPE = 'BASIC_DATA'";
 
             // Load remapping
-            using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS);
+            using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS, null);
             while (result.Read())
             {
                 string columnId = GetString(result, 0);

@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Controls.DataGrid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Controls.PropertyGrid", "DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj", "{CD71EBC4-7CD8-47E9-854F-D295805EFADD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2FA78CD1-8A2D-4285-9DDB-FB4E4B46A7C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -373,6 +375,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D1ED8FBD-8493-496F-9229-497DD526E1C9} = {2FA78CD1-8A2D-4285-9DDB-FB4E4B46A7C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A980F882-ED32-4E77-981F-A37C0AB1410D}

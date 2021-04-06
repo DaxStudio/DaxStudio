@@ -153,18 +153,14 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
-        public AdomdParameterCollection Parameters { get; } = new AdomdParameterCollection();
+        public Microsoft.AnalysisServices.AdomdClient.AdomdParameterCollection Parameters => _command.Parameters;
 
 
         public AdomdDataReader ExecuteReader()
         {
             if (_command != null)
             {
-                _command.Parameters.Clear();
-                foreach (AdomdParameter param in Parameters)
-                {
-                    _command.Parameters.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(param.Name, param.Value));
-                }
+
                 return new AdomdDataReader(_command.ExecuteReader( ));
             }
             else

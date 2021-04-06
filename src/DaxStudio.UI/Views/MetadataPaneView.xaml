@@ -345,6 +345,7 @@
                         -->
                         <ctrl:TreeViewEx x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
                                         Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
+                                        
                                         FocusManager.IsFocusScope="True"
                                         dd:DragDrop.IsDragSource="True"
                                         dd:DragDrop.IsDropTarget="False" 
@@ -446,7 +447,10 @@
                                                 <Separator/>
                                                 <MenuItem Header="{Binding Path=MetadataPane.ShowHiddenObjectsLabel}"
                                                           cal:Message.Attach="[Event Click] = [Action ToggleHiddenObjects()]" />
-                                                
+                                                <Separator/>
+                                                <MenuItem Header="Preview Data"
+                                                          cal:Message.Attach="[Event Click] = [Action PreviewDataForSelectedMetadataItem($dataContext)]"
+                                                          />
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
                                     </StackPanel>
@@ -553,27 +557,31 @@
                                         <StackPanel.ContextMenu>
                                             <ContextMenu 
                                                 cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
-                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsColumnOrMeasure}">
+                                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ShowContextMenu}">
                                                 <MenuItem Header="Define Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineMeasure($dataContext)]"
-                                                    Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
+                                                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
                                                 </MenuItem>
                                                 <MenuItem Header="Define Dependent Measures"
                                                         cal:Message.Attach="[Event Click] = [Action DefineDependentMeasures($dataContext)]"
-                                                          Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
+                                                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
                                                 </MenuItem>
                                                 <MenuItem Header="Define and Expand Measure"
                                                         cal:Message.Attach="[Event Click] = [Action DefineExpandMeasure($dataContext)]"
-                                                          Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
+                                                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
                                                 </MenuItem>
                                                 <MenuItem Header="Show Objects That Reference Measure"
                                                         cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceColumnOrMeasure($dataContext)]"
-                                                          Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
+                                                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsMeasure}">
                                                 </MenuItem>
                                                 <MenuItem Header="Show Objects That Reference Column"
                                                         cal:Message.Attach="[Event Click] = [Action ShowObjectsThatReferenceColumnOrMeasure($dataContext)]"
-                                                          Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsColumn}">
+                                                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=IsColumn}">
                                                 </MenuItem>
+                                                <Separator/>
+                                                <MenuItem Header="Preview Data"
+                                                          cal:Message.Attach="[Event Click] = [Action PreviewDataForSelectedMetadataItem($dataContext)]"
+                                                          Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=CanPreviewData}" />
                                             </ContextMenu>
                                         </StackPanel.ContextMenu>
 

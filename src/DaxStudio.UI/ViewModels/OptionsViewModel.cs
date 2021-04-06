@@ -238,7 +238,7 @@ namespace DaxStudio.UI.ViewModels
 
         [Category("Editor")]
         [DisplayName("Multiple queries detected on paste")]
-        [Description("Specifies how to handle code after a \"// SQL Query\" comment when pasting code from Power BI Performance Analyzer")]
+        [Description("Specifies how to handle code after a \"// Direct Query\" comment when pasting code from Power BI Performance Analyzer")]
         [SortOrder(60)]
         [DataMember]
         [DefaultValue(MultipleQueriesDetectedOnPaste.Prompt)]
@@ -1387,9 +1387,27 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showHiddenMetadata = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue("ShowHiddenMetadata", value, _isInitializing, this);
+                SettingProvider.SetValue(nameof(PreviewDataRowLimit), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
             } 
+        }
+
+        private int _previewDataRowLimit = 500;
+        [Category("Metadata Pane")]
+        [Subcategory("Preview Data")]
+        [DisplayName("Row Limit for Preview Data")]
+        [Description("This limits the amount of rows when previewing data, setting this to 0 will display all the data. (setting to 0 is not recommended as this can result in memory and performance issues with large tables)")]
+        [DataMember, DefaultValue(500), MaxValue(2000000000), MinValue(0)]
+        public int PreviewDataRowLimit
+        {
+            get => _previewDataRowLimit;
+            set
+            {
+                _previewDataRowLimit = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(PreviewDataRowLimit), value, _isInitializing, this);
+                NotifyOfPropertyChange(nameof(PreviewDataRowLimit));
+            }
         }
 
         private bool _setClearCacheAndRunAsDefaultRunStyle;

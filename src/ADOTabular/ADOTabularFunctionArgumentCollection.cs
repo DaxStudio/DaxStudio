@@ -4,20 +4,20 @@ using System.Collections;
 
 namespace ADOTabular
 {
-    public class ADOTabularParameterCollection:IEnumerable<ADOTabularParameter>
+    public class ADOTabularFunctionArgumentCollection:IEnumerable<ADOTabularFunctionArgument>
     {
         private readonly DataRow[] _paramInfo;
 
-        public ADOTabularParameterCollection(DataRow[] paramInfo)
+        public ADOTabularFunctionArgumentCollection(DataRow[] paramInfo)
         {
             _paramInfo = paramInfo;
         }
 
-        public IEnumerator<ADOTabularParameter> GetEnumerator()
+        public IEnumerator<ADOTabularFunctionArgument> GetEnumerator()
         {
             foreach (DataRow dr in _paramInfo)
             {
-                yield return new ADOTabularParameter(dr);
+                yield return new ADOTabularFunctionArgument(dr);
             }
         }
 

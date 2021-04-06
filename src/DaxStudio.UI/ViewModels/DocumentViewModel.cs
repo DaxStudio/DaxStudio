@@ -1130,6 +1130,19 @@ namespace DaxStudio.UI.ViewModels
 
         public string QueryText=> QueryInfo?.ProcessedQuery ?? string.Empty;
 
+
+        public List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> ParameterCollection
+        {
+            get
+            {
+                var coll = new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+                foreach (var p in QueryInfo?.Parameters?.Values)
+                {
+                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter( p.Name, p.Value));
+                }
+                return coll;
+            }
+        }
         public Dictionary<string, QueryParameter> QueryParameters => QueryInfo?.Parameters ?? new Dictionary<string, QueryParameter>();
 
         public string EditorText
@@ -1163,8 +1176,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, false, false, _eventAggregator);
-            txt = queryProcessor.ProcessedQuery;
+            var queryProcessor = new QueryInfo(txt, false, false, _eventAggregator); 
+            txt = DaxHelper.replaceParamsInQuery(queryProcessor.ProcessedQuery, queryProcessor.Parameters);
             if (editor.Dispatcher.CheckAccess())
             {
                 if (editor.SelectionLength == 0)
@@ -1447,7 +1460,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public AdomdDataReader ExecuteDataReaderQuery(string daxQuery)
+        public AdomdDataReader ExecuteDataReaderQuery(string daxQuery, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
             int row = 0;
             int col = 0;
@@ -1476,7 +1489,7 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Start();
                 _queryStopWatch = new Stopwatch();
                 _queryStopWatch.Start();
-                var dr = c.ExecuteReader(daxQuery);
+                var dr = c.ExecuteReader(daxQuery, paramList);
 
                 return dr;
             }
@@ -1557,6 +1570,9 @@ namespace DaxStudio.UI.ViewModels
 
             await RunQueryInternalAsync(message);
 
+            // if the query did not run exit here
+            if (CurrentQueryInfo == null) return;
+
             int durationSecs = CurrentQueryInfo.ClientDurationMs>int.MaxValue? int.MaxValue / 1000: (int)CurrentQueryInfo.ClientDurationMs/ 1000;
             Options.PlayLongOperationSound(durationSecs );
 
@@ -1625,32 +1641,94 @@ namespace DaxStudio.UI.ViewModels
 
                 try {
 
+
+                    // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
+                    // see if the query builder is active and try and use that to get the Query text.
+                    if (EditorText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel))
+                    {
+                        if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0)
+                        {
+                            OutputMessage("There is no text in the editor, redirecting the run command to the Query Builder");
+                            message.QueryProvider = QueryBuilder;
+                        }
+                        else if (this.MetadataPane.SelectedItems.Count() == 1)
+                        {
+                            // if there is no text and the query builder is not active, but the user has a metadata item selected
+                            // we can offer to generate a query for that object
+                            var selectedItem = this.MetadataPane.SelectedItems.ToList()[0];
+                            var queryGenerated = MetadataPane.GenerateQueryForSelectedMetadataItem(selectedItem);
+                            if (string.IsNullOrEmpty(queryGenerated))
+                            {
+                                OutputWarning("There is no query text in the edit window which can be executed.");
+                                ActivateOutput();
+                                IsQueryRunning = false;
+                                return;
+                            } else
+                            {
+                                const string unknownValue = "<UNKNOWN>";
+                                string objectType = unknownValue;
+                                string objectName = unknownValue;
+                                var selection = this.MetadataPane.SelectedItems.ToList()[0];
+                                switch (selection)
+                                {
+                                    case TreeViewTable t:
+                                        objectType = "Table";
+                                        objectName = t.Caption;
+                                        break;
+                                    case TreeViewColumn c when c.IsColumn:
+                                        objectType = "Column";
+                                        objectName = c.Caption;
+                                        break;
+                                    case TreeViewColumn m when m.IsMeasure:
+                                        objectType = "Measure";
+                                        objectName = m.Caption;
+                                        break;
+                                    case TreeViewColumn h when h.Column is ADOTabularHierarchy:
+                                        objectType = "Hierarchy";
+                                        objectName = h.Caption;
+                                        break;
+                                    default:
+
+                                        break;
+                                }
+                                var noQueryMessage = $"There is no query text in the editor and the Query Builder is not open, but you do have the \"{objectName}\" {objectType} selected in the Metadata Pane.\n\nWould you like DAX Studio to generate a query to show a preview of the data for the selected {objectType}?";
+                                if (MessageBox.Show(noQueryMessage, "No Query Text Found", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                                {
+
+                                    InsertTextAtSelection(queryGenerated, false);
+
+                                }
+                                else
+                                {
+                                    OutputError("There is no query text in the editor that can be executed");
+                                    ActivateOutput();
+                                    IsQueryRunning = false;
+                                    return;
+                                }
+                            }
+                            
+                        }
+                        else
+                        {
+                            OutputWarning("There is no query text in the edit window which can be executed.");
+                            ActivateOutput();
+                            IsQueryRunning = false;
+                            return;
+                        }
+
+                    }
+
                     if (PreProcessQuery(message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
                     {
                         IsQueryRunning = false;
                     }
                     else
                     {
-                        // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
-                        // see if the query builder is active and try and use that to get the Query text.
-                        if (QueryText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel))
-                        {
-                            if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0 )
-                            {
-                                OutputMessage("There is no text in the editor, redirecting the run command to the Query Builder");
-                                message.QueryProvider = QueryBuilder;
-                            }
-                            else
-                            {
-                                OutputWarning("There is no text in the edit window to execute.");
-                                IsQueryRunning = false;
-                                return;
-                            }
-                        }
+                        
 
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
-                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText);
+                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText.Trim() + ParameterHelper.GetParameterXml(QueryInfo));
 
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
 
@@ -1678,6 +1756,56 @@ namespace DaxStudio.UI.ViewModels
 
                 }
             }
+        }
+
+
+        private bool GenerateQueryForSelectedMetadataItem()
+        {
+            const string unknownValue = "<UNKNOWN>";
+            const string queryHeader = "// Generated DAX Query\n";
+            string objectType = unknownValue ;
+            string objectName = unknownValue;
+            string query = string.Empty;
+            var selection = this.MetadataPane.SelectedItems.ToList()[0];
+            switch (selection){ 
+                case TreeViewTable t:
+                    objectType = "Table";
+                    objectName = t.Caption;
+                    query = $"{queryHeader}EVALUATE {t.DaxName}";
+                    break;
+                case TreeViewColumn c when c.IsColumn:
+                    objectType = "Column";
+                    objectName = c.Caption;
+                    query = $"{queryHeader}EVALUATE VALUES({c.DaxName})";
+                    break;
+                case TreeViewColumn m when m.IsMeasure:
+                    objectType = "Measure";
+                    objectName = m.Caption;
+                    if (this.Connection.SelectedModel.Capabilities.TableConstructor)
+                        query = $"{queryHeader}EVALUATE {{ {m.DaxName} }}";
+                    else 
+                        query = $"{queryHeader}EVALUATE ROW(\"{m.Caption}\", {m.DaxName})";
+                    break;
+                case TreeViewColumn h when h.Column is ADOTabularHierarchy:
+                    objectType = "Hierarchy";
+                    objectName = h.Caption;
+                    var hier = ((ADOTabularHierarchy)h.Column);
+                    query = $"{queryHeader}EVALUATE GROUPBY({hier.Table.DaxName},\n{ string.Join(",\n", hier.Levels.Select( l => l.Column.DaxName)) }\n)";
+                    break;
+                default:
+
+                    break;
+            }
+
+            if (objectType == unknownValue)
+            {
+                // todo - do we need a different message box here or is the standard warning enough?
+                return false;
+            }
+
+
+
+            return false;
         }
 
         private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
@@ -4070,7 +4198,7 @@ namespace DaxStudio.UI.ViewModels
         public void Handle(ReconnectEvent message)
         {
             UpdateRunningTraces();
-            Spid = Connection.SPID;
+            Spid = Connection?.SPID??-1;
         }
 
         private void UpdateRunningTraces()
@@ -4198,11 +4326,11 @@ namespace DaxStudio.UI.ViewModels
             if (!this.Connection.IsConnected) return;
             if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
             {
-                System.Diagnostics.Process.Start($"https://dax.guide/{word}");
+                System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
             }
         }
 
-        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in dax.guide";
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {

@@ -4,10 +4,10 @@ using System.Globalization;
 
 namespace ADOTabular
 {
-    public class ADOTabularParameter
+    public class ADOTabularFunctionArgument
     {
         
-        public ADOTabularParameter(DataRow dr)
+        public ADOTabularFunctionArgument(DataRow dr)
         {
             if (dr == null) throw new ArgumentNullException(nameof(dr));
             Name = dr["NAME"].ToString();
@@ -17,7 +17,7 @@ namespace ADOTabular
             RepeatGroup = int.Parse(dr["REPEATGROUP"].ToString() , CultureInfo.InvariantCulture);
         }
 
-        public ADOTabularParameter(string name, string description, bool optional, bool repeatable, int repeatGroup)
+        public ADOTabularFunctionArgument(string name, string description, bool optional, bool repeatable, int repeatGroup)
         {
             Name = name;
             Description = description;

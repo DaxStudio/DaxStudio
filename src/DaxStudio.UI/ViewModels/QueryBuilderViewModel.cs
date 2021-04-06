@@ -145,6 +145,15 @@ namespace DaxStudio.UI.ViewModels
             return model.Capabilities;
         }
 
+        public List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> ParameterCollection
+        {
+            get
+            {
+                // todo- we may eventually want to read parameters from filter values, but at the moment we just return an empty collection
+                return new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+            }
+        }
+
         public Dictionary<string, QueryParameter> QueryParameters
         {
             get;

@@ -1,5 +1,6 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace DaxStudio.UI.Interfaces
     {
         string QueryText { get; }
         Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery);
-        AdomdDataReader ExecuteDataReaderQuery(string daxQuery);
+        AdomdDataReader ExecuteDataReaderQuery(string daxQuery, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList);
         DataTable ResultsTable { get; set; }
         DataSet ResultsDataSet { get; set; }
         void OutputMessage(string message);

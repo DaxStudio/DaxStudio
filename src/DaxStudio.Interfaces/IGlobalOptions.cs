@@ -36,6 +36,7 @@ namespace DaxStudio.Interfaces
         bool ExcludeHeadersWhenCopyingResults { get; set; }
         bool KeepMetadataSearchOpen { get; set; }
         DateTime LastVersionCheckUTC { get; set; }
+        int PreviewDataRowLimit { get; set; }
         string ProxyAddress { get; set; }
         bool ProxyUseSystem { get; set; }
         string ProxyUser { get; set; }

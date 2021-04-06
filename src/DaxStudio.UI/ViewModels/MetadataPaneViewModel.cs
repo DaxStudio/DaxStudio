@@ -991,6 +991,79 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public string GenerateQueryForSelectedMetadataItem(object selection)
+        {
+            const string unknownValue = "<UNKNOWN>";
+            const string queryHeader = "// Generated DAX Query\n";
+            string objectType = unknownValue;
+            string objectName = unknownValue;
+            string query = string.Empty;
+            string topnPrefix = string.Empty;
+            string topnSuffix = string.Empty;
+
+            if (_options.PreviewDataRowLimit > 0)
+            {
+                topnPrefix = $"\nTOPN( {_options.PreviewDataRowLimit}, ";
+                topnSuffix = " )";
+            }
+
+            switch (selection)
+            {
+                case TreeViewTable t:
+                    objectType = "Table";
+                    objectName = t.Caption;
+                    query = $"{queryHeader}EVALUATE {topnPrefix}{t.DaxName}{topnSuffix}\n";
+                    break;
+                case TreeViewColumn c when c.IsColumn:
+                    objectType = "Column";
+                    objectName = c.Caption;
+                    query = $"{queryHeader}EVALUATE {topnPrefix}VALUES({c.DaxName}){topnSuffix}\n";
+                    break;
+                case TreeViewColumn m when m.IsMeasure:
+                    objectType = "Measure";
+                    objectName = m.Caption;
+                    if (  ActiveDocument.Connection.SelectedModel.Capabilities.TableConstructor)
+                        query = $"{queryHeader}EVALUATE {{ {m.DaxName} }}\n";
+                    else
+                        query = $"{queryHeader}EVALUATE ROW(\"{m.Caption}\", {m.DaxName})\n";
+                    break;
+                case TreeViewColumn h when h.Column is ADOTabularHierarchy:
+                    objectType = "Hierarchy";
+                    objectName = h.Caption;
+                    var hier = ((ADOTabularHierarchy)h.Column);
+                    query = $"{queryHeader}EVALUATE {topnPrefix}\n    GROUPBY({hier.Table.DaxName},\n        { string.Join(",\n        ", hier.Levels.Select(l => l.Column.DaxName)) }\n    )\n{topnSuffix}\n";
+                    break;
+                default:
+                    // do nothing if we do not match one of the above cases
+                    break;
+            }
+
+            if (objectType == unknownValue)
+            {
+                // todo - do we need a different message box here or is the standard warning enough?
+                return string.Empty;
+            }
+
+            return query;
+        }
+
+        public void PreviewDataForSelectedMetadataItem(object selectedItem)
+        {
+            var query = GenerateQueryForSelectedMetadataItem(selectedItem);
+            if (!string.IsNullOrEmpty(query))
+            {
+                // run query
+                EventAggregator.PublishOnUIThread(new SendTextToEditor(query, true));
+            }
+            else
+            {
+                // throw error
+                ActiveDocument.OutputError("The selected metadata object does not support query generation");
+                ActiveDocument.ActivateOutput();
+            }
+
+        }
+
         public void Handle(QueryStartedEvent message)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
