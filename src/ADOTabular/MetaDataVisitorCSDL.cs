@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace ADOTabular
             // if we are SQL 2012 SP1 or greater ask for v1.1 of the Metadata (includes KPI & Hierarchy information)
 
             if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3368.0"))
-                resColl.Add(new AdomdRestriction("VERSION", "2.0"));
+                resColl.Add(new AdomdRestriction("VERSION", "2.5"));
             else if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0")
                 || (_conn.IsPowerPivot && _conn.ServerVersion.VersionGreaterOrEqualTo("11.0.2830.0")))
                 resColl.Add(new AdomdRestriction("VERSION", "1.1"));
@@ -115,6 +116,9 @@ namespace ADOTabular
                 {
                     switch (rdr.LocalName)
                     {
+                        case "Schema":
+                            GetCSDLVersion(rdr, tabs);
+                            break;
                         case "EntityContainer":
                             if (rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
                                 UpdateDatabaseAndModelFromEntityContainer(rdr, tabs, eEntityContainer);
@@ -127,10 +131,12 @@ namespace ADOTabular
                             AddColumnsToTable(rdr, tabs, eEntityType);
                             break;
                         case "AssociationSet":
-                            BuildRelationshipFromAssociationSet(rdr, tabs, eAssociationSet);
+                            if (tabs.Model.CSDLVersion >= 2.5)
+                                BuildRelationshipFromAssociationSet(rdr, tabs, eAssociationSet);
                             break;
                         case "Association":
-                            UpdateRelationshipFromAssociation(rdr, tabs);
+                            if (tabs.Model.CSDLVersion >= 2.5)
+                                UpdateRelationshipFromAssociation(rdr, tabs);
                             break;
                     }
 
@@ -142,26 +148,56 @@ namespace ADOTabular
             foreach (var t in tabs)
             {
                 TagKpiComponentColumns(t);
-                UpdateTomRelationships(t);
+                if (tabs.Model.CSDLVersion >= 2.5)
+                    UpdateTomRelationships(t);
             }
 
+        }
+
+        private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
+        {
+            var version = rdr.GetAttribute("Version", "http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions");
+            tabs.Model.CSDLVersion = Convert.ToDouble(version);
         }
 
         private void UpdateTomRelationships(ADOTabularTable table)
         {
             var tomTable = table.Model.TOMModel.Tables[table.Name];
+            
             foreach (var r in table.Relationships)
             {
-                //var relationship = new SingleColumnRelationship();
-                //relationship.FromColumn =  tomTable.Columns.First(c => c. r.FromColumn);
-                //relationship.FromColumn = tomTable.Columns.Find(r.ToColumn);
-                //if (Enum.TryParse<RelationshipEndCardinality>(r.FromColumnMultiplicity, out var fromCardinality))
-                //    relationship.FromCardinality = fromCardinality;
-                //if (Enum.TryParse<RelationshipEndCardinality>(r.ToColumnMultiplicity, out var toCardinality))
-                //    relationship.ToCardinality = toCardinality;
-                //if (Enum.TryParse<CrossFilteringBehavior>(r.CrossFilterDirection, out var crossFilteringBehavior))
-                //    relationship.CrossFilteringBehavior = crossFilteringBehavior;
-                //table.Model.TOMModel.Relationships.Add(relationship);
+                var toTable = r.ToTable;
+                var toTomTable = table.Model.TOMModel.Tables[toTable.Name];
+                var relationship = new SingleColumnRelationship
+                {
+                    FromColumn = tomTable.Columns.First(c => c.Name == table.Columns.GetByPropertyRef(r.FromColumn).Name),
+                    ToColumn = toTomTable.Columns.First(c => c.Name == toTable.Columns.GetByPropertyRef(r.ToColumn).Name),
+                    FromCardinality = getCardinality(r.FromColumnMultiplicity),
+                    ToCardinality = getCardinality(r.ToColumnMultiplicity),
+                    CrossFilteringBehavior = getCrossFilteringBehavior(r.CrossFilterDirection),
+                    IsActive = r.IsActive
+                };
+                table.Model.TOMModel.Relationships.Add(relationship);
+            }
+        }
+
+        private RelationshipEndCardinality getCardinality(string multiplicity)
+        {
+            switch (multiplicity)
+            {
+                case "*": return RelationshipEndCardinality.Many;
+                case "0..1": return RelationshipEndCardinality.One;
+                case "1": return RelationshipEndCardinality.One;
+                default: return RelationshipEndCardinality.None;
+            }
+        }
+
+        private CrossFilteringBehavior getCrossFilteringBehavior(string crossFilterDirection)
+        {
+            switch (crossFilterDirection)
+            {
+                case "Both": return CrossFilteringBehavior.BothDirections;
+                default: return CrossFilteringBehavior.OneDirection;
             }
         }
 
@@ -268,6 +304,8 @@ namespace ADOTabular
 
         private static void UpdateRelationshipFromAssociation(XmlReader rdr, ADOTabularTableCollection tabs)
         {
+            if (tabs.Model.CSDLVersion < 2.5) return;
+            
             string refName = string.Empty;
             string toColumnRef = string.Empty;
             string fromColumnRef = string.Empty;
@@ -284,18 +322,33 @@ namespace ADOTabular
                 }
             }
 
+
+                rdr.ReadToFollowing("ReferentialConstraint");
+                
+                var referentialConstraints = ReadReferentialConstraints(rdr, tabs);
+
+                rdr.ReadToFollowing("End");
+                var end1 = GetAssociationEnd(rdr);
+                
+                rdr.ReadToFollowing("End");
+                var end2 = GetAssociationEnd(rdr);
+
+                if (end1.Role == referentialConstraints.fromRole)
+                {
+                    referentialConstraints.fromMultiplicity = end1.Multiplicity;
+                    referentialConstraints.toMultiplicity = end2.Multiplicity;
+                }
+
+                if (end1.Role == referentialConstraints.toRole)
+                {
+                    referentialConstraints.toMultiplicity = end1.Multiplicity;
+                    referentialConstraints.fromMultiplicity = end2.Multiplicity;
+                }
+
+
             while (!(rdr.NodeType == XmlNodeType.EndElement
                      && rdr.LocalName == "Association"))
             {
-                // todo read entitySet as From/To table
-                if (rdr.LocalName == "End")
-                {
-                    (fromColumnRef, fromColumnMultiplicity) = GetRelationshipColumnRef(rdr);
-                    (toColumnRef, toColumnMultiplicity) = GetRelationshipColumnRef(rdr);
-                }
-                if (rdr.NodeType == XmlNodeType.EndElement
-                    && rdr.LocalName == "Association") break;
-                
                 rdr.Read();
             }
 
@@ -306,15 +359,43 @@ namespace ADOTabular
                 {
                     if (rel.InternalName == refName)
                     {
-                        rel.ToColumn = toColumnRef;
-                        rel.ToColumnMultiplicity = toColumnMultiplicity;
-                        rel.FromColumn = fromColumnRef;
-                        rel.FromColumnMultiplicity = fromColumnMultiplicity;
+                        rel.ToColumn = referentialConstraints.toColumnRef;
+                        rel.ToColumnMultiplicity = referentialConstraints.toMultiplicity;
+                        rel.FromColumn = referentialConstraints.fromColumnRef;
+                        rel.FromColumnMultiplicity = referentialConstraints.fromMultiplicity;
                         return;
                     }
                 }
             }
 
+        }
+
+        private static (string fromRole, string fromColumnRef, string fromMultiplicity, string toRole, string toColumnRef, string toMultiplicity) ReadReferentialConstraints(XmlReader rdr, ADOTabularTableCollection tabs)
+        {
+            var result = (fromRole: string.Empty, fromColumnRef: string.Empty, fromMultiplicity: string.Empty,
+                          toRole: string.Empty, toColumnRef: string.Empty, toMultiplicity: string.Empty);
+
+            while (rdr.NodeType != XmlNodeType.EndElement
+                   || rdr.LocalName != "ReferentialConstraint")
+            {
+                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Principal")
+                {
+                    result.toRole = rdr.GetAttribute("Role");
+                    rdr.ReadToFollowing("PropertyRef");
+                    result.toColumnRef = rdr.GetAttribute("Name");
+                }
+
+                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Dependent")
+                {
+                    result.fromRole = rdr.GetAttribute("Role");
+                    rdr.ReadToFollowing("PropertyRef");
+                    result.fromColumnRef = rdr.GetAttribute("Name");
+                }
+
+                rdr.Read();
+            }
+
+            return result;
         }
 
         private static void BuildRelationshipFromAssociationSet(XmlReader rdr, ADOTabularTableCollection tabs, string eAssociationSet)
@@ -323,6 +404,7 @@ namespace ADOTabular
             string fromTableRef = "";
             string toTableRef = "";
             string crossFilterDir = "";
+            bool isActive = true;
 
             while (rdr.MoveToNextAttribute())
             {
@@ -345,11 +427,9 @@ namespace ADOTabular
                 }
                 if (rdr.LocalName == "AssociationSet" && rdr.NamespaceURI == @"http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions")
                 {
-                    //rdr.MoveToFirstAttribute();
-                    if (rdr.MoveToAttribute("CrossFilterDirection"))
-                    {
-                        crossFilterDir = rdr.Value;
-                    }
+
+                    crossFilterDir = rdr.GetAttribute("CrossFilterDirection");
+                    isActive = rdr.GetAttribute("State") != "Inactive";
                 }
                 rdr.Read();
             }
@@ -359,7 +439,8 @@ namespace ADOTabular
                 FromTable = tabs.GetById(fromTableRef),
                 ToTable = tabs.GetById(toTableRef),
                 InternalName = refName,
-                CrossFilterDirection = crossFilterDir
+                CrossFilterDirection = crossFilterDir,
+                IsActive = isActive
             });
 
         }
@@ -384,29 +465,15 @@ namespace ADOTabular
             return "";
         }
 
-        private static Tuple<string,string> GetRelationshipColumnRef(XmlReader rdr)
+        private static (string Role, string Multiplicity) GetAssociationEnd(XmlReader rdr)
         {
-            string role = string.Empty;
-            string multiplicity = string.Empty;
+            var result = (Role: string.Empty, Multiplicity: string.Empty);
 
-            while (!(rdr.NodeType == XmlNodeType.EndElement
-                     && rdr.LocalName == "End"))
-            {
-                if (rdr.MoveToAttribute("Role"))
-                {
-                    role = rdr.Value;
-                }
+            result.Role = rdr.GetAttribute("Role");
+            result.Multiplicity = rdr.GetAttribute("Multiplicity");
 
-                if (rdr.MoveToAttribute("Multiplicity"))
-                {
-                    multiplicity = rdr.Value;
-                }
+            return result;
 
-                rdr.Skip();
-                rdr.MoveToContent();
-                return Tuple.Create(role, multiplicity);
-            }
-            return Tuple.Create( "","");
         }
 
 

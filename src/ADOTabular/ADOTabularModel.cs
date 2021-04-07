@@ -51,10 +51,7 @@ namespace ADOTabular
         public List<ADOTabularRelationship> Relationships { get; private set; }
         public Model TOMModel { get; }
 
-        public MetadataImages MetadataImage
-        {
-            get { return IsPerspective? MetadataImages.Perspective : MetadataImages.Model; }
-        }
+        public MetadataImages MetadataImage => IsPerspective? MetadataImages.Perspective : MetadataImages.Model;
 
         public string Culture { get; private set; }
 
@@ -74,5 +71,7 @@ namespace ADOTabular
         }
 
         public ADOTabularModelCapabilities Capabilities { get; set; } = new ADOTabularModelCapabilities();
+        
+        public double CSDLVersion { get; set; }
     }
 }

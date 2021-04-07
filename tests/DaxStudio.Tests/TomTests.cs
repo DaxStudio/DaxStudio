@@ -8,6 +8,7 @@ using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Interfaces;
 using DaxStudio.Tests.Utils;
+using Microsoft.AnalysisServices.Tabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -166,7 +167,7 @@ namespace DaxStudio.Tests
 
 
         [TestMethod]
-        public void TestPowerBITomModel()
+        public void TestPowerBITomModel_CSDL_2_0()
         {
             //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
 
@@ -180,11 +181,40 @@ namespace DaxStudio.Tests
             v.GenerateTablesFromXmlReader(tabs, xr);
             
             Assert.IsNotNull(m.TOMModel);
-            Assert.AreEqual(13, m.TOMModel.Tables.Count);
-            Assert.AreEqual(tabs["ProductCategory"].Columns.Count , m.TOMModel.Tables["ProductCategory"].Columns.Count);
-            Assert.AreEqual(tabs["Sales"].Relationships.Count, m.TOMModel.Relationships.Where(r=> r.FromTable.Name == "Sales").Count());
-            Assert.AreEqual(tabs["Sales"].Measures.Count, m.TOMModel.Tables["Sales"].Measures.Count);
+            Assert.AreEqual(13, m.TOMModel.Tables.Count,"Table Counts are equal");
+            Assert.AreEqual(tabs["ProductCategory"].Columns.Count , m.TOMModel.Tables["ProductCategory"].Columns.Count,"ProductCategory column counts are equal");
+            Assert.AreEqual(tabs["Sales"].Relationships.Count, m.TOMModel.Relationships.Count(r => r.FromTable.Name == "Sales"), "Sales table relationships are equal");
+            Assert.AreEqual(2, m.TOMModel.Tables["Sales"].Measures.Count, "Sales table measure counts are equal");
 
+        }
+
+
+        [TestMethod]
+        public void TestPowerBITomModel_CSDL_2_5()
+        {
+            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
+
+            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl_2_5.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+
+            Assert.IsNotNull(m.TOMModel);
+            Assert.AreEqual(tabs.Count, m.TOMModel.Tables.Count, "Table Counts are equal");
+            Assert.AreEqual(tabs["Product"].Columns.Count, m.TOMModel.Tables["Product"].Columns.Count, "Product column counts are equal");
+            Assert.AreEqual(tabs["Sales"].Relationships.Count, m.TOMModel.Relationships.Count(r => r.FromTable.Name == "Sales"), "Sales table relationships are equal");
+            Assert.AreEqual(2, m.TOMModel.Tables["Sales"].Measures.Count, "Sales table measure counts are equal");
+
+            Assert.AreEqual(8, m.TOMModel.Relationships.Count, "Total Relationships" );
+            Assert.AreEqual(4,m.TOMModel.Relationships.Count(r => r.FromTable.Name == "Sales"), "4 relationships FROM sales table");
+            Assert.AreEqual(2, m.TOMModel.Relationships.Count(r => r.FromTable.Name == "Bugets"), "2 relationships FROM budgets table");
+            Assert.AreEqual(1, m.TOMModel.Relationships.Count(r => !r.IsActive), "There should be 1 inactive relationship");
+            Assert.AreEqual(3, m.TOMModel.Relationships.Count(r => r.CrossFilteringBehavior == CrossFilteringBehavior.BothDirections), "3 Bi-Di relationships");
+            Assert.AreEqual(1, m.TOMModel.Relationships.Count(r => r.CrossFilteringBehavior == CrossFilteringBehavior.BothDirections && !r.IsActive), "1 inactive Bi-Di relationships");
         }
     }
 }
