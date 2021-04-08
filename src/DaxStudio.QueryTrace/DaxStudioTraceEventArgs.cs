@@ -31,6 +31,7 @@ namespace DaxStudio.QueryTrace
                     NTUserName = e.NTUserName;
                     StartTime = e.StartTime;
                     break;
+                case TraceEventClass.CommandEnd:
                 case TraceEventClass.QueryEnd:
                     Duration = e.Duration;
                     StartTime = e.StartTime;
@@ -38,11 +39,19 @@ namespace DaxStudio.QueryTrace
                     EndTime = e.EndTime;
                     CpuTime = e.CpuTime;
                     break;
+                
                 case TraceEventClass.DirectQueryEnd:
                     Duration = e.Duration;
                     EndTime = e.EndTime;
                     CpuTime = e.CpuTime;
                     StartTime = e.StartTime;
+                    break;
+                case TraceEventClass.ProgressReportEnd:
+                    StartTime = e.StartTime;
+                    //CpuTime = e.CpuTime;
+                    Duration = e.Duration;
+                    NTUserName = e.NTUserName;
+                    ProgressTotal = e.ProgressTotal;
                     break;
                 case TraceEventClass.VertiPaqSEQueryEnd:
                     StartTime = e.StartTime;
@@ -55,11 +64,20 @@ namespace DaxStudio.QueryTrace
                     StartTime = e.CurrentTime;
                     NTUserName = e.NTUserName;
                     break;
+                case TraceEventClass.ProgressReportBegin:
                 case TraceEventClass.CommandBegin:
                     string s = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
                     DateTime.TryParse(s, out var startTime);
                     StartTime = startTime;
                     NTUserName = e.NTUserName;
+                    break;
+                case TraceEventClass.ProgressReportCurrent:
+                    string s2 = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
+                    DateTime.TryParse(s2, out var startTime2);
+                    StartTime = startTime2;
+                    NTUserName = e.NTUserName;
+                    IntegerData = e.IntegerData;
+                    ProgressTotal = e.ProgressTotal;
                     break;
                 case TraceEventClass.DiscoverBegin:
                 case TraceEventClass.DAXQueryPlan:
@@ -129,6 +147,8 @@ namespace DaxStudio.QueryTrace
             //{ }
         }
 
+        public long ProgressTotal { get; set; }
+
         // This default constructor is required to allow deserializing from JSON when tracing PowerPivot
         public DaxStudioTraceEventArgs() { }
 
@@ -168,6 +188,7 @@ namespace DaxStudio.QueryTrace
         public DaxStudioTraceEventSubclass EventSubclass => _eventSubclass;
         // ReSharper disable once InconsistentNaming
         public string NTUserName { get; set; }
+        public long IntegerData { get; private set; }
         public DateTime EndTime { get; set; }
         public DateTime StartTime { get; set; }
         public string DatabaseName { get; set; }

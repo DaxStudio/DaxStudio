@@ -554,6 +554,7 @@
     <Compile Include="Utils\ZoomHelper.cs" />
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
+    <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
@@ -597,6 +598,9 @@
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaRelationshipViewModel.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaSummaryViewModel.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
+    <Compile Include="Views\RefreshTraceView.xaml.cs">
+      <DependentUpon>RefreshTraceView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>
@@ -780,6 +784,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Monotone.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RefreshTraceView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
