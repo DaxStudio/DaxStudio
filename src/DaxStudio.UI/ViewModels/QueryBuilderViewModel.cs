@@ -280,6 +280,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void AddColumnToColumns(ITreeviewColumn column)
         {
+            if (column == null) return;
+            if (column.InternalColumn == null) return;
+
             if (Columns.Contains(column.InternalColumn))
             {
                 // write warning and return
@@ -291,6 +294,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void AddColumnToFilters(ITreeviewColumn column)
         {
+            if (column == null) return;
+            if (column.InternalColumn == null) return;
+
             if (Filters.Contains(column.InternalColumn))
             {
                 // write warning and return
