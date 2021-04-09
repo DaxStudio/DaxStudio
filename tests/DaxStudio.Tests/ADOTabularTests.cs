@@ -543,7 +543,10 @@ namespace DaxStudio.Tests
 
         }
 
-        [TestMethod]
+
+        // We need CSDL v2.5 (or higher) to get the full relationship detail. Prior to that version we do not 
+        // have information on which columns are involved in the relationship
+        [TestMethod, Ignore]
         public void TestCSDLRelationships()
         {
             //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
