@@ -186,7 +186,23 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanSendTextToEditor => Columns.Items.Count > 0;
 
-        public bool CanAddNewMeasure => Document?.Connection?.SelectedModel?.Tables.Count > 0 ;
+        public bool CanAddNewMeasure
+        {
+            get {
+                try
+                {
+                    return Document?.Connection?.SelectedModel?.Tables.Count > 0;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(CanAddNewMeasure), "Error checking if the model has any tables");
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"The following error occurred while checking if your model has any tables:\n{ex.Message}"));                    
+                }
+
+                return false;
+            }
+        }
+
         // ReSharper disable once UnusedMember.Global
         public void AddNewMeasure()
         {
