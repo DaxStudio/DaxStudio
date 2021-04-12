@@ -212,8 +212,8 @@ namespace DaxStudio.Standalone
             else
             {
 #if DEBUG
-                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
-                Log.Information("Information Logging Enabled due to running in debug mode");
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;
+                Log.Information("Verbose Logging Enabled due to running in debug mode");
 #else
                 Log.Information("Changing minimum log event to Error");
                 levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
