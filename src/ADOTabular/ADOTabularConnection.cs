@@ -389,9 +389,12 @@ namespace ADOTabular
             _runningCommand.CommandType = CommandType.Text;
             _runningCommand.CommandText = command;
 
-            foreach (var p in paramList)
+            if (paramList != null)
             {
-                _runningCommand.Parameters.Add(p);
+                foreach (var p in paramList)
+                {
+                    _runningCommand.Parameters.Add(p);
+                }
             }
 
             // TOOO - add parameters to connection

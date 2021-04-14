@@ -39,7 +39,8 @@ sudo gem install github-pages
 
 Once you have the above dependencies installed, 
 the following commands will run the DAX Studio site locally:
+
 ```
 cd /mnt/c/<folder with DaxStudio git repo>/docs
-bundler exec jekyll serve -w
+bundler exec jekyll serve --force_polling
 ```
