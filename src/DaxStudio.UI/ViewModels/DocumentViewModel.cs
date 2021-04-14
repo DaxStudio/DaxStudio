@@ -2826,7 +2826,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ConnectEvent message)
         {
-            _logger.Info("In Handle<ConnectEvent>");
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ConnectEvent>","Starting");
             var msg = NewStatusBarMessage("Connecting...");
 
             Task.Run(() =>

@@ -22,8 +22,9 @@ namespace DaxStudio.UI.Model
         {
             var lst = new List<FilterableTreeViewItem>();
             var grps = funcProvider.FunctionGroups;
+
             if (grps == null) return lst;
-            foreach (var fg in funcProvider.FunctionGroups)
+            foreach (var fg in grps)
             {
                 
                 lst.Add(new TreeViewFunctionGroup(fg, fg.TreeViewFunctions, options, eventAggregator, metadataPane));
