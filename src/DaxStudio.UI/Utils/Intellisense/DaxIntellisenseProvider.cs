@@ -536,6 +536,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             // add keywords
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Keywords))
             {
+                // Keywords
                 tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "COLUMN", 200.0));
@@ -552,6 +553,16 @@ namespace DaxStudio.UI.Utils.Intellisense
                 tmpData.Add(new DaxCompletionData(this, "START", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "AT", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "$SYSTEM", 200.0));
+
+                // Data Types
+                tmpData.Add(new DaxCompletionData(this, "BINARY", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "BOOLEAN", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "CURRENCY", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "DATETIME", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "DECIMAL", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "INTEGER", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "STRING", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "VARIANT", 300.0));
             }
             foreach(var itm in tmpData.OrderBy(x => x.Content.ToString()))
             {
