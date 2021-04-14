@@ -35,7 +35,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
-        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base( eventAggregator, globalOptions)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
             _globalOptions = globalOptions;
@@ -53,6 +53,7 @@ namespace DaxStudio.UI.ViewModels
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
+            
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QueryEnd,
                   DaxStudioTraceEventClass.QueryBegin,
@@ -213,6 +214,7 @@ namespace DaxStudio.UI.ViewModels
 
         // IToolWindow interface
         public override string Title => "All Queries";
+        public override string TraceSuffix => "all";
 
         public override string ToolTipText => "Runs a server trace to record all queries from all users for the current connection";
 

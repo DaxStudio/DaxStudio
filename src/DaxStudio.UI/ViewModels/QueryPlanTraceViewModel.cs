@@ -77,7 +77,7 @@ namespace DaxStudio.UI.ViewModels
     class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, ISaveState
     {
         [ImportingConstructor]
-        public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public QueryPlanTraceViewModel( IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base( eventAggregator, globalOptions)
         {
             _physicalQueryPlanRows = new BindableCollection<PhysicalQueryPlanRow>();
             _logicalQueryPlanRows = new BindableCollection<LogicalQueryPlanRow>();
@@ -189,6 +189,7 @@ namespace DaxStudio.UI.ViewModels
         
         // IToolWindow interface
         public override string Title => "Query Plan";
+        public override string TraceSuffix => "plans";
 
         public override string ContentId => "query-plan";
         public override ImageSource IconSource

@@ -12,10 +12,13 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.XPath;
 using ADOTabular.Utils;
+using DaxStudio.QueryTrace;
 using DaxStudio.UI.Interfaces;
 
 
@@ -581,5 +584,39 @@ namespace DaxStudio.UI.Model
             SetSelectedModel(model);
         }
 
+        private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
+        public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
+        {
+            get
+            {
+                if (_supportedTraceEventClasses == null)
+                {
+                    _supportedTraceEventClasses = PopulateSupportedTraceEventClasses();
+
+                }
+
+                return _supportedTraceEventClasses;
+
+            }
+        }
+
+        private HashSet<DaxStudioTraceEventClass> PopulateSupportedTraceEventClasses()
+        {
+            var result = new HashSet<DaxStudioTraceEventClass>();
+            var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null);
+            while (dr.Read())
+            {
+                var xml = dr.GetString(0);
+                XPathDocument xPath = new XPathDocument(new StringReader(xml));
+                var nav = xPath.CreateNavigator();
+                var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
+                while (iter.MoveNext())
+                {
+                    result.Add((DaxStudioTraceEventClass) iter.Current.ValueAsInt);
+                }
+            }
+
+            return result;
+        }
     }
 }

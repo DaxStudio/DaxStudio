@@ -283,8 +283,8 @@ namespace DaxStudio.UI.ViewModels
         public Dictionary<string,string> RemapColumnNames { get; set; }
 
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails
-            , IGlobalOptions options) : base(eventAggregator, globalOptions)
+        public ServerTimesViewModel( IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails
+            , IGlobalOptions options) : base( eventAggregator, globalOptions)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             RemapColumnNames = new Dictionary<string, string>();
@@ -581,6 +581,7 @@ namespace DaxStudio.UI.ViewModels
 
         // IToolWindow interface
         public override string Title => "Server Timings";
+        public override string TraceSuffix => "timings";
         public override string ContentId => "server-timings-trace";
         public override ImageSource IconSource
         {

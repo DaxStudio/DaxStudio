@@ -15,13 +15,13 @@ namespace DaxStudio.QueryTrace
 {
     public static class QueryTraceEngineFactory
     {
-        public static IQueryTrace CreateLocal(IConnectionManager connection, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession) {
+        public static IQueryTrace CreateLocal(IConnectionManager connection, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string traceSuffix) {
             var dsEvents = events.Select(e => (DaxStudioTraceEventClass)e).ToList();
-            return new QueryTraceEngine(connection, dsEvents, globalOptions, filterForCurrentSession , connection.FileName); 
+            return new QueryTraceEngine(connection, dsEvents, globalOptions, filterForCurrentSession , connection.FileName, traceSuffix); 
         }
-        public static IQueryTrace CreateRemote(IConnectionManager connection, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession) {
+        public static IQueryTrace CreateRemote(IConnectionManager connection, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string traceSuffix) {
             var dsEvents = events.Select(e => (DaxStudioTraceEventClass)e).ToList();
-            return new RemoteQueryTraceEngine(connection, dsEvents, port, globalOptions, filterForCurrentSession,connection.FileName);
+            return new RemoteQueryTraceEngine(connection, dsEvents, port, globalOptions, filterForCurrentSession,connection.FileName, traceSuffix);
         }
     }
 }

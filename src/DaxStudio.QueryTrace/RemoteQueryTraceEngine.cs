@@ -19,7 +19,8 @@ namespace DaxStudio.QueryTrace
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
         private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
         private readonly string _powerBIFileName = string.Empty;
-        public RemoteQueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName)
+        private readonly string _suffix = string.Empty;
+        public RemoteQueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName, string suffix)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub
@@ -27,6 +28,7 @@ namespace DaxStudio.QueryTrace
             queryTraceHubProxy = hubConnection.CreateHubProxy("QueryTrace");
             _eventsToCapture = events;
             _powerBIFileName = powerBIFileName;
+            _suffix = suffix;
             // ==== DEBUG LOGGING =====
             //var writer = new System.IO.StreamWriter(@"d:\temp\SignalR_ClientLog.txt");
             //writer.AutoFlush = true;
@@ -40,7 +42,7 @@ namespace DaxStudio.QueryTrace
             hubConnection.Start().Wait();
             // configure trace
             Log.Debug("{class} {method} {message} connectionType: {connectionType} sessionId: {sessionId} eventCount: {eventCount}", "RemoteQueryTraceEngine", "<constructor>", "about to create remote engine", connectionManager.Type.ToString(), connectionManager.SessionId, events.Count);
-            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionManager.Type, connectionManager.SessionId, events, filterForCurrentSession,_powerBIFileName).Wait();
+            queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionManager.Type, connectionManager.SessionId, events, filterForCurrentSession,_powerBIFileName, _suffix).Wait();
             // wire up hub events
 
         }

@@ -119,10 +119,7 @@ namespace DaxStudio.UI
                 _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
 
-
-
-                
-	            batch.AddExportedValue<IWindowManager>(new WindowManager());
+                batch.AddExportedValue<IWindowManager>(new WindowManager());
 	            batch.AddExportedValue<IEventAggregator>(new EventAggregator());
 	            batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
 	            batch.AddExportedValue<Func<IWindowManager, IEventAggregator, DocumentViewModel>>(
@@ -131,7 +128,6 @@ namespace DaxStudio.UI
 	            batch.AddExportedValue(catalog);
 
                 ISettingProvider settingProvider = SettingsProviderFactory.GetSettingProvider();
-
                 batch.AddExportedValue<ISettingProvider>(settingProvider);
 
                 // add support for MLib themes
@@ -143,8 +139,6 @@ namespace DaxStudio.UI
 	            AvalonDockConventions.Install();
 
                 //var settingFactory = _container.GetExport<Func<ISettingProvider>>();
-
-                
 
                 ConfigureKeyBindingConvention();
 

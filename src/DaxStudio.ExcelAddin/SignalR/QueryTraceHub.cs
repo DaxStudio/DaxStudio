@@ -28,7 +28,7 @@ namespace DaxStudio
             //    ConstructQueryTraceEngine(connectionType, sessionId, eventsToCapture, stubGlobalOptions);
             //}
 
-            public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName) //, IGlobalOptions globalOptions)
+            public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName, string suffix) //, IGlobalOptions globalOptions)
             {
                 try
                 {
@@ -58,7 +58,7 @@ namespace DaxStudio
                         {
                             connectionType = AdomdType.AnalysisServices;
                             Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                            _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName);
+                            _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName, suffix);
                             _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                             _engine.TraceWarning += ((o, e) => { Clients.Caller.OnTraceWarning(e); });
                             _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });

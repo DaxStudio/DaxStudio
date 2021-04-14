@@ -32,7 +32,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
-        public RefreshTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public RefreshTraceViewModel( IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base( eventAggregator, globalOptions)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
             _globalOptions = globalOptions;
@@ -121,6 +121,7 @@ namespace DaxStudio.UI.ViewModels
 
         // IToolWindow interface
         public override string Title => "Refresh Trace";
+        public override string TraceSuffix => "refresh";
 
         public override string ToolTipText => "Runs a server trace to record data refresh details";
 
