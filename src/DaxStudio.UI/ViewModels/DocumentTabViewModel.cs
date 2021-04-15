@@ -13,8 +13,8 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Extensions;
 using System.Windows;
 using System.Linq;
-using DaxStudio.Interfaces;
 using DaxStudio.Common;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

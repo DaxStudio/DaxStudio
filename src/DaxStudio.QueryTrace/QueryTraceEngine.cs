@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
 using Microsoft.AnalysisServices;
 using System.Xml;
 using System.Timers;
@@ -12,6 +11,8 @@ using Serilog;
 using DaxStudio.Common;
 using Polly;
 using ADOTabular.Enums;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using Trace = Microsoft.AnalysisServices.Trace;
 
 namespace DaxStudio.QueryTrace
@@ -92,8 +93,8 @@ namespace DaxStudio.QueryTrace
 
         public List<DaxStudioTraceEventClass> Events { get; }
 
-        public event TraceEventHandler TraceEvent;
-        public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        public event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
+        public event EventHandler TraceCompleted;
         public event EventHandler TraceStarted;
         public event EventHandler<string> TraceError;
         public event EventHandler<string> TraceWarning;
@@ -354,7 +355,7 @@ namespace DaxStudio.QueryTrace
             return _trace;
         }
 
-        public void OnTraceEvent( TraceEventArgs e)
+        public void OnTraceEvent( DaxStudioTraceEventArgs e)
         {
             TraceEvent?.Invoke(this, e);
         }
@@ -472,26 +473,35 @@ namespace DaxStudio.QueryTrace
                         Log.Verbose("Started ActivityId: {EventClass} - {ActivityId}", e.EventClass.ToString(), e[TraceColumn.ActivityID]);
                         //return;
                     }
-                    
-                    OnTraceEvent(e);
-                    _capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBiFileName));
-                    if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error)
-                    {
-                        // if this is not an internal DAX Studio query 
-                        // like the one we issue after a ClearCache to re-establish the session
-                        // then call TraceCompleted, otherwise we clear out the captured events
-                        // and keep waiting
-                        if (!e.TextData.Contains(Constants.InternalQueryHeader))
-                        {
-                            // Raise an event with the captured events
-                            TraceCompleted?.Invoke(this, _capturedEvents);
-                        }
-                        // reset the captured events collection
-                        _capturedEvents = new List<DaxStudioTraceEventArgs>();
 
-                        // Reset activity ID
-                        _activityId = null;
-                    }
+                    if (e.TextData != null && e.TextData.Contains(Constants.InternalQueryHeader)) return;
+                    
+
+                    OnTraceEvent(new DaxStudioTraceEventArgs( e, _powerBiFileName));
+                    
+                    
+                    // TODO - should we move the following block to the trace watchers so that they
+                    //        can control which events to capture and when to clear the list of captured events??
+                    
+                    
+                    //_capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBiFileName));
+                    //if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error)
+                    //{
+                    //    // if this is not an internal DAX Studio query 
+                    //    // like the one we issue after a ClearCache to re-establish the session
+                    //    // then call TraceCompleted, otherwise we clear out the captured events
+                    //    // and keep waiting
+                    //    if (!e.TextData.Contains(Constants.InternalQueryHeader))
+                    //    {
+                    //        // Raise an event with the captured events
+                    //        TraceCompleted?.Invoke(this, null);
+                    //    }
+                    //    // reset the captured events collection
+                    //    _capturedEvents = new List<DaxStudioTraceEventArgs>();
+
+                    //    // Reset activity ID
+                    //    _activityId = null;
+                    //}
                 }
             }
             catch (Exception ex)
@@ -511,8 +521,8 @@ namespace DaxStudio.QueryTrace
         private void ClearEventSubscribers()
         {
             TraceStarted = (EventHandler)Delegate.RemoveAll(TraceStarted, TraceStarted);
-            TraceEvent = (TraceEventHandler)Delegate.RemoveAll(TraceEvent, TraceEvent);
-            TraceCompleted = (EventHandler<IList<DaxStudioTraceEventArgs>>)Delegate.RemoveAll(TraceCompleted, TraceCompleted);
+            TraceEvent = (EventHandler<DaxStudioTraceEventArgs>)Delegate.RemoveAll(TraceEvent, TraceEvent);
+            TraceCompleted = (EventHandler)Delegate.RemoveAll(TraceCompleted, TraceCompleted);
             TraceError = (EventHandler<string>)Delegate.RemoveAll(TraceError, TraceError);
             TraceWarning = (EventHandler<string>)Delegate.RemoveAll(TraceWarning, TraceWarning);
         }

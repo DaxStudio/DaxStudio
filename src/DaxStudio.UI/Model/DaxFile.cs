@@ -1,8 +1,8 @@
-﻿using DaxStudio.Interfaces;
-using DaxStudio.UI.Enums;
+﻿using DaxStudio.UI.Enums;
 using Newtonsoft.Json;
 using System.IO;
 using System.Runtime.Serialization;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.ViewModels;
 
 
@@ -23,7 +24,6 @@ namespace DaxStudio.UI
     using DaxStudio.UI.Utils;
     using DaxStudio.UI.Events;
     using DaxStudio.UI.Interfaces;
-    using DaxStudio.Interfaces;
     using DaxStudio.UI.Model;
     using MLib;
     using MLib.Interfaces;

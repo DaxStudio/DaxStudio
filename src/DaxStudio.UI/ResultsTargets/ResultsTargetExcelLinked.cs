@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ResultsTargets

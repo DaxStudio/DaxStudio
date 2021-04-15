@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.QueryTrace.Interfaces
 {
@@ -16,13 +17,13 @@ namespace DaxStudio.QueryTrace.Interfaces
 
     public interface IQueryTrace
     {
-        Task StartAsync(int startTimeoutSec);
+        Task StartAsync( int startTimeoutSec);
         void Stop();
         void Update();
         void Update(string databaseName, string sessionId);
 
-        //event TraceEventHandler TraceEvent;
-        event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
+        event EventHandler TraceCompleted;
         event EventHandler TraceStarted;
         event EventHandler<string> TraceError;
         event EventHandler<string> TraceWarning;

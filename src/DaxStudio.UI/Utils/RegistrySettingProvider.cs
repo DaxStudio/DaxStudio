@@ -7,12 +7,12 @@ using System.Linq;
 using DaxStudio.UI.Interfaces;
 using System.ComponentModel.Composition;
 using DaxStudio.Common;
-using DaxStudio.Interfaces;
 using System.ComponentModel;
 using System.Security;
 using System.Runtime.Serialization;
 using System.Globalization;
 using System.Reflection;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

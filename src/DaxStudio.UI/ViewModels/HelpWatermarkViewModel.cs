@@ -1,8 +1,8 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Converters;
 using DaxStudio.UI.Events;
 using System.Windows;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

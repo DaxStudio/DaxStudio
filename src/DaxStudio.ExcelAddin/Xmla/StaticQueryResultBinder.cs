@@ -1,5 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.ModelBinding;
 using System.Web.Http.ValueProviders;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {

@@ -1,5 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.Owin;
 using Microsoft.Owin.Hosting;

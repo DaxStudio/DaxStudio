@@ -1,4 +1,4 @@
-﻿using DaxStudio.Interfaces;
+﻿using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.Events

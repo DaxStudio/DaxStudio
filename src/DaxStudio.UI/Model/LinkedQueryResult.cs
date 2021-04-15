@@ -1,4 +1,4 @@
-﻿using DaxStudio.Interfaces;
+﻿using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

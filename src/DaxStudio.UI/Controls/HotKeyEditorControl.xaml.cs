@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Validation;
@@ -17,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Controls
 {

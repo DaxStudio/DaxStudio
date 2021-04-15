@@ -1,9 +1,9 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

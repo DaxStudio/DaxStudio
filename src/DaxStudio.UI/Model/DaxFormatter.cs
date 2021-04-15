@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using Serilog;
 using DaxStudio.UI.Utils;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using DaxStudio.UI.Extensions;
 
 using System.Security.Cryptography;
 using System.Text;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model
@@ -194,7 +195,7 @@ namespace DaxStudio.UI.Model
 
                 DaxFormatterRequest req = new DaxFormatterRequest();
                 req.Dax = query;
-                if (globalOptions.DefaultSeparator == DaxStudio.Interfaces.Enums.DelimiterType.SemiColon)
+                if (globalOptions.DefaultSeparator == DelimiterType.SemiColon)
                 {
                     req.DecimalSeparator = ',';
                     req.ListSeparator = ';';
@@ -207,9 +208,9 @@ namespace DaxStudio.UI.Model
                 req.ServerVersion = serverDbInfo.ServerVersion;
                 req.DatabaseName = Crypto.SHA256( serverDbInfo.DatabaseName );
                 req.DatabaseCompatibilityLevel = serverDbInfo.DatabaseCompatibilityLevel;
-                if ( (globalOptions.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.ShortLine && !formatAlternateStyle)
+                if ( (globalOptions.DefaultDaxFormatStyle == DaxFormatStyle.ShortLine && !formatAlternateStyle)
                     ||
-                     (globalOptions.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine && formatAlternateStyle)
+                     (globalOptions.DefaultDaxFormatStyle == DaxFormatStyle.LongLine && formatAlternateStyle)
                     )
                 {
                     req.MaxLineLenght = 1;

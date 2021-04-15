@@ -3,6 +3,7 @@ using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using System.Windows;
 using DaxStudio.Common;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.Standalone

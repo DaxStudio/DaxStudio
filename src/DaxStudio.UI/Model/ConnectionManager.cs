@@ -3,7 +3,6 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using Polly;
@@ -18,6 +17,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 using ADOTabular.Utils;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Interfaces;
 

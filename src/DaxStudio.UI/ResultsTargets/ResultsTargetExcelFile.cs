@@ -1,6 +1,5 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using LargeXlsx;
@@ -10,6 +9,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using DaxStudio.Common.Interfaces;
 using static LargeXlsx.XlsxAlignment;
 
 namespace DaxStudio.UI.Model

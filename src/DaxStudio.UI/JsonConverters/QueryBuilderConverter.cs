@@ -8,7 +8,7 @@ using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using ControlzEx.Standard;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;

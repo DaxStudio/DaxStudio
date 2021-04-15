@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
@@ -16,6 +15,8 @@ using System.Windows;
 using System.ComponentModel;
 using System.Net;
 using System.Reflection;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.UI.ViewModels
@@ -158,13 +159,13 @@ namespace DaxStudio.UI.ViewModels
         public string FormatQueryAlternateTitle { get 
             {
                 string title;
-                if (Options.DefaultDaxFormatStyle == DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine)
+                if (Options.DefaultDaxFormatStyle == DaxFormatStyle.LongLine)
                 {
-                    title = DaxStudio.Interfaces.Enums.DaxFormatStyle.ShortLine.GetDescription();
+                    title = DaxFormatStyle.ShortLine.GetDescription();
                 }
                 else
                 {
-                    title = DaxStudio.Interfaces.Enums.DaxFormatStyle.LongLine.GetDescription();
+                    title = DaxFormatStyle.LongLine.GetDescription();
                 }
                 return title + " (" + Options.HotkeyFormatQueryAlternate + ")";
             } 

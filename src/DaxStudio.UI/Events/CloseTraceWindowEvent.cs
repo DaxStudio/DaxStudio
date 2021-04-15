@@ -1,4 +1,4 @@
-﻿using DaxStudio.UI.Interfaces;
+﻿using DaxStudio.QueryTrace.Interfaces;
 
 namespace DaxStudio.UI.Events
 {

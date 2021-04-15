@@ -1,10 +1,10 @@
-﻿using DaxStudio.Interfaces;
-using DaxStudio.UI.Interfaces;
+﻿using DaxStudio.UI.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

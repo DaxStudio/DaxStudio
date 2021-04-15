@@ -4,7 +4,6 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using System.IO;
 using Newtonsoft.Json;
@@ -17,6 +16,8 @@ using System.Collections.ObjectModel;
 using System;
 using System.IO.Packaging;
 using System.Windows.Media;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
@@ -126,6 +127,18 @@ namespace DaxStudio.UI.ViewModels
         public override string ToolTipText => "Runs a server trace to record data refresh details";
 
         public override bool FilterForCurrentSession => false;
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.CommandEnd &&
+                   traceEvent.TextData.Contains("<Refresh ");
+        }
+
+        protected override bool ShouldStartCapturing(DaxStudioTraceEventArgs traceEvent)
+        {
+            // we should wait for a CommandBegin with a Refresh before capturing begins
+            return traceEvent.EventClass == DaxStudioTraceEventClass.CommandBegin &&
+                   traceEvent.TextData.Contains("<Refresh ");
+        }
 
         public override void ClearAll()
         {

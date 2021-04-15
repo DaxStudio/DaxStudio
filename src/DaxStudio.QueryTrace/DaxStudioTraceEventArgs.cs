@@ -1,5 +1,6 @@
 ﻿using Microsoft.AnalysisServices;
 using System;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.QueryTrace
 {
@@ -51,7 +52,7 @@ namespace DaxStudio.QueryTrace
                     //CpuTime = e.CpuTime;
                     Duration = e.Duration;
                     NTUserName = e.NTUserName;
-                    ProgressTotal = e.ProgressTotal;
+                    //ProgressTotal = e.ProgressTotal;
                     break;
                 case TraceEventClass.VertiPaqSEQueryEnd:
                     StartTime = e.StartTime;
@@ -76,8 +77,14 @@ namespace DaxStudio.QueryTrace
                     DateTime.TryParse(s2, out var startTime2);
                     StartTime = startTime2;
                     NTUserName = e.NTUserName;
-                    IntegerData = e.IntegerData;
-                    ProgressTotal = e.ProgressTotal;
+                    //IntegerData = e.IntegerData;
+                    try {
+                        ProgressTotal = e.ProgressTotal;
+                    }
+                    catch { 
+                        // suppress all errors
+                    }
+
                     break;
                 case TraceEventClass.DiscoverBegin:
                 case TraceEventClass.DAXQueryPlan:

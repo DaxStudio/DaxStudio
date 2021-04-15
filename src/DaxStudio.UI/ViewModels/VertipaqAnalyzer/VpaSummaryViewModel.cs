@@ -8,7 +8,6 @@ using System;
 using System.ComponentModel;
 using Serilog;
 using System.Windows.Input;
-using DaxStudio.Interfaces;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;

@@ -10,7 +10,6 @@ using System.Windows;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.QueryTrace;
-using DaxStudio.Interfaces;
 using Serilog;
 using Newtonsoft.Json.Linq;
 using System.Text;
@@ -21,6 +20,8 @@ using System.IO.Packaging;
 using System;
 using System.Globalization;
 using DaxStudio.Common;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
@@ -720,6 +721,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
+
         private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -790,5 +797,10 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJsonString());
         }
 
+        protected override void OnCreateTracer()
+        {
+            base.OnCreateTracer();
+            RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
+        }
     }
 }

@@ -1,9 +1,9 @@
-﻿using DaxStudio.Interfaces;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using Caliburn.Micro;
 using DaxStudio.UI.Enums;
 using System.IO;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

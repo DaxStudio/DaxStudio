@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -41,7 +41,7 @@ namespace DaxStudio.Tests
         }
     }
 
-    public class VersionCheckMock: DaxStudio.Interfaces.IVersionCheck
+    public class VersionCheckMock: IVersionCheck
     {
         public void CheckVersion()
         {

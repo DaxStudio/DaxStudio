@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 

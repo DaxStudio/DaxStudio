@@ -1,6 +1,4 @@
-﻿
-using DaxStudio.Interfaces;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.Interfaces

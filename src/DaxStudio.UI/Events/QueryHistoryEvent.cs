@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Events

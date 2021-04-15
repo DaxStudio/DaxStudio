@@ -62,10 +62,10 @@
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="DaxStudioTraceEventArgs.cs" />
-    <Compile Include="DaxStudioTraceEventClass.cs" />
     <Compile Include="DaxStudioTraceEventSubclass.cs" />
     <Compile Include="Interfaces\IQueryTrace.cs" />
     <Compile Include="Interfaces\IQueryTraceHub.cs" />
+    <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="QueryTraceEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryTraceEngineFactory.cs" />
@@ -81,11 +81,6 @@
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
       <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
       <Name>DaxStudio.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

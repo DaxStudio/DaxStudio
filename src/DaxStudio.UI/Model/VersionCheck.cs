@@ -1,8 +1,9 @@
+using DaxStudio.Common.Interfaces;
+
 namespace DaxStudio.UI.Model
 {
     using Caliburn.Micro;
     using DaxStudio.Common;
-    using DaxStudio.Interfaces;
     using DaxStudio.UI.Events;
     using DaxStudio.UI.Utils;
     using Extensions;

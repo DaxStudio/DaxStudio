@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using System.Threading.Tasks;
 using DaxStudio.UI.Views;
@@ -17,6 +16,7 @@ using ADOTabular.Enums;
 using ADOTabular;
 using System.Windows.Input;
 using System.Linq.Expressions;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels

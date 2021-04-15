@@ -10,7 +10,7 @@ using System.Windows.Navigation;
 using ADOTabular;
 using Caliburn.Micro;
 using DAXEditorControl;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using ICSharpCode.AvalonEdit;

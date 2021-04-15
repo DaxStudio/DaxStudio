@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 using Serilog;
 using ADOTabular.Interfaces;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

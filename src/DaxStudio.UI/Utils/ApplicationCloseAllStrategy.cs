@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -10,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Utils {
     [Export]

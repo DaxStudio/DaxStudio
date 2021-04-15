@@ -1,6 +1,5 @@
 ﻿using ADOTabular.Interfaces;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
@@ -19,6 +18,7 @@ using DaxStudio.UI.JsonConverters;
 using DaxStudio.UI.Utils;
 using System.Windows.Media;
 using ADOTabular;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;

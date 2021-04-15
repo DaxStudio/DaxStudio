@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 //using ADOTabular;
 //using ADOTabular.AdomdClientWrappers;
-using DaxStudio.Interfaces;
 using Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Data;

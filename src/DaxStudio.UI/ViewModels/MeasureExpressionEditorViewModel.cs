@@ -1,7 +1,6 @@
 ﻿using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Views;
@@ -12,6 +11,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Windows;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;

@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using ADOTabular;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;

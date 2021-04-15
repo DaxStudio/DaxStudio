@@ -7,6 +7,7 @@ using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 using System.Xml;
 using System.Timers;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.Common.Enums;
 using Serilog;
 using Caliburn.Micro;
 using System.Globalization;
@@ -83,8 +84,8 @@ namespace DaxStudio.QueryTrace
         public delegate void DaxStudioTraceEventHandler(object sender, DaxStudioTraceEventArgs e);
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 
-        public event DaxStudioTraceEventHandler TraceEvent;
-        public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        public event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
+        public event EventHandler TraceCompleted;
         public event EventHandler TraceStarted;
         public event EventHandler<string> TraceError;
         public event EventHandler<string> TraceWarning;
@@ -118,6 +119,7 @@ namespace DaxStudio.QueryTrace
             ConfigureTrace(connectionString, connectionType, applicationName);
             Events = events;
         }
+
 
         public bool FilterForCurrentSession { get; }
 
@@ -328,7 +330,7 @@ namespace DaxStudio.QueryTrace
                 if (e.EventClass == xlAmo.TraceEventClass.QueryEnd || e.EventClass == xlAmo.TraceEventClass.Error)
                 {
                     // Raise an event with the captured events
-                    TraceCompleted?.Invoke(this, _capturedEvents);
+                    TraceCompleted?.Invoke(this, null);
                     // reset the captured events collection
                     _capturedEvents = new List<DaxStudioTraceEventArgs>();
                 }

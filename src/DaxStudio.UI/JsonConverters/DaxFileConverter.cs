@@ -1,5 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using DaxStudio.UI.Model;
+﻿using DaxStudio.UI.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -8,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.JsonConverters
 {

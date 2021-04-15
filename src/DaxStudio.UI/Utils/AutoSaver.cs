@@ -1,5 +1,4 @@
 ﻿using DaxStudio.Common;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
@@ -14,6 +13,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

@@ -29,8 +29,9 @@ using Dax.Metadata.Extractor;
 using Dax.ViewModel;
 using DAXEditorControl;
 using DaxStudio.Common;
-using DaxStudio.Interfaces;
-using DaxStudio.Interfaces.Enums;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
+using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
@@ -2713,8 +2714,7 @@ namespace DaxStudio.UI.ViewModels
                 // block until trace is actually stopped 
                 if (tw.IsChecked)
                 {
-                   var t = tw.StopTraceAsync();
-                   if (t.Status != TaskStatus.RanToCompletion) t.Wait();
+                   tw.StopTrace();
                 } 
                 tw.IsChecked = false;
             }
@@ -3953,7 +3953,7 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; set; }
         public IAutoSaver AutoSaver { get; }
 
-        IModelIntellisenseProvider IDaxDocument.Connection => Connection;
+        IConnectionManager IDaxDocument.Connection => Connection;
 
         public bool IsBenchmarkRunning {get;set;}
 
@@ -4078,7 +4078,7 @@ namespace DaxStudio.UI.ViewModels
             if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
             {
                 stvModel.ServerTimingDetails = ServerTimingDetails;
-                stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
+                
             }
         }
         

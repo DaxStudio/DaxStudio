@@ -12,8 +12,8 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
-using DaxStudio.Interfaces;
 using ADOTabular.Interfaces;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

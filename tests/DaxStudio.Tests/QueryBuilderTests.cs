@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ADOTabular;
 using ADOTabular.Interfaces;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.Tests.Assertions;
 using DaxStudio.Tests.Mocks;
 using DaxStudio.UI.Enums;

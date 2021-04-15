@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

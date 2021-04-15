@@ -1,8 +1,9 @@
 ﻿using System;
-using DaxStudio.Interfaces;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Caliburn.Micro;
+using DaxStudio.Common.Interfaces;
+using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Events

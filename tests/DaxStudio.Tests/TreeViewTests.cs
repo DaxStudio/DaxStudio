@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.Data;
 using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using DaxStudio.UI.Model;
-using DaxStudio.Interfaces;
 using Caliburn.Micro;
 using System.IO;
 using System.Linq;
 using ADOTabular.Interfaces;
 using ADOTabular.AdomdClientWrappers;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.Tests
 {

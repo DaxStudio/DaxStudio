@@ -10,6 +10,7 @@ using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using DaxStudio.SignalR;
 using ADOTabular.Enums;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio
 {
@@ -47,7 +48,7 @@ namespace DaxStudio
                             {
                                 _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture, filterForCurrentSession);
                                 _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
-                                _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
+                                _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(); });
                                 _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
 
                             };
@@ -61,7 +62,7 @@ namespace DaxStudio
                             _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName, suffix);
                             _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                             _engine.TraceWarning += ((o, e) => { Clients.Caller.OnTraceWarning(e); });
-                            _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
+                            _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(); });
                             _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
                             Log.Debug("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngine", (_engine != null));
                         }
@@ -71,16 +72,16 @@ namespace DaxStudio
                 catch (Exception ex)
                 {
                     Log.Error("{class} {method} {exception}", "QueryTraceHub", "ConstructQueryTraceEngine", ex.Message);
-                    Clients.Caller.OnTraceError(string.Format("{0}\n{1}", ex.Message, ex.StackTrace));
+                    Clients.Caller.OnTraceError($"{ex.Message}\n{ex.StackTrace}");
                 }
             }
 
 
-            private void OnTraceCompleted(IList<DaxStudioTraceEventArgs> e)
+            private void OnTraceCompleted()
             {
                 try
                 {
-                    Clients.Caller.OnTraceComplete(e.ToArray<DaxStudioTraceEventArgs>());
+                    Clients.Caller.OnTraceComplete();
                 }
                 catch (Exception ex)
                 {

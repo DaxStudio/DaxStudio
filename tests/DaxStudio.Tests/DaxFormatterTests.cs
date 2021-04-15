@@ -3,9 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.Tests.Mocks;
 using Moq;
-using DaxStudio.Interfaces;
 
 namespace DaxStudio.Tests
 {

@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows;
 using System.Windows.Input;
-using DaxStudio.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
@@ -18,6 +17,7 @@ using DaxStudio.UI.Views;
 using UnitComboLib.ViewModel;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 using UnitComboLib.Unit.Screen;
 using DaxStudio.UI.Utils;
 

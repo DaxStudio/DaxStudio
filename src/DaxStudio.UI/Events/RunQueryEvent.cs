@@ -1,5 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using DaxStudio.UI.Interfaces;
+﻿using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.Events

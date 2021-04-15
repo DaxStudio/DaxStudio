@@ -1,6 +1,6 @@
 ﻿using System;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.ViewModels;
-using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

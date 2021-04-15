@@ -1,6 +1,5 @@
 ﻿
 using ADOTabular.Enums;
-using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json.Linq;
@@ -9,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.QueryTrace
 {
@@ -35,8 +36,8 @@ namespace DaxStudio.QueryTrace
             //hubConnection.TraceLevel = TraceLevels.All;
             //hubConnection.TraceWriter = writer;
             
-            queryTraceHubProxy.On("OnTraceStarted", () => {OnTraceStarted();});
-            queryTraceHubProxy.On("OnTraceComplete", (e) => { OnTraceComplete(e); });
+            queryTraceHubProxy.On("OnTraceStarted", OnTraceStarted);
+            queryTraceHubProxy.On("OnTraceComplete", OnTraceComplete);
             queryTraceHubProxy.On<string>("OnTraceError", (msg) => { OnTraceError(msg); });
             queryTraceHubProxy.On<string>("OnTraceWarning", (msg) => { OnTraceWarning(msg); });
             hubConnection.Start().Wait();
@@ -65,52 +66,41 @@ namespace DaxStudio.QueryTrace
 
         public void OnTraceStarted() {
             _status = QueryTraceStatus.Started;
-            if (TraceStarted != null)
-            { TraceStarted(this, null); }
+            TraceStarted?.Invoke(this, null);
         }
         
-        public void OnTraceError(string errorMessage) { 
-            if (TraceError != null) {
-                TraceError(this, errorMessage);
-            }
+        public void OnTraceError(string errorMessage)
+        {
+            TraceError?.Invoke(this, errorMessage);
         }
 
         public void OnTraceWarning(string errorMessage)
         {
-            if (TraceWarning != null)
-            {
-                TraceWarning(this, errorMessage);
-            }
+            TraceWarning?.Invoke(this, errorMessage);
         }
 
-        public void OnTraceComplete(DaxStudioTraceEventArgs[] capturedEvents)
+        public void OnTraceComplete()
         {
-            if (TraceCompleted != null)
-            { TraceCompleted(this, capturedEvents.ToList<DaxStudioTraceEventArgs>()); }
+            TraceCompleted?.Invoke(this, null);
         }
 
         
-        public void OnTraceComplete(JArray myArray)
-        {            
-            // HACK: not sure why we have to explicitly cast the argument from a JArray, I thought Signalr should do this for us
-            var e = myArray.ToObject<DaxStudioTraceEventArgs[]>();
 
-            TraceCompleted?.Invoke(this, e);
-        }
-
-        public void OnTraceCompleted(IList<DaxStudioTraceEventArgs> capturedEvents) { 
-            if (TraceCompleted != null)
-            { TraceCompleted(this, capturedEvents); }
+        public void OnTraceCompleted()
+        {
+            TraceCompleted?.Invoke(this, null);
         }
 
         public List<DaxStudioTraceEventClass> Events => _eventsToCapture;
 
-        public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        public event EventHandler TraceCompleted;
 
         public event EventHandler TraceStarted;
 
         public event EventHandler<string> TraceError;
         public event EventHandler<string> TraceWarning;
+        public event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
+
         public QueryTraceStatus Status
         {
             get

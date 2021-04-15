@@ -1,5 +1,4 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using Serilog;
@@ -8,6 +7,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using DaxStudio.Common.Interfaces;
 using ICSharpCode.SharpDevelop.Dom;
 
 namespace DaxStudio.UI.Utils

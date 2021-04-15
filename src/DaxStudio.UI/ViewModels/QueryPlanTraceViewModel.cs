@@ -10,10 +10,11 @@ using System.IO;
 using System.IO.Packaging;
 using System.Text;
 using System.Windows.Media;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using Newtonsoft.Json;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Serilog;
 
@@ -206,6 +207,13 @@ namespace DaxStudio.UI.ViewModels
         public override string ToolTipText => "Runs a server trace to capture the Logical and Physical DAX Query Plans";
 
         public override bool FilterForCurrentSession { get { return true; } }
+
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
+    
 
         #region ISaveState Methods
 

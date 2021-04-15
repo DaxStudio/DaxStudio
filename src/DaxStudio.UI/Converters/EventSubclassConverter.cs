@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using DaxStudio.Common.Enums;
 using Microsoft.AnalysisServices;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Model;

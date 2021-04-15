@@ -1,6 +1,6 @@
 ﻿using System;
 using ADOTabular.Enums;
-using DaxStudio.UI.Interfaces;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.Tests.Mocks
 {

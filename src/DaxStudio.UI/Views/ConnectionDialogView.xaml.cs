@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using ADOTabular;
-using DaxStudio.Interfaces;
 using System.Windows.Input;
 
 namespace DaxStudio.UI.Views

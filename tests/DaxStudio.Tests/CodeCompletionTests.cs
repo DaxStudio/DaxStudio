@@ -6,7 +6,6 @@ using DaxStudio.UI.Utils.Intellisense;
 using System;
 using System.Windows.Input;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.ViewModels;
 using DAXEditorControl;
 

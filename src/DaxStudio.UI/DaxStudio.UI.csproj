@@ -297,9 +297,6 @@
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="Extensions\QueryBuilderColumnExtensions.cs" />
     <Compile Include="Extensions\VersionExtensions.cs" />
-    <Compile Include="Interfaces\IDaxDocument.cs" />
-    <Compile Include="Interfaces\IDaxStudioHost.cs" />
-    <Compile Include="Interfaces\IDaxStudioProxy.cs" />
     <Compile Include="Interfaces\IMetadataProvider.cs" />
     <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
     <Compile Include="Interfaces\IQueryRunner.cs" />
@@ -460,7 +457,6 @@
     <Compile Include="Model\ProxyStandalone.cs" />
     <Compile Include="Model\QueryPlanModel.cs" />
     <Compile Include="Interfaces\IToolWindow.cs" />
-    <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="Model\RunStyle.cs" />
     <Compile Include="Model\ServerTimesModel.cs" />
     <Compile Include="Model\StaticQueryResult.cs" />
@@ -1042,11 +1038,6 @@
     <ProjectReference Include="..\DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj">
       <Project>{cd71ebc4-7cd8-47e9-854f-d295805efadd}</Project>
       <Name>DaxStudio.Controls.PropertyGrid</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
       <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>

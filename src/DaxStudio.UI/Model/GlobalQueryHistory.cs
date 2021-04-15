@@ -8,9 +8,9 @@ using System.ComponentModel.Composition;
 using System.IO;
 using Newtonsoft.Json;
 using Serilog;
-using DaxStudio.Interfaces;
 using System.Diagnostics.Contracts;
 using DaxStudio.Common;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

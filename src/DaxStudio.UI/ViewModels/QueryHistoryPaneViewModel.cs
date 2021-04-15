@@ -8,8 +8,8 @@ using System.ComponentModel;
 using System.Net.Mime;
 using System.Windows;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 using Serilog;
-using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

@@ -1,5 +1,4 @@
 ﻿using DaxStudio.Common;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.JsonConverters;
@@ -13,6 +12,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

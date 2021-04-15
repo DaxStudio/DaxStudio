@@ -185,11 +185,6 @@
       <Name>DaxStudio.Common</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj">
       <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>
       <Name>DaxStudio.UI</Name>

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Data;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

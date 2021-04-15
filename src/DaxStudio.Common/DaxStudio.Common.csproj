@@ -51,6 +51,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows" />
@@ -59,10 +60,43 @@
   <ItemGroup>
     <Compile Include="ApplicationPaths.cs" />
     <Compile Include="AppProperties.cs" />
+    <Compile Include="Attributes\HotkeyAttribute.cs" />
     <Compile Include="CmdLineArgs.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="CrashReporter.cs" />
+    <Compile Include="Enums\CsvCustomDelimiterType.cs" />
+    <Compile Include="Enums\DaxFormatStyle.cs" />
+    <Compile Include="Enums\DaxStudioTraceEventClass.cs" />
+    <Compile Include="Enums\DelimiterType.cs" />
+    <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />
+    <Compile Include="Enums\QueryEndSounds.cs" />
     <Compile Include="Exceptions\SaveSettingValueException.cs" />
+    <Compile Include="Interfaces\IActivateResults.cs" />
+    <Compile Include="Interfaces\IConnection.cs" />
+    <Compile Include="Interfaces\IConnectionManager.cs" />
+    <Compile Include="Interfaces\IDatabaseReference.cs" />
+    <Compile Include="Interfaces\IDaxDocument.cs" />
+    <Compile Include="Interfaces\IDaxFile.cs" />
+    <Compile Include="Interfaces\IDaxStudioHost.cs" />
+    <Compile Include="Interfaces\IDaxStudioProxy.cs" />
+    <Compile Include="Interfaces\IDmvProvider.cs" />
+    <Compile Include="Interfaces\IFilterableTreeViewItem.cs" />
+    <Compile Include="Interfaces\IFunctionProvider.cs" />
+    <Compile Include="Interfaces\IGlobalOptions.cs" />
+    <Compile Include="Interfaces\IGlobalOptionsBase.cs" />
+    <Compile Include="Interfaces\ILinkedQueryResult.cs" />
+    <Compile Include="Interfaces\IMetadataPane.cs" />
+    <Compile Include="Interfaces\IModelIntellisenseProvider.cs" />
+    <Compile Include="Interfaces\IOpenable.cs" />
+    <Compile Include="Interfaces\IQueryHistoryEvent.cs" />
+    <Compile Include="Interfaces\ISaveable.cs" />
+    <Compile Include="Interfaces\IServerTimes.cs" />
+    <Compile Include="Interfaces\IStaticQueryResult.cs" />
+    <Compile Include="Interfaces\IStatusBarMessage.cs" />
+    <Compile Include="Interfaces\ITabularConnection.cs" />
+    <Compile Include="Interfaces\IThemeManager.cs" />
+    <Compile Include="Interfaces\ITreeviewColumn.cs" />
+    <Compile Include="Interfaces\IVersionCheck.cs" />
     <Compile Include="MailUtility.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
@@ -93,9 +127,18 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.3</Version>
+    </PackageReference>
     <PackageReference Include="Serilog">
       <Version>2.10.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
+      <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
+      <Name>ADOTabular</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

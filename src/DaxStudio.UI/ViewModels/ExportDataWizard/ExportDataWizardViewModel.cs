@@ -21,7 +21,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 
 namespace DaxStudio.UI.ViewModels

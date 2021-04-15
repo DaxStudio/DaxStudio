@@ -1,4 +1,4 @@
-﻿using DaxStudio.Interfaces.Enums;
+﻿using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.Utils.DelimiterTranslator
 {

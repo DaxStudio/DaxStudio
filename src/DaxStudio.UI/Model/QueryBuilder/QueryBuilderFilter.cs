@@ -1,6 +1,5 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;

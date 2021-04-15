@@ -4,7 +4,6 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using System.IO;
 using Newtonsoft.Json;
@@ -19,6 +18,8 @@ using System.IO.Packaging;
 using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
@@ -219,6 +220,11 @@ namespace DaxStudio.UI.ViewModels
         public override string ToolTipText => "Runs a server trace to record all queries from all users for the current connection";
 
         public override bool FilterForCurrentSession { get { return false; } }
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
 
         public override void ClearAll()
         {

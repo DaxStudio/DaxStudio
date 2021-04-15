@@ -4,7 +4,6 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.QueryTrace;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using System.IO;
 using Newtonsoft.Json;
@@ -16,6 +15,7 @@ using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 using Newtonsoft.Json.Linq;
 using Serilog;
 

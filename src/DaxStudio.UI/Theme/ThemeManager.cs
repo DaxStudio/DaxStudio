@@ -1,5 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using MLib.Interfaces;
+﻿using MLib.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -8,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Theme
 {

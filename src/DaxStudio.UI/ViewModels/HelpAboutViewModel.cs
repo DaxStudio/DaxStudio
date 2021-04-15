@@ -1,9 +1,9 @@
 ﻿using System;
 using Caliburn.Micro;
 using System.Collections.Generic;
-using DaxStudio.Interfaces;
 using System.ComponentModel.Composition;
 using DaxStudio.Common;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Extensions;
 using Humanizer;

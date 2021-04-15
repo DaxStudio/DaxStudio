@@ -1,6 +1,4 @@
-﻿
-using DaxStudio.Interfaces;
-using DaxStudio.QueryTrace.Interfaces;
+﻿using DaxStudio.QueryTrace.Interfaces;
 using Microsoft.AnalysisServices;
 //using AMOTabular;
 //using AMOTabular.AmoWrapper;
@@ -10,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.QueryTrace
 {

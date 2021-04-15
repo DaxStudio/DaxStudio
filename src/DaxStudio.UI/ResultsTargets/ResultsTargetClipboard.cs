@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
@@ -14,6 +13,7 @@ using DaxStudio.Common;
 using System.IO;
 using DaxStudio.UI.Events;
 using System.Windows;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

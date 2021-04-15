@@ -1,7 +1,7 @@
 ﻿using ADOTabular;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Interfaces
 {

@@ -3,7 +3,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using ADOTabular;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using Serilog;

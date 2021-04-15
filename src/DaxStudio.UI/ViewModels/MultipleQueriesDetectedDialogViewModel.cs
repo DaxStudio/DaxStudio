@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.Composition;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.ViewModels
@@ -24,7 +25,7 @@ namespace DaxStudio.UI.ViewModels
             if (RememberChoice)
             {
                 // save Never Remove to options
-                Options.EditorMultipleQueriesDetectedOnPaste = DaxStudio.Interfaces.Enums.MultipleQueriesDetectedOnPaste.AlwaysKeepBoth;
+                Options.EditorMultipleQueriesDetectedOnPaste = MultipleQueriesDetectedOnPaste.AlwaysKeepBoth;
             }
 
             TryClose(true);
@@ -36,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
             if (RememberChoice)
             {
                 // save Always Remove to options
-                Options.EditorMultipleQueriesDetectedOnPaste = DaxStudio.Interfaces.Enums.MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax;
+                Options.EditorMultipleQueriesDetectedOnPaste = MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax;
             }
             TryClose(true);
         }

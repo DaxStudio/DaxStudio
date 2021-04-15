@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Model;
@@ -15,6 +14,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using DaxStudio.UI.Interfaces;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels

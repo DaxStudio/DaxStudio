@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
@@ -10,6 +9,7 @@ using DaxStudio.UI.Utils;
 using System.Threading;
 using System.IO;
 using ADOTabular;
+using DaxStudio.Common.Interfaces;
 using Serilog;
 
 namespace DaxStudio.UI.ResultsTargets

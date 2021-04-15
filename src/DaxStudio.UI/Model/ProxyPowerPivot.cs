@@ -1,5 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -15,6 +14,7 @@ using System.Diagnostics.Contracts;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Utils;
 using ADOTabular.Enums;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.Model

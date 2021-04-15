@@ -1,11 +1,11 @@
-﻿using DaxStudio.Interfaces.Enums;
-using DaxStudio.UI.Utils.DelimiterTranslator;
+﻿using DaxStudio.UI.Utils.DelimiterTranslator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.Tests
 {

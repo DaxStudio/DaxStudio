@@ -469,11 +469,6 @@
       <Project>{508a1faa-9157-4474-94b4-fdbf76ffa74b}</Project>
       <Name>DaxStudio.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\DaxStudio.QueryTrace.Excel\DaxStudio.QueryTrace.Excel.csproj">
       <Project>{30b02415-0085-4ceb-9c74-efda677c6c88}</Project>
       <Name>DaxStudio.QueryTrace.Excel</Name>

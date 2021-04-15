@@ -1,8 +1,7 @@
-﻿using DaxStudio.Interfaces;
-using DaxStudio.Interfaces.Enums;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Security;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.SignalR
 {

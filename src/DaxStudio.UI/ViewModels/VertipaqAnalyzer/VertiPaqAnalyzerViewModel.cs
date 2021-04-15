@@ -5,11 +5,11 @@ using DaxStudio.UI.Model;
 using System.Windows.Data;
 using System.ComponentModel;
 using Serilog;
-using DaxStudio.Interfaces;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
