@@ -176,10 +176,15 @@
                                         , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
                             CanUserSortColumns="True"
-ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"                            
+                            ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"          
+                             
                             >
-
-                            <DataGrid.AlternatingRowBackground>
+                            <DataGrid.Style>
+                                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
+                                    <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
+                                </Style>
+                            </DataGrid.Style>
+                            <!--<DataGrid.AlternatingRowBackground>
                                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                                     <GradientStop Offset="1" Color="#f2f2f2"/>
                                     <GradientStop Color="#f7f7f7"/>
@@ -189,7 +194,7 @@ ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
                                     <Setter Property="FontWeight" Value="SemiBold" />
                                 </Style>
-                            </DataGrid.ColumnHeaderStyle>
+                            </DataGrid.ColumnHeaderStyle>-->
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Command="Copy" >

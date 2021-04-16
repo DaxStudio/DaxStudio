@@ -25,18 +25,18 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="1" Text="Choose the type of Export output:" HorizontalAlignment="Center"/>
+        <Label Grid.Row="1" Content="Choose the type of Export output:" HorizontalAlignment="Center"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10" Grid.Row="2">
             <Button x:Name="ExportToCsv" Style="{StaticResource ImageButtonStyle}">
                 <StackPanel Orientation="Vertical">
                     <Image Source="{StaticResource CsvFileIcon}"  Width="64"/>
-                <TextBlock Text="CSV Files" HorizontalAlignment="Center"/>
+                    <Label Content="CSV Files" HorizontalAlignment="Center" Foreground="{DynamicResource ResourceKey=MahApps.Brushes.Button.Flat.Foreground}"/>
                 </StackPanel>
             </Button>
             <Button x:Name="ExportToSql" Style="{StaticResource ImageButtonStyle}">
                 <StackPanel Orientation="Vertical">
                     <Image Source="{StaticResource SqlTableIcon}" Width="64"/>
-                    <TextBlock Text="SQL Tables" HorizontalAlignment="Center"/>
+                    <Label Content="SQL Tables" HorizontalAlignment="Center" Foreground="{DynamicResource ResourceKey=MahApps.Brushes.Button.Flat.Foreground}"/>
                 </StackPanel>
             </Button>
         </StackPanel>

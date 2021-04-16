@@ -18,7 +18,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="Enter SQL Connection String:" Grid.ColumnSpan="2" Margin="5,0"/>
+        <Label Content="Enter SQL Connection String:" Grid.ColumnSpan="2" Margin="5,0"/>
         <TextBox x:Name="SqlConnectionString"  Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Padding="3" TextWrapping="Wrap" TextChanged="ConnectionString_TextChanged"/>
         <Label Content="Schema:" Grid.Row="2" Margin="5"/>
         <TextBox x:Name="Schema" Grid.Row="2" Grid.Column="1" Margin="5" Padding="3"/>

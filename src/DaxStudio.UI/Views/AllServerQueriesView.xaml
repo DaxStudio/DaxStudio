@@ -118,12 +118,12 @@
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
-
+        <!--                     -->
         <controls:DataGridNoContextMenu x:Name="QueryEvents" 
                     Grid.Row="1"
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
-                    filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
+                    filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}" 
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
 		            TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
@@ -134,7 +134,7 @@
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
                     VerticalAlignment="Stretch" 
-                    Background="White" 
+                    CanUserAddRows="False"
                     Width="Auto"
                     SelectionMode="Extended"
                     SelectionUnit="FullRow"
@@ -143,9 +143,15 @@
                     ScrollViewer.CanContentScroll="True"
                     FrozenColumnCount="1"
                     GridLinesVisibility="None" 
-                    BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
+                    BorderThickness="1,0,0,0" 
+                    BorderBrush="{x:Null}"
                     >
-
+            <DataGrid.Style>
+                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type controls:DataGridNoContextMenu}">
+                    <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
+                </Style>
+            </DataGrid.Style>
+            
             <DataGrid.Resources>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -246,47 +252,46 @@
                                     ElementStyle="{StaticResource AlignRight}"
                                     
                                     />
-                    <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="Username"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                
-                                <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Username"   
-                                            Text="{Binding Path=Username,Mode=OneWay}"  
-                                            VerticalAlignment="Top" 
-                                            HorizontalAlignment="Left"   
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTip="{Binding Username}">
-                                        </TextBlock>
-                                </Border>
-                                
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <DataGridTemplateColumn.CellTemplate>
+                
+                <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
+                                        filter:DataGridColumnExtensions.CustomBindingPath="Username"
+                                        filter:DataGridColumnExtensions.IsContainsTextSearch="True">
+                    <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
+                    <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
-                                <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Query"
-                            Text="{Binding Path=DatabaseName,Mode=OneWay}"  
-                            VerticalAlignment="Top" 
-                            HorizontalAlignment="Left"   
-                            TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding DatabaseName}">
-                                        </TextBlock>
-                                    </Border>
-                            </ScrollViewer>
+                            <Border Margin="0" Padding="0" 
+                                cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
+                                <TextBlock x:Name="Username"   
+                                        Text="{Binding Path=Username,Mode=OneWay}"  
+                                        VerticalAlignment="Top" 
+                                        HorizontalAlignment="Left"   
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTip="{Binding Username}">
+                                </TextBlock>
+                            </Border>
                         </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
+                                        filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
+                                        filter:DataGridColumnExtensions.IsContainsTextSearch="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
+                            <Border Margin="0" Padding="0" 
+                                cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
+                                    <TextBlock x:Name="Query"
+                        Text="{Binding Path=DatabaseName,Mode=OneWay}"  
+                        VerticalAlignment="Top" 
+                        HorizontalAlignment="Left"   
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip="{Binding DatabaseName}">
+                                    </TextBlock>
+                                </Border>
+                        </ScrollViewer>
+                    </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
                                             filter:DataGridColumnExtensions.CustomBindingPath="Query"

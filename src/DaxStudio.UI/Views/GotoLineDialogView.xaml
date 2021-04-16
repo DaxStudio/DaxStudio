@@ -7,8 +7,8 @@
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
              d:DesignHeight="80" d:DesignWidth="200"
-             Width="250"
-             Height="140">
+             Width="300"
+             Height="160">
     
     <UserControl.Resources>
         
@@ -21,7 +21,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Border>
-        <Border Background="White" Padding="15px 10px" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+        <Border Background="{DynamicResource MahApps.Brushes.ThemeBackground}" Padding="15px 10px" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
             <Grid FocusManager.FocusedElement="{Binding ElementName=LineNo}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="38px"/>
@@ -54,15 +54,15 @@
                     </Validation.ErrorTemplate>
                 </TextBox>
                 <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="2px">
-                    <TextBlock Margin="0,0,5px,0">(Lines 1 to</TextBlock>
-                    <TextBlock x:Name="MaxLines"></TextBlock>
-                    <TextBlock>)</TextBlock>
+                    <Label Margin="15,0,5px,0" Padding="0,5">(Lines 1 to</Label>
+                    <Label x:Name="MaxLines" Margin="0" Padding="0,5"></Label>
+                    <Label>)</Label>
                 </StackPanel>
                 <!-- Buttons -->
                 <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                 <Button x:Name="GotoLine" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Padding="5px 2px" Margin="2px" Content="_Goto" IsDefault="True">
                     <Button.Style>
-                        <Style TargetType="Button">
+                            <Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
                             <Setter Property="IsEnabled" Value="False"/>
                             <Style.Triggers>
                                 <MultiDataTrigger>

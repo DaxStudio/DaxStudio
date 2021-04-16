@@ -21,7 +21,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Status" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center"/>
+        <Label Content="Status" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center"/>
         <ListView Margin="5" Grid.Row="1" x:Name="Tables" SelectedItem="{Binding SelectedTable}" >
             <i:Interaction.Behaviors>
                 <beh:ListViewScrollIntoViewBehavior/>

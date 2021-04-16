@@ -15,7 +15,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="2" Orientation="Vertical" Margin="10">
-            <TextBlock Margin="0,5">Output Path:</TextBlock>
+            <Label Margin="0,5">Output Path:</Label>
             <Grid >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -37,7 +37,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="CSV Delimiter:" Margin="0,5"/>
+            <Label Content="CSV Delimiter:" Margin="0,5"/>
             <RadioButton Content="Culture Default List Separator" GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" />
             <RadioButton Content="Comma" GroupName="Delimiters" x:Name="UseCommaDelimiter"  Margin="0,3" Grid.Row="2" />
             <RadioButton Content="Tab" GroupName="Delimiters" x:Name="UseTabDelimiter"  Margin="0,3" Grid.Row="3"/>

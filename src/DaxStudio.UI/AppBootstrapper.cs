@@ -148,11 +148,13 @@ namespace DaxStudio.UI
 
                 ConfigureKeyBindingConvention();
 
-	            // TODO - not working
-	            //VisibilityBindingConvention.Install();
+                // TODO - not working
+                //VisibilityBindingConvention.Install();
 
                 // Enable Caliburn.Micro debug logging
-	            //LogManager.GetLog = type => new DebugLogger(type);
+                //LogManager.GetLog = type => new DebugLogger(type);
+
+                AddMahAppsMetroToApplicationResources();
 
                 // Add Application object to MEF catalog
                 _container.ComposeExportedValue<Application>("System.Windows.Application", Application.Current);
@@ -162,6 +164,15 @@ namespace DaxStudio.UI
 	            Debug.WriteLine(e);
 	        }
 		}
+
+        private void AddMahAppsMetroToApplicationResources()
+        {
+            var myResourceDictionary = new ResourceDictionary();
+            myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml", UriKind.Absolute);
+            Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+            myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml", UriKind.Absolute);
+            Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+        }
 
         public IThemeManager GetThemeManager()
         {

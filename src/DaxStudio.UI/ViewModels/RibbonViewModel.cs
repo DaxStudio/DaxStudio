@@ -1023,7 +1023,6 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _theme = value;
                     Options.Theme = _theme;
-                    //SetRibbonTheme(_theme);
                     _eventAggregator.PublishOnUIThread(new ChangeThemeEvent(_theme));
                     NotifyOfPropertyChange(() => Theme);
                 }
@@ -1032,10 +1031,6 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsActiveDocumentVertipaqAnalyzerRunning { get; private set; }
 
-        private void SetRibbonTheme(string theme)
-        {
-            Application.Current.ChangeRibbonTheme(theme);
-        }
         public void Handle(AllDocumentsClosedEvent message)
         {
             this.ActiveDocument = null;

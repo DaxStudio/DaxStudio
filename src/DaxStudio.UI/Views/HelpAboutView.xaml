@@ -9,23 +9,27 @@
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     mc:Ignorable="d" 
     d:DesignHeight="300" d:DesignWidth="400"
-    Height="225"
+    Height="255"
     MaxHeight="450"
     MinWidth="500"
     DataContext="{Binding}"
     x:Name="dlgHelpAbout"
+    
     >
     <UserControl.Resources>
         <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
         <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
-        <Style x:Key="VersionText" TargetType="TextBlock" >
+        <Style x:Key="VersionText" TargetType="Label" >
             <Setter Property="Margin" Value="5"/>
         </Style>
     </UserControl.Resources>
-    <Border Padding="10">
-    <Border Background="White" CornerRadius="0" Padding="5" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1">
+    <Border Padding="10" >
+        <Border Background="{DynamicResource ResourceKey=MahApps.Brushes.ThemeBackground}" 
+                CornerRadius="0" 
+                Padding="5" 
+                BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1">
     
     <Grid>
         <Grid.RowDefinitions>
@@ -38,8 +42,8 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0">
             <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top" Margin="20,0,10,0"/>
             <StackPanel Orientation="Vertical">
-                <TextBlock Padding="5" FontSize="48"><Run Text="DAX Studio"/></TextBlock>
-                <TextBlock Padding="5,0,5,5"><Hyperlink NavigateUri="https://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true"><Run Text="https://daxstudio.org"/></Hyperlink></TextBlock>
+                <Label Padding="5" FontSize="48"><Run Text="DAX Studio"/></Label>
+                <Label Padding="5,0,5,5"><Hyperlink NavigateUri="https://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true"><Run Text="https://daxstudio.org"/></Hyperlink></Label>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -49,14 +53,14 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Style="{StaticResource VersionText}" Text="Version: "  HorizontalAlignment="Left"/>
+                            <Label Style="{StaticResource VersionText}" Content="Version: "  HorizontalAlignment="Left"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
                     
-                    <TextBlock Style="{StaticResource VersionText}" x:Name="FullVersionNumber" />
+                    <Label Style="{StaticResource VersionText}" x:Name="FullVersionNumber" />
                     <fa:ImageAwesome Icon="Refresh" Spin="True" Width="10" Foreground="Gray" Visibility="{Binding IsCheckRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
                     <!--<local:ucSpinner x:Name="CheckingUpdateStatus" Visibility="Visible" Width="20"/>-->
-                    <TextBlock Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToNotVisibleConverter}}"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="{Binding UpdateStatus, Mode=OneWay}" /></Hyperlink></TextBlock>
-                                <TextBlock x:Name="UpdateStatus" Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Label Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToNotVisibleConverter}}"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="{Binding UpdateStatus, Mode=OneWay}" /></Hyperlink></Label>
+                                <Label x:Name="UpdateStatus" Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
                             <TextBlock Text="{Binding LastChecked}" Grid.Row="1" Grid.Column="1" Foreground="Gray"/>
                         </Grid>
@@ -89,7 +93,7 @@
                                     <Storyboard  AutoReverse="False">
                                         <DoubleAnimation  Storyboard.TargetName="dlgHelpAbout"
 											Storyboard.TargetProperty = "(FrameworkElement.Height)"
-											To="225" Duration="0:0:1"/>
+											To="255" Duration="0:0:1"/>
                                         <Storyboard AutoReverse="False">
                                             <DoubleAnimation Storyboard.TargetName="ReferencedAssemblies"
 												Storyboard.TargetProperty="(UIElement.Opacity)"
@@ -108,8 +112,8 @@
         </StackPanel>
                 <StackPanel Orientation="Vertical" Grid.Row="1"  Opacity="0" x:Name="BuildNumberPanel">
                     <StackPanel Orientation="Horizontal" Margin="5,10,0,0">
-                        <TextBlock Margin="0,0,5,0">Build: </TextBlock>
-                        <TextBlock x:Name="BuildNumber"/>
+                        <Label Margin="0,0,5,0">Build: </Label>
+                        <Label x:Name="BuildNumber"/>
                     </StackPanel>
                 </StackPanel>
                 <DataGrid x:Name="ReferencedAssemblies" 
@@ -123,7 +127,7 @@
 			Opacity="0"       />
                 
                 <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Margin="0,0,5,5">
-            <Button x:Name="Ok" Width="75" Height="23" Content="OK" IsDefault="True" IsCancel="True"/>
+            <Button x:Name="Ok" Width="75" Content="OK" IsDefault="True" Margin="0,5,0,0" IsCancel="True"/>
         </StackPanel>
 
     </Grid>

@@ -42,7 +42,7 @@
             </Style>
             
             <Style x:Key="ToolTipLabel" TargetType="{x:Type TextBlock}">
-                <Setter Property="Foreground" Value="{StaticResource DataTypeBrush}" />
+                <!--<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}" />-->
                 <Setter Property="Margin" Value="0,0,5,0" />
             </Style>
 
@@ -65,7 +65,7 @@
                 </Setter>
             </Style>
 
-            <Style TargetType="{x:Type ToolTip}">
+            <!--<Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Foreground" Value="#FF575757" />
                 <Setter Property="Background" Value="#FFFFFFFF" />
                 <Setter Property="LayoutTransform">
@@ -82,9 +82,9 @@
                         <ControlTemplate TargetType="{x:Type ToolTip}" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
                             <themes:SystemDropShadowChrome Name="Shdw" themes:SystemDropShadowChrome.Color="Transparent" themes:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
                                 <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
-                                    <!--<Border.RenderTransform>
+                                    --><!--<Border.RenderTransform>
                                         <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
-                                    </Border.RenderTransform>-->
+                                    </Border.RenderTransform>--><!--
                                     <ContentPresenter TextOptions.TextFormattingMode="Display" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                                 </Border>
                             </themes:SystemDropShadowChrome>
@@ -97,7 +97,7 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-            </Style>
+            </Style>-->
 
 
             <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
@@ -154,6 +154,10 @@
 
 
             <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
@@ -200,17 +204,19 @@
             
             
         </Border>
-        <!-- database Dropdown MinWidth="160"  -->
+        <!-- database Dropdown MinWidth="160" 
+        Style="{StaticResource DatabaseComboStyle}"  
+        Template="{DynamicResource MetroComboBoxControlTemplate}"-->
         <ComboBox Grid.Row="1" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
             
-            Template="{DynamicResource MetroComboBoxControlTemplate}"
+            
             IsEditable="False"
             IsSynchronizedWithCurrentItem="True" 
             IsEnabled="{Binding CanSelectDatabase}" 
             Margin="0,0,0,2" 
-            Style="{StaticResource DatabaseComboStyle}"      >
+             >
             <ComboBox.ToolTip>
                 <Grid>
                     <Grid>
@@ -276,13 +282,14 @@
         </ComboBox>
         <!-- SelectedValuePath="Name" -->
         <!-- Model Dropdown -->
+        <!--                   Template="{DynamicResource MetroComboBoxControlTemplate}" -->
         <ComboBox Grid.Row="2" 
                   IsEditable="False"
                   IsEnabled="{Binding CanSelectModel, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                   SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
                   IsSynchronizedWithCurrentItem="True" 
-                  Template="{DynamicResource MetroComboBoxControlTemplate}"
+
                   >
             <!-- Style="{DynamicResource MetroComboBox}" -->
             <ComboBox.ItemTemplate>
@@ -300,7 +307,7 @@
                     </VisualBrush.Visual>
                 </VisualBrush>
             </ComboBox.Resources>
-            <ComboBox.Style>
+            <!--<ComboBox.Style>
                 <Style TargetType="ComboBox">
                     <Style.Triggers>
                         <Trigger Property="Text" Value="{x:Null}">
@@ -311,8 +318,9 @@
                         </Trigger>
                     </Style.Triggers>
                 </Style>
-            </ComboBox.Style>
+            </ComboBox.Style>-->
             <ComboBox.ToolTip>
+                <ToolTip>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -332,6 +340,7 @@
                     <TextBlock Text="{Binding SelectedModel.Tables.Count, Mode=OneWay}" Grid.Row="1" Grid.Column="1"  FontWeight="SemiBold"/>
 
                 </Grid>
+                </ToolTip>
             </ComboBox.ToolTip>
         </ComboBox>
         

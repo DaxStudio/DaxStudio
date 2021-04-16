@@ -17,7 +17,7 @@
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
         </ResourceDictionary.MergedDictionaries>
 
-            <Style TargetType="Button">
+            <Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
             <Setter Property="Margin" Value="4,2"/>
                 <Setter Property="Padding" Value="8,2"/>
             </Style>
@@ -63,7 +63,7 @@
    
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+    <Border  BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
         
     <Grid>
         <Grid.RowDefinitions>
@@ -80,17 +80,18 @@
                            FontWeight="Light" FontSize="44" ></Label>
                     <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
                 </StackPanel>
-                <TextBlock Padding="10,10,0,0">DAX Studio was not shutdown cleanly the last time it was run</TextBlock>
-                <TextBlock Padding="10,0,0,5">The following documents had unsaved changes:</TextBlock>
+                <Label Padding="10,10,0,0">DAX Studio was not shutdown cleanly the last time it was run</Label>
+                <Label Padding="10,0,0,5">The following documents had unsaved changes:</Label>
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5,0" >
                 <CheckBox Grid.Row="1" Margin="5,1,5,5"  VerticalAlignment="Center" x:Name="SelecteAll" IsChecked="{Binding SelectAll}"></CheckBox>
-                <TextBlock>Select All</TextBlock>
+                <Label>Select All</Label>
             </StackPanel>
             <ListView x:Name="DocumentList" Grid.Row="2"
                       ItemsSource="{Binding Files}" 
                       Margin="10,0"
                       MaxHeight="400"
+                      BorderThickness="0.8"
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldOpen($this.SelectedItem)]">
             </ListView>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">

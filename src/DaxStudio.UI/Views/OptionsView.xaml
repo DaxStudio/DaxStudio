@@ -14,6 +14,7 @@
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
             xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
             xmlns:templateSelectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
@@ -86,7 +87,7 @@
                 </Style.Triggers>
             </Style>
             
-            <Style TargetType="{x:Type TextBox}">
+            <!--<Style TargetType="{x:Type TextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
                         <Setter Property="Background" Value="LightGray" />
@@ -95,7 +96,7 @@
                         <Setter Property="Background" Value="White" />
                     </Trigger>
                 </Style.Triggers>
-            </Style>
+            </Style>-->
             
             <Style TargetType="{x:Type PasswordBox}">
                 <Style.Triggers>
@@ -204,7 +205,10 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <CheckBox IsChecked="{Binding Value}" IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>
+                    <!--<CheckBox IsChecked="{Binding Value}" IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>-->
+                    <mah:ToggleSwitch                               
+                              IsOn="{Binding Value}"
+                              IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
                 </Grid>
             </DataTemplate>
@@ -488,8 +492,8 @@
 
         </ResourceDictionary>
 
-
     </UserControl.Resources>
+    
     <Grid Margin="35,25,5,5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="261*"/>
@@ -522,12 +526,15 @@
                     <TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>
                     <!-- -->
                     <Grid>
-                        <wmc:WatermarkTextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" 
+                        <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" 
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 mah:TextBoxHelper.Watermark="Search"
                              MinWidth="100" 
                              Grid.Row="1" 
                              Margin="5" 
-                             Padding="5" Watermark="Search"/>
-                        <Button Margin="10" Grid.Column="1" HorizontalAlignment="Right" Padding="5"
+                             Padding="5" />
+                        
+                        <!--<Button Margin="10" Grid.Column="1" HorizontalAlignment="Right" Padding="5"
                                                 Visibility="{Binding Path=HasSearchText, Converter={StaticResource BoolToVisibilityConverter}}"
                                                 BorderThickness="0"
                                                 Background="Transparent">
@@ -537,7 +544,7 @@
                                     <cal:ActionMessage MethodName="ClearSearchText" />
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
-                        </Button>
+                        </Button>-->
                     </Grid>
                     <ListBox x:Name="Categories" Grid.Row="2" 
                         ItemsSource="{Binding Categories}" 
@@ -577,7 +584,7 @@
                                                <TextBlock Text="{Binding DisplayName}" 
                                                           pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
                                                           pg:TextBlockHighlighter.HighlightColor="Yellow"
-                                                          VerticalAlignment="Top" TextWrapping="Wrap"/>    
+                                                          VerticalAlignment="Top" TextWrapping="Wrap" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"/>    
                                             </Grid>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
@@ -595,7 +602,8 @@
                                     <DataTemplate>
                                         <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"
                                                    pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
-                                                   pg:TextBlockHighlighter.HighlightColor="Yellow"/>
+                                                   pg:TextBlockHighlighter.HighlightColor="Yellow"
+                                                   Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
                                     </DataTemplate>
                                 </GroupStyle.HeaderTemplate>
                             </GroupStyle>
@@ -1069,7 +1077,11 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Text="Click on the key binding next to a command and type a new key combination or use Esc or backspace to clear a hotkey" 
-                                           Foreground="Black" TextWrapping="Wrap"  Grid.ColumnSpan="2" Margin="0,0,0,20"/>
+                                           Foreground="{DynamicResource MahApps.Brushes.IdealForeground}"
+                                           Grid.ColumnSpan="2" Margin="0,0,0,20"
+                                           TextWrapping="Wrap">
+                                    
+                                </TextBlock>
                                 <Button Content="Reset All" 
                                         Grid.Column="2" 
                                         x:Name="ResetKeyBindings" Height="22" Width="60" Margin="0,0,0,20"/>

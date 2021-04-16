@@ -20,6 +20,7 @@ using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
 using System.Text;
+using ControlzEx.Theming;
 
 namespace DaxStudio.Standalone
 {
@@ -113,6 +114,10 @@ namespace DaxStudio.Standalone
                 // load selected theme
                 var themeManager = bootstrapper.GetThemeManager();
                 themeManager.SetTheme(_options.Theme);
+            //    var mahappstheme = RuntimeThemeGenerator.Current.GenerateRuntimeTheme(_options.Theme, System.Windows.Media.Color.FromRgb(00,114,198));
+            //    ControlzEx.Theming.ThemeManager.Current.AddTheme(mahappstheme);
+            //ControlzEx.Theming.ThemeManager.Current.ChangeTheme(Application.Current, mahappstheme);
+                //ControlzEx.Theming.ThemeManager.Current.ChangeThemeBaseColor(Application.Current, _options.Theme);
                 Log.Information("ThemeManager configured");
 
 

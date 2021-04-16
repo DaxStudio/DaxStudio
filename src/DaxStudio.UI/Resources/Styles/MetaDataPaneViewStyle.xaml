@@ -20,7 +20,7 @@
                 -->
         </Style.Resources>
 
-        <Setter Property="Background" Value="Transparent"/>
+        <!--<Setter Property="Background" Value="Transparent"/>-->
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
                 <Style TargetType="{x:Type TreeViewItem}">

@@ -16,9 +16,9 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Choose which Tables to export:" Grid.Row="0" Margin="5" />
+        <Label Content="Choose which Tables to export:" Grid.Row="0" Margin="5" />
         <CheckBox Content="Select All" IsChecked="True" Grid.Row="1" Margin="5" cal:Message.Attach="[Event Click] = [Action SelectAllChecked]" x:Name="SelectAll"/>
-        <ListBox Margin="5" Grid.Row="2" x:Name="Tables">
+        <ListBox Margin="5" Grid.Row="2" x:Name="Tables" BorderThickness="0.8">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected}" Tag="{Binding DaxName}"/>

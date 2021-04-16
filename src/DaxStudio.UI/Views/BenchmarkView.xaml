@@ -21,6 +21,7 @@
             <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:AllNumericConverter x:Key="AllNumericConverter"/>
+
         </ResourceDictionary>
     </UserControl.Resources>
     <Border Padding="10,10,10,10" Margin="0,0,0,0"  >
@@ -43,12 +44,17 @@
 
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Benchmark" Foreground="{StaticResource DaxStudioBrush}" 
+                <Label Content="Benchmark" Foreground="{StaticResource DaxStudioBrush}" 
                    Margin="0,0,0,10" Padding="0"
                    FontWeight="Light" FontSize="44"
                    Grid.ColumnSpan="3"/>
 
-                <TextBlock Text="This feature will run the selected query the following times. And will output the timing details" Padding="5" TextWrapping="Wrap" Grid.Row="1" Grid.ColumnSpan="3"/>
+                <TextBlock 
+                    Text="This feature will run the selected query the following times. And will output the timing details" 
+                    Style="{StaticResource ResourceKey=UILabel}"
+                    Padding="5" 
+                    TextWrapping="Wrap" 
+                    Grid.Row="1" Grid.ColumnSpan="3"/>
 
                 <Border Grid.Row="2" Width="8" Margin="7,12,4,2" BorderBrush="Gray" BorderThickness="1,1,0,0" />
                 <TextBox x:Name="ColdCacheRuns" Width="25" Margin="3" Grid.Column="1" Grid.Row="2"/>

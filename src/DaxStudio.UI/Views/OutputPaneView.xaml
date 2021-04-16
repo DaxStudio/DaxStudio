@@ -33,8 +33,7 @@
             HorizontalAlignment="Stretch"  
             behaviours:GridViewColumnResize.Enabled="True"
             extenders:ListViewExtenders.AutoScrollToEnd="True"
-            Focusable="False" 
-            Background="Transparent">
+            Focusable="False" >
             <ListView.View>
                 <GridView>
                     <!-- Icon -->
@@ -68,7 +67,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid HorizontalAlignment="Right">
-                                    <TextBlock TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding DurationString}" ToolTip="{Binding DurationTooltip}"/>
+                                    <Label  HorizontalAlignment="Right" Content="{Binding DurationString}" ToolTip="{Binding DurationTooltip}"/>
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -86,6 +85,7 @@
                                     Margin="5,0,2,2"
                                     Padding="0">
                                     <TextBlock TextWrapping="Wrap" 
+                                               Foreground="{DynamicResource ResourceKey=MahApps.Brushes.ThemeForeground}"
                                                HorizontalAlignment="Stretch" 
                                                TextTrimming="None" 
                                                Text="{Binding Text}"/>
@@ -96,8 +96,8 @@
                    
                 </GridView>
             </ListView.View>
-            <ListView.Style>
-                <Style TargetType="{x:Type ListView}">
+            <!--<ListView.Style>
+                <Style TargetType="{x:Type ListView}" BasedOn="{StaticResource MahApps.Styles.ListView}">
                     <Setter Property="ItemContainerStyle">
                         <Setter.Value>
                             <Style TargetType="ListViewItem">
@@ -106,7 +106,7 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </ListView.Style>
+            </ListView.Style>-->
             <i:Interaction.Behaviors>
                 <behaviours:ListViewClipboardBehaviour />
             </i:Interaction.Behaviors>

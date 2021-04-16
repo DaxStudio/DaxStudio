@@ -1,8 +1,5 @@
 ﻿using ControlzEx.Theming;
-using Fluent;
-using MLib.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 
 namespace DaxStudio.UI.Extensions
@@ -117,27 +114,6 @@ namespace DaxStudio.UI.Extensions
 
         }
 
-        //public static void LoadRibbonTheme(this Application app)
-        //{
-        //    var theme = SettingProvider.GetValue<string>("Theme", "Light");
-        //    ChangeRibbonTheme(app, theme);
-        //}
 
-        public static void ChangeRibbonTheme(this Application app, string theme)
-        {
-            
-            var appTheme = ThemeManager.Current.GetTheme("Light.DaxStudio");
-            if (theme == "Dark") appTheme = ThemeManager.Current.GetTheme("Dark.DaxStudio");
-
-
-            // now change app style to the custom accent and current theme
-            ThemeManager.Current.ChangeTheme(app,
-                                     appTheme);
-
-            //if (app.MainWindow != null)
-            //    ThemeManager.ChangeTheme(app.MainWindow,
-            //                            appTheme);
-
-        }
     }
 }
