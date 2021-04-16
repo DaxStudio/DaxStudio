@@ -12,7 +12,8 @@ $checksum = Get-FileHash -Path "$($env:APPVEYOR_BUILD_FOLDER)\package\DaxStudio_
 
 $script = Get-Content $installFile
 
-write-host $script
+write-host "url:      $script"
+write-host "checksum: $($checksum.Hash)"
 
 $script = $script -replace  '(?<=url\s*=\s*'')([^'']*)(?='')', $url
 $script = $script -replace  '(?<=checksum\s*=\s*'')([^'']*)(?='')', $checksum.Hash
