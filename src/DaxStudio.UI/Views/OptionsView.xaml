@@ -509,7 +509,10 @@
 			Grid.Row="0"
 			Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0.5"/>
         <!-- Editor -->
-        <TabControl Grid.ColumnSpan="2" Margin="0,84,20,10" Grid.RowSpan="2">
+        <TabControl Grid.ColumnSpan="2" 
+                    Margin="0,84,20,10" 
+                    Grid.RowSpan="2" 
+                    Style="{StaticResource MahApps.Styles.TabControl.Animated}">
             <TabItem Header="Standard">
 
                 <Grid>

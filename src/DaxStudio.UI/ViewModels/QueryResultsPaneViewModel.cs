@@ -354,13 +354,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public System.Windows.Media.Brush TabItemBrush
-        {
-            get
-            {
-                return  (System.Windows.Media.Brush)GetValueFromStyle(typeof(TabItem), Control.BackgroundProperty) ?? System.Windows.Media.Brushes.LightSkyBlue;
-            }
-        }
+        //public System.Windows.Media.Brush TabItemBrush
+        //{
+        //    get
+        //    {
+        //        return  (System.Windows.Media.Brush)GetValueFromStyle(typeof(TabItem), Control.BackgroundProperty) ?? System.Windows.Media.Brushes.LightSkyBlue;
+        //    }
+        //}
 
         private static object GetValueFromStyle(object styleKey, DependencyProperty property)
         {

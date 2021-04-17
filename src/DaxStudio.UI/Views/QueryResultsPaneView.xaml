@@ -60,6 +60,7 @@
                 <TabControl.ItemContainerStyle>
 
                     <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                        <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="TabItem">
@@ -69,8 +70,7 @@
                                             BorderThickness="1,1,0,1"
                                             Margin="2,0,0,0"
                                             CornerRadius="2,0,0,2"
-                                            Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-                                            <!--Background="{Binding TabItemBrush, Mode=OneWay}"-->
+                                            Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
                                                 
                                             <!--<Border.Background>
                                             <LinearGradientBrush StartPoint=".7,0" EndPoint=".7,1">
@@ -115,9 +115,9 @@
                                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
                                             <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>
                                         </Trigger>
-                                        <!--<Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Panel" Property="Background" Value="#55002288"/>
-                                        </Trigger>-->
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Panel" Property="Background" Value="DarkGray"/>
+                                        </Trigger>
                                         <MultiTrigger>
                                             <MultiTrigger.Conditions>
                                                 <Condition Property="IsMouseOver" Value="True"/>

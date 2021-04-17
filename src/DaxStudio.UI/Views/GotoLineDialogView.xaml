@@ -62,7 +62,8 @@
                 <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                 <Button x:Name="GotoLine" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Padding="5px 2px" Margin="2px" Content="_Goto" IsDefault="True">
                     <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+
+                            <Style TargetType="Button"  BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
                             <Setter Property="IsEnabled" Value="False"/>
                             <Style.Triggers>
                                 <MultiDataTrigger>

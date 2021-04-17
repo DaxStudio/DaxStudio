@@ -110,9 +110,11 @@
                                  To="1"
                                  Duration="0:0:1.0"/>
 
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" EasingFunction="{StaticResource ResourceKey=easeInEase}" To="28" Duration="0:0:1.0"/>
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" 
+                                 EasingFunction="{StaticResource ResourceKey=easeInEase}" 
+                                 To="32" Duration="0:0:1.0"/>
                 <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="Tables">
-                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,32,0,0"/>
+                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,34,0,0"/>
                 </ThicknessAnimationUsingKeyFrames>
                 <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="SearchIcon">
                     <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="2,2,2,2"/>
@@ -127,8 +129,10 @@
             </Storyboard>
 
             <Storyboard x:Key="SearchOut">
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Tag)" Storyboard.TargetName="srchBox" EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="0" Duration="0:0:0.2"/>
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Tag)" Storyboard.TargetName="srchBox" 
+                                 EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="0" Duration="0:0:0.2"/>
+                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" 
+                                 EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
                 <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="Tables">
                     <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,2,0,0"/>
                 </ThicknessAnimationUsingKeyFrames>
