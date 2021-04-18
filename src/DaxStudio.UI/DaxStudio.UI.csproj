@@ -1630,6 +1630,15 @@
       <Version>5.0.0</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Files\File_Dax_x32_lighter.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\daxstudio-logo_250x250_glow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\daxstudio-logo_250x250_lighter.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

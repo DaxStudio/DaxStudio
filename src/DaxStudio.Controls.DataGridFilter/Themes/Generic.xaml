@@ -4,7 +4,12 @@
     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
     xmlns:s="clr-namespace:System;assembly=mscorlib"
     xmlns:local="clr-namespace:DaxStudio.Controls.DataGridFilter"
-    xmlns:support="clr-namespace:DaxStudio.Controls.DataGridFilter.Support">
+    xmlns:support="clr-namespace:DaxStudio.Controls.DataGridFilter.Support"
+    xmlns:reskeys="clr-namespace:DaxStudio.Controls.DataGridFilter.Themes">
+    
+    
+    
+    
     
     <Style TargetType="{x:Type local:DataGridColumnFilter}">
 
@@ -47,13 +52,15 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <LinearGradientBrush x:Key="ComboBox.Static.Background" EndPoint="0,1" StartPoint="0,0">
+            
+            <!--<LinearGradientBrush x:Key="ComboBox.Static.Background" EndPoint="0,1" StartPoint="0,0">
                 <GradientStop Color="#FFF0F0F0" Offset="0.0"/>
                 <GradientStop Color="#FFE5E5E5" Offset="1.0"/>
-            </LinearGradientBrush>
-            <SolidColorBrush x:Key="ComboBox.Static.Border" Color="#FFACACAC"/>
-            <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="#FFABADB3"/>
+            </LinearGradientBrush>-->
+            <SolidColorBrush x:Key="ComboBox.Static.Background" Color="#FF00FF"/>
+            <SolidColorBrush x:Key="ComboBox.Static.Border" Color="Orange"/>
+            <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="Green"/>
+            <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="Blue"/>
             <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Background" Color="Transparent"/>
             <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Border" Color="Transparent"/>
             <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph" Color="#FF000000"/>
@@ -61,7 +68,7 @@
                 <GradientStop Color="#FFECF4FC" Offset="0.0"/>
                 <GradientStop Color="#FFDCECFC" Offset="1.0"/>
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="ComboBox.MouseOver.Border" Color="#FF7EB4EA"/>
+            <SolidColorBrush x:Key="ComboBox.MouseOver.Border" Color="Red"/>
             <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Background" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Border" Color="#FF7EB4EA"/>
             <LinearGradientBrush x:Key="ComboBox.MouseOver.Editable.Button.Background" EndPoint="0,1" StartPoint="0,0">
@@ -90,6 +97,7 @@
             <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Button.Background" Color="Transparent"/>
             <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Button.Border" Color="Transparent"/>
             <SolidColorBrush x:Key="ComboBox.Static.Glyph" Color="#FF606060"/>
+            
             <Style x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
                 <Setter Property="OverridesDefaultStyle" Value="true"/>
                 <Setter Property="IsTabStop" Value="false"/>
@@ -184,6 +192,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            
             <ControlTemplate x:Key="ComboBoxTemplate" TargetType="{x:Type ComboBox}">
                 <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
                     <Grid.ColumnDefinitions>
@@ -228,7 +237,9 @@
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
+            
             <SolidColorBrush x:Key="TextBox.Static.Background" Color="#FFFFFFFF"/>
+            
             <Style x:Key="ComboBoxEditableTextBox" TargetType="{x:Type TextBox}">
                 <Setter Property="OverridesDefaultStyle" Value="true"/>
                 <Setter Property="AllowDrop" Value="true"/>
@@ -245,6 +256,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            
             <ControlTemplate x:Key="ComboBoxEditableTemplate" TargetType="{x:Type ComboBox}">
                 <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
                     <Grid.ColumnDefinitions>
@@ -297,6 +309,7 @@
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
+            
             <Style TargetType="{x:Type ComboBox}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
                 <Setter Property="Background" Value="{StaticResource ComboBox.Static.Background}"/>
@@ -328,11 +341,11 @@
             </Style>-->
 
             <Style TargetType="{x:Type CheckBox}">
-                <Setter Property="Background" Value="AliceBlue" />
+                <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DataGridHeaderBackground}}" />
             </Style>
 
             <Style TargetType="{x:Type DatePicker}">
-                <Setter Property="Background" Value="AliceBlue" />
+                <Setter Property="Background"  Value="{DynamicResource {x:Static reskeys:ResourceKeys.DataGridHeaderBackground}}" />
             </Style>
 
         </Style.Resources>
@@ -348,7 +361,10 @@
                             BorderThickness="{TemplateBinding BorderThickness}">
 
                         <Grid Name="PART_FilterContainer"
-                              Visibility="{Binding Path=AssignedDataGridColumn.DoNotGenerateFilterControl, RelativeSource={RelativeSource AncestorType={x:Type local:DataGridColumnFilter}}, Converter={StaticResource oppositeBooleanToVisibilityConverter}}">
+                              
+                              Visibility="{Binding Path=AssignedDataGridColumn.DoNotGenerateFilterControl, 
+                                                   RelativeSource={RelativeSource AncestorType={x:Type local:DataGridColumnFilter}}, 
+                                                   Converter={StaticResource oppositeBooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -357,27 +373,23 @@
 
                             <!-- Clear Filter Button -->
                             <Button 
+                                Name="PART_ClearFilterButton"
                                 VerticalAlignment="Top" 
                                 Height="{Binding 
                                         RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
                                         Converter={StaticResource fontSizeToHeightConverter},
                                         Path=FontSize}"
                                 ToolTip="Clear filter" 
-                                
-                                Command="{Binding Path=(local:DataGridExtensions.ClearFilterCommand), RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
-                                                                
-                                Grid.Column="0" Name="PART_ClearFilterButton">
-                                
-                                <Button.Content>
-                                   Clear filter 
-                                </Button.Content>
-                                
+                                Content="Clear filter"
+                                Command="{Binding Path=(local:DataGridExtensions.ClearFilterCommand), RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"                                
+                                Grid.Column="0" 
+                                >
+
                                 <Button.Visibility>
                                     <MultiBinding Converter="{StaticResource clearFilterButtonVisibilityConverter}">
                                         <Binding Path="IsFirstFilterControl" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="(local:DataGridExtensions.IsClearButtonVisible)" RelativeSource="{RelativeSource AncestorType={x:Type DataGrid}}"/>
                                     </MultiBinding>
-
                                 </Button.Visibility>
                                 
                             </Button>
@@ -385,13 +397,15 @@
                             
                             <!-- Numeric and Text-->
                             <ComboBox 
+                                Name="PART_ComboBoxFilterOperator"
+                                Background="{TemplateBinding Background}"
                                 Visibility="Collapsed"
                                 VerticalAlignment="Top"
                                 Height="{Binding 
                                         RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
                                         Converter={StaticResource fontSizeToHeightConverter},
                                         Path=FontSize}"                                
-                                Grid.Column="1" Name="PART_ComboBoxFilterOperator"
+                                Grid.Column="1" 
                                 ItemsSource="{Binding Source={StaticResource filterOperators},Path=DisplayNames}"
   
                                 SelectedItem="{Binding 
@@ -402,10 +416,11 @@
                             </ComboBox>
             
                             <support:DelayTextBox
- 
+                                    x:Name="PART_TextBoxFilter"
                                     Visibility="Collapsed"
                                     VerticalAlignment="Top"
                                     VerticalContentAlignment="Center"
+                                    Background="{TemplateBinding Background}"
                                     Height="{Binding 
                                             RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
                                             Converter={StaticResource fontSizeToHeightConverter},
@@ -415,13 +430,15 @@
                                         Path=FilterCurrentData.QueryString,
                                         Mode=TwoWay,
                                         UpdateSourceTrigger=Explicit}"
-                                        Grid.Column="2" x:Name="PART_TextBoxFilter">
+                                        Grid.Column="2" >
                                 
                             </support:DelayTextBox>
                             <!-- Numeric -->
                             
                             <!-- List -->
                             <ComboBox 
+                                Name="PART_ComboBoxFilter"
+                                
                                 Visibility="Collapsed"
                                 IsTextSearchEnabled="True"
 
@@ -442,7 +459,7 @@
                                         Mode=TwoWay,
                                         Converter={StaticResource comboBoxToQueryStringConverter}}"
                                     
-                                Name="PART_ComboBoxFilter" Grid.Column="2">
+                                Grid.Column="2">
                             </ComboBox>
                             <!-- List -->
                             
@@ -694,25 +711,25 @@
 
     </Style>
 
+    <Style TargetType="{x:Type local:DataGridComboBoxColumnWithBindingHack}">
+        
+    </Style>
+    
     <!--            BasedOn="{StaticResource ResourceKey=MahApps.Styles.DataGridColumnHeader}" -->
     <Style x:Key="{ComponentResourceKey 
                    TypeInTargetAssembly={x:Type local:DataGridHeaderFilterControl}, 
                    ResourceId=DataGridHeaderFilterControlStyle}"
-           TargetType="{x:Type DataGridColumnHeader}"
->
-
+           TargetType="{x:Type DataGridColumnHeader}">
+        
         <Style.Resources>
             <ResourceDictionary>
-                <support:MyBooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />     
+                <support:MyBooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
             </ResourceDictionary>
-
         </Style.Resources>
 
         <Setter Property="Template">
-            
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -722,13 +739,18 @@
                             <RowDefinition />
                         </Grid.RowDefinitions>
 
-                        <local:DataGridColumnFilter Margin="1" Grid.Column="0" Grid.Row="0"
-                        x:Name="dgColumnFilter"
+                        <local:DataGridColumnFilter 
+                            Margin="1" 
+                            Grid.Column="0" 
+                            Grid.Row="0"
+                            x:Name="dgColumnFilter"
+                            Background="{DynamicResource {x:Static reskeys:ResourceKeys.DataGridHeaderBackground}}"
+                            Foreground="{DynamicResource {x:Static reskeys:ResourceKeys.DataGridHeaderForeground}}"
                             FilterCurrentData ="{Binding 
-                                    RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}, 
-                                    Path=Tag, 
-                                    UpdateSourceTrigger=PropertyChanged,
-                                    Mode=TwoWay}"
+                            RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}, 
+                            Path=Tag, 
+                            UpdateSourceTrigger=PropertyChanged,
+                            Mode=TwoWay}"
                                                 
                             AssignedDataGridColumnHeader ="{Binding 
                                     RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}, 
@@ -752,33 +774,44 @@
 
                         </local:DataGridColumnFilter>
 
-                        <theme:DataGridHeaderBorder Grid.Column="0" Grid.Row="1" SortDirection="{TemplateBinding SortDirection}"
-                                     IsHovered="{TemplateBinding IsMouseOver}"
-                                     IsPressed="{TemplateBinding IsPressed}"
-                                     IsClickable="{TemplateBinding CanUserSort}"
-                                     Background="{TemplateBinding Background}"
-                                     BorderBrush="{TemplateBinding BorderBrush}"
-                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                     Padding ="{TemplateBinding Padding}"
-                                     SeparatorVisibility="{TemplateBinding SeparatorVisibility}"
-                                     SeparatorBrush="{TemplateBinding SeparatorBrush}">
+                        <!-- Background="{TemplateBinding Background}" -->
+                        <theme:DataGridHeaderBorder Grid.Column="0" 
+                                                    Grid.Row="1" 
+                                                    SortDirection="{TemplateBinding SortDirection}"
+                                                    IsHovered="{TemplateBinding IsMouseOver}"
+                                                    IsPressed="{TemplateBinding IsPressed}"
+                                                    IsClickable="{TemplateBinding CanUserSort}"
+                                                    Background="{DynamicResource {x:Static reskeys:ResourceKeys.DataGridHeaderBackground}}"
+
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding ="{TemplateBinding Padding}"
+                                                    SeparatorVisibility="{TemplateBinding SeparatorVisibility}"
+                                                    SeparatorBrush="{TemplateBinding SeparatorBrush}">     
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" Grid.Row="1"  Text="{TemplateBinding  Content}" 
-                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                       TextWrapping="Wrap"></TextBlock>
-                                <TextBlock Text="*" HorizontalAlignment="Right" 
-                                           ToolTip="Filter Applied"
-                                           Visibility="{Binding Path=IsFiltered, 
-                                              ElementName=dgColumnFilter,
-                                              Converter={StaticResource booleanToVisibilityConverter}}"
-                                           />
+
+                                <TextBlock Grid.Column="0" 
+                                       Grid.Row="1"
+                                       Background="{TemplateBinding Background}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       Text="{TemplateBinding  Content}" 
+                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                       TextWrapping="Wrap"/>
+                                <TextBlock Text="*" 
+                                       HorizontalAlignment="Right" 
+                                       Background="{TemplateBinding Background}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       ToolTip="Filter Applied"
+                                       Visibility="{Binding Path=IsFiltered, 
+                                       ElementName=dgColumnFilter,
+                                       Converter={StaticResource booleanToVisibilityConverter}}"
+                                       />
                             </Grid>
                         </theme:DataGridHeaderBorder>
 
@@ -795,7 +828,7 @@
                                     </Setter>
                                     <Setter Property="Panel.Background">
                                         <Setter.Value>
-                                            <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                                            <SolidColorBrush>#00000000</SolidColorBrush>
                                         </Setter.Value>
                                     </Setter>
                                     <Setter Property="FrameworkElement.Cursor">

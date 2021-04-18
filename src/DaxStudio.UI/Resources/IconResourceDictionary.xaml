@@ -35,7 +35,7 @@
 
     <conv:ResourceLookupConverter x:Key="FileIcons">
         <ResourceDictionary>
-            <BitmapImage x:Key="Dax" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x32.png"/>
+            <BitmapImage x:Key="Dax" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x32_lighter.png"/>
             <BitmapImage x:Key="Other" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Files/File_Other_x32.png"/>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>

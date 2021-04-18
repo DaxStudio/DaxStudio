@@ -38,6 +38,8 @@
             </col:ArrayList>
 
             <Style TargetType="{x:Type ToolTip}">
+                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -47,8 +49,10 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}">
-                <!--<Setter Property="ContentTemplate">
+            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource MahApps.Styles.ToolTip}">
+                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                <!--<Setter Property="ContentTemplate"> 
                     <Setter.Value>
                         <DataTemplate>
                             <Grid>
@@ -78,6 +82,7 @@
                 </Style.Triggers>
                 
             </Style>
+            
             <Style x:Key="QueryTextStyle">
 
             </Style>
@@ -102,6 +107,11 @@
                 <Setter Property="Padding" Value="2,0,2,0"/>
             </Style>
 
+            <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+                <Setter Property="Background" Value="Red"/>
+                <Setter Property="Foreground" Value="Green"/>
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>-->
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -131,6 +141,7 @@
                     SelectedItem="{Binding SelectedQuery}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
+                                        
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
                     VerticalAlignment="Stretch" 
@@ -145,6 +156,7 @@
                     GridLinesVisibility="None" 
                     BorderThickness="1,0,0,0" 
                     BorderBrush="{x:Null}"
+                    IsReadOnly="True"
                     >
             <DataGrid.Style>
                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type controls:DataGridNoContextMenu}">
@@ -153,9 +165,11 @@
             </DataGrid.Style>
             
             <DataGrid.Resources>
-                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+                    <Setter Property="Background" Value="Red"/>
+                    <Setter Property="Foreground" Value="Green"/>
                     <Setter Property="VerticalContentAlignment" Value="Center" />
-                </Style>
+                </Style>-->
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>

@@ -127,13 +127,13 @@
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
-        <ScrollViewer Background="White" VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="1"  Grid.RowSpan="3">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="1"  Grid.RowSpan="3">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
  
                 </Grid.RowDefinitions>
-                <Grid Background="White" Grid.Row="0">
+                <Grid Grid.Row="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -246,9 +246,15 @@
                     HorizontalAlignment="Stretch" 
                     VerticalAlignment="Stretch" 
                     Margin="0"/>
-        <DataGrid Name="ListEvents" Grid.Column="2" SelectedItem="{Binding SelectedEvent}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
+        <DataGrid Name="ListEvents" Grid.Column="2" 
+                  SelectedItem="{Binding SelectedEvent}" 
+                  HorizontalAlignment="Stretch" 
+                  AutoGenerateColumns="False"
+                  Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                   Grid.Row="1"
-                  behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
+                  behaviours:GridViewColumnResize.Enabled="True" 
+                  VerticalAlignment="Stretch" 
+                  Width="Auto"
                   ItemsSource="{Binding StorageEngineEvents}" 
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
@@ -256,7 +262,11 @@
                   ClipboardCopyMode="IncludeHeader"
                   ScrollViewer.CanContentScroll="True"
                   FrozenColumnCount="1"
-                  GridLinesVisibility="None" BorderThickness="1,0,0,0" BorderBrush="{x:Null}" >
+                  GridLinesVisibility="None" 
+                  BorderThickness="1,0,0,0" 
+                  BorderBrush="{x:Null}"
+                  Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
+                  >
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <ContextMenu.ItemsSource>
@@ -278,7 +288,7 @@
             </DataGrid.ContextMenu>
 
             <DataGrid.Resources>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
@@ -286,12 +296,12 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="FontWeight"
                   Value="SemiBold" />
                 </Style>
             </DataGrid.ColumnHeaderStyle>
-            <DataGrid.CellStyle>
+            <!--<DataGrid.CellStyle> 
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
@@ -309,16 +319,16 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </DataGrid.CellStyle>
+            </DataGrid.CellStyle>-->
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}">
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="35" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" />
-                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Line" Width="50" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Subclass" Width="80" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" />
+                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="85" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="60" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
@@ -336,14 +346,14 @@
                 </DataGridTextColumn>
 
             </DataGrid.Columns>
-            <DataGrid.Style>
+            <!--<DataGrid.Style>
 
-                <Style>
-                    <!--<Setter Property="Grid.RowSpan" Value="{Binding Parent.TextGridRowSpan}" />-->
+                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}">
+                    --><!--<Setter Property="Grid.RowSpan" Value="{Binding Parent.TextGridRowSpan}" />  --><!--
                     <Setter Property="Grid.RowSpan" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}" />
                 </Style>
                 
-            </DataGrid.Style>
+            </DataGrid.Style>-->
         </DataGrid>
         <GridSplitter Height="5" Grid.Row="2" Grid.Column="2" ResizeDirection="Rows" HorizontalAlignment="Stretch" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutBottom}" />

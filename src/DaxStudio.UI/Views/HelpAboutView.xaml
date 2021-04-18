@@ -18,7 +18,8 @@
     >
     <UserControl.Resources>
         <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
-        <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>
+        <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\resources\daxstudio-logo_250x250_lighter.png"/>
+        <!--<BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>-->
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
         <Style x:Key="VersionText" TargetType="Label" >

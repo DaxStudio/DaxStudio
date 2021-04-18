@@ -34,25 +34,32 @@
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
-        <DataGrid Grid.Row="1" SelectedItem="{Binding SelectedPhysicalRow}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
-                  behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
+        <DataGrid Grid.Row="1" 
+                  SelectedItem="{Binding SelectedPhysicalRow}" 
+                  HorizontalAlignment="Stretch" 
+                  AutoGenerateColumns="False"
+                  behaviours:GridViewColumnResize.Enabled="True" 
+                  VerticalAlignment="Stretch" 
+                  Width="Auto"
                   ItemsSource="{Binding PhysicalQueryPlanRows}" 
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
                   HeadersVisibility="Column"
                   FrozenColumnCount="1"
                   ClipboardCopyMode="IncludeHeader"
-                  GridLinesVisibility="None" BorderBrush="#FFABADB3" >
+                  CanUserAddRows="False"
+                  GridLinesVisibility="None" 
+                  BorderBrush="#FFABADB3" >
 
             <DataGrid.Resources>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </DataGrid.Resources>
-            <DataGrid.CellStyle>
+            <!--<DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
@@ -70,15 +77,15 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </DataGrid.CellStyle>
+            </DataGrid.CellStyle>-->
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="40" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Records" IsReadOnly="True" Width="70" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
                                     IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
             </DataGrid.Columns>
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}">
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>
@@ -100,25 +107,32 @@
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
             Margin="0"/>
-        <DataGrid Grid.Row="3" SelectedItem="{Binding SelectedLogicalRow}" HorizontalAlignment="Stretch" AutoGenerateColumns="False"
-                  behaviours:GridViewColumnResize.Enabled="True" VerticalAlignment="Stretch" Background="White" Width="Auto"
+        <DataGrid Grid.Row="3" 
+                  SelectedItem="{Binding SelectedLogicalRow}" 
+                  HorizontalAlignment="Stretch" 
+                  AutoGenerateColumns="False"
+                  behaviours:GridViewColumnResize.Enabled="True" 
+                  VerticalAlignment="Stretch"  
+                  Width="Auto"
                   ItemsSource="{Binding LogicalQueryPlanRows}" 
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
                   HeadersVisibility="Column"
                   FrozenColumnCount="1"
                   ClipboardCopyMode="IncludeHeader"
-                  GridLinesVisibility="None" BorderBrush="#FFABADB3" >
+                  CanUserAddRows="False"
+                  GridLinesVisibility="None" 
+                  BorderBrush="#FFABADB3" >
 
             <DataGrid.Resources>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </DataGrid.Resources>
-            <DataGrid.CellStyle>
+            <!--<DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
@@ -136,9 +150,9 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </DataGrid.CellStyle>
+            </DataGrid.CellStyle>-->
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="40" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
                                     IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
             </DataGrid.Columns>
