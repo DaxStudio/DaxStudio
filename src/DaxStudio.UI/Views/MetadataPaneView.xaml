@@ -384,7 +384,15 @@
                                     <!-- Table Template -->
                                     <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
                                         <Grid>
-                                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+                                            <!-- Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" -->
+                                            <Image  Margin="2,1,5,1">
+                                                <Image.Source>
+                                                    <MultiBinding Converter="{StaticResource MetadataIcons2}">
+                                                        <Binding Path="MetadataImage"/>
+                                                        <Binding Path="Options.Theme"/>
+                                                    </MultiBinding>
+                                                </Image.Source>
+                                            </Image>
                                             <fa:ImageAwesome Icon="ClockOutline" Width="10" Margin="7,12,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsDateTable}"/>
                                         </Grid>
                                         <TextBlock  Text="{Binding Caption}"

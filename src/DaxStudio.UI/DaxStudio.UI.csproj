@@ -269,6 +269,7 @@
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />

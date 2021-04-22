@@ -1,7 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:dsi="clr-namespace:DaxStudio.UI.Utils.Intellisense"
-                    xmlns:local="clr-namespace:DaxStudio.UI.Theme">
+                    xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                    xmlns:sys2="clr-namespace:System;assembly=System"
+                    xmlns:local="clr-namespace:DaxStudio.UI.Theme" xmlns:sys1="http://schemas.microsoft.com/winfx/2009/xaml">
       <ResourceDictionary.MergedDictionaries>
         
         <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/Themes/generic.xaml"/>
@@ -23,4 +26,6 @@
         <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
         <!--<Setter Property="TextBox.Foreground" Value="Red"/>-->
     </Style>
+
+    <sys2:Uri x:Key="Metadata.Table">pack://application:,,,/DaxStudio.UI;component/Images/Metadata/Table.png</sys2:Uri>
 </ResourceDictionary>
