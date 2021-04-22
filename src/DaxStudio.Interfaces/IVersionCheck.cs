@@ -17,7 +17,7 @@ namespace DaxStudio.Interfaces
 
         event PropertyChangedEventHandler PropertyChanged;
 
-        Action UpdateCompleteCallback { get; set; }
-        Action UpdateStartingCallback { get; set; }
+        event EventHandler UpdateCompleteCallback;
+        event EventHandler UpdateStartingCallback;
     }
 }

@@ -1,6 +1,7 @@
 ---
 title: Changelog
 layout: page
+js-footer: /js/changelog-footer.js
 ---
 
 {% for release in  site.github.releases %} 

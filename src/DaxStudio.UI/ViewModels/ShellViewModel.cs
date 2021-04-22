@@ -106,6 +106,7 @@ namespace DaxStudio.UI.ViewModels
 
 
             VersionChecker = versionCheck;
+            VersionChecker.UpdateCompleteCallback += VersionCheckComplete;
 
             DisplayName = AppTitle;
 
@@ -117,6 +118,12 @@ namespace DaxStudio.UI.ViewModels
             
             Log.Debug("============ Shell Started - v{version} =============", Version.ToString());
             
+        }
+
+        private void VersionCheckComplete(object sender, EventArgs e)
+        {
+            NotifyOfPropertyChange(nameof(IsUpdateAvailable));
+            NotifyOfPropertyChange(nameof(UpdateMessage));
         }
 
         private IThemeManager ThemeManager { get; }
@@ -173,6 +180,16 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
 
         public IVersionCheck VersionChecker { get; set; }
+        
+        public bool IsUpdateAvailable => !VersionChecker.VersionIsLatest;
+        public string UpdateMessage => $"Click to open the download page for version {VersionChecker.ServerVersion.ToString(3)}";
+
+        public void UpdateFlagClick()
+        {
+            // Open URL in Browser
+            System.Diagnostics.Process.Start( VersionChecker.DownloadUrl.ToString());
+        }
+        
         public override void TryClose(bool? dialogResult = null)
         {
             //Properties.Settings.Default.Save();
