@@ -43,6 +43,10 @@ namespace DaxStudio.Tests
 
     public class VersionCheckMock: DaxStudio.Interfaces.IVersionCheck
     {
+        public event EventHandler UpdateCompleteCallback;
+
+        public event EventHandler UpdateStartingCallback;
+
         public void CheckVersion()
         {
             throw new NotImplementedException();
@@ -99,9 +103,6 @@ namespace DaxStudio.Tests
                 throw new NotImplementedException();
             }
         }
-
-        public Action UpdateCompleteCallback { get;set; }
-        public Action UpdateStartingCallback { get;set; }
 
         public void Update()
         {
