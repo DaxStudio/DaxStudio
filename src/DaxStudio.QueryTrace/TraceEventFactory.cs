@@ -24,12 +24,14 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(TraceColumn.NTUserName);
             }
 
-            if (eventClass != TraceEventClass.DirectQueryEnd && eventClass != TraceEventClass.Error) {
+            if (eventClass != TraceEventClass.DirectQueryEnd && 
+                eventClass != TraceEventClass.Error) {
                 // DirectQuery doesn't have subclasses
                 trc.Columns.Add(TraceColumn.EventSubclass);
             }
 
-            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch)
+            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch && 
+                eventClass != TraceEventClass.JobGraph)
             {
                 trc.Columns.Add(TraceColumn.StartTime);
             }
@@ -45,6 +47,24 @@ namespace DaxStudio.QueryTrace
             {
                 trc.Columns.Add(TraceColumn.RequestParameters);
                 trc.Columns.Add(TraceColumn.RequestProperties);
+            }
+
+            if (eventClass == TraceEventClass.ProgressReportEnd ||
+                eventClass == TraceEventClass.ProgressReportCurrent)
+            {
+                trc.Columns.Add(TraceColumn.IntegerData);
+                trc.Columns.Add(TraceColumn.ProgressTotal);
+            }
+
+            if (eventClass == TraceEventClass.ProgressReportBegin ||
+                eventClass == TraceEventClass.ProgressReportEnd ||
+                eventClass == TraceEventClass.ProgressReportCurrent ||
+                eventClass == TraceEventClass.ProgressReportError)
+            {
+                trc.Columns.Add(TraceColumn.ObjectName);
+                trc.Columns.Add(TraceColumn.ObjectPath);
+                trc.Columns.Add(TraceColumn.ObjectReference);
+                trc.Columns.Add(TraceColumn.ObjectType);
             }
 
             switch (eventClass)

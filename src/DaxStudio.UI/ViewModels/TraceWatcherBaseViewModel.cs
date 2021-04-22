@@ -92,6 +92,11 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected abstract void ProcessResults();
 
+        protected virtual void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
+        {
+            // by default do nothing with individual events
+        }
+        
         public void ProcessAllEvents()
         {
             if (_timeout != null)
@@ -158,6 +163,19 @@ namespace DaxStudio.UI.ViewModels
         }
         public int AutoHideMinHeight { get; set; }
         public bool IsSelected { get; set; }
+        
+        private bool _isVisible = true;
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                _isVisible = value;
+                //OnVisibilityChanged(EventArgs.Empty);
+                NotifyOfPropertyChange(nameof(IsVisible));
+            }
+        }
+        
         public abstract string ContentId { get; }
         public abstract ImageSource IconSource { get; }
 
@@ -202,11 +220,12 @@ namespace DaxStudio.UI.ViewModels
                         // TODO - need a synchronous way to stop traces when shutting down or closing documents
                         
                         _eventAggregator.Unsubscribe(this);
-                        StopTraceAsync().SafeFireAndForget(onException: ex =>
-                        {
-                            Log.Error(ex, Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(IsChecked), "error setting IsChecked");
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error stopping trace: {ex.Message}"));
-                        }); ;
+                        StopTrace();
+                        //StopTraceAsync().SafeFireAndForget(onException: ex =>
+                        //{
+                        //    Log.Error(ex, Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(IsChecked), "error setting IsChecked");
+                        //    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error stopping trace: {ex.Message}"));
+                        //}); ;
                     }
                     
                     //_eventAggregator.PublishOnUIThread(new TraceWatcherToggleEvent(this, value));
@@ -527,8 +546,10 @@ namespace DaxStudio.UI.ViewModels
             if (!MonitoredEvents.Contains(e.EventClass)) return;
             if (ShouldStartCapturing(e)) CapturingStarted = true;
             if (!CapturingStarted) return;
-            
+
+            ProcessSingleEvent(e);
             Events.Add(e);
+
             if (IsFinalEvent(e)) ProcessAllEvents();
         }
 

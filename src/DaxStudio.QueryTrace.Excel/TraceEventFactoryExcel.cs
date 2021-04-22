@@ -26,7 +26,7 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(xlAmo.TraceColumn.EndTime);
                 trc.Columns.Add(xlAmo.TraceColumn.NTUserName);
             }
-            if (eventClass != xlAmo.TraceEventClass.VertiPaqSEQueryCacheMatch)
+            if (eventClass != xlAmo.TraceEventClass.VertiPaqSEQueryCacheMatch /* JobGraph event does not exist in PowerPivot */)
             {
                 trc.Columns.Add(xlAmo.TraceColumn.StartTime);
             }

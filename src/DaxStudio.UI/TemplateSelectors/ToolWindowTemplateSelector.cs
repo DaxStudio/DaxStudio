@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
 

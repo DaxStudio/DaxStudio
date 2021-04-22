@@ -35,31 +35,51 @@ namespace DaxStudio.UI.ViewModels
         [ImportingConstructor]
         public RefreshTraceViewModel( IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base( eventAggregator, globalOptions)
         {
-            _queryEvents = new BindableCollection<QueryEvent>();
+            _refreshEvents = new BindableCollection<RefreshEvent>();
             _globalOptions = globalOptions;
-            QueryTypes = new ObservableCollection<string>
-            {
-                "DAX",
-                "Dmx",
-                "Mdx",
-                "Sql"
-            };
+
         }
-
-
-        public ObservableCollection<string> QueryTypes { get; set; }
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.CommandBegin,
                   DaxStudioTraceEventClass.CommandEnd,
-                  //DaxStudioTraceEventClass.JobGraph,
+                  DaxStudioTraceEventClass.JobGraph,
                   DaxStudioTraceEventClass.ProgressReportBegin,
                   DaxStudioTraceEventClass.ProgressReportCurrent,
                   DaxStudioTraceEventClass.ProgressReportEnd,
                   DaxStudioTraceEventClass.Error
             };
+        }
+
+
+        protected override void ProcessSingleEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            if (IsPaused) return;
+            
+            base.ProcessSingleEvent(traceEvent);
+            var newEvent = new RefreshEvent()
+            {
+
+                StartTime = traceEvent.StartTime,
+                Username = traceEvent.NTUserName,
+                Text = traceEvent.TextData,
+                Duration = traceEvent.Duration,
+                DatabaseName = traceEvent.DatabaseFriendlyName,
+                RequestID = traceEvent.RequestID,
+                RequestParameters = traceEvent.RequestParameters,
+                RequestProperties = traceEvent.RequestProperties,
+                ObjectName = traceEvent.ObjectName,
+                ObjectPath = traceEvent.ObjectPath,
+                EventClass = traceEvent.EventClass,
+                EventSubClass = traceEvent.EventSubclass,
+                ProgressTotal = traceEvent.ProgressTotal
+
+            };
+
+
+            RefreshEvents.Add(newEvent);
         }
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
@@ -71,25 +91,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (Events == null) return;
             
-            foreach (var traceEvent in Events) {
-                var newEvent = new QueryEvent()
-                {
-                    QueryType = traceEvent.EventSubclassName.Substring(0, 3).ToUpper(),
-                    StartTime = traceEvent.StartTime,
-                    Username = traceEvent.NTUserName,
-                    Query = traceEvent.TextData,
-                    Duration = traceEvent.Duration,
-                    DatabaseName = traceEvent.DatabaseFriendlyName,
-                    RequestID = traceEvent.RequestID,
-                    RequestParameters = traceEvent.RequestParameters,
-                    RequestProperties = traceEvent.RequestProperties
-                };
-
-                    
-                RefreshEvents.Add(newEvent);
-                        
-                    
-            }
+            // todo summarize events
                 
             Events.Clear();
 
@@ -101,7 +103,7 @@ namespace DaxStudio.UI.ViewModels
         }
         
  
-        private readonly BindableCollection<QueryEvent> _queryEvents;
+        private readonly BindableCollection<RefreshEvent> _refreshEvents;
         
         public override bool CanHide => true; 
         public override string ContentId => "refresh-trace";
@@ -111,11 +113,11 @@ namespace DaxStudio.UI.ViewModels
             {
                 var imgSourceConverter = new ImageSourceConverter();
                 return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png") as ImageSource;
+                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-refresh@17px.png") as ImageSource;
 
             }
         }
-        public IObservableCollection<QueryEvent> RefreshEvents => _queryEvents;
+        public IObservableCollection<RefreshEvent> RefreshEvents => _refreshEvents;
 
 
         public string DefaultQueryFilter => "cat";
@@ -157,7 +159,7 @@ namespace DaxStudio.UI.ViewModels
             ProcessResults();
         }
 
-        public QueryEvent SelectedQuery { get; set; }
+        public RefreshEvent SelectedQuery { get; set; }
 
         public override bool IsCopyAllVisible => true;
         public override bool IsFilterVisible => true; 
@@ -198,15 +200,9 @@ namespace DaxStudio.UI.ViewModels
             controller.ClearFilter();
         }
 
-        public void QueryDoubleClick()
+        public void TextDoubleClick()
         {
-            QueryDoubleClick(SelectedQuery);
-        }
-
-        public void QueryDoubleClick(QueryEvent query)
-        {
-            if (query == null) return; // it the user clicked on an empty query exit here
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
+            TextDoubleClick(SelectedQuery);
         }
 
         #region ISaveState methods
@@ -233,10 +229,10 @@ namespace DaxStudio.UI.ViewModels
 
         private void LoadJsonString(string data)
         {
-            List<QueryEvent> qe = JsonConvert.DeserializeObject<List<QueryEvent>>(data);
+            List<RefreshEvent> re = JsonConvert.DeserializeObject<List<RefreshEvent>>(data);
 
-            _queryEvents.Clear();
-            _queryEvents.AddRange(qe);
+            _refreshEvents.Clear();
+            _refreshEvents.AddRange(re);
             NotifyOfPropertyChange(() => RefreshEvents);
         }
 
@@ -285,14 +281,18 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public override bool CanExport => _queryEvents.Count > 0;
+        public override bool CanExport => _refreshEvents.Count > 0;
 
         public override void ExportTraceDetails(string filePath)
         {
             File.WriteAllText(filePath, GetJsonString());
         }
 
-
+        public void TextDoubleClick(RefreshEvent refreshEvent)
+        {
+            if (refreshEvent == null) return; // it the user clicked on an empty query exit here
+            _eventAggregator.PublishOnUIThread(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
+        }
         #endregion
 
     }

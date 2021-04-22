@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
-using Caliburn.Micro;
-namespace DaxStudio.UI.Interfaces
+
+namespace DaxStudio.Common.Interfaces
 {
     public interface IToolWindow
     {
@@ -11,7 +11,7 @@ namespace DaxStudio.UI.Interfaces
         int AutoHideMinHeight { get; set; }
         bool IsSelected { get; set; }
         //bool IsActive { get; set; }
-        
+        bool IsVisible { get; set; }
         string ContentId { get; }
         ImageSource IconSource { get; }
     }

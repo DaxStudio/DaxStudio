@@ -27,7 +27,8 @@
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
                 <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png"/>
-                    <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png"/>
+                <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png"/>
+                <BitmapImage x:Key="Refresh Trace" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-refresh@17px.png"/>
                 </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
@@ -36,6 +37,7 @@
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@96ppi.png"/>
                 <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@96ppi.png"/>
                 <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@96ppi.png"/>
+                <BitmapImage x:Key="Refresh Trace" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-refresh-trace@96ppi.png"/>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 

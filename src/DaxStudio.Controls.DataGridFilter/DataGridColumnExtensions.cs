@@ -9,7 +9,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #region CustomBindingPath Dependency Property
         public static readonly DependencyProperty CustomBindingPathProperty =
             DependencyProperty.RegisterAttached("CustomBindingPath",
-                typeof(string), typeof(DataGridColumn), new PropertyMetadata(string.Empty));
+                typeof(string), typeof(DataGridColumnFilter), new PropertyMetadata(string.Empty));
 
         public static string GetCustomBindingPath(DependencyObject target)
         {
@@ -27,7 +27,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #region IsContainsTextSearch Dependency Property
         public static readonly DependencyProperty IsContainsTextSearchProperty =
             DependencyProperty.RegisterAttached("IsContainsTextSearch",
-                typeof(bool), typeof(DataGridColumn));
+                typeof(bool), typeof(DataGridColumnFilter));
 
         public static bool GetIsContainsTextSearch(DependencyObject target)
         {
@@ -45,7 +45,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #region IsCaseSensitiveSearch Dependency Property
         public static readonly DependencyProperty IsCaseSensitiveSearchProperty =
             DependencyProperty.RegisterAttached("IsCaseSensitiveSearch",
-                typeof(bool), typeof(DataGridColumn));
+                typeof(bool), typeof(DataGridColumnFilter));
 
         public static bool GetIsCaseSensitiveSearch(DependencyObject target)
         {
@@ -63,7 +63,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #region IsBetweenFilter Dependency Property
         public static readonly DependencyProperty IsBetweenFilterControlProperty =
             DependencyProperty.RegisterAttached("IsBetweenFilterControl",
-                typeof(bool), typeof(DataGridColumn));
+                typeof(bool), typeof(DataGridColumnFilter));
 
         public static bool GetIsBetweenFilterControl(DependencyObject target)
         {
@@ -81,7 +81,7 @@ namespace DaxStudio.Controls.DataGridFilter
         #region DoNotGenerateFilter Dependency Property
         public static readonly DependencyProperty DoNotGenerateFilterControlProperty =
             DependencyProperty.RegisterAttached("DoNotGenerateFilterControl",
-                typeof(bool), typeof(DataGridColumn), new PropertyMetadata(false));
+                typeof(bool), typeof(DataGridColumnFilter), new PropertyMetadata(false));
 
         public static bool GetDoNotGenerateFilterControl(DependencyObject target)
         {

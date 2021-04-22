@@ -9,7 +9,7 @@ using DaxStudio.QueryTrace.Interfaces;
 
 namespace DaxStudio.QueryTrace.Interfaces
 {
-    public interface ITraceWatcher
+    public interface ITraceWatcher: IToolWindow
     {
         List<DaxStudioTraceEventClass> MonitoredEvents { get; }
         IDaxDocument Document { get; set; }

@@ -10,6 +10,9 @@
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
+             xmlns:markupExtensions="clr-namespace:DaxStudio.UI.MarkupExtensions"
+             xmlns:local="clr-namespace:DaxStudio.Common.Enums;assembly=DaxStudio.Common"
+             xmlns:queryTrace="clr-namespace:DaxStudio.QueryTrace;assembly=DaxStudio.QueryTrace"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              BorderBrush="DimGray" BorderThickness="1">
@@ -28,14 +31,6 @@
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
 
-            <col:ArrayList x:Key="QueryTypes">
-                <x:Static Member="sys:String.Empty" />
-                <sys:String>DAX</sys:String>
-                <sys:String>DMX</sys:String>
-                <sys:String>MDX</sys:String>
-                <sys:String>SQL</sys:String>
-                <sys:String>ERR</sys:String>
-            </col:ArrayList>
 
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="ContentTemplate">
@@ -47,28 +42,6 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}">
-                <!--<Setter Property="ContentTemplate">
-                    <Setter.Value>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Text="Aggregation Hits: " />
-                                <TextBlock Text="Aggregation Misses: " Grid.Row="1"/>
-                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1"/>
-                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="1"/>
-                            </Grid>
-                        </DataTemplate>
-                    </Setter.Value>
-                </Setter>-->
-            </Style>
 
             <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}">
                 <Style.Triggers>
@@ -78,29 +51,23 @@
                 </Style.Triggers>
                 
             </Style>
-            <Style x:Key="QueryTextStyle">
 
-            </Style>
 
             <DataTemplate x:Key="QueryTextCell">
                 <!--<ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">-->
                     <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
+                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action TextDoubleClick($datacontext)]">
                         <TextBlock x:Name="Query"
-                            Text="{Binding Path=Query,Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
+                            Text="{Binding Path=Text,Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
                             VerticalAlignment="Top" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding Query}">
+                            ToolTip="{Binding Text}">
                         </TextBlock>
 
                     </Border>
                 <!--</ScrollViewer>-->
             </DataTemplate>
-
-            <Style x:Key="ImageCell"  TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                <Setter Property="Padding" Value="2,0,2,0"/>
-            </Style>
 
         </ResourceDictionary>
     </UserControl.Resources>
@@ -129,7 +96,7 @@
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
                     VirtualizingPanel.IsVirtualizing="True"
                     SelectedItem="{Binding SelectedQuery}" 
-                    cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
+                    cal:Message.Attach="[Event MouseDoubleClick] = [Action TextDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
@@ -188,43 +155,7 @@
             <DataGrid.Columns>
                 <!--<DataGridTextColumn Header="StartTime" IsReadOnly="True" Width="65" Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  />-->
                 <!--  -->
-                <DataGridTemplateColumn CellStyle="{StaticResource ImageCell}" Width="15"
-                                        filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True">
-                    
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Image Source="{Binding AggregationStatus, Converter={StaticResource AggregateRewriteIcons}}" />
-                                <Rectangle Fill="Transparent">
-                                    <Rectangle.ToolTip>
-                                        <ToolTip Style="{StaticResource AggregateRewriteTooltip}" DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Text="Aggregation Rewrite: " />
-                                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"/>
-                                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"/>
-                                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"/>
-                                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"/>
-                                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"/>
-                                            </Grid>
 
-                                        </ToolTip>
-
-                                    </Rectangle.ToolTip>
-                                </Rectangle>
-
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
                 <DataGridTextColumn 
                     Header="StartTime" 
                     IsReadOnly="True" 
@@ -232,66 +163,51 @@
                     Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True" />
                 
-                <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
-                                        Binding="{Binding QueryType}" />-->
+                <!--<DataGridTextColumn Header="Class" IsReadOnly="True" Width="80" 
+                                        Binding="{Binding EventClass}" />-->
+                <DataGridComboBoxColumn Header="Class" Width="40" 
+                                        filter:DataGridColumnExtensions.CustomBindingPath="EventClass"
+                                        ItemsSource="{Binding Source={markupExtensions:EnumBindingSource {x:Type local:DaxStudioTraceEventClass}}}"
+                                        SelectedItemBinding="{Binding EventClass}"
+                />
+                <DataGridComboBoxColumn Header="Subclass" Width="80" 
+                                        filter:DataGridColumnExtensions.CustomBindingPath="EventSubClass"
+                                        ItemsSource="{Binding Source={markupExtensions:EnumBindingSource {x:Type queryTrace:DaxStudioTraceEventSubclass}}}"
+                                        SelectedItemBinding="{Binding EventSubClass}"
+                />
+                <!--<DataGridTextColumn Header="Subclass" IsReadOnly="True" Width="80" 
+                                    Binding="{Binding EventSubClass}" />-->
 
-                <DataGridComboBoxColumn Header="Type" Width="40" 
+                <DataGridTextColumn Header="Progress" IsReadOnly="True" Width="80" 
+                                    Binding="{Binding ProgressTotal}" />
+
+                <!--<DataGridComboBoxColumn Header="Type" Width="40" 
                                         filter:DataGridColumnExtensions.CustomBindingPath="QueryType"
                                         ItemsSource="{StaticResource QueryTypes}"
                                         SelectedItemBinding="{Binding QueryType}"
-                                        />
+                                        />-->
 
                 <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" 
                                     Binding="{Binding Duration, StringFormat='#,0'}" 
                                     ElementStyle="{StaticResource AlignRight}"
-                                    
-                                    />
-                    <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="Username"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                
-                                <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Username"   
-                                            Text="{Binding Path=Username,Mode=OneWay}"  
-                                            VerticalAlignment="Top" 
-                                            HorizontalAlignment="Left"   
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTip="{Binding Username}">
-                                        </TextBlock>
-                                </Border>
-                                
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
-                                <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Query"
-                            Text="{Binding Path=DatabaseName,Mode=OneWay}"  
-                            VerticalAlignment="Top" 
-                            HorizontalAlignment="Left"   
-                            TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding DatabaseName}">
-                                        </TextBlock>
-                                    </Border>
-                            </ScrollViewer>
-                        </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                />
 
-                <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
-                                            filter:DataGridColumnExtensions.CustomBindingPath="Query"
+                <DataGridTextColumn Header="CPU"
+                                    IsReadOnly="True"
+                                    Width="60"
+                                    Binding="{Binding CPUDuration, StringFormat='#,0'}"
+                                    ElementStyle="{StaticResource AlignRight}"
+                                    />
+
+                <DataGridTextColumn Header="Object"
+                                    IsReadOnly="True"
+                                    Width="60"
+                                    Binding="{Binding ObjectPath}"
+                />
+                <DataGridTemplateColumn Header="Text" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
+                                            filter:DataGridColumnExtensions.CustomBindingPath="Text"
                                             filter:DataGridColumnExtensions.IsContainsTextSearch="True"
-                                            CellStyle="{StaticResource QueryTextStyle}"
+                                            
                                             />
 
                 <!--<DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"

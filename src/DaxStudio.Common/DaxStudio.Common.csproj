@@ -48,6 +48,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -69,6 +70,7 @@
     <Compile Include="Enums\DaxStudioTraceEventClass.cs" />
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />
+    <Compile Include="Enums\ObjectType.cs" />
     <Compile Include="Enums\QueryEndSounds.cs" />
     <Compile Include="Exceptions\SaveSettingValueException.cs" />
     <Compile Include="Interfaces\IActivateResults.cs" />
@@ -95,6 +97,7 @@
     <Compile Include="Interfaces\IStatusBarMessage.cs" />
     <Compile Include="Interfaces\ITabularConnection.cs" />
     <Compile Include="Interfaces\IThemeManager.cs" />
+    <Compile Include="Interfaces\IToolWindow.cs" />
     <Compile Include="Interfaces\ITreeviewColumn.cs" />
     <Compile Include="Interfaces\IVersionCheck.cs" />
     <Compile Include="MailUtility.cs" />

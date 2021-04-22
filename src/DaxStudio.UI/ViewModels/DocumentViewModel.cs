@@ -105,7 +105,7 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
-        private IObservableCollection<object> _toolWindows;
+        private IObservableCollection<IToolWindow> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
         private readonly IDaxStudioHost _host;
@@ -496,8 +496,8 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Properties added to this collection populate the available tool windows inside the document pane
         /// </summary>
-        public IObservableCollection<object> ToolWindows =>
-            _toolWindows ?? (_toolWindows = new BindableCollection<object>
+        public IObservableCollection<IToolWindow> ToolWindows =>
+            _toolWindows ?? (_toolWindows = new BindableCollection<IToolWindow>
             {
                 MetadataPane,
                 FunctionPane,
@@ -2097,8 +2097,9 @@ namespace DaxStudio.UI.ViewModels
                 // Save all visible TraceWatchers
                 foreach (var tw in ToolWindows)
                 {
-                    var saver = tw as ISaveState;
-                    if (saver != null)
+                    if (!tw.IsVisible) continue;
+                    
+                    if (tw is ISaveState saver)
                     {
                         saver.SavePackage(package);
                     }
@@ -2131,8 +2132,11 @@ namespace DaxStudio.UI.ViewModels
                 // Save all visible TraceWatchers
                 foreach (var tw in ToolWindows)
                 {
-                    var saver = tw as ISaveState;
-                    if (saver != null)
+                    // only save visible tool windows
+                    if (!tw.IsVisible) continue;
+
+                    // check if the window supports saving its state
+                    if (tw is ISaveState saver)
                     {
                         saver.Save(FileName);
                     }

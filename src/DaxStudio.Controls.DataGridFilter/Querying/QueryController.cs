@@ -172,7 +172,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                     debugParameters += p.ToString();
                 });
 
-                System.Diagnostics.Debug.WriteLine("QUERY PARAMETRS: " + debugParameters);
+                System.Diagnostics.Debug.WriteLine("QUERY PARAMETERS: " + debugParameters);
                 #endif
                 #endregion
 

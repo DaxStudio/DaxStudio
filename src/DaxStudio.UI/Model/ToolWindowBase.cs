@@ -3,6 +3,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
 using System;
 using System.Windows.Media;
+using DaxStudio.Common.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

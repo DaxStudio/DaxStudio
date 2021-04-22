@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using DaxStudio.Common.Interfaces;
 using Xceed.Wpf.AvalonDock.Layout;
 using DaxStudio.UI.Interfaces;
 
