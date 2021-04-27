@@ -465,6 +465,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ReplaceXmSqlColumnNames => Options.ReplaceXmSqlColumnNames;
 
+        public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
+
         public bool WordWrap => Options.EditorWordWrap;
 
         public bool ConvertTabsToSpaces => Options.EditorConvertTabsToSpaces;
@@ -2243,6 +2245,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     stvModel.ServerTimingDetails = ServerTimingDetails;
                     stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
+                    stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
                 }
 
                 if (Tracer == null) CreateTracer();

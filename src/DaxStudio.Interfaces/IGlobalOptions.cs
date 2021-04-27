@@ -106,6 +106,7 @@ namespace DaxStudio.Interfaces
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }
+        bool ReplaceXmSqlTableNames { get; set; }
 
 
         #region Methods
