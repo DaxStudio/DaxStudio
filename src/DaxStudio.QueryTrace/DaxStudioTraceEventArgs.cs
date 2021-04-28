@@ -24,7 +24,8 @@ namespace DaxStudio.QueryTrace
             RequestID = e[TraceColumn.RequestID];
             DatabaseName = e.DatabaseName;
             DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName)? powerBiFileName : DatabaseName;
-
+            ActivityId = e[TraceColumn.ActivityID];
+            
             switch (e.EventClass)
             {
                 case TraceEventClass.QueryBegin:
@@ -57,6 +58,7 @@ namespace DaxStudio.QueryTrace
                     //ProgressTotal = e.ProgressTotal;
                     ObjectName = e.ObjectName;
                     ObjectPath = e.ObjectPath;
+                    ObjectReference = e.ObjectReference;
                     SPID = e.Spid;
                     break;
                 case TraceEventClass.VertiPaqSEQueryEnd:
@@ -71,8 +73,6 @@ namespace DaxStudio.QueryTrace
                     NTUserName = e.NTUserName;
                     break;
                 case TraceEventClass.ProgressReportBegin:
-                case TraceEventClass.CommandBegin:
-                    
                     string s = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
                     DateTime.TryParse(s, CultureInfo.CurrentUICulture, DateTimeStyles.AssumeUniversal, out var startTime);
                     StartTime = startTime;
@@ -80,6 +80,15 @@ namespace DaxStudio.QueryTrace
                     SPID = e.Spid;
                     ObjectName = e.ObjectName;
                     ObjectPath = e.ObjectPath;
+                    ObjectReference = e.ObjectReference;
+                    break;
+                case TraceEventClass.CommandBegin:
+                    
+                    string s3 = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
+                    DateTime.TryParse(s3, CultureInfo.CurrentUICulture, DateTimeStyles.AssumeUniversal, out var startTime3);
+                    StartTime = startTime3;
+                    NTUserName = e.NTUserName;
+                    SPID = e.Spid;
                     break;
                 case TraceEventClass.ProgressReportCurrent:
                     string s2 = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
@@ -88,7 +97,9 @@ namespace DaxStudio.QueryTrace
                     NTUserName = e.NTUserName;
                     ObjectName = e.ObjectName;
                     ObjectPath = e.ObjectPath;
+                    ObjectReference = e.ObjectReference;
                     SPID = e.Spid;
+
                     //IntegerData = e.IntegerData;
                     try {
                         ProgressTotal = e.ProgressTotal;
@@ -106,6 +117,7 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.DAXQueryPlan:
                 case TraceEventClass.JobGraph:
                     // no additional properties captured, the plan is stored in the text field
+                    
                     break;
 
                 default:
@@ -168,6 +180,8 @@ namespace DaxStudio.QueryTrace
             //{ }
         }
 
+        public string ActivityId { get; set; }
+
         public long ProgressTotal { get; set; }
 
         // This default constructor is required to allow deserializing from JSON when tracing PowerPivot
@@ -223,6 +237,7 @@ namespace DaxStudio.QueryTrace
         public string SPID { get; set; } = string.Empty;
         public string ObjectName { get; set; }
         public string ObjectPath { get; set; }
+        public string ObjectReference { get; set; }
 
     }
 }

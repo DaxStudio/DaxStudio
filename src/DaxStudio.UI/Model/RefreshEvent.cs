@@ -7,6 +7,7 @@ namespace DaxStudio.UI.Model
 {
     public class RefreshEvent
     {
+        public long CpuDuration { get; set; }
         public long Duration { get; set; }
         public string Text { get; set; }
         public DateTime StartTime { get; set; }
@@ -21,6 +22,7 @@ namespace DaxStudio.UI.Model
         public long ProgressTotal { get; set;  }
         public string ObjectName { get; set; }
         public string ObjectPath { get; set; }
+        public string ObjectReference { get; set; }
         public DaxStudioTraceEventClass EventClass { get; set; }
         public DaxStudioTraceEventSubclass EventSubClass { get; set; }
     }

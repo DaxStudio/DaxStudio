@@ -16,14 +16,18 @@ using System.Collections.ObjectModel;
 using System;
 using System.IO.Packaging;
 using System.Windows.Media;
+using System.Xml;
+using Dax.Metadata;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils;
+using Microsoft.AnalysisServices.Tabular;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace DaxStudio.UI.ViewModels
 {
 
-    class RefreshTraceViewModel
+    public class RefreshTraceViewModel
         : TraceWatcherBaseViewModel, 
         ISaveState, 
         IViewAware 
@@ -65,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
                 StartTime = traceEvent.StartTime,
                 Username = traceEvent.NTUserName,
                 Text = traceEvent.TextData,
+                CpuDuration = traceEvent.CpuTime,
                 Duration = traceEvent.Duration,
                 DatabaseName = traceEvent.DatabaseFriendlyName,
                 RequestID = traceEvent.RequestID,
@@ -72,6 +77,7 @@ namespace DaxStudio.UI.ViewModels
                 RequestProperties = traceEvent.RequestProperties,
                 ObjectName = traceEvent.ObjectName,
                 ObjectPath = traceEvent.ObjectPath,
+                ObjectReference =  traceEvent.ObjectReference,
                 EventClass = traceEvent.EventClass,
                 EventSubClass = traceEvent.EventSubclass,
                 ProgressTotal = traceEvent.ProgressTotal
@@ -80,6 +86,52 @@ namespace DaxStudio.UI.ViewModels
 
 
             RefreshEvents.Add(newEvent);
+
+            AddEventToCommand(newEvent);
+
+        }
+
+        public Dictionary<string, RefreshCommand> Commands { get; set; }
+        private void AddEventToCommand(RefreshEvent newEvent)
+        {
+            RefreshCommand cmd;
+            switch ( newEvent.EventClass )
+            {
+                case DaxStudioTraceEventClass.CommandBegin:
+                    if (!newEvent.Text.Contains("<Refresh")) return;
+                        
+                    Commands.Add(newEvent.ActivityID,  new RefreshCommand(){Message = newEvent.Text, StartDateTime = newEvent.StartTime,ActivityId =  newEvent.ActivityID, Spid =  newEvent.SPID});
+                    
+                    break;
+                case DaxStudioTraceEventClass.CommandEnd:
+                    if (!newEvent.Text.Contains("<Refresh")) return;
+
+                    cmd = Commands[newEvent.ActivityID];
+                    cmd.EndDateTime = newEvent.EndTime;
+                    cmd.Duration = newEvent.Duration;
+                    
+                    break;
+                case DaxStudioTraceEventClass.ProgressReportBegin:
+                    if (string.IsNullOrEmpty(newEvent.ActivityID))
+                        cmd = Commands.Values.FirstOrDefault(c => c.Spid == newEvent.SPID);
+                    else
+                        cmd = Commands[newEvent.ActivityID];
+                    
+                    cmd?.CreateItem(newEvent);
+                    break;
+                case DaxStudioTraceEventClass.ProgressReportCurrent:
+                case DaxStudioTraceEventClass.ProgressReportEnd:
+                case DaxStudioTraceEventClass.ProgressReportError:
+                    // TODO cmd.UpdateItem(newEvent);
+                    break;
+            }
+            
+            // if this is a CommandBegin for a Refresh we should create a new session
+
+            // If this is a progress event get the event by activityid, if activityid is null use the spid
+
+            // if this is a CommandEnd for a Refresh we should mark the session as completed
+            
         }
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
@@ -296,4 +348,165 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
     }
+
+    #region Data Objects
+
+    public enum RefreshStatus
+    {
+        Waiting,
+        Successful,
+        Failed,
+        InProgress
+    }
+    
+    public abstract class RefreshItem {
+        public string Name { get; set; }
+        public RefreshStatus Status { get; set; }
+        public string Message { get; set; }
+        public DateTime StartDateTime { get; set; }
+        public DateTime EndDateTime { get; set; }
+        public long Duration { get; set; }
+        public long CpuDuration { get; set; }
+        public long ProgressTotal { get; internal set; }
+    }
+
+    public class RefreshCommand: RefreshItem
+    {
+        public RefreshCommand()
+        {
+            Tables = new Dictionary<string, RefreshTable>();
+            Relationships = new Dictionary<string, RefreshRelationship>();
+        }
+        public string ActivityId { get; set; }
+        public long Spid { get; set; }
+
+        public Dictionary<string, RefreshTable> Tables { get; set; }
+        public Dictionary<string,RefreshRelationship> Relationships { get; set; }
+
+        public void CreateItem(RefreshEvent newEvent)
+        {
+            // TODO parse ObjectReference XML
+            //      then create
+            var reference = ParseObjectReference(newEvent.ObjectReference);
+
+            UpdateTable(newEvent, reference);
+
+            // Partition
+            // AttributeHierarchy / Column
+            // Hierarchy
+            // Relationship
+
+        }
+
+        private void UpdateTable(RefreshEvent newEvent, Dictionary<string, string> reference)
+        {
+            RefreshTable table;
+            Tables.TryGetValue(reference["Table"], out table);
+            if (table == null)
+            {
+                table = new RefreshTable {Name = reference["Table"]};
+                Tables.Add(table.Name, table);
+            }
+            else
+            {
+                if (reference.ContainsKey("Partition")) UpdatePartition(newEvent, reference, table);
+                else if (reference.ContainsKey("AttributeHierarchy")) UpdateColumn(newEvent, reference);
+                else if (reference.ContainsKey("Relationship")) UpdateRelationship(newEvent, reference);
+                else if (reference.ContainsKey("Hierarchy")) UpdateHierarchy(newEvent, reference);
+                else UpdateDatabase(newEvent, reference);
+
+                // update status of current table
+                if (table.Partitions.Values.Any(p => p.Status == RefreshStatus.InProgress)
+                    || table.Columns.Values.Any(c => c.Status == RefreshStatus.InProgress))
+                    table.Status = RefreshStatus.InProgress;
+                if (table.Partitions.Values.Any(p => p.Status == RefreshStatus.Failed)
+                    || table.Columns.Values.Any(c => c.Status == RefreshStatus.Failed))
+                    table.Status = RefreshStatus.Failed;
+                if (table.Partitions.Values.All(p => p.Status == RefreshStatus.Successful)
+                    && table.Columns.Values.All(c => c.Status == RefreshStatus.Successful))
+                    table.Status = RefreshStatus.Successful;
+                else
+                    table.Status = RefreshStatus.Waiting;
+            }
+        }
+
+        private void UpdatePartition(RefreshEvent newEvent, Dictionary<string, string> reference, RefreshTable table)
+        {
+
+            table.Partitions.TryGetValue(reference["Partition"], out var partition);
+            if (partition == null) 
+                partition = new RefreshPartition() { Name = reference["Partition"]};
+            partition.Message = newEvent.Text;
+            switch (newEvent.EventClass)
+            {
+                case DaxStudioTraceEventClass.ProgressReportBegin:
+                case DaxStudioTraceEventClass.ProgressReportCurrent:
+                    partition.Status = RefreshStatus.InProgress;
+                    break;
+                case DaxStudioTraceEventClass.ProgressReportEnd:
+                    partition.Status = RefreshStatus.Successful;
+                    partition.Duration = newEvent.Duration;
+                    partition.CpuDuration = newEvent.CpuDuration;
+                    partition.ProgressTotal = newEvent.ProgressTotal;
+                    break;
+                case DaxStudioTraceEventClass.ProgressReportError:
+                    partition.Status = RefreshStatus.Failed;
+                    
+                    break;
+            }
+
+        }
+
+        public void UpdateItem(RefreshEvent newEvent)
+        {
+            // TODO parse ObjectReference XML
+            //      then update
+        }
+
+        public static Dictionary<string, string> ParseObjectReference(string xml)
+        {
+            XmlTextReader reader = new XmlTextReader(new StringReader(xml));
+            var result = new Dictionary<string, string>();
+            while (reader.Read())
+            {
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        if (reader.Name == "Object") break; // don't add the outer <Object> tag to the dictionary
+                        var key = reader.Name;
+                        var val = reader.ReadString();
+                        result.Add(key,val);
+                        break;
+                    default:
+                        // do nothing
+                        break;
+                }
+            }
+
+            return result;
+        }
+    }
+    
+    public class RefreshTable:RefreshItem
+    {
+        public RefreshTable()
+        {
+            Columns = new Dictionary<string, RefreshColumn>();
+            Partitions = new Dictionary<string, RefreshPartition>();
+        }
+        public Dictionary<string,RefreshPartition> Partitions { get; private set; }
+        public Dictionary<string,RefreshColumn> Columns { get; private set; }
+    }
+    
+    public class RefreshRelationship:RefreshItem
+    { }
+
+    public class RefreshPartition : RefreshItem
+    {
+        
+    }
+    public class RefreshColumn : RefreshItem
+    { }
+    
+#endregion
 }
