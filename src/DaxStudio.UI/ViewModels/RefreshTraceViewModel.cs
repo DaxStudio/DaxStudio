@@ -41,6 +41,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _refreshEvents = new BindableCollection<RefreshEvent>();
             _globalOptions = globalOptions;
+            Commands = new Dictionary<string, RefreshCommand>();
 
         }
 
@@ -87,7 +88,8 @@ namespace DaxStudio.UI.ViewModels
 
             RefreshEvents.Add(newEvent);
 
-            AddEventToCommand(newEvent);
+            // TODO - fix capturing progress events for treeview
+            //AddEventToCommand(newEvent);
 
         }
 
@@ -99,8 +101,14 @@ namespace DaxStudio.UI.ViewModels
             {
                 case DaxStudioTraceEventClass.CommandBegin:
                     if (!newEvent.Text.Contains("<Refresh")) return;
-                        
-                    Commands.Add(newEvent.ActivityID,  new RefreshCommand(){Message = newEvent.Text, StartDateTime = newEvent.StartTime,ActivityId =  newEvent.ActivityID, Spid =  newEvent.SPID});
+                    var actId = newEvent.ActivityID;
+                    if (string.IsNullOrEmpty(actId))
+                    {
+                        cmd = Commands.Values.FirstOrDefault(c => c.Spid == newEvent.SPID && c.ActivityId != null);
+                        actId = cmd?.ActivityId;
+                    }
+
+                    Commands.Add(actId,  new RefreshCommand(){Message = newEvent.Text, StartDateTime = newEvent.StartTime,ActivityId =  newEvent.ActivityID??string.Empty, Spid =  newEvent.SPID});
                     
                     break;
                 case DaxStudioTraceEventClass.CommandEnd:
@@ -208,6 +216,7 @@ namespace DaxStudio.UI.ViewModels
         public override void OnReset() {
             IsBusy = false;
             Events.Clear();
+            Commands.Clear();
             ProcessResults();
         }
 
@@ -428,6 +437,26 @@ namespace DaxStudio.UI.ViewModels
                 else
                     table.Status = RefreshStatus.Waiting;
             }
+        }
+
+        private void UpdateDatabase(RefreshEvent newEvent, Dictionary<string, string> reference)
+        {
+            // TODO
+        }
+
+        private void UpdateHierarchy(RefreshEvent newEvent, Dictionary<string, string> reference)
+        {
+            // TODO
+        }
+
+        private void UpdateRelationship(RefreshEvent newEvent, Dictionary<string, string> reference)
+        {
+            // TODO
+        }
+
+        private void UpdateColumn(RefreshEvent newEvent, Dictionary<string, string> reference)
+        {
+            // TODO update column info
         }
 
         private void UpdatePartition(RefreshEvent newEvent, Dictionary<string, string> reference, RefreshTable table)
