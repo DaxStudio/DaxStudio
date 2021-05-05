@@ -4,7 +4,7 @@
                     xmlns:local="clr-namespace:DaxStudio.UI.Theme">
       <ResourceDictionary.MergedDictionaries>
         
-        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/Themes/generic.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.Metro;component/Theme.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/LightBrushs.xaml"/>
 
         <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml"/>-->

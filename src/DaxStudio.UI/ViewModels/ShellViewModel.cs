@@ -16,7 +16,7 @@ using System.Security.Principal;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using System.Windows.Media;
-using DaxStudio.UI.Extensions;
+
 
 namespace DaxStudio.UI.ViewModels
 {
