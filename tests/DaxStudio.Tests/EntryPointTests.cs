@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DaxStudio.Tests.Helpers;
+using DaxStudio.Tests.Assertions;
 
 namespace DaxStudio.Tests
 {
@@ -43,7 +44,8 @@ namespace DaxStudio.Tests
   -s --server <string>    Server to connect to
   -d --database <string>  Database to connect to
 ".NormalizeNewline();
-            Assert.AreEqual(expectedHelp, formattedHelp);
+            //Assert.AreEqual(expectedHelp, formattedHelp);
+            StringAssertion.ShouldEqualWithDiff(expectedHelp, formattedHelp, DiffStyle.Full);
         }
     }
 }
