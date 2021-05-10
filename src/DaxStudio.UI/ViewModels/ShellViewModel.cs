@@ -115,7 +115,7 @@ namespace DaxStudio.UI.ViewModels
 
             AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += AutoSaveTimerElapsed;
-            
+
             Log.Debug("============ Shell Started - v{version} =============", Version.ToString());
             
         }

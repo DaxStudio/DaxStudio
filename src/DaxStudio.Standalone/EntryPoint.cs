@@ -20,6 +20,7 @@ using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
 using System.Text;
+using System.Collections.Generic;
 
 namespace DaxStudio.Standalone
 {
@@ -50,108 +51,96 @@ namespace DaxStudio.Standalone
         [STAThread]
         public static void Main()
         {
-            //try
-            //{
+            
+            // add unhandled exception handler
+            App.DispatcherUnhandledException += App_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
 
-                // add unhandled exception handler
-                App.DispatcherUnhandledException += App_DispatcherUnhandledException;
-                AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-                TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+            ConsoleHandler.RedirectToParent();
+
+            // Setup logging, default to information level to start with to log the startup and key system information
+            var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
+
+            Log.Information("============ DaxStudio Startup =============");
+            ConfigureLogging(levelSwitch);
+
+            // Default web requests like AAD Auth to use windows credentials for proxy auth
+            System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+
+            // add the custom DAX Studio accent color theme
+            App.AddDaxStudioAccentColor();
+
+            // TODO - do we need to customize the navigator window to fix the styling?
+            //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
+
+            // then load Caliburn Micro bootstrapper
+            Log.Debug("Loading Caliburn.Micro bootstrapper");
+            AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
+
+            _eventAggregator = bootstrapper.GetEventAggregator();
+            // read command line arguments
+            App.ReadCommandLineArgs();
+
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
+
                 
-                // Setup logging, default to information level to start with to log the startup and key system information
-                var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
 
-                Log.Information("============ DaxStudio Startup =============");
-                ConfigureLogging(levelSwitch);
+            // force control tooltips to display even if disabled
+            ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
+                typeof(Control),
+                new FrameworkPropertyMetadata(true));
 
-                // Default web requests like AAD Auth to use windows credentials for proxy auth
-                System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+            // get the global options
+            _options = bootstrapper.GetOptions(); 
+            _options.Initialize();
+            Log.Information("User Options initialized");
 
-                // add the custom DAX Studio accent color theme
-                App.AddDaxStudioAccentColor();
-
-                // TODO - do we need to customize the navigator window to fix the styling?
-                //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
-
-                // then load Caliburn Micro bootstrapper
-                Log.Debug("Loading Caliburn.Micro bootstrapper");
-                AppBootstrapper bootstrapper = new AppBootstrapper(Assembly.GetAssembly(typeof(DaxStudioHost)), true);
-
-                _eventAggregator = bootstrapper.GetEventAggregator();
-                // read command line arguments
-                App.ReadCommandLineArgs();
-
-                AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-
-                
-
-                // force control tooltips to display even if disabled
-                ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
-                    typeof(Control),
-                    new FrameworkPropertyMetadata(true));
-
-                // get the global options
-                _options = bootstrapper.GetOptions(); 
-                _options.Initialize();
-                Log.Information("User Options initialized");
-
-                // check if we are running portable that we have write access to the settings
-                if (_options.IsRunningPortable)
-                    if (CanWriteToSettings())
-                    {
-                        Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(Main), "Test for read/write access to Settings.json: PASS");
-                    }
-                    else
-                    {
-                        Log.Error(Constants.LogMessageTemplate, nameof(EntryPoint),nameof(Main),"Test for read/write access to Settings.json: FAIL");
-
-                        ShowSettingPermissionErrorDialog();
-                        App.Shutdown(3);
-                        return; 
-                    }
-
-                // load selected theme
-                var themeManager = bootstrapper.GetThemeManager();
-                themeManager.SetTheme(_options.Theme);
-                Log.Information("ThemeManager configured");
-
-                //var theme = options.Theme;// "Light"; 
-                //if (theme == "Dark") app.LoadDarkTheme();
-                //else app.LoadLightTheme();
-
-                // log startup switches
-                if (_options.AnyExternalAccessAllowed())
+            // check if we are running portable that we have write access to the settings
+            if (_options.IsRunningPortable)
+                if (CanWriteToSettings())
                 {
-                    var args = App.Args().AsDictionaryForTelemetry();
-                    Telemetry.TrackEvent("App.Startup", args);
+                    Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(Main), "Test for read/write access to Settings.json: PASS");
+                }
+                else
+                {
+                    Log.Error(Constants.LogMessageTemplate, nameof(EntryPoint),nameof(Main),"Test for read/write access to Settings.json: FAIL");
+
+                    ShowSettingPermissionErrorDialog();
+                    App.Shutdown(3);
+                    return; 
                 }
 
-                // only used for testing of crash reporting UI
-                if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+            // load selected theme
+            var themeManager = bootstrapper.GetThemeManager();
+            themeManager.SetTheme(_options.Theme);
+            Log.Information("ThemeManager configured");
 
+            //var theme = options.Theme;// "Light"; 
+            //if (theme == "Dark") app.LoadDarkTheme();
+            //else app.LoadLightTheme();
+
+            // log startup switches
+            if (_options.AnyExternalAccessAllowed())
+            {
+                var args = App.Args().AsDictionaryForTelemetry();
+                Telemetry.TrackEvent("App.Startup", args);
+            }
+
+            // only used for testing of crash reporting UI
+            if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+
+            if (!App.Args().ShowHelp)
+            {
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
                 bootstrapper.DisplayShell();
                 App.Run();
-            //}
-
-            //catch (Exception ex)
-            //{
-            //    Log.Fatal(ex, "Class: {0} Method: {1} Error: {2}", "EntryPoint", "Main", ex.Message);
-            //    Log.CloseAndFlush();
-            //    //#if DEBUG
-            //    //                MessageBox.Show(ex.Message, "DAX Studio Standalone unhandled exception");
-            //    //#else
-            //    // use CrashReporter.Net to send bug to DrDump
-            //    LogFatalCrash(ex, ex.Message, _options);
-            //    //#endif
-
-            //}
-            //finally
-            //{
-                Log.Information("============ DaxStudio Shutdown =============");
-                Log.CloseAndFlush();
-            //}
+            }
+            
+            Log.Information("============ DaxStudio Shutdown =============");
+            Log.CloseAndFlush();
+            
         }
 
         private static void ShowSettingPermissionErrorDialog()
@@ -396,12 +385,12 @@ namespace DaxStudio.Standalone
             p.Setup<string>('f', "file")
                 .Callback(file => app.Args().FileName = file)
                 .WithDescription("Name of file to open");
-
+#if DEBUG
+            // only include the crashtest parameter on debug builds
             p.Setup<bool>('c', "crashtest")
                 .Callback(crashTest => app.Args().TriggerCrashTest = crashTest)
-                .WithDescription("Used for testing the Crash Test reporting")
                 .SetDefault(false);
-
+#endif
             p.Setup<string>('s', "server")
                 .Callback(server => app.Args().Server = server)
                 .WithDescription("Server to connect to");
@@ -410,9 +399,30 @@ namespace DaxStudio.Standalone
                 .Callback(database => app.Args().Database = database)
                 .WithDescription("Database to connect to");
 
+            p.SetupHelp("?", "help")
+                .Callback(text => {
+                    Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(ReadCommandLineArgs), "Printing CommandLine Help");
+                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
+                    string formattedHelp = HelpFormatter.Format(p.Options);
+                    Console.WriteLine("");
+                    Console.WriteLine($"DAX Studio { ver.ToString(3) } (build { ver.Revision })");
+                    Console.WriteLine("--------------------------------");
+                    Console.WriteLine("");
+                    Console.WriteLine("Supported command line parameters:");
+                    Console.WriteLine(formattedHelp);
+                    Console.WriteLine("");
+                    Console.WriteLine("Note: parameters can either be passed with a short name or a long name form");
+                    Console.WriteLine("eg.  DaxStudio -f myfile.dax");
+                    Console.WriteLine("     DaxStudio --file myfile.dax");
+                    Console.WriteLine("");
+                    //app.Args().HelpText = text;
+                    app.Args().ShowHelp = true;
+                });
+
             p.Parse(args);
             
         }
+
 
         private static void AddResourceDictionary(this Application app, string src)
         {
