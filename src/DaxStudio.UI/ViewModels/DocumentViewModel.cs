@@ -4155,7 +4155,7 @@ namespace DaxStudio.UI.ViewModels
             DataObject data = dropInfo.Data as DataObject;
             bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat)??false;
 
-            if (dropInfo.DragInfo?.DataObject is IADOTabularObject || stringPresent)
+            if (dropInfo.DragInfo?.SourceItem is IADOTabularObject || stringPresent)
             {
                 dropInfo.Effects = DragDropEffects.Move;
                 var pt = dropInfo.DropPosition;
@@ -4173,7 +4173,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.DragInfo?.DataObject as IADOTabularObject;
+            var obj = dropInfo.DragInfo?.SourceItem as IADOTabularObject;
             var text = string.Empty;
             if (obj != null)
             {
