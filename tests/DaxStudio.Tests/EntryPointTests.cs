@@ -39,11 +39,7 @@ namespace DaxStudio.Tests
                 .WithDescription("Database to connect to");
 
             var formattedHelp = DaxStudio.Standalone.HelpFormatter.Format(p.Options).NormalizeNewline();
-            var expectedHelp = @"  -l --log                Enable Debug Logging
-  -f --file <string>      Name of file to open
-  -s --server <string>    Server to connect to
-  -d --database <string>  Database to connect to
-".NormalizeNewline();
+            var expectedHelp = "  -l --log                Enable Debug Logging\n  -f --file <string>      Name of file to open\n  -s --server <string>    Server to connect to\n  -d --database <string>  Database to connect to\n".NormalizeNewline();
             //Assert.AreEqual(expectedHelp, formattedHelp);
             StringAssertion.ShouldEqualWithDiff(expectedHelp, formattedHelp, DiffStyle.Full);
         }
