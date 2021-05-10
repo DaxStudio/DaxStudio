@@ -9,7 +9,7 @@ namespace DaxStudio.Standalone
 {
     internal class ConsoleHandler
     {
-        internal static class Win32Native
+        internal static class NativeMethods
         {
             [DllImport("kernel32.dll", SetLastError = true)]
             internal static extern bool AttachConsole(uint dwProcessId);
@@ -45,7 +45,7 @@ namespace DaxStudio.Standalone
 
             var handle = new SafeFileHandle(ioHandle, ownsHandle: false);
 
-            var type = Win32Native.GetFileType(handle);
+            var type = NativeMethods.GetFileType(handle);
             if (type == FileTypeDisk || type == FileTypePipe)
                 return true;
 
@@ -56,24 +56,24 @@ namespace DaxStudio.Standalone
         [MethodImpl(MethodImplOptions.NoOptimization)]
         public static void RedirectToParent(bool throwOnFailure = false)
         {
-            var stdoutRedirected = IsHandleRedirected(Win32Native.GetStdHandle(STDOUT_HANDLE_NAME));
+            var stdoutRedirected = IsHandleRedirected(NativeMethods.GetStdHandle(STDOUT_HANDLE_NAME));
             if (stdoutRedirected)
             {
                 var stdoutStream = Console.Out;
             }
 
-            var stderrRedirected = IsHandleRedirected(Win32Native.GetStdHandle(STDERR_HANDLE_NAME));
+            var stderrRedirected = IsHandleRedirected(NativeMethods.GetStdHandle(STDERR_HANDLE_NAME));
             if (stderrRedirected)
             {
                 var stderrStream = Console.Error;
             }
 
-            if (!Win32Native.AttachConsole(ATTACH_PARENT_PROCESS) && throwOnFailure)
+            if (!NativeMethods.AttachConsole(ATTACH_PARENT_PROCESS) && throwOnFailure)
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
             if (!stderrRedirected)
             {
-                Win32Native.SetStdHandle(STDERR_HANDLE_NAME, Win32Native.GetStdHandle(STDOUT_HANDLE_NAME));
+                NativeMethods.SetStdHandle(STDERR_HANDLE_NAME, NativeMethods.GetStdHandle(STDOUT_HANDLE_NAME));
             }
         }
     }

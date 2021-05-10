@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Tests.Helpers;
 
 namespace DaxStudio.Tests
 {
@@ -36,12 +37,12 @@ namespace DaxStudio.Tests
             p.Setup<string>('d', "database")
                 .WithDescription("Database to connect to");
 
-            var formattedHelp = DaxStudio.Standalone.HelpFormatter.Format(p.Options);
+            var formattedHelp = DaxStudio.Standalone.HelpFormatter.Format(p.Options).NormalizeNewline();
             var expectedHelp = @"  -l --log                Enable Debug Logging
   -f --file <string>      Name of file to open
   -s --server <string>    Server to connect to
   -d --database <string>  Database to connect to
-";
+".NormalizeNewline();
             Assert.AreEqual(expectedHelp, formattedHelp);
         }
     }
