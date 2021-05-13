@@ -351,7 +351,7 @@ namespace DaxStudio.UI.ViewModels
         {
             filename = filename + ".queryBuilder";
             if (!File.Exists(filename)) return;
-
+            
             string data = File.ReadAllText(filename);
             var model = LoadJson(data);
             LoadViewModel(model);

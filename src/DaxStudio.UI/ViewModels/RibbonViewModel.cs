@@ -357,7 +357,7 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
-                Log.Debug("{Class} {Event} {ServerName} {selectedDatabase}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName);                
+                Log.Debug("{Class} {Event} {ServerName}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName);                
             }
             catch (Exception ex)
             {

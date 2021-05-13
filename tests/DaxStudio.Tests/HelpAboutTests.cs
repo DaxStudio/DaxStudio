@@ -43,6 +43,7 @@ namespace DaxStudio.Tests
 
     public class VersionCheckMock: IVersionCheck
     {
+        
         public void CheckVersion()
         {
             throw new NotImplementedException();
@@ -100,9 +101,6 @@ namespace DaxStudio.Tests
             }
         }
 
-        public Action UpdateCompleteCallback { get;set; }
-        public Action UpdateStartingCallback { get;set; }
-
         public void Update()
         {
             throw new NotImplementedException();
@@ -110,6 +108,8 @@ namespace DaxStudio.Tests
 #pragma warning disable 0067
         // required for implementing the interface, but not used for these tests
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler UpdateCompleteCallback;
+        public event EventHandler UpdateStartingCallback;
 #pragma warning restore 0067
     }
 }

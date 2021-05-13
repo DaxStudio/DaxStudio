@@ -522,8 +522,23 @@ namespace ADOTabular
             }
         }
 
-        public void CacheColumnRemapInfo() {
+        public void CacheColumnRemapInfo()
+        {
             if (_daxColumnsRemapInfo == null) _daxColumnsRemapInfo = new MetadataInfo.DaxColumnsRemap(this);
+        }
+
+        private MetadataInfo.DaxTablesRemap _daxTablesRemapInfo; 
+        public MetadataInfo.DaxTablesRemap DaxTablesRemapInfo
+        {
+            get
+            {
+                CacheTableRemapInfo();
+                return _daxTablesRemapInfo;
+            }
+        }
+
+        public void CacheTableRemapInfo() {
+            if (_daxTablesRemapInfo == null) _daxTablesRemapInfo = new MetadataInfo.DaxTablesRemap(this);
         }
 
         private ADOTabularKeywordCollection _keywords;

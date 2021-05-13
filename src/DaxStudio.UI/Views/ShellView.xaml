@@ -11,6 +11,7 @@
         xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
         xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
                     
@@ -29,32 +30,6 @@
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-
-                <!-- Monotone Theme -->
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Colors.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Brushes.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.ExtendedWPFToolkit.xaml" />-->
-
-
-                <!--<ResourceDictionary Source="/Fluent;Component/Themes/Generic.xaml" />
-                <ResourceDictionary Source="/Fluent;Component/Themes/Metro/White.xaml" />-->
-
-                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Office2013/Generic.xaml"/>-->
-
-                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Generic.xaml" />-->
-
-                <!-- accent resource -->
-                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Accents/Blue.xaml" />-->
-
-                <!-- theme resource -->
-                <!--<ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Colors/BaseDark.xaml" />-->
-
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/FluentRibbon.DaxStudio.xaml" />-->
-
-                <!--<ResourceDictionary Source="/DaxStudio;Component/Themes/Colors.xaml" />
-                <ResourceDictionary Source="/DaxStudio;Component/Themes/ColorsWhite.xaml" />-->
-                <!--<ResourceDictionary Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />-->
                 
                 <ResourceDictionary x:Name="Icons" Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
@@ -65,27 +40,6 @@
             <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
             <SolidColorBrush x:Key="BusyBrush" Color="#30000000" />
 
-            <!--
-            <Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>
-            <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
-            
-            
-            <Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">
-                <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="MinWidth" Value="60"/>
-                <Setter Property="UIElement.SnapsToDevicePixels" Value="True"/>
-                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-                <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-                <Setter Property="TextElement.Foreground" Value="Black"/>
-                <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="BorderBrush" Value="LightGray"/>
-                <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="Background" Value="White" />
-            </Style>
-            -->
-            
         <!--<DataTemplate x:Key="DragAdorner">
             <Border Background="Silver"
                     BorderBrush="Gray"
@@ -129,7 +83,21 @@
         
         
     </Fluent:RibbonWindow.Resources>
-    
+    <Fluent:RibbonWindow.WindowCommands>
+        <Fluent:WindowCommands>
+            <Fluent:Button Size="Small"
+                           Background="Goldenrod"
+                           Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                           cal:Message.Attach="[Event Click] = [Action UpdateFlagClick]">
+                <Fluent:Button.Icon>
+                <fa:FontAwesome Icon="Flag" Margin="0 0"></fa:FontAwesome>
+                </Fluent:Button.Icon>
+                <Fluent:Button.ToolTip>
+    <Fluent:ScreenTip Title="Update Available" Text="{Binding UpdateMessage}"></Fluent:ScreenTip>
+</Fluent:Button.ToolTip>
+            </Fluent:Button>
+        </Fluent:WindowCommands>
+    </Fluent:RibbonWindow.WindowCommands>
     <Grid>
         <Grid x:Name="LayoutRoot"
               Margin="0,0,0,-2" >

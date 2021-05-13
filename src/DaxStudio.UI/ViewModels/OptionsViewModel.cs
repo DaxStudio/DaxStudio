@@ -63,6 +63,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _highlightXmSqlCallbacks;
         private bool _simplifyXmSqlSyntax;
         private bool _replaceXmSqlColumnNames;
+        private bool _replaceXmSqlTableNames;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
         private LongOperationSounds _queryEndSound;
@@ -318,6 +319,23 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ReplaceXmSqlColumnNames);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlColumnNames), value, _isInitializing, this);
+            }
+        }
+
+        [DisplayName("Replace table ID with name")]
+        [Category("Server Timings")]
+        [Description("Replace xmSQL table ID with corresponding table name in data model.")]
+        [DataMember, DefaultValue(true)]
+        public bool ReplaceXmSqlTableNames
+        {
+            get => _replaceXmSqlTableNames;
+            set
+            {
+                if (_replaceXmSqlTableNames == value) return;
+                _replaceXmSqlTableNames = value;
+                NotifyOfPropertyChange(() => ReplaceXmSqlTableNames);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlTableNames), value, _isInitializing, this);
             }
         }
 

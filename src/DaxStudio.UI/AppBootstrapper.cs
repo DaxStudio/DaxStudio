@@ -3,31 +3,31 @@ using System.Reflection;
 using System.Windows;
 using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
+using System.Linq;
+using Caliburn.Micro;
+using System.Windows.Markup;
+using System.Globalization;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Serilog;
+using System.Windows.Input;
+using DaxStudio.UI.Triggers;
+using DaxStudio.UI.Utils;
+using DaxStudio.UI.Events;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Model;
+using MLib;
+using MLib.Interfaces;
 
 
 namespace DaxStudio.UI
 {
-	using System;
-	using System.Collections.Generic;
-	using System.ComponentModel.Composition;
-	using System.ComponentModel.Composition.Hosting;
-	using System.ComponentModel.Composition.Primitives;
-	using System.Linq;
-	using Caliburn.Micro;
-    using System.Windows.Markup;
-    using System.Globalization;
-    using System.Windows.Controls;
-    using System.Windows.Media;
-    using Serilog;
-    using System.Windows.Input;
-    using DaxStudio.UI.Triggers;
-    using DaxStudio.UI.Utils;
-    using DaxStudio.UI.Events;
-    using DaxStudio.UI.Interfaces;
-    using DaxStudio.UI.Model;
-    using MLib;
-    using MLib.Interfaces;
-
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
     public class AppBootstrapper : BootstrapperBase//<IShell>
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable

@@ -441,6 +441,16 @@
       <Word>MONTH</Word>
       <Word>YEAR</Word>
       -->
+
+      <!-- Data Types-->
+      <Word>BINARY</Word>
+      <Word>BOOLEAN</Word>
+      <Word>CURRENCY</Word>
+      <Word>DATETIME</Word>
+      <Word>DECIMAL</Word>
+      <Word>INTEGER</Word>
+      <Word>STRING</Word>
+      <Word>VARIANT</Word>
     </Keywords>
    
     <Rule color="Numbers">[\d\w_]+(?=(\s*\())</Rule>

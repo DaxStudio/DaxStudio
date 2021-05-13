@@ -13,7 +13,8 @@ namespace DaxStudio.Tests.Helpers
 
         public static string NormalizeNewline(this string str)
         {
-            return _crlfRegex.Replace(str, "\n");
+            var result = _crlfRegex.Replace(str, "\n");
+            return result.Replace("\r\n","\n");
         }
     }
 }

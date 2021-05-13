@@ -73,7 +73,7 @@ namespace DaxStudio.UI.ViewModels
                     _activeDocument = null;
                     return;  // no items in collection usually means we are shutting down
                 }
-                Log.Debug("{Class} {Event} {Connection} {Document}", "DocumentTabViewModel", "ActiveDocument:Set", value.DisplayName);
+                Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value.DisplayName);
                 lock (_activeDocumentLock)
                 {
                     _activeDocument = value;
@@ -199,30 +199,35 @@ namespace DaxStudio.UI.ViewModels
             if (sourceDocument == null
                 || sourceDocument.Connection.IsConnected == false)
             {
-                if (!string.IsNullOrEmpty(_app.Args().Server) && !_app.Properties.Contains("InitialQueryConnected") )
-                {
-                    // we only want to run this code to default connection to the server name and database arguments
-                    // on the first window that is connected. After that the user can use the copy connection option
-                    // so if they start a new window chances are that they want to connect to another source
-                    // Setting this property on the app means this code should only run once
-                    _app.Properties.Add("InitialQueryConnected",true);
-
-                    var server = _app.Args().Server;
-                    var database = _app.Args().Database;
-                    var initialCatalog = string.Empty;
-                    if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
-                    Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
-                    _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
-                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
-                }
-                else
-                    new System.Action(ChangeConnection).BeginOnUIThread();
+                ConnectToServer();
             }
             else
             {
                 _eventAggregator.PublishOnUIThread(new CopyConnectionEvent(sourceDocument));
             }
             
+        }
+
+        private void ConnectToServer()
+        {
+            if (!string.IsNullOrEmpty(_app.Args().Server) && !_app.Properties.Contains("InitialQueryConnected"))
+            {
+                // we only want to run this code to default connection to the server name and database arguments
+                // on the first window that is connected. After that the user can use the copy connection option
+                // so if they start a new window chances are that they want to connect to another source
+                // Setting this property on the app means this code should only run once
+                _app.Properties.Add("InitialQueryConnected", true);
+
+                var server = _app.Args().Server;
+                var database = _app.Args().Database;
+                var initialCatalog = string.Empty;
+                if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
+                Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+            }
+            else
+                new System.Action(ChangeConnection).BeginOnUIThread();
         }
 
         private void CleanActiveDocument()

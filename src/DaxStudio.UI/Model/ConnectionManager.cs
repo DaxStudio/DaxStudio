@@ -112,7 +112,8 @@ namespace DaxStudio.UI.Model
         public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
         public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
-        public DaxColumnsRemap DaxColumnsRemapInfo {
+        public DaxColumnsRemap DaxColumnsRemapInfo
+        {
             get
             {
                 ADOTabularConnection newConn = null;
@@ -125,7 +126,7 @@ namespace DaxStudio.UI.Model
                     var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
                     if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
                     {
-                        newConn = _connection.Clone(new[] {"EffectiveUserName", "Roles"});
+                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
                         conn = newConn;
                     }
                     else
@@ -151,9 +152,52 @@ namespace DaxStudio.UI.Model
                 }
 
             }
-        }   
 
-    #region Query Exection
+        }
+
+        public DaxTablesRemap DaxTablesRemapInfo
+        {
+            get
+            {
+                ADOTabularConnection newConn = null;
+                ADOTabularConnection conn;
+                try
+                {
+                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
+                    // so that we can run the discover command to get the column remap info
+                    // Otherwise we just use the current connection
+                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
+                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    {
+                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
+                        conn = newConn;
+                    }
+                    else
+                    {
+                        conn = _connection;
+                    }
+
+                    var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
+                    return remapInfo;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(DaxColumnsRemapInfo), "Error getting column remap information");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                        $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
+                    return new DaxTablesRemap();
+                }
+                finally
+                {
+                    // close the temporary connection if it's not null
+                    newConn?.Close();
+                }
+
+            }
+        }
+
+        #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -128,10 +128,12 @@ namespace DaxStudio.UI.ViewModels
             , ServerTimingDetailsViewModel serverTimingDetails
             , IGlobalOptions options
             , ISettingProvider settingProvider
-            , IAutoSaver autoSaver)
+            , IAutoSaver autoSaver
+            )
         {
             try
             {
+                
                 _host = host;
                 _eventAggregator = eventAggregator;
                 _eventAggregator.Subscribe(this);
@@ -454,6 +456,8 @@ namespace DaxStudio.UI.ViewModels
         public bool SimplifyXmSqlSyntax => Options.SimplifyXmSqlSyntax;
 
         public bool ReplaceXmSqlColumnNames => Options.ReplaceXmSqlColumnNames;
+
+        public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
         public bool WordWrap => Options.EditorWordWrap;
 
@@ -856,6 +860,9 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionPendingEvent(this));
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
+
+            if (TryConnectToCommandLineServer()) return;
+
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
             Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
 
@@ -906,6 +913,30 @@ namespace DaxStudio.UI.ViewModels
                 }
             }, TaskScheduler.Default);
 
+        }
+
+        private bool TryConnectToCommandLineServer()
+        {
+            var _app = Application.Current;
+            if (!string.IsNullOrEmpty(_app.Args().Server) && !_app.Properties.Contains("InitialQueryConnected"))
+            {
+                // we only want to run this code to default connection to the server name and database arguments
+                // on the first window that is connected. After that the user can use the copy connection option
+                // so if they start a new window chances are that they want to connect to another source
+                // Setting this property on the app means this code should only run once
+                _app.Properties.Add("InitialQueryConnected", true);
+
+                var server = _app.Args().Server;
+                var database = _app.Args().Database;
+                var initialCatalog = string.Empty;
+                if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                return true;
+            }
+            
+            return false;
         }
 
         public bool IsConnected => Connection.IsConnected;
@@ -3849,7 +3880,7 @@ namespace DaxStudio.UI.ViewModels
             DataObject data = dropInfo.Data as DataObject;
             bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat)??false;
 
-            if (dropInfo.DragInfo?.DataObject is IADOTabularObject || stringPresent)
+            if (dropInfo.DragInfo?.SourceItem is IADOTabularObject || stringPresent)
             {
                 dropInfo.Effects = DragDropEffects.Move;
                 var pt = dropInfo.DropPosition;
@@ -3867,7 +3898,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.DragInfo?.DataObject as IADOTabularObject;
+            var obj = dropInfo.DragInfo?.SourceItem as IADOTabularObject;
             var text = string.Empty;
             if (obj != null)
             {

@@ -6,8 +6,8 @@
 #define myAppMinor
 #define myAppRevision
 #define myAppBuild
-#define MyAppVersionFull ParseVersion('..\release\DaxStudio.exe', myAppMajor, myAppMinor, myAppRevision, myAppBuild)
-#define MyAppVersion GetFileVersion('..\release\DaxStudio.exe')
+#define MyAppVersionFull GetVersionComponents('..\release\DaxStudio.exe', myAppMajor, myAppMinor, myAppRevision, myAppBuild)
+#define MyAppVersion GetVersionNumbersString('..\release\DaxStudio.exe')
 #define MyAppPublisher "DAX Studio"
 #define MyAppURL "https://daxstudio.org"
 #define MyAppExeName "DaxStudio.exe"
@@ -129,7 +129,7 @@ Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {app}\bin\
 
 
 [UninstallRun]
-Filename: {code:GetV4NetDir}ngen.exe; Parameters: "uninstall ""{app}\{#MyAppExeName}""";  StatusMsg: Removing native images and dependencies ...; Flags: runhidden; 
+Filename: {code:GetV4NetDir}ngen.exe; Parameters: "uninstall ""{app}\{#MyAppExeName}""";  StatusMsg: Removing native images and dependencies ...; Flags: runhidden;  RunOnceId: "DaxStudio-ngen";
 ;Check: CheckFramework; 
 
 [Types]
