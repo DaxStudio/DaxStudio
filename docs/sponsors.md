@@ -10,5 +10,5 @@ title: Sponsors
 
 ## Gold Sponsors
 
-![](https://avatars.githubusercontent.com/u/31683734?s=120&v=4)
+[![SQLBI](https://avatars.githubusercontent.com/u/31683734?s=120&v=4)](https://www.sqlbi.com)
 
