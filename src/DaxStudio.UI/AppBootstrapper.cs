@@ -20,7 +20,6 @@ using DaxStudio.UI.Triggers;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using MLib;
 using MLib.Interfaces;

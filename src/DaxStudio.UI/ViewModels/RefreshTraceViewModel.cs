@@ -12,17 +12,15 @@ using DaxStudio.Controls.DataGridFilter;
 using System.Linq;
 using System.ComponentModel;
 using System.Windows.Data;
-using System.Collections.ObjectModel;
 using System;
 using System.IO.Packaging;
 using System.Windows.Media;
 using System.Xml;
-using Dax.Metadata;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils;
-using Microsoft.AnalysisServices.Tabular;
 using Formatting = Newtonsoft.Json.Formatting;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -62,7 +60,7 @@ namespace DaxStudio.UI.ViewModels
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs traceEvent)
         {
             if (IsPaused) return;
-            
+
             base.ProcessSingleEvent(traceEvent);
             var newEvent = new RefreshEvent()
             {
@@ -78,19 +76,26 @@ namespace DaxStudio.UI.ViewModels
                 RequestProperties = traceEvent.RequestProperties,
                 ObjectName = traceEvent.ObjectName,
                 ObjectPath = traceEvent.ObjectPath,
-                ObjectReference =  traceEvent.ObjectReference,
+                ObjectReference = traceEvent.ObjectReference,
                 EventClass = traceEvent.EventClass,
                 EventSubClass = traceEvent.EventSubclass,
-                ProgressTotal = traceEvent.ProgressTotal
+                ProgressTotal = traceEvent.ProgressTotal,
+                ActivityID = traceEvent.ActivityId,
+                SPID = traceEvent.SPID
 
             };
+            try { 
 
+                RefreshEvents.Add(newEvent);
 
-            RefreshEvents.Add(newEvent);
-
-            // TODO - fix capturing progress events for treeview
-            //AddEventToCommand(newEvent);
-
+                // TODO - fix capturing progress events for treeview
+                AddEventToCommand(newEvent);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RefreshTraceViewModel), nameof(ProcessSingleEvent), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while processing trace events:\n{ex.Message}"));
+            }
         }
 
         public Dictionary<string, RefreshCommand> Commands { get; set; }
@@ -387,7 +392,7 @@ namespace DaxStudio.UI.ViewModels
             Relationships = new Dictionary<string, RefreshRelationship>();
         }
         public string ActivityId { get; set; }
-        public long Spid { get; set; }
+        public string Spid { get; set; }
 
         public Dictionary<string, RefreshTable> Tables { get; set; }
         public Dictionary<string,RefreshRelationship> Relationships { get; set; }

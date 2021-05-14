@@ -16,7 +16,7 @@ namespace DaxStudio.UI.Model
         public string DatabaseName { get; internal set; }
         public string RequestID { get; set; }
         public string ActivityID { get; set; }
-        public int SPID { get; set; }
+        public string SPID { get; set; }
         public string RequestProperties { get; set; }
         public string RequestParameters { get; set; }
         public long ProgressTotal { get; set;  }

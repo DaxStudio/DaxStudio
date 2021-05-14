@@ -234,7 +234,7 @@ namespace DaxStudio.QueryTrace
         public string RequestProperties { get; set; }
         public string RequestParameters { get; set; }
 
-        public string SPID { get; set; } = string.Empty;
+        public string SPID { get; set; } 
         public string ObjectName { get; set; }
         public string ObjectPath { get; set; }
         public string ObjectReference { get; set; }

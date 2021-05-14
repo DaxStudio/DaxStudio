@@ -43,14 +43,7 @@
             </Style>
 
 
-            <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}">
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding QueryType}" Value="ERR">
-                        <Setter Property="Foreground" Value="OrangeRed"/>
-                    </DataTrigger>
-                </Style.Triggers>
-                
-            </Style>
+
 
 
             <DataTemplate x:Key="QueryTextCell">
@@ -148,7 +141,7 @@
                 </Style>
             </DataGrid.CellStyle>
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource QueryTypeStyle}">
+                <Style TargetType="{x:Type DataGridRow}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>
@@ -181,12 +174,6 @@
                 <DataGridTextColumn Header="Progress" IsReadOnly="True" Width="80" 
                                     Binding="{Binding ProgressTotal}" />
 
-                <!--<DataGridComboBoxColumn Header="Type" Width="40" 
-                                        filter:DataGridColumnExtensions.CustomBindingPath="QueryType"
-                                        ItemsSource="{StaticResource QueryTypes}"
-                                        SelectedItemBinding="{Binding QueryType}"
-                                        />-->
-
                 <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" 
                                     Binding="{Binding Duration, StringFormat='#,0'}" 
                                     ElementStyle="{StaticResource AlignRight}"
@@ -195,7 +182,7 @@
                 <DataGridTextColumn Header="CPU"
                                     IsReadOnly="True"
                                     Width="60"
-                                    Binding="{Binding CPUDuration, StringFormat='#,0'}"
+                                    Binding="{Binding CpuDuration, StringFormat='#,0'}"
                                     ElementStyle="{StaticResource AlignRight}"
                                     />
 
