@@ -930,6 +930,35 @@ namespace DaxStudio.UI.ViewModels
             return dsm.ProcessString(selectedText);
         }
 
+        // Moves the commas at the end of a line as the first character in the following line
+        internal void MoveCommasToDebugMode()
+        {
+            try
+            {
+                var editor = GetEditor();
+                if (editor.SelectionLength > 0)
+                {
+                    editor.SelectedText = MoveCommasToDebugMode(editor.SelectedText);
+                }
+                else
+                {
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = MoveCommasToDebugMode(editor.Text);
+                    editor.Document.EndUpdate();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SwapDelimiters), $"ERROR: {ex.Message}");
+                OutputError($"The following error occurred attempting to move commas to debug mode: {ex.Message}");
+            }
+        }
+
+        private string MoveCommasToDebugMode( string text )
+        {
+            return FormatDebugMode.MoveCommasToDebugMode(text);
+        }
+
         public bool Close()
         {
             // Close the document's connection 

@@ -103,6 +103,8 @@ namespace DaxStudio.Interfaces
         bool VpaxReadStatisticsFromData { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
+        bool ShowDebugCommas { get; set; }
+
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }

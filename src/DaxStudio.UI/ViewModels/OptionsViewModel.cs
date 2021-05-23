@@ -1230,6 +1230,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showDebugCommas;
+        [DataMember, DefaultValue(false)]
+        public bool ShowDebugCommas
+        {
+            get => _showDebugCommas;
+
+            set
+            {
+                _showDebugCommas = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowDebugCommas), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowDebugCommas);
+            }
+        }
+
         #endregion
 
 

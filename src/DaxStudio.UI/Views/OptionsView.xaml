@@ -1212,7 +1212,9 @@
 
                                 <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowKeyBindings" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Key Bindings" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a tab in the options screen to alter global hotkeys</TextBlock>
-                               
+                                <CheckBox Grid.Row="8" Grid.Column="0" x:Name="ShowDebugCommas" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Debug Commas" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="9" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show a button to move commas from the end of a line to the beginning of the following line. Activating this featurs hides the Swap Delimiters button.</TextBlock>
+
 
                             </Grid>
                         </GroupBox>
