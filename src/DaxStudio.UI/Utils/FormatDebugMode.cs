@@ -83,7 +83,7 @@ namespace DaxStudio.UI.Utils
                         addTrailingComma = false;
                 }
                 
-                sb.Insert(0, result + "\r\n");
+                sb.Insert(0, result + "\n");
             }
             return sb.ToString().TrimEnd();
         }
