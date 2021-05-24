@@ -46,7 +46,7 @@ ADDCOLUMNS (
 )";
             var actual = FormatDebugMode.MoveCommasToDebugMode(input);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(expected, actual,DiffStyle.Full);
+            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ ADDCOLUMNS (
 )";
             var actual = FormatDebugMode.MoveCommasToDebugMode(input);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(expected, actual, DiffStyle.Full);
+            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
         }
 
 

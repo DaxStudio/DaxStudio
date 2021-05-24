@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
-
 namespace DaxStudio.UI.Utils
 {
     public static class FormatDebugMode
@@ -35,7 +30,8 @@ namespace DaxStudio.UI.Utils
                     if (trimmedLine.Length > 0)
                         addInitialComma = false;
                 }
-                sb.AppendLine(result);
+                sb.Append(result);
+                sb.Append("\n");
 
             }
             return sb.ToString().TrimEnd();
