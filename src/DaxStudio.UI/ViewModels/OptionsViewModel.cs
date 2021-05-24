@@ -1242,6 +1242,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ShowDebugCommas), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowDebugCommas);
+
             }
         }
 

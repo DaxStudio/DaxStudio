@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -16,23 +17,95 @@ namespace DaxStudio.UI.Utils
             bool addInitialComma = false;
             for (int line = 0; line < list.Length; line++)
             {
-                string result = addInitialComma ? "," : string.Empty;
+                
                 string trimmedLine = list[line].TrimEnd();
+                string trailingComment;
+                (trimmedLine, trailingComment) = TrimTrailingComment(trimmedLine);
+                string result = addInitialComma & (trimmedLine.Length > 0 ) ? "," : string.Empty;
                 bool commaLast = trimmedLine.EndsWith(",");
                 var nextLineAvailable = ((line + 1) < list.Length) ? !list[line + 1].TrimStart().StartsWith(",") : false;
-                if (commaLast && nextLineAvailable)
+                if (commaLast && nextLineAvailable && trimmedLine.Length > 0)
                 {
-                    result += list[line].TrimEnd().Substring(0, Math.Max(trimmedLine.Length - 1, 0));
+                    result += trimmedLine.Substring(0, Math.Max(trimmedLine.Length - 1, 0)) + trailingComment;
                     addInitialComma = true;
                 }
                 else
                 {
-                    result += list[line];
-                    addInitialComma = false;
+                    result += trimmedLine + trailingComment;
+                    if (trimmedLine.Length > 0)
+                        addInitialComma = false;
                 }
                 sb.AppendLine(result);
+
             }
-            return sb.ToString();
+            return sb.ToString().TrimEnd();
+        }
+
+
+        public static string MoveCommasFromDebugMode(string test)
+        {
+            StringBuilder sb = new StringBuilder();
+            var list = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            bool addTrailingComma = false;
+            string nextTrimmedLine = string.Empty;
+            string nextTrailingComment = string.Empty;
+            
+            for (int line = list.Length-1; line >= 0 ; line--)
+            {
+
+                string trimmedLine = list[line].TrimEnd();
+                string trailingComment;
+
+                string result = string.Empty;
+                
+                if (line == list.Length-1)
+                    (trimmedLine, trailingComment) = TrimTrailingComment(trimmedLine);
+                else
+                {
+                    trimmedLine = nextTrimmedLine;
+                    trailingComment = nextTrailingComment;
+                }
+                if ( line != 0)
+                    (nextTrimmedLine, nextTrailingComment ) = TrimTrailingComment(list[line-1].TrimEnd());
+
+                result += addTrailingComma & (trimmedLine.Length > 0) ? "," : string.Empty;
+                bool commaFirst = trimmedLine.StartsWith(",");
+                var nextLineAvailable = ((line - 1) >= 0) ? !nextTrimmedLine.EndsWith(",") : false;
+                if (commaFirst && nextLineAvailable && trimmedLine.Length > 0)
+                {
+                    result =  trimmedLine.Substring(1) + result + trailingComment ;
+                    addTrailingComma = true;
+                }
+                else
+                {
+                    result = trimmedLine + result + trailingComment;
+                    if (trimmedLine.Length > 0)
+                        addTrailingComma = false;
+                }
+                
+                sb.Insert(0, result + Environment.NewLine);
+            }
+            return sb.ToString().TrimEnd();
+        }
+
+        private static (string trimmedLine, string trailingComment) TrimTrailingComment(string trimmedLine)
+        {
+            var doubleDashPos = trimmedLine.IndexOf("--");
+            var doubleSlashPos = trimmedLine.IndexOf("//");
+            var commentPos = Math.Max(doubleSlashPos, doubleDashPos);
+            if (commentPos >= 0)
+                return (trimmedLine.Substring(0, commentPos), trimmedLine.Substring(commentPos));
+            else
+                return (trimmedLine, string.Empty);
+
+        }
+
+        private static Regex leadingComma = new Regex("\\n\\,", RegexOptions.Compiled);
+
+        public static string ToggleDebugCommas(string test)
+        {
+            if (leadingComma.IsMatch(test)) return MoveCommasFromDebugMode(test);
+            return MoveCommasToDebugMode(test);
         }
     }
 }

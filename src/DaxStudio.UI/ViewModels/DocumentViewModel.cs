@@ -956,7 +956,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string MoveCommasToDebugMode( string text )
         {
-            return FormatDebugMode.MoveCommasToDebugMode(text);
+            return FormatDebugMode.ToggleDebugCommas(text);
         }
 
         public bool Close()

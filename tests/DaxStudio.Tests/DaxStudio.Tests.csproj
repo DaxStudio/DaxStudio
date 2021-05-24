@@ -99,6 +99,7 @@
     <Compile Include="TreeViewDisplayFolderTests.cs" />
     <Compile Include="QueryBuilderTests.cs" />
     <Compile Include="ServerNameConverterTests.cs" />
+    <Compile Include="DebugCommasTest.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />

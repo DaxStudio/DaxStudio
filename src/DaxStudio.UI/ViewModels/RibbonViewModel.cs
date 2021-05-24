@@ -964,6 +964,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
             NotifyOfPropertyChange(nameof(FormatQueryDisabledReason));
             NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
+            NotifyOfPropertyChange(nameof(ShowDebugCommas));
+            NotifyOfPropertyChange(nameof(ShowSwapDelimiters));
         }
 
         public void LaunchSqlProfiler()
