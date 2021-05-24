@@ -10,10 +10,10 @@ namespace DaxStudio.UI.Utils
 {
     public static class FormatDebugMode
     {
-        public static string MoveCommasToDebugMode(string test)
+        public static string MoveCommasToDebugMode(string daxExpression)
         {
             StringBuilder sb = new StringBuilder();
-            var list = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var list = daxExpression.Split(new[] { "\n" }, StringSplitOptions.None);
             bool addInitialComma = false;
             for (int line = 0; line < list.Length; line++)
             {
@@ -42,10 +42,10 @@ namespace DaxStudio.UI.Utils
         }
 
 
-        public static string MoveCommasFromDebugMode(string test)
+        public static string MoveCommasFromDebugMode(string daxExpression)
         {
             StringBuilder sb = new StringBuilder();
-            var list = test.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var list = daxExpression.Split(new[] { "\n" }, StringSplitOptions.None);
             bool addTrailingComma = false;
             string nextTrimmedLine = string.Empty;
             string nextTrailingComment = string.Empty;
@@ -83,7 +83,7 @@ namespace DaxStudio.UI.Utils
                         addTrailingComma = false;
                 }
                 
-                sb.Insert(0, result + Environment.NewLine);
+                sb.Insert(0, result + "\r\n");
             }
             return sb.ToString().TrimEnd();
         }

@@ -46,7 +46,7 @@ ADDCOLUMNS (
 )";
             var actual = FormatDebugMode.MoveCommasToDebugMode(input);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(expected, actual,DiffStyle.Compact);
+            StringAssertion.ShouldEqualWithDiff(expected, actual,DiffStyle.Full);
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ ADDCOLUMNS (
 )";
             var actual = FormatDebugMode.MoveCommasToDebugMode(input);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(expected, actual, DiffStyle.Compact);
+            StringAssertion.ShouldEqualWithDiff(expected, actual, DiffStyle.Full);
         }
 
 
@@ -130,11 +130,11 @@ ADDCOLUMNS (
 )";
             var actual = FormatDebugMode.ToggleDebugCommas(input);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Compact);
+            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
 
             actual = FormatDebugMode.ToggleDebugCommas(actual);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(input.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Compact);
+            StringAssertion.ShouldEqualWithDiff(input.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
 
         }
 
@@ -175,11 +175,11 @@ ADDCOLUMNS (
 )";
             var actual = FormatDebugMode.ToggleDebugCommas(input);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Compact);
+            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
 
             actual = FormatDebugMode.ToggleDebugCommas(actual);
             //Assert.AreEqual(expected, actual);
-            StringAssertion.ShouldEqualWithDiff(input.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Compact);
+            StringAssertion.ShouldEqualWithDiff(input.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
 
         }
     }
