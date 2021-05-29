@@ -1246,6 +1246,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showXmlaInAllQueries;
+        [DataMember, DefaultValue(false)]
+        public bool ShowXmlaInAllQueries
+        {
+            get => _showXmlaInAllQueries;
+
+            set
+            {
+                _showXmlaInAllQueries = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowXmlaInAllQueries), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowXmlaInAllQueries);
+            }
+        }
+
         #endregion
 
 

@@ -31,7 +31,8 @@ namespace DaxStudio.UI.ViewModels
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
         private IGlobalOptions _globalOptions;
-        
+
+        protected IGlobalOptions GlobalOptions { get => _globalOptions; }
 
         [ImportingConstructor]
         protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions)

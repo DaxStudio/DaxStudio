@@ -471,7 +471,7 @@ namespace DaxStudio.QueryTrace
                     
                     OnTraceEvent(e);
                     _capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBiFileName));
-                    if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error)
+                    if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error || e.EventClass == TraceEventClass.CommandEnd)
                     {
                         // if this is not an internal DAX Studio query 
                         // like the one we issue after a ClearCache to re-establish the session

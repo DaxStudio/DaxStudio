@@ -104,6 +104,7 @@ namespace DaxStudio.Interfaces
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
         bool ShowDebugCommas { get; set; }
+        bool ShowXmlaInAllQueries { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
