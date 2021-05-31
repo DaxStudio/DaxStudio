@@ -57,7 +57,7 @@ WizardImageFile=WizardImageFile.bmp
 WizardSmallImageFile=WizardSmallImageFile.bmp
 
 PrivilegesRequiredOverridesAllowed=dialog commandline
-ArchitecturesAllowed=x86 x64
+ArchitecturesAllowed=x86 x64 arm64
 ArchitecturesInstallIn64BitMode=x64 
 
 DisableDirPage=auto

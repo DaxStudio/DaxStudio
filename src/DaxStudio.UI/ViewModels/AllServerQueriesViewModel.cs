@@ -34,7 +34,7 @@ namespace DaxStudio.UI.ViewModels
     {
         private readonly Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
         private readonly Dictionary<string, QueryBeginEvent> _queryBeginCache = new Dictionary<string, QueryBeginEvent>();
-        private readonly IGlobalOptions _globalOptions;
+
 
         [ImportingConstructor]
 
@@ -46,9 +46,10 @@ namespace DaxStudio.UI.ViewModels
             QueryTypes = new ObservableCollection<string>
             {
                 "DAX",
-                "Dmx",
-                "Mdx",
-                "Sql"
+                "DMX",
+                "MDX",
+                "SQL",
+                "Xmla" // Intentionally lowercase to reduce width
             };
         }
 
@@ -77,13 +78,20 @@ namespace DaxStudio.UI.ViewModels
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
-            
-            return new List<DaxStudioTraceEventClass>
+            var monitoredEvents = new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QueryEnd,
                   DaxStudioTraceEventClass.QueryBegin,
                   DaxStudioTraceEventClass.Error,
                   DaxStudioTraceEventClass.AggregateTableRewriteQuery
+                  
             };
+
+            if (GlobalOptions.ShowXmlaInAllQueries)
+            {
+                monitoredEvents.Add(DaxStudioTraceEventClass.CommandEnd);
+            }
+
+            return monitoredEvents;
         }
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
@@ -149,6 +157,10 @@ namespace DaxStudio.UI.ViewModels
                         case DaxStudioTraceEventClass.Error:
                             newEvent.QueryType = "ERR";
                             QueryEvents.Insert(0,newEvent);
+                            break;
+                        case DaxStudioTraceEventClass.CommandEnd:
+                            newEvent.QueryType = "Xmla";
+                            QueryEvents.Insert(0, newEvent);
                             break;
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             // cache rewrite events

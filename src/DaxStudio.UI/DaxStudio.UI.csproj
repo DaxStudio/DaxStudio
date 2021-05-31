@@ -493,6 +493,7 @@
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\FocusManager.cs" />
+    <Compile Include="Utils\FormatDebugMode.cs" />
     <Compile Include="Utils\Intellisense\DaxStudioCompletionWindow.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />
     <Compile Include="Utils\LongLineStateMachine.cs" />
@@ -1619,6 +1620,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-refresh-trace%4096ppi.png" />
+    <Resource Include="Images\icon-debug-commas.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

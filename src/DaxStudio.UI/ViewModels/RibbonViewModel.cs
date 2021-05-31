@@ -871,6 +871,27 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.SwapDelimiters();
         }
 
+        public void MoveCommasToDebugMode()
+        {
+            ActiveDocument?.MoveCommasToDebugMode();
+        }
+
+        public bool ShowSwapDelimiters
+        {
+            get
+            {
+                return !Options.ShowDebugCommas;
+            }
+        }
+
+        public bool ShowDebugCommas
+        {
+            get
+            {
+                return Options.ShowDebugCommas;
+            }
+        }
+
         public bool IsDebugBuild
         {
             get {
@@ -973,6 +994,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
             NotifyOfPropertyChange(nameof(FormatQueryDisabledReason));
             NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
+            NotifyOfPropertyChange(nameof(ShowDebugCommas));
+            NotifyOfPropertyChange(nameof(ShowSwapDelimiters));
         }
 
         public void LaunchSqlProfiler()

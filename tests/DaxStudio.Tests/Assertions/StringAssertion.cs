@@ -34,7 +34,7 @@ namespace DaxStudio.Tests.Assertions
 
             StringBuilder output = new StringBuilder();
             if (diffStyle == DiffStyle.Compact) CompactDiff(actualValue, expectedValue, output);
-            else DetailDiff(actualValue, expectedValue, diffStyle, output);
+            else DetailDiff( expectedValue, actualValue, diffStyle, output);
 
             throw new Exception(string.Format("\nExpected: {0}\nActual  : {1}\nDetails : {2}", expectedValue, actualValue, output.ToString()));
         }

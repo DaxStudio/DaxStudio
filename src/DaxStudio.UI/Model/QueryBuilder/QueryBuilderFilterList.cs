@@ -9,14 +9,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Serilog;
+using Caliburn.Micro;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class QueryBuilderFilterList :  IQueryBuilderFieldList
     {
-        public QueryBuilderFilterList(Func<IModelCapabilities> modelCapabilities)
+        public QueryBuilderFilterList(IEventAggregator eventAggregator,Func<IModelCapabilities> modelCapabilities)
         {
+            EventAggregator = eventAggregator;
             DropHandler = new QueryBuilderDropHandler(this);
             GetModelCapabilities = modelCapabilities;
         }
@@ -27,6 +31,7 @@ namespace DaxStudio.UI.Model
         }
         [JsonProperty]
         public ObservableCollection<QueryBuilderFilter> Items { get; } = new ObservableCollection<QueryBuilderFilter>();
+        public IEventAggregator EventAggregator { get; }
         public QueryBuilderDropHandler DropHandler { get; }
         public Func<IModelCapabilities> GetModelCapabilities { get; }
 
@@ -44,8 +49,17 @@ namespace DaxStudio.UI.Model
         #region IQueryBuilderFieldList
         public void Add(IADOTabularColumn item)
         {
-            var filter = new QueryBuilderFilter(item, GetModelCapabilities());
-            Items.Add(filter);
+            try
+            {
+                var filter = new QueryBuilderFilter(item, GetModelCapabilities());
+                Items.Add(filter);
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error adding Filter to Query Builder: {ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderFilterList), nameof(Add), msg);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
         }
 
         internal void Add(QueryBuilderFilter filter)

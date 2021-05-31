@@ -1230,6 +1230,37 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showDebugCommas;
+        [DataMember, DefaultValue(false)]
+        public bool ShowDebugCommas
+        {
+            get => _showDebugCommas;
+
+            set
+            {
+                _showDebugCommas = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowDebugCommas), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowDebugCommas);
+
+            }
+        }
+
+        private bool _showXmlaInAllQueries;
+        [DataMember, DefaultValue(false)]
+        public bool ShowXmlaInAllQueries
+        {
+            get => _showXmlaInAllQueries;
+
+            set
+            {
+                _showXmlaInAllQueries = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowXmlaInAllQueries), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowXmlaInAllQueries);
+            }
+        }
+
         #endregion
 
 

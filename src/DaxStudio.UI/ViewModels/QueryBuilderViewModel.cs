@@ -45,7 +45,7 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = globalOptions;
-            Filters = new QueryBuilderFilterList(GetModelCapabilities);
+            Filters = new QueryBuilderFilterList(EventAggregator ,GetModelCapabilities);
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;

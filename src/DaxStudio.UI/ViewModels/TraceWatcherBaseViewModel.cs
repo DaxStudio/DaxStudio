@@ -45,6 +45,8 @@ namespace DaxStudio.UI.ViewModels
         private readonly IGlobalOptions _globalOptions;
         private IQueryTrace _tracer;
 
+        protected IGlobalOptions GlobalOptions { get => _globalOptions; }
+
         [ImportingConstructor]
         protected TraceWatcherBaseViewModel( IEventAggregator eventAggregator, IGlobalOptions globalOptions)
         {
