@@ -21,6 +21,7 @@ using DaxStudio.Common;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Utils;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -36,10 +37,12 @@ namespace DaxStudio.UI.ViewModels
         private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
-        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base( eventAggregator, globalOptions)
+
+        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
             _globalOptions = globalOptions;
+            _windowManager = windowManager;
             QueryTypes = new ObservableCollection<string>
             {
                 "DAX",
@@ -49,6 +52,26 @@ namespace DaxStudio.UI.ViewModels
             };
         }
 
+        protected override void OnStart()
+        {
+            base.OnStart();
+            var dialog = new AllQueriesEventClassesDialogViewModel();
+            
+
+                _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                    {
+                        { "WindowStyle", WindowStyle.None},
+                        { "ShowInTaskbar", false},
+                        { "ResizeMode", ResizeMode.NoResize},
+                        { "Background", Brushes.Transparent},
+                        { "AllowsTransparency",true}
+
+                    });
+
+                //if (dialog.IsCancelled) return;
+
+            
+        }
 
         public ObservableCollection<string> QueryTypes { get; set; }
 
@@ -189,7 +212,8 @@ namespace DaxStudio.UI.ViewModels
         
  
         private readonly BindableCollection<QueryEvent> _queryEvents;
-        
+        private readonly IWindowManager _windowManager;
+
         public override bool CanHide { get { return true; } }
         public override string ContentId => "all-queries-trace";
         public override ImageSource IconSource
@@ -294,6 +318,8 @@ namespace DaxStudio.UI.ViewModels
             if (query == null) return; // it the user clicked on an empty query exit here
             _eventAggregator.PublishOnUIThread(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
         }
+
+        
 
         #region ISaveState methods
         void ISaveState.Save(string filename)

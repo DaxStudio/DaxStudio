@@ -366,9 +366,18 @@ namespace DaxStudio.UI.ViewModels
 
         public void Start()
         {
+            if (IsPaused)
+                OnRestart();
+            else
+                OnStart();
             IsChecked = true;
             IsPaused = false;
         }
+
+        // Lets subclasses hook in to restarting of the trace
+        protected virtual void OnRestart() { }
+        // Lets subclasses hook in to starting of the trace
+        protected virtual void OnStart() { }
 
         public bool CanStop { get { return IsChecked; } }
         public void Stop()

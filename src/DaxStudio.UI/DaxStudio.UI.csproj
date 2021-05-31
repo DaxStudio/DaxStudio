@@ -551,6 +551,7 @@
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
+    <Compile Include="ViewModels\AllQueriesEventClassesDialogViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
@@ -596,6 +597,8 @@
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
     <Compile Include="Views\RefreshTraceView.xaml.cs">
       <DependentUpon>RefreshTraceView.xaml</DependentUpon>
+    <Compile Include="Views\AllQueriesEventClassesDialogView.xaml.cs">
+      <DependentUpon>AllQueriesEventClassesDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
@@ -786,6 +789,9 @@
     <Page Include="Views\RefreshTraceView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    <Page Include="Views\AllQueriesEventClassesDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CrashReportingBlockedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>

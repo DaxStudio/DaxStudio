@@ -32,6 +32,10 @@
         <Setter Property="Background" Value="{DynamicResource BaseBrush}" />
     </Style>
 
-    
+    <Style x:Key="DialogHeader" TargetType="Label">
+        <Setter Property="FontSize" Value="44"/>
+        <Setter Property="Foreground" Value="{StaticResource DaxStudioBrush}"/>
+        <Setter Property="FontWeight" Value="Light"/>
+    </Style>
 
 </ResourceDictionary>
