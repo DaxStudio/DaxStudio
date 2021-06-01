@@ -54,9 +54,7 @@ namespace DaxStudio.UI.ViewModels
             _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
             HideCommand = new DelegateCommand(HideTrace, CanHideTrace);
-            Init();
 
-            //_eventAggregator.Subscribe(this); 
         }
 
         public IDaxDocument Document { get; set; }
@@ -71,12 +69,6 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new CloseTraceWindowEvent(this));
         }
         
-
-        private void Init()
-        {
-            MonitoredEvents = GetMonitoredEvents();
-            
-        }
 
         public DelegateCommand HideCommand { get; set; }
         public List<DaxStudioTraceEventClass> MonitoredEvents { get; private set; }
@@ -270,6 +262,13 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     CreateTracer();
+                    if (_tracer == null)
+                    {
+                        // the creation of the trace was cancelled
+                        await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
+                        IsChecked = false;
+                        return;
+                    }
                     await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, true));
                     Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync),
                         "Starting Tracer");
@@ -497,6 +496,9 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CapturingStarted { get; private set; }
 
+        // allows a subclass to perform an action before updating the monitored events
+        protected virtual bool UpdatedMonitoredEvents() { return true; }
+
         public void CreateTracer()
         {
             try
@@ -512,6 +514,11 @@ namespace DaxStudio.UI.ViewModels
                 OnCreateTracer();
                 
                 var supportedEvents = Connection.SupportedTraceEventClasses;
+
+                // exit here if the updating of the event list has been cancelled
+                if (!UpdatedMonitoredEvents()) return;
+                
+                MonitoredEvents = GetMonitoredEvents();
                 var validEventsForConnection = MonitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
                 
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)

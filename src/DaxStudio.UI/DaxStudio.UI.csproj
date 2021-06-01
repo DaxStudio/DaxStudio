@@ -598,6 +598,7 @@
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
     <Compile Include="Views\RefreshTraceView.xaml.cs">
       <DependentUpon>RefreshTraceView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\AllQueriesEventClassesDialogView.xaml.cs">
       <DependentUpon>AllQueriesEventClassesDialogView.xaml</DependentUpon>
     </Compile>
@@ -790,6 +791,7 @@
     <Page Include="Views\RefreshTraceView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\AllQueriesEventClassesDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -872,10 +874,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles\DaxStudio.RadioButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\DaxStudioDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

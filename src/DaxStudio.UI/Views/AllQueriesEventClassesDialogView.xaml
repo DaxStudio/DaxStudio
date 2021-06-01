@@ -12,14 +12,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="CheckBox">
                 <Setter Property="Margin" Value="20 5 5 0"/>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    
+    <Border Style="{StaticResource DaxStudioDialog}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -73,4 +72,5 @@
             <Button x:Name="Cancel" Content="Cancel" IsCancel="True" Margin="5 0" Width="80" />
         </StackPanel>
     </Grid>
+    </Border>
 </UserControl>

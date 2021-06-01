@@ -38,4 +38,11 @@
         <Setter Property="FontWeight" Value="Light"/>
     </Style>
 
+
+    <Style x:Key="DaxStudioDialog" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{DynamicResource DialogBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DaxStudioBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
 </ResourceDictionary>

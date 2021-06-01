@@ -2,7 +2,7 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/Fluent;Component/Themes/Generic.xaml" />
         <!--<ResourceDictionary Source="/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml"/>-->
-        <ResourceDictionary Source="Styles/DaxStudioDialog.xaml"/>
+        <ResourceDictionary Source="DaxStudioResources.xaml"/>
         <!--<ResourceDictionary Source="/DaxStudio.UI;component/Theme/DarkTheme.xaml"/>-->
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

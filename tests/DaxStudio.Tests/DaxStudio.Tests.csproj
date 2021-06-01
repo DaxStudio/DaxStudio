@@ -120,11 +120,6 @@
       <Project>{508a1faa-9157-4474-94b4-fdbf76ffa74b}</Project>
       <Name>DaxStudio.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\DaxStudio.Standalone\DaxStudio.Standalone.csproj">
       <Project>{f92e0bfc-f721-4a08-a4fa-77dc019b14f6}</Project>
       <Name>DaxStudio.Standalone</Name>

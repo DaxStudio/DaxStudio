@@ -22,8 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAXEditor", "DAXEditor\DAXE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADOTabular", "ADOTabular\ADOTabular.csproj", "{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Interfaces", "DaxStudio.Interfaces\DaxStudio.Interfaces.csproj", "{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Standalone", "DaxStudio.Standalone\DaxStudio.Standalone.csproj", "{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443} = {C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}
@@ -105,18 +103,6 @@ Global
 		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Release|x64.ActiveCfg = Release|Any CPU
 		{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}.Release|x86.ActiveCfg = Release|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Release|x64.ActiveCfg = Release|Any CPU
-		{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}.Release|x86.ActiveCfg = Release|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

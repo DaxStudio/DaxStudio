@@ -41,7 +41,6 @@ namespace DaxStudio.UI.ViewModels
         public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
-            _globalOptions = globalOptions;
             _windowManager = windowManager;
             QueryTypes = new ObservableCollection<string>
             {
@@ -53,12 +52,13 @@ namespace DaxStudio.UI.ViewModels
             };
         }
 
-        protected override void OnStart()
+        protected override bool UpdatedMonitoredEvents()
         {
-            base.OnStart();
-            var dialog = new AllQueriesEventClassesDialogViewModel();
-            
 
+            var dialog = new AllQueriesEventClassesDialogViewModel();
+
+            Execute.OnUIThread(() =>
+            {
                 _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
                     {
                         { "WindowStyle", WindowStyle.None},
@@ -68,9 +68,9 @@ namespace DaxStudio.UI.ViewModels
                         { "AllowsTransparency",true}
 
                     });
+            });
 
-                //if (dialog.IsCancelled) return;
-
+            return !dialog.IsCancelled;
             
         }
 
