@@ -612,12 +612,14 @@ namespace DAXEditorControl
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
-            System.Diagnostics.Debug.WriteLine($"DaxEditor.DisposeCompletionWindow (IsMouseOverCompletionWindow: {IsMouseOverCompletionWindow}");
-            if (IsMouseOverCompletionWindow) return;
+            System.Diagnostics.Debug.WriteLine($"DaxEditor.DisposeCompletionWindow (IsMouseOverCompletionWindow: {_completionWindow?.IsMouseOver}");
+            //if (IsMouseOverCompletionWindow) return;
+            if (_completionWindow != null && _completionWindow.IsMouseOver) return;
+
             lock (_disposeLock)
             {
                 // close function tooltip if it is open
-                if (_toolTip != null)
+               if (_toolTip != null)
                     _toolTip.IsOpen = false;
 
                 // force completion window to close
@@ -632,7 +634,7 @@ namespace DAXEditorControl
                     //swallow any errors while trying to close the completion window
                 }
                 _completionWindow = null;
-
+                return;
             }
         }
 

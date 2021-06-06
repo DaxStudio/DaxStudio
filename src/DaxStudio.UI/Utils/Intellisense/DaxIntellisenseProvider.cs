@@ -86,6 +86,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 {
                     Debug.WriteLine("Hack: Force dispose of completion window as StartOffset == EndOffset");
                     CloseCompletionWindow();
+                    //completionWindow = null;
                 }
                 
                 if (completionWindow != null)
@@ -96,7 +97,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                     {
                         Debug.WriteLine("Completion Window has no items - Closing");
                         CloseCompletionWindow();
-                        completionWindow = null;
+                        //completionWindow = null;
                         return;
                     }
                     else
@@ -115,7 +116,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                         if (string.Compare(selectedItem.Text, txt, true) == 0 || string.Compare(selectedItem.Content.ToString(), txt, true) == 0)
                         {
                             CloseCompletionWindow();
-                            completionWindow = null;
+                            //completionWindow = null;
                         }
 
                         return;
@@ -214,13 +215,13 @@ namespace DaxStudio.UI.Utils.Intellisense
                         {
                             Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
                             CloseCompletionWindow();
-                            completionWindow = null;
+                            //completionWindow = null;
                         }
                     }
                     else
                     {
                         CloseCompletionWindow();
-                        completionWindow = null;
+                        //completionWindow = null;
                     }
                 }
 
@@ -269,6 +270,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
             completionWindow.MouseEnter += completionWindow_MouseEnter;
             completionWindow.MouseLeave += completionWindow_MouseLeave;
+
             //completionWindow.IsVisibleChanged += delegate
             //{
             //    System.Diagnostics.Debug.WriteLine("firing CompletionWindow IsVisibleChanged delegate");
