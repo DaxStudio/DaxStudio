@@ -3403,14 +3403,26 @@ namespace DaxStudio.UI.ViewModels
                 // todo - do I want to disable the editor control while formatting is in progress???
 
                 string qry;
-                var editor = GetEditor();
-                // if there is a selection send that to DocumentViewModel.com otherwise send all the text
-                qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
-                if (editor.SelectionLength > 0)
+                DAXEditorControl.DAXEditor editor;
+
+                try
                 {
-                    var loc = editor.Document.GetLocation(editor.SelectionStart);
-                    colOffset = loc.Column;
-                    rowOffset = loc.Line;
+                    
+                    editor = GetEditor();
+                    // if there is a selection send that to DocumentViewModel.com otherwise send all the text
+                    qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
+                    if (editor.SelectionLength > 0)
+                    {
+                        var loc = editor.Document.GetLocation(editor.SelectionStart);
+                        colOffset = loc.Column;
+                        rowOffset = loc.Line;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(FormatQuery), ex.Message);
+                    OutputError($"The following error occurred while attempting to get the query text from the edit window:\n{ex.Message}");
+                    return;
                 }
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
