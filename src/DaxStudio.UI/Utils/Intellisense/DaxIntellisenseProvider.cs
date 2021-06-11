@@ -336,31 +336,69 @@ namespace DaxStudio.UI.Utils.Intellisense
             
             if (f != null)
             {
+                ShowFunctionInsightWindow(offset, f);
+            }
+            else
+            {
+                ShowKeywordInsightWindow(offset, funcName);
+            }
+        }
+
+        private void ShowFunctionInsightWindow(int offset, ADOTabularFunction f)
+        {
+            try
+            {
+                Log.Verbose("Showing InsightWindow for function {function}", f.Caption);
+                //_editor.InsightWindow?.Close();
+                _editor.InsightWindow = null;
+                _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                if (offset > -1)
+                {
+                    _editor.InsightWindow.StartOffset = offset;
+                }
+                _editor.InsightWindow.Content = BuildInsightFunctionContent(f, 400);
                 try
                 {
-                    Log.Verbose("Showing InsightWindow for {function}", f.Caption);
-                    //_editor.InsightWindow?.Close();
-                    _editor.InsightWindow = null;
-                    _editor.InsightWindow = new InsightWindow(_editor.TextArea);
-                    if (offset > -1)
-                    {
-                        _editor.InsightWindow.StartOffset = offset;
-                    }
-                    _editor.InsightWindow.Content = BuildInsightContent(f,400);
-                    try
-                    {
-                        _editor.InsightWindow.Show();
-                        
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
-                    }
+                    _editor.InsightWindow.Show();
+
                 }
-                catch (Exception ex)
+                catch (InvalidOperationException ex)
                 {
-                    Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
+                    Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
+            }
+        }
+
+        private void ShowKeywordInsightWindow(int offset, string keyword)
+        {
+            try
+            {
+                Log.Verbose($"Showing InsightWindow for keyword: {keyword}");
+                //_editor.InsightWindow?.Close();
+                _editor.InsightWindow = null;
+                _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                if (offset > -1)
+                {
+                    _editor.InsightWindow.StartOffset = offset;
+                }
+                _editor.InsightWindow.Content = BuildInsightKeywordContent(keyword, 400);
+                try
+                {
+                    _editor.InsightWindow.Show();
+
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
             }
         }
 
@@ -380,7 +418,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             }
         }
 
-        private UIElement BuildInsightContent(ADOTabularFunction f, int maxWidth)
+        private UIElement BuildInsightFunctionContent(ADOTabularFunction f, int maxWidth)
         {
             var grd = new Grid();
             grd.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = maxWidth });
@@ -393,6 +431,27 @@ namespace DaxStudio.UI.Utils.Intellisense
             var docLink = new Hyperlink();
             docLink.Inlines.Add($"https://dax.guide/{f.Caption}");
             docLink.NavigateUri = new Uri($"https://dax.guide/{f.Caption}/?aff=dax-studio");
+            docLink.RequestNavigate += InsightHyperLinkNavigate;
+            tb.Inlines.Add("\n");
+            tb.Inlines.Add(docLink);
+            Grid.SetColumn(tb, 0);
+            grd.Children.Add(tb);
+            return grd;
+        }
+
+        private UIElement BuildInsightKeywordContent(string keyword, int maxWidth)
+        {
+            var grd = new Grid();
+            grd.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = maxWidth });
+            var tb = new TextBlock { TextWrapping = TextWrapping.Wrap };
+            var caption = new Run(keyword);
+            tb.Inlines.Add(new Bold(caption));
+            //tb.Inlines.Add("\n");
+            //tb.Inlines.Add(f.Description);
+
+            var docLink = new Hyperlink();
+            docLink.Inlines.Add($"https://dax.guide/{keyword}");
+            docLink.NavigateUri = new Uri($"https://dax.guide/{keyword}/?aff=dax-studio");
             docLink.RequestNavigate += InsightHyperLinkNavigate;
             tb.Inlines.Add("\n");
             tb.Inlines.Add(docLink);

@@ -46,7 +46,19 @@ namespace DaxStudio.UI.Model
         private ADOTabularConnection _connection;
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
+        private static readonly IEnumerable<string> _keywords;
 
+        static ConnectionManager()
+        {
+            _keywords = new List<string>() 
+            {   "COLUMN", 
+                "DEFINE", 
+                "EVALUATE", 
+                "MEASURE",
+                "RETURN", 
+                "TABLE",
+                "VAR" };
+        }
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
@@ -54,6 +66,8 @@ namespace DaxStudio.UI.Model
         }
 
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
+
+        public IEnumerable<string> Keywords => _keywords;
         public string ApplicationName => _connection.ApplicationName;
 
         public void Cancel()

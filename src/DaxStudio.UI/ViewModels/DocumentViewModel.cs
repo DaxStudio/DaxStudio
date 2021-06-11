@@ -4447,7 +4447,8 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (pos == null) return;
                 var word = _editor.GetCurrentWord((TextViewPosition) pos);
-                if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+                if ( Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase)
+                  || Connection.Keywords.Contains(word,StringComparer.OrdinalIgnoreCase))
                 {
                     System.Diagnostics.Debug.WriteLine($"Hovering over '{word}'");
                     Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnEditorHover),
