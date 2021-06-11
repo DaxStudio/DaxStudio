@@ -100,10 +100,12 @@ namespace ADOTabular
 
                     // todo - somehow users are getting here, but the current database is not in the dictionary
                     var db = dd[_currentDatabase];
-                    if (_db == null || db.Name != _db.Name)
+                    if (_db == null || db.Id != _db.Id) // && db.Name != FileName)
                     {
                         _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
-                    }
+                        _db.Caption = db.Caption;
+                    } 
+
                     return _db;
                 }
                 catch (Exception ex)
@@ -247,9 +249,9 @@ namespace ADOTabular
         private static ADOTabularConnectionType GetConnectionType(string serverName)
         {
             var lowerServerName = serverName.Trim();
-            if (lowerServerName.StartsWith("localhost",StringComparison.InvariantCultureIgnoreCase)) return ADOTabularConnectionType.LocalMachine;
-            if (lowerServerName.StartsWith("asazure:", StringComparison.InvariantCultureIgnoreCase) 
-             || lowerServerName.StartsWith("powerbi:", StringComparison.InvariantCultureIgnoreCase)) return ADOTabularConnectionType.Cloud;
+            if (lowerServerName.StartsWith("localhost",StringComparison.OrdinalIgnoreCase)) return ADOTabularConnectionType.LocalMachine;
+            if (lowerServerName.StartsWith("asazure:", StringComparison.OrdinalIgnoreCase) 
+             || lowerServerName.StartsWith("powerbi:", StringComparison.OrdinalIgnoreCase)) return ADOTabularConnectionType.Cloud;
             return ADOTabularConnectionType.LocalNetwork;
         }
 

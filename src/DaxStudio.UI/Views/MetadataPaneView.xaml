@@ -230,7 +230,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
                             <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
-                            <TextBlock Text="{Binding Path=SelectedDatabaseObject.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
+                            <TextBlock Text="{Binding Path=SelectedDatabaseObject.Caption, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
                         </StackPanel>
                         <TextBlock Text="(Right-Click to copy Database Name/ID)" Grid.Row="1" Grid.ColumnSpan="2" FontStyle="Italic"/>
                         <TextBlock Text="Compatibility: " Grid.Row="2"/>
@@ -325,7 +325,7 @@
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
                         <Image Source="{StaticResource ModelIcon}" Width="16" Height="16"></Image>
-                        <TextBlock Text="{Binding Path=SelectedModel.Name, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
+                        <TextBlock Text="{Binding Path=SelectedModel.Caption, Mode=OneWay}" Margin="4,0" FontWeight="Bold" ></TextBlock>
                     </StackPanel>
 
                     <TextBlock Text="Tables: " Grid.Row="1"/>

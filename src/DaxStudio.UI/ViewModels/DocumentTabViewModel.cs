@@ -223,7 +223,14 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
-                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
+                                                                        false, 
+                                                                        string.Empty,
+                                                                        string.Empty, 
+                                                                        database,
+                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop: ADOTabular.Enums.ServerType.AnalysisServices,
+                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)
+                                                                        ));
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
             else

@@ -202,7 +202,17 @@ namespace DaxStudio.UI.Model
         {
             return _retry.Execute(()=> _connection.ExecuteReader(query,paramList));
         }
-        public string FileName => _connection.FileName;
+        public string FileName
+        {
+            get => _connection?.FileName;
+            set
+            {
+                if (_connection != null)
+                {
+                    _connection.FileName = value;
+                }
+            }
+        }
 
         private ADOTabularDynamicManagementViewCollection _dynamicManagementViews;
         public ADOTabularDynamicManagementViewCollection DynamicManagementViews
@@ -268,6 +278,7 @@ namespace DaxStudio.UI.Model
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
+
         public int SPID => _connection.SPID;
         public string ShortFileName => _connection.ShortFileName;
 
@@ -564,6 +575,7 @@ namespace DaxStudio.UI.Model
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(Connect), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
             _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
             ServerType = message.ServerType;
+            FileName = GetFileName(message);
             IsPowerPivot = message.PowerPivotModeSelected;
             _connection.Open();
             SelectedDatabase = _connection.Database;
@@ -572,6 +584,16 @@ namespace DaxStudio.UI.Model
             _eventAggregator.PublishOnUIThread(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
             _eventAggregator.PublishOnBackgroundThread(new DmvsLoadedEvent(DynamicManagementViews));
             _eventAggregator.PublishOnBackgroundThread(new FunctionsLoadedEvent(FunctionGroups));
+        }
+
+        private string GetFileName(ConnectEvent message)
+        {
+            switch (message.ServerType)
+            {
+                case ServerType.PowerPivot: return message.WorkbookName;
+                case ServerType.PowerBIDesktop: return message.PowerBIFileName;
+                default: return string.Empty;
+            }
         }
 
         public Task Handle(RefreshTablesEvent message)

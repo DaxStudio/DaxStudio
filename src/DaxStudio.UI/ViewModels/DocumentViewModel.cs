@@ -25,6 +25,7 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
+using ADOTabular.Utils;
 using Caliburn.Micro;
 using Dax.Metadata.Extractor;
 using Dax.ViewModel;
@@ -73,7 +74,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
-        , IHandle<ConnectEvent>
+        , IHandleWithTask<ConnectEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
         , IHandle<DefineMeasureOnEditor>
@@ -303,7 +304,8 @@ namespace DaxStudio.UI.ViewModels
                     cnn.IsPowerPivot ? _sourceDocument.FileName : "",
                     "",
                     cnn.IsPowerPivot ? "" : cnn.FileName,
-                    cnn.ServerType)
+                    cnn.ServerType
+                    ,false)
                 { DatabaseName = cnn.Database.Name });
 
                 _sourceDocument = null;
@@ -1123,7 +1125,10 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
-                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, 
+                    database, server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)?ServerType.PowerBIDesktop:ServerType.AnalysisServices,
+                    server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)
+                    ));
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 return true;
             }
@@ -1877,7 +1882,7 @@ namespace DaxStudio.UI.ViewModels
                 qhe = new QueryHistoryEvent(queryText
                     , DateTime.Now
                     , ServerName
-                    , Connection.SelectedDatabaseName
+                    , Connection.SelectedDatabase.Caption
                     , FileName) {Status = QueryStatus.Running};
             }
             catch (Exception ex)
@@ -2109,7 +2114,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!string.IsNullOrEmpty(message.DatabaseName))
             {
-                if (Databases.Contains(message.DatabaseName))
+                if (Databases.Any( db => db.Name == message.DatabaseName))
                     if (Connection.SelectedDatabaseName != message.DatabaseName)
                     {
                         try
@@ -2887,38 +2892,43 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void Handle(ConnectEvent message)
+        public async Task Handle(ConnectEvent message)
         {
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ConnectEvent>","Starting");
             var msg = NewStatusBarMessage("Connecting...");
 
-            Task.Run(() =>
+            await Task.Run(() =>
                 {
 
-                    var cnn = message.PowerPivotModeSelected
-                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
-                                     : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-                    cnn.IsPowerPivot = message.PowerPivotModeSelected;
-                    cnn.ServerType = message.ServerType;
+                    //var cnn = message.PowerPivotModeSelected
+                    //                 ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
+                    //                 : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+                    //cnn.IsPowerPivot = message.PowerPivotModeSelected;
+                    //cnn.ServerType = message.ServerType;
 
-                    if (message.PowerBIFileName.Length > 0)
-                    {
-                        cnn.FileName = message.PowerBIFileName;
-                    }
-                    if (message.WorkbookName.Length > 0)
-                    {
-                        cnn.FileName = message.WorkbookName;
-                    }
+
+                    //if (message.PowerBIFileName.Length > 0)
+                    //{
+                    //    cnn.FileName = message.PowerBIFileName;
+                    //}
+                    //if (message.WorkbookName.Length > 0)
+                    //{
+                    //    cnn.FileName = message.WorkbookName;
+                    //}
+
+                    if (message.RefreshDatabases) RefreshConnectionFilename(message);
+
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
                         Dispatcher.CurrentDispatcher.Invoke(() => {
-                            SetupConnection(message, cnn);
+                            SetupConnection(message);//, cnn);
                         });
                     }
                     else
                     {
-                        SetupConnection(message, cnn);
+                        SetupConnection(message); //, cnn);
                     }
+                    
 
                 }).ContinueWith(taskResult =>
                     {
@@ -2934,6 +2944,7 @@ namespace DaxStudio.UI.ViewModels
                             _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
                             _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                             //LoadState();
+
                         }
                         msg.Dispose(); //reset the status message
 
@@ -2941,7 +2952,24 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void SetupConnection(ConnectEvent message, ADOTabularConnection cnn)
+        private void RefreshConnectionFilename(ConnectEvent message)
+        {
+            try
+            {
+                var server = ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
+                var port = int.Parse(server.Split(':')[1]);
+                var instances = PowerBIHelper.GetLocalInstances(false);
+                var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
+                message.PowerBIFileName = selectedInstance.Name;
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilename), $"Error getting Power BI Filename: {ex.Message}");
+                OutputWarning($"An error occurred while trying to the Power BI Desktop filename:\n{ex.Message}");
+            }
+        }
+
+        private void SetupConnection(ConnectEvent message) //, ADOTabularConnection cnn)
         {
             
             UpdateConnections(message);
@@ -2958,7 +2986,7 @@ namespace DaxStudio.UI.ViewModels
 
             //SelectedDatabase = message.DatabaseName;
 
-            Databases = cnn.Databases.ToBindableCollection();
+            Databases = Connection.Databases.ToBindableCollection();
 
 
             if (Connection == null)
@@ -3004,7 +3032,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public BindableCollection<string> Databases { get; private set; }
+        public BindableCollection<DatabaseDetails> Databases { get; private set; }
         public async Task ClearDatabaseCacheAsync()
         {
             try
