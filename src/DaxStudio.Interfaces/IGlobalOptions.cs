@@ -93,6 +93,8 @@ namespace DaxStudio.Interfaces
         [Hotkey] string HotkeyGotoLine { get; set; }
         [Hotkey] string HotkeyFormatQueryStandard { get; set; }
         [Hotkey] string HotkeyFormatQueryAlternate { get; set; }
+        [Hotkey] string HotkeySelectWord { get; set; }
+        [Hotkey] string HotkeyToggleComment { get; set; }
 
         #endregion
 

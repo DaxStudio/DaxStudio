@@ -18,6 +18,7 @@ using System.Windows.Controls;
 using System.Text;
 using ICSharpCode.AvalonEdit;
 using System.ComponentModel;
+using System.Windows.Documents;
 
 namespace DAXEditorControl
 {
@@ -702,6 +703,28 @@ namespace DAXEditorControl
             }
         }
 
+        public void SelectCurrentWord()
+        {
+
+            var offset = CaretOffset;
+
+            if (offset >= Document.TextLength)
+                offset--;
+
+            int offsetStart = TextUtilities.GetNextCaretPosition(Document, offset, LogicalDirection.Backward, CaretPositioningMode.WordBorder);
+            int offsetEnd = TextUtilities.GetNextCaretPosition(Document, offset, LogicalDirection.Forward, CaretPositioningMode.WordBorder);
+
+            if (offsetEnd == -1 || offsetStart == -1)
+                return;
+
+            var currentChar = Document.GetText(offset, 1);
+
+            if (string.IsNullOrWhiteSpace(currentChar))
+                return;
+
+            Select(offsetStart, offsetEnd - offsetStart);
+            
+        }
 
         public void Dispose()
         {

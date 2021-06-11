@@ -271,6 +271,7 @@
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
+    <Compile Include="Events\SelectWordEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />

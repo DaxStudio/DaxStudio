@@ -89,15 +89,16 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
+        , IHandle<SelectWordEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
-        //, IHandle<UpdateConnectionEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
+        , IHandle<ToggleCommentEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -4470,6 +4471,19 @@ namespace DaxStudio.UI.ViewModels
 
             }
 
+        }
+
+        public void Handle(SelectWordEvent message)
+        {
+            var editor = GetEditor();
+            editor.SelectCurrentWord();
+        }
+
+        public void Handle(ToggleCommentEvent message)
+        {
+            var editor = GetEditor();
+            if (editor.IsInComment()) UnCommentSelection();
+            else CommentSelection();
         }
     }
 }

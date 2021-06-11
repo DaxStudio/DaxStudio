@@ -266,7 +266,8 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
             yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), Options.HotkeyFormatQueryAlternate);
             yield return new InputBindingCommand(this, nameof(GotoLine), Options.HotkeyGotoLine);
-            yield return new InputBindingCommand(this, nameof(ToggleComment), "Ctrl + Divide");
+            yield return new InputBindingCommand(this, nameof(ToggleComment), Options.HotkeyToggleComment);
+            yield return new InputBindingCommand(this, nameof(SelectWord), Options.HotkeySelectWord);
             
         }
 
@@ -455,6 +456,11 @@ namespace DaxStudio.UI.ViewModels
         public void ToggleComment()
         {
             _eventAggregator.PublishOnUIThread(new ToggleCommentEvent());
+        }
+
+        public void SelectWord()
+        {
+            _eventAggregator.PublishOnUIThread(new SelectWordEvent());
         }
 
         #endregion

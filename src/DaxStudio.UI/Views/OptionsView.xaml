@@ -1103,6 +1103,8 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="24"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
@@ -1163,7 +1165,14 @@
                                 <Label Content="Format Query (alternate style)" Padding="2" Grid.Row="11" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="11" Padding="2" Hotkey="{Binding HotkeyFormatQueryAlternate, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}">
+                                <Label Content="Toggle Comment" Padding="2" Grid.Row="12" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="12" Padding="2" Hotkey="{Binding HotkeyToggleComment, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Select Word" Padding="2" Grid.Row="13" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="13" Padding="2" Hotkey="{Binding HotkeySelectWord, Converter={StaticResource HotKeyConverter}}"/>
+
+
+                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="14" Grid.Column="1" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}">
                                     <fa:FontAwesome Icon="Warning" Foreground="Red" Margin="3"/>
                                     <TextBlock x:Name="HotkeyWarningMessage" Foreground="Red"/>
                                     

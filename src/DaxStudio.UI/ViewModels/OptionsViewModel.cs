@@ -1084,6 +1084,34 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _hotkeySelectWord;
+        [DataMember, DefaultValue("Ctrl + W"), Hotkey]
+        public string HotkeySelectWord
+        {
+            get => _hotkeySelectWord;
+            set
+            {
+                _hotkeySelectWord = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeySelectWord), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeySelectWord);
+            }
+        }
+
+        private string _hotkeyToggleComment;
+        [DataMember, DefaultValue("Ctrl + OemQuestion"), Hotkey]
+        public string HotkeyToggleComment
+        {
+            get => _hotkeyToggleComment;
+            set
+            {
+                _hotkeyToggleComment = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyToggleComment), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyToggleComment);
+            }
+        }
+
 
         public void ResetKeyBindings()
         {
