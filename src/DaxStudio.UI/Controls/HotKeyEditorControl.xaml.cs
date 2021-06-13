@@ -36,6 +36,8 @@ namespace DaxStudio.UI.Controls
             binding.ValidationRules.Clear();
             var rule = new HotkeyValidationRule();
             rule.Wrapper = new Wrapper() { Options = (IGlobalOptions)this.DataContext };
+            rule.Wrapper.PropertyName = binding.Path.Path;
+            rule.Wrapper.HotkeyEditorControl = this;
             rule.ValidationStep = ValidationStep.ConvertedProposedValue;
             binding.ValidationRules.Add(rule);
             //this.Validation.AddErrorHandler
@@ -136,7 +138,8 @@ namespace DaxStudio.UI.Controls
             //{
                 txtBox.Dispatcher.BeginInvoke(new System.Action(() =>
                 {
-                    var be = BindingOperations.GetBindingExpressionBase(txtBox, TextBox.TextProperty);
+                    //var be = BindingOperations.GetBindingExpressionBase(txtBox, TextBox.TextProperty);
+                    var be = BindingOperations.GetBindingExpressionBase(txtBox.Parent, HotkeyEditorControl.HotkeyProperty);
                     be.UpdateTarget();
                     txtBox.ToolTip = null;
                 }), System.Windows.Threading.DispatcherPriority.Render);

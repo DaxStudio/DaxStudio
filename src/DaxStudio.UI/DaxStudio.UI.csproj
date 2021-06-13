@@ -237,7 +237,6 @@
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
-    <Compile Include="Behaviours\ResetInvalidTextBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
