@@ -43,8 +43,8 @@
             </Style>-->
 
             <Style x:Key="OrderByButton" TargetType="{x:Type fa:ImageAwesome}">
-                <Setter Property="Width" Value="10"/>
-                <Setter Property="Height" Value="10"/>
+                <Setter Property="Width" Value="12"/>
+                <Setter Property="Height" Value="12"/>
                 <Setter Property="Foreground" Value="Gray"/>
                 <Setter Property="Margin" Value="0,0,5,0"/>
                 <Style.Triggers>
@@ -161,9 +161,9 @@
             </conv:ResourceLookupConverter>-->
             <conv:ResourceLookupConverter x:Key="SortIcons">
                 <ResourceDictionary>
-                    <sys:String x:Key="ASC" >SortAlphaAsc</sys:String>
-                    <sys:String x:Key="DESC">SortAlphaDesc</sys:String>
-                    <sys:String x:Key="None">MinusCircle</sys:String>
+                    <sys:String x:Key="ASC" >SortAmountAsc</sys:String>
+                    <sys:String x:Key="DESC">SortAmountDesc</sys:String>
+                    <sys:String x:Key="None">Ban</sys:String>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
 
@@ -408,8 +408,7 @@
                             <!-- Edit Controls -->
                             <StackPanel Orientation="Horizontal" Grid.Column="2">
                                 <fa:ImageAwesome Icon="{Binding SortDirection, Converter={StaticResource SortIcons}}" Style="{StaticResource OrderByButton}"
-                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action ChangeSortDirection($dataContext)]"
+
                                          />
                             </StackPanel>
 
