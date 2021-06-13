@@ -22,6 +22,7 @@ using ADOTabular;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
+using System.Windows.Data;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -49,7 +50,6 @@ namespace DaxStudio.UI.ViewModels
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
-            OrderBy = new QueryBuilderFieldList(EventAggregator);
             VisibilityChanged += OnVisibilityChanged;
         }
 
@@ -64,6 +64,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
             NotifyOfPropertyChange(nameof(CanOrderBy));
+            NotifyOfPropertyChange(nameof(OrderBy));
         }
 
 
@@ -88,8 +89,15 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderFieldList Columns { get; } 
         [DataMember]
         public QueryBuilderFilterList Filters { get; }
-        [DataMember]
-        public QueryBuilderFieldList OrderBy { get; }
+
+        public ICollectionView OrderBy { get {
+                //Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level); 
+                ICollectionView view = CollectionViewSource.GetDefaultView(Columns);
+                view.Filter = (c) => { return ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Column || ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Level; };
+                return view;
+            } 
+        }
+
 
         private bool _isEnabled = true;
         public new bool IsEnabled
@@ -127,7 +135,7 @@ namespace DaxStudio.UI.ViewModels
             get { 
                 try {
                     var modelCaps = GetModelCapabilities();
-                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items,OrderBy.Items); 
+                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items); 
                 }
                 catch (Exception ex)
                 {

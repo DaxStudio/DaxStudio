@@ -692,16 +692,17 @@ namespace ADOTabular
 
                     // reset temp column variables
                     kpi = new KpiDetails();
-                    refName = "";
-                    caption = "";
+                    refName = string.Empty;
+                    caption = string.Empty;
                     name = null;
-                    description = "";
+                    description = string.Empty;
                     isVisible = true;
-                    contents = "";
-                    dataType = "";
+                    contents = string.Empty;
+                    dataType = string.Empty;
+                    orderBy = string.Empty;
                     stringValueMaxLength = -1;
-                    formatString = "";
-                    defaultAggregateFunction = "";
+                    formatString = string.Empty;
+                    defaultAggregateFunction = string.Empty;
                     nullable = true;
                     colType = ADOTabularObjectType.Column;
                     _variations = new List<ADOTabularVariation>();

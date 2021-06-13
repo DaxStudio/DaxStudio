@@ -9,6 +9,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
@@ -22,106 +23,165 @@
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
             <conv:FilterValueHeightConverter x:Key="FilterValueHeightConverter" />
             <conv:IsMultiLineFilterTypeConverter x:Key="IsMultiLineFilterTypeConverter"/>
-            <conv:CanDuplicateMeasureConverter x:Key="CanDuplicateMeasureConverter"></conv:CanDuplicateMeasureConverter>
-            <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
-            <Setter Property="Width" Value="10"/>
-            <Setter Property="Height" Value="10"/>
-            <Setter Property="Foreground" Value="Gray"/>
+            <conv:CanDuplicateMeasureConverter x:Key="CanDuplicateMeasureConverter"/>
+            <conv:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
+            <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
+
+
+            <!--<Style x:Key="showRow" TargetType="{x:Type RowDefinition}">
+                <Style.Setters>
+                    <Setter Property="Height" Value="*"/>
+                </Style.Setters>
+                <Style.Triggers>
+                    <DataTrigger Binding="{ShowSortOptions}" Value="False">
+                        <DataTrigger.Setters>
+                            <Setter Property="Height" Value="0"/>
+                            <Setter Property="MaxHeight" Value="0"/>
+                        </DataTrigger.Setters>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>-->
+
+            <Style x:Key="OrderByButton" TargetType="{x:Type fa:ImageAwesome}">
+                <Setter Property="Width" Value="10"/>
+                <Setter Property="Height" Value="10"/>
+                <Setter Property="Foreground" Value="Gray"/>
                 <Setter Property="Margin" Value="0,0,5,0"/>
                 <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="Green"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="RemoveButton" TargetType="{x:Type fa:ImageAwesome}">
-            <Setter Property="Width" Value="10"/>
-            <Setter Property="Height" Value="10"/>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="Blue"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            
+            <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
+                <Setter Property="Width" Value="10"/>
+                <Setter Property="Height" Value="10"/>
                 <Setter Property="Foreground" Value="Gray"/>
+                    <Setter Property="Margin" Value="0,0,5,0"/>
+                    <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="Green"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="RemoveButton" TargetType="{x:Type fa:ImageAwesome}">
+                <Setter Property="Width" Value="10"/>
+                <Setter Property="Height" Value="10"/>
+                    <Setter Property="Foreground" Value="Gray"/>
+                    <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="EmptyColumnListStyle"
+               TargetType="ListBox"
+               BasedOn="{StaticResource {x:Type ListBox}}">
                 <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="Red"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="EmptyColumnListStyle"
-           TargetType="ListBox"
-           BasedOn="{StaticResource {x:Type ListBox}}">
-            <Style.Triggers>
-                <!-- Use ListBox.HasItems instead of Binding -->
-                <Trigger Property="HasItems" Value="False">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate>
-                                <Border BorderBrush="Gray" BorderThickness="0.5">
-                                    <StackPanel Orientation="Vertical">
-                                        <TextBlock 
-                                           TextWrapping="Wrap" 
-                                           Padding="5 10 5 0"
-                                           FontWeight ="Bold"
-                                           FontSize="24"
-                                           Margin="0"
-                                           Foreground="LightGray"
-                                           TextAlignment="Center">Drag output Columns / Measures Here</TextBlock>
+                    <!-- Use ListBox.HasItems instead of Binding -->
+                    <Trigger Property="HasItems" Value="False">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate>
+                                    <Border BorderBrush="Gray" BorderThickness="0.5" Background="White">
+                                        <StackPanel Orientation="Vertical">
                                             <TextBlock 
-                                                TextWrapping="Wrap"
-                                                Margin="5 0"
-                                                Foreground="LightGray" TextDecorations="Underline" TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink></TextBlock>
-                                    </StackPanel>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="EmptyFilterListStyle"
-           TargetType="ListBox"
-           BasedOn="{StaticResource {x:Type ListBox}}">
-            <Style.Triggers>
-                <!-- Use ListBox.HasItems instead of Binding -->
-                <Trigger Property="HasItems" Value="False">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate>
-                                <Border BorderBrush="Gray" BorderThickness="0.5">
-                                    <StackPanel Orientation="Vertical">
-                                        <TextBlock  
-                                           TextWrapping="Wrap" 
-                                           Padding="5 10 5 0"
-                                           FontWeight ="Bold"
-                                           FontSize="24"
-                                           Foreground="LightGray"
-                                           TextAlignment="Center">Drag Filter Columns Here</TextBlock>
-                                        <TextBlock Foreground="LightGray" 
-                                                   TextDecorations="Underline" 
-                                                   TextWrapping="Wrap"
-                                                   Margin="5 0"
-                                                   TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink></TextBlock>
-                                    </StackPanel>
+                                               TextWrapping="Wrap" 
+                                               Padding="5 10 5 0"
+                                               FontWeight ="Bold"
+                                               FontSize="24"
+                                               Margin="0"
+                                               Foreground="LightGray"
+                                               TextAlignment="Center">Drag output Columns / Measures Here</TextBlock>
+                                                <TextBlock 
+                                                    TextWrapping="Wrap"
+                                                    Margin="5 0"
+                                                    Foreground="LightGray" TextDecorations="Underline" TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink></TextBlock>
+                                        </StackPanel>
                                     </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="EmptyFilterListStyle"
+               TargetType="ListBox"
+               BasedOn="{StaticResource {x:Type ListBox}}">
+                <Style.Triggers>
+                    <!-- Use ListBox.HasItems instead of Binding -->
+                    <Trigger Property="HasItems" Value="False">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate>
+                                    <Border BorderBrush="Gray" BorderThickness="0.5" Background="White">
+                                        <!--Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>-->
+                                        <StackPanel Orientation="Vertical" >
+                                            <TextBlock  
+                                               TextWrapping="Wrap" 
+                                               Padding="5 10 5 0"
+                                               FontWeight ="Bold"
+                                               FontSize="24"
+                                               Foreground="LightGray"
+                                               TextAlignment="Center">Drag Filter Columns Here</TextBlock>
+                                            <TextBlock Foreground="LightGray" 
+                                                       TextDecorations="Underline" 
+                                                       TextWrapping="Wrap"
+                                                       Margin="5 0"
+                                                       TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink>
+                                            </TextBlock>
+                                            
+                                        </StackPanel>
+                                            <!-- added this border so that the drop target works -->
+                                            <!--<Border Grid.Row="1" Background="White" />-->
+                                        <!--</Grid>-->
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+
+            <!--<conv:ResourceLookupConverter x:Key="SortIcons">
+                <ResourceDictionary>
+                    <fa:ImageAwesome x:Key="ASC" Icon="SortAlphaAsc"/>
+                    <fa:ImageAwesome x:Key="DESC" Icon="SortAlphaDesc"/>
+                    <fa:ImageAwesome x:Key="None" Icon="MinusCircle"/>
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>-->
+            <conv:ResourceLookupConverter x:Key="SortIcons">
+                <ResourceDictionary>
+                    <sys:String x:Key="ASC" >SortAlphaAsc</sys:String>
+                    <sys:String x:Key="DESC">SortAlphaDesc</sys:String>
+                    <sys:String x:Key="None">MinusCircle</sys:String>
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ctrl:ZoomableUserControl.Resources>
-    <Grid>
+    <Grid attachedProperties:GridSplitterController.Watch="{Binding ElementName=SortSplitter}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*" MinHeight="100"/>
+            <RowDefinition Height="3*" MinHeight="100"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*" MinHeight="100"/>
+            <RowDefinition Height="2*" MinHeight="100"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -179,6 +239,7 @@
                         <Grid>
                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" Grid.Column="0" />
                             <fa:ImageAwesome Icon="Star" Width="10" Margin="7,12,0,0" Foreground="Gold" Visibility="{Binding Converter={StaticResource BoolToNotVisibleConverter},Path=IsModelItem}"/>
+                            <fa:ImageAwesome Icon="SortAlphaAsc" Width="10" Margin="7,12,0,0" Foreground="MediumOrchid" Visibility="{Binding Converter={StaticResource BoolToVisibility},Path=IsSortBy}"/>
                         </Grid>
                         <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding DaxName}" Grid.Column="1"/>
    
@@ -292,7 +353,76 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="3"
+
+        
+        <GridSplitter x:Name="SortSplitter" Grid.Row="4" HorizontalAlignment="Stretch" ResizeDirection="Rows" VerticalAlignment="Top"
+                      ShowsPreview="True" Grid.ColumnSpan="3"
+                      Visibility="{Binding ElementName=SortOptions, Path=IsChecked, Converter={StaticResource BoolToVisibility}}"
+                      Height="5" ResizeBehavior="PreviousAndNext"/>
+
+            <ToggleButton x:Name="SortOptions" 
+                          Grid.Row="4" 
+                          Grid.ColumnSpan="3" 
+                          Margin="0 5 0 0" 
+                          Padding="3"
+                          Template="{StaticResource ExpanderButtonTemplate}"
+                          Background="Transparent" 
+                          BorderThickness="0"
+                          ToolTip="Click to Expand/Collapse"
+                          >Order By</ToggleButton>
+
+
+        <!--<Expander Header="Sorting" Grid.Row="4" Grid.ColumnSpan="3" IsExpanded="False">-->
+            <!-- SelectedItem="{Binding SelectedColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 SelectedIndex="{Binding SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->
+            <ListBox Name="OrderBy" ItemsSource="{Binding OrderBy}" 
+                     Grid.Row="5"
+                     Grid.ColumnSpan="3"
+                 Visibility="{Binding ElementName=SortOptions, Path=IsChecked,Converter={StaticResource BoolToVisibility}}"
+                 dd:DragDrop.IsDropTarget="False" 
+                 dd:DragDrop.IsDragSource="False"
+                 dd:DragDrop.UseDefaultDragAdorner="True"
+                 dd:DragDrop.DropTargetAdornerBrush="Coral"
+                 dd:DragDrop.ShowAlwaysDropTargetAdorner="True"
+                 HorizontalContentAlignment="Stretch"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    MinHeight="{Binding ElementName=SortOptions, Path=IsChecked, Converter={StaticResource BoolToDoubleConverter},ConverterParameter=50}"
+                 Margin="10,5">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Tag="{Binding DataContext, ElementName=Columns}" 
+                              cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              cal:Message.Attach="[Event MouseLeftButtonUp] = [Action ChangeSortDirection($dataContext)]"
+                              >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid>
+                                <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" Grid.Column="0" />
+                            </Grid>
+                            <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding SortDescription}" Grid.Column="1"/>
+
+                            <!-- Edit Controls -->
+                            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                <fa:ImageAwesome Icon="{Binding SortDirection, Converter={StaticResource SortIcons}}" Style="{StaticResource OrderByButton}"
+                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action ChangeSortDirection($dataContext)]"
+                                         />
+                            </StackPanel>
+
+                        </Grid>
+
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+
+            </ListBox>
+        <!--</Expander>-->
+      
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.ColumnSpan="3"
                     HorizontalAlignment="Right">
             <Button x:Name="SendTextToEditor" Margin="5" Padding="5,3">
                 <StackPanel Orientation="Vertical">

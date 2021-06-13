@@ -217,6 +217,7 @@
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
+    <Compile Include="AttachedProperties\GridSplitterController.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
@@ -254,6 +255,8 @@
     <Compile Include="Converters\AllNumericConverter.cs" />
     <Compile Include="Converters\BoolNotConverter.cs" />
     <Compile Include="Converters\BoolToCollapsedConverter.cs" />
+    <Compile Include="Converters\BoolToDoubleConverter.cs" />
+    <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
     <Compile Include="Converters\BoolToThicknessConverter.cs">
