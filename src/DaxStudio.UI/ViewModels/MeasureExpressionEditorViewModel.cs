@@ -15,6 +15,7 @@ using System.Windows;
 using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -119,6 +120,7 @@ namespace DaxStudio.UI.ViewModels
             Column.MeasureExpression = MeasureExpression.Text;
             Column.Caption = MeasureName;
             Document.QueryBuilder.IsEnabled = true;
+            EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
         }
 
         public void CancelMeasureExpression()

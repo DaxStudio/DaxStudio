@@ -81,6 +81,8 @@ namespace DaxStudio.UI.Model
             {
                 _overridenMeasureExpression = value;
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(IsModelItem));
+                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -122,6 +124,7 @@ namespace DaxStudio.UI.Model
                 _sortDirection = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(SortDescription));
+                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
             }
         }
 

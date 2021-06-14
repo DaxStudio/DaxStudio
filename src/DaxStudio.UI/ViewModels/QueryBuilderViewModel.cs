@@ -37,6 +37,8 @@ namespace DaxStudio.UI.ViewModels
         ,IHandle<DuplicateMeasureEvent>
         ,IDisposable
         ,ISaveState
+        ,INotifyPropertyChanged
+        ,IHandle<QueryBuilderUpdateEvent>
     {
         const string NewMeasurePrefix = "MyMeasure";
 
@@ -50,7 +52,28 @@ namespace DaxStudio.UI.ViewModels
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
+            Filters.PropertyChanged += OnFiltersPropertyChanged;
             VisibilityChanged += OnVisibilityChanged;
+        }
+
+        private bool _autoGenerate;
+        public bool AutoGenerate { get=> _autoGenerate;
+            set {
+                _autoGenerate = value;
+                NotifyOfPropertyChange();
+                AutoGenerateQuery();
+            } 
+        }
+
+        private void AutoGenerateQuery()
+        {
+            if (AutoGenerate && Columns.Count > 0) SendTextToEditor();
+            if (AutoGenerate && Columns.Count == 0) SendTextToEditor(true);
+        }
+
+        private void OnFiltersPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            AutoGenerateQuery();
         }
 
         private void OnVisibilityChanged(object sender, EventArgs e)
@@ -65,6 +88,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
             NotifyOfPropertyChange(nameof(CanOrderBy));
             NotifyOfPropertyChange(nameof(OrderBy));
+            AutoGenerateQuery();
         }
 
 
@@ -185,9 +209,14 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // ReSharper disable once UnusedMember.Global
+
         public void SendTextToEditor()
         {
-            EventAggregator.PublishOnUIThread(new SendTextToEditor(QueryText));
+            SendTextToEditor(false);
+        }
+        public void SendTextToEditor(bool clearText)
+        {
+            EventAggregator.PublishOnUIThread(new SendTextToEditor(clearText?string.Empty:QueryText,false,true));
         }
 
         public bool CanRunQuery => Columns.Items.Count > 0;
@@ -414,6 +443,18 @@ namespace DaxStudio.UI.ViewModels
             var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
                 { MeasureExpression = message.Measure.MeasureExpression };
             Columns.Add(meas);
+        }
+
+        public void Handle(QueryBuilderUpdateEvent message)
+        {
+            AutoGenerateQuery();
+        }
+
+        public void Clear()
+        {
+            Columns.Items.Clear();
+            Filters.Items.Clear();
+            AutoGenerateQuery();
         }
     }
 }

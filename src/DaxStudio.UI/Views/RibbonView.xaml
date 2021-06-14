@@ -337,7 +337,10 @@
                               >
             
 
-            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
+            <Fluent:RibbonGroupBox Header="Query" 
+                                   x:Name="Query" 
+                                   Margin="4,0" 
+                                   Icon="{StaticResource PlanIcon}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"

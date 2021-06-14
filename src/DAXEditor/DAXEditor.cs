@@ -133,7 +133,18 @@ namespace DAXEditorControl
 
             this.DocumentChanged += DaxEditor_DocumentChanged;
             DataObject.AddPastingHandler(this, OnDataObjectPasting);
+
+            RegiserKeyBindings();
+        }
+
+        private void RegiserKeyBindings()
+        {
             
+            //InputBindings.Add(new InputBinding( new HotKeyCommand(MoveLineUp) , new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Shift)));
+            //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineDown), new KeyGesture(Key.Down, ModifierKeys.Control | ModifierKeys.Shift)));
+
+            //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineUp), new KeyGesture(Key.Up, ModifierKeys.Alt )));
+            //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineDown), new KeyGesture(Key.Down, ModifierKeys.Alt )));
         }
 
         public EventHandler<DataObjectPastingEventArgs> OnPasting { get; set; }
@@ -724,6 +735,66 @@ namespace DAXEditorControl
 
             Select(offsetStart, offsetEnd - offsetStart);
             
+        }
+
+        public void MoveLineUp()
+        {
+            var currentLine = Document.GetLineByOffset(CaretOffset);
+            if (currentLine.LineNumber == 1) return;
+            var line = Document.GetText(currentLine.Offset, currentLine.TotalLength);
+            if (currentLine.LineNumber == Document.LineCount)
+            {
+                // if this is the last line it does not have a trailing newline char
+                // so we need to add one.
+                line = line + '\n';
+            }
+            var prevLine = currentLine.PreviousLine;
+            var prevOffset = prevLine?.Offset ?? 0;
+            var sb = new StringBuilder(Document.Text);
+            sb.Remove(currentLine.Offset, currentLine.TotalLength);
+            sb.Insert(prevOffset, line);
+            Document.Text = sb.ToString();
+
+            // set the caret position to the line we just moved
+            CaretOffset = prevOffset;
+
+//            Select(currentLine.Offset, currentLine.TotalLength);
+//            Cut();
+//            CaretOffset = prevLine.Offset;
+//            Paste();
+//            CaretOffset = prevLine.Offset;
+        }
+
+        public void MoveLineDown()
+        {
+            var currentLine = Document.GetLineByOffset(CaretOffset);
+            if (currentLine.LineNumber == Document.LineCount ) return;
+            var nextLine = currentLine.NextLine;
+            var line = Document.GetText(currentLine.Offset, currentLine.TotalLength);
+            var currentOffset = currentLine.Offset;
+            var nextLen = nextLine.TotalLength;
+            var lastLineOffset = 0;
+            if (nextLine.LineNumber == Document.LineCount) { 
+                line = "\n" + line.TrimEnd();
+                lastLineOffset = 1;
+            }
+
+            var sb = new StringBuilder(Document.Text);
+            sb.Remove(currentOffset, currentLine.TotalLength);
+            sb.Insert(currentOffset + nextLen, line);
+            Document.Text = sb.ToString();
+
+            // Set the caret position to the line we just moved
+            CaretOffset = currentOffset + nextLen + lastLineOffset;
+
+            //var currentLine = Document.GetLineByOffset(CaretOffset);
+            //if (currentLine.LineNumber == Document.LineCount-1) return;
+            //var nextLine = currentLine.NextLine;
+            //Select(currentLine.Offset, currentLine.TotalLength);
+            //Cut();
+            //CaretOffset = currentLine.EndOffset;
+            //Paste();
+
         }
 
         public void Dispose()

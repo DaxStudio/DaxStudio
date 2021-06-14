@@ -89,7 +89,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
-        , IHandle<SelectWordEvent>
+        , IHandle<EditorHotkeyEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
@@ -282,7 +282,7 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
                 _editor.PreviewDragEnter += OnDragEnterPreview;
-
+                _editor.KeyUp += OnKeyUp;
                 _editor.OnPasting += OnPasting;
 
             }
@@ -314,6 +314,15 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
 
+        }
+
+        private void OnKeyUp(object sender, KeyEventArgs e)
+        {
+            if (QueryBuilder.IsVisible && QueryBuilder.AutoGenerate)
+            {
+                QueryBuilder.AutoGenerate = false;
+                OutputMessage("Edits made to query text, disabling Query Builder auto generate");
+            }
         }
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
@@ -433,6 +442,7 @@ namespace DaxStudio.UI.ViewModels
             LastModifiedUtcTime = DateTime.UtcNow;
             NotifyOfPropertyChange(() => IsDirty);
             NotifyOfPropertyChange(() => DisplayName);
+            
         }
 
         private void OnPositionChanged(object sender, EventArgs e)
@@ -808,6 +818,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(IntellisenseProvider);
             _eventAggregator.Unsubscribe(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.Unsubscribe(HelpWatermark);
+            _eventAggregator.Unsubscribe(QueryBuilder);
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
@@ -838,6 +849,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(IntellisenseProvider);
                 _eventAggregator.Subscribe(MeasureExpressionEditor.IntellisenseProvider);
                 _eventAggregator.Subscribe(HelpWatermark);
+                _eventAggregator.Subscribe(QueryBuilder);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in TraceWatchers)
                 {
@@ -1761,7 +1773,7 @@ namespace DaxStudio.UI.ViewModels
                                 if (MessageBox.Show(noQueryMessage, "No Query Text Found", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                                 {
 
-                                    InsertTextAtSelection(queryGenerated, false);
+                                    InsertTextAtSelection(queryGenerated, false, false);
 
                                 }
                                 else
@@ -1983,7 +1995,7 @@ namespace DaxStudio.UI.ViewModels
             editor.Focus();
         }
 
-        private void InsertTextAtSelection(string text, bool selectInsertedText)
+        private void InsertTextAtSelection(string text, bool selectInsertedText, bool replaceQueryBuilderQuery)
         {
 
             var editor = GetEditor();
@@ -1994,17 +2006,36 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
             var startOffset = editor.CaretOffset;
+            var textReplaced = false;
 
-            if (editor.SelectionLength == 0)
+            if (replaceQueryBuilderQuery)
             {
-                editor.Document.Insert(editor.SelectionStart, text);
+                var editorText = editor.Text;
+                Regex rex = new Regex("(/\\* START QUERY BUILDER \\*/.*/\\* END QUERY BUILDER \\*/)",RegexOptions.Singleline);
+                var matches = rex.Match(editorText);
+                if (matches.Success)
+                { 
+                    editorText = rex.Replace(editorText, text,1);
+                    editor.Text = editorText;
+                    textReplaced = true;
+                    return;
+                }
             }
-            else
+            
+            if(!textReplaced)
             {
-                editor.SelectedText = text;
-                startOffset = editor.SelectionStart;
-            }
 
+                if (editor.SelectionLength == 0)
+                {
+                    editor.Document.Insert(editor.SelectionStart, text);
+                }
+                else
+                {
+                    editor.SelectedText = text;
+                    startOffset = editor.SelectionStart;
+                }
+
+            }
             editor.Focus();
 
             if (selectInsertedText)
@@ -2139,7 +2170,7 @@ namespace DaxStudio.UI.ViewModels
             var sm = new LongLineStateMachine(Constants.MaxLineLength);
             var newContent = sm.ProcessString(message.TextToSend);
 
-            InsertTextAtSelection(newContent, message.RunQuery);
+            InsertTextAtSelection(newContent, message.RunQuery, message.ReplaceQueryBuilderQuery);
 
             if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
 
@@ -2239,7 +2270,7 @@ namespace DaxStudio.UI.ViewModels
                 measureDeclaration =
                     $"DEFINE {Environment.NewLine}{measureDeclaration}{Environment.NewLine}";
 
-                InsertTextAtSelection(measureDeclaration, false);
+                InsertTextAtSelection(measureDeclaration, false, false);
             }
         }
 
@@ -4473,10 +4504,23 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public void Handle(SelectWordEvent message)
+        public void Handle(EditorHotkeyEvent message)
         {
             var editor = GetEditor();
-            editor.SelectCurrentWord();
+            if (editor == null) return;
+
+            switch (message.Hotkey)
+            {
+                case EditorHotkey.SelectWord:        
+                    editor.SelectCurrentWord();
+                    break;
+                case EditorHotkey.MoveLineUp:
+                    editor.MoveLineUp();
+                    break;
+                case EditorHotkey.MoveLineDown:
+                    editor.MoveLineDown();
+                    break;
+            }
         }
 
         public void Handle(ToggleCommentEvent message)
