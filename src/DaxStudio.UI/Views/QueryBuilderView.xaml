@@ -27,7 +27,7 @@
             <conv:CanDuplicateMeasureConverter x:Key="CanDuplicateMeasureConverter"/>
             <conv:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
             <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
-
+            <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
 
             <!--<Style x:Key="showRow" TargetType="{x:Type RowDefinition}">
                 <Style.Setters>
@@ -175,7 +175,8 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ctrl:ZoomableUserControl.Resources>
-    <Grid attachedProperties:GridSplitterController.Watch="{Binding ElementName=SortSplitter}">
+    <Grid attachedProperties:GridSplitterController.Watch="{Binding ElementName=SortSplitter}"
+          attachedProperties:GridSplitterController.HeightRatio="0.5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="3*" MinHeight="100"/>
@@ -361,7 +362,7 @@
         
         <GridSplitter x:Name="SortSplitter" Grid.Row="4" HorizontalAlignment="Stretch" ResizeDirection="Rows" VerticalAlignment="Top"
                       ShowsPreview="True" Grid.ColumnSpan="3"
-                      Visibility="{Binding ElementName=SortOptions, Path=IsChecked, Converter={StaticResource BoolToVisibility}}"
+                      Visibility="{Binding ElementName=SortOptions, Path=IsChecked, Converter={StaticResource BoolToHiddenConverter}}"
                       Height="5" ResizeBehavior="PreviousAndNext"/>
 
             <ToggleButton x:Name="SortOptions" 
@@ -427,34 +428,60 @@
         
         <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.ColumnSpan="3"
                     HorizontalAlignment="Right">
-            <ToggleButton x:Name="AutoGenerate" VerticalAlignment="Top" Margin="5" >
-                <fa:ImageAwesome Icon="Refresh"  Width="20" Height="20" >
-                    <!--<fa:ImageAwesome.Style>
-                        <Style TargetType="fa:ImageAwesome">
-                            <Style.Triggers>
-                                <Trigger SourceName="AutoGenerate" Property="IsChecked" Value="True">
-                                    <Setter Property="Background" Value="Red" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </fa:ImageAwesome.Style>-->
-                </fa:ImageAwesome>
-
-                <ToggleButton.ToolTip>Auto Generate Query</ToggleButton.ToolTip>
-          
-
-
-                    <ToggleButton.Style>
+            <ToggleButton x:Name="AutoGenerate" VerticalAlignment="Top" Margin="5" ToolTip="Auto Generate Query" >
+                <fa:ImageAwesome Icon="Refresh"  Width="20" Height="20" />
+                <ToggleButton.Style>
                     <Style TargetType="{x:Type ToggleButton}">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                    <Border HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="border" Padding="5,5,5,5" CornerRadius="3,3,3,3" Background="Transparent" BorderBrush="#66000000" BorderThickness="1,1,1,1" SnapsToDevicePixels="True">
-                                        <fa:ImageAwesome x:Name="RefreshIcon" Icon="Refresh"  Width="20" Height="20" Foreground="LightGray"/>
+                                    <Border 
+                                        HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center" 
+                                        x:Name="border" Padding="5,5,5,5" CornerRadius="3,3,3,3" 
+                                        Background="Transparent" 
+                                        BorderBrush="#66000000" BorderThickness="1,1,1,1" SnapsToDevicePixels="True">
+                                        <fa:ImageAwesome x:Name="RefreshIcon" Icon="Refresh"  Width="20" Height="20" Foreground="Black" RenderTransformOrigin="0.5,0.5">
+                                            <fa:ImageAwesome.RenderTransform>
+                                                <RotateTransform Angle="0"/>
+                                            </fa:ImageAwesome.RenderTransform>
+                                        </fa:ImageAwesome>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="true">
                                             <Setter Property="fa:ImageAwesome.Foreground" TargetName="RefreshIcon" Value="Green"/>
+                                            <Setter Property="Background" TargetName="border" Value="AliceBlue"/>
+                                            <Setter Property="BorderBrush" TargetName="border" Value="Blue"/>
+                                        </Trigger>
+                                       
+                                            <Trigger Property="IsChecked"
+                                                    Value="True">
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="RefreshIcon"
+                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                            To="180"
+                                                            Duration="0:0:0.5">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <PowerEase />
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="RefreshIcon"
+                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                            To="0"
+                                                            Duration="0:0:0.3">
+                                                            
+                                                        </DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
