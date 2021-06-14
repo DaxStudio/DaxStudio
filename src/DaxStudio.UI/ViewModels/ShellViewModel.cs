@@ -269,7 +269,9 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(ToggleComment), Options.HotkeyToggleComment);
             yield return new InputBindingCommand(this, nameof(SelectWord), Options.HotkeySelectWord);
             yield return new InputBindingCommand(this, nameof(MoveLineUp), "Ctrl + OemPlus");
+            yield return new InputBindingCommand(this, nameof(MoveLineUp), "Ctrl + Add");
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + OemMinus");
+            yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + Subtract");
 
         }
 
