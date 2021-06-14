@@ -1860,6 +1860,16 @@ namespace DaxStudio.UI.ViewModels
             //return (string)(key?.GetValue("ExcelBitness", "32Bit")??"32Bit") == "64Bit";
         }
 
+        private bool _hasShowQueryBuilderAutoGenerateWarning;
+        [DataMember, DefaultValue(false)]
+        public bool HasShownQueryBuilderAutoGenerateWarning { get => _hasShowQueryBuilderAutoGenerateWarning;
+            set {
+                _hasShowQueryBuilderAutoGenerateWarning = value;
+                SettingProvider.SetValue(nameof(HasShownQueryBuilderAutoGenerateWarning), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HasShownQueryBuilderAutoGenerateWarning);
+            } 
+        }
+
 
         #region PropertyList support properties
 

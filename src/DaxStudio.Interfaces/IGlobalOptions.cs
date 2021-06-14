@@ -128,6 +128,7 @@ namespace DaxStudio.Interfaces
         bool BlockVersionChecks { get; set; }
         bool BlockCrashReporting { get; set; }
         bool BlockExternalServices { get; set; }
+        bool HasShownQueryBuilderAutoGenerateWarning { get; set; }
 
         bool AnyExternalAccessAllowed();
 

@@ -61,10 +61,18 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoGenerate = value;
                 NotifyOfPropertyChange();
+                if (!Options.HasShownQueryBuilderAutoGenerateWarning) { 
+                    ShowAutoGenerateWarning();
+                    Options.HasShownQueryBuilderAutoGenerateWarning = true;
+                }
                 AutoGenerateQuery();
             } 
         }
 
+        private void ShowAutoGenerateWarning()
+        {
+            MessageBox.Show("Enabling this option will overwrite any changes you may have made to the query text.\n\nHowever, if you make any further manual edits to the query this option will be automatically disabled.", "Auto Generate Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
         private void AutoGenerateQuery()
         {
             if (AutoGenerate && Columns.Count > 0) SendTextToEditor();
