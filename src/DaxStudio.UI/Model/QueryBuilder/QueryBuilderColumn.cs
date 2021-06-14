@@ -7,9 +7,21 @@ using System.Runtime.Serialization;
 using DaxStudio.UI.Events;
 using Microsoft.AnalysisServices.Tabular;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace DaxStudio.UI.Model
 {
+
+    public enum SortDirection
+    {
+        [Description("Ascending")]
+        ASC,
+        [Description("Descending")]
+        DESC,
+        [Description("None")]
+        None
+    }
+
     [DataContract]
     public class QueryBuilderColumn : PropertyChangedBase //, IADOTabularColumn
     {
@@ -72,6 +84,8 @@ namespace DaxStudio.UI.Model
             {
                 _overridenMeasureExpression = value;
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(IsModelItem));
+                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -104,5 +118,21 @@ namespace DaxStudio.UI.Model
             _eventAggregator.PublishOnUIThread(new DuplicateMeasureEvent(this));
             
         }
+
+        private SortDirection _sortDirection = SortDirection.ASC;
+        [DataMember]
+        public SortDirection SortDirection { get => _sortDirection; 
+            set
+            {
+                _sortDirection = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(SortDescription));
+                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            }
+        }
+
+        public string SortDescription => SortDirection== SortDirection.None? $"Do not order by {DaxName}\n(Click to change)" : $"Order by {DaxName} {SortDirection}\n(Click to change)";
+
+        public bool IsSortBy { get; internal set; }
     }
 }

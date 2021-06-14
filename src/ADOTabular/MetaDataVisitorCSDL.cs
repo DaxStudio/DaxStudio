@@ -1422,6 +1422,28 @@ namespace ADOTabular
                 
             }
         }
+        public void Visit(MetadataInfo.DaxTablesRemap daxTablesRemap)
+        {
+            if (daxTablesRemap == null) throw new ArgumentNullException(nameof(daxTablesRemap));
+
+            // Clear remapping
+            daxTablesRemap.RemapNames.Clear();
+            const string QUERY_REMAP_TABLES = @"select TABLE_ID AS TABLE_ID, DIMENSION_NAME AS TABLE_NAME from $SYSTEM.DISCOVER_STORAGE_TABLES WHERE RIGHT ( LEFT ( TABLE_ID, 2 ), 1 ) <> '$'";
+
+            // Load remapping
+            using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_TABLES, null);
+            while (result.Read())
+            {
+                string columnId = GetString(result, 0);
+                string columnName = GetString(result, 1);
+
+                // Safety check - if two tables have the same name
+                // this can throw a duplicate key error; the IF check prevents this.
+                if (!daxTablesRemap.RemapNames.ContainsKey(columnId))
+                    daxTablesRemap.RemapNames.Add(columnId, columnName);
+
+            }
+        }
     }
 
 }

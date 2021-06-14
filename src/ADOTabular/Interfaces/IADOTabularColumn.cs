@@ -18,5 +18,6 @@ namespace ADOTabular.Interfaces
         string MeasureExpression { get; }
 
         string TableName { get; }
+
     }
 }

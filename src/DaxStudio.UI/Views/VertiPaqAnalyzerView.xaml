@@ -614,7 +614,7 @@
                                                                 <TextBlock Text="{Binding Name.RelationshipSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelSize}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipMaxFromCardinality, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelFromCardinality}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipMaxToCardinality, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelToCardinality}"/>
-                                                                <TextBlock Text="{Binding Name.RelationshipMaxOneToManyRatio, StringFormat={}{0:#0.00'%'}}" x:Name="hdrOneToManyRatio" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelOneToManyRatio}"/>
+                                                                <TextBlock Text="{Binding Name.RelationshipMaxOneToManyRatio, StringFormat=P2}" x:Name="hdrOneToManyRatio" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelOneToManyRatio}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipFromMissingKeys, StringFormat=N0}" x:Name="hdrMissingKeys" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colMissingKeys}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipInvalidRows, StringFormat=N0}" x:Name="hdrInvalidRows" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colInvalidRows}"/>
                                                             </StackPanel>
@@ -692,7 +692,7 @@
 
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding OneToManyRatio, StringFormat={}{0:#0.00'%'}}" 
+                            <DataGridTextColumn Binding="{Binding OneToManyRatio, StringFormat=P2}" 
                                                 x:Name="colRelOneToManyRatio" 
                                                 Header="1:M Ratio %" 
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">

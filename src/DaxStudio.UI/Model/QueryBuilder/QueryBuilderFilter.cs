@@ -24,16 +24,17 @@ namespace DaxStudio.UI.Model
     public class QueryBuilderFilter : PropertyChangedBase
     {
 
-        public QueryBuilderFilter(IADOTabularColumn obj, IModelCapabilities modelCapabilities)
+        public QueryBuilderFilter(IADOTabularColumn obj, IModelCapabilities modelCapabilities, IEventAggregator eventAggregator)
         {
             TabularObject = obj;
             ModelCapabilities = modelCapabilities;
+            EventAggregator = eventAggregator;
         }
         [DataMember]
         public IADOTabularColumn TabularObject { get; }
         [DataMember]
         public IModelCapabilities ModelCapabilities { get; }
-
+        public IEventAggregator EventAggregator { get; }
 
         public string Caption => TabularObject.Caption;
 
@@ -47,6 +48,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(nameof(FilterType));
                 NotifyOfPropertyChange(nameof(ShowFilterValue));
                 NotifyOfPropertyChange(nameof(ShowFilterValue2));
+                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -95,15 +97,30 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        private string _filterValue;
         [DataMember]
-        public string FilterValue { get; set; }
+        public string FilterValue { get => _filterValue;
+            set {
+                _filterValue = value;
+                NotifyOfPropertyChange();
+                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            } 
+        }
 
         public bool ShowFilterValue
         {
             get { return FilterType != FilterType.IsBlank && FilterType != FilterType.IsNotBlank; }
         }
+
+        private string _filterValue2;
         [DataMember]
-        public string FilterValue2 { get; set; }
+        public string FilterValue2 { get => _filterValue2;
+            set {
+                _filterValue2 = value;
+                NotifyOfPropertyChange();
+                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            }
+        }
         public bool ShowFilterValue2 => FilterType == FilterType.Between;
 
     }

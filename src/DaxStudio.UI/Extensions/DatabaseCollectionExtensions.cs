@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using ADOTabular;
+using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace DaxStudio.UI.Extensions
 {
     public static class DatabaseCollectionExtensions
     {
-        public static BindableCollection<string> ToBindableCollection(this ADOTabular.ADOTabularDatabaseCollection databases)
+        public static BindableCollection<DatabaseDetails> ToBindableCollection(this ADOTabular.ADOTabularDatabaseCollection databases)
         {
-            var ss = new BindableCollection<string>();
+            var ss = new BindableCollection<DatabaseDetails>();
             foreach (var dbname in databases)
             { ss.Add(dbname); }
             return ss;

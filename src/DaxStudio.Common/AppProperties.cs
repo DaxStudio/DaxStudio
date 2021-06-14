@@ -14,8 +14,10 @@ namespace DaxStudio.Common
         internal const string CrashTest = "CrashTest";
         internal const string Database = "Database";
         internal const string Server = "Server";
+        internal const string ShowHelp = "ShowHelp";
 
         public static CmdLineArgs _args;
+
         public static CmdLineArgs Args(this System.Windows.Application app)
         {
             return new CmdLineArgs(app);

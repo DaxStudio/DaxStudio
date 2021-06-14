@@ -1,4 +1,8 @@
-﻿namespace DaxStudio.UI.ViewModels
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace DaxStudio.UI.ViewModels
 {
     public class ExportDataWizardCsvFolderViewModel : ExportDataWizardBasePageViewModel
     {
@@ -87,6 +91,24 @@
                 }
             }
 
+        }
+
+        public CsvEncoding CsvEncoding
+        {
+            get => Wizard.CsvEncoding; 
+            set { 
+                Wizard.CsvEncoding = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public IEnumerable<CsvEncoding> CsvEncodings
+        {
+            get
+            {
+                var items = Enum.GetValues(typeof(CsvEncoding)).Cast<CsvEncoding>();
+                return items;
+            }
         }
 
         public void Next()

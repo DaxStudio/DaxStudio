@@ -37,6 +37,8 @@ namespace DaxStudio.UI.Utils
 
             foreach (var keyBinding in _stash)
                 _inputBindings.Remove(keyBinding);
+
+            _stash.Clear();
         }
     }
 }

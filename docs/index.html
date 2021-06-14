@@ -32,6 +32,7 @@ js-footer: "/js/index-footer.js"
       <i class="fa fa-calendar" title="release date"></i><span>{% if installer.created_at != nil %}{{ installer.created_at | date_to_string }} {% else %}N/A{% endif %} </span>
       <span id="download_cnt"></span> 
     </div>
+    <div>The details of the new features and fixes included in this release are available in the <a href="/changelog/latest">changelog</a></div>
   </div>
 </div>
 
@@ -140,6 +141,13 @@ js-footer: "/js/index-footer.js"
 <div class="row">
   <div class="col-lg-2 pull-left"><i class="fa fa-cogs" style="font-size: 48pt"></i></div> 
   <div class="col-lg-10">Will DAX Studio run on your machine? Probably, but you can double check the <a href="/documentation/Requirements">Requirements</a> for running DAX Studio</div>
+</div>
+<hr>
+<div class="row">
+  <div class="col-lg-2 pull-left"><i class="fa fa-heart" style="font-size: 48pt"></i></div> 
+  <div class="col-lg-10">Interested in supporting the future development of DAX Studio? There are a number of different ways of <a href="/contributing">helping</a> with this.
+    
+  </div>
 </div>
 
 {% if posts.size > 0 %}

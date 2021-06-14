@@ -46,7 +46,19 @@ namespace DaxStudio.UI.Model
         private ADOTabularConnection _connection;
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
+        private static readonly IEnumerable<string> _keywords;
 
+        static ConnectionManager()
+        {
+            _keywords = new List<string>() 
+            {   "COLUMN", 
+                "DEFINE", 
+                "EVALUATE", 
+                "MEASURE",
+                "RETURN", 
+                "TABLE",
+                "VAR" };
+        }
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
@@ -54,6 +66,8 @@ namespace DaxStudio.UI.Model
         }
 
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
+
+        public IEnumerable<string> Keywords => _keywords;
         public string ApplicationName => _connection.ApplicationName;
 
         public void Cancel()
@@ -108,7 +122,8 @@ namespace DaxStudio.UI.Model
         public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
         public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
-        public DaxColumnsRemap DaxColumnsRemapInfo {
+        public DaxColumnsRemap DaxColumnsRemapInfo
+        {
             get
             {
                 ADOTabularConnection newConn = null;
@@ -121,7 +136,7 @@ namespace DaxStudio.UI.Model
                     var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
                     if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
                     {
-                        newConn = _connection.Clone(new[] {"EffectiveUserName", "Roles"});
+                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
                         conn = newConn;
                     }
                     else
@@ -147,9 +162,52 @@ namespace DaxStudio.UI.Model
                 }
 
             }
-        }   
 
-    #region Query Exection
+        }
+
+        public DaxTablesRemap DaxTablesRemapInfo
+        {
+            get
+            {
+                ADOTabularConnection newConn = null;
+                ADOTabularConnection conn;
+                try
+                {
+                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
+                    // so that we can run the discover command to get the column remap info
+                    // Otherwise we just use the current connection
+                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
+                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    {
+                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
+                        conn = newConn;
+                    }
+                    else
+                    {
+                        conn = _connection;
+                    }
+
+                    var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
+                    return remapInfo;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(DaxColumnsRemapInfo), "Error getting column remap information");
+                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                        $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
+                    return new DaxTablesRemap();
+                }
+                finally
+                {
+                    // close the temporary connection if it's not null
+                    newConn?.Close();
+                }
+
+            }
+        }
+
+        #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
@@ -158,7 +216,17 @@ namespace DaxStudio.UI.Model
         {
             return _retry.Execute(()=> _connection.ExecuteReader(query,paramList));
         }
-        public string FileName => _connection.FileName;
+        public string FileName
+        {
+            get => _connection?.FileName;
+            set
+            {
+                if (_connection != null)
+                {
+                    _connection.FileName = value;
+                }
+            }
+        }
 
         private ADOTabularDynamicManagementViewCollection _dynamicManagementViews;
         public ADOTabularDynamicManagementViewCollection DynamicManagementViews
@@ -224,6 +292,7 @@ namespace DaxStudio.UI.Model
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
+
         public int SPID => _connection.SPID;
         public string ShortFileName => _connection.ShortFileName;
 
@@ -520,6 +589,7 @@ namespace DaxStudio.UI.Model
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(Connect), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
             _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
             ServerType = message.ServerType;
+            FileName = GetFileName(message);
             IsPowerPivot = message.PowerPivotModeSelected;
             _connection.Open();
             SelectedDatabase = _connection.Database;
@@ -528,6 +598,16 @@ namespace DaxStudio.UI.Model
             _eventAggregator.PublishOnUIThread(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
             _eventAggregator.PublishOnBackgroundThread(new DmvsLoadedEvent(DynamicManagementViews));
             _eventAggregator.PublishOnBackgroundThread(new FunctionsLoadedEvent(FunctionGroups));
+        }
+
+        private string GetFileName(ConnectEvent message)
+        {
+            switch (message.ServerType)
+            {
+                case ServerType.PowerPivot: return message.WorkbookName;
+                case ServerType.PowerBIDesktop: return message.PowerBIFileName;
+                default: return string.Empty;
+            }
         }
 
         public Task Handle(RefreshTablesEvent message)

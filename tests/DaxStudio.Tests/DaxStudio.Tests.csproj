@@ -85,6 +85,7 @@
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
     <Compile Include="DaxQueryPreProcessorTests.cs" />
+    <Compile Include="EntryPointTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Helpers\StringHelpers.cs" />
     <Compile Include="LongLineStateMachineTests.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="TreeViewDisplayFolderTests.cs" />
     <Compile Include="QueryBuilderTests.cs" />
     <Compile Include="ServerNameConverterTests.cs" />
+    <Compile Include="DebugCommasTest.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
     <Compile Include="_TestConfig.cs" />
@@ -132,6 +134,10 @@
       <Name>DaxStudio.Interfaces</Name>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\DaxStudio.Standalone\DaxStudio.Standalone.csproj">
+      <Project>{f92e0bfc-f721-4a08-a4fa-77dc019b14f6}</Project>
+      <Name>DaxStudio.Standalone</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\DaxStudio.UI\DaxStudio.UI.csproj">
       <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>
       <Name>DaxStudio.UI</Name>
@@ -144,7 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.0</Version>
+      <Version>6.1.2.30</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>3.2.0</Version>
@@ -153,7 +159,7 @@
       <Version>4.4.1</Version>
     </PackageReference>
     <PackageReference Include="Humanizer">
-      <Version>2.8.26</Version>
+      <Version>2.10.1</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.3</Version>

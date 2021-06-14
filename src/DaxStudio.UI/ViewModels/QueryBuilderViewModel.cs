@@ -22,6 +22,7 @@ using ADOTabular;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
+using System.Windows.Data;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -36,6 +37,8 @@ namespace DaxStudio.UI.ViewModels
         ,IHandle<DuplicateMeasureEvent>
         ,IDisposable
         ,ISaveState
+        ,INotifyPropertyChanged
+        ,IHandle<QueryBuilderUpdateEvent>
     {
         const string NewMeasurePrefix = "MyMeasure";
 
@@ -45,12 +48,40 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
             Document = document;
             Options = globalOptions;
-            Filters = new QueryBuilderFilterList(GetModelCapabilities);
+            Filters = new QueryBuilderFilterList(EventAggregator ,GetModelCapabilities);
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
-            OrderBy = new QueryBuilderFieldList(EventAggregator);
+            Filters.PropertyChanged += OnFiltersPropertyChanged;
             VisibilityChanged += OnVisibilityChanged;
+        }
+
+        private bool _autoGenerate;
+        public bool AutoGenerate { get=> _autoGenerate;
+            set {
+                _autoGenerate = value;
+                NotifyOfPropertyChange();
+                if (!Options.HasShownQueryBuilderAutoGenerateWarning) { 
+                    ShowAutoGenerateWarning();
+                    Options.HasShownQueryBuilderAutoGenerateWarning = true;
+                }
+                AutoGenerateQuery();
+            } 
+        }
+
+        private void ShowAutoGenerateWarning()
+        {
+            MessageBox.Show("Enabling this option will overwrite any changes you may have made to the query text.\n\nHowever, if you make any further manual edits to the query this option will be automatically disabled.", "Auto Generate Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        private void AutoGenerateQuery()
+        {
+            if (AutoGenerate && Columns.Count > 0) SendTextToEditor();
+            if (AutoGenerate && Columns.Count == 0) SendTextToEditor(true);
+        }
+
+        private void OnFiltersPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            AutoGenerateQuery();
         }
 
         private void OnVisibilityChanged(object sender, EventArgs e)
@@ -64,6 +95,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
             NotifyOfPropertyChange(nameof(CanOrderBy));
+            NotifyOfPropertyChange(nameof(OrderBy));
+            AutoGenerateQuery();
         }
 
 
@@ -88,8 +121,15 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderFieldList Columns { get; } 
         [DataMember]
         public QueryBuilderFilterList Filters { get; }
-        [DataMember]
-        public QueryBuilderFieldList OrderBy { get; }
+
+        public ICollectionView OrderBy { get {
+                //Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level); 
+                ICollectionView view = CollectionViewSource.GetDefaultView(Columns);
+                view.Filter = (c) => { return ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Column || ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Level; };
+                return view;
+            } 
+        }
+
 
         private bool _isEnabled = true;
         public new bool IsEnabled
@@ -127,7 +167,7 @@ namespace DaxStudio.UI.ViewModels
             get { 
                 try {
                     var modelCaps = GetModelCapabilities();
-                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items,OrderBy.Items); 
+                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items); 
                 }
                 catch (Exception ex)
                 {
@@ -177,9 +217,14 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // ReSharper disable once UnusedMember.Global
+
         public void SendTextToEditor()
         {
-            EventAggregator.PublishOnUIThread(new SendTextToEditor(QueryText));
+            SendTextToEditor(false);
+        }
+        public void SendTextToEditor(bool clearText)
+        {
+            EventAggregator.PublishOnUIThread(new SendTextToEditor(clearText?string.Empty:QueryText,false,true));
         }
 
         public bool CanRunQuery => Columns.Items.Count > 0;
@@ -351,7 +396,7 @@ namespace DaxStudio.UI.ViewModels
         {
             filename = filename + ".queryBuilder";
             if (!File.Exists(filename)) return;
-
+            
             string data = File.ReadAllText(filename);
             var model = LoadJson(data);
             LoadViewModel(model);
@@ -406,6 +451,18 @@ namespace DaxStudio.UI.ViewModels
             var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
                 { MeasureExpression = message.Measure.MeasureExpression };
             Columns.Add(meas);
+        }
+
+        public void Handle(QueryBuilderUpdateEvent message)
+        {
+            AutoGenerateQuery();
+        }
+
+        public void Clear()
+        {
+            Columns.Items.Clear();
+            Filters.Items.Clear();
+            AutoGenerateQuery();
         }
     }
 }

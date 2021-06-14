@@ -126,5 +126,22 @@ namespace DaxStudio.Common
                 _app.Properties.Add(AppProperties.Database, value);
             }
         }
+
+
+        public bool ShowHelp
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.ShowHelp))
+                    return (bool)_app.Properties[AppProperties.ShowHelp];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.ShowHelp))
+                    _app.Properties[AppProperties.ShowHelp] = value;
+                _app.Properties.Add(AppProperties.ShowHelp, value);
+            }
+        }
     }
 }

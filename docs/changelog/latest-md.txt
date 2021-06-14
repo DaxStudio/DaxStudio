@@ -1,0 +1,9 @@
+---
+title: Changelog
+layout: none
+---
+{% assign release = site.github.latest_release %}# {{ release.name }}
+*Published {{ release.published_at | date_to_string }}*
+
+{{ release.body | replace: '\r\n', '<br/>' }}
+

@@ -365,8 +365,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // Database Dropdown Properties
-        private BindableCollection<string> _databases = new BindableCollection<string>();
-        public BindableCollection<string> Databases
+        private BindableCollection<DatabaseDetails> _databases = new BindableCollection<DatabaseDetails>();
+        public BindableCollection<DatabaseDetails> Databases
         {
             get => _databases;
             set
@@ -386,8 +386,8 @@ namespace DaxStudio.UI.ViewModels
             var newList = _databases.Select(
                                 db => new DatabaseReference()
                                 {
-                                    Name = db,
-                                    Caption = (_metadataProvider.IsPowerPivot || _metadataProvider.IsPowerBIorSSDT) && _metadataProvider?.ShortFileName?.Length > 0 ? _metadataProvider.ShortFileName : db,
+                                    Name = db.Name,
+                                    Caption = db.Caption,
                                     Description = ( _metadataProvider.IsPowerPivot || _metadataProvider.IsPowerBIorSSDT) && _metadataProvider?.FileName?.Length > 0 ? _metadataProvider.FileName : ""
                                 }).OrderBy(db => db.Name);
 
@@ -488,13 +488,13 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private SortedSet<string> CopyDatabaseList(ADOTabularConnection cnn)
-        {
-            var ss = new SortedSet<string>();
-            foreach (var dbname in cnn.Databases)
-            { ss.Add(dbname); }
-            return ss;
-        }
+        //private SortedList<string,DatabaseDetails> CopyDatabaseList(ADOTabularConnection cnn)
+        //{
+        //    var ss = new SortedList<string,DatabaseDetails>();
+        //    foreach (var dbname in cnn.Databases)
+        //    { ss.Add(dbname); }
+        //    return ss;
+        //}
         public IObservableCollection<DatabaseReference> DatabasesView { get; } = new BindableCollection<DatabaseReference>();
 
         #region Busy Overlay
@@ -1110,7 +1110,10 @@ namespace DaxStudio.UI.ViewModels
 
             Execute.OnUIThread(() =>
             {
+                Databases.IsNotifying = false;
                 Databases = _metadataProvider.GetDatabases().ToBindableCollection();
+                Databases.IsNotifying = true;
+                NotifyOfPropertyChange(nameof(Databases));
             });
             var ml = _metadataProvider.GetModels();
             //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
