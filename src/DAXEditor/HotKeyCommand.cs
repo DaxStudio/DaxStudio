@@ -9,8 +9,9 @@ namespace DAXEditorControl
 {
     public class HotKeyCommand: ICommand
     {
-        
+#pragma warning disable CS0067 // this event is never used, but is required by the ICommand interface
         public event EventHandler CanExecuteChanged;
+#pragma warning restore CS0067
         Action action;
 
         /// <summary>

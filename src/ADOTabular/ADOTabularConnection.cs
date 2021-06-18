@@ -748,6 +748,7 @@ namespace ADOTabular
             set
             {
                 _powerBIFileName = value ?? throw new ArgumentNullException(nameof(FileName));
+                if (string.IsNullOrEmpty(_powerBIFileName)) return;
                 if (_powerBIFileName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                   || _powerBIFileName.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
                 {
