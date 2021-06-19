@@ -823,6 +823,8 @@ namespace ADOTabular
             var folderReference = "";
             string folderCaption = null;
             string objRef = "";
+            bool hasVisibleChild = false;
+            IADOTabularFolderReference folder = null;
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
                     && rdr.LocalName == "DisplayFolder"))
@@ -847,13 +849,16 @@ namespace ADOTabular
                         }
                     }
                     // create folder and add to parent's folders
-                    IADOTabularFolderReference folder = new ADOTabularDisplayFolder(folderCaption, folderReference);
+                    folder = new ADOTabularDisplayFolder(folderCaption, folderReference);
                     parent.FolderItems.Add(folder);
 
                     rdr.ReadToNextElement();
 
                     // recurse down to child items
                     ProcessDisplayFolder(rdr, table, folder);
+
+                    if (folder.IsVisible && parent is ADOTabularDisplayFolder parentFolder) parentFolder.IsVisible = true;
+
                     rdr.Read();
                     //rdr.ReadToNextElement(); // read the end element
                 }
@@ -881,7 +886,10 @@ namespace ADOTabular
                     IADOTabularObjectReference reference = new ADOTabularObjectReference("", objRef);
                     parent.FolderItems.Add(reference);
                     var column = table.Columns.GetByPropertyRef(objRef);
-                    if (column != null) { column.IsInDisplayFolder = true; }
+                    if (column != null) { 
+                        column.IsInDisplayFolder = true;
+                        if (column.IsVisible && parent is ADOTabularDisplayFolder displayFolder) displayFolder.IsVisible = true;
+                    }
                     objRef = "";
 
                     rdr.Read();
@@ -905,7 +913,7 @@ namespace ADOTabular
                 //rdr.Read();
 
             }
-
+            
         }
 
         private static KpiDetails ProcessKpi(XmlReader rdr)
