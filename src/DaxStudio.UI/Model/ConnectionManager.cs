@@ -358,8 +358,8 @@ namespace DaxStudio.UI.Model
                 await Task.Run(() => {
                     using (var newConn = _connection.Clone())
                     {
-                        column.SampleData.Clear();
-                        column.SampleData.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
+                        column.SampleData?.Clear();
+                        column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
                     }
                 });
             }

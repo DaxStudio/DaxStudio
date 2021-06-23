@@ -385,11 +385,21 @@ namespace DaxStudio.UI.ViewModels
 
         internal QueryBuilderViewModel LoadJson(string jsontext)
         {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
-            //settings.Converters.Add(new ADOTabularColumnCreationConverter());
-            var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
-            return result;
+            try
+            {
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
+                //settings.Converters.Add(new ADOTabularColumnCreationConverter());
+                var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var msg = $"The following error occurred while attempting to load the Query Builder from your saved file:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(LoadJson), msg);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                return null;
+            }
         }
 
         public void Load(string filename)
@@ -404,6 +414,8 @@ namespace DaxStudio.UI.ViewModels
 
         private void LoadViewModel(QueryBuilderViewModel model)
         {
+            if (model == null) return;
+
             this.Columns.Clear();
             foreach (var col in model.Columns)
             {
