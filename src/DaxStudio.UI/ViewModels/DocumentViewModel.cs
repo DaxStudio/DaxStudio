@@ -1894,7 +1894,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 qhe = new QueryHistoryEvent(queryText
                     , DateTime.Now
-                    , ServerName
+                    , Connection.ServerNameForHistory
                     , Connection.SelectedDatabase.Caption
                     , FileName) {Status = QueryStatus.Running};
             }
@@ -3178,8 +3178,7 @@ namespace DaxStudio.UI.ViewModels
         //private string _selectedDatabase;
         public string StatusBarMessage => _statusBarMessage;
 
-        public string ServerName
-        { get; private set; }
+        public string ServerName { get; private set; }
 
         public IStatusBarMessage NewStatusBarMessage(string message)
         {

@@ -289,6 +289,7 @@ namespace DaxStudio.UI.Model
         public string ServerLocation => _connection.ServerLocation;
         public string ServerMode => _connection.ServerMode;
         public string ServerName => _connection?.ServerName??string.Empty;
+        public string ServerNameForHistory =>  !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }

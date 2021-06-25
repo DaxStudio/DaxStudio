@@ -91,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
             return qhe != null 
-                && (String.Compare( qhe.ServerName, CurrentDocument?.Connection?.ServerName??string.Empty, StringComparison.OrdinalIgnoreCase)==0 || !IsFilteredByServer)
+                && (String.Compare( qhe.ServerName, CurrentDocument?.Connection?.ServerNameForHistory??string.Empty, StringComparison.OrdinalIgnoreCase)==0 || !IsFilteredByServer)
                 && (String.Compare(qhe.DatabaseName,  CurrentDocument?.Connection?.SelectedDatabase?.Caption??string.Empty, StringComparison.OrdinalIgnoreCase) == 0 || !IsFilteredByDatabase);
         }
 
