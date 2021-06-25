@@ -111,6 +111,8 @@ namespace DaxStudio.UI.Model
             {
                 foreach (var folderItem in folder.FolderItems)
                 {
+                    isVisible = false;
+
                     GetChildrenDelegate getChildren = null;
                     if (folderItem is IADOTabularFolderReference fi)
                     {
@@ -138,7 +140,7 @@ namespace DaxStudio.UI.Model
                         };
                     }
 
-                    if (isVisible || (options.ShowHiddenMetadata && metadataPane.ShowHiddenObjects)) 
+                    if (isVisible || metadataPane.ShowHiddenObjects) 
                         lst.Add(new TreeViewColumn(folderItem, getChildren, (table as ADOTabularTable), options, eventAggregator, metadataPane));
                 }
             }
