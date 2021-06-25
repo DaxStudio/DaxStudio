@@ -102,7 +102,7 @@ namespace ADOTabular
                     var db = dd[_currentDatabase];
                     if (_db == null || db.Id != _db.Id) // && db.Name != FileName)
                     {
-                        _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
+                        _db = new ADOTabularDatabase(this, db.Name, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
                         _db.Caption = db.Caption;
                     } 
 

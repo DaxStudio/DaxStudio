@@ -823,7 +823,7 @@ namespace ADOTabular
             var folderReference = "";
             string folderCaption = null;
             string objRef = "";
-            bool hasVisibleChild = false;
+
             IADOTabularFolderReference folder = null;
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
