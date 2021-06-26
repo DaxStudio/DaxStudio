@@ -23,6 +23,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using System.ComponentModel;
+using DaxStudio.UI.Converters;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -35,6 +37,15 @@ namespace DaxStudio.UI.ViewModels
         Cancel,
         ManualConnectionString,
         ChoosingType
+    }
+
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    public enum CsvEncoding
+    {
+        [Description("UTF-8")]
+        UTF8,
+        [Description("Unicode (UTF-16)")]
+        Unicode
     }
 
     public class ExportDataWizardViewModel : Conductor<IScreen>.Collection.OneActive, IDisposable
@@ -162,7 +173,7 @@ namespace DaxStudio.UI.ViewModels
         public string CsvDelimiter { get; set; } = ",";
         public bool CsvQuoteStrings { get; set; } = true;
         public string CsvFolder { get; set; } = "";
-
+        public CsvEncoding CsvEncoding { get; set; } = CsvEncoding.UTF8;
         public ObservableCollection<SelectedTable> Tables { get; } = new ObservableCollection<SelectedTable>();
         public TransitionMap TransitionMap { get; } = new TransitionMap();
         public bool TruncateTables { get; internal set; } = true;
@@ -275,7 +286,8 @@ namespace DaxStudio.UI.ViewModels
             var tableCnt = 0;
             string decimalSep = CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator;
             string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
-            var encoding = new UTF8Encoding(false);
+            Encoding encoding = new UTF8Encoding(false);
+            if (CsvEncoding == CsvEncoding.Unicode) encoding = new UnicodeEncoding();
 
             foreach (var table in  selectedTables)
             {

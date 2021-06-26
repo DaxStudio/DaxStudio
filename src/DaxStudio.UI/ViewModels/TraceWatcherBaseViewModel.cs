@@ -31,7 +31,8 @@ namespace DaxStudio.UI.ViewModels
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
         private IGlobalOptions _globalOptions;
-        
+
+        protected IGlobalOptions GlobalOptions { get => _globalOptions; }
 
         [ImportingConstructor]
         protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions)
@@ -40,8 +41,7 @@ namespace DaxStudio.UI.ViewModels
             _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
             HideCommand = new DelegateCommand(HideTrace, CanHideTrace);
-            Init();
-            
+           
             //_eventAggregator.Subscribe(this); 
         }
 
@@ -56,13 +56,10 @@ namespace DaxStudio.UI.ViewModels
         }
         
 
-        private void Init()
-        {
-            MonitoredEvents = GetMonitoredEvents();
-        }
+
 
         public DelegateCommand HideCommand { get; set; }
-        public List<DaxStudioTraceEventClass> MonitoredEvents { get; private set; }
+        public List<DaxStudioTraceEventClass> MonitoredEvents { get => GetMonitoredEvents(); }
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher

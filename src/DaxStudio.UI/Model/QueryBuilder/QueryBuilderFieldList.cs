@@ -48,6 +48,13 @@ namespace DaxStudio.UI.Model
                 if (col.OrderBy != null)
                 {
                     // TODO - look at automatically pulling OrderBy columns into the query
+                    var sortCol = ((IADOTabularColumn)col.OrderBy) as QueryBuilderColumn;
+                    if (sortCol == null) sortCol = new QueryBuilderColumn(col.OrderBy, true, EventAggregator);
+                    sortCol.IsSortBy = true;
+                    if (!Items.Any(sort => sort.DaxName == sortCol.DaxName)) { 
+                        Items.Add(sortCol);
+                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
+                    }
                 }
             }
             Items.Add(builderItem);
@@ -72,6 +79,7 @@ namespace DaxStudio.UI.Model
         public void Move(int oldIndex, int newIndex)
         {
             Items.Move(oldIndex, newIndex);
+            NotifyOfPropertyChange(nameof(Items));
         }
         public void Insert(int index, IADOTabularColumn item)
         {
@@ -79,6 +87,7 @@ namespace DaxStudio.UI.Model
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(builderItem);
             else Items.Insert(index, builderItem);
+            NotifyOfPropertyChange(nameof(Items));
         }
 
         public int IndexOf(IADOTabularColumn obj)
@@ -90,6 +99,22 @@ namespace DaxStudio.UI.Model
         public void EditMeasure(QueryBuilderColumn measure)
         {
             EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(measure));
+        }
+
+        public void ChangeSortDirection(QueryBuilderColumn column)
+        {
+            switch (column.SortDirection)
+            {
+                case SortDirection.ASC:
+                    column.SortDirection = SortDirection.DESC;
+                    break;
+                case SortDirection.DESC:
+                    column.SortDirection = SortDirection.None;
+                    break;
+                default:
+                    column.SortDirection = SortDirection.ASC;
+                    break;
+            }
         }
 
 

@@ -46,7 +46,7 @@ namespace DaxStudio.UI.Model
 
             if (_globalOptions.BlockVersionChecks)
             {
-                UpdateCompleteCallback?.Invoke();
+                UpdateCompleteCallback?.Invoke(this,null);
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace DaxStudio.UI.Model
             {
                 Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Starting Background Version Check");
                 _isCheckRunning = true;
-                UpdateStartingCallback?.Invoke();
+                UpdateStartingCallback?.Invoke(this, null);
 
                 //give DaxStudio a little time to get started up so we don't impede work people are doing with this version check
                 if (_isAutomaticCheck)
@@ -106,7 +106,7 @@ namespace DaxStudio.UI.Model
             finally
             {
                 _isCheckRunning = false;
-                UpdateCompleteCallback?.Invoke();
+                UpdateCompleteCallback?.Invoke(this, null);
             }
             Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Finished Background Version Check");
         }
@@ -135,36 +135,21 @@ namespace DaxStudio.UI.Model
                 if (_globalOptions.LastVersionCheckUTC == DateTime.MinValue) _globalOptions.LastVersionCheckUTC = DateTime.UtcNow;
                 return _globalOptions.LastVersionCheckUTC;
             }
-            set
-            {
-                _globalOptions.LastVersionCheckUTC = value;
-            }
+            set => _globalOptions.LastVersionCheckUTC = value;
         }
 
 
         public Version DismissedVersion
         {
-            get
-            {
-                return _globalOptions.DismissedVersion ;
-            }
-            set
-            {
-                _globalOptions.DismissedVersion = value;
-            }
+            get => _globalOptions.DismissedVersion;
+            set => _globalOptions.DismissedVersion = value;
         }
 
         public Version LocalVersion => typeof(VersionCheck).Assembly.GetName().Version;
          
         public int LocalBuild =>  typeof(VersionCheck).Assembly.GetName().Version.Build;
 
-        public Version ServerVersion
-        {
-            get
-            {
-                return _globalOptions.CurrentDownloadVersion;
-            }
-        }
+        public Version ServerVersion => _globalOptions.CurrentDownloadVersion;
 
         //private void SetVersionStatus()
         //{
@@ -234,14 +219,14 @@ namespace DaxStudio.UI.Model
                 }
                 finally
                 {
-                    UpdateCompleteCallback?.Invoke();
+                    UpdateCompleteCallback?.Invoke(this, null);
                 }
                 Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Finish");
             }
         }
 
         public string ServerVersionType {
-            get { return _serverVersionType; }
+            get => _serverVersionType;
             set {
                 _serverVersionType = value;
                 NotifyOfPropertyChange(() => ServerVersionType);
@@ -284,8 +269,9 @@ namespace DaxStudio.UI.Model
             } 
         }
 
-        public System.Action UpdateCompleteCallback { get; set; }
-        public System.Action UpdateStartingCallback { get; set; }
+
+        public event EventHandler UpdateCompleteCallback;
+        public event EventHandler UpdateStartingCallback;
     }
 }
 

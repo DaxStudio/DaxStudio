@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Model
 {
     public static class QueryBuilder
     {
-        public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters, ICollection<QueryBuilderColumn> orderBy)
+        public static string BuildQuery(ADOTabular.Interfaces.IModelCapabilities modelCaps, ICollection<QueryBuilderColumn> columns, ICollection<QueryBuilderFilter> filters)
         {
             var measureDefines = BuildMeasureDefines(columns);
 
@@ -20,7 +20,7 @@ namespace DaxStudio.UI.Model
             var columnList = BuildColumns(columns);
             var filterList = BuildFilters(modelCaps, filters);
             var measureList = BuildMeasures(columns);
-            var orderByList = BuildOrderBy(orderBy);
+            var orderByList = BuildOrderBy(columns);
             var filterStart = filters.Count > 0 ? ",\n    " : string.Empty;
             var measureStart = !string.IsNullOrWhiteSpace(measureList)
                 ? columns.Any(c => c.ObjectType == ADOTabularObjectType.Column)
@@ -36,11 +36,11 @@ namespace DaxStudio.UI.Model
         private static string BuildOrderBy(ICollection<QueryBuilderColumn> orderBy)
         {
             // get all levels or columns
-            var cols = orderBy.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level);
+            var cols = orderBy.Where(c => (c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level) && c.SortDirection != SortDirection.None);
             if (!cols.Any()) return string.Empty;
 
             // build a comma separated list of [DaxName] values
-            return "\nORDER BY " + cols.Select(c => c.DaxName).Aggregate((current, next) => current + ",\n    " + next);
+            return "\nORDER BY \n" + cols.Select(c => $"    {c.DaxName} {c.SortDirection}" ).Aggregate((current, next) => current + ",\n" + next);
         }
 
         private static string BuildQueryWithColumns(string measureDefines, string columnList, string filterList, string measureList, string filterStart, string measureStart, string orderBy)

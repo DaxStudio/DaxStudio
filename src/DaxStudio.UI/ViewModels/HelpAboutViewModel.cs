@@ -30,10 +30,10 @@ namespace DaxStudio.UI.ViewModels
 
             // start version check async
             VersionChecker = checker;
-            VersionChecker.UpdateStartingCallback = this.VersionUpdateStarting;
-            VersionChecker.UpdateCompleteCallback = this.VersionUpdateComplete;
+            VersionChecker.UpdateStartingCallback += this.VersionUpdateStarting;
+            VersionChecker.UpdateCompleteCallback += this.VersionUpdateComplete;
 
-            VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
+            //VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
             //Task.Run(() => 
             //    {
             //        this.VersionChecker.Update(); 
@@ -60,12 +60,12 @@ namespace DaxStudio.UI.ViewModels
             //    },TaskScheduler.Default);
         }
 
-        public void VersionUpdateStarting()
+        public void VersionUpdateStarting(object sender, EventArgs e)
         {
             IsCheckRunning = true;
         }
 
-        public void VersionUpdateComplete()
+        public void VersionUpdateComplete(object sender, EventArgs e)
         {
             IsCheckRunning = false;
 
@@ -77,14 +77,14 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => DownloadUrl);
         }
 
-        void VersionChecker_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "VersionStatus")
-            {
+        //void VersionChecker_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        //{
+        //    if (e.PropertyName == "VersionStatus")
+        //    {
 
-                VersionUpdateComplete();
-            }
-        }
+        //        VersionUpdateComplete();
+        //    }
+        //}
 
         public string FullVersionNumber => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version.ToString(3); 
         

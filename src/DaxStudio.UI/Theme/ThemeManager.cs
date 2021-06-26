@@ -35,8 +35,8 @@ namespace DaxStudio.UI.Theme
 
             AppearanceManager.AddThemeResources("Light", new List<Uri>
                 {
-                  // new Uri("/AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                  //,new Uri("/AvalonDock.Themes.VS2013;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
+                //   new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
+                  new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
 
                   //,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
                   new Uri("/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml", UriKind.RelativeOrAbsolute)
@@ -45,8 +45,10 @@ namespace DaxStudio.UI.Theme
 
             AppearanceManager.AddThemeResources("Dark", new List<Uri>
                 {
-                  // new Uri("/AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                  //,new Uri("/AvalonDock.Themes.VS2013;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute)
+                //   new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
+                  new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute)
+                  
+                  //,new Uri("/MLib;component/Themes/DarkTheme.xaml", UriKind.RelativeOrAbsolute)
                   
                   //,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
                   new Uri("/DaxStudio.UI;component/Theme/Dark.DaxStudio.Theme.xaml", UriKind.RelativeOrAbsolute)

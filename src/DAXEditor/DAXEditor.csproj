@@ -108,6 +108,7 @@
     <Compile Include="BracketRenderer\IBracketSearcher.cs" />
     <Compile Include="BracketRenderer\DaxStudioBracketSearcher.cs" />
     <Compile Include="DAXEditor_TextController.cs" />
+    <Compile Include="HotKeyCommand.cs" />
     <Compile Include="HSLColor.cs" />
     <Compile Include="IEditor.cs" />
     <Compile Include="IIntellisenseProvider.cs" />
@@ -172,7 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.1</Version>
+      <Version>6.1.2.30</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>5.0.3</Version>

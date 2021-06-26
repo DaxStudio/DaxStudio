@@ -86,6 +86,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 {
                     Debug.WriteLine("Hack: Force dispose of completion window as StartOffset == EndOffset");
                     CloseCompletionWindow();
+                    //completionWindow = null;
                 }
                 
                 if (completionWindow != null)
@@ -96,7 +97,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                     {
                         Debug.WriteLine("Completion Window has no items - Closing");
                         CloseCompletionWindow();
-                        completionWindow = null;
+                        //completionWindow = null;
                         return;
                     }
                     else
@@ -115,7 +116,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                         if (string.Compare(selectedItem.Text, txt, true) == 0 || string.Compare(selectedItem.Content.ToString(), txt, true) == 0)
                         {
                             CloseCompletionWindow();
-                            completionWindow = null;
+                            //completionWindow = null;
                         }
 
                         return;
@@ -214,13 +215,13 @@ namespace DaxStudio.UI.Utils.Intellisense
                         {
                             Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
                             CloseCompletionWindow();
-                            completionWindow = null;
+                            //completionWindow = null;
                         }
                     }
                     else
                     {
                         CloseCompletionWindow();
-                        completionWindow = null;
+                        //completionWindow = null;
                     }
                 }
 
@@ -269,6 +270,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             completionWindow.PreviewKeyUp += completionWindow_PreviewKeyUp;
             completionWindow.MouseEnter += completionWindow_MouseEnter;
             completionWindow.MouseLeave += completionWindow_MouseLeave;
+
             //completionWindow.IsVisibleChanged += delegate
             //{
             //    System.Diagnostics.Debug.WriteLine("firing CompletionWindow IsVisibleChanged delegate");
@@ -334,31 +336,69 @@ namespace DaxStudio.UI.Utils.Intellisense
             
             if (f != null)
             {
+                ShowFunctionInsightWindow(offset, f);
+            }
+            else
+            {
+                ShowKeywordInsightWindow(offset, funcName);
+            }
+        }
+
+        private void ShowFunctionInsightWindow(int offset, ADOTabularFunction f)
+        {
+            try
+            {
+                Log.Verbose("Showing InsightWindow for function {function}", f.Caption);
+                //_editor.InsightWindow?.Close();
+                _editor.InsightWindow = null;
+                _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                if (offset > -1)
+                {
+                    _editor.InsightWindow.StartOffset = offset;
+                }
+                _editor.InsightWindow.Content = BuildInsightFunctionContent(f, 400);
                 try
                 {
-                    Log.Verbose("Showing InsightWindow for {function}", f.Caption);
-                    //_editor.InsightWindow?.Close();
-                    _editor.InsightWindow = null;
-                    _editor.InsightWindow = new InsightWindow(_editor.TextArea);
-                    if (offset > -1)
-                    {
-                        _editor.InsightWindow.StartOffset = offset;
-                    }
-                    _editor.InsightWindow.Content = BuildInsightContent(f,400);
-                    try
-                    {
-                        _editor.InsightWindow.Show();
-                        
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
-                    }
+                    _editor.InsightWindow.Show();
+
                 }
-                catch (Exception ex)
+                catch (InvalidOperationException ex)
                 {
-                    Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
+                    Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
+            }
+        }
+
+        private void ShowKeywordInsightWindow(int offset, string keyword)
+        {
+            try
+            {
+                Log.Verbose($"Showing InsightWindow for keyword: {keyword}");
+                //_editor.InsightWindow?.Close();
+                _editor.InsightWindow = null;
+                _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                if (offset > -1)
+                {
+                    _editor.InsightWindow.StartOffset = offset;
+                }
+                _editor.InsightWindow.Content = BuildInsightKeywordContent(keyword, 400);
+                try
+                {
+                    _editor.InsightWindow.Show();
+
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Log.Warning("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", "Error calling InsightWindow.Show(): " + ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message}", "DaxIntellisenseProvider", "ShowInsight", ex.Message);
             }
         }
 
@@ -378,7 +418,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             }
         }
 
-        private UIElement BuildInsightContent(ADOTabularFunction f, int maxWidth)
+        private UIElement BuildInsightFunctionContent(ADOTabularFunction f, int maxWidth)
         {
             var grd = new Grid();
             grd.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = maxWidth });
@@ -391,6 +431,27 @@ namespace DaxStudio.UI.Utils.Intellisense
             var docLink = new Hyperlink();
             docLink.Inlines.Add($"https://dax.guide/{f.Caption}");
             docLink.NavigateUri = new Uri($"https://dax.guide/{f.Caption}/?aff=dax-studio");
+            docLink.RequestNavigate += InsightHyperLinkNavigate;
+            tb.Inlines.Add("\n");
+            tb.Inlines.Add(docLink);
+            Grid.SetColumn(tb, 0);
+            grd.Children.Add(tb);
+            return grd;
+        }
+
+        private UIElement BuildInsightKeywordContent(string keyword, int maxWidth)
+        {
+            var grd = new Grid();
+            grd.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = maxWidth });
+            var tb = new TextBlock { TextWrapping = TextWrapping.Wrap };
+            var caption = new Run(keyword);
+            tb.Inlines.Add(new Bold(caption));
+            //tb.Inlines.Add("\n");
+            //tb.Inlines.Add(f.Description);
+
+            var docLink = new Hyperlink();
+            docLink.Inlines.Add($"https://dax.guide/{keyword}");
+            docLink.NavigateUri = new Uri($"https://dax.guide/{keyword}/?aff=dax-studio");
             docLink.RequestNavigate += InsightHyperLinkNavigate;
             tb.Inlines.Add("\n");
             tb.Inlines.Add(docLink);
@@ -536,6 +597,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             // add keywords
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Keywords))
             {
+                // Keywords
                 tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "COLUMN", 200.0));
@@ -552,6 +614,16 @@ namespace DaxStudio.UI.Utils.Intellisense
                 tmpData.Add(new DaxCompletionData(this, "START", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "AT", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "$SYSTEM", 200.0));
+
+                // Data Types
+                tmpData.Add(new DaxCompletionData(this, "BINARY", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "BOOLEAN", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "CURRENCY", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "DATETIME", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "DECIMAL", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "INTEGER", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "STRING", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "VARIANT", 300.0));
             }
             foreach(var itm in tmpData.OrderBy(x => x.Content.ToString()))
             {

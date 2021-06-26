@@ -11,6 +11,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -47,8 +49,21 @@
             </StackPanel>
             <CheckBox x:Name="CsvQuoteStrings" Content="Quote all string fields" Grid.Row="5" Margin="0,10"/>
         </Grid>
-        
-        <StackPanel Orientation="Vertical" Grid.Row="5">
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="File Encoding:"/>
+            <ComboBox x:Name="Encoding" 
+                      Grid.Column="1"
+                      ItemsSource="{Binding CsvEncodings}" 
+                      SelectedItem="{Binding CsvEncoding}"
+                      />
+        </Grid>
+        <StackPanel Orientation="Vertical" Grid.Row="6">
             <Separator Foreground="{DynamicResource DaxStudioBrush}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="Back" Margin="5,10" Padding="10,5">&lt; Back</Button>

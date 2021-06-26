@@ -8,7 +8,7 @@ namespace DaxStudio.UI.Events
     {
 
 
-        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string workbookName, string connectionType, string powerBIFileName, ServerType serverType) 
+        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string workbookName, string connectionType, string powerBIFileName, ServerType serverType, bool refreshDatabases) 
         {
             ConnectionString = connectionString;
             PowerPivotModeSelected = powerPivotModeSelected;
@@ -16,6 +16,7 @@ namespace DaxStudio.UI.Events
             ConnectionType = connectionType;
             PowerBIFileName = powerBIFileName;
             ServerType = serverType;
+            RefreshDatabases = refreshDatabases;
         }
 
         public string ConnectionString{get; set; }
@@ -26,5 +27,6 @@ namespace DaxStudio.UI.Events
         public ServerType ServerType { get; internal set; }
 
         public string DatabaseName { get; set; }
+        public bool RefreshDatabases { get; set; }
     }
 }

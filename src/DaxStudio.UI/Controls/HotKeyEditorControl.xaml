@@ -56,9 +56,7 @@
         <TextBox.ContextMenu>
             <ContextMenu Visibility="Collapsed" />
         </TextBox.ContextMenu>
-        <i:Interaction.Behaviors>
-            <beh:ResetInvalidTextBehaviour />
-        </i:Interaction.Behaviors>
+
         <Validation.ErrorTemplate>
             <ControlTemplate>
                 <StackPanel>

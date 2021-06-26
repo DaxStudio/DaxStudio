@@ -100,10 +100,12 @@ namespace ADOTabular
 
                     // todo - somehow users are getting here, but the current database is not in the dictionary
                     var db = dd[_currentDatabase];
-                    if (_db == null || db.Name != _db.Name)
+                    if (_db == null || db.Id != _db.Id) // && db.Name != FileName)
                     {
-                        _db = new ADOTabularDatabase(this, _currentDatabase, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
-                    }
+                        _db = new ADOTabularDatabase(this, db.Name, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
+                        _db.Caption = db.Caption;
+                    } 
+
                     return _db;
                 }
                 catch (Exception ex)
@@ -247,9 +249,9 @@ namespace ADOTabular
         private static ADOTabularConnectionType GetConnectionType(string serverName)
         {
             var lowerServerName = serverName.Trim();
-            if (lowerServerName.StartsWith("localhost",StringComparison.InvariantCultureIgnoreCase)) return ADOTabularConnectionType.LocalMachine;
-            if (lowerServerName.StartsWith("asazure:", StringComparison.InvariantCultureIgnoreCase) 
-             || lowerServerName.StartsWith("powerbi:", StringComparison.InvariantCultureIgnoreCase)) return ADOTabularConnectionType.Cloud;
+            if (lowerServerName.StartsWith("localhost",StringComparison.OrdinalIgnoreCase)) return ADOTabularConnectionType.LocalMachine;
+            if (lowerServerName.StartsWith("asazure:", StringComparison.OrdinalIgnoreCase) 
+             || lowerServerName.StartsWith("powerbi:", StringComparison.OrdinalIgnoreCase)) return ADOTabularConnectionType.Cloud;
             return ADOTabularConnectionType.LocalNetwork;
         }
 
@@ -522,8 +524,23 @@ namespace ADOTabular
             }
         }
 
-        public void CacheColumnRemapInfo() {
+        public void CacheColumnRemapInfo()
+        {
             if (_daxColumnsRemapInfo == null) _daxColumnsRemapInfo = new MetadataInfo.DaxColumnsRemap(this);
+        }
+
+        private MetadataInfo.DaxTablesRemap _daxTablesRemapInfo; 
+        public MetadataInfo.DaxTablesRemap DaxTablesRemapInfo
+        {
+            get
+            {
+                CacheTableRemapInfo();
+                return _daxTablesRemapInfo;
+            }
+        }
+
+        public void CacheTableRemapInfo() {
+            if (_daxTablesRemapInfo == null) _daxTablesRemapInfo = new MetadataInfo.DaxTablesRemap(this);
         }
 
         private ADOTabularKeywordCollection _keywords;
@@ -731,6 +748,7 @@ namespace ADOTabular
             set
             {
                 _powerBIFileName = value ?? throw new ArgumentNullException(nameof(FileName));
+                if (string.IsNullOrEmpty(_powerBIFileName)) return;
                 if (_powerBIFileName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                   || _powerBIFileName.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
                 {

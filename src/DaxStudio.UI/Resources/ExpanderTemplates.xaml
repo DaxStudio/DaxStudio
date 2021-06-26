@@ -5,7 +5,87 @@
                     xmlns:local="clr-namespace:DaxStudio.UI.Resources">
 
     <conv:MultiplyConverter x:Key="multiplyConverter" />
-    
+
+    <ControlTemplate x:Key="ExpanderButtonTemplate" TargetType="{x:Type ToggleButton}">
+        <Border x:Name="ExpanderButtonBorder"
+        		Background="{TemplateBinding Background}"
+        		BorderBrush="{TemplateBinding BorderBrush}"
+        		BorderThickness="{TemplateBinding BorderThickness}"
+        		Padding="{TemplateBinding Padding}"
+                    >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Rectangle Fill="Transparent"
+        				Grid.ColumnSpan="2"/>
+                <!-- Data="M 1,1.5 L 4.5,5 8,1.5" -->
+                <Path x:Name="Arrow"
+        				Grid.Column="0"
+        				Data="M 1,1 L 4,4.5 1,8"
+        				Stroke="#FF666666"
+        				StrokeThickness="2"
+        				HorizontalAlignment="Center"
+        				VerticalAlignment="Center"
+        				RenderTransformOrigin="0.5,0.5"
+                      >
+                    <Path.RenderTransform>
+                        <RotateTransform Angle="0"/>
+                    </Path.RenderTransform>
+                </Path>
+                <ContentPresenter x:Name="HeaderContent"
+        				Grid.Column="1"
+        				Margin="4,0,0,0"
+        				ContentSource="Content" 
+                                      />
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <!-- Animate arrow when toggled-->
+            <Trigger Property="IsChecked"
+                         Value="False">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                 To="0"
+                                                 Duration="0:0:0.3"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                 To="90"
+                                                 Duration="0:0:0.3"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+
+            <!-- MouseOver, Pressed behaviours-->
+            <Trigger Property="IsMouseOver"
+                                 Value="true">
+
+                <Setter Property="Stroke"
+                                    Value="#222"
+                                    TargetName="Arrow"/>
+            </Trigger>
+            <Trigger Property="IsPressed"
+                                 Value="true">
+
+                <Setter Property="Stroke"
+                                    Value="#FF003366"
+                                    TargetName="Arrow"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+
     <ControlTemplate x:Key="AnimatedExpanderButtonTemp" TargetType="{x:Type ToggleButton}">
         <Border x:Name="ExpanderButtonBorder"
         		Background="{TemplateBinding Background}"
