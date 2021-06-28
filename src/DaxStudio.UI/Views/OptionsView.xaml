@@ -615,444 +615,9 @@
                     </Border>
                 </Grid>
 
-                <!--<ScrollViewer Name="MyScrollViewer" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="5" >
-                    <WrapPanel Width="{Binding ElementName=MyScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
-                        <GroupBox Header="Editor">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
 
-                                <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
-                                <ComboBox x:Name="EditorFontFamily" Grid.Row="0" Grid.Column="1"
-			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-			                        ItemTemplate="{DynamicResource FontTemplate}"
-                                    SelectedItem="{Binding Path=EditorFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
-                                    IsSynchronizedWithCurrentItem="True"
-                                    VerticalContentAlignment="Center"      >
-                                    <ComboBox.Resources>
-
-                                        <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
-                                            <CollectionViewSource.SortDescriptions>
-                                                <ComponentModel:SortDescription PropertyName="Source" />
-                                            </CollectionViewSource.SortDescriptions>
-                                        </CollectionViewSource>
-
-                                        <Style x:Key="FontStyle">
-                                            <Setter Property="Control.FontFamily" Value="{Binding Source}" />
-                                            <Setter Property="Control.FontSize" Value="14" />
-                                        </Style>
-
-                                        <DataTemplate x:Key="FontTemplate">
-                                            <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
-                                                <TextBlock Style="{StaticResource FontStyle}"
-                                           Text="{Binding Source}"
-                                           ToolTip="{Binding Source}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-
-                                    </ComboBox.Resources>
-
-                                    <ComboBox.ItemsSource>
-                                        <Binding Source="{StaticResource myFonts}" />
-                                    </ComboBox.ItemsSource>
-                                </ComboBox>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                --><!--<nud:NumericUpDown   Grid.Row="1" Grid.Column="1" x:Name="EditorFontSize" Value="{Binding EditorFontSize, Converter={StaticResource IntToDoubleConverter}}" StepSize="1" NumberStyle="Integer" IsReadOnly="False" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:NumericUpDown>--><!--
-                                <nud:DoubleUpDown x:Name="ctlEditorFontSize" Value="{Binding EditorFontSize,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  MinValue="6" MaxValue="120" IsReadOnly="False" FormatString="0.0" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" Padding="0" />
-                                <Label Grid.Row="2" Grid.Column="0" Content="Show Line Numbers:" HorizontalAlignment="Right"/>
-                                <CheckBox  x:Name="EditorShowLineNumbers" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" />
-
-                                <Label Grid.Row="3" Grid.Column="0" Content="Enable Intellisense:" HorizontalAlignment="Right"/>
-                                <CheckBox Grid.Row="3" Grid.Column="1" x:Name="EditorEnableIntellisense" VerticalAlignment="Center" />
-
-                                <Label Grid.Row="4" Grid.Column="0" Content="Keep Metadata Search Open:" HorizontalAlignment="Right"/>
-                                <CheckBox Grid.Row="4" Grid.Column="1" x:Name="KeepMetadataSearchOpen" VerticalAlignment="Center" />
-
-                                <Label Grid.Row="5" Grid.Column="0" Content="Convert Tabs to Spaces:" HorizontalAlignment="Right"/>
-                                <CheckBox Grid.Row="5" Grid.Column="1" x:Name="EditorConvertTabsToSpaces" VerticalAlignment="Center" />
-
-                                <Label Grid.Row="6" Grid.Column="0" Content="Enable Word Wrapping:" HorizontalAlignment="Right"/>
-                                <CheckBox Grid.Row="6" Grid.Column="1" x:Name="EditorWordWrap" VerticalAlignment="Center" />
-                                
-                                <Label Grid.Row="7" Grid.Column="0" Content="Indentation Size" HorizontalAlignment="Right"/>
-                                <nud:ShortUpDown Grid.Row="7" Grid.Column="1" MinValue="1" MaxValue="25" Value="{Binding EditorIndentationSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" HorizontalAlignment="Left" x:Name="ctrlEditorIndentationSize" VerticalAlignment="Center" />
-
-                                <Label Grid.Row="8" Grid.Column="0" Content="Intellisense Width:" HorizontalAlignment="Right"/>
-                                <StackPanel Orientation="Horizontal" Grid.Row="8" Grid.Column="1">
-                                    <nud:NumericUpDown x:Name="ctrlCodeCompletionWindowWidthIncrease" Value="{Binding CodeCompletionWindowWidthIncrease,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" MinValue="100" MaxValue="300" Margin="2"  HorizontalAlignment="Left"></nud:NumericUpDown>
-                                    <Label  Content="% (100 - 300)"/>
-                                </StackPanel>
-                            </Grid>
-                        </GroupBox>
-
-                        <GroupBox Header="Proxy"  >
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <Label Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Right" Content="Use System Proxy:"/>
-                                --><!-- Style="{StaticResource checkboxLeftSideText}" --><!--
-                                <CheckBox Grid.Row="0" Grid.Column="1" x:Name="ProxyUseSystem" VerticalAlignment="Center" >
-
-                                </CheckBox>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Proxy Address:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right" />
-                                <wmc:WatermarkTextBox Grid.Row="1" Grid.Column="1" Name="ProxyAddress" MinWidth="250" Margin="0,2,0,2" IsEnabled="{Binding Path=ProxyDontUseSystem}" Watermark="eg. http://myproxy.com:8080" IsReadOnly="{Binding Path=ProxyUseSystem}"  />
-                                <Label Grid.Row="2" Grid.Column="0" Content="Proxy User:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right"/>
-                                <TextBox Grid.Row="2" Grid.Column="1" Name="ProxyUser" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" IsReadOnly="{Binding Path=ProxyUseSystem}"/>
-                                <Label Grid.Row="3" Grid.Column="0" Content="Proxy Password:" IsEnabled="{Binding Path=ProxyDontUseSystem}" HorizontalAlignment="Right"/>
-                                <PasswordBox Grid.Row="3" Grid.Column="1" Name="ProxyPassword" Margin="0,2,0,2"  IsEnabled="{Binding Path=ProxyDontUseSystem}" Focusable="{Binding Path=ProxyDontUseSystem}">
-                                    <i:Interaction.Behaviors>
-                                        <beh:PasswordBoxBindingBehavior SecurePassword="{Binding ProxySecurePassword}"/>
-                                    </i:Interaction.Behaviors>
-                                </PasswordBox>
-                            </Grid>
-                        </GroupBox>
-                        --><!-- Query History --><!--
-                        <GroupBox Header="Query History">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-
-                                </Grid.RowDefinitions>
-                                <Label Grid.Row="0" Grid.Column="0" Content="History Items to Keep:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlQueryHistoryMaxItems" Value="{Binding QueryHistoryMaxItems,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" MinValue="0"  MaxValue="500" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Show Trace Timings:" HorizontalAlignment="Right"/>
-                                <CheckBox Grid.Row="1" Grid.Column="1" x:Name="QueryHistoryShowTraceColumns" VerticalAlignment="Center">( Server / FE / SE timings )</CheckBox>
-                            </Grid>
-                        </GroupBox>
-
-                        <GroupBox Header="Timeouts">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <Label Grid.Row="0" Grid.Column="0" Content="Server Timings End Event Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlQueryEndEventTimeout" Value="{Binding QueryEndEventTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="0" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
-                                <Label Grid.Row="0" Grid.Column="2" Content="seconds"/>
-
-                                <Label Grid.Row="1" Grid.Column="0" Content="DaxFormatter Request Timeout:" HorizontalAlignment="Right"/>
-                                <nud:NumericUpDown Name="ctrlDaxFormatterRequestTimeout" Value="{Binding DaxFormatterRequestTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="1" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
-                                <Label Grid.Row="1" Grid.Column="2" Content="seconds"/>
-
-                                <Label Grid.Row="2" Grid.Column="0" Content="Trace Startup Timeout:" HorizontalAlignment="Right"/>
-                                --><!-- x:Name="ctrlTraceStartupTimeout" --><!--
-                                <nud:NumericUpDown  Value="{Binding TraceStartupTimeout,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" Grid.Row="2" Grid.Column="1" MinValue="0" MaxValue="120" Margin="2" Width="80" HorizontalAlignment="Left"></nud:NumericUpDown>
-                                <Label Grid.Row="2" Grid.Column="2" Content="seconds"/>
-                            </Grid>
-                        </GroupBox>
-
-                        <GroupBox Header="Defaults">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
-
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*"/>
-
-                                </Grid.RowDefinitions>
-                                <Label  Content="Separators:"/>
-                                <ComboBox Grid.Column="1" ItemsSource="{Binding SeparatorTypes}" SelectedItem="{Binding DefaultSeparator}">
-
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                                <Label Grid.Row="1">Run Style:</Label>
-                                <CheckBox  Grid.Row="1" Grid.Column="1" Margin="0,5,0,0" x:Name="SetClearCacheAsDefaultRunStyle" Content="Set 'Clear Cache and Run' as the default"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,40.5,0">This option affects the default run style that is selected when DAX Studio starts up. Any change will take effect next time DAX Studio starts up.</TextBlock>
-                                <Label Grid.Row="3">Title Bar:</Label>
-                                <CheckBox Grid.Row="3"  Grid.Column="1" Margin="0,5,0,0" x:Name="ShowUserInTitlebar" Content="Show Username in Title bar" />
-                                --><!--
-                                <Label Grid.Row="4">Status Bar:</Label>
-                                <CheckBox Grid.Row="4" Grid.Column="1" x:Name="ShowDatabaseIdStatus" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Database ID in Status Bar" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows the ID of the currently selected database in the status bar along with a button to copy this value to the clipboard</TextBlock>
-                                --><!--
-                            </Grid>
-                        </GroupBox>
-
-                        <GroupBox Header="Trace"  >
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                    <CheckBox  Grid.Column="0" x:Name="TraceDirectQuery" Content="DirectQuery Trace"/>
-                                    <Image Source="{StaticResource QuestionIcon}" Width="16" HorizontalAlignment="Right" ToolTipService.HasDropShadow="True" Margin="5,0,0,0" >
-                                        <Image.ToolTip>
-                                            <Grid Width="300" >
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="*"/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock  Margin="6" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="14">Legacy DirectQuery Trace</TextBlock>
-                                                <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="6">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible
-                                                </TextBlock>
-                                            </Grid>
-                                        </Image.ToolTip>
-
-                                    </Image>
-                                </StackPanel>
-                                --><!--<TextBlock Grid.Row="1" Grid.Column="1" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap">On servers prior to v15 (SSAS 2017) we do not trace DirectQuery events by default in the server timings pane as we have to do expensive client side filtering. Only turn this option on if you explicitly need to trace these events on a v14 or earlier data source and turn off the trace as soon as possible</TextBlock>--><!--
-                            </Grid>
-                        </GroupBox>
-                        <GroupBox Header="Results">
-                            <StackPanel Orientation="Vertical">
-                                <Grid Margin="5,5,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-
-                                        <ColumnDefinition Width="*"/>
-
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-
-                                    </Grid.RowDefinitions>
-
-                                    <Label Grid.Row="0" Grid.Column="0" Content="Font Family:" HorizontalAlignment="Right"/>
-                                    <ComboBox x:Name="ResultFontFamily" Grid.Row="0" Grid.Column="1"
-			                        xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-			                        ItemTemplate="{DynamicResource FontTemplate}"
-                                    SelectedItem="{Binding Path=ResultFontFamily, Mode=TwoWay, Converter={StaticResource fontConverter}}"
-                                    IsSynchronizedWithCurrentItem="True"
-                                    VerticalContentAlignment="Center"      >
-                                        <ComboBox.Resources>
-
-                                            <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
-                                                <CollectionViewSource.SortDescriptions>
-                                                    <ComponentModel:SortDescription PropertyName="Source" />
-                                                </CollectionViewSource.SortDescriptions>
-                                            </CollectionViewSource>
-
-                                            <Style x:Key="FontStyle">
-                                                <Setter Property="Control.FontFamily" Value="{Binding Source}" />
-                                                <Setter Property="Control.FontSize" Value="14" />
-                                            </Style>
-
-                                            <DataTemplate x:Key="FontTemplate">
-                                                <StackPanel VirtualizingStackPanel.IsVirtualizing="True">
-                                                    <TextBlock Style="{StaticResource FontStyle}"
-                                           Text="{Binding Source}"
-                                           ToolTip="{Binding Source}" />
-                                                </StackPanel>
-                                            </DataTemplate>
-
-                                        </ComboBox.Resources>
-
-                                        <ComboBox.ItemsSource>
-                                            <Binding Source="{StaticResource myFonts}" />
-                                        </ComboBox.ItemsSource>
-                                    </ComboBox>
-                                    <Label Grid.Row="1" Grid.Column="0" Content="Font Size:" HorizontalAlignment="Right"/>
-                                    <nud:DoubleUpDown Value="{Binding ResultFontSize, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" FormatString="0.0" MinValue="6" MaxValue="120" IsReadOnly="False"  Grid.Row="1" Grid.Column="1" x:Name="ctrlResultFontSize" Width="60" HorizontalAlignment="Left" Margin="0,2,0,2"></nud:DoubleUpDown>
-                                </Grid>
-                                <Grid Margin="5,5,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-
-                                    </Grid.RowDefinitions>
-                                    
-                                    <CheckBox Grid.Row="0" Grid.Column="0" x:Name="ScaleResultsFontWithEditor" VerticalAlignment="Top"  Height="15" Content="Scale Results Font with Editor" Grid.ColumnSpan="2" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5">Setting this option will cause the results font to scale when you change the zoom percentage on the editor</TextBlock>
-                                    <Label Grid.Row="2" Grid.Column="1"   />
-                                    <CheckBox Grid.Row="2" Grid.Column="0" x:Name="ExcludeHeadersWhenCopyingResults" Content="Exclude Headers when Copying Data" VerticalAlignment="Top" Grid.ColumnSpan="2" />
-                                    <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5">Setting this option will just copy the raw data from the query results pane</TextBlock>
-                                    <CheckBox Grid.Row="4" Grid.Column="0" x:Name="ResultAutoFormat" VerticalAlignment="Top"  Content="Automatic Format Results" Grid.ColumnSpan="2"/>
-                                    <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="0,0,0,5" >Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name of the column in the output</TextBlock>
-
-                                </Grid>
-                            </StackPanel>
-                        </GroupBox>
-                        --><!--<GroupBox Header="Excel Addin">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-
-
-
-                                </Grid.RowDefinitions>
-                                <Button Grid.Column="0" x:Name="ToggleExcelAddin" VerticalAlignment="Top" Margin="2,7,2,0" Content="{Binding ToggleExcelAddinCaption}" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0" Text="{Binding ToggleExcelAddinDescription}"></TextBlock>
-
-                            </Grid>
-                        </GroupBox>--><!--
-                        <GroupBox Header="Metadata Pane">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <TextBlock>Tooltips</TextBlock>
-                                <CheckBox Grid.Row="1" x:Name="ShowTooltipBasicStats" Content="Show Basic Statistics" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="2" x:Name="ShowTooltipSampleData" VerticalAlignment="Top" Content="Show Sample Data" Margin="2,7,2,0" />
-
-                                <TextBlock Grid.Row="3" Margin="0 10 0 0">Automatic Metadata Refresh</TextBlock>
-                                <CheckBox Grid.Row="4" x:Name="ShowMetadataRefreshPrompt" Content="Prompt before refreshing metadata" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="5" x:Name="AutoRefreshMetadataLocalMachine" Content="Local Connections (PBI Desktop/SSDT)" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="6" x:Name="AutoRefreshMetadataLocalNetwork" VerticalAlignment="Top" Content="Network Connections (SSAS on-prem)" Margin="2,7,2,0" />
-                                <CheckBox Grid.Row="7" x:Name="AutoRefreshMetadataCloud" VerticalAlignment="Top" Content="Cloud Connections (asazure:// or powerbi://)" Margin="2,7,2,0" />
-
-                                <TextBlock Grid.Row="8" Margin="0 10 0 0">Hidden Objects</TextBlock>
-                                <CheckBox Grid.Row="9" x:Name="ShowHiddenMetadata" Content="Show Hidden Columns, Tables and Measures" VerticalAlignment="Top" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="10" Margin="0 10 0 0">Sorting</TextBlock>
-                                <CheckBox Grid.Row="11" x:Name="SortFoldersFirstInMetadata" Content="Sort Folders first in metadata pane" VerticalAlignment="Top" Margin="2,7,2,0" />
-
-                            </Grid>
-                        </GroupBox>
-
-                        <GroupBox Header="Dax Formatter">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
-
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-
-                                </Grid.RowDefinitions>
-                                <Label  Grid.Column="0" Content="Default Format Style:"/>
-                                <ComboBox Grid.Column="1" ItemsSource="{Binding DaxFormatStyles}" SelectedItem="{Binding DefaultDaxFormatStyle}">
-
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource enumDescriptionConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                                <Label Grid.Row="1" Grid.Column="0" Content="Spacing:"/>
-                                <CheckBox Grid.Row="1" Grid.Column="1" x:Name="SkipSpaceAfterFunctionName" VerticalAlignment="Top" Content="Skip space after function name" Margin="2,7,2,0" />
-                            </Grid>
-                        </GroupBox>
-
-                        <GroupBox Header="Custom Export Format">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <GroupBox Header="CSV Delimiter:" Grid.Row="0">
-                                    <StackPanel Orientation="Vertical">
-                                        <RadioButton GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" >
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Culture Default List Separator  (" />
-                                                <TextBlock x:Name="CultureSpecificListDelimiter"/>
-                                                <TextBlock Text=")"/>
-                                            </StackPanel>
-
-                                        </RadioButton>
-                                        <RadioButton Content="Comma" GroupName="Delimiters" x:Name="UseCommaDelimiter" Grid.Row="2"  Margin="0,3"/>
-                                        <RadioButton Content="Tab" GroupName="Delimiters" x:Name="UseTabDelimiter"  Grid.Row="3" Margin="0,3"/>
-                                        <StackPanel Orientation="Horizontal" Grid.Row="4">
-                                            <RadioButton Content="Other" GroupName="Delimiters" x:Name="UseOtherDelimiter" Margin="0,3" />
-                                            <TextBox x:Name="CustomCsvDelimiter"  Width="30" Margin="10,0" IsEnabled="{Binding IsChecked, ElementName=UseOtherDelimiter}"></TextBox>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </GroupBox>
-                                <CheckBox Content="Quote String Fields" x:Name="CustomCsvQuoteStringFields" Grid.Row="1" Grid.ColumnSpan="2"/>
-                            </Grid>
-                        </GroupBox>
-                        --><!--<GroupBox Header="Logging"  Margin="0,0,10,0" MinWidth="300" Width="375" Foreground="{StaticResource DaxStudioBrush}">
-                        </GroupBox>--><!--
-                    </WrapPanel>
-                </ScrollViewer>-->
             </TabItem>
-            <TabItem Header="Key Bindings" Visibility="{Binding ShowKeyBindings, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TabItem Header="Key Bindings" >
                 <ScrollViewer x:Name="AdvancedScrollViewer2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer2, Path=ViewportWidth}" Orientation="Horizontal" >
                         <GroupBox Header="Hotkeys" Width="450">
@@ -1063,6 +628,8 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -1106,7 +673,10 @@
                                         </Binding>
                                     </controls:HotkeyEditorControl.Hotkey>
                                 </controls:HotkeyEditorControl>-->
+                                
+
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" Hotkey="{Binding HotkeyCommentSelection, Converter={StaticResource HotKeyConverter}, NotifyOnValidationError=True, ValidatesOnNotifyDataErrors=True}"/>
+
 
                                 <Label Content="Uncomment Selection" Padding="2" Grid.Row="2" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
@@ -1139,7 +709,15 @@
                                 <Label Content="Format Query (alternate style)" Padding="2" Grid.Row="11" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="11" Padding="2" Hotkey="{Binding HotkeyFormatQueryAlternate, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="12" Grid.Column="1" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}">
+                                <Label Content="Toggle Comment" Padding="2" Grid.Row="12" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="12" Padding="2" Hotkey="{Binding HotkeyToggleComment, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Select Word" Padding="2" Grid.Row="13" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="13" Padding="2" Hotkey="{Binding HotkeySelectWord, Converter={StaticResource HotKeyConverter}}"/>
+
+
+                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}"
+                                            HorizontalAlignment="Center">
                                     <fa:FontAwesome Icon="Warning" Foreground="Red" Margin="3"/>
                                     <TextBlock x:Name="HotkeyWarningMessage" Foreground="Red"/>
                                     
@@ -1186,9 +764,12 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox Grid.Row="6" Grid.Column="0" x:Name="ShowKeyBindings" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Key Bindings" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">This feature shows a tab in the options screen to alter global hotkeys</TextBlock>
-                               
+                                <CheckBox Grid.Row="1" Grid.Column="0" x:Name="ShowDebugCommas" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Debug Commas" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show a button to move commas from the end of a line to the beginning of the following line. Activating this featurs hides the Swap Delimiters button.</TextBlock>
+                                
+                                <CheckBox Grid.Row="3" Grid.Column="0" x:Name="ShowXmlaInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show XMLA Commands" Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show the XMLA commands in the All Queries window. The new setting will be active after you restart DAX Studio.</TextBlock>
+
 
                             </Grid>
                         </GroupBox>

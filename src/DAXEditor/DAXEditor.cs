@@ -18,6 +18,7 @@ using System.Windows.Controls;
 using System.Text;
 using ICSharpCode.AvalonEdit;
 using System.ComponentModel;
+using System.Windows.Documents;
 
 namespace DAXEditorControl
 {
@@ -132,7 +133,18 @@ namespace DAXEditorControl
 
             this.DocumentChanged += DaxEditor_DocumentChanged;
             DataObject.AddPastingHandler(this, OnDataObjectPasting);
+
+            RegiserKeyBindings();
+        }
+
+        private void RegiserKeyBindings()
+        {
             
+            //InputBindings.Add(new InputBinding( new HotKeyCommand(MoveLineUp) , new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Shift)));
+            //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineDown), new KeyGesture(Key.Down, ModifierKeys.Control | ModifierKeys.Shift)));
+
+            //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineUp), new KeyGesture(Key.Up, ModifierKeys.Alt )));
+            //InputBindings.Add(new InputBinding(new HotKeyCommand(MoveLineDown), new KeyGesture(Key.Down, ModifierKeys.Alt )));
         }
 
         public EventHandler<DataObjectPastingEventArgs> OnPasting { get; set; }
@@ -612,12 +624,14 @@ namespace DAXEditorControl
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors when closing the completion window should be swallowed")]
         public void DisposeCompletionWindow()
         {
-            System.Diagnostics.Debug.WriteLine($"DaxEditor.DisposeCompletionWindow (IsMouseOverCompletionWindow: {IsMouseOverCompletionWindow}");
-            if (IsMouseOverCompletionWindow) return;
+            System.Diagnostics.Debug.WriteLine($"DaxEditor.DisposeCompletionWindow (IsMouseOverCompletionWindow: {_completionWindow?.IsMouseOver}");
+            //if (IsMouseOverCompletionWindow) return;
+            if (_completionWindow != null && _completionWindow.IsMouseOver) return;
+
             lock (_disposeLock)
             {
                 // close function tooltip if it is open
-                if (_toolTip != null)
+               if (_toolTip != null)
                     _toolTip.IsOpen = false;
 
                 // force completion window to close
@@ -632,7 +646,7 @@ namespace DAXEditorControl
                     //swallow any errors while trying to close the completion window
                 }
                 _completionWindow = null;
-
+                return;
             }
         }
 
@@ -700,6 +714,88 @@ namespace DAXEditorControl
             }
         }
 
+        public void SelectCurrentWord()
+        {
+
+            var offset = CaretOffset;
+
+            if (offset >= Document.TextLength)
+                offset--;
+
+            int offsetStart = TextUtilities.GetNextCaretPosition(Document, offset, LogicalDirection.Backward, CaretPositioningMode.WordBorder);
+            int offsetEnd = TextUtilities.GetNextCaretPosition(Document, offset, LogicalDirection.Forward, CaretPositioningMode.WordBorder);
+
+            if (offsetEnd == -1 || offsetStart == -1)
+                return;
+
+            var currentChar = Document.GetText(offset, 1);
+
+            if (string.IsNullOrWhiteSpace(currentChar))
+                return;
+
+            Select(offsetStart, offsetEnd - offsetStart);
+            
+        }
+
+        public void MoveLineUp()
+        {
+            var currentLine = Document.GetLineByOffset(CaretOffset);
+            if (currentLine.LineNumber == 1) return;
+            var line = Document.GetText(currentLine.Offset, currentLine.TotalLength);
+            if (currentLine.LineNumber == Document.LineCount)
+            {
+                // if this is the last line it does not have a trailing newline char
+                // so we need to add one.
+                line = line + '\n';
+            }
+            var prevLine = currentLine.PreviousLine;
+            var prevOffset = prevLine?.Offset ?? 0;
+            var sb = new StringBuilder(Document.Text);
+            sb.Remove(currentLine.Offset, currentLine.TotalLength);
+            sb.Insert(prevOffset, line);
+            Document.Text = sb.ToString();
+
+            // set the caret position to the line we just moved
+            CaretOffset = prevOffset;
+
+//            Select(currentLine.Offset, currentLine.TotalLength);
+//            Cut();
+//            CaretOffset = prevLine.Offset;
+//            Paste();
+//            CaretOffset = prevLine.Offset;
+        }
+
+        public void MoveLineDown()
+        {
+            var currentLine = Document.GetLineByOffset(CaretOffset);
+            if (currentLine.LineNumber == Document.LineCount ) return;
+            var nextLine = currentLine.NextLine;
+            var line = Document.GetText(currentLine.Offset, currentLine.TotalLength);
+            var currentOffset = currentLine.Offset;
+            var nextLen = nextLine.TotalLength;
+            var lastLineOffset = 0;
+            if (nextLine.LineNumber == Document.LineCount) { 
+                line = "\n" + line.TrimEnd();
+                lastLineOffset = 1;
+            }
+
+            var sb = new StringBuilder(Document.Text);
+            sb.Remove(currentOffset, currentLine.TotalLength);
+            sb.Insert(currentOffset + nextLen, line);
+            Document.Text = sb.ToString();
+
+            // Set the caret position to the line we just moved
+            CaretOffset = currentOffset + nextLen + lastLineOffset;
+
+            //var currentLine = Document.GetLineByOffset(CaretOffset);
+            //if (currentLine.LineNumber == Document.LineCount-1) return;
+            //var nextLine = currentLine.NextLine;
+            //Select(currentLine.Offset, currentLine.TotalLength);
+            //Cut();
+            //CaretOffset = currentLine.EndOffset;
+            //Paste();
+
+        }
 
         public void Dispose()
         {

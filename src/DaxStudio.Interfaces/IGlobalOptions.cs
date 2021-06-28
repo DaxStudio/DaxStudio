@@ -93,6 +93,8 @@ namespace DaxStudio.Interfaces
         [Hotkey] string HotkeyGotoLine { get; set; }
         [Hotkey] string HotkeyFormatQueryStandard { get; set; }
         [Hotkey] string HotkeyFormatQueryAlternate { get; set; }
+        [Hotkey] string HotkeySelectWord { get; set; }
+        [Hotkey] string HotkeyToggleComment { get; set; }
 
         #endregion
 
@@ -103,9 +105,13 @@ namespace DaxStudio.Interfaces
         bool VpaxReadStatisticsFromData { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
+        bool ShowDebugCommas { get; set; }
+        bool ShowXmlaInAllQueries { get; set; }
+
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }
+        bool ReplaceXmSqlTableNames { get; set; }
 
 
         #region Methods
@@ -122,6 +128,7 @@ namespace DaxStudio.Interfaces
         bool BlockVersionChecks { get; set; }
         bool BlockCrashReporting { get; set; }
         bool BlockExternalServices { get; set; }
+        bool HasShownQueryBuilderAutoGenerateWarning { get; set; }
 
         bool AnyExternalAccessAllowed();
 

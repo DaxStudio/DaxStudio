@@ -22,7 +22,7 @@ namespace DaxStudio.QueryTrace
             RequestID = e[TraceColumn.RequestID];
             DatabaseName = e.DatabaseName;
             DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName)? powerBiFileName : DatabaseName;
-
+            
             switch (e.EventClass)
             {
                 case TraceEventClass.QueryBegin:
@@ -67,6 +67,12 @@ namespace DaxStudio.QueryTrace
                     break;
                 case TraceEventClass.Error:
                     StartTime = e.StartTime;
+                    NTUserName = e.NTUserName;
+                    break;
+                case TraceEventClass.CommandEnd:
+                    // no additional properties captured, the plan is stored in the text field
+                    Duration = e.Duration;
+                    StartTime = e.CurrentTime;
                     NTUserName = e.NTUserName;
                     break;
                 default:

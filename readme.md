@@ -32,9 +32,12 @@ sudo apt install make gcc
 sudo apt install build-essentials
 sudo apt install ruby ruby-all-dev
 sudo apt install zlib1g-dev
+sudo apt install g++
 sudo gem install jekyll
 sudo gem install bundler
 sudo gem install github-pages 
+bundle install
+bundle update github-pages
 ```
 
 Once you have the above dependencies installed, 

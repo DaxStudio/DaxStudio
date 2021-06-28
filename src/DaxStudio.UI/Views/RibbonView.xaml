@@ -337,7 +337,10 @@
                               >
             
 
-            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
+            <Fluent:RibbonGroupBox Header="Query" 
+                                   x:Name="Query" 
+                                   Margin="4,0" 
+                                   Icon="{StaticResource PlanIcon}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
@@ -710,7 +713,8 @@
                                Icon="{StaticResource SwapDelimitersIcon}"
                                SizeDefinition="Middle,Small,Small"
                                Margin="4,0"
-                               FocusManager.IsFocusScope="True">
+                               FocusManager.IsFocusScope="True"
+                               Visibility="{Binding ShowSwapDelimiters, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+,)"
                                           Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"
@@ -718,7 +722,22 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 
-                 <Fluent:Button Name="CommentSelection"
+                <Fluent:Button Name="DebugCommas"
+                               Header="Debug Commas"
+                               cal:Message.Attach="[Event Click] = [Action MoveCommasToDebugMode()]"
+                               Icon="{StaticResource DebugCommasIcon}"
+                               SizeDefinition="Middle,Small,Small"
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True"
+                               Visibility="{Binding ShowDebugCommas, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Debug Commas (Ctrl+,)"
+                                          Text="Move the comma at the end of a line to the beginning of the next line"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                
+                <Fluent:Button Name="CommentSelection"
                                Header="Comment"
                                cal:Message.Attach="[Event Click] = [Action CommentSelection()]"
                                Icon="{StaticResource CommentIcon}"

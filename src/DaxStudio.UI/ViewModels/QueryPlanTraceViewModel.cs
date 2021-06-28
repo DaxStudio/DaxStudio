@@ -169,9 +169,6 @@ namespace DaxStudio.UI.ViewModels
 
         public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {
             get {
-                //var pqp = from r in _physicalQueryPlanRows
-                //          select r;
-                //return new BindableCollection<PhysicalQueryPlanRow>(pqp);
                 return _physicalQueryPlanRows;
             }
             private set { _physicalQueryPlanRows = value; }
@@ -179,9 +176,6 @@ namespace DaxStudio.UI.ViewModels
 
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows {
             get {
-                //var lqp = from r in _logicalQueryPlanRows
-                //          select r;
-                //return new BindableCollection<LogicalQueryPlanRow>(lqp);
                 return _logicalQueryPlanRows;
             }
             private set { _logicalQueryPlanRows = value; }

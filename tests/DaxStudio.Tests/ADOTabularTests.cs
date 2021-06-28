@@ -374,6 +374,7 @@ namespace DaxStudio.Tests
             Assert.IsNotNull(localDateTable);
             Assert.AreEqual(localDateTable.Columns["MonthNo"], localDateTable.Columns["Month"].OrderBy);
             Assert.AreEqual(localDateTable.Columns["QuarterNo"], localDateTable.Columns["Quarter"].OrderBy);
+            Assert.IsNull(localDateTable.Columns["QuarterNo"].OrderBy);
             Assert.IsNull( localDateTable.Columns["Year"].OrderBy);
 
         }

@@ -117,7 +117,7 @@ namespace DaxStudio.UI.Utils
             //System.Diagnostics.Debug.WriteLine(">>> ParseLine");
 
             // todo - can we get away with 1 string builder instance?
-            StringBuilder sbTableName = new StringBuilder();
+           StringBuilder sbTableName = new StringBuilder();
             StringBuilder sbColumnName = new StringBuilder();
             StringBuilder sbMeasureName = new StringBuilder();
 

@@ -25,6 +25,7 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
+using ADOTabular.Utils;
 using Caliburn.Micro;
 using Dax.Metadata.Extractor;
 using Dax.ViewModel;
@@ -73,7 +74,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
-        , IHandle<ConnectEvent>
+        , IHandleWithTask<ConnectEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
         , IHandle<DefineMeasureOnEditor>
@@ -88,6 +89,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
         , IHandle<SelectedModelChangedEvent>
+        , IHandle<EditorHotkeyEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
@@ -96,6 +98,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
+        , IHandle<ToggleCommentEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -132,10 +135,12 @@ namespace DaxStudio.UI.ViewModels
             , ServerTimingDetailsViewModel serverTimingDetails
             , IGlobalOptions options
             , ISettingProvider settingProvider
-            , IAutoSaver autoSaver)
+            , IAutoSaver autoSaver
+            )
         {
             try
             {
+                
                 _host = host;
                 _eventAggregator = eventAggregator;
                 _eventAggregator.Subscribe(this);
@@ -275,7 +280,7 @@ namespace DaxStudio.UI.ViewModels
                 _editor.TextChanged += OnDocumentChanged;
                 _editor.PreviewDrop += OnDrop;
                 _editor.PreviewDragEnter += OnDragEnterPreview;
-
+                _editor.KeyUp += OnKeyUp;
                 _editor.OnPasting += OnPasting;
 
             }
@@ -298,7 +303,8 @@ namespace DaxStudio.UI.ViewModels
                     cnn.IsPowerPivot ? _sourceDocument.FileName : "",
                     "",
                     cnn.IsPowerPivot ? "" : cnn.FileName,
-                    cnn.ServerType)
+                    cnn.ServerType
+                    ,false)
                 { DatabaseName = cnn.Database.Name });
 
                 _sourceDocument = null;
@@ -306,6 +312,15 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
 
+        }
+
+        private void OnKeyUp(object sender, KeyEventArgs e)
+        {
+            if (QueryBuilder.IsVisible && QueryBuilder.AutoGenerate)
+            {
+                QueryBuilder.AutoGenerate = false;
+                OutputMessage("Edits made to query text, disabling Query Builder auto generate");
+            }
         }
 
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
@@ -425,6 +440,7 @@ namespace DaxStudio.UI.ViewModels
             LastModifiedUtcTime = DateTime.UtcNow;
             NotifyOfPropertyChange(() => IsDirty);
             NotifyOfPropertyChange(() => DisplayName);
+            
         }
 
         private void OnPositionChanged(object sender, EventArgs e)
@@ -461,6 +477,8 @@ namespace DaxStudio.UI.ViewModels
         public bool SimplifyXmSqlSyntax => Options.SimplifyXmSqlSyntax;
 
         public bool ReplaceXmSqlColumnNames => Options.ReplaceXmSqlColumnNames;
+
+        public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
         public bool WordWrap => Options.EditorWordWrap;
 
@@ -798,6 +816,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(IntellisenseProvider);
             _eventAggregator.Unsubscribe(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.Unsubscribe(HelpWatermark);
+            _eventAggregator.Unsubscribe(QueryBuilder);
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
@@ -828,6 +847,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(IntellisenseProvider);
                 _eventAggregator.Subscribe(MeasureExpressionEditor.IntellisenseProvider);
                 _eventAggregator.Subscribe(HelpWatermark);
+                _eventAggregator.Subscribe(QueryBuilder);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in TraceWatchers)
                 {
@@ -921,6 +941,35 @@ namespace DaxStudio.UI.ViewModels
         {
             var dsm = new DelimiterStateMachine();
             return dsm.ProcessString(selectedText);
+        }
+
+        // Moves the commas at the end of a line as the first character in the following line
+        internal void MoveCommasToDebugMode()
+        {
+            try
+            {
+                var editor = GetEditor();
+                if (editor.SelectionLength > 0)
+                {
+                    editor.SelectedText = MoveCommasToDebugMode(editor.SelectedText);
+                }
+                else
+                {
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = MoveCommasToDebugMode(editor.Text);
+                    editor.Document.EndUpdate();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SwapDelimiters), $"ERROR: {ex.Message}");
+                OutputError($"The following error occurred attempting to move commas to debug mode: {ex.Message}");
+            }
+        }
+
+        private string MoveCommasToDebugMode( string text )
+        {
+            return FormatDebugMode.ToggleDebugCommas(text);
         }
 
         public bool Close()
@@ -1017,6 +1066,9 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionPendingEvent(this));
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
+
+            if (TryConnectToCommandLineServer()) return;
+
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
             Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
 
@@ -1067,6 +1119,33 @@ namespace DaxStudio.UI.ViewModels
                 }
             }, TaskScheduler.Default);
 
+        }
+
+        private bool TryConnectToCommandLineServer()
+        {
+            var _app = Application.Current;
+            if (!string.IsNullOrEmpty(_app.Args().Server) && !_app.Properties.Contains("InitialQueryConnected"))
+            {
+                // we only want to run this code to default connection to the server name and database arguments
+                // on the first window that is connected. After that the user can use the copy connection option
+                // so if they start a new window chances are that they want to connect to another source
+                // Setting this property on the app means this code should only run once
+                _app.Properties.Add("InitialQueryConnected", true);
+
+                var server = _app.Args().Server;
+                var database = _app.Args().Database;
+                var initialCatalog = string.Empty;
+                if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
+                Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, 
+                    database, server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)?ServerType.PowerBIDesktop:ServerType.AnalysisServices,
+                    server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)
+                    ));
+                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                return true;
+            }
+            
+            return false;
         }
 
         public bool IsConnected => Connection.IsConnected;
@@ -1696,7 +1775,7 @@ namespace DaxStudio.UI.ViewModels
                                 if (MessageBox.Show(noQueryMessage, "No Query Text Found", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                                 {
 
-                                    InsertTextAtSelection(queryGenerated, false);
+                                    InsertTextAtSelection(queryGenerated, false, false);
 
                                 }
                                 else
@@ -1817,8 +1896,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 qhe = new QueryHistoryEvent(queryText
                     , DateTime.Now
-                    , ServerName
-                    , Connection.SelectedDatabaseName
+                    , Connection.ServerNameForHistory
+                    , Connection.SelectedDatabase.Caption
                     , FileName) {Status = QueryStatus.Running};
             }
             catch (Exception ex)
@@ -1918,7 +1997,7 @@ namespace DaxStudio.UI.ViewModels
             editor.Focus();
         }
 
-        private void InsertTextAtSelection(string text, bool selectInsertedText)
+        private void InsertTextAtSelection(string text, bool selectInsertedText, bool replaceQueryBuilderQuery)
         {
 
             var editor = GetEditor();
@@ -1929,17 +2008,36 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
             var startOffset = editor.CaretOffset;
+            var textReplaced = false;
 
-            if (editor.SelectionLength == 0)
+            if (replaceQueryBuilderQuery)
             {
-                editor.Document.Insert(editor.SelectionStart, text);
+                var editorText = editor.Text;
+                Regex rex = new Regex("(/\\* START QUERY BUILDER \\*/.*/\\* END QUERY BUILDER \\*/)",RegexOptions.Singleline);
+                var matches = rex.Match(editorText);
+                if (matches.Success)
+                { 
+                    editorText = rex.Replace(editorText, text,1);
+                    editor.Text = editorText;
+                    textReplaced = true;
+                    return;
+                }
             }
-            else
+            
+            if(!textReplaced)
             {
-                editor.SelectedText = text;
-                startOffset = editor.SelectionStart;
-            }
 
+                if (editor.SelectionLength == 0)
+                {
+                    editor.Document.Insert(editor.SelectionStart, text);
+                }
+                else
+                {
+                    editor.SelectedText = text;
+                    startOffset = editor.SelectionStart;
+                }
+
+            }
             editor.Focus();
 
             if (selectInsertedText)
@@ -2050,7 +2148,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!string.IsNullOrEmpty(message.DatabaseName))
             {
-                if (Databases.Contains(message.DatabaseName))
+                if (Databases.Any( db => db.Name == message.DatabaseName))
                     if (Connection.SelectedDatabaseName != message.DatabaseName)
                     {
                         try
@@ -2074,7 +2172,7 @@ namespace DaxStudio.UI.ViewModels
             var sm = new LongLineStateMachine(Constants.MaxLineLength);
             var newContent = sm.ProcessString(message.TextToSend);
 
-            InsertTextAtSelection(newContent, message.RunQuery);
+            InsertTextAtSelection(newContent, message.RunQuery, message.ReplaceQueryBuilderQuery);
 
             if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
 
@@ -2174,7 +2272,7 @@ namespace DaxStudio.UI.ViewModels
                 measureDeclaration =
                     $"DEFINE {Environment.NewLine}{measureDeclaration}{Environment.NewLine}";
 
-                InsertTextAtSelection(measureDeclaration, false);
+                InsertTextAtSelection(measureDeclaration, false, false);
             }
         }
 
@@ -2244,6 +2342,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     stvModel.ServerTimingDetails = ServerTimingDetails;
                     stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
+                    stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
                 }
 
                 if (Tracer == null) CreateTracer();
@@ -2827,38 +2926,43 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void Handle(ConnectEvent message)
+        public async Task Handle(ConnectEvent message)
         {
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ConnectEvent>","Starting");
             var msg = NewStatusBarMessage("Connecting...");
 
-            Task.Run(() =>
+            await Task.Run(() =>
                 {
 
-                    var cnn = message.PowerPivotModeSelected
-                                     ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
-                                     : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-                    cnn.IsPowerPivot = message.PowerPivotModeSelected;
-                    cnn.ServerType = message.ServerType;
+                    //var cnn = message.PowerPivotModeSelected
+                    //                 ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
+                    //                 : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+                    //cnn.IsPowerPivot = message.PowerPivotModeSelected;
+                    //cnn.ServerType = message.ServerType;
 
-                    if (message.PowerBIFileName.Length > 0)
-                    {
-                        cnn.FileName = message.PowerBIFileName;
-                    }
-                    if (message.WorkbookName.Length > 0)
-                    {
-                        cnn.FileName = message.WorkbookName;
-                    }
+
+                    //if (message.PowerBIFileName.Length > 0)
+                    //{
+                    //    cnn.FileName = message.PowerBIFileName;
+                    //}
+                    //if (message.WorkbookName.Length > 0)
+                    //{
+                    //    cnn.FileName = message.WorkbookName;
+                    //}
+
+                    if (message.RefreshDatabases) RefreshConnectionFilename(message);
+
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
                     {
                         Dispatcher.CurrentDispatcher.Invoke(() => {
-                            SetupConnection(message, cnn);
+                            SetupConnection(message);//, cnn);
                         });
                     }
                     else
                     {
-                        SetupConnection(message, cnn);
+                        SetupConnection(message); //, cnn);
                     }
+                    
 
                 }).ContinueWith(taskResult =>
                     {
@@ -2874,6 +2978,7 @@ namespace DaxStudio.UI.ViewModels
                             _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
                             _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
                             //LoadState();
+
                         }
                         msg.Dispose(); //reset the status message
 
@@ -2881,7 +2986,24 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void SetupConnection(ConnectEvent message, ADOTabularConnection cnn)
+        private void RefreshConnectionFilename(ConnectEvent message)
+        {
+            try
+            {
+                var server = ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
+                var port = int.Parse(server.Split(':')[1]);
+                var instances = PowerBIHelper.GetLocalInstances(false);
+                var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
+                message.PowerBIFileName = selectedInstance.Name;
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilename), $"Error getting Power BI Filename: {ex.Message}");
+                OutputWarning($"An error occurred while trying to the Power BI Desktop filename:\n{ex.Message}");
+            }
+        }
+
+        private void SetupConnection(ConnectEvent message) //, ADOTabularConnection cnn)
         {
             
             UpdateConnections(message);
@@ -2898,7 +3020,7 @@ namespace DaxStudio.UI.ViewModels
 
             //SelectedDatabase = message.DatabaseName;
 
-            Databases = cnn.Databases.ToBindableCollection();
+            Databases = Connection.Databases.ToBindableCollection();
 
 
             if (Connection == null)
@@ -2944,7 +3066,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public BindableCollection<string> Databases { get; private set; }
+        public BindableCollection<DatabaseDetails> Databases { get; private set; }
         public async Task ClearDatabaseCacheAsync()
         {
             try
@@ -3058,8 +3180,7 @@ namespace DaxStudio.UI.ViewModels
         //private string _selectedDatabase;
         public string StatusBarMessage => _statusBarMessage;
 
-        public string ServerName
-        { get; private set; }
+        public string ServerName { get; private set; }
 
         public IStatusBarMessage NewStatusBarMessage(string message)
         {
@@ -3343,14 +3464,26 @@ namespace DaxStudio.UI.ViewModels
                 // todo - do I want to disable the editor control while formatting is in progress???
 
                 string qry;
-                var editor = GetEditor();
-                // if there is a selection send that to DocumentViewModel.com otherwise send all the text
-                qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
-                if (editor.SelectionLength > 0)
+                DAXEditorControl.DAXEditor editor;
+
+                try
                 {
-                    var loc = editor.Document.GetLocation(editor.SelectionStart);
-                    colOffset = loc.Column;
-                    rowOffset = loc.Line;
+                    
+                    editor = GetEditor();
+                    // if there is a selection send that to DocumentViewModel.com otherwise send all the text
+                    qry = editor.SelectionLength == 0 ? editor.Text : editor.SelectedText;
+                    if (editor.SelectionLength > 0)
+                    {
+                        var loc = editor.Document.GetLocation(editor.SelectionStart);
+                        colOffset = loc.Column;
+                        rowOffset = loc.Line;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(FormatQuery), ex.Message);
+                    OutputError($"The following error occurred while attempting to get the query text from the edit window:\n{ex.Message}");
+                    return;
                 }
                 Log.Verbose("{class} {method} {event}", "DocumentViewModel", "FormatQuery", "About to Call daxformatter.com");
 
@@ -4124,7 +4257,7 @@ namespace DaxStudio.UI.ViewModels
             DataObject data = dropInfo.Data as DataObject;
             bool stringPresent = data?.GetDataPresent(DataFormats.StringFormat)??false;
 
-            if (dropInfo.DragInfo?.DataObject is IADOTabularObject || stringPresent)
+            if (dropInfo.DragInfo?.SourceItem is IADOTabularObject || stringPresent)
             {
                 dropInfo.Effects = DragDropEffects.Move;
                 var pt = dropInfo.DropPosition;
@@ -4142,7 +4275,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Drop(IDropInfo dropInfo)
         {
-            var obj = dropInfo.DragInfo?.DataObject as IADOTabularObject;
+            var obj = dropInfo.DragInfo?.SourceItem as IADOTabularObject;
             var text = string.Empty;
             if (obj != null)
             {
@@ -4347,7 +4480,8 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (pos == null) return;
                 var word = _editor.GetCurrentWord((TextViewPosition) pos);
-                if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+                if ( Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase)
+                  || Connection.Keywords.Contains(word,StringComparer.OrdinalIgnoreCase))
                 {
                     System.Diagnostics.Debug.WriteLine($"Hovering over '{word}'");
                     Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnEditorHover),
@@ -4369,6 +4503,32 @@ namespace DaxStudio.UI.ViewModels
 
             }
 
+        }
+
+        public void Handle(EditorHotkeyEvent message)
+        {
+            var editor = GetEditor();
+            if (editor == null) return;
+
+            switch (message.Hotkey)
+            {
+                case EditorHotkey.SelectWord:        
+                    editor.SelectCurrentWord();
+                    break;
+                case EditorHotkey.MoveLineUp:
+                    editor.MoveLineUp();
+                    break;
+                case EditorHotkey.MoveLineDown:
+                    editor.MoveLineDown();
+                    break;
+            }
+        }
+
+        public void Handle(ToggleCommentEvent message)
+        {
+            var editor = GetEditor();
+            if (editor.IsInComment()) UnCommentSelection();
+            else CommentSelection();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
+using DaxStudio.UI.Controls;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace DaxStudio.UI.Validation
 {
@@ -32,6 +34,18 @@ namespace DaxStudio.UI.Validation
             get => (string)GetValue(PropertyNameProperty);
             set => SetValue(PropertyNameProperty, value);
         }
+
+        public static readonly DependencyProperty HotkeyEditorControlProperty =
+             DependencyProperty.Register("HotkeyEditorControl", typeof(HotkeyEditorControl),
+             typeof(Wrapper));
+
+        public HotkeyEditorControl HotkeyEditorControl
+        {
+            get => (HotkeyEditorControl)GetValue(HotkeyEditorControlProperty);
+            set => SetValue(HotkeyEditorControlProperty, value);
+        }
+
+
     }
 
     public class HotkeyValidationRule : System.Windows.Controls.ValidationRule
@@ -49,6 +63,10 @@ namespace DaxStudio.UI.Validation
                 if ((string)prop.GetValue(this.Wrapper.Options) == hotkey) {
                     msg = $"Cannot add Duplicate Hotkey '{hotkey}'";
                     this.Wrapper.Options.HotkeyWarningMessage = msg;
+                    // rollback to original value
+                    BindingOperations.GetBindingExpressionBase(
+                        ((Control)this.Wrapper.HotkeyEditorControl), HotkeyEditorControl.HotkeyProperty).UpdateTarget();
+                    
                     return new ValidationResult(false, msg);
                 }
             }
@@ -59,5 +77,6 @@ namespace DaxStudio.UI.Validation
         }
 
         public Wrapper Wrapper { get; set; }
+        
     }
 }

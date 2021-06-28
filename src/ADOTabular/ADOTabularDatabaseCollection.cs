@@ -10,24 +10,37 @@ namespace ADOTabular
 {
     public class DatabaseDetails
     {
-        public DatabaseDetails(string name, string id, string lastUpdate, string compatLevel, string roles)
+        public DatabaseDetails(string name, string id, string caption, string lastUpdate, string compatLevel, string roles)
         {
             Name = name;
             Id = id;
+            Caption = caption;
             _ = DateTime.TryParse(lastUpdate, out DateTime lastUpdatedDate);
             LastUpdate = lastUpdatedDate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
-
+            
         }
 
-        public string Name {get; }
+        public DatabaseDetails(DataRow row, string caption)
+        {
+            Name = row["CATALOG_NAME"].ToString();
+            Id = row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : "";
+            Caption = caption?.Length > 0 ? caption : row["CATALOG_NAME"].ToString();
+            _ = DateTime.TryParse(row["DATE_MODIFIED"].ToString(), out DateTime lastUpdatedDate);
+            LastUpdate = lastUpdatedDate;
+            CompatibilityLevel = row.Table.Columns.Contains("COMPATIBILITY_LEVEL") ? row["COMPATIBILITY_LEVEL"].ToString() : "";
+            Roles = row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : "";
+        }
+
+        public string Name { get; set; }
         public string Id {get; }
         public DateTime LastUpdate {get; set;}
         public string CompatibilityLevel { get; internal set; }
         public string Roles { get; internal set; }
+        public string Caption { get; set; }
     }
-    public class ADOTabularDatabaseCollection:IEnumerable<string>
+    public class ADOTabularDatabaseCollection:IEnumerable<DatabaseDetails>
     {
         private DataSet _dsDatabases;
         private readonly ADOTabularConnection _adoTabConn;
@@ -70,6 +83,8 @@ namespace ADOTabular
                 {
                     db.CompatibilityLevel = tmpDatabaseDmvDict[db.Name].CompatibilityLevel;
                     db.Roles = tmpDatabaseDmvDict[db.Name].Roles;
+                    if (_adoTabConn.FileName.Length > 0) db.Caption = _adoTabConn.ShortFileName;
+
                 }
             }
             else
@@ -112,13 +127,14 @@ namespace ADOTabular
 
         private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
         {
-            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
+            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>(StringComparer.OrdinalIgnoreCase);
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)
             {
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
                     row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : "",
+                    _adoTabConn.ShortFileName?.Length > 0 ? _adoTabConn.ShortFileName: row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString(),
                     row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
                     row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""
@@ -132,7 +148,7 @@ namespace ADOTabular
         private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXml()
         {
             
-            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
+            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>(StringComparer.OrdinalIgnoreCase);
 
             var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
                                                  new AdomdRestrictionCollection
@@ -177,16 +193,14 @@ namespace ADOTabular
                                     break;
                             }
                             continue;
-                        }                                 
-                                    
-                                    
-                                
+                        }
+
+                        var caption = _adoTabConn.ShortFileName?.Length > 0 ? _adoTabConn.ShortFileName : name;         
                                 
                         if (rdr.NodeType == XmlNodeType.EndElement
                             && rdr.LocalName == eDatabase)
                         {
-                            databaseDictionary.Add(name, new DatabaseDetails( name,  id, lastUpdate,compatLevel,""));
-                                    
+                            databaseDictionary.Add(name, new DatabaseDetails( name,  id, caption, lastUpdate,compatLevel,""));       
                         }
 
                         rdr.Read();
@@ -217,7 +231,7 @@ namespace ADOTabular
         }
 
 
-        public IEnumerator<string> GetEnumerator()
+        public IEnumerator<DatabaseDetails> GetEnumerator()
         {
             foreach (DataRow dr in GetDatabaseTable().Rows)
             {
@@ -226,7 +240,10 @@ namespace ADOTabular
                 //}
                 //else {
                     //yield return new ADOTabularDatabase(_adoTabConn, dr["CATALOG_NAME"].ToString());//, dr);
-                    yield return dr["CATALOG_NAME"].ToString();//, dr);
+                    //yield return dr["CATALOG_NAME"].ToString();//, dr);
+                yield return new DatabaseDetails(dr, _adoTabConn.ShortFileName);
+                    
+                    
                 //}
             }
         }

@@ -25,6 +25,6 @@
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                  ResourceId=DataGridHeaderForeground}"
-                 Color="{DynamicResource {x:Static MLib_reskeys:ResourceKeys.ControlNormalForegroundKey}}"
+                 Color="{DynamicResource MahApps.Colors.ThemeForeground}"
                  options:Freeze="true" />
 </ResourceDictionary>

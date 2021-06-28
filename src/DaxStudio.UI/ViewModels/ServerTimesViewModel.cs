@@ -85,7 +85,7 @@ namespace DaxStudio.UI.ViewModels
             private set { _options = value; }
         }
 
-        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns)
+        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
             Options = options;
 
@@ -107,8 +107,11 @@ namespace DaxStudio.UI.ViewModels
                     QueryRichText = Query;
                     break;
                 default:
-                    // TODO: we should implement as optional the removal of aliases and lineage
-                    string queryRemapped = Options.ReplaceXmSqlColumnNames ? ev.TextData.ReplaceColumnNames( remapColumns ) : ev.TextData;
+                    // Replace column names
+                    string queryRemapped = Options.ReplaceXmSqlColumnNames ? ev.TextData.ReplaceTableOrColumnNames( remapColumns ) : ev.TextData;
+                    // replace table names
+                    queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
+
                     Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid() : queryRemapped;
                     QueryRichText = Query;
                     // Set flag in case any highlight is present
@@ -140,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
 
         public RewriteTraceEngineEvent() { }
 
-        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns) : base(ev, rowNumber, options, remapColumns) {
+        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables) : base(ev, rowNumber, options, remapColumns, remapTables) {
             TextData = ev.TextData;
         }
         
@@ -259,15 +262,16 @@ namespace DaxStudio.UI.ViewModels
             return foundRows && foundBytes;
         }
 
-        public static string ReplaceColumnNames( this string xmSqlQuery, Dictionary<string,string> columnsMap )
+        public static string ReplaceTableOrColumnNames( this string xmSqlQuery, Dictionary<string,string> TablesOrColumnsMap )
         {
-            // NOTE: the speed might be affected by the number of columns
+            // NOTE: the speed might be affected by the number of columns/tables
             // we could save time by reducing the mapping to calculated columns only, but it would not work with older versions of metadata (from XML instead of JSON)
-            foreach ( var replaceColumn in columnsMap )
+            // it should always be applied to tables, though
+            foreach ( var replaceName in TablesOrColumnsMap )
             {
-                if (xmSqlQuery.Contains(replaceColumn.Key))
+                if (xmSqlQuery.Contains(replaceName.Key))
                 {
-                    xmSqlQuery = xmSqlQuery.Replace(replaceColumn.Key, replaceColumn.Value);
+                    xmSqlQuery = xmSqlQuery.Replace(replaceName.Key, replaceName.Value);
                 }
             }
             return xmSqlQuery;
@@ -280,7 +284,8 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
     {
         public IGlobalOptions Options { get; set; }
-        public Dictionary<string,string> RemapColumnNames { get; set; }
+        public Dictionary<string, string> RemapColumnNames { get; set; }
+        public Dictionary<string, string> RemapTableNames { get; set; }
 
         [ImportingConstructor]
         public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails
@@ -288,6 +293,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             RemapColumnNames = new Dictionary<string, string>();
+            RemapTableNames = new Dictionary<string, string>();
             Options = options;
             ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
@@ -335,6 +341,11 @@ namespace DaxStudio.UI.ViewModels
             get => Options.ReplaceXmSqlColumnNames;
         }
 
+        public bool ReplaceXmSqlTableNames
+        {
+            get => Options.ReplaceXmSqlTableNames;
+        }
+
         public void Handle(UpdateGlobalOptions message)
         {
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
@@ -369,7 +380,7 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
                         }
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
@@ -377,7 +388,7 @@ namespace DaxStudio.UI.ViewModels
                         StorageEngineDuration += traceEvent.Duration;
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
@@ -385,7 +396,7 @@ namespace DaxStudio.UI.ViewModels
                         //StorageEngineDuration += traceEvent.Duration;
                         //StorageEngineCpu += traceEvent.CpuTime;
                         //StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
@@ -398,7 +409,7 @@ namespace DaxStudio.UI.ViewModels
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                     {
                         VertipaqCacheMatches++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames));
+                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                     }
                 }
 

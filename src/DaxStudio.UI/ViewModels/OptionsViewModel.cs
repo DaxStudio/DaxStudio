@@ -63,6 +63,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _highlightXmSqlCallbacks;
         private bool _simplifyXmSqlSyntax;
         private bool _replaceXmSqlColumnNames;
+        private bool _replaceXmSqlTableNames;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
         private LongOperationSounds _queryEndSound;
@@ -318,6 +319,23 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ReplaceXmSqlColumnNames);
                 _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlColumnNames), value, _isInitializing, this);
+            }
+        }
+
+        [DisplayName("Replace table ID with name")]
+        [Category("Server Timings")]
+        [Description("Replace xmSQL table ID with corresponding table name in data model.")]
+        [DataMember, DefaultValue(true)]
+        public bool ReplaceXmSqlTableNames
+        {
+            get => _replaceXmSqlTableNames;
+            set
+            {
+                if (_replaceXmSqlTableNames == value) return;
+                _replaceXmSqlTableNames = value;
+                NotifyOfPropertyChange(() => ReplaceXmSqlTableNames);
+                _eventAggregator.PublishOnUIThread(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlTableNames), value, _isInitializing, this);
             }
         }
 
@@ -1066,6 +1084,34 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _hotkeySelectWord;
+        [DataMember, DefaultValue("Ctrl + W"), Hotkey]
+        public string HotkeySelectWord
+        {
+            get => _hotkeySelectWord;
+            set
+            {
+                _hotkeySelectWord = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeySelectWord), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeySelectWord);
+            }
+        }
+
+        private string _hotkeyToggleComment;
+        [DataMember, DefaultValue("Ctrl + OemQuestion"), Hotkey]
+        public string HotkeyToggleComment
+        {
+            get => _hotkeyToggleComment;
+            set
+            {
+                _hotkeyToggleComment = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThread(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyToggleComment), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyToggleComment);
+            }
+        }
+
 
         public void ResetKeyBindings()
         {
@@ -1209,6 +1255,37 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ShowKeyBindings), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowKeyBindings);
+            }
+        }
+
+        private bool _showDebugCommas;
+        [DataMember, DefaultValue(false)]
+        public bool ShowDebugCommas
+        {
+            get => _showDebugCommas;
+
+            set
+            {
+                _showDebugCommas = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowDebugCommas), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowDebugCommas);
+
+            }
+        }
+
+        private bool _showXmlaInAllQueries;
+        [DataMember, DefaultValue(false)]
+        public bool ShowXmlaInAllQueries
+        {
+            get => _showXmlaInAllQueries;
+
+            set
+            {
+                _showXmlaInAllQueries = value;
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowXmlaInAllQueries), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowXmlaInAllQueries);
             }
         }
 
@@ -1781,6 +1858,16 @@ namespace DaxStudio.UI.ViewModels
             //var key = Registry.LocalMachine.OpenSubKey(@"Software\DaxStudio", false);
             //if (key == null) return false;
             //return (string)(key?.GetValue("ExcelBitness", "32Bit")??"32Bit") == "64Bit";
+        }
+
+        private bool _hasShowQueryBuilderAutoGenerateWarning;
+        [DataMember, DefaultValue(false)]
+        public bool HasShownQueryBuilderAutoGenerateWarning { get => _hasShowQueryBuilderAutoGenerateWarning;
+            set {
+                _hasShowQueryBuilderAutoGenerateWarning = value;
+                SettingProvider.SetValue(nameof(HasShownQueryBuilderAutoGenerateWarning), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HasShownQueryBuilderAutoGenerateWarning);
+            } 
         }
 
 

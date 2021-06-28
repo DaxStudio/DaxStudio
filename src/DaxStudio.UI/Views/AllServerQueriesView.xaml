@@ -35,6 +35,7 @@
                 <sys:String>MDX</sys:String>
                 <sys:String>SQL</sys:String>
                 <sys:String>ERR</sys:String>
+                <sys:String>Xmla</sys:String>
             </col:ArrayList>
 
             <Style TargetType="{x:Type ToolTip}">
