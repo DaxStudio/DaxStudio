@@ -268,50 +268,58 @@ namespace DaxStudio.UI.ViewModels
             base.OnViewLoaded(view);
             _editor = GetEditor();
 
-            // TODO - if theme is dark increase brightness of syntax highlights
-            //_editor.ChangeColorBrightness(1.25);
-            _editor.SetSyntaxHighlightColorTheme(Options.Theme);
-
-            IntellisenseProvider.Editor = _editor;
-            UpdateSettings();
-            if (_editor != null)
+            try
             {
-                FindReplaceDialog.Editor = _editor;
-                SetDefaultHighlightFunction();
-                _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
-                _editor.TextChanged += OnDocumentChanged;
-                _editor.PreviewDrop += OnDrop;
-                _editor.PreviewDragEnter += OnDragEnterPreview;
-                _editor.KeyUp += OnKeyUp;
-                _editor.OnPasting += OnPasting;
+                // TODO - if theme is dark increase brightness of syntax highlights
+                //_editor.ChangeColorBrightness(1.25);
+                _editor.SetSyntaxHighlightColorTheme(Options.Theme);
 
+                IntellisenseProvider.Editor = _editor;
+                UpdateSettings();
+                if (_editor != null)
+                {
+                    FindReplaceDialog.Editor = _editor;
+                    SetDefaultHighlightFunction();
+                    _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
+                    _editor.TextChanged += OnDocumentChanged;
+                    _editor.PreviewDrop += OnDrop;
+                    _editor.PreviewDragEnter += OnDragEnterPreview;
+                    _editor.KeyUp += OnKeyUp;
+                    _editor.OnPasting += OnPasting;
+
+                }
+                switch (State)
+                {
+                    case DocumentState.LoadPending:
+                        OpenFile();
+                        break;
+                    case DocumentState.RecoveryPending:
+                        LoadAutoSaveFile(AutoSaveId);
+                        break;
+                }
+
+                if (_sourceDocument != null)
+                {
+                    var cnn = _sourceDocument.Connection;
+                    _eventAggregator.PublishOnUIThread(new ConnectEvent(
+                        cnn.ConnectionStringWithInitialCatalog,
+                        cnn.IsPowerPivot,
+                        cnn.IsPowerPivot ? _sourceDocument.FileName : "",
+                        "",
+                        cnn.IsPowerPivot ? "" : cnn.FileName,
+                        cnn.ServerType
+                        , false)
+                    { DatabaseName = cnn.Database.Name });
+
+                    _sourceDocument = null;
+
+                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                }
             }
-            switch (State)
+            catch (Exception ex)
             {
-                case DocumentState.LoadPending:
-                    OpenFile();
-                    break;
-                case DocumentState.RecoveryPending:
-                    LoadAutoSaveFile(AutoSaveId);
-                    break;
-            }
-
-            if (_sourceDocument != null)
-            {
-                var cnn = _sourceDocument.Connection;
-                _eventAggregator.PublishOnUIThread(new ConnectEvent(
-                    cnn.ConnectionStringWithInitialCatalog,
-                    cnn.IsPowerPivot,
-                    cnn.IsPowerPivot ? _sourceDocument.FileName : "",
-                    "",
-                    cnn.IsPowerPivot ? "" : cnn.FileName,
-                    cnn.ServerType
-                    ,false)
-                { DatabaseName = cnn.Database.Name });
-
-                _sourceDocument = null;
-
-                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                Log.Error(ex, nameof(DocumentViewModel), nameof(OnViewLoaded), ex.Message);
+                OutputError($"Error opening a new query tab: {ex.Message}");
             }
 
         }
