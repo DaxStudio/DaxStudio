@@ -15,7 +15,7 @@ title: Sponsors
 
 ## Bronze Sponsors
 
-| [![Access-Analytics](https://avatars.githubusercontent.com/u/86407855?s=96&v=4)](https://accessanalytic.com.au/) | **Access Analytics** <br/> [https://accessanalytic.com.au/](https://accessanalytic.com.au/) |
+| [![Access-Analytic](https://avatars.githubusercontent.com/u/86407855?s=96&v=4)](https://accessanalytic.com.au/) | **Access Analytic** <br/> [https://accessanalytic.com.au/](https://accessanalytic.com.au/) |
 
 <script>
 var tables, i;
