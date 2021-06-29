@@ -51,9 +51,11 @@ namespace DaxStudio.UI.JsonConverters
                 SortDirection sortDirection = SortDirection.ASC;
                 var _ = Enum.TryParse( col["SortDirection"].ToString(), out sortDirection);
                 string measureExpression = col["MeasureExpression"].ToString();
+                string measureCaption = col["Caption"].ToString();
                 var queryBuilderCol = new QueryBuilderColumn(obj, isModelItem, _eventAggregator);
                 queryBuilderCol.MeasureExpression = isOverridden?measureExpression:string.Empty;
                 queryBuilderCol.SortDirection = sortDirection;
+                if (isOverridden) queryBuilderCol.Caption = measureCaption;
                 vm.Columns.Add(queryBuilderCol);
             }
 

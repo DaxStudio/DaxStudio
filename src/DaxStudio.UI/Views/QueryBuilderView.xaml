@@ -7,6 +7,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
@@ -172,6 +173,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ctrl:ZoomableUserControl.Resources>
@@ -201,12 +203,18 @@
             <Button x:Name="Clear" Margin="0,0,5,0" Padding="2">
                 <fa:FontAwesome Icon="Eraser" ToolTip="Clear Query Builder" Foreground="OrangeRed"/>
             </Button>
+                <!-- ToolTip="Create a new measure for this query" -->
             <Button x:Name="AddNewMeasure" Grid.Column="1" MaxWidth="80" Margin="0,0,5,0" Padding="3,0"
-                    ToolTip="Create a new measure for this query">
+                    >
                 <StackPanel Orientation="Horizontal">
                     <fa:FontAwesome Icon="PlusSquare" Margin="2" Foreground="Green"/>
                     <TextBlock>New</TextBlock>
                 </StackPanel>
+                    <Button.ToolTip>
+                        <Fluent:ScreenTip Title="Add New Measure" 
+                                          Text="Adds a custom measure to the Query Builder"
+                                          DisableReason="You must be connected to a data model"></Fluent:ScreenTip>
+                    </Button.ToolTip>
             </Button>
             </StackPanel>
         </Grid>
@@ -428,7 +436,12 @@
         
         <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.ColumnSpan="3"
                     HorizontalAlignment="Right">
-            <ToggleButton x:Name="AutoGenerate" VerticalAlignment="Top" Margin="5" ToolTip="Auto Generate Query" >
+            <ToggleButton x:Name="AutoGenerate" VerticalAlignment="Top" Margin="5" IsEnabled="{Binding CanAutoGenerate}" >
+                <ToggleButton.ToolTip>
+                    <Fluent:ScreenTip Title="Auto Generate Query"
+                                      Text="Updates the generated query in the editor window in real time"
+                                      DisableReason="You must be connected to a data model to use the Query Builder"/>
+                </ToggleButton.ToolTip>
                 <fa:ImageAwesome Icon="Refresh"  Width="20" Height="20" />
                 <ToggleButton.Style>
                     <Style TargetType="{x:Type ToggleButton}">
@@ -448,6 +461,10 @@
                                         </fa:ImageAwesome>
                                     </Border>
                                     <ControlTemplate.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="fa:ImageAwesome.Foreground" TargetName="RefreshIcon" Value="Gray"/>
+                                            <Setter Property="Background" TargetName="border" Value="WhiteSmoke"/>
+                                        </Trigger>
                                         <Trigger Property="IsChecked" Value="true">
                                             <Setter Property="fa:ImageAwesome.Foreground" TargetName="RefreshIcon" Value="Green"/>
                                             <Setter Property="Background" TargetName="border" Value="AliceBlue"/>
@@ -493,6 +510,11 @@
             </ToggleButton>
             
             <Button x:Name="SendTextToEditor" Margin="5" Padding="5,3">
+                <Button.ToolTip>
+                    <Fluent:ScreenTip Title="Send Text to Editor"
+                                      Text="Sends the text for the query to the editor window"
+                                      DisableReason="You must be connected to a data model to use the Query Builder"/>
+                </Button.ToolTip>
                 <StackPanel Orientation="Vertical">
                     <fa:FontAwesome Icon="Edit" 
                                     FontSize="32"
@@ -503,11 +525,17 @@
                 
             </Button>
             <Button x:Name="RunQuery" Margin="5"  Padding="5,3">
+                <Button.ToolTip>
+                    <Fluent:ScreenTip Title="Run Query"
+                                      Text="Executes a query based on the current content of the Query Builder"
+                                      DisableReason="You must be connected to a data model to use the Query Builder"/>
+                </Button.ToolTip>
                 <StackPanel Orientation="Vertical">
-                    <fa:FontAwesome Icon="Play" 
+                    <Image Source="{Binding Path=RunStyle.Icon,Converter={StaticResource RunIconsLarger}}"/>
+                    <!--<fa:FontAwesome Icon="Play" 
                                     FontSize="32" 
                                     Foreground="{StaticResource RunGreenBrush}"
-                                    Margin="5,2,5,0" />
+                                    Margin="5,2,5,0" />-->
                     <TextBlock Text="Run Query"/>
                 </StackPanel>
             </Button>

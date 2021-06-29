@@ -147,6 +147,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(this);
                 _windowManager = windowManager;
                 _ribbon = ribbon;
+                SelectedRunStyle = _ribbon.SelectedRunStyle;
                 SettingProvider = settingProvider;
                 ServerTimingDetails = serverTimingDetails;
                 _rexQueryError =

@@ -86,6 +86,7 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        [DataMember]
         public string Caption { get => TabularObject?.Caption ?? _caption;
             set {
                 _caption = value;

@@ -45,7 +45,7 @@ namespace DaxStudio.Tests
                 ADOTabularObjectType.Column));
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
 
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
@@ -82,7 +82,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
                     modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "Red"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -117,7 +117,7 @@ ORDER BY
                     modelCaps, mockEventAggregator) {FilterType = FilterType.IsNot, FilterValue = "M"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -155,7 +155,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
                     modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "Red"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -192,7 +192,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("Number of Children", "'Customer'[Number of Children]", typeof(int),
                         ADOTabularObjectType.Column), modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "2"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -239,7 +239,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("Number 4", "'Customer'[Number4]", typeof(int), ADOTabularObjectType.Column),
                     modelCaps, mockEventAggregator) {FilterType = FilterType.LessThanOrEqual, FilterValue = "4"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -289,7 +289,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("String 4", "'Customer'[String4]", typeof(string), ADOTabularObjectType.Column),
                     modelCaps, mockEventAggregator) {FilterType = FilterType.DoesNotStartWith, FilterValue = "JKL"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -327,7 +327,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("Number 1", "'Customer'[Number1]", typeof(long), ADOTabularObjectType.Column),
                     modelCaps, mockEventAggregator) {FilterType = FilterType.Between, FilterValue = "2", FilterValue2 = "5"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -366,7 +366,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("String 2", "'Customer'[String2]", typeof(string), ADOTabularObjectType.Column),
                     modelCaps, mockEventAggregator) {FilterType = FilterType.IsNotBlank, FilterValue = ""});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -403,7 +403,7 @@ ORDER BY
                             ADOTabularObjectType.Column), modelCaps, mockEventAggregator)
                     {FilterType = FilterType.Is, FilterValue = "2019-11-24"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -441,7 +441,7 @@ ORDER BY
                     {FilterType = FilterType.Is, FilterValue = "24/24/2019"});
 
             ExceptionAssert.Throws<ArgumentException>(
-                () => QueryBuilder.BuildQuery(modelCaps, cols, filters),
+                () => QueryBuilder.BuildQuery(modelCaps, cols, filters,false),
                 "Unable to parse the value '24/24/2019' as a DateTime value");
 
 
@@ -464,7 +464,7 @@ ORDER BY
                             ADOTabularObjectType.Column), modelCaps, mockEventAggregator)
                     {FilterType = FilterType.Is, FilterValue = "2019-11-24"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 CALCULATETABLE(
@@ -502,7 +502,7 @@ CALCULATETABLE(
                     MockColumn.CreateADOTabularColumn("Number of Children", "'Customer'[Number of Children]", typeof(int),
                         ADOTabularObjectType.Column), modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "2"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 DEFINE
 MEASURE 'Internet Sales'[Total Sales] = 123
@@ -544,7 +544,7 @@ ORDER BY
                     MockColumn.CreateADOTabularColumn("Number of Children", "'Customer'[Number of Children]", typeof(int),
                         ADOTabularObjectType.Column), modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "2"});
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 DEFINE
 MEASURE 'Internet Sales'[Test Measure] = 123
@@ -582,7 +582,7 @@ ORDER BY
                     modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "ABC"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -620,7 +620,7 @@ ORDER BY
                     modelCaps, mockEventAggregator) {FilterType = FilterType.Is, FilterValue = "123"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -658,7 +658,7 @@ ORDER BY
                     modelCaps, mockEventAggregator) {FilterType = FilterType.In, FilterValue = "red\ngreen\nblue"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -697,7 +697,7 @@ ORDER BY
                 {FilterType = FilterType.NotIn, FilterValue = "red\ngreen\nblue"});
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -736,7 +736,7 @@ ORDER BY
             { FilterType = FilterType.In, FilterValue = "red\ngreen\nblue" });
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -777,7 +777,7 @@ ORDER BY
 
 
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
             var expectedQry = @"/* START QUERY BUILDER */
 EVALUATE
 SUMMARIZECOLUMNS(
@@ -813,7 +813,7 @@ ORDER BY
                         modelCaps, mockEventAggregator)
                     { FilterType = FilterType.Is, FilterValue = "Red" });
 
-            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters);
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false);
 
             QueryBuilderViewModel vm = new QueryBuilderViewModel(new MockEventAggregator(), null , mockOptions  );
             cols.ForEach(c => vm.Columns.Add(c));
