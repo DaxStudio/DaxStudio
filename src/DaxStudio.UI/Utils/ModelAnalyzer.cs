@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Utils
     public static class ModelAnalyzer
     {
       
-        public static void ExportVPAX(string serverName, string databaseName, string path, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData)
+        public static void ExportVPAX(string serverName, string databaseName, string path, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData, string modelName)
         {
             //
             // Get Dax.Model object from the SSAS engine
@@ -39,6 +39,8 @@ namespace DaxStudio.UI.Utils
             // Create VertiPaq Analyzer views
             //
             Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(model);
+
+            model.ModelName = new Dax.Metadata.DaxName(modelName);
 
             //
             // Save VPAX file

@@ -4025,6 +4025,8 @@ namespace DaxStudio.UI.ViewModels
                         }
                     }
                     viewModel = new VpaModel(model);
+                    var modelName = GetSelectedModelName();
+                    viewModel.Model.ModelName = new Dax.Metadata.DaxName(modelName);
                 });
                 task.ContinueWith(prevTask =>
                 {
@@ -4181,25 +4183,7 @@ namespace DaxStudio.UI.ViewModels
                     OutputMessage(String.Format("Saving {0}...", path));
                     // get current DAX Studio version
                     Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                    string modelCaption = Connection.Database.Name;
-                    switch (Connection.ServerType)
-                    {
-                        case ServerType.PowerBIDesktop:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.pbix";
-                            break;
-                        case ServerType.PowerPivot:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.xlsx";
-                            break;
-                        case ServerType.SSDT:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (SSDT)";
-                            break;
-                        case ServerType.PowerBIReportServer:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (PBIRS)";
-                            break;
-                        case ServerType.AnalysisServices:
-                            modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
-                            break;
-                    }
+                    var modelName = GetSelectedModelName();
                     // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
                     bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
                         || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
@@ -4208,7 +4192,7 @@ namespace DaxStudio.UI.ViewModels
                     bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
                     try
                     {
-                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData);
+                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName);
                     }
                     catch (Exception ex)
                     {
@@ -4219,7 +4203,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false); // Disable statistics during retry
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName); // Disable statistics during retry
                         }
                         else
                         {
@@ -4238,6 +4222,29 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string GetSelectedModelName()
+        {
+            string modelCaption = Connection.Database.Name;
+            switch (Connection.ServerType)
+            {
+                case ServerType.PowerBIDesktop:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.pbix";
+                    break;
+                case ServerType.PowerPivot:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.xlsx";
+                    break;
+                case ServerType.SSDT:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (SSDT)";
+                    break;
+                case ServerType.PowerBIReportServer:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (PBIRS)";
+                    break;
+                case ServerType.AnalysisServices:
+                    modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
+                    break;
+            }
+            return modelCaption;
+        }
 
         internal void AppendText(string paramXml)
         {
