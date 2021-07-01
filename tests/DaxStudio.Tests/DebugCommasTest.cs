@@ -241,6 +241,28 @@ Line 3";
         }
 
         [TestMethod]
+        public void TestToggleDebugCommasWithAllComments()
+        {
+            var input = @"   Line 1,
+   -- comment with leading space
+   Line 2, // trailing comment
+   /* leading comment */ Line 3,
+   Line 4";
+            var expected = @"   Line 1
+   -- comment with leading space
+,   Line 2 // trailing comment
+,   /* leading comment */ Line 3
+,   Line 4";
+            var actual = FormatDebugMode.ToggleDebugCommas(input);
+            //Assert.AreEqual(expected, actual);
+            StringAssertion.ShouldEqualWithDiff(expected.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
+
+            actual = FormatDebugMode.ToggleDebugCommas(actual);
+            //Assert.AreEqual(expected, actual);
+            StringAssertion.ShouldEqualWithDiff(input.NormalizeNewline(), actual.NormalizeNewline(), DiffStyle.Full);
+        }
+
+        [TestMethod]
         public void TestToggleDebugCommasWithIndentedComments()
         {
             var input = @"Date =
