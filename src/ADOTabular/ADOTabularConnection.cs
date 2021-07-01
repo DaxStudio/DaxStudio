@@ -887,7 +887,10 @@ namespace ADOTabular
 
         private ADOTabularConnection CloneInternal(string connectionString)
         {
-            var cnn = new ADOTabularConnection(connectionString, this.Type)
+            var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            connStrBuilder["SessionId"] = _adomdConn.SessionID;
+            var newConnStr = connStrBuilder.ToString();
+            var cnn = new ADOTabularConnection(newConnStr, this.Type)
             {
                 // copy keywords, functiongroups, DMV's
                 _functionGroups = this._functionGroups,

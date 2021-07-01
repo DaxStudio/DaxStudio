@@ -411,8 +411,8 @@ namespace DaxStudio.UI.Model
             {
                 var tempConn = _connection.Clone();
                 tempConn.Open();
-                tempConn.Ping();
-                tempConn.Close();
+                tempConn.PingTrace();
+                tempConn.Close(false);
             });
         }
         public ADOTabularModel SelectedModel { get; set; }
