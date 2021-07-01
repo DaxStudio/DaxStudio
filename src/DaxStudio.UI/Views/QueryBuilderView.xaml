@@ -344,6 +344,7 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             <WrapPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal">
                                 <TextBox 
                                      x:Name="FilterValue" 
                                      Text="{Binding FilterValue,UpdateSourceTrigger=PropertyChanged}" 
@@ -353,12 +354,25 @@
                                      Height="{Binding FilterType, Converter={StaticResource FilterValueHeightConverter}, ConverterParameter=100}"
                                      MinWidth="120"
                                      Margin="3"/>
+                                <fa:ImageAwesome Icon="ExclamationTriangle" 
+                                                 Width="14"
+                                                 Foreground="OrangeRed" 
+                                                 Visibility="{Binding FilterValueIsValid, Converter={StaticResource BoolToNotVisibleConverter}}"
+                                                 ToolTip="{Binding FilterValueValidationMessage}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
                                 <TextBox 
                                     x:Name="FilterValue2"
                                     Text="{Binding FilterValue2, UpdateSourceTrigger=PropertyChanged}"
                                     Visibility="{Binding ShowFilterValue2, Converter={StaticResource BoolToVisibility}}"
                                     MinWidth="120"
                                     Margin="3"/>
+                                <fa:ImageAwesome Icon="ExclamationTriangle" 
+                                                 Width="14"
+                                                 Foreground="OrangeRed" 
+                                                 Visibility="{Binding FilterValue2IsValid, Converter={StaticResource BoolToNotVisibleConverter}}"
+                                                 ToolTip="{Binding FilterValue2ValidationMessage}"/>
+                                </StackPanel>
                             </WrapPanel>
                         </WrapPanel>
                     </Grid>

@@ -1,19 +1,9 @@
-﻿using ADOTabular;
-using Caliburn.Micro;
-using DaxStudio.Interfaces;
+﻿using Caliburn.Micro;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
-using GongSolutions.Wpf.DragDrop;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using ADOTabular.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -102,9 +92,35 @@ namespace DaxStudio.UI.Model
         public string FilterValue { get => _filterValue;
             set {
                 _filterValue = value;
+                FilterValueValidationMessage = ValidateInput(FilterValue);
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(FilterValueIsValid));
+                NotifyOfPropertyChange(nameof(FilterValueValidationMessage));
                 EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
             } 
+        }
+
+        public bool FilterValueIsValid
+        {
+            get
+            {
+                return string.IsNullOrEmpty(FilterValueValidationMessage);
+            }
+        }
+
+        private string ValidateInput(string input)
+        {
+            try
+            {
+                if (TabularObject.DataType == typeof(DateTime)) {DateTime _ = DateTime.Parse(input); }
+                if (TabularObject.DataType == typeof(Int64)) { var _ = Int64.Parse(input); }
+                if (TabularObject.DataType == typeof(Decimal)) { var _ = Decimal.Parse(input); }
+                
+                return string.Empty;
+            } catch (Exception ex)
+            {
+                return $"Unable to parse '{input}' as {TabularObject.DataType.Name}\n{ex.Message}";
+            }
         }
 
         public bool ShowFilterValue
@@ -117,11 +133,22 @@ namespace DaxStudio.UI.Model
         public string FilterValue2 { get => _filterValue2;
             set {
                 _filterValue2 = value;
+                FilterValue2ValidationMessage = ValidateInput(FilterValue2);
                 NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(FilterValue2IsValid));
+                NotifyOfPropertyChange(nameof(FilterValue2ValidationMessage));
                 EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
             }
         }
+
+        public bool FilterValue2IsValid
+        {
+            get { return string.IsNullOrEmpty(FilterValue2ValidationMessage); }
+        }
+
         public bool ShowFilterValue2 => FilterType == FilterType.Between;
 
+        public string FilterValueValidationMessage { get; private set; }
+        public string FilterValue2ValidationMessage { get; private set; }
     }
 }
