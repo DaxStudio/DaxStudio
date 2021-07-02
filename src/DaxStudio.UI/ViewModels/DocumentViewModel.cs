@@ -4376,9 +4376,19 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ShowMeasureExpressionEditor message)
         {
-            MeasureExpressionEditor.Column = message.Column;
-            ShowMeasureExpressionEditor = true;
-            QueryBuilder.IsEnabled = false;
+            try
+            {
+                MeasureExpressionEditor.Column = message.Column;
+                ShowMeasureExpressionEditor = true;
+                QueryBuilder.IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "IHandle<ShowMeasureExpressionEditor>", ex.Message);
+                OutputError($"Error showing the Measure Expression Editor:\n{ex.Message}");
+                ShowMeasureExpressionEditor = false;
+                QueryBuilder.IsEnabled = true;
+            }
         }
 
         public void Handle(SetFocusEvent message)
