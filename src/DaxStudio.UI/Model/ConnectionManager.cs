@@ -133,10 +133,10 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
-                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    
+                    if (_connection.HasRlsParameters())
                     {
-                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
+                        newConn = _connection.CloneWithoutRLS();
                         conn = newConn;
                     }
                     else
@@ -176,10 +176,9 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
-                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    if (_connection.HasRlsParameters())
                     {
-                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
+                        newConn = _connection.CloneWithoutRLS();
                         conn = newConn;
                     }
                     else
@@ -409,7 +408,7 @@ namespace DaxStudio.UI.Model
             
             _retry.Execute(() =>
             {
-                var tempConn = _connection.Clone();
+                var tempConn = _connection.Clone(true);
                 tempConn.Open();
                 tempConn.PingTrace();
                 tempConn.Close(false);

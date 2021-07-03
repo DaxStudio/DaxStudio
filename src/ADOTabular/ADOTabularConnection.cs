@@ -829,7 +829,7 @@ namespace ADOTabular
         public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
         public string ShortFileName { get; private set; }
 
-        public bool IsAdminConnection => SPID != -1 || Properties.ContainsKey("roles") || Properties.ContainsKey("EffectiveUserName") || IsPowerBIXmla;
+        public bool IsAdminConnection => SPID != -1 || HasRlsParameters() || IsPowerBIXmla;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
@@ -868,27 +868,46 @@ namespace ADOTabular
             }
         }
 
+        public ADOTabularConnection Clone(bool sameSession)
+        {
+            return CloneInternal(this.ConnectionStringWithInitialCatalog, sameSession);
+        }
 
         public ADOTabularConnection Clone()
         {
-            return CloneInternal(this.ConnectionStringWithInitialCatalog);
+            return CloneInternal(this.ConnectionStringWithInitialCatalog,false);
         }
 
-        public ADOTabularConnection Clone(string[] parametersToIgnore)
+        /// <summary>
+        /// Checks if the connection string contains any of the RLS testing parameters
+        /// </summary>
+        /// <returns>bool</returns>
+        public bool HasRlsParameters()
         {
-            var connParams = ConnectionStringParser.Parse(this.ConnectionStringWithInitialCatalog);
-            foreach (var param in parametersToIgnore)
+            var builder = new OleDbConnectionStringBuilder(ConnectionStringWithInitialCatalog);
+            foreach (var param in rlsParameters)
             {
-                connParams.Remove(param);
+                if (builder.ContainsKey(param)) return true;
             }
-            var newConnStr = string.Join(";", connParams.Select(p => $"{p.Key}={p.Value}"));
-            return CloneInternal(newConnStr);
+            return false;
         }
 
-        private ADOTabularConnection CloneInternal(string connectionString)
+        private static string[] rlsParameters = { "Roles", "EffectiveUserName","Authentication Scheme","Ext Auth Info" };
+        public ADOTabularConnection CloneWithoutRLS()
+        {
+            var builder = new OleDbConnectionStringBuilder(ConnectionStringWithInitialCatalog);
+            foreach (var param in rlsParameters)
+            {
+                builder.Remove(param);
+            }   
+            var newConnStr = builder.ToString();
+            return CloneInternal(newConnStr,false);
+        }
+
+        private ADOTabularConnection CloneInternal(string connectionString, bool sameSession)
         {
             var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
-            connStrBuilder["SessionId"] = _adomdConn.SessionID;
+            if(sameSession) connStrBuilder["SessionId"] = _adomdConn.SessionID;
             var newConnStr = connStrBuilder.ToString();
             var cnn = new ADOTabularConnection(newConnStr, this.Type)
             {
