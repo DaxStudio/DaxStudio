@@ -484,6 +484,7 @@ namespace DaxStudio.UI.ViewModels
         {
             Columns.Items.Clear();
             Filters.Items.Clear();
+            NotifyOfPropertyChange(nameof(OrderBy));
             AutoGenerateQuery();
         }
 

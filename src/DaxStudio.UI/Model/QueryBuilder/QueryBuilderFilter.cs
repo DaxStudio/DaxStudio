@@ -19,7 +19,15 @@ namespace DaxStudio.UI.Model
             TabularObject = obj;
             ModelCapabilities = modelCapabilities;
             EventAggregator = eventAggregator;
+            SetDefaultFilterType();
         }
+
+        private void SetDefaultFilterType()
+        {
+            if (TabularObject.DataType != typeof(string)) FilterType = FilterType.Is;
+            else FilterType = FilterType.Contains;
+        }
+
         [DataMember]
         public IADOTabularColumn TabularObject { get; }
         [DataMember]

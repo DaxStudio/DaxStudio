@@ -226,6 +226,7 @@ namespace DaxStudio.UI.Model
                 }
             }
             var quotes = dataType == typeof(string) ? "\"" : string.Empty;
+            if (dataType == typeof(string) && val != null) val = val?.Replace("\"", "\"\""); // escape any quote characters in the filter string
             return $"{quotes}{val}{quotes}";
         }
 

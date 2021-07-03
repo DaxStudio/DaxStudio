@@ -332,6 +332,8 @@
                         </fa:ImageAwesome>
 
                         <WrapPanel  Grid.ColumnSpan="2" Orientation="Horizontal" Grid.Row="1" >
+                            <!-- The stack panel prevents the combobox from expanding vertically when using an IN filter -->
+                            <StackPanel>
                             <ComboBox Grid.Row="2" 
                                       Grid.ColumnSpan="2" 
                                       x:Name="FilterType" ItemsSource="{Binding FilterTypes}" 
@@ -343,6 +345,7 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
+                            </StackPanel>
                             <WrapPanel Orientation="Horizontal">
                                 <StackPanel Orientation="Horizontal">
                                 <TextBox 
