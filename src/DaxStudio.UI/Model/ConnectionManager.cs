@@ -410,6 +410,18 @@ namespace DaxStudio.UI.Model
             {
                 var tempConn = _connection.Clone(true);
                 tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close(false);
+            });
+        }
+
+        public void PingTrace()
+        {
+
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone(true);
+                tempConn.Open();
                 tempConn.PingTrace();
                 tempConn.Close(false);
             });

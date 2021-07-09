@@ -290,7 +290,7 @@ namespace DaxStudio.QueryTrace
                         //if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
                         Debug.WriteLine("Connection.PingTrace()");
                         //_connection.PingTrace(); 
-                        _connectionManager.Ping();
+                        _connectionManager.PingTrace();
                         Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
                     });
                 }
