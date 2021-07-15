@@ -1189,15 +1189,15 @@ namespace DaxStudio.UI.ViewModels
         public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
-        private DialogResult PreProcessQuery(bool injectEvaluate, bool injectRowFunction)
+        private DialogResult PreProcessQuery(IQueryTextProvider textProvider, bool injectEvaluate, bool injectRowFunction)
         {
 
             // merge in any parameters
-            QueryInfo = new QueryInfo(EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
+            textProvider.QueryInfo = new QueryInfo(textProvider.QueryText, injectEvaluate, injectRowFunction, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
-            if (QueryInfo.NeedsParameterValues)
+            if (textProvider.QueryInfo.NeedsParameterValues)
             {
-                var paramDialog = new QueryParametersDialogViewModel(this, QueryInfo);
+                var paramDialog = new QueryParametersDialogViewModel(this, textProvider.QueryInfo);
 
 
                 _windowManager.ShowDialogBox(paramDialog, settings: new Dictionary<string, object>
@@ -1634,12 +1634,8 @@ namespace DaxStudio.UI.ViewModels
         {
             // if we can't run the query then do nothing 
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
-            if (!CanRunQuery)
-            {
-
-                return;
-            }
-
+            if (!CanRunQuery) return;
+            
             // the benchmark run style will pop up it's own dialog
             if (message.IsBenchmark)
             {
@@ -1805,7 +1801,7 @@ namespace DaxStudio.UI.ViewModels
 
                     }
 
-                    if (PreProcessQuery(message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
+                    if (PreProcessQuery(message.QueryProvider, message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
                     {
                         IsQueryRunning = false;
                     }
@@ -1815,7 +1811,7 @@ namespace DaxStudio.UI.ViewModels
 
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
-                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText.Trim() + ParameterHelper.GetParameterXml(QueryInfo));
+                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText.Trim() + ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
 
@@ -2623,30 +2619,49 @@ namespace DaxStudio.UI.ViewModels
                 MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            // Configure save file dialog box
-            var dlg = new SaveFileDialog {
-                FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,
-                DefaultExt = ".zip",
-                Filter = "DAX metadata (ZIP)|*.zip|DAX metadata|*.json"
-            };
 
-            // Show save file dialog box
-            var result = dlg.ShowDialog();
+            try
+            {
+                // Configure save file dialog box
+                var dlg = new SaveFileDialog
+                {
+                    FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,
+                    DefaultExt = ".zip",
+                    Filter = "DAX metadata (ZIP)|*.zip|DAX metadata|*.json"
+                };
 
-            // Process save file dialog box results 
-            if (result == true) {
-                // Save document 
-                try
+                // Show save file dialog box
+                var result = dlg.ShowDialog();
+
+                // Process save file dialog box results 
+                if (result == true)
                 {
-                    ExportDaxFunctions(dlg.FileName);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "ExportDaxFunctions", ex.Message);
-                    OutputError($"Error Exporting Functions: {ex.Message}");
+                    // Save document 
+                    try
+                    {
+                        ExportDaxFunctions(dlg.FileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = $"Error Exporting Functions: {ex.Message}";
+                        Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "ExportDaxFunctions", msg);
+                        OutputError(msg);
+                    }
                 }
             }
-        }
+            catch (Exception ex)
+            {
+                var msg = $"Error Showing Exporting DAX Functions dialog: {ex.Message}";
+                // it can be caught here if there is an error getting the SSAS_VERSION
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExportDaxFunctions), msg);
+                OutputError(msg);
+            }
+
+
+            
+
+
+            }
         private void ExportDaxFunctions(string path) {
             string extension = Path.GetExtension(path).ToLower();
             bool compression = (extension == ".zip");
@@ -2940,22 +2955,6 @@ namespace DaxStudio.UI.ViewModels
 
             await Task.Run(() =>
                 {
-
-                    //var cnn = message.PowerPivotModeSelected
-                    //                 ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
-                    //                 : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-                    //cnn.IsPowerPivot = message.PowerPivotModeSelected;
-                    //cnn.ServerType = message.ServerType;
-
-
-                    //if (message.PowerBIFileName.Length > 0)
-                    //{
-                    //    cnn.FileName = message.PowerBIFileName;
-                    //}
-                    //if (message.WorkbookName.Length > 0)
-                    //{
-                    //    cnn.FileName = message.WorkbookName;
-                    //}
 
                     if (message.RefreshDatabases) RefreshConnectionFilename(message);
 

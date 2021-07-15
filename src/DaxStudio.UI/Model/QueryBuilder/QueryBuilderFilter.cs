@@ -74,7 +74,7 @@ namespace DaxStudio.UI.Model
                         case FilterType.In:
                         case FilterType.NotIn:
                             // if the data type is string and the model supports TREATAS
-                            if (TabularObject.DataType == typeof(string) && ( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) ) yield return ft;
+                            if (TabularObject.DataType == typeof(string) && ( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) && !FilterValueIsParameter ) yield return ft;
                             break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
@@ -99,8 +99,16 @@ namespace DaxStudio.UI.Model
         [DataMember]
         public string FilterValue { get => _filterValue;
             set {
-                _filterValue = value;
-                FilterValueValidationMessage = ValidateInput(FilterValue);
+                _filterValue = FilterValueIsParameter? value.Trim() : value;
+                if (_filterValue.StartsWith("@"))
+                {
+                    //IsNotifying = false;
+                    FilterValueIsParameter = !FilterValueIsParameter;
+                    //IsNotifying = true;
+                    if (FilterValueIsParameter) _filterValue = _filterValue.TrimStart('@');
+                }
+                
+                FilterValueValidationMessage = ValidateInput(FilterValue, FilterValueIsParameter);
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValueIsValid));
                 NotifyOfPropertyChange(nameof(FilterValueValidationMessage));
@@ -116,8 +124,24 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private string ValidateInput(string input)
+        bool _filterValueIsParameter = false;
+        public bool FilterValueIsParameter { 
+            get => _filterValueIsParameter; 
+            set {
+                
+                if (_filterValueIsParameter && !value && !FilterValue.StartsWith("@")) { FilterValue = "@" + FilterValue; }
+                _filterValueIsParameter = value;
+                NotifyOfPropertyChange();
+                if (FilterType == FilterType.In) FilterType = FilterType.Is;
+                if (FilterType == FilterType.NotIn) FilterType = FilterType.IsNot;
+                NotifyOfPropertyChange(nameof(FilterTypes));
+                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            } 
+        }
+
+        private string ValidateInput(string input, bool isParameter)
         {
+            if (isParameter) return string.Empty;
             try
             {
                 if (TabularObject.DataType == typeof(DateTime)) {DateTime _ = DateTime.Parse(input); }
@@ -141,7 +165,17 @@ namespace DaxStudio.UI.Model
         public string FilterValue2 { get => _filterValue2;
             set {
                 _filterValue2 = value;
-                FilterValue2ValidationMessage = ValidateInput(FilterValue2);
+                
+                _filterValue2 = FilterValue2IsParameter ? value.Trim() : value;
+                if (_filterValue2.StartsWith("@"))
+                {
+                    //IsNotifying = false;
+                    FilterValue2IsParameter = !FilterValue2IsParameter;
+                    //IsNotifying = true;
+                    if (FilterValue2IsParameter) _filterValue2 = _filterValue2.TrimStart('@');
+                }
+
+                FilterValue2ValidationMessage = ValidateInput(FilterValue2, FilterValue2IsParameter);
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValue2IsValid));
                 NotifyOfPropertyChange(nameof(FilterValue2ValidationMessage));
@@ -152,6 +186,20 @@ namespace DaxStudio.UI.Model
         public bool FilterValue2IsValid
         {
             get { return string.IsNullOrEmpty(FilterValue2ValidationMessage); }
+        }
+
+        bool _filterValue2IsParameter = false;
+        public bool FilterValue2IsParameter
+        {
+            get => _filterValue2IsParameter;
+            set
+            {
+
+                if (_filterValue2IsParameter && !value && !FilterValue2.StartsWith("@")) { FilterValue2 = "@" + FilterValue2; }
+                _filterValue2IsParameter = value;
+                NotifyOfPropertyChange();
+                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            }
         }
 
         public bool ShowFilterValue2 => FilterType == FilterType.Between;

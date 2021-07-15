@@ -792,6 +792,46 @@ ORDER BY
             StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
         }
 
+        [TestMethod]
+        public void TestParameterQuery()
+        {
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            // override the default sort direction 
+            cols[1].SortDirection = SortDirection.None;
+            
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Gender", "'Customer'[Gender]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps, mockEventAggregator)
+                { FilterType = FilterType.Is, FilterValue = "M" });
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column),
+                    modelCaps, mockEventAggregator)
+                { FilterType = FilterType.Is, FilterValue = "color", FilterValueIsParameter=true });
+
+
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, false);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    KEEPFILTERS( TREATAS( {""M""}, 'Customer'[Gender] )),
+    KEEPFILTERS( TREATAS( {@color}, 'Product'[Color] ))
+)
+ORDER BY 
+    'Product Category'[Category] ASC
+/* END QUERY BUILDER */".Replace("\r", "");
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+        }
+
         [TestMethod,Ignore]
         public void TestSerializer()
         {

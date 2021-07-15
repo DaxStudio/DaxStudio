@@ -27,6 +27,7 @@
             <conv:IsMultiLineFilterTypeConverter x:Key="IsMultiLineFilterTypeConverter"/>
             <conv:CanDuplicateMeasureConverter x:Key="CanDuplicateMeasureConverter"/>
             <conv:BoolToDoubleConverter x:Key="BoolToDoubleConverter"/>
+            <conv:BoolToThicknessConverter x:Key="BoolToThicknessConverter"/>
             <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
 
@@ -346,36 +347,94 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </StackPanel>
-                            <WrapPanel Orientation="Horizontal">
-                                <StackPanel Orientation="Horizontal">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
                                 <TextBox 
                                      x:Name="FilterValue" 
                                      Text="{Binding FilterValue,UpdateSourceTrigger=PropertyChanged}" 
                                      Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
                                      AcceptsReturn="{Binding FilterType, Converter={StaticResource IsMultiLineFilterTypeConverter}}"
                                      VerticalScrollBarVisibility="Auto"
-                                     Height="{Binding FilterType, Converter={StaticResource FilterValueHeightConverter}, ConverterParameter=100}"
+                                     Height="{Binding FilterType, Converter={StaticResource FilterValueHeightConverter}, ConverterParameter='100,14'}"
+                                    
                                      MinWidth="120"
-                                     Margin="3"/>
+                                     Margin="3,3,3,3"
+                                     >
+                                    <TextBox.Style>
+                                        <Style>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding FilterValueIsParameter}" Value="true">
+                                                    <Setter Property="TextBox.Padding" Value="13 0 0 0"></Setter>
+                                                    <Setter Property="TextBox.Foreground" Value="HotPink"/>
+                                    
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                                <ToggleButton x:Name="FilterValueIsParameter" 
+                                              Visibility="{Binding FilterValueIsParameter,Converter={StaticResource BoolToVisibility}}" 
+                                              IsChecked="{Binding FilterValueIsParameter}" 
+                                              Foreground="HotPink" Padding="0" Width="14"
+                                              HorizontalAlignment="Left" Height="18"
+                                              Margin="3,0"
+                                              ToolTip="This value is a parameter, click here to turn it back to a normal text filter">@</ToggleButton>
                                 <fa:ImageAwesome Icon="ExclamationTriangle" 
                                                  Width="14"
+                                                 Grid.Column="1"
                                                  Foreground="OrangeRed" 
                                                  Visibility="{Binding FilterValueIsValid, Converter={StaticResource BoolToNotVisibleConverter}}"
                                                  ToolTip="{Binding FilterValueValidationMessage}"/>
-                                </StackPanel>
+                            </Grid>
+                            <WrapPanel Orientation="Horizontal">
                                 <StackPanel Orientation="Horizontal">
-                                <TextBox 
-                                    x:Name="FilterValue2"
-                                    Text="{Binding FilterValue2, UpdateSourceTrigger=PropertyChanged}"
-                                    Visibility="{Binding ShowFilterValue2, Converter={StaticResource BoolToVisibility}}"
-                                    MinWidth="120"
-                                    Margin="3"/>
-                                <fa:ImageAwesome Icon="ExclamationTriangle" 
+
+                                 
+                                
+                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox 
+                                        x:Name="FilterValue2"
+                                        Text="{Binding FilterValue2, UpdateSourceTrigger=PropertyChanged}"
+                                        Visibility="{Binding ShowFilterValue2, Converter={StaticResource BoolToVisibility}}"
+                                        MinWidth="120"
+                                        Grid.Column="0"
+                                        Margin="3">
+                                        <TextBox.Style>
+                                            <Style>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding FilterValue2IsParameter}" Value="true">
+                                                        <Setter Property="TextBox.Padding" Value="13 0 0 0"></Setter>
+                                                        <Setter Property="TextBox.Foreground" Value="HotPink"/>
+
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                    <ToggleButton x:Name="FilterValue2IsParameter" 
+                                              Visibility="{Binding FilterValue2IsParameter,Converter={StaticResource BoolToVisibility}}" 
+                                              IsChecked="{Binding FilterValue2IsParameter}" 
+                                              Foreground="HotPink" Padding="0" Width="14"
+                                              HorizontalAlignment="Left" Height="18"
+                                              Margin="3,0"
+                                              ToolTip="This value is a parameter, click here to turn it back to a normal text filter">@</ToggleButton>
+                                    <fa:ImageAwesome Icon="ExclamationTriangle" 
                                                  Width="14"
                                                  Foreground="OrangeRed" 
+                                                     Grid.Column="1"
                                                  Visibility="{Binding FilterValue2IsValid, Converter={StaticResource BoolToNotVisibleConverter}}"
                                                  ToolTip="{Binding FilterValue2ValidationMessage}"/>
-                                </StackPanel>
+                                </Grid>
                             </WrapPanel>
                         </WrapPanel>
                     </Grid>

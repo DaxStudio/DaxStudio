@@ -11,5 +11,6 @@ namespace DaxStudio.UI.Interfaces
     {
         string QueryText {get; }
         List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> ParameterCollection { get; }
+        QueryInfo QueryInfo { get; set; }
     }
 }

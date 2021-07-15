@@ -195,8 +195,12 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                // todo- we may eventually want to read parameters from filter values, but at the moment we just return an empty collection
-                return new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+                var coll = new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+                foreach (var p in QueryInfo?.Parameters?.Values)
+                {
+                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value));
+                }
+                return coll;
             }
         }
 
@@ -257,6 +261,7 @@ namespace DaxStudio.UI.ViewModels
         private bool IsConnectedToAModelWithTables => Document?.Connection?.SelectedModel?.Tables.Count > 0;
 
         public RunStyle RunStyle { get => Document.SelectedRunStyle; }
+        public QueryInfo QueryInfo { get;set; }
 
         // ReSharper disable once UnusedMember.Global
         public void AddNewMeasure()
