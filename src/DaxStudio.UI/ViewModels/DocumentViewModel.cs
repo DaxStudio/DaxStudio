@@ -3942,6 +3942,21 @@ namespace DaxStudio.UI.ViewModels
 
         private VertiPaqAnalyzerViewModel vpaView;
 
+        public async Task ViewAnalysisDataAsync()
+        {
+            try
+            {
+                await Task.Run(() => ViewAnalysisData());
+            }
+            catch (Exception ex)
+            {
+                var msg = $"The following error occurred while trying to view the metrics for your model:\n{ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ViewAnalysisDataAsync), msg);
+                OutputError(msg);
+            }
+
+        }
+
         public void ViewAnalysisData()
         {
             Stopwatch sw = new Stopwatch();
@@ -3990,7 +4005,7 @@ namespace DaxStudio.UI.ViewModels
 
                 VpaModel viewModel = null;
 
-                var task = new Task(() => {
+                
                     // run Vertipaq Analyzer Async
 
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -4026,33 +4041,29 @@ namespace DaxStudio.UI.ViewModels
                     viewModel = new VpaModel(model);
                     var modelName = GetSelectedModelName();
                     viewModel.Model.ModelName = new Dax.Metadata.DaxName(modelName);
-                });
-                task.ContinueWith(prevTask =>
-                {
 
-                    if (!prevTask.IsFaulted) {
-                        try
-                        {
+
+
                             
                             // update view model
                             vpaView.ViewModel = viewModel;
                             
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view: {ex.Message}");
-                            OutputError($"Error viewing metrics : {ex.Message}");
-                            ActivateOutput();
-                        }
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisDataAsync), $"Error loading VPA view: {ex.Message}");
+                        //    OutputError($"Error viewing metrics : {ex.Message}");
+                        //    ActivateOutput();
+                        //}
 
-                    } else
-                    {
-                        var ex = prevTask.Exception;
-                        Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
-                        var exMsg = ex.GetAllMessages();
-                        OutputError($"Error viewing metrics: {exMsg}");
-                        ActivateOutput();
-                    }
+                    //} else
+                    //{
+                    //    var ex = prevTask.Exception;
+                    //    Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                    //    var exMsg = ex.GetAllMessages();
+                    //    OutputError($"Error viewing metrics: {exMsg}");
+                    //    ActivateOutput();
+                    //}
 
                     vpaView.IsBusy = false;
                     IsVertipaqAnalyzerRunning = false;
@@ -4063,12 +4074,12 @@ namespace DaxStudio.UI.ViewModels
                     Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
                     
 
-                }, TaskScheduler.Default);
-                task.Start(TaskScheduler.Default);
+                //}, TaskScheduler.Default);
+                //task.Start(TaskScheduler.Default);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                Log.Error(ex, "{class} {method} Error Getting Metrics", nameof(DocumentViewModel), "ViewAnalysisData");
                 var exMsg = ex.GetAllMessages();
                 OutputError("Error viewing metrics: " + exMsg);
                 ActivateOutput();
@@ -4077,7 +4088,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void ExportAnalysisData()
+        public async Task ExportAnalysisDataAsync()
         {
             if (!IsConnected)
             {
@@ -4099,22 +4110,17 @@ namespace DaxStudio.UI.ViewModels
             if (result == true)
             {
                 // Save document 
-                var task = new Task(() => {
+                
                     try {
                         IsVertipaqAnalyzerRunning = true;
-                        ExportAnalysisData(dlg.FileName);
+                        await ExportAnalysisDataAsync(dlg.FileName);
                     }
                     finally
                     {
                         IsVertipaqAnalyzerRunning = false;
                     }
-                });
-                task.Start();
-                task.ContinueWith(prevTask => {
-                    if (prevTask.IsFaulted)
-                        if (prevTask.Exception != null)
-                            throw prevTask.Exception;
-                });
+
+
             }
         }
 
@@ -4172,6 +4178,21 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public async Task ExportAnalysisDataAsync(string path)
+        {
+            try
+            {
+                await Task.Run(() => ExportAnalysisData(path));
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error exporting metrics:\n{ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExportAnalysisDataAsync), msg);
+                OutputError(msg);
+                ActivateOutput();
+            }
+        }
+
         public void ExportAnalysisData(string path)
         {
             using (var _ = new StatusBarMessage(this, "Exporting Model Metrics"))
@@ -4217,6 +4238,7 @@ namespace DaxStudio.UI.ViewModels
                     Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel", "ExportAnalysisData");
                     var exMsg = ex.GetAllMessages();
                     OutputError("Error exporting metrics: " + exMsg);
+                    ActivateOutput();
                 }
             }
         }

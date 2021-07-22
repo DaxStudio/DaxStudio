@@ -911,16 +911,16 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning;
 
-        public void ExportAnalysisData()
+        public async void ExportAnalysisData()
         {
-            ActiveDocument?.ExportAnalysisData();
+            await ActiveDocument?.ExportAnalysisDataAsync();
         }
 
         public bool CanViewAnalysisData => IsActiveDocumentConnected && !QueryRunning;
 
-        public void ViewAnalysisData()
+        public async void ViewAnalysisData()
         {
-            ActiveDocument?.ViewAnalysisData();
+            await ActiveDocument?.ViewAnalysisDataAsync();
         }
 
         public bool CanExportAllData => IsActiveDocumentConnected;

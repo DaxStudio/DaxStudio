@@ -360,7 +360,7 @@
                                      Visibility="{Binding ShowFilterValue, Converter={StaticResource BoolToVisibility}}" 
                                      AcceptsReturn="{Binding FilterType, Converter={StaticResource IsMultiLineFilterTypeConverter}}"
                                      VerticalScrollBarVisibility="Auto"
-                                     Height="{Binding FilterType, Converter={StaticResource FilterValueHeightConverter}, ConverterParameter='100,14'}"
+                                     Height="{Binding FilterType, Converter={StaticResource FilterValueHeightConverter}, ConverterParameter='100,18'}"
                                     
                                      MinWidth="120"
                                      Margin="3,3,3,3"
