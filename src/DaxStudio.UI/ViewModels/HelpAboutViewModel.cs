@@ -72,7 +72,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => UpdateStatus);
             NotifyOfPropertyChange(() => LastChecked);
             VersionIsLatest = VersionChecker.VersionIsLatest;
-            DownloadUrl = VersionChecker.DownloadUrl;
+            //DownloadUrl = VersionChecker.DownloadUrl;
             NotifyOfPropertyChange(() => VersionIsLatest);
             NotifyOfPropertyChange(() => DownloadUrl);
         }
@@ -160,7 +160,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Uri DownloadUrl { get; private set; }
+        public Uri DownloadUrl => VersionChecker.DownloadUrl;
         public bool VersionIsLatest { get; private set; }
 
         public bool IsLoggingEnabled { get { return _host.DebugLogging; } }
