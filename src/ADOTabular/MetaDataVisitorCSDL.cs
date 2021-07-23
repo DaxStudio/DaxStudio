@@ -11,6 +11,7 @@ using ADOTabular.Interfaces;
 using ADOTabular.Enums;
 
 using Tuple = System.Tuple;
+using System.Threading.Tasks;
 
 namespace ADOTabular
 {
@@ -63,6 +64,93 @@ namespace ADOTabular
             */
 
             // get hierarchy structure
+            GetHierarchiesFromDmv();
+
+            using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
+            GenerateTablesFromXmlReader(tables, rdr);
+
+            // update the expressions async on a background thread
+            PopulateMeasureExpressionsAsync(tables.Model,_conn).Forget();
+        }
+
+        private async Task PopulateMeasureExpressionsAsync(ADOTabularModel model, IADOTabularConnection conn)
+        {
+            await Task.Run(() => {
+                // TODO get measure definitions asynch
+                var measureDict = model.MeasureExpressions;
+                measureDict.Clear();
+                GetMeasuresFromDmv(measureDict, conn);
+            });
+        }
+
+
+
+        internal static void GetMeasuresFromDmv(Dictionary<string,string> measureExpressions,  IADOTabularConnection conn)
+        {
+            // need to check if the DMV collection has the TMSCHEMA_MEASURES view, 
+            // and if this is a connection with admin rights
+            // and if it is not a PowerPivot model (as they seem to throw an error about the model needing to be in the "new" tabular mode)
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection && !conn.IsPowerPivot) GetTmSchemaMeasures(measureExpressions, conn);
+            else GetMdSchemaMeasures(measureExpressions, conn);
+        }
+
+        private static void GetMdSchemaMeasures(Dictionary<string,string> measureExpressions, IADOTabularConnection conn)
+        {
+            
+            var resCollMeasures = new AdomdRestrictionCollection
+                {
+                    {"CATALOG_NAME", conn.Database.Name},
+                    {"CUBE_NAME", conn.Database.Models.BaseModel.Name},
+                    {
+                        "MEASURE_VISIBILITY",
+                        conn.ShowHiddenObjects
+                            ? (int) (MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)
+                            : (int) MdschemaVisibility.Visible
+                    }
+                };
+
+            DataTable dtMeasures = conn.GetSchemaDataSet("MDSCHEMA_MEASURES", resCollMeasures).Tables[0];
+
+            foreach (DataRow dr in dtMeasures.Rows)
+            {
+                measureExpressions.Add(dr["MEASURE_NAME"].ToString()
+                                    ,  dr["EXPRESSION"].ToString()
+                                    );
+            }
+
+            
+        }
+
+        private static void GetTmSchemaMeasures(Dictionary<string, string> measureExpressions, IADOTabularConnection conn)
+        {
+
+            var resCollMeasures = new AdomdRestrictionCollection
+                {
+                    {"DatabaseName", conn.Database.Name}
+                };
+
+            if (!conn.ShowHiddenObjects) resCollMeasures.Add(new AdomdRestriction("IsHidden", false));
+
+            // then get all the measures for the current table
+            DataTable dtMeasures = conn.GetSchemaDataSet("TMSCHEMA_MEASURES", resCollMeasures).Tables[0];
+
+            foreach (DataRow dr in dtMeasures.Rows)
+            {
+                measureExpressions.Add(dr["Name"].ToString()
+                                    , dr["Expression"].ToString()      
+                                    );
+            }
+        }
+
+
+
+
+
+
+
+
+        private void GetHierarchiesFromDmv()
+        {
             var hierResCol = new AdomdRestrictionCollection { { "CATALOG_NAME", _conn.Database.Name }, { "CUBE_NAME", _conn.Database.Models.BaseModel.Name }, { "HIERARCHY_VISIBILITY", 3 } };
             var dsHier = _conn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", hierResCol);
 
@@ -85,9 +173,6 @@ namespace ADOTabular
                 }
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
-
-            using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
-            GenerateTablesFromXmlReader(tables, rdr);
         }
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
@@ -118,7 +203,7 @@ namespace ADOTabular
                                 UpdateDatabaseAndModelFromEntityContainer(rdr, tabs, eEntityContainer);
                             break;
                         case "EntitySet":
-                            var tab = BuildTableFromEntitySet(rdr, eEntitySet);
+                            var tab = BuildTableFromEntitySet(rdr, eEntitySet, tabs);
                             tabs.Add(tab);
                             break;
                         case "EntityType":
@@ -388,7 +473,7 @@ namespace ADOTabular
         }
 
 
-        private ADOTabularTable BuildTableFromEntitySet(XmlReader rdr, string eEntitySet)
+        private ADOTabularTable BuildTableFromEntitySet(XmlReader rdr, string eEntitySet, ADOTabularTableCollection tables)
         {
             string caption = null;
             string description = "";
@@ -443,7 +528,7 @@ namespace ADOTabular
             //                - if this is missing the Name property is used
             // Caption        - this is what the end user sees (may be translated)
             //                - if this is missing the Name property is used
-            var tab = new ADOTabularTable(_conn, refname, name, caption, description, isVisible, _private, showAsVariationsOnly);
+            var tab = new ADOTabularTable(_conn, tables.Model, refname, name, caption, description, isVisible, _private, showAsVariationsOnly);
 
             return tab;
         }

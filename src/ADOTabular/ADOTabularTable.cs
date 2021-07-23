@@ -21,7 +21,7 @@ namespace ADOTabular
             _model = model;
         }
         */
-        public ADOTabularTable(IADOTabularConnection adoTabConn, string internalReference, string name, string caption, string description, bool isVisible, bool @private, bool showAsVariationsOnly )
+        public ADOTabularTable(IADOTabularConnection adoTabConn, ADOTabularModel model, string internalReference, string name, string caption, string description, bool isVisible, bool @private, bool showAsVariationsOnly )
         {
             _adoTabConn = adoTabConn;
             InternalReference = internalReference;
@@ -34,6 +34,7 @@ namespace ADOTabular
             FolderItems = new List<IADOTabularObjectReference>();
             Private = @private;
             ShowAsVariationsOnly = showAsVariationsOnly;
+            Model = model;
         }
 
         public string DaxName
