@@ -169,6 +169,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public string EditorText => QueryText;
+
         public string QueryText { 
             get { 
                 try {

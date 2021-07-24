@@ -9,6 +9,7 @@ namespace DaxStudio.UI.Interfaces
 {
     public interface IQueryTextProvider
     {
+        string EditorText { get; }
         string QueryText {get; }
         List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> ParameterCollection { get; }
         QueryInfo QueryInfo { get; set; }

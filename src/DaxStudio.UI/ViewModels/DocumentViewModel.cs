@@ -1193,7 +1193,7 @@ namespace DaxStudio.UI.ViewModels
         {
 
             // merge in any parameters
-            textProvider.QueryInfo = new QueryInfo(textProvider.QueryText, injectEvaluate, injectRowFunction, _eventAggregator);
+            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
             if (textProvider.QueryInfo.NeedsParameterValues)
             {
