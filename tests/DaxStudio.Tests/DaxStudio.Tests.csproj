@@ -152,7 +152,7 @@
       <Version>2.11.10</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
-      <Version>0.11.3</Version>
+      <Version>0.11.4</Version>
     </PackageReference>
     <PackageReference Include="Moq">
       <Version>4.16.1</Version>

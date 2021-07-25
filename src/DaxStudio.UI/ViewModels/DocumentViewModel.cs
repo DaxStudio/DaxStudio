@@ -55,8 +55,8 @@ using Newtonsoft.Json;
 using Serilog;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
-using Xceed.Wpf.AvalonDock;
-using Xceed.Wpf.AvalonDock.Themes;
+using AvalonDock;
+using AvalonDock.Themes;
 using Action = System.Action;
 using Constants = DaxStudio.Common.Constants;
 using Timer = System.Timers.Timer;
@@ -4417,7 +4417,7 @@ namespace DaxStudio.UI.ViewModels
             IsFocused = true;
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme => new GenericTheme();
+        public AvalonDock.Themes.Theme AvalonDockTheme => new GenericTheme();
 
         private bool _showMeasureExpressionEditor;
         public bool ShowMeasureExpressionEditor

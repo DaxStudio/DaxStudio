@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xceed.Wpf.AvalonDock;
+using AvalonDock;
 
 namespace DaxStudio.UI.Theme
 {
 
-    public class DaxStudioLightTheme : Xceed.Wpf.AvalonDock.Themes.Theme
+    public class DaxStudioLightTheme : AvalonDock.Themes.Theme
     {
         
 
