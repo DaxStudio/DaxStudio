@@ -74,7 +74,8 @@ namespace DaxStudio.UI.Model
                         case FilterType.In:
                         case FilterType.NotIn:
                             // if the data type is string and the model supports TREATAS
-                            if (TabularObject.DataType == typeof(string) && ( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) && !FilterValueIsParameter ) yield return ft;
+                            // TabularObject.DataType == typeof(string) &&
+                            if (( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) && !FilterValueIsParameter ) yield return ft;
                             break;
                         case FilterType.GreaterThan:
                         case FilterType.GreaterThanOrEqual:
@@ -100,7 +101,7 @@ namespace DaxStudio.UI.Model
         public string FilterValue { get => _filterValue;
             set {
                 _filterValue = FilterValueIsParameter? value.Trim() : value;
-                if (_filterValue.StartsWith("@"))
+                if (_filterValue == "@" || _filterValue == "@@")
                 {
                     //IsNotifying = false;
                     FilterValueIsParameter = !FilterValueIsParameter;
@@ -142,17 +143,40 @@ namespace DaxStudio.UI.Model
         private string ValidateInput(string input, bool isParameter)
         {
             if (isParameter) return string.Empty;
-            try
-            {
-                if (TabularObject.DataType == typeof(DateTime)) {DateTime _ = DateTime.Parse(input); }
-                if (TabularObject.DataType == typeof(Int64)) { var _ = Int64.Parse(input); }
-                if (TabularObject.DataType == typeof(Decimal)) { var _ = Decimal.Parse(input); }
-                
+
+                if (FilterType == FilterType.In || FilterType == FilterType.NotIn)
+                {
+                    foreach (var line in input.Split('\n'))
+                    {
+                        try { 
+                            ValidateInputValue(line);
+                        } catch (Exception ex)
+                        {
+                            return $"Unable to parse '{line}' as {TabularObject.DataType.Name}\n{ex.Message}";
+                        }
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        ValidateInputValue(input);
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Unable to parse '{input}' as {TabularObject.DataType.Name}\n{ex.Message}";
+                    }
+                }
+
                 return string.Empty;
-            } catch (Exception ex)
-            {
-                return $"Unable to parse '{input}' as {TabularObject.DataType.Name}\n{ex.Message}";
-            }
+
+        }
+
+        private void ValidateInputValue(string input)
+        {
+            if (TabularObject.DataType == typeof(DateTime)) { DateTime _ = DateTime.Parse(input); }
+            if (TabularObject.DataType == typeof(Int64)) { var _ = Int64.Parse(input); }
+            if (TabularObject.DataType == typeof(Decimal)) { var _ = Decimal.Parse(input); }
         }
 
         public bool ShowFilterValue

@@ -35,7 +35,7 @@ namespace DaxStudio.UI.ViewModels
             Options = options;
             ColdRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.ClearThenRun);
             WarmRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
-            TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultTargetTimer));
+            TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultsTargetTimer));
             ProgressIcon = FontAwesomeIcon.ClockOutline;
             ProgressSpin = false;
             ProgressMessage = "Ready";
