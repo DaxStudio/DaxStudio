@@ -857,7 +857,7 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Refresh Metadata"
                                           Text="Refreshes the table and column metadata for the current database"
-                                          DisableReason="{Binding ClearCacheDisableReason}"
+                                          DisableReason="{Binding RunQueryDisableReason}"
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -1047,6 +1047,15 @@
                     <Fluent:Button.Icon>
 
                         <fa:FontAwesome  Icon="Plug" Foreground="OrangeRed" FontSize="16" />
+
+                    </Fluent:Button.Icon>
+                </Fluent:Button>
+
+                <Fluent:Button Header="View As" x:Name="ViewAs" Size="Middle"
+                               cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]">
+                    <Fluent:Button.Icon>
+
+                        <fa:FontAwesome  Icon="UserCircleOutline" Foreground="BlueViolet" FontSize="16" />
 
                     </Fluent:Button.Icon>
                 </Fluent:Button>

@@ -603,6 +603,7 @@
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaRelationshipViewModel.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaSummaryViewModel.cs" />
     <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
+    <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>
@@ -741,6 +742,9 @@
     <Compile Include="Views\VertiPaqAnalyzerView.xaml.cs">
       <DependentUpon>VertiPaqAnalyzerView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ViewAsDialogView.xaml.cs">
+      <DependentUpon>ViewAsDialogView.xaml</DependentUpon>
+    </Compile>
     <Page Include="Controls\HotKeyEditorControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -842,6 +846,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\VertiPaqAnalyzerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ViewAsDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

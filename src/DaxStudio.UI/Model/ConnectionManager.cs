@@ -502,6 +502,14 @@ namespace DaxStudio.UI.Model
             return modelMeasures;
         }
 
+        public List<string> GetRoles()
+        {
+            var roleQuery = "select [Name] from $SYSTEM.TMSCHEMA_ROLES";
+            var roleTable = ExecuteDaxQueryDataTable(roleQuery);
+            var result = roleTable.AsEnumerable().Select(row => row[0].ToString()).ToList<string>();
+            return result;
+        }
+
         public string DefineFilterDumpMeasureExpression(string tableCaption, bool allTables)
         {
 

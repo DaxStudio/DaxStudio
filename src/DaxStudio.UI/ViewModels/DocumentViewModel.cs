@@ -406,6 +406,26 @@ namespace DaxStudio.UI.ViewModels
             return stripDirectQueryDialog.Result;
         }
 
+        public void ShowViewAsDialog()
+        {
+            var viewAsDialog = new ViewAsDialogViewModel(Connection);
+        
+
+            _windowManager.ShowDialogBox(viewAsDialog, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+
+            // if result is OK then change connection to ViewAs mode
+            // else do nothing
+
+        }
+
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (_editor.SelectionLength == 0)

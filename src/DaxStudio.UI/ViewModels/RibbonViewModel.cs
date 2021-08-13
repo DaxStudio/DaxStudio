@@ -1178,5 +1178,10 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.CloseConnection();
         }
 
+        public void ShowViewAsDialog()
+        {
+            ActiveDocument?.ShowViewAsDialog();
+        }
+
     }
 }
