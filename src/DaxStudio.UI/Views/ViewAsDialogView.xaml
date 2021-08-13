@@ -45,10 +45,9 @@
             <ListBox x:Name="RoleList" Grid.Row="3" Grid.Column="1" Margin="2">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel>
-                            <TextBlock>123</TextBlock>
+
                         <CheckBox IsChecked="{Binding Selected}" Content="{Binding Name}"/>
-                        </StackPanel>
+
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

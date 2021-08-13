@@ -25,7 +25,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class ViewAsDialogViewModel : Screen
     {
-        private OpenDialogResult _dialogResult = OpenDialogResult.Cancel;
+        private DialogResult _dialogResult = DialogResult.Cancel;
         private IMetadataProvider _connectionManager;
 
         [ImportingConstructor]
@@ -81,16 +81,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void Cancel()
         {
-            _dialogResult = OpenDialogResult.Cancel;
+            _dialogResult = DialogResult.Cancel;
+            TryClose(true);
         }
 
         public void Ok()
         {
-            _dialogResult = OpenDialogResult.Open;
+            _dialogResult = DialogResult.OK;
             TryClose(true);
         }
 
-        public OpenDialogResult Result => _dialogResult;
+        public DialogResult Result => _dialogResult;
 
     }
 }
