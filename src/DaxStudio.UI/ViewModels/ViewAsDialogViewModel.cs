@@ -8,6 +8,7 @@ namespace DaxStudio.UI.ViewModels
 {
     public class ViewAsRole:PropertyChangedBase
     {
+
         public ViewAsRole (string name)
         {
             Name = name;
@@ -27,6 +28,7 @@ namespace DaxStudio.UI.ViewModels
     {
         private DialogResult _dialogResult = DialogResult.Cancel;
         private IMetadataProvider _connectionManager;
+        private int _selectedRoles = 0;
 
         [ImportingConstructor]
         public ViewAsDialogViewModel(IMetadataProvider connectionManager) {
@@ -77,7 +79,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string OtherUserName { get; set; }
+        public string OtherUserName { get; set; } = string.Empty;
 
         public void Cancel()
         {
@@ -92,6 +94,14 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public DialogResult Result => _dialogResult;
+
+        public void SelectRole(bool role)
+        {
+            if (role) _selectedRoles++;
+            else _selectedRoles--;
+
+            Roles = _selectedRoles > 0;
+        }
 
     }
 }

@@ -99,6 +99,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
+        , IHandle<ViewAsEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -423,7 +424,44 @@ namespace DaxStudio.UI.ViewModels
 
             // if result is OK then change connection to ViewAs mode
             // else do nothing
+            if (viewAsDialog.Result == DialogResult.OK)
+            {
+                // cache any active traces
+                List<ITraceWatcher> activeTraces = new List<ITraceWatcher>();
+                foreach (var t in TraceWatchers)
+                {
+                    if (t.IsChecked) activeTraces.Add(t);
 
+                }
+
+                var roles = viewAsDialog.RoleList.Where(r => r.Selected).Select(r => r.Name).Aggregate((current, next) => current + "," + next);
+                var rolePrefix = string.IsNullOrEmpty(roles) ? string.Empty : " Roles: ";
+                var userPrefix = viewAsDialog.OtherUser ? "User: " : string.Empty;
+                ViewAsDescription = $"{userPrefix}{viewAsDialog.OtherUserName} {rolePrefix}{roles}";
+                IsViewAsActive = true;
+                Connection.SetViewAs(viewAsDialog.OtherUserName.Trim(), roles);
+
+                // restore active traces
+                foreach (var t in activeTraces)
+                {
+                    t.IsChecked = true;
+                }
+            }
+        }
+
+        private string _viewAsDescription = string.Empty;
+        public string ViewAsDescription { get => _viewAsDescription;
+            set
+            {
+                _viewAsDescription = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public void StopViewAs()
+        {
+            IsViewAsActive = false;
+            Connection.StopViewAs();
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -4531,6 +4569,14 @@ namespace DaxStudio.UI.ViewModels
 
         public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
 
+        private bool _isViewAsActive = false;
+        public bool IsViewAsActive { get=> _isViewAsActive; 
+            private set { 
+                _isViewAsActive = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {
             if (!Options.EditorShowFunctionInsightsOnHover) return;
@@ -4594,6 +4640,11 @@ namespace DaxStudio.UI.ViewModels
             var editor = GetEditor();
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
+        }
+
+        public void Handle(ViewAsEvent message)
+        {
+            Connection.SetViewAs(message.UserName, message.Roles);
         }
     }
 }

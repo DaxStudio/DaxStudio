@@ -681,5 +681,73 @@ namespace DaxStudio.UI.Model
             SetSelectedModel(model);
         }
 
+
+        /// <summary>
+        /// Attempts to set the ViewAs user.
+        /// Warning: this uses settings that are not documented by Microsoft and so could be subject to changes at any time
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="roles"></param>
+        internal void SetViewAs(string userName, string roles)
+        {
+            /*
+             * ;Authentication Scheme=ActAs;
+             * Ext Auth Info="<Properties><UserName>test</UserName><BypassAuthorization>true</BypassAuthorization><RestrictCatalog>29530e54-5667-46ab-9c6a-d5b494347966</RestrictCatalog></Properties>";
+             */
+            if (string.IsNullOrEmpty(userName) && string.IsNullOrEmpty(roles)) throw new ArgumentException("You must specify either a Username or Roles to activate the ViewAs functionality");
+
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
+
+            // set catalog
+            if (!builder.ContainsKey("Initial Catalog")) builder["Initial Catalog"] = this.DatabaseName;
+            var catalogElement = $"<RestrictCatalog>{this.DatabaseName}</RestrictCatalog>";
+
+            string userElement = string.Empty;
+            string rolesElement = string.Empty;
+
+            if (!string.IsNullOrEmpty(userName))
+            {
+                // TODO - if data source does not support ActAs we should try Effective Username
+
+                userElement = $"<UserName>{userName}</UserName><BypassAuthorization>true</BypassAuthorization>";
+
+                if (!string.IsNullOrEmpty(roles))
+                {
+                    // set Roles= on connstr
+                    // add roles restriction to ExtAuth
+                    builder.Add("Roles", roles);
+                    rolesElement = $"<RestrictRoles>{roles}</RestrictRoles>";
+                }
+
+                var extAuthInfo = $"<Properties>{userElement}{catalogElement}{rolesElement}</Properties>";
+
+                builder.Add("Authentication Scheme", "ActAs");
+                builder.Add("Ext Auth Info", extAuthInfo);
+            }
+
+            if (!string.IsNullOrEmpty(roles))
+            {
+                // set Roles= on connstr
+                // add roles restriction to ExtAuth
+                builder["Roles"] = roles;
+            }
+
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            _eventAggregator.PublishOnUIThread(connEvent);
+
+        }
+
+        public void StopViewAs()
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
+            builder.Remove("Authentication Scheme");
+            builder.Remove("Ext Auth Info");
+            builder.Remove("Roles");
+            builder.Remove("Effective Username");
+
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            _eventAggregator.PublishOnUIThread(connEvent);
+
+        }
     }
 }

@@ -831,6 +831,8 @@ namespace ADOTabular
 
         public bool IsAdminConnection => SPID != -1 || HasRlsParameters() || IsPowerBIXmla;
 
+        public bool IsTestingRls => HasRlsParameters();
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
         {
