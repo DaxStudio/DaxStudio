@@ -277,7 +277,6 @@
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
-    <Compile Include="Events\ViewAsEvent.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />

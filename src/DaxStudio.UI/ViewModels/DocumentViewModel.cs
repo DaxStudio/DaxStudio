@@ -99,7 +99,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
-        , IHandle<ViewAsEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -407,7 +406,7 @@ namespace DaxStudio.UI.ViewModels
             return stripDirectQueryDialog.Result;
         }
 
-        public void ShowViewAsDialog()
+        public async void ShowViewAsDialog()
         {
             var viewAsDialog = new ViewAsDialogViewModel(Connection);
         
@@ -426,6 +425,8 @@ namespace DaxStudio.UI.ViewModels
             // else do nothing
             if (viewAsDialog.Result == DialogResult.OK)
             {
+                
+
                 // cache any active traces
                 List<ITraceWatcher> activeTraces = new List<ITraceWatcher>();
                 foreach (var t in TraceWatchers)
@@ -434,18 +435,27 @@ namespace DaxStudio.UI.ViewModels
 
                 }
 
-                var roles = viewAsDialog.RoleList.Where(r => r.Selected).Select(r => r.Name).Aggregate((current, next) => current + "," + next);
-                var rolePrefix = string.IsNullOrEmpty(roles) ? string.Empty : " Roles: ";
-                var userPrefix = viewAsDialog.OtherUser ? "User: " : string.Empty;
-                ViewAsDescription = $"{userPrefix}{viewAsDialog.OtherUserName} {rolePrefix}{roles}";
-                IsViewAsActive = true;
-                Connection.SetViewAs(viewAsDialog.OtherUserName.Trim(), roles);
-
-                // restore active traces
-                foreach (var t in activeTraces)
+                try
                 {
-                    t.IsChecked = true;
+                    string roles = string.Empty;
+                    if (viewAsDialog.RoleList.Count(r => r.Selected) > 0)
+                        roles = viewAsDialog.RoleList.Where(r => r.Selected).Select(r => r.Name).Aggregate((current, next) => current + "," + next);
+                    var rolePrefix = string.IsNullOrEmpty(roles) ? string.Empty : " Roles: ";
+                    var userPrefix = viewAsDialog.OtherUser ? "User: " : string.Empty;
+
+                    await Connection.SetViewAsAsync(viewAsDialog.OtherUserName.Trim(), roles, activeTraces);
+                    ViewAsDescription = $"{userPrefix}{viewAsDialog.OtherUserName} {rolePrefix}{roles}";
+                    
+
                 }
+                catch (Exception ex)
+                {
+                    
+                    var msg = $"Error Setting ViewAs: {ex.Message}";
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ShowViewAsDialog), msg);
+                    OutputError( msg);
+                }
+
             }
         }
 
@@ -460,8 +470,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void StopViewAs()
         {
-            IsViewAsActive = false;
-            Connection.StopViewAs();
+            var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
+            Connection.StopViewAs(activeTraces);
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -1073,11 +1083,20 @@ namespace DaxStudio.UI.ViewModels
                     // enable/disable traces depending on the current connection
                     foreach (var traceWatcher in TraceWatchers)
                     {
-                        // on change of connection we need to disable traces as the will
+                        // on change of connection we need to disable traces as they will
                         // be pointing to the old connection
                         traceWatcher.IsChecked = false;
                         // then we need to check if the new connection can be traced
                         traceWatcher.CheckEnabled(Connection, activeTrace);
+                    }
+
+                    // re-connect any traces that were previously active
+                    if (message.ActiveTraces != null)
+                    {
+                        foreach (var traceWatcher in message.ActiveTraces)
+                        {
+                            traceWatcher.IsChecked = true;
+                        }
                     }
 
                     Execute.OnUIThread(() =>
@@ -1102,6 +1121,10 @@ namespace DaxStudio.UI.ViewModels
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
                     OutputError(msg);
                     ActivateOutput();
+                    // if we've had an error and there are RLS "View As" settings active we need to switch those off
+                    // since they could be the cause of the error and there is most likely no way to recover with
+                    // them enabled
+                    if (Connection.IsTestingRls) Connection.StopViewAs(null);
                 }
             }
             if (Connection.Databases.Count == 0) {
@@ -3074,6 +3097,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", Connection == null ? "<null>" : Connection.ConnectionString);
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => IsAdminConnection);
+            NotifyOfPropertyChange(() => IsViewAsActive);
             _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
 
             
@@ -4569,12 +4593,12 @@ namespace DaxStudio.UI.ViewModels
 
         public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
 
-        private bool _isViewAsActive = false;
-        public bool IsViewAsActive { get=> _isViewAsActive; 
-            private set { 
-                _isViewAsActive = value;
-                NotifyOfPropertyChange();
-            } 
+        //private bool _isViewAsActive = false;
+        public bool IsViewAsActive { get => Connection.IsTestingRls; 
+            //private set { 
+            //    _isViewAsActive = value;
+            //    NotifyOfPropertyChange();
+            //} 
         }
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
@@ -4642,9 +4666,7 @@ namespace DaxStudio.UI.ViewModels
             else CommentSelection();
         }
 
-        public void Handle(ViewAsEvent message)
-        {
-            Connection.SetViewAs(message.UserName, message.Roles);
-        }
+
+
     }
 }

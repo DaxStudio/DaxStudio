@@ -50,6 +50,7 @@ namespace DaxStudio.UI.ViewModels
                 _unrestricted = true;
                 OtherUser = false;
                 Roles = false;
+                RoleList.Apply(r => r.Selected = false);
                 NotifyOfPropertyChange();
             }
         }

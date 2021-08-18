@@ -23,6 +23,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -38,12 +39,15 @@
                    FontWeight="Light" 
                    FontSize="44" ></Label>
 
-            <CheckBox x:Name="Unrestricted" Content="Unrestricted" Grid.Row="1" Margin="10 0"/>
-            <Label Grid.Row="1" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top"/>
-            <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="2" VerticalAlignment="Center" Margin="10 5 "/>
-            <TextBox x:Name="OtherUserName" Grid.Row="2" Grid.Column="2" Margin="2"/>
-            <CheckBox x:Name="Roles"  Content="Roles" Grid.Row="3" Margin="10 5"/>
-            <ListBox x:Name="RoleList" Grid.Row="3" Grid.Column="1" Margin="2">
+            <CheckBox x:Name="Unrestricted" Content="Unrestricted" Grid.Row="1" Margin="12 0"/>
+            <Label Grid.Row="1" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>
+            <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="2" VerticalAlignment="Center" Margin="12 5 "/>
+            <TextBox x:Name="OtherUserName" Grid.Row="2" Grid.Column="2" Margin="5"/>
+            <Label Content="Roles" Foreground="{StaticResource DaxStudioBrush}"
+                   FontWeight="Normal"
+                   Grid.Row="3" Margin="5 5 0 0 " FontSize="18" Padding="0"/>
+
+            <ListBox x:Name="RoleList" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
 
@@ -52,7 +56,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.ColumnSpan="2">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.ColumnSpan="2">
                 <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True"/>
                 <Button x:Name="Cancel" Content="Cancel" Margin="5,10" MinWidth="50" IsCancel="True"/>
             </StackPanel>

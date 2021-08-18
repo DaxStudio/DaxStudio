@@ -1,6 +1,8 @@
 ﻿
 
 using ADOTabular.Enums;
+using DaxStudio.UI.Interfaces;
+using System.Collections.Generic;
 
 namespace DaxStudio.UI.Events
 {
@@ -28,5 +30,7 @@ namespace DaxStudio.UI.Events
 
         public string DatabaseName { get; set; }
         public bool RefreshDatabases { get; set; }
+
+        public List<ITraceWatcher> ActiveTraces { get; set; }
     }
 }

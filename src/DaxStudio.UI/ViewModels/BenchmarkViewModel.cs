@@ -42,6 +42,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressPercentage = 0;
             ProgressColor = "LightGray";
             RunSameWarmAndCold = true;
+            IsViewAsActive = document.IsViewAsActive;
         }
 
 
@@ -352,6 +353,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool RunSameWarmAndCold { get; set; }
+        public bool IsViewAsActive { get; }
 
         private string _progressMessage;
         public string ProgressMessage { get => _progressMessage;

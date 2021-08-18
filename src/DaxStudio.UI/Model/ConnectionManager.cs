@@ -688,7 +688,7 @@ namespace DaxStudio.UI.Model
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="roles"></param>
-        internal void SetViewAs(string userName, string roles)
+        internal async Task SetViewAsAsync(string userName, string roles, List<ITraceWatcher> activeTraces)
         {
             /*
              * ;Authentication Scheme=ActAs;
@@ -721,8 +721,17 @@ namespace DaxStudio.UI.Model
 
                 var extAuthInfo = $"<Properties>{userElement}{catalogElement}{rolesElement}</Properties>";
 
-                builder.Add("Authentication Scheme", "ActAs");
-                builder.Add("Ext Auth Info", extAuthInfo);
+
+                if ( SupportsActAs() )
+                {
+                    // ExtAuth works on PBI or ASAzure
+                    builder.Add("Authentication Scheme", "ActAs");
+                    builder.Add("Ext Auth Info", extAuthInfo);
+                } else
+                {
+                    builder.Add("EffectiveUsername", userName);
+                }
+
             }
 
             if (!string.IsNullOrEmpty(roles))
@@ -733,21 +742,38 @@ namespace DaxStudio.UI.Model
             }
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
-            _eventAggregator.PublishOnUIThread(connEvent);
+            connEvent.ActiveTraces = activeTraces;
+            await _eventAggregator.PublishOnUIThreadAsync(connEvent);
+            
 
         }
 
-        public void StopViewAs()
+        private bool SupportsActAs()
+        {
+            return (this.ServerName.StartsWith("asazure://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("localhost:", StringComparison.InvariantCultureIgnoreCase)
+                );
+
+        }
+
+        public void StopViewAs(List<ITraceWatcher> activeTraces)
         {
             var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
             builder.Remove("Authentication Scheme");
             builder.Remove("Ext Auth Info");
             builder.Remove("Roles");
-            builder.Remove("Effective Username");
+            builder.Remove("EffectiveUsername");
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            connEvent.ActiveTraces = activeTraces;
             _eventAggregator.PublishOnUIThread(connEvent);
 
         }
+
+        public bool IsTestingRls => _connection?.IsTestingRls??false;
+        
     }
 }
