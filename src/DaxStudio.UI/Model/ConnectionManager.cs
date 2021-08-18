@@ -774,6 +774,15 @@ namespace DaxStudio.UI.Model
         }
 
         public bool IsTestingRls => _connection?.IsTestingRls??false;
-        
+
+        public static bool IsPbiXmlaEndpoint(string connectionString)
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var server = builder["Data Source"].ToString();
+            return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
+                || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
+                || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
+        }
+
     }
 }

@@ -1117,7 +1117,16 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     _eventAggregator.PublishOnUIThread(new ConnectFailedEvent());
-                    var msg = $"The following error occurred while updating the connection: {ex.Message}";
+
+                    // if the xmla endpoint is not enabled it returns a generic WebException so we add extra info 
+                    // to the error to help people potentially mitigate the issue.
+                    string extraInfo = string.Empty;
+                    if (ex is System.Net.WebException && ConnectionManager.IsPbiXmlaEndpoint(message.ConnectionString) )
+                    {
+                        extraInfo = "\nPlease check your Tenant / PPU admin settings to make sure the XMLA Endpoint is enabled\n";
+                    }
+
+                    var msg = $"The following error occurred while updating the connection{extraInfo}: {ex.Message}";
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
                     OutputError(msg);
                     ActivateOutput();
@@ -1125,6 +1134,9 @@ namespace DaxStudio.UI.ViewModels
                     // since they could be the cause of the error and there is most likely no way to recover with
                     // them enabled
                     if (Connection.IsTestingRls) Connection.StopViewAs(null);
+
+                    // if there was an error we bail out here
+                    return;
                 }
             }
             if (Connection.Databases.Count == 0) {
@@ -1133,7 +1145,9 @@ namespace DaxStudio.UI.ViewModels
                 OutputWarning(msg);
             }
         }
+
         
+
         public string SelectedText { get {
                 var editor = GetEditor();
                 if (editor == null) return "";
@@ -3055,8 +3069,10 @@ namespace DaxStudio.UI.ViewModels
                     {
                         if (taskResult.IsFaulted)
                         {
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {taskResult?.Exception?.InnerException?.Message}"));
-                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", taskResult?.Exception?.InnerException?.Message);
+                            var errMsg = taskResult?.Exception?.InnerException?.Message;
+
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
+                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
                         }
                         else
                         {
