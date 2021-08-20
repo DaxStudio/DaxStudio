@@ -463,6 +463,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
             Connection.StopViewAs(activeTraces);
+            _viewAsDescription = string.Empty;
+            NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -1069,7 +1071,9 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (message == null) return;
                     Connection.Connect(message) ;
-                    UpdateViewAsDescription(message.ConnectionString);
+                    if (string.IsNullOrEmpty(ViewAsDescription)) 
+                        UpdateViewAsDescription(message.ConnectionString);
+
                     NotifyOfPropertyChange(() => IsAdminConnection);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                     // enable/disable traces depending on the current connection
@@ -1148,9 +1152,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetViewAsDescription(string user, string roles)
         {
-            var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $"User: {user} ";
+            var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $" User: {user}";
             var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
-            _viewAsDescription = $"{userSection}{roleSection}".Trim();
+            _viewAsDescription = $"Viewing As:{userSection}{roleSection}";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
