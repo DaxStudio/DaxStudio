@@ -61,6 +61,7 @@ namespace DaxStudio.UI.ViewModels
                 _otherUser = value;
                 if (_otherUser) _unrestricted = false;
                 if (!_roles && !_otherUser) _unrestricted = true;
+                if (!_otherUser) OtherUserName = string.Empty;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(Unrestricted));
             }

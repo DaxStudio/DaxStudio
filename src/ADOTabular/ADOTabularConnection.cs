@@ -903,10 +903,14 @@ namespace ADOTabular
                 builder.Remove(param);
             }   
             var newConnStr = builder.ToString();
-            return CloneInternal(newConnStr,false);
+            return CloneInternal(newConnStr,false, false);
         }
 
         private ADOTabularConnection CloneInternal(string connectionString, bool sameSession)
+        {
+            return CloneInternal(connectionString, sameSession, true);
+        }
+        private ADOTabularConnection CloneInternal(string connectionString, bool sameSession, bool copyDatabaseReference)
         {
             var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
             if(sameSession) connStrBuilder["SessionId"] = _adomdConn.SessionID;
@@ -918,10 +922,14 @@ namespace ADOTabular
                 _keywords = this._keywords,
                 _serverMode = this._serverMode,
                 _dmvCollection = this._dmvCollection,
-                _db = this._db,
-                _adoTabDatabaseColl = this._adoTabDatabaseColl,
                 ServerType = this.ServerType
             };
+
+            if (copyDatabaseReference)
+            {
+                cnn._db = this._db;
+                cnn._adoTabDatabaseColl = this._adoTabDatabaseColl;
+            }
             return cnn;
         }
     }

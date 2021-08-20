@@ -426,6 +426,21 @@ namespace DaxStudio.UI.Model
                 tempConn.Close(false);
             });
         }
+
+        public void ClearCache()
+        {
+            if (IsTestingRls)
+            {
+                var tempConn = _connection.CloneWithoutRLS();
+                //tempConn.Open();
+                tempConn.Database.ClearCache();
+                tempConn.Close();
+            }
+            else
+            {
+                this.Database.ClearCache();
+            }
+        }
         public ADOTabularModel SelectedModel { get; set; }
 
         public void SetSelectedModel(ADOTabularModel model)

@@ -425,7 +425,8 @@ namespace DaxStudio.UI.ViewModels
             // else do nothing
             if (viewAsDialog.Result == DialogResult.OK)
             {
-                
+                // exit here if no restrictions were specified
+                if (viewAsDialog.Unrestricted) return;
 
                 // cache any active traces
                 List<ITraceWatcher> activeTraces = new List<ITraceWatcher>();
@@ -440,13 +441,9 @@ namespace DaxStudio.UI.ViewModels
                     string roles = string.Empty;
                     if (viewAsDialog.RoleList.Count(r => r.Selected) > 0)
                         roles = viewAsDialog.RoleList.Where(r => r.Selected).Select(r => r.Name).Aggregate((current, next) => current + "," + next);
-                    var rolePrefix = string.IsNullOrEmpty(roles) ? string.Empty : " Roles: ";
-                    var userPrefix = viewAsDialog.OtherUser ? "User: " : string.Empty;
-
-                    await Connection.SetViewAsAsync(viewAsDialog.OtherUserName.Trim(), roles, activeTraces);
-                    ViewAsDescription = $"{userPrefix}{viewAsDialog.OtherUserName} {rolePrefix}{roles}";
                     
-
+                    await Connection.SetViewAsAsync(viewAsDialog.OtherUserName.Trim(), roles, activeTraces);
+                    SetViewAsDescription(viewAsDialog.OtherUserName, roles);                    
                 }
                 catch (Exception ex)
                 {
@@ -460,13 +457,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _viewAsDescription = string.Empty;
-        public string ViewAsDescription { get => _viewAsDescription;
-            set
-            {
-                _viewAsDescription = value;
-                NotifyOfPropertyChange();
-            }
-        }
+        public string ViewAsDescription  => _viewAsDescription;
 
         public void StopViewAs()
         {
@@ -1078,6 +1069,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (message == null) return;
                     Connection.Connect(message) ;
+                    UpdateViewAsDescription(message.ConnectionString);
                     NotifyOfPropertyChange(() => IsAdminConnection);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                     // enable/disable traces depending on the current connection
@@ -1146,7 +1138,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        
+        private void UpdateViewAsDescription(string connectionString)
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var effUser = builder.ContainsKey("EffectiveUserName")? builder["EffectiveUserName"].ToString(): string.Empty;
+            var roles = builder.ContainsKey("Roles") ? builder["Roles"].ToString() : string.Empty;
+            SetViewAsDescription(effUser, roles);
+        }
+
+        private void SetViewAsDescription(string user, string roles)
+        {
+            var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $"User: {user} ";
+            var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
+            _viewAsDescription = $"{userSection}{roleSection}".Trim();
+            NotifyOfPropertyChange(nameof(ViewAsDescription));
+        }
 
         public string SelectedText { get {
                 var editor = GetEditor();
@@ -3178,7 +3184,7 @@ namespace DaxStudio.UI.ViewModels
                 var sw = Stopwatch.StartNew();
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty);
 
-                Connection.Database.ClearCache();
+                Connection.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
 
                 

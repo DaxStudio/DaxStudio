@@ -24,7 +24,10 @@ namespace DaxStudio.UI.ViewModels
     {
 
         private Stopwatch _stopwatch;
-        
+        private string _viewAsStatus = "On";
+        private int _totalRuns = 0;
+        private int _viewAsRuns = 0;
+
         [ImportingConstructor]
         public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon, IGlobalOptions options)
         {
@@ -43,6 +46,7 @@ namespace DaxStudio.UI.ViewModels
             ProgressColor = "LightGray";
             RunSameWarmAndCold = true;
             IsViewAsActive = document.IsViewAsActive;
+            RepeatRunWithoutViewAs = document.IsViewAsActive;
         }
 
 
@@ -53,6 +57,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 _stopwatch = new Stopwatch();
                 _stopwatch.Start();
+                _totalRuns = ColdCacheRuns + WarmCacheRuns;
+                if (RepeatRunWithoutViewAs) _totalRuns = _totalRuns * 2;
                 ProgressIcon = FontAwesomeIcon.Refresh;
                 ProgressSpin = true;
                 ProgressMessage = "Starting Server Timings trace...";
@@ -124,36 +130,51 @@ namespace DaxStudio.UI.ViewModels
 
             RefreshProgress();
 
-            if (!_benchmarkingComplete)
+            if (!_benchmarkingPassComplete)
             {
                 EventAggregator.PublishOnUIThread(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
             }
 
-            // if we have completed all the cold and warm runs set completed to true
-            if (_currentColdRun == ColdCacheRuns 
-                && _currentWarmRun == WarmCacheRuns )
+            // if we have completed the runs with ViewAs On
+            if (_benchmarkingPassComplete && _viewAsStatus == "On" && RepeatRunWithoutViewAs)
             {
-                _benchmarkingComplete = true;
+                _viewAsStatus = "Off";
+                _benchmarkingPassComplete = false;
+                _currentColdRun = 0;
+                _currentWarmRun = 0;
+                _viewAsRuns = ColdCacheRuns + WarmCacheRuns;
+                ProgressMessage = "Stopping View As and restarting Trace";
+                Document.StopViewAs();
+            }
+
+            
+            
+
+            // if we have completed all the cold and warm runs
+            // with the ViewAs pass if required then set completed to true
+            if (_currentColdRun == ColdCacheRuns 
+                && _currentWarmRun == WarmCacheRuns)
+            {
+                _benchmarkingPassComplete = true;
             }
             
         }
 
         private void RefreshProgress()
         {
-            ProgressPercentage = (double)(_currentColdRun + _currentWarmRun) / (ColdCacheRuns + WarmCacheRuns);
+            ProgressPercentage = (double)(_viewAsRuns + _currentColdRun + _currentWarmRun) / _totalRuns;
+            var viewAsState = string.Empty;
+            if (RepeatRunWithoutViewAs) viewAsState = $"(with ViewAs {_viewAsStatus}) ";
             if (_currentColdRun <= ColdCacheRuns && _currentWarmRun == 0)
             {
-                ProgressMessage = $"Running Cold Cache Query {_currentColdRun} of {ColdCacheRuns}";
+                ProgressMessage = $"Running Cold Cache Query {viewAsState}{_currentColdRun} of {ColdCacheRuns}";
                 return;
             }
-            if (_currentWarmRun <= WarmCacheRuns && !_benchmarkingComplete)
+            if (_currentWarmRun <= WarmCacheRuns && !_benchmarkingPassComplete)
             {
-                ProgressMessage = $"Running Warm Cache Query {_currentWarmRun} of {WarmCacheRuns}";
+                ProgressMessage = $"Running Warm Cache Query {viewAsState}{_currentWarmRun} of {WarmCacheRuns}";
                 return;
             }
-
-            
-            
 
         }
 
@@ -193,7 +214,11 @@ namespace DaxStudio.UI.ViewModels
             string[] statistics = { "Average", "StdDev", "Min", "Max" };
             var newDt2 = from d in dt.AsEnumerable()
                          from stat in statistics
-                         select new { Cache = d["Cache"], Statistic = stat, TotalDuration = (int)d["TotalDuration"], StorageEngineDuration = (int)d["StorageEngineDuration"] };
+                         select new { Cache = d["Cache"], 
+                                      Statistic = stat, 
+                                      ViewAs = RepeatRunWithoutViewAs? d["RLS"].ToString():"Off",
+                                      TotalDuration = (int)d["TotalDuration"], 
+                                      StorageEngineDuration = (int)d["StorageEngineDuration"] };
 
             var newGrp = newDt2.GroupBy(x => new { Cache = x.Cache, Statistic = x.Statistic });
 
@@ -208,20 +233,40 @@ namespace DaxStudio.UI.ViewModels
                 switch (grp.Key.Statistic)
                 {
                     case "Average":
-                        newRow["TotalDuration"] = grp.Average(x => x.TotalDuration);
-                        newRow["StorageEngineDuration"] = grp.Average(x => x.StorageEngineDuration);
+                        newRow["TotalDuration"] = grp.Where(x => x.ViewAs == "Off").Average(x => x.TotalDuration);
+                        newRow["SE Duration"] = grp.Where(x => x.ViewAs == "Off").Average(x => x.StorageEngineDuration);
+                        if (RepeatRunWithoutViewAs)
+                        {
+                            newRow["TotalDuration (RLS)"] = grp.Where(x => x.ViewAs == "On").Average(x => x.TotalDuration);
+                            newRow["SE Duration (RLS)"] = grp.Where(x => x.ViewAs == "On").Average(x => x.StorageEngineDuration);
+                        }
                         break;
                     case "StdDev":
-                        newRow["TotalDuration"] = grp.StdDev(x => x.TotalDuration);
-                        newRow["StorageEngineDuration"] = grp.StdDev(x => x.StorageEngineDuration);
+                        newRow["TotalDuration"] = grp.Where(x => x.ViewAs == "Off").StdDev(x => x.TotalDuration);
+                        newRow["SE Duration"] = grp.Where(x => x.ViewAs == "Off").StdDev(x => x.StorageEngineDuration);
+                        if (RepeatRunWithoutViewAs)
+                        {
+                            newRow["TotalDuration (RLS)"] = grp.Where(x => x.ViewAs == "On").StdDev(x => x.TotalDuration);
+                            newRow["SE Duration (RLS)"] = grp.Where(x => x.ViewAs == "On").StdDev(x => x.StorageEngineDuration);
+                        }
                         break;
                     case "Min":
-                        newRow["TotalDuration"] = grp.Min(x => x.TotalDuration);
-                        newRow["StorageEngineDuration"] = grp.Min(x => x.StorageEngineDuration);
+                        newRow["TotalDuration"] = grp.Where(x => x.ViewAs == "Off").Min(x => x.TotalDuration);
+                        newRow["SE Duration"] = grp.Where(x => x.ViewAs == "Off").Min(x => x.StorageEngineDuration);
+                        if (RepeatRunWithoutViewAs)
+                        {
+                            newRow["TotalDuration (RLS)"] = grp.Where(x => x.ViewAs == "On").Min(x => x.TotalDuration);
+                            newRow["SE Duration (RLS)"] = grp.Where(x => x.ViewAs == "On").Min(x => x.StorageEngineDuration);
+                        }
                         break;
                     case "Max":
-                        newRow["TotalDuration"] = grp.Max(x => x.TotalDuration);
-                        newRow["StorageEngineDuration"] = grp.Max(x => x.StorageEngineDuration);
+                        newRow["TotalDuration"] = grp.Where(x => x.ViewAs == "Off").Max(x => x.TotalDuration);
+                        newRow["SE Duration"] = grp.Where(x => x.ViewAs == "Off").Max(x => x.StorageEngineDuration);
+                        if (RepeatRunWithoutViewAs)
+                        {
+                            newRow["TotalDuration (RLS)"] = grp.Where(x => x.ViewAs == "On").Max(x => x.TotalDuration);
+                            newRow["SE Duration (RLS)"] = grp.Where(x => x.ViewAs == "On").Max(x => x.StorageEngineDuration);
+                        }
                         break;
                     default:
 
@@ -237,11 +282,20 @@ namespace DaxStudio.UI.ViewModels
             DataTable summary = new DataTable("Summary");
             summary.Columns.Add("Cache", typeof(string));
             summary.Columns.Add("Statistic", typeof(string));
+
+            if (RepeatRunWithoutViewAs)
+            {
+                summary.Columns.Add("TotalDuration (RLS)", typeof(double));
+                summary.Columns["TotalDuration (RLS)"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
+                summary.Columns.Add("SE Duration (RLS)", typeof(double));
+                summary.Columns["SE Duration (RLS)"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
+            }
+
             summary.Columns.Add("TotalDuration", typeof(double));
             summary.Columns["TotalDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
-            summary.Columns.Add("StorageEngineDuration", typeof(double));
-            summary.Columns["StorageEngineDuration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
-
+            summary.Columns.Add("SE Duration", typeof(double));
+            summary.Columns["SE Duration"].ExtendedProperties[Constants.FormatString] = "#,##0.00";
+            
             BenchmarkDataSet.Tables.Add(summary);
         }
 
@@ -250,6 +304,7 @@ namespace DaxStudio.UI.ViewModels
             var details = new DataTable("Details");
             details.Columns.Add("Sequence", typeof(int));
             details.Columns.Add("Cache", typeof(string));
+            if (RepeatRunWithoutViewAs) details.Columns.Add("RLS", typeof(string));
             details.Columns.Add("TotalDuration", typeof(int));
             details.Columns.Add("TotalCpuDuration", typeof(int));
             details.Columns.Add("TotalCpuFactor", typeof(double));
@@ -279,8 +334,7 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Debug.WriteLine($"TimingEvent Recieved: {message.TotalDuration}ms");
 
 
-            if (_currentColdRun < ColdCacheRuns
-                || _currentWarmRun < WarmCacheRuns)
+            if (_viewAsRuns + _currentColdRun + _currentWarmRun < _totalRuns)
             {
                 RunNextQuery();
             } 
@@ -297,6 +351,7 @@ namespace DaxStudio.UI.ViewModels
             var dr = dt.NewRow();
             dr["Sequence"] = sequence;
             dr["Cache"] = runStyle.ClearCache ? "Cold" : "Warm";
+            if (RepeatRunWithoutViewAs) dr["RLS"] = _viewAsStatus;
             dr["TotalDuration"] = message.TotalDuration;
             dr["TotalCpuDuration"] = message.TotalCpuDuration;
             dr["TotalCpuFactor"] = message.TotalCpuFactor;
@@ -317,7 +372,7 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        private bool _benchmarkingComplete;
+        private bool _benchmarkingPassComplete;
         private int _currentColdRun;
         private int _currentWarmRun;
 
@@ -392,6 +447,16 @@ namespace DaxStudio.UI.ViewModels
 
         public DataSet BenchmarkDataSet { get; } = new DataSet("BenchmarkResults");
         public bool IsCancelled { get; internal set; }
+
+
+        private bool _repeatRunWithoutViewAs = false;
+        public bool RepeatRunWithoutViewAs { get => _repeatRunWithoutViewAs; 
+            set
+            {
+                _repeatRunWithoutViewAs = value;
+                NotifyOfPropertyChange();
+            }
+        }
         #endregion
 
         #region IDisposable

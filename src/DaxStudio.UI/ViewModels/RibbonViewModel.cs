@@ -515,6 +515,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
+                NotifyOfPropertyChange(() => CanShowViewAsDialog);
                 NotifyOfPropertyChange(() => IsActiveDocumentConnected);
                 NotifyOfPropertyChange(() => IsActiveDocumentVertipaqAnalyzerRunning);
                 NotifyOfPropertyChange(() => CanImportAnalysisData);
@@ -538,11 +539,13 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
+                    NotifyOfPropertyChange(() => CanShowViewAsDialog);
                     break;
                 case nameof(ActiveDocument.IsVertipaqAnalyzerRunning):
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
                     NotifyOfPropertyChange(() => CanRunBenchmark);
+                    NotifyOfPropertyChange(() => CanShowViewAsDialog);
                     break;
                 case nameof(ActiveDocument.IsConnected):
                     NotifyOfPropertyChange(() => CanRunQuery);
@@ -550,6 +553,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanClearCache);
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
+                    NotifyOfPropertyChange(() => CanShowViewAsDialog);
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAllData);
@@ -568,6 +572,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
             NotifyOfPropertyChange(() => CanConnect);
+            NotifyOfPropertyChange(() => CanShowViewAsDialog);
         }
 
         public void LinkToDaxStudioWiki()
@@ -1178,6 +1183,15 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.CloseConnection();
         }
 
+        public bool CanShowViewAsDialog
+        {
+            get =>
+                (ActiveDocument?.IsConnected ?? false)
+                  && !(ActiveDocument?.IsViewAsActive ??false)
+                  && !(ActiveDocument?.IsQueryRunning ?? false)
+                  && !(ActiveDocument?.IsVertipaqAnalyzerRunning ?? false);
+            
+        }
         public void ShowViewAsDialog()
         {
             ActiveDocument?.ShowViewAsDialog();
