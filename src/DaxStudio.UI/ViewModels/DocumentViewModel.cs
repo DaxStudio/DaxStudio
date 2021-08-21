@@ -1154,7 +1154,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $" User: {user}";
             var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
-            _viewAsDescription = $"Viewing As:{userSection}{roleSection}";
+            _viewAsDescription = $"{userSection}{roleSection}";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
@@ -3124,7 +3124,9 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => IsAdminConnection);
             NotifyOfPropertyChange(() => IsViewAsActive);
-            _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
+
+            if (IsConnected)
+                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
 
             
 

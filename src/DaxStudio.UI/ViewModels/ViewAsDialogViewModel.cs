@@ -1,6 +1,8 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Common;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 
@@ -85,12 +87,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void Cancel()
         {
+            Log.Information(Constants.LogMessageTemplate, nameof(ViewAsDialogViewModel), nameof(Cancel), $"Cancelling ViewAs Dialog");
             _dialogResult = DialogResult.Cancel;
             TryClose(true);
         }
 
         public void Ok()
         {
+            Log.Information(Constants.LogMessageTemplate, nameof(ViewAsDialogViewModel), nameof(Ok), $"Setting ViewAs");
             _dialogResult = DialogResult.OK;
             TryClose(true);
         }

@@ -929,6 +929,19 @@
                     </Fluent:Button>
                 
             </Fluent:RibbonGroupBox>
+
+            <Fluent:RibbonGroupBox Header="Security">
+                <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" Width="48"
+                               cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]">
+                    <Fluent:Button.Icon>
+                        <fa:FontAwesome  Icon="Eye" Foreground="#444444" FontSize="16" />
+                    </Fluent:Button.Icon>
+                    <Fluent:Button.LargeIcon>
+                        <fa:FontAwesome  Icon="Eye" Foreground="#444444" FontSize="32" />
+                    </Fluent:Button.LargeIcon>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
             <Fluent:RibbonGroupBox Header="Performance">
                 <Fluent:Button
                     Name="RunBenchmark"
@@ -1051,14 +1064,7 @@
                     </Fluent:Button.Icon>
                 </Fluent:Button>
 
-                <Fluent:Button Header="View As" x:Name="ViewAs" Size="Middle"
-                               cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]">
-                    <Fluent:Button.Icon>
 
-                        <fa:FontAwesome  Icon="UserCircleOutline" Foreground="BlueViolet" FontSize="16" />
-
-                    </Fluent:Button.Icon>
-                </Fluent:Button>
 
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    

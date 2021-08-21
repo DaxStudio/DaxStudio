@@ -47,6 +47,8 @@ namespace DaxStudio.UI.ViewModels
             RunSameWarmAndCold = true;
             IsViewAsActive = document.IsViewAsActive;
             RepeatRunWithoutViewAs = document.IsViewAsActive;
+
+            Log.Information(Constants.LogMessageTemplate, nameof(BenchmarkViewModel), "ctor", $"Benchmark Dialog Opened - IsViewAsActive={IsViewAsActive}");
         }
 
 
@@ -55,6 +57,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                Log.Information(Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), $"Running Benchmark - Cold:{ColdCacheRuns} Warm: {WarmCacheRuns} RepeatWithoutViewAs: {RepeatRunWithoutViewAs}");
                 _stopwatch = new Stopwatch();
                 _stopwatch.Start();
                 _totalRuns = ColdCacheRuns + WarmCacheRuns;
