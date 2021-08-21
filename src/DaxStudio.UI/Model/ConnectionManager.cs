@@ -705,6 +705,7 @@ namespace DaxStudio.UI.Model
         /// <param name="roles"></param>
         internal async Task SetViewAsAsync(string userName, string roles, List<ITraceWatcher> activeTraces)
         {
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetViewAsAsync), $"Setting ViewAs User: '{userName}' Roles: '{roles}'");
             /*
              * ;Authentication Scheme=ActAs;
              * Ext Auth Info="<Properties><UserName>test</UserName><BypassAuthorization>true</BypassAuthorization><RestrictCatalog>29530e54-5667-46ab-9c6a-d5b494347966</RestrictCatalog></Properties>";
@@ -722,7 +723,7 @@ namespace DaxStudio.UI.Model
 
             if (!string.IsNullOrEmpty(userName))
             {
-                // TODO - if data source does not support ActAs we should try Effective Username
+                
 
                 userElement = $"<UserName>{userName}</UserName><BypassAuthorization>true</BypassAuthorization>";
 
@@ -736,7 +737,7 @@ namespace DaxStudio.UI.Model
 
                 var extAuthInfo = $"<Properties>{userElement}{catalogElement}{rolesElement}</Properties>";
 
-
+                // if data source does not support ActAs we should try Effective Username
                 if ( SupportsActAs() )
                 {
                     // ExtAuth works on PBI or ASAzure
