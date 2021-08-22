@@ -65,6 +65,8 @@ DisableProgramGroupPage=auto
 ChangesAssociations=yes
 UninstallDisplayIcon={app}\daxstudio.exe
 
+InfoBeforeFile=infobefore.txt
+
 [Messages]
 ; define wizard title and tray status msg
 ; both are normally defined in innosetup's default.isl (install folder)
@@ -616,6 +618,12 @@ if IsUpgrade then
         Result := true
       end;
 
+    if PageID = wpInfoBefore then 
+      begin
+        Log('ShouldSkipPage - Skipping InfoBefore page');
+        Result := true;
+      end;
+
     if PageID = wpSelectTasks then begin
       Log('ShouldSkipPage - Skipping Tasks');
       Result := true
@@ -624,6 +632,12 @@ if IsUpgrade then
   else
   begin
     Log('ShouldSkipPage - Initial Install');
+    if PageID = wpInfoBefore then
+    if IsAdminInstallMode() then 
+    begin
+        Log('ShouldSkipPage - Skipping InfoBefore page');
+        Result := true;
+    end;
   end;
 end;
 /////////////////////////////////////////////////////////////////////

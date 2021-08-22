@@ -69,9 +69,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new CloseTraceWindowEvent(this));
         }
         
-
         public DelegateCommand HideCommand { get; set; }
-        public List<DaxStudioTraceEventClass> MonitoredEvents { get; private set; }
+        public List<DaxStudioTraceEventClass> MonitoredEvents { get => GetMonitoredEvents(); }
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher

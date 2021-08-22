@@ -12,6 +12,7 @@ namespace ADOTabular.Utils
             {
                 case ADOTabularObjectType.Column:
                     return tabObj.IsVisible ? MetadataImages.Column : MetadataImages.HiddenColumn;
+                case ADOTabularObjectType.MeasureFormatString:
                 case ADOTabularObjectType.Measure:
                     return tabObj.IsVisible ? MetadataImages.Measure : MetadataImages.HiddenMeasure;
                 case ADOTabularObjectType.Table:

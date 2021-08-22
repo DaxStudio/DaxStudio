@@ -98,6 +98,7 @@ namespace DaxStudio.UI.ResultsTargets
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelLinkedOdc), nameof(OutputResultsAsync), ex.Message);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
                     }

@@ -16,7 +16,9 @@ using DaxStudio.UI.Events;
 namespace DaxStudio.UI.Model
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class QueryBuilderFilterList :  IQueryBuilderFieldList
+    public class QueryBuilderFilterList :  
+        PropertyChangedBase,
+        IQueryBuilderFieldList
     {
         public QueryBuilderFilterList(IEventAggregator eventAggregator,Func<IModelCapabilities> modelCapabilities)
         {
@@ -28,7 +30,9 @@ namespace DaxStudio.UI.Model
         public void Remove(QueryBuilderFilter item)
         {
             Items.Remove(item);
+            NotifyOfPropertyChange(nameof(Items));
         }
+
         [JsonProperty]
         public ObservableCollection<QueryBuilderFilter> Items { get; } = new ObservableCollection<QueryBuilderFilter>();
         public IEventAggregator EventAggregator { get; }
@@ -51,8 +55,9 @@ namespace DaxStudio.UI.Model
         {
             try
             {
-                var filter = new QueryBuilderFilter(item, GetModelCapabilities());
+                var filter = new QueryBuilderFilter(item, GetModelCapabilities(), EventAggregator);
                 Items.Add(filter);
+                NotifyOfPropertyChange(nameof(Items));
             }
             catch (Exception ex)
             {
@@ -80,7 +85,7 @@ namespace DaxStudio.UI.Model
         }
         public void Insert(int index, IADOTabularColumn item)
         {
-            var filter = new QueryBuilderFilter(item, GetModelCapabilities());
+            var filter = new QueryBuilderFilter(item, GetModelCapabilities(),EventAggregator);
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(filter);
             Items.Insert(index, filter);

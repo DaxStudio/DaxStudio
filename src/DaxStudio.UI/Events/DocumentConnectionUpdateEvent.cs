@@ -5,12 +5,13 @@ using Caliburn.Micro;
 using DaxStudio.Common.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Interfaces;
+using ADOTabular;
 
 namespace DaxStudio.UI.Events
 {
     public class DocumentConnectionUpdateEvent
     {
-        public DocumentConnectionUpdateEvent(IConnection connection, BindableCollection<string> databases, ITraceWatcher activeTrace)
+        public DocumentConnectionUpdateEvent(IConnection connection, BindableCollection<DatabaseDetails> databases, ITraceWatcher activeTrace)
         {
             Connection = connection;
             Databases = databases;
@@ -18,7 +19,7 @@ namespace DaxStudio.UI.Events
         }
 
         public IConnection Connection { get; set; }
-        public BindableCollection<string> Databases { get; set; }
+        public BindableCollection<DatabaseDetails> Databases { get; set; }
         public ITraceWatcher ActiveTrace { get; set; }
     }
 }

@@ -22,6 +22,7 @@ using DaxStudio.Common.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
+using System.Windows.Data;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,10 +33,17 @@ namespace DaxStudio.UI.ViewModels
     [DataContract]
     public sealed class QueryBuilderViewModel : ToolWindowBase
         ,IQueryTextProvider
-        ,IHandle<SendColumnToQueryBuilderEvent>
+        ,IHandle<ActivateDocumentEvent>
+        ,IHandle<ConnectionChangedEvent>
         ,IHandle<DuplicateMeasureEvent>
+        ,IHandle<QueryBuilderUpdateEvent>
+        ,IHandle<RunStyleChangedEvent>
+        ,IHandle<SendColumnToQueryBuilderEvent>
+        
         ,IDisposable
         ,ISaveState
+        ,INotifyPropertyChanged
+        
     {
         const string NewMeasurePrefix = "MyMeasure";
 
@@ -49,8 +57,37 @@ namespace DaxStudio.UI.ViewModels
             IsVisible = false;
             Columns = new QueryBuilderFieldList(EventAggregator);
             Columns.PropertyChanged += OnColumnsPropertyChanged;
-            OrderBy = new QueryBuilderFieldList(EventAggregator);
+            Filters.PropertyChanged += OnFiltersPropertyChanged;
             VisibilityChanged += OnVisibilityChanged;
+            //RunStyle = document.SelectedRunStyle;
+        }
+
+        private bool _autoGenerate;
+        public bool AutoGenerate { get=> _autoGenerate;
+            set {
+                _autoGenerate = value;
+                NotifyOfPropertyChange();
+                if (!Options.HasShownQueryBuilderAutoGenerateWarning) { 
+                    ShowAutoGenerateWarning();
+                    Options.HasShownQueryBuilderAutoGenerateWarning = true;
+                }
+                AutoGenerateQuery();
+            } 
+        }
+
+        private void ShowAutoGenerateWarning()
+        {
+            MessageBox.Show("Enabling this option will overwrite any changes you may have made to the query text.\n\nHowever, if you make any further manual edits to the query this option will be automatically disabled.", "Auto Generate Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        private void AutoGenerateQuery()
+        {
+            if (AutoGenerate && Columns.Count > 0) SendTextToEditor();
+            if (AutoGenerate && Columns.Count == 0) ClearEditor();
+        }
+
+        private void OnFiltersPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            AutoGenerateQuery();
         }
 
         private void OnVisibilityChanged(object sender, EventArgs e)
@@ -64,6 +101,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
             NotifyOfPropertyChange(nameof(CanOrderBy));
+            NotifyOfPropertyChange(nameof(OrderBy));
+            AutoGenerateQuery();
         }
 
 
@@ -88,8 +127,15 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderFieldList Columns { get; } 
         [DataMember]
         public QueryBuilderFilterList Filters { get; }
-        [DataMember]
-        public QueryBuilderFieldList OrderBy { get; }
+
+        public ICollectionView OrderBy { get {
+                //Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column || c.ObjectType == ADOTabularObjectType.Level); 
+                ICollectionView view = CollectionViewSource.GetDefaultView(Columns);
+                view.Filter = (c) => { return ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Column || ((QueryBuilderColumn)c).ObjectType == ADOTabularObjectType.Level; };
+                return view;
+            } 
+        }
+
 
         private bool _isEnabled = true;
         public new bool IsEnabled
@@ -123,11 +169,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public string EditorText => QueryText;
+
         public string QueryText { 
             get { 
                 try {
                     var modelCaps = GetModelCapabilities();
-                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items,OrderBy.Items); 
+                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items, AutoGenerate); 
                 }
                 catch (Exception ex)
                 {
@@ -149,8 +197,12 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                // todo- we may eventually want to read parameters from filter values, but at the moment we just return an empty collection
-                return new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+                var coll = new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
+                foreach (var p in QueryInfo?.Parameters?.Values)
+                {
+                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value));
+                }
+                return coll;
             }
         }
 
@@ -176,22 +228,27 @@ namespace DaxStudio.UI.ViewModels
             return MessageBox.Show("Including columns from multiple tables without a measure is likely to result in a large crossjoin which could use a lot of memory.\n\nAre you sure you want to proceed?", "Potential Crossjoin Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No;
         }
 
-        // ReSharper disable once UnusedMember.Global
         public void SendTextToEditor()
         {
-            EventAggregator.PublishOnUIThread(new SendTextToEditor(QueryText));
+            EventAggregator.PublishOnUIThread(new SendTextToEditor(QueryText,false,true));
         }
 
-        public bool CanRunQuery => Columns.Items.Count > 0;
+        public void ClearEditor()
+        {
+            EventAggregator.PublishOnUIThread(new SendTextToEditor(string.Empty , false, true));
+        }
 
-        public bool CanSendTextToEditor => Columns.Items.Count > 0;
+        public bool CanAutoGenerate => IsConnectedToAModelWithTables;
+        public bool CanRunQuery => IsConnectedToAModelWithTables && Columns.Items.Count > 0;
+
+        public bool CanSendTextToEditor => IsConnectedToAModelWithTables && Columns.Items.Count > 0;
 
         public bool CanAddNewMeasure
         {
             get {
                 try
                 {
-                    return Document?.Connection?.SelectedModel?.Tables.Count > 0;
+                    return IsConnectedToAModelWithTables;
                 }
                 catch (Exception ex)
                 {
@@ -202,6 +259,11 @@ namespace DaxStudio.UI.ViewModels
                 return false;
             }
         }
+
+        private bool IsConnectedToAModelWithTables => Document?.Connection?.SelectedModel?.Tables.Count > 0;
+
+        public RunStyle RunStyle { get => Document.SelectedRunStyle; }
+        public QueryInfo QueryInfo { get;set; }
 
         // ReSharper disable once UnusedMember.Global
         public void AddNewMeasure()
@@ -340,11 +402,21 @@ namespace DaxStudio.UI.ViewModels
 
         internal QueryBuilderViewModel LoadJson(string jsontext)
         {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
-            //settings.Converters.Add(new ADOTabularColumnCreationConverter());
-            var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
-            return result;
+            try
+            {
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
+                //settings.Converters.Add(new ADOTabularColumnCreationConverter());
+                var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var msg = $"The following error occurred while attempting to load the Query Builder from your saved file:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(LoadJson), msg);
+                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                return null;
+            }
         }
 
         public void Load(string filename)
@@ -359,6 +431,8 @@ namespace DaxStudio.UI.ViewModels
 
         private void LoadViewModel(QueryBuilderViewModel model)
         {
+            if (model == null) return;
+
             this.Columns.Clear();
             foreach (var col in model.Columns)
             {
@@ -406,6 +480,44 @@ namespace DaxStudio.UI.ViewModels
             var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
                 { MeasureExpression = message.Measure.MeasureExpression };
             Columns.Add(meas);
+        }
+
+        public void Handle(QueryBuilderUpdateEvent message)
+        {
+            AutoGenerateQuery();
+        }
+
+        public void Clear()
+        {
+            Columns.Items.Clear();
+            Filters.Items.Clear();
+            NotifyOfPropertyChange(nameof(OrderBy));
+            AutoGenerateQuery();
+        }
+
+        public void Handle(ActivateDocumentEvent message)
+        {
+            RefreshButtonStates();
+        }
+
+        private void RefreshButtonStates()
+        {
+            NotifyOfPropertyChange(nameof(CanAddNewMeasure));
+            NotifyOfPropertyChange(nameof(CanRunQuery));
+            NotifyOfPropertyChange(nameof(CanSendTextToEditor));
+            NotifyOfPropertyChange(nameof(CanAutoGenerate));
+            NotifyOfPropertyChange(nameof(RunStyle));
+        }
+
+        public void Handle(ConnectionChangedEvent message)
+        {
+            RefreshButtonStates();
+        }
+
+        public void Handle(RunStyleChangedEvent message)
+        {
+            //RunStyle = message.RunStyle;
+            NotifyOfPropertyChange(nameof(RunStyle));
         }
     }
 }

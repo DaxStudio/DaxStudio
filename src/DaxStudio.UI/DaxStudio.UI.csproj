@@ -217,6 +217,7 @@
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
+    <Compile Include="AttachedProperties\GridSplitterController.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
@@ -236,7 +237,6 @@
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
     <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
-    <Compile Include="Behaviours\ResetInvalidTextBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
@@ -254,6 +254,8 @@
     <Compile Include="Converters\AllNumericConverter.cs" />
     <Compile Include="Converters\BoolNotConverter.cs" />
     <Compile Include="Converters\BoolToCollapsedConverter.cs" />
+    <Compile Include="Converters\BoolToDoubleConverter.cs" />
+    <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
     <Compile Include="Converters\BoolToThicknessConverter.cs">
@@ -264,12 +266,15 @@
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
+    <Compile Include="Converters\DatetimeToLocalTimeConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
+    <Compile Include="Events\EditorHotkeyEvent.cs" />
+    <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
@@ -602,6 +607,7 @@
     <Compile Include="Views\AllQueriesEventClassesDialogView.xaml.cs">
       <DependentUpon>AllQueriesEventClassesDialogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
     </Compile>
@@ -740,6 +746,9 @@
     <Compile Include="Views\VertiPaqAnalyzerView.xaml.cs">
       <DependentUpon>VertiPaqAnalyzerView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ViewAsDialogView.xaml.cs">
+      <DependentUpon>ViewAsDialogView.xaml</DependentUpon>
+    </Compile>
     <Page Include="Controls\HotKeyEditorControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -849,6 +858,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\VertiPaqAnalyzerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ViewAsDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1524,7 +1537,7 @@
       <Version>5.1.0</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.0</Version>
+      <Version>6.1.2.30</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>3.2.0</Version>
@@ -1533,28 +1546,28 @@
       <Version>4.4.0</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>26.0.0</Version>
+      <Version>27.1.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.0.35</Version>
+      <Version>1.0.36</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.0.35</Version>
+      <Version>1.0.36</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.0.35</Version>
+      <Version>1.0.36</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.0.35</Version>
+      <Version>1.0.36</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
-      <Version>3.6.2</Version>
+      <Version>4.51.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
-      <Version>3.6.2</Version>
+      <Version>4.51.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.MLib">
-      <Version>1.3.0.1</Version>
+      <Version>1.3.1.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.NumericUpDownLib">
       <Version>2.4.2.2</Version>
@@ -1578,10 +1591,10 @@
       <Version>1.1.0</Version>
     </PackageReference>
     <PackageReference Include="Humanizer">
-      <Version>2.10.1</Version>
+      <Version>2.11.10</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>1.2.0</Version>
+      <Version>1.3.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.7</Version>
@@ -1601,13 +1614,13 @@
       <Version>3.0.0</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>7.2.1</Version>
+      <Version>7.2.2</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>2.10.0</Version>
     </PackageReference>
     <PackageReference Include="SharpCompress">
-      <Version>0.28.1</Version>
+      <Version>0.28.3</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>

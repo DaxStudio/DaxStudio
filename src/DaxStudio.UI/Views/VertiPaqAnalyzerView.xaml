@@ -16,7 +16,7 @@
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:MinusConverter x:Key="MinusConverter"/>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
-            
+            <conv:DatetimeToLocalTimeConverter x:Key="DateTimeToLocalTimeConverter"/>
             <BitmapImage x:Key="ModelIcon" UriSource="..\Images\Metadata\model.png"/>
 
 
@@ -28,9 +28,10 @@
             </Style>
 
             <Style x:Key="SummaryLabel" TargetType="{x:Type TextBlock}">
-                <Setter Property="Margin" Value="0 5 5 0"/>
+                <Setter Property="Margin" Value="0 10 5 0"/>
                 <Setter Property="Foreground" Value="#999999"/>
                 <Setter Property="FontSize" Value="12"/>
+                <Setter Property="VerticalAlignment" Value="Bottom"/>
             </Style>
 
             <Style x:Key="SummaryValue" TargetType="{x:Type TextBlock}">
@@ -98,10 +99,10 @@
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary.MergedDictionaries>
                     <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />-->
-                    <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
-                    <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
-                    <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ExpanderArrowStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ExpanderArrowStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -184,7 +185,7 @@
                                                      Header="Name"
                                                      SortMemberPath="ColumnName" 
                                                      ClipboardContentBinding="{Binding TableColumnName}">
-                                
+
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding ColumnName}" Padding="25,0,0,0"/>
@@ -244,8 +245,8 @@
                                                     Width="80" >
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                    <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </Style>
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -273,7 +274,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding DictionarySize, StringFormat=N0}" x:Name="colDictionary" 
                                                 Header="Dictionary"
                                                 ElementStyle="{StaticResource NumTextBlockStyle}" Width="80">
@@ -283,7 +284,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}" 
                                                 x:Name="colHierarchies" 
                                                 Header="Hier Size"
@@ -294,7 +295,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding Encoding}" 
                                                 x:Name="colEncoding" 
                                                 Header="Encoding">
@@ -304,7 +305,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding TypeName}" 
                                                 x:Name="colDataType"
                                                 Header="Data Type">
@@ -394,7 +395,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding ColumnsNumber}" 
                                                 x:Name="colColumnsNumber" 
                                                 Header="Columns"
@@ -405,7 +406,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -460,7 +461,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTemplateColumn 
                                 Header="Col Size" 
                                 ClipboardContentBinding="{Binding TotalSize}"
@@ -513,7 +514,7 @@
                             <DataGridTextColumn Binding="{Binding HierarchiesSize, StringFormat=N0}" 
                                                 Header="Hier Size"
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
-                                
+
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.HierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -555,7 +556,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" 
                                                 Header="Segments"
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
@@ -614,7 +615,7 @@
                                                                 <TextBlock Text="{Binding Name.RelationshipSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelSize}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipMaxFromCardinality, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelFromCardinality}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipMaxToCardinality, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelToCardinality}"/>
-                                                                <TextBlock Text="{Binding Name.RelationshipMaxOneToManyRatio, StringFormat={}{0:#0.00'%'}}" x:Name="hdrOneToManyRatio" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelOneToManyRatio}"/>
+                                                                <TextBlock Text="{Binding Name.RelationshipMaxOneToManyRatio, StringFormat=P2}" x:Name="hdrOneToManyRatio" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colRelOneToManyRatio}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipFromMissingKeys, StringFormat=N0}" x:Name="hdrMissingKeys" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colMissingKeys}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipInvalidRows, StringFormat=N0}" x:Name="hdrInvalidRows" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colInvalidRows}"/>
                                                             </StackPanel>
@@ -640,7 +641,7 @@
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Relationship, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
-                                
+
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding RelationshipFromToName}" Padding="25,0,0,0"/>
@@ -683,7 +684,7 @@
                             <DataGridTextColumn Binding="{Binding ToColumnCardinality, StringFormat=N0}" 
                                                 x:Name="colRelToCardinality" 
                                                 Header="Max To Cardinality" ElementStyle="{StaticResource NumTextBlockStyle}">
-                                
+
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.MaxToCardinality, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -692,7 +693,7 @@
 
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding OneToManyRatio, StringFormat={}{0:#0.00'%'}}" 
+                            <DataGridTextColumn Binding="{Binding OneToManyRatio, StringFormat=P2}" 
                                                 x:Name="colRelOneToManyRatio" 
                                                 Header="1:M Ratio %" 
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
@@ -726,7 +727,7 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-                            
+
                             <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" 
                                                 x:Name="colSampleViolations" 
                                                 Header="Sample Violations">
@@ -800,7 +801,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            
+
                             <DataGridTemplateColumn  x:Name="colRowsCount"  
                                                      Header="Rows"
                                                      SortMemberPath="RowsCount"
@@ -892,21 +893,22 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-
+                            <RowDefinition Height="*"/>
+                            
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition MinWidth="34.132"/>
+                            <ColumnDefinition MinWidth="42.868"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Header Rows -->
-                        <Image Source="{StaticResource ModelIcon}" Grid.RowSpan="2" VerticalAlignment="Top"/>
-                        <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource SummaryHeader}"/>
+                        <Image Source="{StaticResource ModelIcon}" Grid.RowSpan="1" VerticalAlignment="Top"/>
+                        <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="5" Style="{StaticResource SummaryHeader}"/>
 
                         <!-- Row 1 -->
                         <TextBlock Text="Total Size" Grid.Column="1" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
@@ -917,15 +919,15 @@
                             <fa:FontAwesome Icon="InfoCircle" 
                                             FontSize="16"
                                             Foreground="{StaticResource DaxStudioBrush}" 
-                                            VerticalAlignment="Center"
+                                            VerticalAlignment="Top"
                                             ToolTip="The total size is the total amount of memory used while the model is loaded into RAM, it will be different to the size of the file(s) on disk. (often slightly larger because some structures are decompressed when the are loaded into memory)" />
                         </StackPanel>
 
                         <TextBlock Text="Last Data Refresh" Grid.Column="2" Grid.Row="1" Style="{StaticResource SummaryLabel}" Grid.ColumnSpan="2" />
-                        <TextBlock Text="{Binding SummaryViewModel.LastDataRefresh}" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource SummaryValue}"/>
+                        <TextBlock Text="{Binding SummaryViewModel.LastDataRefresh,Converter={StaticResource DateTimeToLocalTimeConverter}}" Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Style="{StaticResource SummaryValue}"/>
 
-                        <TextBlock Text="Analysis Date" Grid.Column="4" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
-                        <TextBlock Text="{Binding SummaryViewModel.ExtractionDate}" Grid.Column="4" Grid.Row="2" Style="{StaticResource SummaryValue}" />
+                        <TextBlock Text="Analysis Date" Grid.Column="4" Grid.Row="1" Style="{StaticResource SummaryLabel}" Grid.ColumnSpan="2"/>
+                        <TextBlock Text="{Binding SummaryViewModel.ExtractionDate, Converter={StaticResource DateTimeToLocalTimeConverter}}" Grid.Column="4" Grid.Row="2" Style="{StaticResource SummaryValue}" Grid.ColumnSpan="2" />
 
                         <!-- Row 2 -->
                         <TextBlock Text="Compatibility" Grid.Column="1" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
@@ -933,10 +935,12 @@
 
                         <TextBlock Text="Tables" Grid.Column="2" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
                         <TextBlock Text="{Binding SummaryViewModel.TableCount}" Grid.Column="2" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
+                        
                         <TextBlock Text="Columns" Grid.Column="3" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
                         <TextBlock Text="{Binding SummaryViewModel.ColumnCount}" Grid.Column="3" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
-                        <TextBlock Text="Server" Grid.Column="4" Grid.Row="3" Style="{StaticResource SummaryLabel}"/>
-                        <TextBlock Text="{Binding SummaryViewModel.DataSource}" Grid.Column="4" Grid.Row="4" Style="{StaticResource SummaryValue}"/>
+                        
+                        <TextBlock Text="Server" Grid.Column="4" Grid.Row="3" Style="{StaticResource SummaryLabel}" Grid.ColumnSpan="2"/>
+                        <TextBlock Text="{Binding SummaryViewModel.DataSource}" Grid.Column="4" Grid.Row="4" Style="{StaticResource SummaryValue}" Grid.ColumnSpan="2"/>
 
 
                     </Grid>

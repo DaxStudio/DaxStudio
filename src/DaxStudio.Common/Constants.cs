@@ -28,7 +28,7 @@
         public const string RefreshSessionQuery =  "EVALUATE " + InternalQueryHeader + " ROW(\"DAX Studio Session Refresh\",0)";
 
         public const string InternalQueryHeader = "/* <<DAX Studio Internal>> */";
-        public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}000";
+        public const string IsoDateMask = "yyyy-MM-dd HH:mm:ss{0}fff";
         public const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ssZ"; // this is an Excel friendly ISO date format for csv files
         public const string IsoDateFormatPaste = "yyyy-MM-dd HH:mm:ss"; // this is an Excel friendly ISO date format
         

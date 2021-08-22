@@ -339,7 +339,10 @@
                               >
             
 
-            <Fluent:RibbonGroupBox Header="Query" Name="Query" Margin="4,0" Icon="{StaticResource PlanIcon}">
+            <Fluent:RibbonGroupBox Header="Query" 
+                                   x:Name="Query" 
+                                   Margin="4,0" 
+                                   Icon="{StaticResource PlanIcon}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
@@ -856,7 +859,7 @@
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Refresh Metadata"
                                           Text="Refreshes the table and column metadata for the current database"
-                                          DisableReason="{Binding ClearCacheDisableReason}"
+                                          DisableReason="{Binding RunQueryDisableReason}"
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -928,6 +931,19 @@
                     </Fluent:Button>
                 
             </Fluent:RibbonGroupBox>
+
+            <Fluent:RibbonGroupBox Header="Security">
+                <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" Width="48"
+                               cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]">
+                    <Fluent:Button.Icon>
+                        <fa:FontAwesome  Icon="Eye" Foreground="#444444" FontSize="16" />
+                    </Fluent:Button.Icon>
+                    <Fluent:Button.LargeIcon>
+                        <fa:FontAwesome  Icon="Eye" Foreground="#444444" FontSize="32" />
+                    </Fluent:Button.LargeIcon>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
             <Fluent:RibbonGroupBox Header="Performance">
                 <Fluent:Button
                     Name="RunBenchmark"
@@ -1049,6 +1065,8 @@
 
                     </Fluent:Button.Icon>
                 </Fluent:Button>
+
+
 
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    

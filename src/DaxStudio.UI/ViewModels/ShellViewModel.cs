@@ -266,8 +266,13 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
             yield return new InputBindingCommand(this, nameof(FormatQueryAlternate), Options.HotkeyFormatQueryAlternate);
             yield return new InputBindingCommand(this, nameof(GotoLine), Options.HotkeyGotoLine);
-            yield return new InputBindingCommand(this, nameof(ToggleComment), "Ctrl + Divide");
-            
+            yield return new InputBindingCommand(this, nameof(ToggleComment), Options.HotkeyToggleComment);
+            yield return new InputBindingCommand(this, nameof(SelectWord), Options.HotkeySelectWord);
+            yield return new InputBindingCommand(this, nameof(MoveLineUp), "Ctrl + OemPlus");
+            yield return new InputBindingCommand(this, nameof(MoveLineUp), "Ctrl + Add");
+            yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + OemMinus");
+            yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + Subtract");
+
         }
 
         public void ResetInputBindings()
@@ -457,6 +462,37 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new ToggleCommentEvent());
         }
 
+        public void SelectWord()
+        {
+            _eventAggregator.PublishOnUIThread(new EditorHotkeyEvent( EditorHotkey.SelectWord));
+        }
+
+        public void MoveLineUp()
+        {
+            try
+            {
+                _eventAggregator.PublishOnUIThread(new EditorHotkeyEvent(EditorHotkey.MoveLineUp));
+            }
+            catch(Exception ex)
+            {
+                var msg = $"Error moving editor line up: {ex.Message}";
+                Log.Error(ex, nameof(ShellViewModel), nameof(MoveLineUp), msg);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+            }
+        }
+        public void MoveLineDown()
+        {
+            try
+            {
+                _eventAggregator.PublishOnUIThread(new EditorHotkeyEvent(EditorHotkey.MoveLineDown));
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error moving editor line down: {ex.Message}";
+                Log.Error(ex, nameof(ShellViewModel), nameof(MoveLineDown), msg);
+                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+            }
+        }
         #endregion
 
         #region Event Aggregator methods

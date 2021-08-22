@@ -1,6 +1,7 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using Serilog;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -140,6 +141,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetTextFile), nameof(OutputResultsAsync), ex.Message);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
 #if DEBUG

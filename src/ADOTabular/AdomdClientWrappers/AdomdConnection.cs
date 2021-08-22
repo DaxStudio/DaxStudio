@@ -123,6 +123,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             if (database == null) return; 
             if (database.Trim().Length == 0) return;
+            if (String.Compare(database, _conn.Database, true) == 0) return;
             if (_type == AdomdType.AnalysisServices)
             {
                 _conn.ChangeDatabase(database);

@@ -20,6 +20,17 @@
             <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:AllNumericConverter x:Key="AllNumericConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
+
+            <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Foreground" Value="Gray"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
     </UserControl.Resources>
     <Border Padding="10,10,10,10" Margin="0,0,0,0"  >
@@ -27,6 +38,7 @@
 
             <Grid Margin="25 10">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -59,7 +71,13 @@
                 <TextBox x:Name="WarmCacheRuns" Width="25"  Grid.Column="1" Grid.Row="4" Margin="3" IsEnabled="{Binding Path=IsChecked, ElementName=RunSameWarmAndCold, Converter={StaticResource BoolNotConverter}}"/>
                 <Label Content="Warm Cache Executions" Grid.Column="2" Grid.Row="4" />
 
-                <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="3" HorizontalAlignment="Right">
+                <StackPanel Grid.Row="5" Grid.ColumnSpan="4" Orientation="Vertical">
+                    <CheckBox  x:Name="RepeatRunWithoutViewAs" Content='Do a second pass without "View As" (RLS) enabled' IsEnabled="{Binding IsViewAsActive}"  Margin="-2 10 0 0" />
+                    <Label  Content="(This option is only enabled if you start the benchmark while using 'View As')" Foreground="#666666" Margin="15 0 0 10" Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
+                    <!--<fa:FontAwesome Icon="InfoCircle" Foreground="{DynamicResource DaxStudioBrush}" FontSize="16" VerticalAlignment="Center" Margin="10 0" ToolTip="This option is only enabled if you start the benchmark while using 'View As'"/>-->
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="3" HorizontalAlignment="Right">
                     <Button x:Name="Run" IsDefault="True"  Content="Run" Margin="3" Padding="3" MinWidth="55">
                         <Button.IsEnabled>
                             <MultiBinding Converter="{StaticResource AllNumericConverter}">
@@ -71,7 +89,7 @@
                     <Button x:Name="Cancel" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="6" Grid.ColumnSpan="3" Orientation="Vertical">
+                <StackPanel Grid.Row="7" Grid.ColumnSpan="3" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />
                         <TextBlock x:Name="ProgressMessage" Text="Ready..." Margin="2"></TextBlock>

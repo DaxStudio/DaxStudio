@@ -4,6 +4,11 @@ using System.Security;
 using DaxStudio.Common.Attributes;
 using DaxStudio.Common.Enums;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
+using DaxStudio.Interfaces.Attributes;
+using Serilog.Events;
+using Serilog.Core;
+
 
 namespace DaxStudio.Common.Interfaces
 {
@@ -92,6 +97,8 @@ namespace DaxStudio.Common.Interfaces
         [Hotkey] string HotkeyGotoLine { get; set; }
         [Hotkey] string HotkeyFormatQueryStandard { get; set; }
         [Hotkey] string HotkeyFormatQueryAlternate { get; set; }
+        [Hotkey] string HotkeySelectWord { get; set; }
+        [Hotkey] string HotkeyToggleComment { get; set; }
 
         #endregion
 
@@ -125,11 +132,14 @@ namespace DaxStudio.Common.Interfaces
         bool BlockVersionChecks { get; set; }
         bool BlockCrashReporting { get; set; }
         bool BlockExternalServices { get; set; }
+        bool HasShownQueryBuilderAutoGenerateWarning { get; set; }
 
         bool AnyExternalAccessAllowed();
 
         void PlayLongOperationSound(int currentOperationSeconds);
 
+        LogEventLevel LoggingLevel { get; set; }
+        LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
     }
 }

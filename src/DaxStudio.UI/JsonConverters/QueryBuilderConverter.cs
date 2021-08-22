@@ -48,9 +48,14 @@ namespace DaxStudio.UI.JsonConverters
                 IADOTabularColumn obj = col["TabularObject"].ToObject<ADOTabularColumnStub>();
                 bool isModelItem = (bool)col["IsModelItem"];
                 bool isOverridden = (bool)col["IsOverriden"];
+                SortDirection sortDirection = SortDirection.ASC;
+                var _ = Enum.TryParse( col["SortDirection"].ToString(), out sortDirection);
                 string measureExpression = col["MeasureExpression"].ToString();
+                string measureCaption = col["Caption"].ToString();
                 var queryBuilderCol = new QueryBuilderColumn(obj, isModelItem, _eventAggregator);
                 queryBuilderCol.MeasureExpression = isOverridden?measureExpression:string.Empty;
+                queryBuilderCol.SortDirection = sortDirection;
+                if (isOverridden) queryBuilderCol.Caption = measureCaption;
                 vm.Columns.Add(queryBuilderCol);
             }
 
@@ -61,7 +66,7 @@ namespace DaxStudio.UI.JsonConverters
                 string filterValue = filter["FilterValue"].ToString();
                 string filterValue2 = filter["FilterValue2"].ToString();
                 IModelCapabilities modelCapabilities = filter["ModelCapabilities"].ToObject<ADOTabularModelCapabilities>();
-                var queryBuilderFilter = new QueryBuilderFilter(obj, modelCapabilities);
+                var queryBuilderFilter = new QueryBuilderFilter(obj, modelCapabilities,_eventAggregator);
                 queryBuilderFilter.FilterType = filterType;
                 queryBuilderFilter.FilterValue = filterValue;
                 queryBuilderFilter.FilterValue2 = filterValue2;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xceed.Wpf.AvalonDock;
+using AvalonDock;
 using System.IO;
 using DaxStudio.Common;
 using DaxStudio.UI.Model;
@@ -20,7 +20,7 @@ namespace DaxStudio.UI.Extensions
             using (StreamReader sr = new StreamReader(layoutFileName))
             {
             
-                var ls = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockingManager);
+                var ls = new AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockingManager);
                 //var ls = new DockingManagerJsonLayoutSerializer(dm);
                 ls.Deserialize(sr);
             }
@@ -34,7 +34,7 @@ namespace DaxStudio.UI.Extensions
             using (StreamWriter sw = new StreamWriter(layoutFile))
             {
 
-                var ls = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockingManager);
+                var ls = new AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockingManager);
                 ls.Serialize(sw);
 
             }
@@ -49,7 +49,7 @@ namespace DaxStudio.UI.Extensions
                 // check if default layout was found
                 if (strm == null) return;
 
-                var ls = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockingManager);
+                var ls = new AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockingManager);
                 ls.Deserialize(strm);
             }
 

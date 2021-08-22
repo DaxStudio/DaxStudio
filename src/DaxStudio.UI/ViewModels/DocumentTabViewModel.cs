@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Composition;
-using Xceed.Wpf.AvalonDock;
+using AvalonDock;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using Microsoft.Win32;
@@ -91,7 +91,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Xceed.Wpf.AvalonDock.Themes.Theme AvalonDockTheme => new Xceed.Wpf.AvalonDock.Themes.GenericTheme();
+        public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.GenericTheme();
         //if (_options.Theme == "Dark") return new Theme.MonotoneTheme();
         //else return new Theme.DaxStudioLightTheme();
 
@@ -223,7 +223,14 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), $"Connecting to Server: {server} Database:{database}");
-                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, string.Empty, string.Empty, database, ADOTabular.Enums.ServerType.PowerBIDesktop));
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
+                                                                        false, 
+                                                                        string.Empty,
+                                                                        string.Empty, 
+                                                                        database,
+                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop: ADOTabular.Enums.ServerType.AnalysisServices,
+                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)
+                                                                        ));
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
             else

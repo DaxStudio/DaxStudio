@@ -47,7 +47,8 @@ namespace ADOTabular
         public string Name { get;
         //get { return _adoTabConn.PowerBIFileName == string.Empty? _databaseName: _adoTabConn.PowerBIFileName; }
         }
-
+        private string _caption = string.Empty;
+        public string Caption { get => string.IsNullOrEmpty(_caption) ? Name : _caption; set { _caption = value; } }
         public ADOTabularModelCollection Models => _modelColl ??= new ADOTabularModelCollection(Connection, this);
 
         public IADOTabularConnection Connection { get; }

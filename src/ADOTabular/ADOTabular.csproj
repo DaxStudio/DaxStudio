@@ -162,6 +162,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ConnectionStringParser.cs" />
     <Compile Include="Utils\MetadataImageHelper.cs" />
+    <Compile Include="Utils\TaskExtensions.cs" />
     <Compile Include="Utils\TupleExtensions.cs" />
     <Compile Include="Utils\XmlReaderExtensions.cs" />
     <Compile Include="VersionComparisonExtension.cs" />
@@ -175,7 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.21.0</Version>
+      <Version>19.22.5</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>5.0.3</Version>
