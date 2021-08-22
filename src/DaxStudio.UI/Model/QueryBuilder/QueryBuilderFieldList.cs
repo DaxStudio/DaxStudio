@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using DaxStudio.UI.Extensions;
+using System.Collections.Specialized;
 
 namespace DaxStudio.UI.Model
 {
@@ -22,9 +23,18 @@ namespace DaxStudio.UI.Model
             DropHandler = new QueryBuilderDropHandler(this);
         }
 
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        protected virtual void OnCollectionChange(NotifyCollectionChangedEventArgs e)
+        {
+            if (CollectionChanged != null)
+                CollectionChanged(this, e);
+        }
+
         public void Remove(QueryBuilderColumn item)
         {
             Items.Remove(item);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
             NotifyOfPropertyChange(nameof(Items));
         }
         public ObservableCollection<QueryBuilderColumn> Items { get; } = new ObservableCollection<QueryBuilderColumn>();
@@ -58,6 +68,7 @@ namespace DaxStudio.UI.Model
                 }
             }
             Items.Add(builderItem);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, builderItem));
             NotifyOfPropertyChange(nameof(Items));
         }
 
@@ -65,6 +76,7 @@ namespace DaxStudio.UI.Model
         {
 
             Items.Add(item);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             NotifyOfPropertyChange(nameof(Items));
         }
 
@@ -79,6 +91,7 @@ namespace DaxStudio.UI.Model
         public void Move(int oldIndex, int newIndex)
         {
             Items.Move(oldIndex, newIndex);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, Items, newIndex, oldIndex));
             NotifyOfPropertyChange(nameof(Items));
         }
         public void Insert(int index, IADOTabularColumn item)
@@ -87,6 +100,7 @@ namespace DaxStudio.UI.Model
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(builderItem);
             else Items.Insert(index, builderItem);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             NotifyOfPropertyChange(nameof(Items));
         }
 
@@ -139,6 +153,7 @@ namespace DaxStudio.UI.Model
         public void Clear()
         {
             Items.Clear();
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 }

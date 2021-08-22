@@ -4,7 +4,6 @@ using ADOTabular;
 using ADOTabular.Interfaces;
 using DaxStudio.Common.Interfaces;
 using Caliburn.Micro;
-using DaxStudio.Interfaces;
 using DaxStudio.Tests.Assertions;
 using DaxStudio.Tests.Mocks;
 using DaxStudio.UI.Enums;

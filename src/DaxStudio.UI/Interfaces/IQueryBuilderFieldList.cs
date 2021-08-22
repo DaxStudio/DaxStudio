@@ -1,8 +1,9 @@
 ﻿using ADOTabular.Interfaces;
+using System.Collections.Specialized;
 
 namespace DaxStudio.UI.Interfaces
 {
-    public interface IQueryBuilderFieldList
+    public interface IQueryBuilderFieldList : INotifyCollectionChanged
     {
         bool Contains(IADOTabularColumn item);
         void Insert(int index, IADOTabularColumn item);

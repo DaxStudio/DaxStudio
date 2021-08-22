@@ -84,7 +84,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<RunStyleChangedEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
-        , IHandle<SelectedModelChangedEvent>
         , IHandle<EditorHotkeyEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
@@ -4418,11 +4417,6 @@ namespace DaxStudio.UI.ViewModels
             else CommentSelection();
         }
 
-        public void Handle(SelectedModelChangedEvent message)
-        {
-
-            UpdateRunningTraces();
-        }
 
     }
 }

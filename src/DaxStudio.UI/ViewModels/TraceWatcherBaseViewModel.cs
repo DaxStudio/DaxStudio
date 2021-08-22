@@ -70,7 +70,7 @@ namespace DaxStudio.UI.ViewModels
         }
         
         public DelegateCommand HideCommand { get; set; }
-        public List<DaxStudioTraceEventClass> MonitoredEvents { get => GetMonitoredEvents(); }
+
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher
@@ -209,9 +209,9 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-                        
+
                         // TODO - need a synchronous way to stop traces when shutting down or closing documents
-                        
+                        IsBusy = false;
                         _eventAggregator.Unsubscribe(this);
                         StopTrace();
                         //StopTraceAsync().SafeFireAndForget(onException: ex =>
@@ -397,6 +397,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => IsPaused);
                 NotifyOfPropertyChange(() => CanPause);
                 NotifyOfPropertyChange(() => CanStart);
+                if (_isPaused) IsBusy = false;
             }
         }
 
@@ -517,8 +518,8 @@ namespace DaxStudio.UI.ViewModels
                 // exit here if the updating of the event list has been cancelled
                 if (!UpdatedMonitoredEvents()) return;
                 
-                MonitoredEvents = GetMonitoredEvents();
-                var validEventsForConnection = MonitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
+                var monitoredEvents = GetMonitoredEvents();
+                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
                 
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
@@ -560,7 +561,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void TracerOnTraceEvent(object sender, DaxStudioTraceEventArgs e)
         {
-            if (!MonitoredEvents.Contains(e.EventClass)) return;
+            if (!GetMonitoredEvents().Contains(e.EventClass)) return;
             if (ShouldStartCapturing(e)) CapturingStarted = true;
             if (!CapturingStarted) return;
 

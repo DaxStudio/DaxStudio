@@ -1,4 +1,5 @@
-<controls:ZoomableUserControl xmlns:Views="clr-namespace:DaxStudio.UI.Views"  x:Class="DaxStudio.UI.Views.QueryResultsPaneView"
+<controls:ZoomableUserControl xmlns:Views="clr-namespace:DaxStudio.UI.Views"  
+                              x:Class="DaxStudio.UI.Views.QueryResultsPaneView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,10 +8,10 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
-                              xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
-             xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
+             xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
+             xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter" xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="400">
+             d:DesignHeight="100" d:DesignWidth="400" x:Name="QueryResultsPaneViewControl">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -169,15 +170,29 @@
                             IsReadOnly="True"
                             VerticalGridLinesBrush="WhiteSmoke" 
                             HorizontalGridLinesBrush="WhiteSmoke"
+                            
                             AutoGenerateColumns="False"
                             FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
-                            
-                            cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
-                                        , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
+
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
                             CanUserSortColumns="True"
 ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"                            
                             >
+
+<!-- 
+                                                         cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
+                                        , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"      
+                            cal:Action.TargetWithoutContext="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext}"
+                             -->
+                            <!--<i:Interaction.Triggers>
+
+                                <i:EventTrigger EventName="CopyingRowClipboardContent">
+                                    
+                                    <cal:ActionMessage MethodName="CopyingRowClipboardContent">
+                                        <cal:Parameter Value="{Binding ElementName=Name, Path=Text}" />
+                                    </cal:ActionMessage>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>-->
 
                             <DataGrid.AlternatingRowBackground>
                                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Serilog;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using System.Collections.Specialized;
 
 namespace DaxStudio.UI.Model
 {
@@ -27,9 +28,18 @@ namespace DaxStudio.UI.Model
             GetModelCapabilities = modelCapabilities;
         }
 
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        protected virtual void OnCollectionChange(NotifyCollectionChangedEventArgs e)
+        {
+            if (CollectionChanged != null)
+                CollectionChanged(this, e);
+        }
+
         public void Remove(QueryBuilderFilter item)
         {
             Items.Remove(item);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
             NotifyOfPropertyChange(nameof(Items));
         }
 
@@ -57,6 +67,7 @@ namespace DaxStudio.UI.Model
             {
                 var filter = new QueryBuilderFilter(item, GetModelCapabilities(), EventAggregator);
                 Items.Add(filter);
+                OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
                 NotifyOfPropertyChange(nameof(Items));
             }
             catch (Exception ex)
@@ -70,6 +81,8 @@ namespace DaxStudio.UI.Model
         internal void Add(QueryBuilderFilter filter)
         {
             Items.Add(filter);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, filter));
+            NotifyOfPropertyChange(nameof(Items));
         }
 
         public bool Contains(IADOTabularColumn item)
@@ -89,16 +102,19 @@ namespace DaxStudio.UI.Model
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(filter);
             Items.Insert(index, filter);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
         public void Move(int oldIndex, int newIndex)
         {
             Items.Move(oldIndex, newIndex);
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, Items, newIndex,oldIndex));
         }
         #endregion
 
         public void Clear()
         {
             Items.Clear();
+            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 }

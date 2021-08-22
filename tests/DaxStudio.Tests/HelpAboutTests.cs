@@ -37,7 +37,7 @@ namespace DaxStudio.Tests
                 System.Diagnostics.Debug.WriteLine(a.Key);
             }
 
-            Assert.IsTrue( ra["DaxStudio.Interfaces"].Length > 0);
+            Assert.IsTrue( ra["DaxStudio.Common"].Length > 0);
         }
     }
 

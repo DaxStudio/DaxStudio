@@ -219,11 +219,13 @@ namespace DaxStudio.UI.ViewModels
         public bool CanClearAll => RefreshEvents.Count > 0;
 
         public override void OnReset() {
-            IsBusy = false;
+            //IsBusy = false;
             Events.Clear();
             Commands.Clear();
             ProcessResults();
         }
+
+        public new bool IsBusy => false;
 
         public RefreshEvent SelectedQuery { get; set; }
 
