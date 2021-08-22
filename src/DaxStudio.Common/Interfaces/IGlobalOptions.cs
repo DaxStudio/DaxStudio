@@ -5,7 +5,7 @@ using DaxStudio.Common.Attributes;
 using DaxStudio.Common.Enums;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
-using DaxStudio.Interfaces.Attributes;
+//using DaxStudio.Interfaces.Attributes;
 using Serilog.Events;
 using Serilog.Core;
 

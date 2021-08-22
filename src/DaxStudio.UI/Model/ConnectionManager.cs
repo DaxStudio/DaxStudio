@@ -21,7 +21,7 @@ using DaxStudio.Common.Enums;
 using DaxStudio.Common.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Interfaces;
-
+using DaxStudio.QueryTrace.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

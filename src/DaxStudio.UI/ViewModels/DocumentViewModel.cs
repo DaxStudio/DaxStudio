@@ -4418,6 +4418,11 @@ namespace DaxStudio.UI.ViewModels
             else CommentSelection();
         }
 
+        public void Handle(SelectedModelChangedEvent message)
+        {
+
+            UpdateRunningTraces();
+        }
 
     }
 }

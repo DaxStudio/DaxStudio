@@ -1,6 +1,7 @@
 ﻿
 
 using ADOTabular.Enums;
+using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Interfaces;
 using System.Collections.Generic;
 

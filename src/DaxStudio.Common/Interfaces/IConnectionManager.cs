@@ -19,5 +19,6 @@ namespace DaxStudio.Common.Interfaces
         DaxColumnsRemap DaxColumnsRemapInfo { get; }
 
         void Ping();
+        void PingTrace();
     }
 }

@@ -1,11 +1,4 @@
-﻿using DaxStudio.Interfaces;
-using DaxStudio.Interfaces.Attributes;
-using DaxStudio.UI.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DaxStudio.UI.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using DaxStudio.Common.Attributes;

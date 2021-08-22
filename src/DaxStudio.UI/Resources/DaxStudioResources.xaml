@@ -44,7 +44,8 @@
         <Setter Property="Background" Value="{DynamicResource DialogBackground}" />
         <Setter Property="BorderBrush" Value="{StaticResource DaxStudioBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-
+    </Style>
+    
     <Style TargetType="{x:Type ToolTip}">
         <Setter Property="Foreground" Value="#FF575757" />
         <Setter Property="Background" Value="#FFFFFFFF" />
