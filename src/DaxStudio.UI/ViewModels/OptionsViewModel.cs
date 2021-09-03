@@ -470,7 +470,7 @@ namespace DaxStudio.UI.ViewModels
                 _proxySecurePassword = value;
                 NotifyOfPropertyChange(() => ProxyPassword);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue("ProxySecurePassword", value.GetInsecureString().Encrypt(), _isInitializing, MethodBase.GetCurrentMethod().GetCustomAttribute<DefaultValueAttribute>());
+                SettingProvider.SetValue("ProxySecurePassword", value.GetInsecureString().Encrypt(), _isInitializing, this);
             }
         }
 
@@ -1450,7 +1450,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showMetadataRefreshPrompt = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue("ShowMetadataRefreshPrompt", value, _isInitializing, this);
+                SettingProvider.SetValue(nameof(ShowMetadataRefreshPrompt), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowMetadataRefreshPrompt);
             }
         }
@@ -1465,7 +1465,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showHiddenMetadata = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(PreviewDataRowLimit), value, _isInitializing, this);
+                SettingProvider.SetValue(nameof(ShowHiddenMetadata), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
             } 
         }
