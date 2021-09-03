@@ -652,7 +652,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <fa:FontAwesome Icon="Shield" Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
+                                            <fa:FontAwesome Icon="{Binding InformationBarIcon}" Spin="{Binding InformationBarIconSpin}"  Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
                                             <Label x:Name="ViewAsDescription" Content="{Binding ViewAsDescription}" Grid.Column="1"/>
                                             <Button x:Name="StopViewAs" Content="Stop Viewing" Grid.Column="2" Margin="3" Padding="5 0"
                                                     cal:Message.Attach="[Event Click]=[Action StopViewAs()]"

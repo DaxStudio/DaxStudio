@@ -459,11 +459,30 @@ namespace DaxStudio.UI.ViewModels
         private string _viewAsDescription = string.Empty;
         public string ViewAsDescription  => _viewAsDescription;
 
+        private bool _informationBarIconSpin = false;
+        public bool InformationBarIconSpin { get => _informationBarIconSpin;
+            set { 
+                _informationBarIconSpin = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private string _informationBarIcon = "Shield";
+        public string InformationBarIcon { get => _informationBarIcon;
+            set
+            {
+                _informationBarIcon = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
         public void StopViewAs()
         {
             var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
             Connection.StopViewAs(activeTraces);
-            _viewAsDescription = string.Empty;
+            InformationBarIcon = "Spinner";
+            InformationBarIconSpin = true;
+            _viewAsDescription = "Reconnecting...";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
@@ -1070,6 +1089,7 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     if (message == null) return;
+                    MetadataPane.IsBusy = true;
                     Connection.Connect(message) ;
                     if (string.IsNullOrEmpty(ViewAsDescription)) 
                         UpdateViewAsDescription(message.ConnectionString);
@@ -1155,6 +1175,8 @@ namespace DaxStudio.UI.ViewModels
             var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $" User: {user}";
             var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
             _viewAsDescription = $"{userSection}{roleSection}";
+            InformationBarIconSpin = false;
+            InformationBarIcon = "Shield";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
