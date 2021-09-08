@@ -64,14 +64,29 @@ namespace DaxStudio.UI.JsonConverters
                 IADOTabularColumn obj = filter["TabularObject"].ToObject<ADOTabularColumnStub>();
                 FilterType filterType = filter["FilterType"].ToObject<FilterType>();
                 string filterValue = filter["FilterValue"].ToString();
+
+                var filterValueIsParameterToken = filter["FilterValueIsParameter"];
+                var filterValue2IsParameterToken = filter["FilterValue2IsParameter"];
+
                 string filterValue2 = filter["FilterValue2"].ToString();
+
                 IModelCapabilities modelCapabilities = filter["ModelCapabilities"].ToObject<ADOTabularModelCapabilities>();
                 var queryBuilderFilter = new QueryBuilderFilter(obj, modelCapabilities,_eventAggregator);
                 queryBuilderFilter.FilterType = filterType;
                 queryBuilderFilter.FilterValue = filterValue;
+                if (filterValueIsParameterToken != null)
+                {
+                    bool filterValueIsParameter = Convert.ToBoolean(filterValueIsParameterToken.ToString());
+                    queryBuilderFilter.FilterValueIsParameter = filterValueIsParameter;
+                }
                 queryBuilderFilter.FilterValue2 = filterValue2;
+                if (filterValue2IsParameterToken != null)
+                {
+                    bool filterValue2IsParameter = Convert.ToBoolean(filterValue2IsParameterToken.ToString());
+                    queryBuilderFilter.FilterValue2IsParameter = filterValue2IsParameter;
+                }
 
-            vm.Filters.Add(queryBuilderFilter);
+                vm.Filters.Add(queryBuilderFilter);
 
             }
 

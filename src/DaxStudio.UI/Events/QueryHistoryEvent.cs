@@ -12,16 +12,19 @@ namespace DaxStudio.UI.Events
 
         [JsonConstructor]
         public QueryHistoryEvent( string queryText
-        , DateTime startTime
-        , long clientDurationMs 
-        , long serverDurationMs
-        , long seDurationMs 
-        , long feDurationMs 
-        , string serverName 
-        , string databaseName 
-        , string fileName)
+            , string parameters
+            , DateTime startTime
+            , long clientDurationMs 
+            , long serverDurationMs
+            , long seDurationMs 
+            , long feDurationMs 
+            , string serverName 
+            , string databaseName 
+            , string fileName
+            , string queryBuilderJson)
         {
             QueryText = queryText.Trim();
+            Parameters = parameters;
             QueryTextLines = queryText.Split('\n').Count();
             StartTime = startTime;
             ClientDurationMs = clientDurationMs;
@@ -31,15 +34,31 @@ namespace DaxStudio.UI.Events
             ServerName = serverName.Trim().ToLower();
             DatabaseName = databaseName.Trim();
             FileName = fileName;
+            QueryBuilderJson = queryBuilderJson;
+
         }
 
-        public QueryHistoryEvent( string queryText
-        , DateTime startTime
-        , string serverName 
-        , string databaseName 
-        , string fileName): this(queryText,startTime,-1,-1,-1,-1,serverName,databaseName,fileName )
+        public QueryHistoryEvent(
+            string json
+            , string queryText
+            , string parameters
+            , DateTime startTime
+            , string serverName 
+            , string databaseName 
+            , string fileName): this(queryText, parameters,startTime,-1,-1,-1,-1,serverName,databaseName,fileName ,json)
         {   }
 
+        public QueryHistoryEvent(
+              string queryText
+            , string parameters
+            , DateTime startTime
+            , string serverName
+            , string databaseName
+            , string fileName) : this(queryText, parameters, startTime, -1, -1, -1, -1, serverName, databaseName, fileName, string.Empty)
+        { }
+
+        public string QueryBuilderJson { get; }
+        public string Parameters { get; }
         public string QueryText { get; private set; }
         public DateTime StartTime { get; private set; }
         public long ClientDurationMs { get; set; }

@@ -100,7 +100,7 @@ namespace DaxStudio.UI.Model
         public async Task Handle(QueryHistoryEvent message)
         {
             // don't add a history record if the query text is empty
-            if (string.IsNullOrWhiteSpace(message.QueryText))
+            if (string.IsNullOrWhiteSpace(message.QueryText) && string.IsNullOrWhiteSpace(message.QueryBuilderJson))
             {
                 Log.Debug("{class} {method} {message}", nameof(GlobalQueryHistory), "Handle<QueryHistoryEvent>", "Skipping saving Query History as QueryText is empty");
                 return;

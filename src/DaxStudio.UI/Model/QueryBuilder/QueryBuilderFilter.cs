@@ -126,6 +126,7 @@ namespace DaxStudio.UI.Model
         }
 
         bool _filterValueIsParameter = false;
+        [DataMember]
         public bool FilterValueIsParameter { 
             get => _filterValueIsParameter; 
             set {
@@ -213,6 +214,7 @@ namespace DaxStudio.UI.Model
         }
 
         bool _filterValue2IsParameter = false;
+        [DataMember]
         public bool FilterValue2IsParameter
         {
             get => _filterValue2IsParameter;

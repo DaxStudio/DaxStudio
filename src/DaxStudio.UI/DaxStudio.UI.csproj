@@ -274,6 +274,7 @@
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\EditorHotkeyEvent.cs" />
+    <Compile Include="Events\LoadQueryBuilderEvent.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
