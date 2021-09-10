@@ -9,6 +9,7 @@
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:clr="clr-namespace:System;assembly=mscorlib"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="700">
@@ -386,7 +387,15 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-
+                <DataGridTemplateColumn >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                <fa:FontAwesome Icon="{Binding TypeIcon}" ToolTip="{Binding TypeTooltip}" Margin="0,2" />
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Query" Width="*" 
                                         ClipboardContentBinding="{Binding QueryText}"
                                         CellTemplate="{StaticResource QueryTextCell}" />

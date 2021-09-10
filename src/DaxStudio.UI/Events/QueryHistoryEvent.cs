@@ -87,5 +87,11 @@ namespace DaxStudio.UI.Events
             }
         }
 
+        [JsonIgnore]
+        public string TypeIcon => string.IsNullOrEmpty(QueryBuilderJson) ? "Edit" : "Wrench" ;
+
+        [JsonIgnore]
+        public string TypeTooltip => string.IsNullOrEmpty(QueryBuilderJson) ? "Query Text" : "Query Builder Query";
+
     }
 }
