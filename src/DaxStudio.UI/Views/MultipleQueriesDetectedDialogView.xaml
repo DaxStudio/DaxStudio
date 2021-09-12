@@ -13,7 +13,8 @@
         <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
-        </ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
             <Style TargetType="Button">
                 <Setter Property="Margin" Value="4,2"/>
@@ -26,7 +27,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+    <Border  Style="{StaticResource DaxStudioDialog}">
         
     <Grid>
         <Grid.RowDefinitions>

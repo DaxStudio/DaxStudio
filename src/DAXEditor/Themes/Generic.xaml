@@ -15,6 +15,7 @@
         <Setter Property="Foreground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorForeground}}" />
         <Setter Property="LineNumbersForeground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorLineNumbersForeground}}" />
         <Setter Property="EditorCurrentLineBackground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBackgroundBrushKey}}" />
+        
         <!--<Setter Property="EditorCurrentLineBorder" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBorderBrushKey}}" />
         <Setter Property="EditorCurrentLineBorderThickness" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBorderThicknessKey}}" />-->
         
@@ -158,7 +159,8 @@
                         -->
                     <Border Background="{TemplateBinding Background}"
 							      BorderBrush="{TemplateBinding BorderBrush}"
-							      BorderThickness="{TemplateBinding BorderThickness}">
+							      BorderThickness="{TemplateBinding BorderThickness}"
+                            x:Name="EditorBorder">
 
                         <ScrollViewer Focusable="False"
 						            Name="PART_ScrollViewer"

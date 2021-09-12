@@ -4,5 +4,15 @@
 
     <Style x:Key="DaxStudioDialog" TargetType="{x:Type Border}">
         <Setter Property="Background" Value="White" />
+        <!--<Setter Property="BorderBrush" Value="{StaticResource DaxStudioBrush}" />-->
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Background" Value="{DynamicResource DialogBackground}" />
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="BitmapEffect">
+            <Setter.Value>
+                <DropShadowBitmapEffect ShadowDepth="0" Color="LightGray"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

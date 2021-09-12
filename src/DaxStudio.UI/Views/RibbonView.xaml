@@ -10,6 +10,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignWidth="980">
     <UserControl.Resources>
@@ -163,60 +164,64 @@
         <!--Backstage-->
             
         <Fluent:Ribbon.Menu>
-            
-            <Fluent:Backstage x:Name="Backstage">
-                <Fluent:BackstageTabControl>
+            <Grid>
+                <Fluent:Backstage x:Name="Backstage">
+                    
+                    <Fluent:BackstageTabControl>
 
-                    <!-- File New -->
-                    <Fluent:Button Header="New" 
+                            <!-- File New -->
+                        <Fluent:Button Header="New" 
                                    Name="btnNewQuery" 
                                    HorizontalContentAlignment="Left" 
                                    Foreground="White"
-                                   Icon="{StaticResource NewIconSmall}"
-                                   ToolTip="Open a New Query">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="NewQuery"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </Fluent:Button>
+                                   Height="30"
+                                   ToolTip="Open a New Query"
+                                       DockPanel.Dock="Top">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <cal:ActionMessage MethodName="NewQuery"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Fluent:Button>
 
-                    <Fluent:Button
+                        <Fluent:Button
                         Name="btnNewQueryConnected"
                         Header="New (Copy Connection)"
-                        Icon="{StaticResource NewConnectedIconSmall}"
-                        ToolTip="Open a New Query with the current connection">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                        
-                    </Fluent:Button>
-                    
-                    <Fluent:BackstageTabItem Header="Open"  >
-                        
-                        <!-- Right-side content here -->
-                        <Grid Margin="35,25,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="200" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="56" 
+                        ToolTip="Open a New Query with the current connection"
+                        Height="30">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+
+                        </Fluent:Button>
+
+                        <Fluent:BackstageTabItem 
+                        Header="Open" 
+                        Height="30" >
+
+                            <!-- Right-side content here -->
+                            <Grid Margin="35,25,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="56" 
                                        Foreground="{StaticResource DaxStudioBrush}"
                                        Margin="5,0,0,0"
                                        FontWeight="ExtraLight"
                                        />
-                            
-                            <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px" Grid.Row="1">
-                                <Border>
-                                    <!-- style comes from ribbon control -->
-                                    <!-- Style="{DynamicResource ButtonBackstageStyle}" -->
-                                    <Fluent:Button 
+
+                                <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px" Grid.Row="1">
+                                    <Border>
+                                        <!-- style comes from ribbon control -->
+                                        <!-- Style="{DynamicResource ButtonBackstageStyle}" -->
+                                        <Fluent:Button 
                                         Style="{DynamicResource ButtonBackstageStyle}"
                                         BorderBrush="DimGray"  
                                         BorderThickness="1" 
@@ -224,27 +229,27 @@
                                         Header="Browse"
                                         SizeDefinition="Large"
                                         Height="100" Width="100" Foreground="Black">
-                                           
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="Click">
-                                                <cal:ActionMessage MethodName="Open">
-                                                </cal:ActionMessage>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                            </Fluent:Button>
-                                </Border>
-                            </StackPanel>
-                            
-                            <Grid HorizontalAlignment="Stretch" Margin="5,0" Grid.Column="1" Grid.Row="1" >
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Label FontSize="24" Foreground="DimGray" FontWeight="Light" Grid.Row="0">Recent Documents</Label>
-                                <ListView x:Name="RecentFiles" 
+
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="Click">
+                                                    <cal:ActionMessage MethodName="Open">
+                                                    </cal:ActionMessage>
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Fluent:Button>
+                                    </Border>
+                                </StackPanel>
+
+                                <Grid HorizontalAlignment="Stretch" Margin="5,0" Grid.Column="1" Grid.Row="1" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label FontSize="24" Foreground="DimGray" FontWeight="Light" Grid.Row="0">Recent Documents</Label>
+                                    <ListView x:Name="RecentFiles" 
                                           Background="Transparent"
                                           DataContext="{Binding}" 
                                           ItemsSource="{Binding Path=RecentFiles}" 
@@ -252,71 +257,88 @@
                                           BorderBrush="Transparent" 
                                           Grid.Row="1"
                                           HorizontalContentAlignment="Stretch">
-                                    <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                            <cal:ActionMessage MethodName="OpenRecentFile">
-                                                <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
-                                                <cal:Parameter Value="{Binding ElementName=Backstage}"/>
-                                            </cal:ActionMessage>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                    
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Grid>
-                                                <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                        <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                <cal:ActionMessage MethodName="OpenRecentFile">
+                                                    <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                    <cal:Parameter Value="{Binding ElementName=Backstage}"/>
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Grid>
+                                                        <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
                                                        Margin="0,3,10,3" Width="32" Height="32" />
-                                                    <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
-                                                </Grid>
-                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
-                                                    <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                        <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                                                    </Grid>
+                                                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
+                                                        <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                    </StackPanel>
                                                 </StackPanel>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Grid>
                             </Grid>
-                        </Grid> 
-                    </Fluent:BackstageTabItem>
-                    <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
+                        </Fluent:BackstageTabItem>
+                        <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
 
-                    <Fluent:Button Name="btnSave" Header="Save" Foreground="White" HorizontalContentAlignment="Left" Icon="{StaticResource SaveIcon}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="Save"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
+                        <Fluent:Button Name="btnSave" 
+                                   Header="Save" 
+                                   Foreground="White" 
+                                   HorizontalContentAlignment="Left"
+                                   Height="30"
+                                   >
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <cal:ActionMessage MethodName="Save"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
 
-                    </Fluent:Button>
-                    <Fluent:Button Name="btnSaveAs" Header="Save As" Foreground="White">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="SaveAs">
+                        </Fluent:Button>
+                        <Fluent:Button Name="btnSaveAs" 
+                                   Header="Save As" 
+                                   Height="30"
+                                   Foreground="White">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <cal:ActionMessage MethodName="SaveAs">
 
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
+                                    </cal:ActionMessage>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
 
-                    </Fluent:Button>
+                        </Fluent:Button>
 
-                    <Fluent:BackstageTabItem Header="Options" Icon="{StaticResource OptionsIcon}" >
-                        <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}"  />
-                    </Fluent:BackstageTabItem>
+                        <Fluent:BackstageTabItem Header="Options" Height="30">
+                            <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}"  />
+                        </Fluent:BackstageTabItem>
+
+                        <Fluent:SeparatorTabItem />
+
+                        <Fluent:Button Name="btnExit" 
+                                   Header="Exit" 
+                                   Foreground="White"  
+                                   VerticalAlignment="Bottom"
+                                   DockPanel.Dock="Bottom">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Click">
+                                    <cal:ActionMessage MethodName="Exit">
+
+                                    </cal:ActionMessage>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Fluent:Button>
+
+                    </Fluent:BackstageTabControl>
                     
-                    <Fluent:Button Name="btnExit" Header="Exit" Foreground="White">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="Click">
-                                <cal:ActionMessage MethodName="Exit">
-
-                                </cal:ActionMessage>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </Fluent:Button>
-                </Fluent:BackstageTabControl>
-            </Fluent:Backstage>
+                </Fluent:Backstage>
+            </Grid>
         </Fluent:Ribbon.Menu>
 
         
@@ -381,21 +403,38 @@
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-                <Fluent:Button Name="ClearCache"
+                
+                <Fluent:SplitButton Name="ClearCache"
                                Header="Clear Cache"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
+                                    Size="Large"
                                Icon="{StaticResource ClearCacheIcon}"
                                LargeIcon="{StaticResource ClearCacheIconLarger}"
                                Margin="4,0"
                                >
-                    <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Clear Cache"
+                    <Fluent:SplitButton.ToolTip>
+                        <Fluent:ScreenTip Title="Clear Cache before every Run"
                                           Text="Clears the cache for the current database"
                                           DisableReason="{Binding ClearCacheDisableReason}"
                                           ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
-                </Fluent:Button>
-        
+                    </Fluent:SplitButton.ToolTip>
+
+                    <Fluent:Gallery >
+                        <Fluent:GalleryItem MinHeight="100" MinWidth="150">
+                        <mah:ToggleSwitch Content=""  MinWidth="150" Width="150">
+                            <mah:ToggleSwitch.Header>
+                                <StackPanel Orientation="Vertical" >
+                                    <TextBlock FontSize="12" >Clear Cache</TextBlock>
+                                    <TextBlock FontSize="12" >automatically</TextBlock>
+                                        <TextBlock FontSize="12" >before</TextBlock>
+                                        <TextBlock FontSize="12">every run</TextBlock>
+                                </StackPanel>
+                            </mah:ToggleSwitch.Header>
+                        </mah:ToggleSwitch>
+                        </Fluent:GalleryItem>
+                    </Fluent:Gallery>
+                </Fluent:SplitButton>
+
                 <!-- Output Targets -->
 
                 <Fluent:DropDownButton x:Name="OutputTargets"

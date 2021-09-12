@@ -671,6 +671,7 @@
                                     <dax:DAXEditor x:Name="daxEditor" 
                                                    Margin="2,2,2,2" 
                                                    Padding="8,8,8,8"
+                                                   EditorBorder.CornerRadius="8"
                                                    TabIndex="0"
                                                    Grid.Column="0" 
                                                    Grid.Row="0" 

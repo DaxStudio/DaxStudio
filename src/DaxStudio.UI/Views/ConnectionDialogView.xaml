@@ -56,6 +56,8 @@
                 </Style.Triggers>
             </Style>
 
+
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>
@@ -65,11 +67,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
-        <Border Style="{StaticResource DaxStudioDialog}" 
-                BorderBrush="{StaticResource DaxStudioBrush}" 
-                BorderThickness="1" 
-                CornerRadius="0" 
-                Background="{DynamicResource DialogBackground}">
+        <Border Style="{StaticResource DaxStudioDialog}" >
 
             <Grid  Height="Auto">
                 <Grid.ColumnDefinitions>
@@ -88,9 +86,8 @@
                     <fluent:GrayscaleEffect/>
                 </Grid.Effect>-->
                 <Label Content="Connect" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="44" Padding="17,0" />
-                <GroupBox Header="Data Source" Margin="10,10,10,0" x:Name="grpServer" 
-                          VerticalAlignment="Top"  MinWidth="420" Grid.Row="1">
-                    <StackPanel Orientation="Vertical">
+                
+                    <StackPanel Orientation="Vertical" Grid.Row="1">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -122,7 +119,8 @@
                                     Grid.Column="1" 
                                     Foreground="#3571AD"/>
                             </Grid>
-                            <StackPanel Margin="18 0 0 0" Orientation="Horizontal"  Visibility="{Binding ShowMissingModelWarning, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Margin="18 0 0 0" Orientation="Horizontal"  
+                                        Visibility="{Binding ShowMissingModelWarning, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Image x:Name="WarningImage" Source="{StaticResource ResourceKey=Warning}" Width="16" Margin="5 2 0 0" IsEnabled="True" />
                                 <Label Content="Warning: PowerPivot model not detected" Height="26" HorizontalAlignment="Left" Margin="0,0,0,0" x:Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000"/>
                             </StackPanel>
@@ -241,7 +239,7 @@
                             </ComboBox>
                         </Grid>
                     </StackPanel>
-                </GroupBox>
+
                 <Expander x:Name="myExpander" Header="Advanced Options"
 					ExpandDirection="Down" IsExpanded="False" 
 					Template="{StaticResource RevealExpanderTemp}"
@@ -336,8 +334,31 @@
                 </Expander>
                 <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" 
                             Grid.ColumnSpan="3" Width="165" Margin="0,10,0,5">
-                    <Button Content="Connect" HorizontalAlignment="Right" Margin="0,0,5,6" x:Name="Connect" IsEnabled="{Binding CanConnect}"  Width="75" IsDefault="True"  VerticalAlignment="Bottom" />
-                    <Button Content="Cancel"  HorizontalAlignment="Right" Margin="0,0,10,6" x:Name="Cancel" VerticalAlignment="Bottom" Width="75" IsCancel="True"  />
+                    <Button Content="Connect" 
+                            HorizontalAlignment="Right" 
+                            Margin="0,0,5,6" 
+                            Padding="6"
+                            BorderBrush="#2D5E79"
+                            BorderThickness="0 0 0 2"
+                            x:Name="Connect" 
+                            IsEnabled="{Binding CanConnect}"  
+                            Width="75" IsDefault="True"
+                            Background="#228ED6"
+                            Foreground="White"
+                            VerticalAlignment="Bottom" 
+                            mah:ControlsHelper.CornerRadius="5"
+                            />
+                    <Button Content="Cancel"  
+                            HorizontalAlignment="Right" 
+                            Margin="0,0,10,6" 
+                            BorderBrush="Gray"
+                            BorderThickness="0 0 0 2"
+                            Padding="6"
+                            x:Name="Cancel" 
+                            VerticalAlignment="Bottom" 
+                            Width="75" 
+                            IsCancel="True"
+                            mah:ControlsHelper.CornerRadius="5"/>
                 </StackPanel>
             </Grid>
         </Border>

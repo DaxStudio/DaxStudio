@@ -6,7 +6,6 @@
              xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
              
              xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
-             xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=Xceed.Wpf.AvalonDock"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
@@ -21,6 +20,102 @@
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
 
+
+            <Style x:Key="MyCustomDocumentPaneControlStyle" TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
+                <Setter Property="TabStripPlacement" Value="Bottom"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
+                            <Grid ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <!--Following border is required to catch mouse events-->
+                                <Border Background="Transparent" Grid.RowSpan="2"/>
+                                <Grid Panel.ZIndex="1" Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <avalonDockControls:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" IsItemsHost="true" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1"/>
+                                    <avalonDockControls:DropDownButton
+                            x:Name="MenuDropDownButton"
+                            Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
+                            Focusable="False"
+                            Grid.Column="1">
+                                        <avalonDockControls:DropDownButton.DropDownContextMenu>
+                                            <avalonDockControls:ContextMenuEx
+                                    ItemsSource="{Binding Model.ChildrenSorted, RelativeSource={RelativeSource TemplatedParent}}">
+                                                <avalonDockControls:ContextMenuEx.ItemContainerStyle>
+                                                    <Style TargetType="{x:Type avalonDockControls:MenuItemEx}" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                                        <Setter Property="HeaderTemplate" Value="{Binding Path=Root.Manager.DocumentPaneMenuItemHeaderTemplate}"/>
+                                                        <Setter Property="HeaderTemplateSelector" Value="{Binding Path=Root.Manager.DocumentPaneMenuItemHeaderTemplateSelector}"/>
+                                                        <Setter Property="IconTemplate" Value="{Binding Path=Root.Manager.IconContentTemplate}"/>
+                                                        <Setter Property="IconTemplateSelector" Value="{Binding Path=Root.Manager.IconContentTemplateSelector}"/>
+                                                        <!--<Setter Property="Command" Value="{Binding Path=., Converter={StaticResource ActivateCommandLayoutItemFromLayoutModelConverter}}"/>-->
+                                                    </Style>
+                                                </avalonDockControls:ContextMenuEx.ItemContainerStyle>
+                                            </avalonDockControls:ContextMenuEx>
+                                        </avalonDockControls:DropDownButton.DropDownContextMenu>
+                                        <Image Source="/AvalonDock;component/Images/PinDocMenu.png"/>
+                                    </avalonDockControls:DropDownButton>
+                                </Grid>
+                                <Border x:Name="ContentPanel" 
+                            VerticalAlignment="Stretch" 
+                            HorizontalAlignment="Stretch"  
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}" 
+                            Grid.Column="0" 
+                            KeyboardNavigation.DirectionalNavigation="Contained" 
+                            Grid.Row="0"
+                            KeyboardNavigation.TabIndex="2" 
+                            KeyboardNavigation.TabNavigation="Cycle">
+                                    <ContentPresenter x:Name="PART_SelectedContentHost" 
+                                          ContentSource="SelectedContent" 
+                                          Margin="{TemplateBinding Padding}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Model.ChildrenCount}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed" TargetName="MenuDropDownButton" />
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type TabItem}">
+                            <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="ToolTip" Value="{Binding ToolTip}"/>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <avalonDockControls:LayoutDocumentTabItem Model="{Binding}"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+
+                <Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <avalonDockControls:LayoutDocumentControl Model="{Binding}"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml" />
                 <!--<ResourceDictionary Source="Styles/AvalonDock.NavigatorWindow.xaml"/>-->
@@ -32,7 +127,7 @@
     <Grid>
         <avalondock:DockingManager 
             x:Name="Items"
-     
+            DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}" 
             cal:Message.Attach="[Event ActiveContentChanged] = [Action ActiveDocumentChanged]" 
             >

@@ -9,9 +9,10 @@
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
         xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"   
+        xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
-                    
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
         BorderBrush="{DynamicResource DaxStudioBrush}"
@@ -25,8 +26,6 @@
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                
-
 
                 <!-- Mahapps Metro resources -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
@@ -39,9 +38,12 @@
             
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
-            <SolidColorBrush x:Key="BusyBrush" Color="#30000000" />
+            <!--<SolidColorBrush x:Key="BusyBrush" Color="#30000000" />-->
+            <SolidColorBrush x:Key="BusyBrush" Color="#00000000" />
 
-        <!--<DataTemplate x:Key="DragAdorner">
+            
+
+            <!--<DataTemplate x:Key="DragAdorner">
             <Border Background="Silver"
                     BorderBrush="Gray"
                     BorderThickness="1"
@@ -82,22 +84,22 @@
             </Style>
         </ResourceDictionary>    
         
-    </Fluent:RibbonWindow.Resources>
-    <Fluent:RibbonWindow.WindowCommands>
-        <Fluent:WindowCommands>
-            <Fluent:Button Size="Small"
+    </fluent:RibbonWindow.Resources>
+    <fluent:RibbonWindow.WindowCommands>
+        <fluent:WindowCommands>
+            <fluent:Button Size="Small"
                            Background="Goldenrod"
                            Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
                            cal:Message.Attach="[Event Click] = [Action UpdateFlagClick]">
-                <Fluent:Button.Icon>
+                <fluent:Button.Icon>
                 <fa:FontAwesome Icon="Flag" Margin="0 0"></fa:FontAwesome>
-                </Fluent:Button.Icon>
-                <Fluent:Button.ToolTip>
-    <Fluent:ScreenTip Title="Update Available" Text="{Binding UpdateMessage}"></Fluent:ScreenTip>
-</Fluent:Button.ToolTip>
-            </Fluent:Button>
-        </Fluent:WindowCommands>
-    </Fluent:RibbonWindow.WindowCommands>
+                </fluent:Button.Icon>
+                <fluent:Button.ToolTip>
+    <fluent:ScreenTip Title="Update Available" Text="{Binding UpdateMessage}"></fluent:ScreenTip>
+</fluent:Button.ToolTip>
+            </fluent:Button>
+        </fluent:WindowCommands>
+    </fluent:RibbonWindow.WindowCommands>
     <Grid>
         <Grid x:Name="LayoutRoot"
               Margin="0,0,0,-2" >
@@ -123,20 +125,21 @@
     -->        
 
         </Grid>
+        <!-- Background="{StaticResource BusyBrush}" -->
         <Border HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch" 
                 Grid.RowSpan="3"
                 Visibility="{Binding Path=IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                Background="{StaticResource BusyBrush}" Opacity="0.7"
+                 Opacity="0.7"
                 >
             <!--
         <Border.BitmapEffect>
-            <BlurBitmapEffect Radius="10"/>
+            <BlurBitmapEffect Radius="5"/>
         </Border.BitmapEffect>
         <Border.Background>
             <VisualBrush  Visual="{Binding ElementName=LayoutRoot}" Stretch="None" />
         </Border.Background>
-        -->
+       -->
     </Border>
     </Grid>
     <!-- TODO - show pulsing taskbar window while query is running -->

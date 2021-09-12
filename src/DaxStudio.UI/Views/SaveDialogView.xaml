@@ -14,6 +14,7 @@
         <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
         </ResourceDictionary.MergedDictionaries>
 
             <Thickness x:Key="ButtonMargin">10 5 0 0</Thickness>
@@ -40,41 +41,43 @@
    
         </ResourceDictionary>
     </UserControl.Resources>
-    <Border Background="{DynamicResource DialogBackground}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
-        
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Orientation="Vertical">
-                <StackPanel Orientation="Horizontal">
-                    <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
-                    <Label Content="Unsaved Changes" Foreground="{StaticResource DaxStudioBrush}" 
+    <Border Padding="10,10,10,10" Margin="0,0,0,0"  >
+        <Border Style="{StaticResource DaxStudioDialog}" >
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
+                        <Label Content="Unsaved Changes" Foreground="{StaticResource DaxStudioBrush}" 
                            Margin="3,0"
                            FontWeight="Light" FontSize="44" ></Label>
-                    <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
+                        <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
+                    </StackPanel>
+                    <Label Padding="10,10,0,5">The following documents have unsaved changes:</Label>
                 </StackPanel>
-                <Label Padding="10,10,0,5">The following documents have unsaved changes:</Label>
-            </StackPanel>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5,0" Visibility="Collapsed">
-                <CheckBox Grid.Row="1" Margin="5,1,5,5"  VerticalAlignment="Center" x:Name="SelecteAll"></CheckBox>
-                <Label>Select All</Label>
-            </StackPanel>
-            <ListView x:Name="DocumentList" Grid.Row="2"
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5,0" Visibility="Collapsed">
+                    <CheckBox Grid.Row="1" Margin="5,1,5,5"  VerticalAlignment="Center" x:Name="SelecteAll"></CheckBox>
+                    <Label>Select All</Label>
+                </StackPanel>
+                <ListView x:Name="DocumentList" Grid.Row="2"
                       Background="{DynamicResource DialogBackground}"
                       ItemsSource="{Binding Documents}" 
                       Margin="10,0"
                       BorderThickness="0.8"
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldSave($this.SelectedItem)]">
-            </ListView>
-            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
-                <Button x:Name="Save" Margin="{StaticResource ButtonMargin}" Padding="{StaticResource ButtonPadding}">_Save</Button>
-                <Button x:Name="DontSave"  Margin="{StaticResource ButtonMargin}" Padding="{StaticResource ButtonPadding}">Do_n't Save</Button>
-                <Button x:Name="Cancel" IsCancel="True"  Margin="{StaticResource ButtonMargin}" Padding="{StaticResource ButtonPadding}">Cancel</Button>
-            </StackPanel>
-        </Grid>
+                </ListView>
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
+                    <Button x:Name="Save" Margin="{StaticResource ButtonMargin}" Padding="{StaticResource ButtonPadding}">_Save</Button>
+                    <Button x:Name="DontSave"  Margin="{StaticResource ButtonMargin}" Padding="{StaticResource ButtonPadding}">Do_n't Save</Button>
+                    <Button x:Name="Cancel" IsCancel="True"  Margin="{StaticResource ButtonMargin}" Padding="{StaticResource ButtonPadding}">Cancel</Button>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Border>
 </UserControl>

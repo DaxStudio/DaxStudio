@@ -317,8 +317,8 @@ namespace DaxStudio.UI
                 }
             }
             */
-            
-            var backstage = ribbon.Menu as Fluent.Backstage;
+            var backstageGrid = ribbon.Menu as Grid;
+            var backstage = backstageGrid.Children[0] as Fluent.Backstage;
             var backstageTabs = backstage.Content as Fluent.BackstageTabControl;
             BindingScope.GetNamedElements(backstageTabs);
 
