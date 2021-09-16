@@ -1223,9 +1223,9 @@ namespace ADOTabular
 
 
             var kwords = from keyword in drKeywords.AsEnumerable()
-                           join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
-                           from kword in a.DefaultIfEmpty()
-                           where kword == null
+                         join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
+                         from kword in a.DefaultIfEmpty()
+                         where kword == null
 #pragma warning disable IDE0050 // Convert to tuple
                          select new { Keyword = (string)keyword["Keyword"] , Matched = (kword==null) };
 #pragma warning restore IDE0050 // Convert to tuple

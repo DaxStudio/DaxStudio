@@ -176,7 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.22.5</Version>
+      <Version>19.26.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>5.0.3</Version>
