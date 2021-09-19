@@ -35,29 +35,15 @@ namespace DaxStudio.UI.Theme
 
             AppearanceManager.AddThemeResources("Light", new List<Uri>
                 {
-                //   new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                //  new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-
-                  //,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
                   new Uri("/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml", UriKind.RelativeOrAbsolute)
                 }, Themes);
 
 
             AppearanceManager.AddThemeResources("Dark", new List<Uri>
                 {
-                //   new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                // new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  
-                  //,new Uri("/MLib;component/Themes/DarkTheme.xaml", UriKind.RelativeOrAbsolute)
-                  
-                  //,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
+                 
                   new Uri("/DaxStudio.UI;component/Theme/Dark.DaxStudio.Theme.xaml", UriKind.RelativeOrAbsolute)
                   
-                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.Colors.xaml", UriKind.RelativeOrAbsolute)
-                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.Brushes.xaml", UriKind.RelativeOrAbsolute)
-                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.xaml", UriKind.RelativeOrAbsolute)
-                  //,new Uri("/DaxStudio.UI;component/Theme/Monotone.DaxEditor.xaml", UriKind.RelativeOrAbsolute)
-
                 }, Themes);
         }
 
@@ -80,8 +66,8 @@ namespace DaxStudio.UI.Theme
             Application.Current.Resources[MLib.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
             Application.Current.Resources[MLib.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
 
-            Application.Current.Resources[AvalonDock.Themes.VS2013.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
-            Application.Current.Resources[AvalonDock.Themes.VS2013.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
+            Application.Current.Resources[AvalonDock.Themes.DaxStudio.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
+            Application.Current.Resources[AvalonDock.Themes.DaxStudio.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
 
             Application.Current.Resources[NumericUpDownLib.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
             Application.Current.Resources[NumericUpDownLib.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);

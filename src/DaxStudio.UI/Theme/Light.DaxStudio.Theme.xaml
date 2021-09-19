@@ -7,10 +7,9 @@
                     xmlns:local="clr-namespace:DaxStudio.UI.Theme" xmlns:sys1="http://schemas.microsoft.com/winfx/2009/xaml">
       <ResourceDictionary.MergedDictionaries>
         
-        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.Metro;component/Theme.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.VS2013;component/LightBrushs.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/LightTheme.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/LightBrushs.xaml"/>
 
-        <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml"/>-->
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Light.AvalonEdit.xaml"/>
 
         <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />

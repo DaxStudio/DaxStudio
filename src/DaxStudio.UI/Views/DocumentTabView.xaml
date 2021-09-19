@@ -32,12 +32,26 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <!--Following border is required to catch mouse events-->
-                                <Border Background="Transparent" Grid.RowSpan="2"/>
-                                <Grid Panel.ZIndex="1" Grid.Row="1">
+                                <Border Background="Transparent" 
+                                        Grid.RowSpan="2"
+                                        />
+
+                                <Grid Panel.ZIndex="1" Grid.Row="1" ClipToBounds="True">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
+
+                                    <Border  
+                                        Grid.ColumnSpan="2"
+                                        BorderThickness="0 1 0 0"
+                                        BorderBrush="Black"
+                                        Margin="0 -1 0 0 ">
+                                        <Border.Effect>
+                                            <DropShadowEffect  ShadowDepth="0" BlurRadius="10" />
+                                        </Border.Effect>
+                                    </Border>
+
                                     <avalonDockControls:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" IsItemsHost="true" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1"/>
                                     <avalonDockControls:DropDownButton
                             x:Name="MenuDropDownButton"
@@ -59,7 +73,9 @@
                                             </avalonDockControls:ContextMenuEx>
                                         </avalonDockControls:DropDownButton.DropDownContextMenu>
                                         <Image Source="/AvalonDock;component/Images/PinDocMenu.png"/>
+                                        
                                     </avalonDockControls:DropDownButton>
+                                    
                                 </Grid>
                                 <Border x:Name="ContentPanel" 
                             VerticalAlignment="Stretch" 
@@ -101,7 +117,21 @@
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
                         <DataTemplate>
-                            <avalonDockControls:LayoutDocumentTabItem Model="{Binding}"/>
+                            <Grid>
+                            <Border 
+                                x:Name="Bd"
+                                BorderThickness="0 0 0 3"
+                                    Margin="4 0 4 0"
+                                    BorderBrush="Transparent">
+                                </Border>
+                                <avalonDockControls:LayoutDocumentTabItem Model="{Binding}"/>
+                            
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsSelected}" Value="true">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource DaxStudioBrush}"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
@@ -118,6 +148,7 @@
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <!--<ResourceDictionary Source="Styles/AvalonDock.NavigatorWindow.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

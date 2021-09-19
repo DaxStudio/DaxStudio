@@ -13,6 +13,7 @@
         xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
+   
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
         BorderBrush="{DynamicResource DaxStudioBrush}"
@@ -20,8 +21,17 @@
         MinWidth="460"                    
         Height="720"
         Width="1120"
-        Top="5">
 
+        Top="5">
+<!--    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="{x:Static SystemParameters.CaptionHeight}"
+                      ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}"
+                      CornerRadius="8"
+                      
+                      UseAeroCaptionButtons="False">
+        </WindowChrome>
+
+    </WindowChrome.WindowChrome>-->
     <fluent:RibbonWindow.Resources>
         
         <ResourceDictionary>

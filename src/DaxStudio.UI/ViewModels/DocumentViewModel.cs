@@ -3821,7 +3821,7 @@ namespace DaxStudio.UI.ViewModels
 
         public DaxMetadata DaxMetadataInfo => Connection?.DaxMetadataInfo;
 
-        public DaxColumnsRemap DaxColumnsRemapInfo => Connection?.DaxColumnsRemapInfo;
+        public DaxColumnsRemap DaxColumnsRemapInfo => Connection?.IsConnected??false?(Connection?.DaxColumnsRemapInfo):null;
 
         public void Handle(ExportDaxFunctionsEvent exportFunctions)
         {
