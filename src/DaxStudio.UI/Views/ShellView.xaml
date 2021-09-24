@@ -4,7 +4,7 @@
         xmlns:fluent="clr-namespace:Fluent;assembly=Fluent"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
         xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
@@ -23,7 +23,7 @@
         Width="1120"
 
         Top="5">
-<!--    <WindowChrome.WindowChrome>
+    <!--<WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{x:Static SystemParameters.CaptionHeight}"
                       ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}"
                       CornerRadius="8"
@@ -38,9 +38,12 @@
             <ResourceDictionary.MergedDictionaries>
 
                 <!-- Mahapps Metro resources -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />-->
+                <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />-->
+
+                <ui:ThemeResources />
+                <ui:XamlControlsResources />
+                <ui:IntellisenseResources Source="/ModernWpf;component/DesignTime/DesignTimeResources.xaml" />
                 
                 <ResourceDictionary x:Name="Icons" Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />

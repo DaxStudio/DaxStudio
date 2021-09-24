@@ -31,10 +31,14 @@
 
         <clr:String x:Key="NaColour">#909090</clr:String>
 
-        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+        <!--<Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>-->
+
+        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" >
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
-
+        
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Width" Value="3"/>
             <Setter Property="Foreground" Value="Transparent" />
@@ -49,7 +53,7 @@
         </Style>
 
 
-        <Style BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}" x:Key="DataGridColumnHeaderStyle1" TargetType="{x:Type DataGridColumnHeader}">
+        <!--<Style BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}" x:Key="DataGridColumnHeaderStyle1" TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -67,7 +71,10 @@
             </Setter>
         </Style>
 
-        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+        BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}"
+        -->
+        
+        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}" >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -114,8 +121,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}" -->
 
-        <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+        <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}" >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -126,13 +134,13 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
-                                <aero:DataGridHeaderBorder Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,0,0">
 
-                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <aero:DataGridHeaderBorder Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,0,0">
 
-                                </aero:DataGridHeaderBorder>
-                                <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" Margin="2" ToolTip="Filter by current database name" >
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                            </aero:DataGridHeaderBorder>
+                            <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" Margin="2" ToolTip="Filter by current database name" >
                                 <Image Width="17" Height="17">
                                     <Image.Style>
                                         <Style TargetType="Image">
@@ -152,8 +160,9 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Image.Style>
-                                </Image></ToggleButton>
-                            
+                                </Image>
+                            </ToggleButton>
+
                             <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource ColumnHeaderGripperStyle}"/>
                             <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource ColumnHeaderGripperStyle}"/>
                         </Grid>
@@ -207,11 +216,11 @@
                 IsReadOnly="True"
                 Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                 >
-            <DataGrid.Style>
+            <!--<DataGrid.Style>
                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
                     <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
                 </Style>
-            </DataGrid.Style>
+            </DataGrid.Style>-->
             <DataGrid.Resources>
                 <Style TargetType="DataGridCellsPresenter">
                     <Setter Property="Height" Value="{Binding QueryTextHeight}"/>

@@ -124,8 +124,8 @@
 
             <ResourceDictionary.MergedDictionaries>
                 <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />-->
 
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
@@ -180,7 +180,7 @@
         <ComboBox Grid.Row="1" x:Name="Database" 
             SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
-            
+            HorizontalAlignment="Stretch"
             
             IsEditable="False"
             IsSynchronizedWithCurrentItem="True" 
@@ -259,7 +259,7 @@
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                   SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
                   IsSynchronizedWithCurrentItem="True" 
-
+HorizontalAlignment="Stretch"
                   >
             <!-- Style="{DynamicResource MetroComboBox}" -->
             <ComboBox.ItemTemplate>

@@ -17,10 +17,10 @@
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
         </ResourceDictionary.MergedDictionaries>
 
-            <Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+            <!--<Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
             <Setter Property="Margin" Value="4,2"/>
                 <Setter Property="Padding" Value="8,2"/>
-            </Style>
+            </Style>-->
 
             <DataTemplate  DataType="{x:Type model:AutoSaveIndexEntry}">
 

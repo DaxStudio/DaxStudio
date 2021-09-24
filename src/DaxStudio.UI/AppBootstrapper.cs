@@ -153,7 +153,8 @@ namespace DaxStudio.UI
                 // Enable Caliburn.Micro debug logging
                 //LogManager.GetLog = type => new DebugLogger(type);
 
-                AddMahAppsMetroToApplicationResources();
+                //AddMahAppsMetroToApplicationResources();
+                AddModernWpfUiToApplicationResources();
 
                 // Add Application object to MEF catalog
                 _container.ComposeExportedValue<Application>("System.Windows.Application", Application.Current);
@@ -164,14 +165,25 @@ namespace DaxStudio.UI
 	        }
 		}
 
-        private void AddMahAppsMetroToApplicationResources()
+        private void AddModernWpfUiToApplicationResources()
         {
-            var myResourceDictionary = new ResourceDictionary();
-            myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml", UriKind.Absolute);
-            Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-            myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml", UriKind.Absolute);
-            Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+            var themeResources = new ModernWpf.ThemeResources();
+            Application.Current.Resources.MergedDictionaries.Add(themeResources);
+            var controlResources = new ModernWpf.Controls.XamlControlsResources();
+            Application.Current.Resources.MergedDictionaries.Add(controlResources);
+            var compactSizing = new ResourceDictionary();
+            compactSizing.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml");
+            Application.Current.Resources.MergedDictionaries.Add(compactSizing);
         }
+
+        //private void AddMahAppsMetroToApplicationResources()
+        //{
+            //var myResourceDictionary = new ResourceDictionary();
+            //myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml", UriKind.Absolute);
+            //Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+            //myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml", UriKind.Absolute);
+            //Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+        //}
 
         public IThemeManager GetThemeManager()
         {

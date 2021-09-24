@@ -288,19 +288,19 @@
             </DataGrid.ContextMenu>
 
             <DataGrid.Resources>
-                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+                <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
-                </Style>
+                </Style>-->
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </DataGrid.Resources>
-            <DataGrid.ColumnHeaderStyle>
+            <!--<DataGrid.ColumnHeaderStyle>
                 <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="FontWeight"
                   Value="SemiBold" />
                 </Style>
-            </DataGrid.ColumnHeaderStyle>
+            </DataGrid.ColumnHeaderStyle>-->
             <!--<DataGrid.CellStyle> 
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
@@ -320,11 +320,11 @@
                     </Setter>
                 </Style>
             </DataGrid.CellStyle>-->
-            <DataGrid.RowStyle>
+            <!--<DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
-            </DataGrid.RowStyle>
+            </DataGrid.RowStyle>-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="50" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Subclass" Width="80" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" />

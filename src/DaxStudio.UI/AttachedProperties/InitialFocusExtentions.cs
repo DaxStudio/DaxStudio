@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using DaxStudio.UI.Utils;
-using WatermarkControlsLib.Controls;
+
 
 namespace DaxStudio.UI.AttachedProperties
 {
@@ -38,15 +38,6 @@ namespace DaxStudio.UI.AttachedProperties
                 }
             }
 
-            if (obj is WatermarkTextBox )
-            {
-                var watermarkTextBox = obj as WatermarkTextBox;
-                if (watermarkTextBox == null) return;
-                if (SetProperty)
-                {
-                    GotFocused(watermarkTextBox, null);
-                }
-            }
 
             if (obj is TextBox)
             {
@@ -77,10 +68,7 @@ namespace DaxStudio.UI.AttachedProperties
             sender.SelectAll();
         }
 
-        public static void GotFocused(WatermarkTextBox sender, RoutedEventArgs e)
-        {
-            sender.SelectAll();
-        }
+
 
     }
 }

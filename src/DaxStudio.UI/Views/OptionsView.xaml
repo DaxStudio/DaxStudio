@@ -8,16 +8,17 @@
             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
             xmlns:fa="http://schemas.fontawesome.io/icons/"
-            xmlns:wmc="clr-namespace:WatermarkControlsLib.Controls;assembly=WatermarkControlsLib"
             xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
             xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
             xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
             xmlns:templateSelectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
+            
+             xmlns:ui="http://schemas.modernwpf.com/2019"
             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
+    <!-- xmlns:ui="clr-namespace:ModernWpf.Controls;assembly=ModernWpf.Controls" -->
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:FontConverter x:Key="FontConverter"/>
@@ -76,7 +77,7 @@
                 </Style.Triggers>
             </Style>
 
-            <Style TargetType="{x:Type wmc:WatermarkTextBox}">
+            <Style TargetType="{x:Type TextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
                         <Setter Property="Background" Value="LightGray" />
@@ -202,11 +203,11 @@
             <DataTemplate x:Key="BoolTemplate">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
                     <!--<CheckBox IsChecked="{Binding Value}" IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>-->
-                    <mah:ToggleSwitch                               
+                    <ui:ToggleSwitch                               
                               IsOn="{Binding Value}"
                               IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
@@ -512,7 +513,7 @@
         <TabControl Grid.ColumnSpan="2" 
                     Margin="0,84,20,10" 
                     Grid.RowSpan="2" 
-                    Style="{StaticResource MahApps.Styles.TabControl.Animated}">
+                    >
             <TabItem Header="Standard">
 
                 <Grid>
@@ -529,9 +530,10 @@
                     <TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>
                     <!-- -->
                     <Grid>
+                        <!-- mah:TextBoxHelper.ClearTextButton="True" -->
                         <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" 
-                                 mah:TextBoxHelper.ClearTextButton="True"
-                                 mah:TextBoxHelper.Watermark="Search"
+                                 
+                                 ui:ControlHelper.PlaceholderText="Search"
                              MinWidth="100" 
                              Grid.Row="1" 
                              Margin="5" 
@@ -569,7 +571,8 @@
                         BorderThickness="0"
                         Margin="0"
                         VirtualizingPanel.IsVirtualizing="True"
-                        Padding="0" beh:GridViewColumnResize.Enabled="True">
+                        Padding="0" 
+                        beh:GridViewColumnResize.Enabled="True">
                         <pg:PropertyList.Resources>
                             <!--<Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                     <Setter Property="Background" Value="Transparent"/>
@@ -583,11 +586,12 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid VerticalAlignment="Top">
-
+                                                    <!-- Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" -->
                                                <TextBlock Text="{Binding DisplayName}" 
                                                           pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
                                                           pg:TextBlockHighlighter.HighlightColor="Yellow"
-                                                          VerticalAlignment="Top" TextWrapping="Wrap" Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"/>    
+                                                          VerticalAlignment="Top" TextWrapping="Wrap" 
+                                                          />    
                                             </Grid>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
@@ -603,10 +607,11 @@
                             <GroupStyle>
                                 <GroupStyle.HeaderTemplate>
                                     <DataTemplate>
+                                            <!-- Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" -->
                                         <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"
                                                    pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
                                                    pg:TextBlockHighlighter.HighlightColor="Yellow"
-                                                   Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                                                   />
                                     </DataTemplate>
                                 </GroupStyle.HeaderTemplate>
                             </GroupStyle>
@@ -646,8 +651,9 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
+                                <!-- Foreground="{DynamicResource MahApps.Brushes.IdealForeground}" -->
                                 <TextBlock Text="Click on the key binding next to a command and type a new key combination or use Esc or backspace to clear a hotkey" 
-                                           Foreground="{DynamicResource MahApps.Brushes.IdealForeground}"
+                                           
                                            Grid.ColumnSpan="2" Margin="0,0,0,20"
                                            TextWrapping="Wrap">
                                     

@@ -179,11 +179,11 @@
                             ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"          
                              
                             >
-                            <DataGrid.Style>
+                            <!--<DataGrid.Style>
                                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
                                     <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
                                 </Style>
-                            </DataGrid.Style>
+                            </DataGrid.Style>-->
                             <!--<DataGrid.AlternatingRowBackground>
                                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                                     <GradientStop Offset="1" Color="#f2f2f2"/>

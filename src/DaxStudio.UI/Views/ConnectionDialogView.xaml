@@ -6,13 +6,15 @@
         xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
         xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-        xmlns:fluent="urn:fluent-ribbon" xmlns:cal="http://www.caliburnproject.org"
+        xmlns:fluent="urn:fluent-ribbon" 
+        xmlns:cal="http://www.caliburnproject.org"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
-        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        
         x:Class="DaxStudio.UI.Views.ConnectionDialogView"
         DataContext="{Binding}" 
         Loaded="UserControl_Loaded" 
-        Width="500">
+        Width="550">
     <UserControl.Resources>
         <ResourceDictionary>
             <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
@@ -61,6 +63,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -69,7 +72,8 @@
     <Border Padding="10,10,10,200" Margin="0,0,0,0"  >
         <Border Style="{StaticResource DaxStudioDialog}" >
 
-            <Grid  Height="Auto">
+            <Grid  Height="Auto"
+                    Margin="30 0 20 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
 
@@ -85,142 +89,111 @@
                 <!--<Grid.Effect>
                     <fluent:GrayscaleEffect/>
                 </Grid.Effect>-->
-                <Label Content="Connect" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="44" Padding="17,0" />
-                
-                    <StackPanel Orientation="Vertical" Grid.Row="1">
-                        <StackPanel>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150" />
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
-                                <StackPanel Orientation="Horizontal" Grid.Column="0">
-                                    <RadioButton HorizontalAlignment="Left" Margin="5,12,0,0" x:Name="rdoPowerPivot" VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType"  IsEnabled="{Binding HasPowerPivotModel}">
-                                        
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock IsEnabled="{Binding PowerPivotEnabled}" Style="{StaticResource disabledText}" Text="PowerPivot Model" />
-                                        </StackPanel>
-                                    </RadioButton>
-                                    <Image Source="{StaticResource question}" Margin="5,10,0,0" Height="16" Visibility="{Binding HasPowerPivotModel, Converter={StaticResource BoolToNotHiddenConverter}}">
-                                        <Image.ToolTip>
-                                            <TextBlock MaxWidth="200" TextWrapping="Wrap">DAX Studio must be launched from an Excel workbook containing a PowerPivot mode in order to use this option.</TextBlock>
-                                        </Image.ToolTip>
-                                    </Image>
-                                </StackPanel>
-                                <TextBlock  
-                                    Text="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  
-                                    Margin="0,12,5,5" Padding="0" 
-                                    x:Name="lblWorkBook" 
-                                    VerticalAlignment="Top" 
-                                    Grid.Column="1" 
-                                    Foreground="#3571AD"/>
-                            </Grid>
-                            <StackPanel Margin="18 0 0 0" Orientation="Horizontal"  
-                                        Visibility="{Binding ShowMissingModelWarning, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Image x:Name="WarningImage" Source="{StaticResource ResourceKey=Warning}" Width="16" Margin="5 2 0 0" IsEnabled="True" />
-                                <Label Content="Warning: PowerPivot model not detected" Height="26" HorizontalAlignment="Left" Margin="0,0,0,0" x:Name="lblPowerPivotUnavailable" VerticalAlignment="Top"  Foreground="#FFFA0000"/>
-                            </StackPanel>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="145" />
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
-                                <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
-                                    <RadioButton  HorizontalAlignment="Left" Margin="5,10,5,0" x:Name="rdoPowerBI" 
-                                             VerticalAlignment="Top" 
-                                             IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" 
-                                             Grid.Column="0" GroupName="ConnectionType" 
-                                             IsEnabled="{Binding PowerBIInstanceDetected}">
-                                        <StackPanel Orientation="Horizontal">
+                <Label Content="Connect" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="44" Padding="0,0" />
 
-                                            <TextBlock IsEnabled="{Binding PowerBIInstanceDetected}" Style="{StaticResource disabledText}" ><Run Text="PBI"/><Run Text=" / SSDT Model"/></TextBlock>
+                <!-- Radio Button Grid-->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                                        </StackPanel>
-                                    </RadioButton>
-                                    <Image Source="{StaticResource question}" Margin="5,1,0,0" Height="16" 
-                                       Visibility="{Binding PowerBIInstanceDetected, Converter={StaticResource BoolToNotHiddenConverter}}">
-                                        <Image.ToolTip>
-                                            <TextBlock MaxWidth="200" TextWrapping="Wrap">DAX Studio can connect to running Power BI Desktop windows or SSDT windows with an SSAS tabular project open using the Integrated Workspaces.</TextBlock>
-                                        </Image.ToolTip>
-                                    </Image>
-                                </StackPanel>
-                                <ComboBox Height="23" Margin="0,5,5,5" x:Name="cboPowerBI" 
-                                          VerticalAlignment="Top"  IsEditable="False"  Grid.Column="1"
-								          ItemsSource="{Binding PowerBIDesignerInstances}" 
-								          SelectedItem="{Binding SelectedPowerBIInstance}"
-								          IsEnabled="{Binding IsChecked, ElementName=rdoPowerBI}"
-
-                                      >
-                                    <!-- ap:InitialFocusExtentions.SelectWhenFocused="{Binding SelectedServerSetFocus}" -->
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
-                                                <!--<Rectangle Fill="{Binding Name}" Width="16" Height="16" Margin="0,2,5,2" />-->
-                                                <Image  Source="{Binding Icon,Converter={StaticResource EmbeddedSsasIcons}}" Margin="0,0,5,0" Width="16" Height="16"/>
-                                                <TextBlock Text="{Binding Name}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </Grid>
-                        </StackPanel>
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="145" />
-                                <ColumnDefinition Width="254*"/>
-                                <ColumnDefinition Width="47*"/>
-                            </Grid.ColumnDefinitions>
-                            <RadioButton HorizontalAlignment="Left" Margin="5,10,0,0" x:Name="rdoTabularServer" VerticalAlignment="Top" IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" Grid.Column="0" GroupName="ConnectionType">
+                    
+                    <!-- PBI / SSDT -->
+                    <RadioButton  HorizontalAlignment="Left" Margin="5,10,5,0" x:Name="rdoPowerBI" 
+                                  VerticalAlignment="Top" 
+                                  IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" 
+                                  Grid.Column="0" 
+                                  Grid.Row="0"
+                                  GroupName="ConnectionType" 
+                                  
+                                  IsEnabled="{Binding PowerBIInstanceDetected}">
+                        <Label Margin="5 0">Power BI / SSDT Model</Label>
+                    </RadioButton>
+ 
+                    <ComboBox Height="23" 
+                              Margin="0,5,5,5" 
+                              x:Name="cboPowerBI" 
+                              VerticalAlignment="Top"  
+                              IsEditable="False"  
+                              Grid.Column="1"
+                              Grid.Row="0"
+                              HorizontalAlignment="Stretch"
+							  ItemsSource="{Binding PowerBIDesignerInstances}"
+							  SelectedItem="{Binding SelectedPowerBIInstance}"
+							  IsEnabled="{Binding IsChecked, ElementName=rdoPowerBI}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <!--<Image Source="{StaticResource Database}" Margin="0,0,5,0" />-->
-                                    <TextBlock Text="Tabular Server" Style="{StaticResource disabledText}" />
-                                    <fa:FontAwesome Icon="Warning" Foreground="Goldenrod" Margin="5,2,0,0" Visibility="{Binding ShowConnectionWarning, Converter={StaticResource BoolToVisibilityConverter}}" ToolTip="{Binding ConnectionWarning}"/>
+                                    <Image  Source="{Binding Icon,Converter={StaticResource EmbeddedSsasIcons}}" Margin="0,0,5,0" Width="16" Height="16"/>
+                                    <TextBlock Text="{Binding Name}" />
                                 </StackPanel>
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Checked">
-                                        <cal:ActionMessage MethodName="ClearDatabases"/>
-                                    </i:EventTrigger>
-                                    <i:EventTrigger EventName="SelectionChanged">
-                                        <cal:ActionMessage MethodName="ClearDatabases"/>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </RadioButton>
-                            <!-- mah:TextBoxHelper.ClearTextButton="True" -->
-                            <ComboBox Height="23" Margin="0,6,5,0" x:Name="cboServers" VerticalAlignment="Top"  IsEditable="True"  
-								ItemsSource="{Binding RecentServers}" 
-                                mah:TextBoxHelper.Watermark="Type or select from list"
-                                
-								Text="{Binding DataSource, UpdateSourceTrigger=PropertyChanged}" 
-								IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" Grid.Column="1"
-								ap:InitialFocusExtentions.SelectWhenFocused="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="2"
-                                ap:DataSourcePasteHandlerHelper.PasteHandler="{Binding DataSourcePasted}"
-                                >
-                                <!--beh:ComboBoxPasteBehaviour.PasteCommand="{Binding DataSourcePasted}"-->
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
+                    <!-- Server -->
+                    <RadioButton HorizontalAlignment="Left" 
+                                 Margin="5,10,0,0" 
+                                 x:Name="rdoTabularServer" 
+                                 VerticalAlignment="Top" 
+                                 IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" 
+                                 
+                                 Grid.Column="0" 
+                                 Grid.Row="1"
+                                 GroupName="ConnectionType">
+                        <StackPanel Orientation="Horizontal" Margin="5 0" VerticalAlignment="Top">
+                            <Label>Tabular Server</Label>
+                            <fa:FontAwesome Icon="Warning" Foreground="Goldenrod" Margin="5,2,0,0" Visibility="{Binding ShowConnectionWarning, Converter={StaticResource BoolToVisibilityConverter}}" ToolTip="{Binding ConnectionWarning}"/>
+                        </StackPanel>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Checked">
+                                <cal:ActionMessage MethodName="ClearDatabases"/>
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <cal:ActionMessage MethodName="ClearDatabases"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </RadioButton>
+                    
+                    <!-- mah:TextBoxHelper.ClearTextButton="True" -->
+                    <!--   -->
+                    <ComboBox Height="23" Margin="0,6,5,0" 
+                              x:Name="cboServers" 
+                              VerticalAlignment="Top"  
+                              IsEditable="True"  
+							  ItemsSource="{Binding RecentServers}"
+                              HorizontalAlignment="Stretch"
+                              Grid.Column="1"
+                              Grid.Row="1"
+							  Text="{Binding DataSource, UpdateSourceTrigger=PropertyChanged}" 
+							  IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" 
+							  ap:InitialFocusExtentions.SelectWhenFocused="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="2"
+                              ap:DataSourcePasteHandlerHelper.PasteHandler="{Binding DataSourcePasted}"
+                              >
 
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="SelectionChanged">
-                                        <cal:ActionMessage MethodName="ClearDatabases"/>
-                                    </i:EventTrigger>
-                                    <i:EventTrigger EventName="KeyUp">
-                                        <cal:ActionMessage MethodName="ClearDatabases"/>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                                <ComboBox.Resources>
-                                    <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
-                                        <VisualBrush.Visual>
-                                            <TextBlock FontStyle="Italic" Text="Type or select from list"/>
-                                        </VisualBrush.Visual>
-                                    </VisualBrush>
-                                </ComboBox.Resources>
-                                <!--<ComboBox.Style>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <cal:ActionMessage MethodName="ClearDatabases"/>
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="KeyUp">
+                                <cal:ActionMessage MethodName="ClearDatabases"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <ComboBox.Resources>
+                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
+                                <VisualBrush.Visual>
+                                    <TextBlock FontStyle="Italic" Text="Type or select from list"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </ComboBox.Resources>
+                        <!--<ComboBox.Style>
                                     <Style TargetType="{x:Type ComboBox}">
                                         <Style.Triggers>
                                             <Trigger Property="Text" Value="{x:Null}">
@@ -232,17 +205,45 @@
                                         </Style.Triggers>
                                     </Style>
                                 </ComboBox.Style>-->
-                                <i:Interaction.Behaviors>
-                                    <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
-     
-                                </i:Interaction.Behaviors>
-                            </ComboBox>
-                        </Grid>
-                    </StackPanel>
+                        <i:Interaction.Behaviors>
+                            <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
 
+                        </i:Interaction.Behaviors>
+                    </ComboBox>
+                    
+                    <!-- PowerPivot -->
+                    <RadioButton HorizontalAlignment="Left" 
+                                 Margin="5,12,0,0" 
+                                 x:Name="rdoPowerPivot" 
+                                 VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" 
+                                 Grid.Column="0" 
+                                 Grid.Row="2"
+                                 GroupName="ConnectionType"  IsEnabled="{Binding HasPowerPivotModel}">
+                        <Label Margin="5 0">PowerPivot Model</Label>
+                    </RadioButton>
+
+                    <TextBlock    Text="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  
+                                  Margin="0,12,5,5" 
+                                  Padding="0" 
+                                  x:Name="lblWorkBook" 
+                                  VerticalAlignment="Top" 
+                                  Grid.Column="1" 
+                                  Grid.Row="2"
+                                  Foreground="#3571AD"/>
+                    <TextBlock Margin="40 0"
+                               Foreground="#AAAAAA"
+                               Visibility="{Binding HasPowerPivotModel, Converter={StaticResource BoolToNotHiddenConverter}}"
+                               TextWrapping="Wrap"
+                               Grid.Row="3"
+                               Grid.ColumnSpan="2">Launch DAX Studio from an Excel file containing a PowerPivot model to enable this option.</TextBlock>
+                </Grid>
+
+
+
+                <!-- Template="{StaticResource RevealExpanderTemp}"-->
                 <Expander x:Name="myExpander" Header="Advanced Options"
 					ExpandDirection="Down" IsExpanded="False" 
-					Template="{StaticResource RevealExpanderTemp}"
+					
                           
 					Grid.Row="2" Grid.Column="0"  Margin="10,10,5,0" >
                     <!-- Template="{StaticResource RevealExpanderTemp}" -->
@@ -255,7 +256,7 @@
                     <!--<GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" >-->
                     <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,15,0" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="125"/>
                             <ColumnDefinition Width="*"/>
 
                         </Grid.ColumnDefinitions>
@@ -313,10 +314,21 @@
                         </ComboBox>
 
                         <Label Content="Effective User Name: " Height="28" HorizontalAlignment="Left"  x:Name="lblEffectiveUserName" VerticalAlignment="Top" Grid.Column="0" Grid.Row="3" />
-                        <TextBox Height="23"  x:Name="EffectiveUserName" VerticalAlignment="Top" IsEnabled="{Binding IsEffectiveUserNameEnabled}"  Grid.Column="1" Grid.Row="3" Width="298"/>
+                        <TextBox Height="23"  
+                                 x:Name="EffectiveUserName" 
+                                 VerticalAlignment="Top" 
+                                 IsEnabled="{Binding IsEffectiveUserNameEnabled}"  Grid.Column="1" 
+                                 Grid.Row="3" 
+                                 HorizontalAlignment="Stretch"
+                                 Width="Auto"/>
                         
                         <Label Content="Roles: " Height="28" HorizontalAlignment="Left" x:Name="lblRoles" VerticalAlignment="Top" Grid.Row="4" Grid.Column="0" />
-                        <TextBox Height="23"  x:Name="Roles" VerticalAlignment="Top" IsEnabled="{Binding IsRolesEnabled}" Grid.Row="4" Grid.Column="1" Width="298" />
+                        <TextBox Height="23"  
+                                 x:Name="Roles" 
+                                 VerticalAlignment="Top" 
+                                 HorizontalAlignment="Stretch"
+                                 IsEnabled="{Binding IsRolesEnabled}" Grid.Row="4" 
+                                 Grid.Column="1"  />
                         
                         <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="5" x:Name="cboLocales" 
@@ -326,39 +338,49 @@
 							ItemsSource="{Binding Path=LocaleOptions.Values}"/>
                         
                         <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="6" Grid.Column="0"/>
-                        <ScrollViewer Grid.Row="6" Grid.Column="1" Height="85" Width="298" >
+                        <ScrollViewer Grid.Row="6" Grid.Column="1" Height="85" HorizontalAlignment="Stretch" >
                             <TextBox x:Name="AdditionalOptions" TextWrapping="Wrap" 
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         </ScrollViewer>
                     </Grid>
                 </Expander>
-                <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" 
-                            Grid.ColumnSpan="3" Width="165" Margin="0,10,0,5">
-                    <Button Content="Connect" 
-                            HorizontalAlignment="Right" 
-                            Margin="0,0,5,6" 
-                            Padding="6"
-                            BorderBrush="#2D5E79"
-                            BorderThickness="0 0 0 2"
-                            x:Name="Connect" 
-                            IsEnabled="{Binding CanConnect}"  
-                            Width="75" IsDefault="True"
+                <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" 
+                            VerticalAlignment="Top"
+                            Grid.ColumnSpan="3" >
+                    <!--
                             Background="#228ED6"
                             Foreground="White"
+                            BorderBrush="#2D5E79"
+                            BorderThickness="0 0 0 2"
+                            mah:ControlsHelper.CornerRadius="5" 
+                    -->
+                    <!-- Style="{DynamicResource DaxStudioButtonStyle}" -->
+                    <Button Content="Connect" 
+                            HorizontalAlignment="Right" 
+                            x:Name="Connect" 
+                            IsEnabled="{Binding CanConnect}"  
+                            Width="70" 
+                            IsDefault="True"
+Style="{DynamicResource AccentButtonStyle}"
                             VerticalAlignment="Bottom" 
-                            mah:ControlsHelper.CornerRadius="5"
+                            
                             />
+                    <!-- 
+                    BorderBrush="Gray"
+                            BorderThickness="0 0 0 2"
+                    mah:ControlsHelper.CornerRadius="5"
+                    Style="{DynamicResource DaxStudioButtonStyle}"
+                    -->
                     <Button Content="Cancel"  
                             HorizontalAlignment="Right" 
-                            Margin="0,0,10,6" 
-                            BorderBrush="Gray"
-                            BorderThickness="0 0 0 2"
-                            Padding="6"
+                             
+                            
+
                             x:Name="Cancel" 
                             VerticalAlignment="Bottom" 
-                            Width="75" 
+                            Width="70" 
                             IsCancel="True"
-                            mah:ControlsHelper.CornerRadius="5"/>
+                            />
                 </StackPanel>
             </Grid>
         </Border>

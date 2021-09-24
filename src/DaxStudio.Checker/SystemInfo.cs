@@ -38,7 +38,7 @@ namespace DaxStudio.CheckerApp
 
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_OperatingSystem");
             var result = new OSInfo();
-            foreach (ManagementObject os in searcher.Get())
+            foreach (ManagementObject os in searcher?.Get())
             {
                 result.Name = os["Caption"].ToString();
                 result.Version = Version.Parse(os["Version"].ToString());
@@ -48,7 +48,7 @@ namespace DaxStudio.CheckerApp
             }
 
             searcher = new ManagementObjectSearcher("SELECT FreePhysicalMemory, TotalVisibleMemorySize FROM Win32_OperatingSystem");
-            foreach (ManagementObject os in searcher.Get())
+            foreach (ManagementObject os in searcher?.Get())
             {
                 result.TotalVisibleMemory = long.Parse(os["TotalVisibleMemorySize"].ToString()).KbToGb();
                 result.TotalFreeMemory = long.Parse(os["FreePhysicalMemory"].ToString()).KbToGb();

@@ -405,7 +405,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 
-                <Fluent:SplitButton Name="ClearCache"
+                <Fluent:Button Name="ClearCache"
                                Header="Clear Cache"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
                                     Size="Large"
@@ -413,28 +413,15 @@
                                LargeIcon="{StaticResource ClearCacheIconLarger}"
                                Margin="4,0"
                                >
-                    <Fluent:SplitButton.ToolTip>
+                    <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Clear Cache before every Run"
                                           Text="Clears the cache for the current database"
                                           DisableReason="{Binding ClearCacheDisableReason}"
                                           ></Fluent:ScreenTip>
-                    </Fluent:SplitButton.ToolTip>
+                    </Fluent:Button.ToolTip>
 
-                    <Fluent:Gallery >
-                        <Fluent:GalleryItem MinHeight="100" MinWidth="150">
-                        <mah:ToggleSwitch Content=""  MinWidth="150" Width="150">
-                            <mah:ToggleSwitch.Header>
-                                <StackPanel Orientation="Vertical" >
-                                    <TextBlock FontSize="12" >Clear Cache</TextBlock>
-                                    <TextBlock FontSize="12" >automatically</TextBlock>
-                                        <TextBlock FontSize="12" >before</TextBlock>
-                                        <TextBlock FontSize="12">every run</TextBlock>
-                                </StackPanel>
-                            </mah:ToggleSwitch.Header>
-                        </mah:ToggleSwitch>
-                        </Fluent:GalleryItem>
-                    </Fluent:Gallery>
-                </Fluent:SplitButton>
+                    
+                </Fluent:Button>
 
                 <!-- Output Targets -->
 

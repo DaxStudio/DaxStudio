@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <RootNamespace>AvalonDock.Themes</RootNamespace>
-    <TargetFrameworks>net5.0-windows;net40</TargetFrameworks>
+    <TargetFrameworks>net40</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>sn.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -19,6 +19,9 @@
     <PackageId>Dirkster.AvalonDock.Themes.VS2013</PackageId>
     <Authors>https://github.com/Dirkster99/AvalonDock</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>

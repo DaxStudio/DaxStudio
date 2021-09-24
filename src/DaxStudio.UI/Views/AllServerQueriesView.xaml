@@ -159,11 +159,11 @@
                     BorderBrush="{x:Null}"
                     IsReadOnly="True"
                     >
-            <DataGrid.Style>
+            <!--<DataGrid.Style>
                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type controls:DataGridNoContextMenu}">
                     <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
                 </Style>
-            </DataGrid.Style>
+            </DataGrid.Style>-->
             
             <DataGrid.Resources>
                 <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">

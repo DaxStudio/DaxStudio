@@ -12,10 +12,10 @@
 
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.AvalonEdit.xaml"/>
 
-        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+        <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
         <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.FlatButton.xaml" />
         <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml" />-->
 
 
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/DaxStudio.BaseStyles.xaml"/>
