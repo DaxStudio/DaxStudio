@@ -97,6 +97,8 @@
     -->
     <Fluent:Ribbon Height="Auto" 
                    AutomaticStateManagement="False"
+                   CanCustomizeQuickAccessToolBar="False"
+                   CanCustomizeQuickAccessToolBarItems="False"
          >    
         <Fluent:Ribbon.Resources>
 
@@ -123,7 +125,7 @@
 
 
         <!--Quick Access Toolbar Items-->
-        <Fluent:Ribbon.QuickAccessItems>
+        <Fluent:Ribbon.QuickAccessItems >
             <!--You Can Just Bind with Any Control-->
             
             <!--<Fluent:QuickAccessMenuItem Target="{Binding ElementName=NewQueryQat}" IsChecked="True"/>
@@ -356,7 +358,7 @@
                               Format,Format,
                               Find,Find,
                               Edit,Edit
-                              "
+                              " Template="{DynamicResource DaxStudioRibbonTabItemControlTemplate}"
                               >
             
 
@@ -369,7 +371,7 @@
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
                                Icon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIcons}}"
                                LargeIcon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIconsLarger}}"
-                               
+                               MinWidth="50"
                                SizeDefinition="Large,Large,Small"
                                Margin="4,0">
                     <Fluent:SplitButton.ToolTip>
@@ -409,8 +411,8 @@
                                Header="Clear Cache"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
                                     Size="Large"
-                               Icon="{StaticResource ClearCacheIcon}"
-                               LargeIcon="{StaticResource ClearCacheIconLarger}"
+                               Icon="{DynamicResource clear_cacheDrawingImage}"
+                               LargeIcon="{DynamicResource clear_cacheDrawingImage}"
                                Margin="4,0"
                                >
                     <Fluent:Button.ToolTip>
@@ -542,13 +544,15 @@
                     Name="DisplayQueryBuilder" 
                     IsEnabled="{Binding CanDisplayQueryBuilder}"
                     IsChecked="{Binding DisplayQueryBuilder}"
+                    Icon="{DynamicResource query_builderDrawingImage}"
+                    LargeIcon="{DynamicResource query_builderDrawingImage}"
                     SizeDefinition="Large">
-                    <Fluent:ToggleButton.Icon>
+                    <!--<Fluent:ToggleButton.Icon>
                         <fa:FontAwesome  Icon="Wrench" FontSize="32" />
                     </Fluent:ToggleButton.Icon>
                     <Fluent:ToggleButton.LargeIcon>
                         <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-                    </Fluent:ToggleButton.LargeIcon>
+                    </Fluent:ToggleButton.LargeIcon>-->
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
                     </Fluent:ToggleButton.ToolTip> 
@@ -686,6 +690,10 @@
                                           DisableReason="{Binding FormatQueryDisabledReason}"
                                            ></Fluent:ScreenTip>
                     </Fluent:SplitButton.ToolTip>
+                    <!--<Fluent:SplitButton.ContextMenu>
+                        <ContextMenuEx></ContextMenuEx>
+                    </Fluent:SplitButton.ContextMenu>-->
+                    
                     <Fluent:MenuItem Header="{Binding FormatQueryStandardTitle}" cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]" />
                     <Fluent:MenuItem Header="{Binding FormatQueryAlternateTitle}" cal:Message.Attach="[Event Click] = [Action FormatQueryAlternate()]"  />
                     <!--<Fluent:Gallery ScrollViewer.VerticalScrollBarVisibility="Hidden"

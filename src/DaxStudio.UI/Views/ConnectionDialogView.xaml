@@ -62,7 +62,7 @@
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
@@ -89,8 +89,13 @@
                 <!--<Grid.Effect>
                     <fluent:GrayscaleEffect/>
                 </Grid.Effect>-->
-                <Label Content="Connect" Foreground="{StaticResource DaxStudioBrush}" FontWeight="Light" FontSize="44" Padding="0,0" />
-
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource connectDrawingImage}"/>
+                    <Label Content="Connect" 
+                           Margin="8,0,0,0"
+                           FontWeight="Regular"
+                           FontSize="28" Padding="0,0" />
+                </StackPanel>
                 <!-- Radio Button Grid-->
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
@@ -106,21 +111,20 @@
 
                     
                     <!-- PBI / SSDT -->
-                    <RadioButton  HorizontalAlignment="Left" Margin="5,10,5,0" x:Name="rdoPowerBI" 
-                                  VerticalAlignment="Top" 
+                    <RadioButton  HorizontalAlignment="Left" 
+                                  Margin="5,10,5,0" x:Name="rdoPowerBI" 
+                                  VerticalAlignment="Center" 
                                   IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" 
                                   Grid.Column="0" 
                                   Grid.Row="0"
                                   GroupName="ConnectionType" 
-                                  
                                   IsEnabled="{Binding PowerBIInstanceDetected}">
                         <Label Margin="5 0">Power BI / SSDT Model</Label>
                     </RadioButton>
  
-                    <ComboBox Height="23" 
-                              Margin="0,5,5,5" 
+                    <ComboBox 
                               x:Name="cboPowerBI" 
-                              VerticalAlignment="Top"  
+                              VerticalAlignment="Center"  
                               IsEditable="False"  
                               Grid.Column="1"
                               Grid.Row="0"
@@ -140,9 +144,9 @@
                     
                     <!-- Server -->
                     <RadioButton HorizontalAlignment="Left" 
-                                 Margin="5,10,0,0" 
+                                 Margin="5,0,0,0" 
                                  x:Name="rdoTabularServer" 
-                                 VerticalAlignment="Top" 
+                                 VerticalAlignment="Center" 
                                  IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" 
                                  
                                  Grid.Column="0" 
@@ -164,9 +168,9 @@
                     
                     <!-- mah:TextBoxHelper.ClearTextButton="True" -->
                     <!--   -->
-                    <ComboBox Height="23" Margin="0,6,5,0" 
+                    <ComboBox 
                               x:Name="cboServers" 
-                              VerticalAlignment="Top"  
+                              VerticalAlignment="Center"  
                               IsEditable="True"  
 							  ItemsSource="{Binding RecentServers}"
                               HorizontalAlignment="Stretch"
@@ -213,7 +217,8 @@
                     
                     <!-- PowerPivot -->
                     <RadioButton HorizontalAlignment="Left" 
-                                 Margin="5,12,0,0" 
+                                 Margin="5,0,0,0" 
+                                 
                                  x:Name="rdoPowerPivot" 
                                  VerticalAlignment="Top" IsChecked="{Binding PowerPivotModeSelected, Mode=TwoWay}" 
                                  Grid.Column="0" 
@@ -223,7 +228,7 @@
                     </RadioButton>
 
                     <TextBlock    Text="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  
-                                  Margin="0,12,5,5" 
+                                  Margin="5,0,0,0"
                                   Padding="0" 
                                   x:Name="lblWorkBook" 
                                   VerticalAlignment="Top" 
@@ -245,7 +250,7 @@
 					ExpandDirection="Down" IsExpanded="False" 
 					
                           
-					Grid.Row="2" Grid.Column="0"  Margin="10,10,5,0" >
+					Grid.Row="2" Grid.Column="0"  Margin="10,10,0,0" >
                     <!-- Template="{StaticResource RevealExpanderTemp}" -->
                     <!--<Expander.HeaderTemplate>
                         <DataTemplate>
@@ -254,7 +259,7 @@
                     </Expander.HeaderTemplate>-->
                     <!--</GroupBox>-->
                     <!--<GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" >-->
-                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,15,0" >
+                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,0,0" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="125"/>
                             <ColumnDefinition Width="*"/>
@@ -282,6 +287,7 @@
                         <!--SelectedItem="{Binding Path=InitialCatalog}"-->
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="0" x:Name="cboCatalogs" 
 							VerticalAlignment="Top" 
+                            HorizontalAlignment="Stretch"
                             IsEditable="True"      
                             Text="{Binding InitialCatalog}"
 							ItemsSource="{Binding Path=Databases}"
@@ -298,6 +304,7 @@
                             IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"/>
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="1" x:Name="cboDirectQuery" 
 							VerticalAlignment="Top" 
+                            HorizontalAlignment="Stretch"
 							IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"
 							SelectedValue="{Binding DirectQueryMode}"
 							ItemsSource="{Binding DirectQueryModeOptions}"
@@ -333,6 +340,7 @@
                         <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
                         <ComboBox Height="23" Grid.Column="1" Grid.Row="5" x:Name="cboLocales" 
 							VerticalAlignment="Top" 
+                            HorizontalAlignment="Stretch"
                             DisplayMemberPath="DisplayName"
 							SelectedItem="{Binding Path=Locale}"
 							ItemsSource="{Binding Path=LocaleOptions.Values}"/>
@@ -374,7 +382,7 @@ Style="{DynamicResource AccentButtonStyle}"
                     <Button Content="Cancel"  
                             HorizontalAlignment="Right" 
                              
-                            
+                            Margin="8 0 0 0"
 
                             x:Name="Cancel" 
                             VerticalAlignment="Bottom" 

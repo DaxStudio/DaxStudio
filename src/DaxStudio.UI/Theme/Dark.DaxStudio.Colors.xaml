@@ -116,7 +116,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonGroupBox.Collapsed.MouseOver.Background" SolidColorBrush.Color="{StaticResource Gray10}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonGroupBox.DropDownOpen.Background" SolidColorBrush.Color="{StaticResource Gray8}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonGroupBox.Header.Foreground" SolidColorBrush.Color="{StaticResource Gray6}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background" SolidColorBrush.Color="{StaticResource WhiteColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background" SolidColorBrush.Color="#363636" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background" SolidColorBrush.Color="#363636" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.BorderBrush" SolidColorBrush.Color="Transparent" />
@@ -127,7 +127,8 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonContextualTabGroup.TabItemMouseOverForeground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonContextualTabGroup.TabItemSelectedMouseOverForeground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Foreground" SolidColorBrush.Color="{StaticResource Gray5}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.BorderBrush" SolidColorBrush.Color="{StaticResource Gray8}" />
+    <!--<SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.BorderBrush" SolidColorBrush.Color="{StaticResource Gray8}" />-->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.BorderBrush" SolidColorBrush.Color="Transparent" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Active.Background" SolidColorBrush.Color="#363636" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.MouseOver.Background" SolidColorBrush.Color="#444444" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.MouseOver.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />

@@ -18,7 +18,7 @@
     <SolidColorBrush x:Key="RunGreenBrush" Color="{StaticResource RunGreen}"/>
 
     <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
-    <Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">
+    <!--<Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="MinWidth" Value="60"/>
@@ -31,7 +31,7 @@
         <Setter Property="BorderBrush" Value="LightGray"/>
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="{DynamicResource BaseBrush}" />
-    </Style>
+    </Style>-->
 
     <Style TargetType="{x:Type ToolTip}">
         <Setter Property="Foreground" Value="#FF575757" />

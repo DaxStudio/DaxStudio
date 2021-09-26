@@ -2,7 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
                     xmlns:reskeys="clr-namespace:DaxStudio.Controls.DataGridFilter.Themes;assembly=DaxStudio.Controls.DataGridFilter"
-                    xmlns:MLib_reskeys="clr-namespace:MLib.Themes;assembly=MLib"
                     xmlns:local="clr-namespace:DaxStudio.UI.Theme">
   <Style  x:Key="UILabel" TargetType="{x:Type TextBlock}">
     <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
@@ -11,7 +10,7 @@
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                  ResourceId=ControlAccentBrushKey}"
-                 Color="{DynamicResource {x:Static MLib_reskeys:ResourceKeys.ControlAccentColorKey}}"
+                 Color="{DynamicResource SystemAccentColor}"
                  options:Freeze="true" />
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},

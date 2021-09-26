@@ -508,13 +508,17 @@
         </Grid.RowDefinitions>
         <Label Content="Options" Foreground="{StaticResource DaxStudioBrush}" FontSize="56" FontWeight="Light" 
 			Grid.Row="0"
-			Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0.5"/>
+			Grid.Column="0" Grid.ColumnSpan="2"/>
         <!-- Editor -->
         <TabControl Grid.ColumnSpan="2" 
-                    Margin="0,84,20,10" 
+                    Margin="0,0,20,10" 
                     Grid.RowSpan="2" 
+                    Grid.Row="1"
+                    
+                    Style="{StaticResource TabControlPivotStyle}"
                     >
-            <TabItem Header="Standard">
+            <TabItem Header="Standard" >
+
 
                 <Grid>
                     <Grid.ColumnDefinitions>

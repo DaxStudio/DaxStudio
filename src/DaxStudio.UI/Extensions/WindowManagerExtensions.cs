@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.ViewModels;
+using ModernWpf.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,8 +68,8 @@ namespace DaxStudio.UI.Extensions
             try
             {
                 shellViewModel.ShowOverlay();
-                
-                @this.ShowDialog(model,null,settings);
+
+                @this.ShowDialog(model, null, settings);
 
             }
             finally
@@ -76,9 +77,14 @@ namespace DaxStudio.UI.Extensions
                 shellViewModel.HideOverlay();
             }
 
+            //var view = ViewLocator.LocateForModel(model, null, null) as ContentDialog;
+            //if (view == null) throw new ArgumentException($"The view for the ViewModel '{model.ToString()}' is not a ModernWpf ContentDialog control");
+
+            //ViewModelBinder.Bind(model, view, null);
+            //view.ShowAsync();
+            // ?? TODO - how to pass dialog result back
         }
 
     }
-
 
 }

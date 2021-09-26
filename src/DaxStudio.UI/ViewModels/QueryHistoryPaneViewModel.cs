@@ -49,7 +49,7 @@ namespace DaxStudio.UI.ViewModels
 
         public BindableCollection<QueryHistoryEvent> QueryHistoryList => _globalHistory.QueryHistory;
 
-        public override string Title => "Query History";
+        public override string Title => "History";
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "query-history";
         public override ImageSource IconSource

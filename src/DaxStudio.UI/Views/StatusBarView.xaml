@@ -80,8 +80,9 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    
+
     <Grid >
+        
         <Fluent:StatusBar>
             <Fluent:StatusBar.ItemsPanel >
                 <ItemsPanelTemplate>
@@ -189,4 +190,5 @@
             </Fluent:StatusBarItem>
         </Fluent:StatusBar>
     </Grid>
+
 </UserControl>

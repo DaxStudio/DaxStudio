@@ -50,7 +50,7 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage(MessageType.Error, message,row,column ));
         }
 
-        public override string Title => "Output";
+        public override string Title => "Log";
 
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "output";

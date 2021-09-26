@@ -21,8 +21,6 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
-using MLib;
-using MLib.Interfaces;
 
 
 namespace DaxStudio.UI
@@ -133,9 +131,6 @@ namespace DaxStudio.UI
 
                 batch.AddExportedValue<ISettingProvider>(settingProvider);
 
-                // add support for MLib themes
-                batch.AddExportedValue<IAppearanceManager>(AppearanceManager.GetInstance());
-
                 _container.Compose(batch);
 
 	            // Add AvalonDock binding conventions
@@ -168,9 +163,22 @@ namespace DaxStudio.UI
         private void AddModernWpfUiToApplicationResources()
         {
             var themeResources = new ModernWpf.ThemeResources();
+
+            var lightTheme = new ResourceDictionary();
+            lightTheme.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml");
+            ModernWpf.ThemeDictionary.SetKey(lightTheme, "Light");
+            themeResources.ThemeDictionaries.Add("Light", lightTheme);
+
+            var darkTheme = new ResourceDictionary();
+            darkTheme.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.Theme.xaml");
+            ModernWpf.ThemeDictionary.SetKey(darkTheme, "Dark");
+            themeResources.ThemeDictionaries.Add("Dark", darkTheme);
+
             Application.Current.Resources.MergedDictionaries.Add(themeResources);
+
             var controlResources = new ModernWpf.Controls.XamlControlsResources();
             Application.Current.Resources.MergedDictionaries.Add(controlResources);
+            
             var compactSizing = new ResourceDictionary();
             compactSizing.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml");
             Application.Current.Resources.MergedDictionaries.Add(compactSizing);

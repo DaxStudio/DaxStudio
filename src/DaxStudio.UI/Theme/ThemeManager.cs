@@ -1,5 +1,4 @@
 ﻿using DaxStudio.Interfaces;
-using MLib.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -15,56 +14,32 @@ namespace DaxStudio.UI.Theme
     [Export(typeof(IThemeManager))]
     public class ThemeManager : IThemeManager
     {
+        private Color _lightAccent = Color.FromRgb(34, 142, 214);
+        private Color _darkAccent = Color.FromRgb(41, 169, 255);
+
         [ImportingConstructor]
-        public ThemeManager(IAppearanceManager appearanceMgr, IGlobalOptions options)
+        public ThemeManager(IGlobalOptions options)
         {
-            AppearanceManager = appearanceMgr;
-            Themes = appearanceMgr.CreateThemeInfos();
-            AccentColor = Color.FromRgb(0, 114, 198);
             Options = options;
             CurrentTheme = Options.Theme;
             _app = Application.Current;
-            LoadThemeResources();
         }
 
-        private void LoadThemeResources()
-        {
-            Themes.RemoveAllThemeInfos();
-            Themes.AddThemeInfo("Light", new List<Uri>() { });
-            Themes.AddThemeInfo("Dark", new List<Uri>() { });
-
-            AppearanceManager.AddThemeResources("Light", new List<Uri>
-                {
-                  new Uri("/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml", UriKind.RelativeOrAbsolute)
-                }, Themes);
-
-
-            AppearanceManager.AddThemeResources("Dark", new List<Uri>
-                {
-                 
-                  new Uri("/DaxStudio.UI;component/Theme/Dark.DaxStudio.Theme.xaml", UriKind.RelativeOrAbsolute)
-                  
-                }, Themes);
-        }
-
-        public IAppearanceManager AppearanceManager { get; }
 
         public void SetTheme(string themeName)
         {
             CurrentTheme = themeName;
-            AppearanceManager.SetTheme(Themes, themeName, AccentColor);
-            SetMLibAccent(AccentColor);
-            AppearanceManager.SetAccentColor(AccentColor);
-            //            ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
+            var theme = ModernWpf.ApplicationTheme.Light;
+            Enum.TryParse(themeName, false, out theme);
+            ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
+            SetAccent(AccentColor);
+
         }
 
-        private void SetMLibAccent(Color accentColor)
+        private void SetAccent(Color accentColor)
         {
-            //Application.Current.Resources[MWindowLib.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
-            //Application.Current.Resources[MWindowLib.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
 
-            Application.Current.Resources[MLib.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
-            Application.Current.Resources[MLib.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
+            ModernWpf.ThemeManager.Current.AccentColor = accentColor;
 
             Application.Current.Resources[AvalonDock.Themes.DaxStudio.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
             Application.Current.Resources[AvalonDock.Themes.DaxStudio.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
@@ -76,8 +51,13 @@ namespace DaxStudio.UI.Theme
             //Application.Current.Resources[AvalonDock.Themes.Themes.ResourceKeys.DocumentWellTabSelectedInactiveBackground] = accentColor;
         }
 
-        public IThemeInfos Themes { get; }
-        public Color AccentColor { get; }
+        public Color AccentColor { 
+            get {
+                if (CurrentTheme.Equals("Dark", StringComparison.OrdinalIgnoreCase)) return _darkAccent;
+                return _lightAccent;
+            } 
+        
+        }
         public IGlobalOptions Options { get; }
         public string CurrentTheme { get; private set; }
 

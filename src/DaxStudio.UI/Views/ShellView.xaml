@@ -13,7 +13,11 @@
         xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
-   
+        
+        AllowsTransparency="True"
+        Background="Transparent"
+                     
+        Style="{DynamicResource DaxStudioRibbonWindowStyle}"
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
         BorderBrush="{DynamicResource DaxStudioBrush}"
@@ -43,10 +47,11 @@
 
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
-                <ui:IntellisenseResources Source="/ModernWpf;component/DesignTime/DesignTimeResources.xaml" />
+                <!--<ui:IntellisenseResources Source="/ModernWpf;component/DesignTime/DesignTimeResources.xaml;assembly" />-->
                 
                 <ResourceDictionary x:Name="Icons" Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
