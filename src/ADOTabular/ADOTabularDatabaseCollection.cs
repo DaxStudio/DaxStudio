@@ -127,7 +127,7 @@ namespace ADOTabular
 
         private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromDMV()
         {
-            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
+            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>(StringComparer.OrdinalIgnoreCase);
             var ds = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS", null);
             foreach( DataRow row in ds.Tables[0].Rows)
             {
@@ -148,7 +148,7 @@ namespace ADOTabular
         private IDictionary<string, DatabaseDetails> GetDatabaseDictionaryFromXml()
         {
             
-            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>();
+            var databaseDictionary = new SortedDictionary<string, DatabaseDetails>(StringComparer.OrdinalIgnoreCase);
 
             var ds = _adoTabConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
                                                  new AdomdRestrictionCollection

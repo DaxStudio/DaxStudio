@@ -29,6 +29,7 @@ using DaxStudio.UI.JsonConverters;
 using Microsoft.Win32;
 using DaxStudio.UI.Utils;
 using Serilog;
+using Serilog.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -469,7 +470,7 @@ namespace DaxStudio.UI.ViewModels
                 _proxySecurePassword = value;
                 NotifyOfPropertyChange(() => ProxyPassword);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue("ProxySecurePassword", value.GetInsecureString().Encrypt(), _isInitializing, MethodBase.GetCurrentMethod().GetCustomAttribute<DefaultValueAttribute>());
+                SettingProvider.SetValue("ProxySecurePassword", value.GetInsecureString().Encrypt(), _isInitializing, this);
             }
         }
 
@@ -1449,7 +1450,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _showMetadataRefreshPrompt = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue("ShowMetadataRefreshPrompt", value, _isInitializing, this);
+                SettingProvider.SetValue(nameof(ShowMetadataRefreshPrompt), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowMetadataRefreshPrompt);
             }
         }
@@ -1464,7 +1465,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _showHiddenMetadata = value;
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(PreviewDataRowLimit), value, _isInitializing, this);
+                SettingProvider.SetValue(nameof(ShowHiddenMetadata), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowHiddenMetadata);
             } 
         }
@@ -1736,9 +1737,39 @@ namespace DaxStudio.UI.ViewModels
 
         public bool BlockExternalServicesEnabled => !BlockAllInternetAccess;
 
-        #region Export Function Methods
+        private LogEventLevel _loggingLevel = LogEventLevel.Warning; 
+        [Category("Logging")]
+        [DisplayName("Logging Level")]
+        [Description("Sets the minimum level of information recorded in the log file (eg Error would log Error and Fatal events)")]
+        [DataMember, DefaultValue(LogEventLevel.Warning)]
+        public LogEventLevel LoggingLevel { get => _loggingLevel;
+            set {
+                _loggingLevel = value;
+                if (LoggingLevelSwitch != null)
+                {
+                    LoggingLevelSwitch.MinimumLevel = LogEventLevel.Information;
+                    Log.Information(Constants.LogMessageTemplate, nameof(OptionsViewModel), nameof(LoggingLevel), $"Setting Logging Level to {_loggingLevel} base on user options");
+                    LoggingLevelSwitch.MinimumLevel = _loggingLevel;
+                }
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(LoggingLevel), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
 
-        public void ExportDaxFunctions()
+
+        private Serilog.Core.LoggingLevelSwitch _loggingLevelSwitch;
+        public Serilog.Core.LoggingLevelSwitch LoggingLevelSwitch { get => _loggingLevelSwitch;
+            set {
+                _loggingLevelSwitch = value;
+                _loggingLevelSwitch.MinimumLevel = _loggingLevel;
+            } 
+        }
+
+
+    #region Export Function Methods
+
+    public void ExportDaxFunctions()
         {
             _eventAggregator.PublishOnUIThread(new ExportDaxFunctionsEvent());
         }

@@ -4,8 +4,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
-    xmlns:avalondock="http://schemas.xceed.com/wpf/xaml/avalondock"
-    xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+    xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
+    xmlns:avalonDockControls="clr-namespace:AvalonDock.Controls;assembly=AvalonDock"
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -638,9 +638,29 @@
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
+                                    <Border 
+                                        Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToCollapsedConverter}}"
+                                        Grid.ColumnSpan="2"
+                                        Background="{DynamicResource WarningBarBackgroundBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <fa:FontAwesome Icon="{Binding InformationBarIcon}" Spin="{Binding InformationBarIconSpin}"  Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
+                                            <Label x:Name="ViewAsDescription" Content="{Binding ViewAsDescription}" Grid.Column="1"/>
+                                            <Button x:Name="StopViewAs" Content="Stop Viewing" Grid.Column="2" Margin="3" Padding="5 0"
+                                                    cal:Message.Attach="[Event Click]=[Action StopViewAs()]"
+                                                    />
+                                            <!--<fa:FontAwesome Icon="Close" Grid.Column="2" VerticalAlignment="Center" Margin="5 0"/>-->
+                                        </Grid>
+
+                                    </Border>
 
 
                                     <dax:DAXEditor x:Name="daxEditor" 
@@ -648,7 +668,7 @@
                                                    Padding="8,8,8,8"
                                                    TabIndex="0"
                                                    Grid.Column="0" 
-                                                   Grid.Row="0" 
+                                                   Grid.Row="1" 
                                                    Grid.RowSpan="2" 
                                                    Grid.ColumnSpan="2" MinWidth="80"
                                                    MinHeight="60"
@@ -737,6 +757,7 @@
                                     <ContentControl x:Name="HelpWatermark"
                                                     cal:View.Model="{Binding HelpWatermark}" 
                                                     cal:View.ApplyConventions="true"
+                                                    Grid.Row="1"
                                                     Grid.RowSpan="2"
                                                     Grid.ColumnSpan="2"
                                                     HorizontalAlignment="Center"
@@ -746,7 +767,8 @@
                                     <!-- Floats over the main editor control -->
                                     <Border x:Name="borExpressionBackground" 
                                             Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}"
-                                            Grid.RowSpan="2"  
+                                            
+                                            Grid.RowSpan="3"  
                                             Grid.ColumnSpan="2" 
                                             Background="Gray" Opacity=".7"
                                             Style="{StaticResource FadeInOut}"/>
@@ -754,7 +776,7 @@
 
                                     <!-- Measure Editor View Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}" -->
                                     <Border x:Name="brdExpressionEditor" 
-                                            Grid.RowSpan="2"  
+                                            Grid.RowSpan="3"  
                                             Grid.ColumnSpan="2"
                                             Style="{StaticResource SlideInOut}">
                                         <ContentControl x:Name="MeasureExpressionEditor"
@@ -785,7 +807,7 @@
                                                 VerticalAlignment="Top"
                                                 Width="300"
                                                 Margin="0,2,21,0" 
-                                                Grid.Column="1" Grid.Row="0"
+                                                Grid.Column="1" Grid.Row="1"
                                                 cal:View.Model="{Binding FindReplaceDialog}" cal:View.ApplyConventions="true"/>
                                 </Grid>
                             </avalondock:LayoutDocument>

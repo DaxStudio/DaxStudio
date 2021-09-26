@@ -5,6 +5,8 @@ using System.Security;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using DaxStudio.Interfaces.Attributes;
+using Serilog.Events;
+using Serilog.Core;
 
 namespace DaxStudio.Interfaces
 {
@@ -134,6 +136,8 @@ namespace DaxStudio.Interfaces
 
         void PlayLongOperationSound(int currentOperationSeconds);
 
+        LogEventLevel LoggingLevel { get; set; }
+        LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
     }
 }

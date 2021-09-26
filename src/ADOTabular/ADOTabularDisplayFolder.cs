@@ -19,5 +19,7 @@ namespace ADOTabular
         public List<IADOTabularObjectReference> FolderItems { get; }
 
         public FolderReferenceType ReferenceType { get; }
+
+        public bool IsVisible { get;set; }
     }
 }

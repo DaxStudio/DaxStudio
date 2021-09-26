@@ -1,17 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Extensions
+namespace ADOTabular.Utils
 {
     public static class TaskExtensions
     {
-        //public static async void FireAndForget(this Task task)
-        //{
-        //    await task.ConfigureAwait(false);
-        //}
-
-
         // sourced from https://www.meziantou.net/fire-and-forget-a-task-in-dotnet.htm
-        public static void FireAndForget(this Task task)
+        public static void Forget(this Task task)
         {
             // note: this code is inspired by a tweet from Ben Adams: https://twitter.com/ben_a_adams/status/1045060828700037125
             // Only care about tasks that may fault (not completed) or are faulted,
@@ -23,7 +21,7 @@ namespace DaxStudio.UI.Extensions
                 _ = ForgetAwaited(task);
             }
 
-            
+
         }
 
         // Allocate the async/await state machine only when needed for performance reason.
@@ -40,6 +38,5 @@ namespace DaxStudio.UI.Extensions
                 // Nothing to do here
             }
         }
-
     }
 }

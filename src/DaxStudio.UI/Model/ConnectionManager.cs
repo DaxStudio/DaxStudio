@@ -133,10 +133,10 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
-                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    
+                    if (_connection.HasRlsParameters())
                     {
-                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
+                        newConn = _connection.CloneWithoutRLS();
                         conn = newConn;
                     }
                     else
@@ -176,10 +176,9 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    var connParams = ConnectionStringParser.Parse(_connection.ConnectionString);
-                    if (connParams.ContainsKey("EffectiveUserName") || connParams.ContainsKey("Roles"))
+                    if (_connection.HasRlsParameters())
                     {
-                        newConn = _connection.Clone(new[] { "EffectiveUserName", "Roles" });
+                        newConn = _connection.CloneWithoutRLS();
                         conn = newConn;
                     }
                     else
@@ -289,6 +288,7 @@ namespace DaxStudio.UI.Model
         public string ServerLocation => _connection.ServerLocation;
         public string ServerMode => _connection.ServerMode;
         public string ServerName => _connection?.ServerName??string.Empty;
+        public string ServerNameForHistory =>  !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
@@ -358,8 +358,8 @@ namespace DaxStudio.UI.Model
                 await Task.Run(() => {
                     using (var newConn = _connection.Clone())
                     {
-                        column.SampleData.Clear();
-                        column.SampleData.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
+                        column.SampleData?.Clear();
+                        column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
                     }
                 });
             }
@@ -408,11 +408,38 @@ namespace DaxStudio.UI.Model
             
             _retry.Execute(() =>
             {
-                var tempConn = _connection.Clone();
+                var tempConn = _connection.Clone(true);
                 tempConn.Open();
                 tempConn.Ping();
-                tempConn.Close();
+                tempConn.Close(false);
             });
+        }
+
+        public void PingTrace()
+        {
+
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone(true);
+                tempConn.Open();
+                tempConn.PingTrace();
+                tempConn.Close(false);
+            });
+        }
+
+        public void ClearCache()
+        {
+            if (IsTestingRls)
+            {
+                var tempConn = _connection.CloneWithoutRLS();
+                //tempConn.Open();
+                tempConn.Database.ClearCache();
+                tempConn.Close();
+            }
+            else
+            {
+                this.Database.ClearCache();
+            }
         }
         public ADOTabularModel SelectedModel { get; set; }
 
@@ -488,6 +515,14 @@ namespace DaxStudio.UI.Model
                                  where (allTables || t.Caption == filterTable)
                                  select m).ToList();
             return modelMeasures;
+        }
+
+        public List<string> GetRoles()
+        {
+            var roleQuery = "select [Name] from $SYSTEM.TMSCHEMA_ROLES";
+            var roleTable = ExecuteDaxQueryDataTable(roleQuery);
+            var result = roleTable.AsEnumerable().Select(row => row[0].ToString()).ToList<string>();
+            return result;
         }
 
         public string DefineFilterDumpMeasureExpression(string tableCaption, bool allTables)
@@ -659,6 +694,110 @@ namespace DaxStudio.UI.Model
             SelectedModelName = message.SelectedModel;
             if (model == null) return;
             SetSelectedModel(model);
+        }
+
+
+        /// <summary>
+        /// Attempts to set the ViewAs user.
+        /// Warning: this uses settings that are not documented by Microsoft and so could be subject to changes at any time
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="roles"></param>
+        internal async Task SetViewAsAsync(string userName, string roles, List<ITraceWatcher> activeTraces)
+        {
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetViewAsAsync), $"Setting ViewAs User: '{userName}' Roles: '{roles}'");
+            /*
+             * ;Authentication Scheme=ActAs;
+             * Ext Auth Info="<Properties><UserName>test</UserName><BypassAuthorization>true</BypassAuthorization><RestrictCatalog>29530e54-5667-46ab-9c6a-d5b494347966</RestrictCatalog></Properties>";
+             */
+            if (string.IsNullOrEmpty(userName) && string.IsNullOrEmpty(roles)) throw new ArgumentException("You must specify either a Username or Roles to activate the ViewAs functionality");
+
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
+
+            // set catalog
+            if (!builder.ContainsKey("Initial Catalog")) builder["Initial Catalog"] = this.DatabaseName;
+            var catalogElement = $"<RestrictCatalog>{this.DatabaseName}</RestrictCatalog>";
+
+            string userElement = string.Empty;
+            string rolesElement = string.Empty;
+
+            if (!string.IsNullOrEmpty(userName))
+            {
+                
+
+                userElement = $"<UserName>{userName}</UserName><BypassAuthorization>true</BypassAuthorization>";
+
+                if (!string.IsNullOrEmpty(roles))
+                {
+                    // set Roles= on connstr
+                    // add roles restriction to ExtAuth
+                    builder.Add("Roles", roles);
+                    rolesElement = $"<RestrictRoles>{roles}</RestrictRoles>";
+                }
+
+                var extAuthInfo = $"<Properties>{userElement}{catalogElement}{rolesElement}</Properties>";
+
+                // if data source does not support ActAs we should try Effective Username
+                if ( SupportsActAs() )
+                {
+                    // ExtAuth works on PBI or ASAzure
+                    builder.Add("Authentication Scheme", "ActAs");
+                    builder.Add("Ext Auth Info", extAuthInfo);
+                } else
+                {
+                    builder.Add("EffectiveUsername", userName);
+                }
+
+            }
+
+            if (!string.IsNullOrEmpty(roles))
+            {
+                // set Roles= on connstr
+                // add roles restriction to ExtAuth
+                builder["Roles"] = roles;
+            }
+
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            connEvent.ActiveTraces = activeTraces;
+            await _eventAggregator.PublishOnUIThreadAsync(connEvent);
+            
+
+        }
+
+        private bool SupportsActAs()
+        {
+            return (this.ServerName.StartsWith("asazure://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase)
+                || this.ServerName.StartsWith("localhost:", StringComparison.InvariantCultureIgnoreCase)
+                );
+
+        }
+
+        public void StopViewAs(List<ITraceWatcher> activeTraces)
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
+            builder.Remove("Authentication Scheme");
+            builder.Remove("Ext Auth Info");
+            builder.Remove("Roles");
+            builder.Remove("EffectiveUsername");
+
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            connEvent.ActiveTraces = activeTraces;
+            _eventAggregator.PublishOnUIThread(connEvent);
+
+        }
+
+        public bool IsTestingRls => _connection?.IsTestingRls??false;
+
+        public static bool IsPbiXmlaEndpoint(string connectionString)
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var server = builder["Data Source"].ToString();
+            return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
+                || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
+                || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
         }
 
     }

@@ -14,6 +14,7 @@ using ADOTabular.Extensions;
 using Microsoft.AnalysisServices.Tabular;
 
 using Tuple = System.Tuple;
+using System.Threading.Tasks;
 
 namespace ADOTabular
 {
@@ -66,6 +67,93 @@ namespace ADOTabular
             */
 
             // get hierarchy structure
+            GetHierarchiesFromDmv();
+
+            using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
+            GenerateTablesFromXmlReader(tables, rdr);
+
+            // update the expressions async on a background thread
+            PopulateMeasureExpressionsAsync(tables.Model,_conn).Forget();
+        }
+
+        private async Task PopulateMeasureExpressionsAsync(ADOTabularModel model, IADOTabularConnection conn)
+        {
+            await Task.Run(() => {
+                // TODO get measure definitions asynch
+                var measureDict = model.MeasureExpressions;
+                measureDict.Clear();
+                GetMeasuresFromDmv(measureDict, conn);
+            });
+        }
+
+
+
+        internal static void GetMeasuresFromDmv(Dictionary<string,string> measureExpressions,  IADOTabularConnection conn)
+        {
+            // need to check if the DMV collection has the TMSCHEMA_MEASURES view, 
+            // and if this is a connection with admin rights
+            // and if it is not a PowerPivot model (as they seem to throw an error about the model needing to be in the "new" tabular mode)
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection && !conn.IsTestingRls && !conn.IsPowerPivot) GetTmSchemaMeasures(measureExpressions, conn);
+            else GetMdSchemaMeasures(measureExpressions, conn);
+        }
+
+        private static void GetMdSchemaMeasures(Dictionary<string,string> measureExpressions, IADOTabularConnection conn)
+        {
+            
+            var resCollMeasures = new AdomdRestrictionCollection
+                {
+                    {"CATALOG_NAME", conn.Database.Name},
+                    {"CUBE_NAME", conn.Database.Models.BaseModel.Name},
+                    {
+                        "MEASURE_VISIBILITY",
+                        conn.ShowHiddenObjects
+                            ? (int) (MdschemaVisibility.Visible | MdschemaVisibility.NonVisible)
+                            : (int) MdschemaVisibility.Visible
+                    }
+                };
+
+            DataTable dtMeasures = conn.GetSchemaDataSet("MDSCHEMA_MEASURES", resCollMeasures).Tables[0];
+
+            foreach (DataRow dr in dtMeasures.Rows)
+            {
+                measureExpressions.Add(dr["MEASURE_NAME"].ToString()
+                                    ,  dr["EXPRESSION"].ToString()
+                                    );
+            }
+
+            
+        }
+
+        private static void GetTmSchemaMeasures(Dictionary<string, string> measureExpressions, IADOTabularConnection conn)
+        {
+
+            var resCollMeasures = new AdomdRestrictionCollection
+                {
+                    {"DatabaseName", conn.Database.Name}
+                };
+
+            if (!conn.ShowHiddenObjects) resCollMeasures.Add(new AdomdRestriction("IsHidden", false));
+
+            // then get all the measures for the current table
+            DataTable dtMeasures = conn.GetSchemaDataSet("TMSCHEMA_MEASURES", resCollMeasures).Tables[0];
+
+            foreach (DataRow dr in dtMeasures.Rows)
+            {
+                measureExpressions.Add(dr["Name"].ToString()
+                                    , dr["Expression"].ToString()      
+                                    );
+            }
+        }
+
+
+
+
+
+
+
+
+        private void GetHierarchiesFromDmv()
+        {
             var hierResCol = new AdomdRestrictionCollection { { "CATALOG_NAME", _conn.Database.Name }, { "CUBE_NAME", _conn.Database.Models.BaseModel.Name }, { "HIERARCHY_VISIBILITY", 3 } };
             var dsHier = _conn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", hierResCol);
 
@@ -88,9 +176,6 @@ namespace ADOTabular
                 }
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
-
-            using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
-            GenerateTablesFromXmlReader(tables, rdr);
         }
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
@@ -924,6 +1009,8 @@ namespace ADOTabular
             string folderCaption = null;
             string objRef = "";
 
+            IADOTabularFolderReference folder = null;
+
             while (!(rdr.NodeType == XmlNodeType.EndElement
                     && rdr.LocalName == "DisplayFolder"))
             {
@@ -947,13 +1034,16 @@ namespace ADOTabular
                         }
                     }
                     // create folder and add to parent's folders
-                    IADOTabularFolderReference folder = new ADOTabularDisplayFolder(folderCaption, folderReference);
+                    folder = new ADOTabularDisplayFolder(folderCaption, folderReference);
                     parent.FolderItems.Add(folder);
 
                     rdr.ReadToNextElement();
 
                     // recurse down to child items
                     ProcessDisplayFolder(rdr, table, folder);
+
+                    if (folder.IsVisible && parent is ADOTabularDisplayFolder parentFolder) parentFolder.IsVisible = true;
+
                     rdr.Read();
                     //rdr.ReadToNextElement(); // read the end element
                 }
@@ -981,7 +1071,10 @@ namespace ADOTabular
                     IADOTabularObjectReference reference = new ADOTabularObjectReference("", objRef);
                     parent.FolderItems.Add(reference);
                     var column = table.Columns.GetByPropertyRef(objRef);
-                    if (column != null) { column.IsInDisplayFolder = true; }
+                    if (column != null) { 
+                        column.IsInDisplayFolder = true;
+                        if (column.IsVisible && parent is ADOTabularDisplayFolder displayFolder) displayFolder.IsVisible = true;
+                    }
                     objRef = "";
 
                     rdr.Read();
@@ -1005,7 +1098,7 @@ namespace ADOTabular
                 //rdr.Read();
 
             }
-
+            
         }
 
         private static KpiDetails ProcessKpi(XmlReader rdr)
@@ -1230,9 +1323,9 @@ namespace ADOTabular
 
 
             var kwords = from keyword in drKeywords.AsEnumerable()
-                           join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
-                           from kword in a.DefaultIfEmpty()
-                           where kword == null
+                         join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
+                         from kword in a.DefaultIfEmpty()
+                         where kword == null
 #pragma warning disable IDE0050 // Convert to tuple
                          select new { Keyword = (string)keyword["Keyword"] , Matched = (kword==null) };
 #pragma warning restore IDE0050 // Convert to tuple

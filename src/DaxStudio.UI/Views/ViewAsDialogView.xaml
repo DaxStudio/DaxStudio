@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="DaxStudio.UI.Views.ViewAsDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:local="clr-namespace:DaxStudio.UI.Views" 
+             xmlns:conv1="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="400"
+             MinWidth="400"
+             MinHeight="350">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <conv1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
+        </ResourceDictionary>
+        
+    </UserControl.Resources>
+    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="View As" 
+                   Foreground="{StaticResource DaxStudioBrush}" 
+                   Grid.ColumnSpan="2"
+                   Margin="3,0"
+                   FontWeight="Light" 
+                   FontSize="44" ></Label>
+
+            <CheckBox x:Name="Unrestricted" Content="Unrestricted" Grid.Row="1" Margin="12 0"/>
+            <Label Grid.Row="1" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>
+            <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="2" VerticalAlignment="Center" Margin="12 5 "/>
+            <TextBox x:Name="OtherUserName" Grid.Row="2" Grid.Column="2" Margin="5" Visibility="{Binding OtherUser, Converter={StaticResource BoolToHiddenConverter}}"/>
+            <Label Content="Roles" Foreground="{StaticResource DaxStudioBrush}"
+                   FontWeight="Normal"
+                   Grid.Row="3" Margin="5 5 0 0 " FontSize="18" Padding="0"/>
+
+            <ListBox x:Name="RoleList" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+
+                        <CheckBox IsChecked="{Binding Selected}" Content="{Binding Name}" cal:Message.Attach="[Event Click]=[Action SelectRole($this)]"/>
+
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.ColumnSpan="2">
+                <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True"/>
+                <Button x:Name="Cancel" Content="Cancel" Margin="5,10" MinWidth="50" IsCancel="True"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

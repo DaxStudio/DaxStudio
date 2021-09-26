@@ -58,7 +58,8 @@ namespace DaxStudio.UI.Utils
             _instances.Clear();
 
             var dict = ManagedIpHelper.GetExtendedTcpDictionary();
-            foreach (var proc in Process.GetProcessesByName("msmdsrv"))
+            var msmdsrvProcesses = Process.GetProcessesByName("msmdsrv");
+            foreach (var proc in msmdsrvProcesses)
             { 
                 int _port = 0;
                 string parentTitle = $"localhost:{_port}";
@@ -86,6 +87,7 @@ namespace DaxStudio.UI.Utils
 
                     // get the window title so that we can parse out the file name
                     parentTitle = parent.MainWindowTitle;
+                    
                     if (parentTitle.Length == 0)
                     {
                         // for minimized windows we need to use some Win32 api calls to get the title

@@ -22,6 +22,7 @@ namespace ADOTabular.Interfaces
         string ServerId { get; }
         bool ShowHiddenObjects { get; set; }
         int SPID { get; }
+        bool IsTestingRls { get; }
 
         AdomdType Type { get; }
         IMetaDataVisitor Visitor { get; set; }

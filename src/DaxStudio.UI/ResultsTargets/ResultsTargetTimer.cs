@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
+using Serilog;
 
 namespace DaxStudio.UI.Model
 {
@@ -13,7 +14,7 @@ namespace DaxStudio.UI.Model
     // do not want to be influenced by the time taken to render
     // the results.
     [Export(typeof(IResultsTarget))]
-    public class ResultTargetTimer :  IResultsTarget
+    public class ResultsTargetTimer :  IResultsTarget
     {
         #region Standard Properties
         public string Name => "Timer";
@@ -49,6 +50,7 @@ namespace DaxStudio.UI.Model
             }
             catch (Exception ex)
             {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetTimer), nameof(OutputResultsAsync), ex.Message);
                 runner.ActivateOutput();
                 runner.OutputError(ex.Message);
             }

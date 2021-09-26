@@ -677,7 +677,7 @@ namespace DaxStudio.UI.ViewModels
                         // it looks like it's possible for people to add a custom culture to windows which can cause issues
                         // when enumerating cultures
                         // see: https://social.msdn.microsoft.com/Forums/ie/en-US/671bc463-932d-4a9e-bba1-3e5898b9100d/culture-4096-0x1000-is-an-invalid-culture-identifier-culturenotfoundexception?forum=csharpgeneral
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(LocaleOptions), ex.Message);
+                        Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(LocaleOptions), ex.Message);
                         _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"An error occurred reading the system locales: {ex.Message}"));
                     }
                 }

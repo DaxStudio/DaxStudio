@@ -18,9 +18,9 @@ namespace DaxStudio.UI.Utils
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     //[Export(typeof(ISettingProvider))]
-    public class RegistrySettingProvider:ISettingProvider
+    public class RegistrySettingProvider : ISettingProvider
     {
-    
+
         private const string RegistryRootKey = "SOFTWARE\\DaxStudio";
 
 
@@ -62,7 +62,7 @@ namespace DaxStudio.UI.Utils
         public ObservableCollection<IDaxFile> GetFileMRUList()
         {
             var lst = new ObservableCollection<IDaxFile>();
-            foreach (var itm in  GetMRUListFromRegistry("File"))
+            foreach (var itm in GetMRUListFromRegistry("File"))
             {
                 lst.Add(new DaxFile(itm));
             }
@@ -93,23 +93,23 @@ namespace DaxStudio.UI.Utils
 
 
 
-            SaveListToRegistry("File",file, files);
+            SaveListToRegistry("File", file, files);
         }
 
 
 
-        public T GetValue<T>(string subKey, T defaultValue )
+        public T GetValue<T>(string subKey, T defaultValue)
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadSubTree, System.Security.AccessControl.RegistryRights.QueryValues);
             if (regDaxStudio == null) return defaultValue;
-            return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T), CultureInfo.InvariantCulture );
+            return (T)Convert.ChangeType(regDaxStudio.GetValue(subKey, defaultValue), typeof(T), CultureInfo.InvariantCulture);
         }
 
 
         private static T GetValue<T>(string subKey)
         {
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey);
-            if (regDaxStudio != null) return (T) regDaxStudio.GetValue(subKey);
+            if (regDaxStudio != null) return (T)regDaxStudio.GetValue(subKey);
             return default;
         }
 
@@ -117,7 +117,7 @@ namespace DaxStudio.UI.Utils
         public void SetValue(string subKey, DateTime value, bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
         {
             if (isInitializing) return;
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true) 
+            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true)
                                 ?? Registry.CurrentUser.CreateSubKey(RegistryRootKey);
 
             PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
@@ -130,8 +130,8 @@ namespace DaxStudio.UI.Utils
                 return;
             }
 
-                regDaxStudio?.SetValue(subKey,
-                    value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
+            regDaxStudio?.SetValue(subKey,
+                value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture));
         }
 
         // Version overload of SetValue
@@ -161,7 +161,7 @@ namespace DaxStudio.UI.Utils
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
             if (regDaxStudio == null) { regDaxStudio = Registry.CurrentUser.CreateSubKey(RegistryRootKey); }
 
-            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName,true);
+            PropertyDescriptor prop = TypeDescriptor.GetProperties(options).Find(propertyName, true);
 
             var defaultValueAttribute = (DefaultValueAttribute)prop.Attributes[typeof(DefaultValueAttribute)];
             bool valueIsSetToDefault = false;
@@ -180,9 +180,9 @@ namespace DaxStudio.UI.Utils
             else
             {
                 var defaultValue = (T)(object)defaultValueAttribute.Value;
-                valueIsSetToDefault = defaultValue.Equals(value);
+                valueIsSetToDefault = (defaultValue == null && value == null) || (defaultValue?.Equals(value)??false);
             }
-            
+
             if (valueIsSetToDefault)
             {
                 if (regDaxStudio.GetValue(subKey) != null) regDaxStudio.DeleteValue(subKey);
@@ -225,7 +225,7 @@ namespace DaxStudio.UI.Utils
 
 
 
-        internal void SaveListToRegistry(string listName, object currentItem, IEnumerable<object>itemList)
+        internal void SaveListToRegistry(string listName, object currentItem, IEnumerable<object> itemList)
         {
             var listKey = $"{listName}MRU";
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
@@ -244,7 +244,7 @@ namespace DaxStudio.UI.Utils
                     {
                         if (i > Constants.MaxMruSize) break; // don't save more than the max mru size
                         if (!(listItem is string str)) str = listItem.ToString();
-                        regListMRU.SetValue($"{listName}{i}", str );
+                        regListMRU.SetValue($"{listName}{i}", str);
                         i++;
                     }
                 }
@@ -258,7 +258,7 @@ namespace DaxStudio.UI.Utils
         /// <param name="options"></param>
         public void Initialize(IGlobalOptions options)
         {
-            
+
             var invariantCulture = CultureInfo.InvariantCulture;
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {
@@ -291,7 +291,8 @@ namespace DaxStudio.UI.Utils
                 }
                 else if (prop.PropertyType == typeof(Version))
                 {
-                    var versionVal = val==null? new Version("0.0.0.0"):Version.Parse(val.ToString());
+                    var versionVal = new Version("0.0.0.0"); 
+                    if ( val != null) Version.TryParse(val.ToString(), out versionVal);
                     prop.SetValue(options, versionVal);
                 }
                 else if (prop.PropertyType == typeof(DateTime))
@@ -302,18 +303,19 @@ namespace DaxStudio.UI.Utils
                 }
                 else if (prop.PropertyType == typeof(double))
                 {
-                    var doubleVal = val == null ? Double.Parse(attrDefaultVal.Value.ToString(),invariantCulture) : double.Parse(val.ToString(),invariantCulture);
+                    var doubleVal = val == null ? Double.Parse(attrDefaultVal.Value.ToString(), invariantCulture) : double.Parse(val.ToString(), invariantCulture);
                     prop.SetValue(options, doubleVal);
                 }
                 else if (prop.PropertyType == typeof(bool))
                 {
-                    var boolVal = val == null ? bool.Parse(attrDefaultVal.Value.ToString()) : bool.Parse(val.ToString());
+                    var boolVal = bool.Parse(attrDefaultVal.Value.ToString());
+                    if (val != null) bool.TryParse(val.ToString(), out boolVal);
                     prop.SetValue(options, boolVal);
                 }
                 else if (prop.PropertyType == typeof(ObservableCollection<IDaxFile>))
                 {
                     var files = GetFileMRUList();
-                    prop.SetValue(options, files );
+                    prop.SetValue(options, files);
                 }
                 else if (prop.PropertyType == typeof(ObservableCollection<string>))
                 {
@@ -322,12 +324,22 @@ namespace DaxStudio.UI.Utils
                 }
                 else if (prop.PropertyType.IsEnum)
                 {
-                    var enumVal =  Enum.Parse(prop.PropertyType, val.ToString());
+                    var enumVal = Enum.Parse(prop.PropertyType, attrDefaultVal.Value.ToString(),true);
+                    if( val != null) enumVal = Enum.Parse(prop.PropertyType, val.ToString(),true);
                     prop.SetValue(options, enumVal);
                 }
                 else
                 {
-                    prop.SetValue(options, val);
+                    try
+                    {
+                        prop.SetValue(options, val);
+                    }
+                    catch //(Exception ex)
+                    {
+                        // if the set fails try using the default value
+                        prop.SetValue(options, attrDefaultVal);
+                    }
+
                 }
             }
 
@@ -346,7 +358,7 @@ namespace DaxStudio.UI.Utils
             if (regDaxStudio == null) return;
             foreach (var subKey in previewKeys)
             {
-                regDaxStudio.DeleteValue(subKey,false);
+                regDaxStudio.DeleteValue(subKey, false);
             }
         }
 
@@ -356,6 +368,15 @@ namespace DaxStudio.UI.Utils
             if (regDaxStudio == null) return;
             const string subKey = "BlockAllInternetAccess";
             options.BlockAllInternetAccess = (bool)Convert.ChangeType(regDaxStudio.GetValue(subKey, false), typeof(bool), CultureInfo.InvariantCulture);
+        }
+    }
+
+    public static class PropertyDescriptorExtensions
+    {
+        public static void TrySetValue(this PropertyDescriptor prop, object component,object val, object defaultVal)
+        {
+
+
         }
     }
 }

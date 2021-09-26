@@ -62,7 +62,6 @@ namespace DaxStudio.UI.Triggers
 
         private void OnKeyPress(object sender, KeyEventArgs args)
         {
-            args.Handled = false;
             if (args.Key.Equals(TriggerValue))
             {
                 args.Handled = true;

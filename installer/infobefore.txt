@@ -1,0 +1,7 @@
+*** WARNING *** 
+
+Power BI Desktop External Tools integration is only available when using the "All Users" install option since the registration with Power BI requires Admin access. 
+
+If you continue with the "Current User" install option the DAX Studio button cannot be added to the Power BI External Tools ribbon. If you want to see this button in Power BI Desktop you should cancel the install and re-start it with the "All User" option.
+
+Note: If you need to use the "Current User" install option you can still launch DAX Studio separately and connect to Power BI Desktop and work with your data model in that way.

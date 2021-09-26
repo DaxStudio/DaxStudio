@@ -61,6 +61,7 @@ namespace DaxStudio.UI.Model
             foreach( IADOTabularObjectReference f in table.FolderItems)
             {
                 var folder = new TreeViewColumn(f, f.TreeViewFolderChildren, table, options, eventAggregator, metadataPane);
+                if (!metadataPane.ShowHiddenObjects && !folder.IsVisible) continue; // skip hidden columns
                 try
                 {
                     var sortKey = folder.Caption;
@@ -104,19 +105,25 @@ namespace DaxStudio.UI.Model
 
             var folder = objRef as IADOTabularFolderReference;
 
+            var isVisible = false;
+
             if (folder != null)
             {
                 foreach (var folderItem in folder.FolderItems)
                 {
+                    isVisible = false;
+
                     GetChildrenDelegate getChildren = null;
                     if (folderItem is IADOTabularFolderReference fi)
                     {
                         // if the current item is a sub-folder look for it's children 
                         getChildren = fi.TreeViewFolderChildren;
+                        if (fi.IsVisible) isVisible = true;
                     }
                     else
                     {
                         var col = (table as ADOTabularTable).Columns.GetByPropertyRef(folderItem.InternalReference);
+                        if (col.IsVisible) isVisible = true;
                         switch (col)
                         {
                             // if this item is a KPI get it's child components
@@ -133,13 +140,15 @@ namespace DaxStudio.UI.Model
                         };
                     }
 
-                    lst.Add(new TreeViewColumn(folderItem, getChildren, (table as ADOTabularTable), options, eventAggregator, metadataPane));
+                    if (isVisible || metadataPane.ShowHiddenObjects) 
+                        lst.Add(new TreeViewColumn(folderItem, getChildren, (table as ADOTabularTable), options, eventAggregator, metadataPane));
                 }
             }
             else
             {
                 var col = (table as ADOTabularTable).Columns.GetByPropertyRef(objRef.InternalReference);
-                lst.Add(new TreeViewColumn(col, null, options, eventAggregator,metadataPane));
+                if (col.IsVisible || options.ShowHiddenMetadata)
+                    lst.Add(new TreeViewColumn(col, null, options, eventAggregator,metadataPane));
             }
             
 
@@ -390,6 +399,7 @@ namespace DaxStudio.UI.Model
         */
 
         private IADOTabularColumn _column;
+        private IADOTabularFolderReference _folder;
         private List<string> _sampleData;
         private bool _updatingBasicStats;
         private bool _updatingSampleData;
@@ -474,6 +484,7 @@ namespace DaxStudio.UI.Model
             }
             else
             {
+                _folder = folder;
                 _caption = reference.Name;
                 MetadataImage = MetadataImages.Folder;
             }
@@ -540,7 +551,7 @@ namespace DaxStudio.UI.Model
         }
 
 
-        public override bool IsVisible => _column?.IsVisible ?? true;
+        public override bool IsVisible => _column?.IsVisible ?? _folder?.IsVisible ?? true;
 
         public bool IsColumn =>  this.MetadataImage == MetadataImages.Column
                               || this.MetadataImage == MetadataImages.HiddenColumn;

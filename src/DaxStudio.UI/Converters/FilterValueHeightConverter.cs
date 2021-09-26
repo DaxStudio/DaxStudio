@@ -14,11 +14,20 @@ namespace DaxStudio.UI.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var ft = (FilterType)value;
-            var height = System.Convert.ToDouble(parameter);
-            if (ft == FilterType.In || ft == FilterType.NotIn)
-                return height;
+            var paramArray =  parameter.ToString().Split(',');
+            double bigHeight = Double.NaN;
+            double smallHeight = Double.NaN;
+            if (paramArray.Length == 1) bigHeight = System.Convert.ToDouble(paramArray[0]);
+            if (paramArray.Length == 2)
+            {
+                bigHeight = System.Convert.ToDouble(paramArray[0]);
+                smallHeight = System.Convert.ToDouble(paramArray[1]);
+            }
 
-            return Double.NaN; // Binding.DoNothing;
+            if (ft == FilterType.In || ft == FilterType.NotIn)
+                return bigHeight;
+
+            return smallHeight; // Binding.DoNothing;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

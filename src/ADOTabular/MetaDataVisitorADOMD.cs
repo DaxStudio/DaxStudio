@@ -46,7 +46,7 @@ namespace ADOTabular
             {
                 tables.Add(
                     new ADOTabularTable(_conn
-                        , tables.Model
+                        ,tables.Model
                         ,dr["DIMENSION_NAME"].ToString()
                         ,dr["DIMENSION_NAME"].ToString()
                         ,dr["DIMENSION_CAPTION"].ToString()
