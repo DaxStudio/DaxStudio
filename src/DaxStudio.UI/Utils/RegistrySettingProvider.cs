@@ -180,7 +180,7 @@ namespace DaxStudio.UI.Utils
             else
             {
                 var defaultValue = (T)(object)defaultValueAttribute.Value;
-                valueIsSetToDefault = defaultValue.Equals(value);
+                valueIsSetToDefault = (defaultValue == null && value == null) || (defaultValue?.Equals(value)??false);
             }
 
             if (valueIsSetToDefault)

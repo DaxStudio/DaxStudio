@@ -621,6 +621,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 tmpData.Add(new DaxCompletionData(this, "CURRENCY", 300.0));
                 tmpData.Add(new DaxCompletionData(this, "DATETIME", 300.0));
                 tmpData.Add(new DaxCompletionData(this, "DECIMAL", 300.0));
+                tmpData.Add(new DaxCompletionData(this, "DOUBLE", 300.0));
                 tmpData.Add(new DaxCompletionData(this, "INTEGER", 300.0));
                 tmpData.Add(new DaxCompletionData(this, "STRING", 300.0));
                 tmpData.Add(new DaxCompletionData(this, "VARIANT", 300.0));

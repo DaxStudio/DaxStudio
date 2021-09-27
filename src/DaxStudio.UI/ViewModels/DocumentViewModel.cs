@@ -76,6 +76,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DefineMeasureOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
+        , IHandle<LoadQueryBuilderEvent>
         , IHandle<NavigateToLocationEvent>
         , IHandle<OutputMessage>
         , IHandle<QueryResultsPaneMessageEvent>
@@ -454,11 +455,30 @@ namespace DaxStudio.UI.ViewModels
         private string _viewAsDescription = string.Empty;
         public string ViewAsDescription  => _viewAsDescription;
 
+        private bool _informationBarIconSpin = false;
+        public bool InformationBarIconSpin { get => _informationBarIconSpin;
+            set { 
+                _informationBarIconSpin = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private string _informationBarIcon = "Shield";
+        public string InformationBarIcon { get => _informationBarIcon;
+            set
+            {
+                _informationBarIcon = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
         public void StopViewAs()
         {
             var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
             Connection.StopViewAs(activeTraces);
-            _viewAsDescription = string.Empty;
+            InformationBarIcon = "Spinner";
+            InformationBarIconSpin = true;
+            _viewAsDescription = "Reconnecting...";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
@@ -907,6 +927,7 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     if (message == null) return;
+                    MetadataPane.IsBusy = true;
                     Connection.Connect(message) ;
                     if (string.IsNullOrEmpty(ViewAsDescription)) 
                         UpdateViewAsDescription(message.ConnectionString);
@@ -993,6 +1014,8 @@ namespace DaxStudio.UI.ViewModels
             var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $" User: {user}";
             var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
             _viewAsDescription = $"{userSection}{roleSection}";
+            InformationBarIconSpin = false;
+            InformationBarIcon = "Shield";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
@@ -1756,7 +1779,10 @@ namespace DaxStudio.UI.ViewModels
 
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
-                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText.Trim() + ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                        if (message.QueryProvider is ISaveState)
+                            _currentQueryDetails = CreateQueryHistoryEvent((ISaveState)message.QueryProvider, message.QueryProvider.QueryText.Trim() , ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                        else
+                            _currentQueryDetails = CreateQueryHistoryEvent(message.QueryProvider.QueryText.Trim() , ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
 
@@ -1836,13 +1862,41 @@ namespace DaxStudio.UI.ViewModels
             return false;
         }
 
-        private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
+
+        private IQueryHistoryEvent CreateQueryHistoryEvent(ISaveState queryProvider, string queryText, string parameters)
+        {
+            var json = queryProvider.GetJson();
+
+            QueryHistoryEvent qhe = null;
+            try
+            {
+                qhe = new QueryHistoryEvent(
+                    json
+                    , queryText
+                    , parameters
+                    , DateTime.Now
+                    , Connection.ServerNameForHistory
+                    , Connection.SelectedDatabase.Caption
+                    , FileName
+                    )
+                { Status = QueryStatus.Running };
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error creating QueryHistory details");
+                OutputWarning("Error saving query details to history pane");
+            }
+            return qhe;
+        }
+
+        private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText, string parameters)
         {
 
             QueryHistoryEvent qhe = null;
             try
             {
                 qhe = new QueryHistoryEvent(queryText
+                    , parameters
                     , DateTime.Now
                     , Connection.ServerNameForHistory
                     , Connection.SelectedDatabase.Caption
@@ -2905,7 +2959,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var sw = Stopwatch.StartNew();
-                _currentQueryDetails = CreateQueryHistoryEvent(string.Empty);
+                _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
 
                 Connection.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
@@ -4417,6 +4471,22 @@ namespace DaxStudio.UI.ViewModels
             else CommentSelection();
         }
 
+        public void Handle(LoadQueryBuilderEvent message)
+        {
+            if (QueryBuilder.Columns.Count > 0 || QueryBuilder.Filters.Count > 0)
+            {
+                if (MessageBox.Show(
+                    "Do you want to replace the current content of the Query Builder with the item from the Query History?",
+                    "Restore Query History", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question) == MessageBoxResult.No)
+                {
+                    return;
+                }
 
+                QueryBuilder.Clear();
+            }
+            QueryBuilder.LoadJson(message.Json);
+        }
     }
 }

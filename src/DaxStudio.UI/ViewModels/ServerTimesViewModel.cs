@@ -618,7 +618,7 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveState methods
         void ISaveState.Save(string filename)
         {
-            string json = GetJsonString();
+            string json = GetJson();
             File.WriteAllText(filename + ".serverTimings", json);
 
         }
@@ -629,7 +629,7 @@ namespace DaxStudio.UI.ViewModels
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
             using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
             {
-                tw.Write(GetJsonString());
+                tw.Write(GetJson());
                 tw.Close();
             }
         }
@@ -643,12 +643,12 @@ namespace DaxStudio.UI.ViewModels
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
                 string data = tr.ReadToEnd();
-                LoadJsonString(data);
+                LoadJson(data);
             }
 
         }
 
-        private string GetJsonString()
+        public string GetJson()
         {
             var m = new ServerTimesModel()
             {
@@ -674,10 +674,10 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
-            LoadJsonString(data);
+            LoadJson(data);
         }
 
-        private void LoadJsonString(string data)
+        public void LoadJson(string data)
         {
             var eventConverter = new ServerTimingConverter();
             var deseralizeSettings = new JsonSerializerSettings();
@@ -805,7 +805,7 @@ namespace DaxStudio.UI.ViewModels
         public override bool CanExport => _storageEngineEvents.Count > 0;
         public override void ExportTraceDetails(string filePath)
         {
-            File.WriteAllText(filePath, GetJsonString());
+            File.WriteAllText(filePath, GetJson());
         }
 
         protected override void OnCreateTracer()

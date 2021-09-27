@@ -448,6 +448,7 @@
       <Word>CURRENCY</Word>
       <Word>DATETIME</Word>
       <Word>DECIMAL</Word>
+      <Word>DOUBLE</Word>
       <Word>INTEGER</Word>
       <Word>STRING</Word>
       <Word>VARIANT</Word>

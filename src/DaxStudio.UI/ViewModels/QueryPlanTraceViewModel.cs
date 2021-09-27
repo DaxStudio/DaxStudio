@@ -219,11 +219,11 @@ namespace DaxStudio.UI.ViewModels
 
         void ISaveState.Save(string filename)
         {
-            string json = GetJsonString();
+            string json = ((ISaveState)this).GetJson();
             File.WriteAllText(filename + ".queryPlans", json);
         }
 
-        private string GetJsonString()
+        public string GetJson()
         {
             var m = new QueryPlanModel()
             {
@@ -241,10 +241,10 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
-            LoadJsonString(data);
+            LoadJson(data);
         }
 
-        private void LoadJsonString(string data)
+        public void LoadJson(string data)
         {
             QueryPlanModel m = JsonConvert.DeserializeObject<QueryPlanModel>(data);
 
@@ -263,7 +263,7 @@ namespace DaxStudio.UI.ViewModels
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryPlan, UriKind.Relative));
             using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
             {
-                tw.Write(GetJsonString());
+                tw.Write(((ISaveState)this).GetJson());
                 tw.Close();
             }
         }
@@ -278,7 +278,7 @@ namespace DaxStudio.UI.ViewModels
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
                 string data = tr.ReadToEnd();
-                LoadJsonString(data);
+                LoadJson(data);
             }
 
         }
@@ -312,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override void ExportTraceDetails(string filePath)
         {
-            File.WriteAllText(filePath, GetJsonString());
+            File.WriteAllText(filePath, GetJson());
         }
 
     }

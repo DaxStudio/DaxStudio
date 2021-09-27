@@ -390,7 +390,7 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filename + ".queryBuilder", json);
         }
 
-        internal string GetJson()
+        public string GetJson()
         {
             var settings = new JsonSerializerSettings()
             {
@@ -400,7 +400,7 @@ namespace DaxStudio.UI.ViewModels
             return json;
         }
 
-        internal QueryBuilderViewModel LoadJson(string jsontext)
+        public void LoadJson(string jsontext)
         {
             try
             {
@@ -408,14 +408,15 @@ namespace DaxStudio.UI.ViewModels
                 settings.Converters.Add(new QueryBuilderConverter(this.EventAggregator, this.Document, this.Options));
                 //settings.Converters.Add(new ADOTabularColumnCreationConverter());
                 var result = JsonConvert.DeserializeObject<QueryBuilderViewModel>(jsontext, settings);
-                return result;
+                LoadViewModel(result);
+                
             }
             catch (Exception ex)
             {
                 var msg = $"The following error occurred while attempting to load the Query Builder from your saved file:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(LoadJson), msg);
                 EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
-                return null;
+                return;
             }
         }
 
@@ -425,8 +426,8 @@ namespace DaxStudio.UI.ViewModels
             if (!File.Exists(filename)) return;
             
             string data = File.ReadAllText(filename);
-            var model = LoadJson(data);
-            LoadViewModel(model);
+            LoadJson(data);
+            
         }
 
         private void LoadViewModel(QueryBuilderViewModel model)
@@ -468,8 +469,7 @@ namespace DaxStudio.UI.ViewModels
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
                 string data = tr.ReadToEnd();
-                var model = LoadJson(data);
-                LoadViewModel(model);
+                LoadJson(data);
             }
             
         }
