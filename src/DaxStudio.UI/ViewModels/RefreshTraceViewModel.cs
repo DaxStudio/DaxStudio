@@ -276,11 +276,11 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveState methods
         void ISaveState.Save(string filename)
         {
-            string json = GetJsonString();
+            string json = GetJson();
             File.WriteAllText(filename + ".refreshTrace", json);
         }
 
-        private string GetJsonString()
+        public string GetJson()
         {
             return JsonConvert.SerializeObject(RefreshEvents, Formatting.Indented);
         }
@@ -292,10 +292,10 @@ namespace DaxStudio.UI.ViewModels
 
             _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
-            LoadJsonString(data);
+            LoadJson(data);
         }
 
-        private void LoadJsonString(string data)
+        public void LoadJson(string data)
         {
             List<RefreshEvent> re = JsonConvert.DeserializeObject<List<RefreshEvent>>(data);
 
@@ -310,7 +310,7 @@ namespace DaxStudio.UI.ViewModels
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
             using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
             {
-                tw.Write(GetJsonString());
+                tw.Write(GetJson());
                 tw.Close();
             }
         }
@@ -325,7 +325,7 @@ namespace DaxStudio.UI.ViewModels
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
                 string data = tr.ReadToEnd();
-                LoadJsonString(data);
+                LoadJson(data);
                 
             }
 
@@ -353,7 +353,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override void ExportTraceDetails(string filePath)
         {
-            File.WriteAllText(filePath, GetJsonString());
+            File.WriteAllText(filePath, GetJson());
         }
 
         public void TextDoubleClick(RefreshEvent refreshEvent)
