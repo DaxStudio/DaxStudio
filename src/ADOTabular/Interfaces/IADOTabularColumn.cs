@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular.Interfaces
 {
@@ -10,8 +11,8 @@ namespace ADOTabular.Interfaces
         long DistinctValues { get; }
         void UpdateBasicStats(ADOTabularConnection connection);
         List<string> GetSampleData(ADOTabularConnection connection, int sampleSize);
-        Type DataType { get; }
-
+        Type SystemType { get; }
+        DataType DataType { get; }
         MetadataImages MetadataImage { get; }
 
         string MeasureExpression { get; }

@@ -12,5 +12,6 @@ namespace DaxStudio.Interfaces
         AdomdType Type { get; }
 
         void Ping();
+        void PingTrace();
     }
 }

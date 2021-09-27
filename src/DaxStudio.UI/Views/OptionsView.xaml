@@ -127,7 +127,7 @@
 
 
             <!-- Category Icons -->
-            <conv:ResourceLookupConverter x:Key="CategoryIcons">
+            <!--<conv:ResourceLookupConverter x:Key="CategoryIcons">
                 <ResourceDictionary>
                     <fa:ImageAwesome x:Key="Custom Export Format"  Icon="Download" Width="16"/>
                     <fa:ImageAwesome x:Key="Dax Formatter" Icon="Pencil" Width="16"/>
@@ -141,8 +141,9 @@
                     <fa:ImageAwesome x:Key="Server Timings" Icon="Pencil" Width="16"/>
                     <fa:ImageAwesome x:Key="Timeouts" Icon="Pencil" Width="16"/>
                     <fa:ImageAwesome x:Key="Trace" Icon="Pencil" Width="16"/>
+                    <fa:ImageAwesome x:Key="Logging" Icon="FileOutline" Width="16"/>
                 </ResourceDictionary>
-            </conv:ResourceLookupConverter>
+            </conv:ResourceLookupConverter>-->
 
             <conv:ResourceLookupConverter x:Key="CategoryIconNames">
                 <ResourceDictionary>
@@ -159,6 +160,7 @@
                     <sys:String x:Key="Sounds">VolumeUp</sys:String>
                     <sys:String x:Key="Timeouts">ClockOutline</sys:String>
                     <sys:String x:Key="Trace">Search</sys:String>
+                    <sys:String x:Key="Logging">Medkit</sys:String>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
 

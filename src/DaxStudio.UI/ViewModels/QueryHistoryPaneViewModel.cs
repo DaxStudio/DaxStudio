@@ -107,7 +107,14 @@ namespace DaxStudio.UI.ViewModels
         public void QueryHistoryDoubleClick(QueryHistoryEvent queryHistoryEvent)
         {
             if (queryHistoryEvent == null) return;  // exit here silently if no history event is selected
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(queryHistoryEvent.QueryText));
+            if (!string.IsNullOrEmpty(queryHistoryEvent.QueryBuilderJson))
+                _eventAggregator.PublishOnUIThread(new LoadQueryBuilderEvent(queryHistoryEvent.QueryBuilderJson));
+            else
+            {
+                var text = queryHistoryEvent.QueryText;
+                if (!string.IsNullOrWhiteSpace(queryHistoryEvent.Parameters)) text += $"\n{queryHistoryEvent.Parameters}";
+                _eventAggregator.PublishOnUIThread(new SendTextToEditor(text));
+            }
         }
 
         public void Handle(DocumentConnectionUpdateEvent message)

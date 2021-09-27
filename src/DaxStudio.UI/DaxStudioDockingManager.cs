@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-
 namespace DaxStudio.UI
 {
     class DaxStudioDockingManager:DockingManager

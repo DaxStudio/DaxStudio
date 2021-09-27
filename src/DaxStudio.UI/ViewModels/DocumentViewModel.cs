@@ -80,6 +80,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DefineMeasureOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
+        , IHandle<LoadQueryBuilderEvent>
         , IHandle<NavigateToLocationEvent>
         , IHandle<OutputMessage>
         , IHandle<QueryResultsPaneMessageEvent>
@@ -146,6 +147,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.Subscribe(this);
                 _windowManager = windowManager;
                 _ribbon = ribbon;
+                SelectedRunStyle = _ribbon.SelectedRunStyle;
                 SettingProvider = settingProvider;
                 ServerTimingDetails = serverTimingDetails;
                 _rexQueryError =
@@ -266,50 +268,59 @@ namespace DaxStudio.UI.ViewModels
             base.OnViewLoaded(view);
             _editor = GetEditor();
 
-            // TODO - if theme is dark increase brightness of syntax highlights
-            //_editor.ChangeColorBrightness(1.25);
-            _editor.SetSyntaxHighlightColorTheme(Options.Theme);
-
-            IntellisenseProvider.Editor = _editor;
-            UpdateSettings();
-            if (_editor != null)
+            try
             {
-                if (FindReplaceDialog != null) FindReplaceDialog.Editor = _editor;
-                SetDefaultHighlightFunction();
-                _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
-                _editor.TextChanged += OnDocumentChanged;
-                _editor.PreviewDrop += OnDrop;
-                _editor.PreviewDragEnter += OnDragEnterPreview;
-                _editor.KeyUp += OnKeyUp;
-                _editor.OnPasting += OnPasting;
 
+                IntellisenseProvider.Editor = _editor;
+                UpdateSettings();
+                if (_editor != null)
+                {
+                    // TODO - if theme is dark increase brightness of syntax highlights
+                    //_editor.ChangeColorBrightness(1.25);
+                    _editor.SetSyntaxHighlightColorTheme(Options.Theme);
+
+                    if (FindReplaceDialog != null) FindReplaceDialog.Editor = _editor;
+                    SetDefaultHighlightFunction();
+                    _editor.TextArea.Caret.PositionChanged += OnPositionChanged;
+                    _editor.TextChanged += OnDocumentChanged;
+                    _editor.PreviewDrop += OnDrop;
+                    _editor.PreviewDragEnter += OnDragEnterPreview;
+                    _editor.KeyUp += OnKeyUp;
+                    _editor.OnPasting += OnPasting;
+
+                }
+                switch (State)
+                {
+                    case DocumentState.LoadPending:
+                        OpenFile();
+                        break;
+                    case DocumentState.RecoveryPending:
+                        LoadAutoSaveFile(AutoSaveId);
+                        break;
+                }
+
+                if (_sourceDocument != null)
+                {
+                    var cnn = _sourceDocument.Connection;
+                    _eventAggregator.PublishOnUIThread(new ConnectEvent(
+                        cnn.ConnectionStringWithInitialCatalog,
+                        cnn.IsPowerPivot,
+                        cnn.IsPowerPivot ? _sourceDocument.FileName : "",
+                        "",
+                        cnn.IsPowerPivot ? "" : cnn.FileName,
+                        cnn.ServerType
+                        , false)
+                    { DatabaseName = cnn.Database.Name });
+
+                    _sourceDocument = null;
+
+                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                }
             }
-            switch (State)
+            catch (Exception ex)
             {
-                case DocumentState.LoadPending:
-                    OpenFile();
-                    break;
-                case DocumentState.RecoveryPending:
-                    LoadAutoSaveFile(AutoSaveId);
-                    break;
-            }
-
-            if (_sourceDocument != null)
-            {
-                var cnn = _sourceDocument.Connection;
-                _eventAggregator.PublishOnUIThread(new ConnectEvent(
-                    cnn.ConnectionStringWithInitialCatalog,
-                    cnn.IsPowerPivot,
-                    cnn.IsPowerPivot ? _sourceDocument.FileName : "",
-                    "",
-                    cnn.IsPowerPivot ? "" : cnn.FileName,
-                    cnn.ServerType
-                    ,false)
-                { DatabaseName = cnn.Database.Name });
-
-                _sourceDocument = null;
-
-                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                Log.Error(ex, nameof(DocumentViewModel), nameof(OnViewLoaded), ex.Message);
+                OutputError($"Error opening a new query tab: {ex.Message}");
             }
 
         }
@@ -393,6 +404,86 @@ namespace DaxStudio.UI.ViewModels
             });
 
             return stripDirectQueryDialog.Result;
+        }
+
+        public async void ShowViewAsDialog()
+        {
+            var viewAsDialog = new ViewAsDialogViewModel(Connection);
+        
+
+            _windowManager.ShowDialogBox(viewAsDialog, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+
+            // if result is OK then change connection to ViewAs mode
+            // else do nothing
+            if (viewAsDialog.Result == DialogResult.OK)
+            {
+                // exit here if no restrictions were specified
+                if (viewAsDialog.Unrestricted) return;
+
+                // cache any active traces
+                List<ITraceWatcher> activeTraces = new List<ITraceWatcher>();
+                foreach (var t in TraceWatchers)
+                {
+                    if (t.IsChecked) activeTraces.Add(t);
+
+                }
+
+                try
+                {
+                    string roles = string.Empty;
+                    if (viewAsDialog.RoleList.Count(r => r.Selected) > 0)
+                        roles = viewAsDialog.RoleList.Where(r => r.Selected).Select(r => r.Name).Aggregate((current, next) => current + "," + next);
+                    
+                    await Connection.SetViewAsAsync(viewAsDialog.OtherUserName.Trim(), roles, activeTraces);
+                    SetViewAsDescription(viewAsDialog.OtherUserName, roles);                    
+                }
+                catch (Exception ex)
+                {
+                    
+                    var msg = $"Error Setting ViewAs: {ex.Message}";
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ShowViewAsDialog), msg);
+                    OutputError( msg);
+                }
+
+            }
+        }
+
+        private string _viewAsDescription = string.Empty;
+        public string ViewAsDescription  => _viewAsDescription;
+
+        private bool _informationBarIconSpin = false;
+        public bool InformationBarIconSpin { get => _informationBarIconSpin;
+            set { 
+                _informationBarIconSpin = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private string _informationBarIcon = "Shield";
+        public string InformationBarIcon { get => _informationBarIcon;
+            set
+            {
+                _informationBarIcon = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public void StopViewAs()
+        {
+            var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
+            Connection.StopViewAs(activeTraces);
+            InformationBarIcon = "Spinner";
+            InformationBarIconSpin = true;
+            _viewAsDescription = "Reconnecting...";
+            NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -998,17 +1089,30 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     if (message == null) return;
+                    MetadataPane.IsBusy = true;
                     Connection.Connect(message) ;
+                    if (string.IsNullOrEmpty(ViewAsDescription)) 
+                        UpdateViewAsDescription(message.ConnectionString);
+
                     NotifyOfPropertyChange(() => IsAdminConnection);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                     // enable/disable traces depending on the current connection
                     foreach (var traceWatcher in TraceWatchers)
                     {
-                        // on change of connection we need to disable traces as the will
+                        // on change of connection we need to disable traces as they will
                         // be pointing to the old connection
                         traceWatcher.IsChecked = false;
                         // then we need to check if the new connection can be traced
                         traceWatcher.CheckEnabled(Connection, activeTrace);
+                    }
+
+                    // re-connect any traces that were previously active
+                    if (message.ActiveTraces != null)
+                    {
+                        foreach (var traceWatcher in message.ActiveTraces)
+                        {
+                            traceWatcher.IsChecked = true;
+                        }
                     }
 
                     Execute.OnUIThread(() =>
@@ -1029,10 +1133,26 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     _eventAggregator.PublishOnUIThread(new ConnectFailedEvent());
-                    var msg = $"The following error occurred while updating the connection: {ex.Message}";
+
+                    // if the xmla endpoint is not enabled it returns a generic WebException so we add extra info 
+                    // to the error to help people potentially mitigate the issue.
+                    string extraInfo = string.Empty;
+                    if (ex is System.Net.WebException && ConnectionManager.IsPbiXmlaEndpoint(message.ConnectionString) )
+                    {
+                        extraInfo = "\nPlease check your Tenant / PPU admin settings to make sure the XMLA Endpoint is enabled\n";
+                    }
+
+                    var msg = $"The following error occurred while updating the connection{extraInfo}: {ex.Message}";
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
                     OutputError(msg);
                     ActivateOutput();
+                    // if we've had an error and there are RLS "View As" settings active we need to switch those off
+                    // since they could be the cause of the error and there is most likely no way to recover with
+                    // them enabled
+                    if (Connection.IsTestingRls) Connection.StopViewAs(null);
+
+                    // if there was an error we bail out here
+                    return;
                 }
             }
             if (Connection.Databases.Count == 0) {
@@ -1041,7 +1161,25 @@ namespace DaxStudio.UI.ViewModels
                 OutputWarning(msg);
             }
         }
-        
+
+        private void UpdateViewAsDescription(string connectionString)
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var effUser = builder.ContainsKey("EffectiveUserName")? builder["EffectiveUserName"].ToString(): string.Empty;
+            var roles = builder.ContainsKey("Roles") ? builder["Roles"].ToString() : string.Empty;
+            SetViewAsDescription(effUser, roles);
+        }
+
+        private void SetViewAsDescription(string user, string roles)
+        {
+            var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $" User: {user}";
+            var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
+            _viewAsDescription = $"{userSection}{roleSection}";
+            InformationBarIconSpin = false;
+            InformationBarIcon = "Shield";
+            NotifyOfPropertyChange(nameof(ViewAsDescription));
+        }
+
         public string SelectedText { get {
                 var editor = GetEditor();
                 if (editor == null) return "";
@@ -1179,15 +1317,15 @@ namespace DaxStudio.UI.ViewModels
         public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
-        private DialogResult PreProcessQuery(bool injectEvaluate, bool injectRowFunction)
+        private DialogResult PreProcessQuery(IQueryTextProvider textProvider, bool injectEvaluate, bool injectRowFunction)
         {
 
             // merge in any parameters
-            QueryInfo = new QueryInfo(EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
+            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
-            if (QueryInfo.NeedsParameterValues)
+            if (textProvider.QueryInfo.NeedsParameterValues)
             {
-                var paramDialog = new QueryParametersDialogViewModel(this, QueryInfo);
+                var paramDialog = new QueryParametersDialogViewModel(this, textProvider.QueryInfo);
 
 
                 _windowManager.ShowDialogBox(paramDialog, settings: new Dictionary<string, object>
@@ -1627,12 +1765,8 @@ namespace DaxStudio.UI.ViewModels
         {
             // if we can't run the query then do nothing 
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
-            if (!CanRunQuery)
-            {
-
-                return;
-            }
-
+            if (!CanRunQuery) return;
+            
             // the benchmark run style will pop up it's own dialog
             if (message.IsBenchmark)
             {
@@ -1798,7 +1932,7 @@ namespace DaxStudio.UI.ViewModels
 
                     }
 
-                    if (PreProcessQuery(message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
+                    if (PreProcessQuery(message.QueryProvider, message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
                     {
                         IsQueryRunning = false;
                     }
@@ -1808,7 +1942,10 @@ namespace DaxStudio.UI.ViewModels
 
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
-                        _currentQueryDetails = CreateQueryHistoryEvent(QueryText.Trim() + ParameterHelper.GetParameterXml(QueryInfo));
+                        if (message.QueryProvider is ISaveState)
+                            _currentQueryDetails = CreateQueryHistoryEvent((ISaveState)message.QueryProvider, message.QueryProvider.QueryText.Trim() , ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
+                        else
+                            _currentQueryDetails = CreateQueryHistoryEvent(message.QueryProvider.QueryText.Trim() , ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
 
@@ -1888,13 +2025,41 @@ namespace DaxStudio.UI.ViewModels
             return false;
         }
 
-        private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText)
+
+        private IQueryHistoryEvent CreateQueryHistoryEvent(ISaveState queryProvider, string queryText, string parameters)
+        {
+            var json = queryProvider.GetJson();
+
+            QueryHistoryEvent qhe = null;
+            try
+            {
+                qhe = new QueryHistoryEvent(
+                    json
+                    , queryText
+                    , parameters
+                    , DateTime.Now
+                    , Connection.ServerNameForHistory
+                    , Connection.SelectedDatabase.Caption
+                    , FileName
+                    )
+                { Status = QueryStatus.Running };
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error creating QueryHistory details");
+                OutputWarning("Error saving query details to history pane");
+            }
+            return qhe;
+        }
+
+        private IQueryHistoryEvent CreateQueryHistoryEvent(string queryText, string parameters)
         {
 
             QueryHistoryEvent qhe = null;
             try
             {
                 qhe = new QueryHistoryEvent(queryText
+                    , parameters
                     , DateTime.Now
                     , Connection.ServerNameForHistory
                     , Connection.SelectedDatabase.Caption
@@ -2616,30 +2781,49 @@ namespace DaxStudio.UI.ViewModels
                 MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            // Configure save file dialog box
-            var dlg = new SaveFileDialog {
-                FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,
-                DefaultExt = ".zip",
-                Filter = "DAX metadata (ZIP)|*.zip|DAX metadata|*.json"
-            };
 
-            // Show save file dialog box
-            var result = dlg.ShowDialog();
+            try
+            {
+                // Configure save file dialog box
+                var dlg = new SaveFileDialog
+                {
+                    FileName = "DAX Functions " + DaxMetadataInfo.Version.SSAS_VERSION,
+                    DefaultExt = ".zip",
+                    Filter = "DAX metadata (ZIP)|*.zip|DAX metadata|*.json"
+                };
 
-            // Process save file dialog box results 
-            if (result == true) {
-                // Save document 
-                try
+                // Show save file dialog box
+                var result = dlg.ShowDialog();
+
+                // Process save file dialog box results 
+                if (result == true)
                 {
-                    ExportDaxFunctions(dlg.FileName);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "ExportDaxFunctions", ex.Message);
-                    OutputError($"Error Exporting Functions: {ex.Message}");
+                    // Save document 
+                    try
+                    {
+                        ExportDaxFunctions(dlg.FileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = $"Error Exporting Functions: {ex.Message}";
+                        Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "ExportDaxFunctions", msg);
+                        OutputError(msg);
+                    }
                 }
             }
-        }
+            catch (Exception ex)
+            {
+                var msg = $"Error Showing Exporting DAX Functions dialog: {ex.Message}";
+                // it can be caught here if there is an error getting the SSAS_VERSION
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExportDaxFunctions), msg);
+                OutputError(msg);
+            }
+
+
+            
+
+
+            }
         private void ExportDaxFunctions(string path) {
             string extension = Path.GetExtension(path).ToLower();
             bool compression = (extension == ".zip");
@@ -2934,22 +3118,6 @@ namespace DaxStudio.UI.ViewModels
             await Task.Run(() =>
                 {
 
-                    //var cnn = message.PowerPivotModeSelected
-                    //                 ? Host.Proxy.GetPowerPivotConnection(message.ConnectionType, string.Format("Location=\"{0}\";Workstation ID=\"{0}\";", message.WorkbookName))
-                    //                 : new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-                    //cnn.IsPowerPivot = message.PowerPivotModeSelected;
-                    //cnn.ServerType = message.ServerType;
-
-
-                    //if (message.PowerBIFileName.Length > 0)
-                    //{
-                    //    cnn.FileName = message.PowerBIFileName;
-                    //}
-                    //if (message.WorkbookName.Length > 0)
-                    //{
-                    //    cnn.FileName = message.WorkbookName;
-                    //}
-
                     if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
                     if (Dispatcher.CurrentDispatcher.CheckAccess())
@@ -2968,8 +3136,10 @@ namespace DaxStudio.UI.ViewModels
                     {
                         if (taskResult.IsFaulted)
                         {
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {taskResult?.Exception?.InnerException?.Message}"));
-                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", taskResult?.Exception?.InnerException?.Message);
+                            var errMsg = taskResult?.Exception?.InnerException?.Message;
+
+                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
+                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
                         }
                         else
                         {
@@ -3010,7 +3180,10 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", Connection == null ? "<null>" : Connection.ConnectionString);
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => IsAdminConnection);
-            _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
+            NotifyOfPropertyChange(() => IsViewAsActive);
+
+            if (IsConnected)
+                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
 
             
 
@@ -3072,9 +3245,9 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var sw = Stopwatch.StartNew();
-                _currentQueryDetails = CreateQueryHistoryEvent(string.Empty);
+                _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
 
-                Connection.Database.ClearCache();
+                Connection.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
 
                 
@@ -3936,6 +4109,21 @@ namespace DaxStudio.UI.ViewModels
 
         private VertiPaqAnalyzerViewModel vpaView;
 
+        public async Task ViewAnalysisDataAsync()
+        {
+            try
+            {
+                await Task.Run(() => ViewAnalysisData());
+            }
+            catch (Exception ex)
+            {
+                var msg = $"The following error occurred while trying to view the metrics for your model:\n{ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ViewAnalysisDataAsync), msg);
+                OutputError(msg);
+            }
+
+        }
+
         public void ViewAnalysisData()
         {
             Stopwatch sw = new Stopwatch();
@@ -3984,7 +4172,7 @@ namespace DaxStudio.UI.ViewModels
 
                 VpaModel viewModel = null;
 
-                var task = new Task(() => {
+                
                     // run Vertipaq Analyzer Async
 
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -4018,33 +4206,31 @@ namespace DaxStudio.UI.ViewModels
                         }
                     }
                     viewModel = new VpaModel(model);
-                });
-                task.ContinueWith(prevTask =>
-                {
+                    var modelName = GetSelectedModelName();
+                    viewModel.Model.ModelName = new Dax.Metadata.DaxName(modelName);
 
-                    if (!prevTask.IsFaulted) {
-                        try
-                        {
+
+
                             
                             // update view model
                             vpaView.ViewModel = viewModel;
                             
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisData), $"Error loading VPA view: {ex.Message}");
-                            OutputError($"Error viewing metrics : {ex.Message}");
-                            ActivateOutput();
-                        }
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisDataAsync), $"Error loading VPA view: {ex.Message}");
+                        //    OutputError($"Error viewing metrics : {ex.Message}");
+                        //    ActivateOutput();
+                        //}
 
-                    } else
-                    {
-                        var ex = prevTask.Exception;
-                        Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
-                        var exMsg = ex.GetAllMessages();
-                        OutputError($"Error viewing metrics: {exMsg}");
-                        ActivateOutput();
-                    }
+                    //} else
+                    //{
+                    //    var ex = prevTask.Exception;
+                    //    Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                    //    var exMsg = ex.GetAllMessages();
+                    //    OutputError($"Error viewing metrics: {exMsg}");
+                    //    ActivateOutput();
+                    //}
 
                     vpaView.IsBusy = false;
                     IsVertipaqAnalyzerRunning = false;
@@ -4055,12 +4241,12 @@ namespace DaxStudio.UI.ViewModels
                     Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
                     
 
-                }, TaskScheduler.Default);
-                task.Start(TaskScheduler.Default);
+                //}, TaskScheduler.Default);
+                //task.Start(TaskScheduler.Default);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
+                Log.Error(ex, "{class} {method} Error Getting Metrics", nameof(DocumentViewModel), "ViewAnalysisData");
                 var exMsg = ex.GetAllMessages();
                 OutputError("Error viewing metrics: " + exMsg);
                 ActivateOutput();
@@ -4069,7 +4255,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void ExportAnalysisData()
+        public async Task ExportAnalysisDataAsync()
         {
             if (!IsConnected)
             {
@@ -4091,22 +4277,17 @@ namespace DaxStudio.UI.ViewModels
             if (result == true)
             {
                 // Save document 
-                var task = new Task(() => {
+                
                     try {
                         IsVertipaqAnalyzerRunning = true;
-                        ExportAnalysisData(dlg.FileName);
+                        await ExportAnalysisDataAsync(dlg.FileName);
                     }
                     finally
                     {
                         IsVertipaqAnalyzerRunning = false;
                     }
-                });
-                task.Start();
-                task.ContinueWith(prevTask => {
-                    if (prevTask.IsFaulted)
-                        if (prevTask.Exception != null)
-                            throw prevTask.Exception;
-                });
+
+
             }
         }
 
@@ -4164,6 +4345,21 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public async Task ExportAnalysisDataAsync(string path)
+        {
+            try
+            {
+                await Task.Run(() => ExportAnalysisData(path));
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error exporting metrics:\n{ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ExportAnalysisDataAsync), msg);
+                OutputError(msg);
+                ActivateOutput();
+            }
+        }
+
         public void ExportAnalysisData(string path)
         {
             using (var _ = new StatusBarMessage(this, "Exporting Model Metrics"))
@@ -4174,25 +4370,7 @@ namespace DaxStudio.UI.ViewModels
                     OutputMessage(String.Format("Saving {0}...", path));
                     // get current DAX Studio version
                     Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                    string modelCaption = Connection.Database.Name;
-                    switch (Connection.ServerType)
-                    {
-                        case ServerType.PowerBIDesktop:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.pbix";
-                            break;
-                        case ServerType.PowerPivot:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.xlsx";
-                            break;
-                        case ServerType.SSDT:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (SSDT)";
-                            break;
-                        case ServerType.PowerBIReportServer:
-                            modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (PBIRS)";
-                            break;
-                        case ServerType.AnalysisServices:
-                            modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
-                            break;
-                    }
+                    var modelName = GetSelectedModelName();
                     // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
                     bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
                         || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
@@ -4201,7 +4379,7 @@ namespace DaxStudio.UI.ViewModels
                     bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
                     try
                     {
-                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData);
+                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName);
                     }
                     catch (Exception ex)
                     {
@@ -4212,7 +4390,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false); // Disable statistics during retry
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName); // Disable statistics during retry
                         }
                         else
                         {
@@ -4227,10 +4405,34 @@ namespace DaxStudio.UI.ViewModels
                     Log.Error(ex, "{class} {method} Error Exporting Metrics", "DocumentViewModel", "ExportAnalysisData");
                     var exMsg = ex.GetAllMessages();
                     OutputError("Error exporting metrics: " + exMsg);
+                    ActivateOutput();
                 }
             }
         }
 
+        private string GetSelectedModelName()
+        {
+            string modelCaption = Connection.Database.Name;
+            switch (Connection.ServerType)
+            {
+                case ServerType.PowerBIDesktop:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.pbix";
+                    break;
+                case ServerType.PowerPivot:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"}.xlsx";
+                    break;
+                case ServerType.SSDT:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (SSDT)";
+                    break;
+                case ServerType.PowerBIReportServer:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (PBIRS)";
+                    break;
+                case ServerType.AnalysisServices:
+                    modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
+                    break;
+            }
+            return modelCaption;
+        }
 
         internal void AppendText(string paramXml)
         {
@@ -4362,9 +4564,19 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ShowMeasureExpressionEditor message)
         {
-            MeasureExpressionEditor.Column = message.Column;
-            ShowMeasureExpressionEditor = true;
-            QueryBuilder.IsEnabled = false;
+            try
+            {
+                MeasureExpressionEditor.Column = message.Column;
+                ShowMeasureExpressionEditor = true;
+                QueryBuilder.IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "IHandle<ShowMeasureExpressionEditor>", ex.Message);
+                OutputError($"Error showing the Measure Expression Editor:\n{ex.Message}");
+                ShowMeasureExpressionEditor = false;
+                QueryBuilder.IsEnabled = true;
+            }
         }
 
         public void Handle(SetFocusEvent message)
@@ -4466,6 +4678,14 @@ namespace DaxStudio.UI.ViewModels
 
         public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
 
+        //private bool _isViewAsActive = false;
+        public bool IsViewAsActive { get => Connection.IsTestingRls; 
+            //private set { 
+            //    _isViewAsActive = value;
+            //    NotifyOfPropertyChange();
+            //} 
+        }
+
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {
             if (!Options.EditorShowFunctionInsightsOnHover) return;
@@ -4529,6 +4749,24 @@ namespace DaxStudio.UI.ViewModels
             var editor = GetEditor();
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
+        }
+
+        public void Handle(LoadQueryBuilderEvent message)
+        {
+            if (QueryBuilder.Columns.Count > 0 || QueryBuilder.Filters.Count > 0)
+            {
+                if (MessageBox.Show(
+                    "Do you want to replace the current content of the Query Builder with the item from the Query History?",
+                    "Restore Query History", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question) == MessageBoxResult.No)
+                {
+                    return;
+                }
+
+                QueryBuilder.Clear();
+            }
+            QueryBuilder.LoadJson(message.Json);
         }
     }
 }

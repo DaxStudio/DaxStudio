@@ -1,6 +1,7 @@
 ﻿using ADOTabular.Interfaces;
 using System;
 using System.Collections.Generic;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -34,7 +35,9 @@ namespace ADOTabular
 
         public long DistinctValues => Column.DistinctValues;
 
-        public Type DataType => Column.DataType;
+        public Type SystemType => Column.SystemType;
+
+        public Microsoft.AnalysisServices.Tabular.DataType DataType => Column.DataType;
 
         public MetadataImages MetadataImage => Column.MetadataImage;
 

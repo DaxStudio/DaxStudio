@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interactivity;
-
+using AvalonDock;
 
 namespace DaxStudio.UI.Behaviours
 {

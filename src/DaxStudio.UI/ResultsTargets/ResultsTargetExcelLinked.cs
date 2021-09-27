@@ -6,6 +6,7 @@ using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using Serilog;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -85,6 +86,7 @@ namespace DaxStudio.UI.ResultsTargets
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelLinked), nameof(OutputResultsAsync), ex.Message);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
                     }

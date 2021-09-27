@@ -9,6 +9,7 @@ using System.Data.OleDb;
 using System.Globalization;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
+using ADOTabular.Extensions;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 
@@ -826,10 +827,12 @@ namespace ADOTabular
             }
         }
 
-        public bool IsPowerBIXmla { get => this.Properties["Data Source"].StartsWith("powerbi://", StringComparison.OrdinalIgnoreCase); }
+        public bool IsPowerBIXmla { get => this.Properties["Data Source"].IsPowerBIService(); }
         public string ShortFileName { get; private set; }
 
-        public bool IsAdminConnection => SPID != -1 || Properties.ContainsKey("roles") || Properties.ContainsKey("EffectiveUserName") || IsPowerBIXmla;
+        public bool IsAdminConnection => SPID != -1 || HasRlsParameters() || IsPowerBIXmla;
+
+        public bool IsTestingRls => HasRlsParameters();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
@@ -868,36 +871,66 @@ namespace ADOTabular
             }
         }
 
+        public ADOTabularConnection Clone(bool sameSession)
+        {
+            return CloneInternal(this.ConnectionStringWithInitialCatalog, sameSession);
+        }
 
         public ADOTabularConnection Clone()
         {
-            return CloneInternal(this.ConnectionStringWithInitialCatalog);
+            return CloneInternal(this.ConnectionStringWithInitialCatalog,false);
         }
 
-        public ADOTabularConnection Clone(string[] parametersToIgnore)
+        /// <summary>
+        /// Checks if the connection string contains any of the RLS testing parameters
+        /// </summary>
+        /// <returns>bool</returns>
+        public bool HasRlsParameters()
         {
-            var connParams = ConnectionStringParser.Parse(this.ConnectionStringWithInitialCatalog);
-            foreach (var param in parametersToIgnore)
+            var builder = new OleDbConnectionStringBuilder(ConnectionStringWithInitialCatalog);
+            foreach (var param in rlsParameters)
             {
-                connParams.Remove(param);
+                if (builder.ContainsKey(param)) return true;
             }
-            var newConnStr = string.Join(";", connParams.Select(p => $"{p.Key}={p.Value}"));
-            return CloneInternal(newConnStr);
+            return false;
         }
 
-        private ADOTabularConnection CloneInternal(string connectionString)
+        private static string[] rlsParameters = { "Roles", "EffectiveUserName","Authentication Scheme","Ext Auth Info" };
+        public ADOTabularConnection CloneWithoutRLS()
         {
-            var cnn = new ADOTabularConnection(connectionString, this.Type)
+            var builder = new OleDbConnectionStringBuilder(ConnectionStringWithInitialCatalog);
+            foreach (var param in rlsParameters)
+            {
+                builder.Remove(param);
+            }   
+            var newConnStr = builder.ToString();
+            return CloneInternal(newConnStr,false, false);
+        }
+
+        private ADOTabularConnection CloneInternal(string connectionString, bool sameSession)
+        {
+            return CloneInternal(connectionString, sameSession, true);
+        }
+        private ADOTabularConnection CloneInternal(string connectionString, bool sameSession, bool copyDatabaseReference)
+        {
+            var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            if(sameSession) connStrBuilder["SessionId"] = _adomdConn.SessionID;
+            var newConnStr = connStrBuilder.ToString();
+            var cnn = new ADOTabularConnection(newConnStr, this.Type)
             {
                 // copy keywords, functiongroups, DMV's
                 _functionGroups = this._functionGroups,
                 _keywords = this._keywords,
                 _serverMode = this._serverMode,
                 _dmvCollection = this._dmvCollection,
-                _db = this._db,
-                _adoTabDatabaseColl = this._adoTabDatabaseColl,
                 ServerType = this.ServerType
             };
+
+            if (copyDatabaseReference)
+            {
+                cnn._db = this._db;
+                cnn._adoTabDatabaseColl = this._adoTabDatabaseColl;
+            }
             return cnn;
         }
     }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Markup;
 using AvalonDock;
+using AvalonDock.Layout;
 using Caliburn.Micro;
 
 namespace DaxStudio.UI

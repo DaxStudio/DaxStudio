@@ -390,7 +390,8 @@ namespace DaxStudio.UI.ViewModels
                                     Caption = db.Caption,
                                     Description = ( _metadataProvider.IsPowerPivot || _metadataProvider.IsPowerBIorSSDT) && _metadataProvider?.FileName?.Length > 0 ? _metadataProvider.FileName : ""
                                 }).OrderBy(db => db.Name);
-
+            
+            DatabasesView.IsNotifying = false;
             // remove deleted databases
             for (int i = DatabasesView.Count - 1; i >= 0; i--)
             {
@@ -404,6 +405,7 @@ namespace DaxStudio.UI.ViewModels
                 var found = DatabasesView.Where(db => db.Name == dbRef.Name).FirstOrDefault();
                 if (found == null) DatabasesView.Add(dbRef);
             }
+            DatabasesView.IsNotifying = true;
 
             NotifyOfPropertyChange(() => DatabasesView);
             if (SelectedDatabase == null)

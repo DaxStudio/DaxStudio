@@ -86,17 +86,17 @@ namespace DaxStudio.UI.Utils
 
         private static (string trimmedLine, string trailingComment) TrimTrailingComment(string trimmedLine)
         {
-            var doubleDashPos = trimmedLine.IndexOf("--");
-            var doubleSlashPos = trimmedLine.IndexOf("//");
-            var commentPos = Math.Max(doubleSlashPos, doubleDashPos);
-            if (commentPos >= 0)
-                return (trimmedLine.Substring(0, commentPos), trimmedLine.Substring(commentPos));
+            var commentMatch = comment.Match(trimmedLine);
+            
+            if (commentMatch.Success) 
+                return (trimmedLine.Substring(0, commentMatch.Index), trimmedLine.Substring(commentMatch.Index));
             else
                 return (trimmedLine, string.Empty);
 
         }
 
-        private static Regex leadingComma = new Regex("\\n\\,", RegexOptions.Compiled);
+        private static Regex leadingComma = new Regex(@"\n\,", RegexOptions.Compiled);
+        private static Regex comment = new Regex(@"(\s*(?://|--).*)$|(\s*/\*.*?\*/(?!w*|\,))", RegexOptions.Compiled);
 
         public static string ToggleDebugCommas(string test)
         {

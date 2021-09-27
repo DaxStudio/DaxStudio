@@ -19,6 +19,7 @@ namespace DaxStudio.UI.Interfaces
         ADOTabularTableCollection GetTables();
         string SelectedDatabaseName { get; }
         ADOTabularDatabase SelectedDatabase { get; }
+        ADOTabularModel SelectedModel { get; }
         string SelectedModelName { get; }
 
         Task UpdateColumnSampleData(ITreeviewColumn column, int sampleSize);
@@ -32,5 +33,7 @@ namespace DaxStudio.UI.Interfaces
         string ExpandDependentMeasure(string measureName, bool ignoreNonUniqueMeasureNames);
         IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPaneViewModel, IGlobalOptions options);
         void UpdateTableBasicStats(DaxStudio.UI.Model.TreeViewTable table);
+
+        List<string> GetRoles();
     }
 }

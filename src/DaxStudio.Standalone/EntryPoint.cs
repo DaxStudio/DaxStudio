@@ -63,8 +63,8 @@ namespace DaxStudio.Standalone
             // Setup logging, default to information level to start with to log the startup and key system information
             var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
 
-            Log.Information("============ DaxStudio Startup =============");
             ConfigureLogging(levelSwitch);
+            Log.Information("============ DaxStudio Startup =============");
 
             // Default web requests like AAD Auth to use windows credentials for proxy auth
             System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
@@ -94,7 +94,10 @@ namespace DaxStudio.Standalone
             // get the global options
             _options = bootstrapper.GetOptions(); 
             _options.Initialize();
+            _options.LoggingLevelSwitch = levelSwitch;
             Log.Information("User Options initialized");
+
+            UpdateLoggingLevelFromOptions(_options, ref levelSwitch);
 
             // check if we are running portable that we have write access to the settings
             if (_options.IsRunningPortable)
@@ -141,6 +144,13 @@ namespace DaxStudio.Standalone
             Log.Information("============ DaxStudio Shutdown =============");
             Log.CloseAndFlush();
             
+        }
+
+        private static void UpdateLoggingLevelFromOptions(IGlobalOptions options, ref LoggingLevelSwitch levelSwitch)
+        {
+            if (options.LoggingLevel == levelSwitch.MinimumLevel) return;
+            Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(UpdateLoggingLevelFromOptions), $"Setting Logging level to {options.LoggingLevel}");
+            levelSwitch.MinimumLevel = options.LoggingLevel;
         }
 
         private static void ShowSettingPermissionErrorDialog()
@@ -204,8 +214,8 @@ namespace DaxStudio.Standalone
                 levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;
                 Log.Information($"{levelSwitch.MinimumLevel} Logging Enabled due to running in debug mode");
 #else
-                Log.Information("Changing minimum log event to Error");
-                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Error;
+                Log.Information("Changing minimum log event to Warning");
+                levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Warning;
 #endif
             }
 

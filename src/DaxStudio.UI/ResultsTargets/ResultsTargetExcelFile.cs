@@ -4,6 +4,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using LargeXlsx;
+using Serilog;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -133,6 +134,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelFile), nameof(OutputResultsAsync), ex.Message);
                         runner.ActivateOutput();
                         runner.OutputError(ex.Message);
 #if DEBUG
@@ -265,7 +267,7 @@ namespace DaxStudio.UI.Model
         {
 
             // check for special case formatting
-            switch (col.DataType.Name.ToLower())
+            switch (col.SystemType.Name.ToLower())
             {
                 case "long":
                 case "double":
