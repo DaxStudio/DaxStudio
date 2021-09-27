@@ -200,11 +200,11 @@ namespace DaxStudio.UI.Model
             {
                 // strip out \r and break on \n
                 string[] valArray = val.Replace("\r","").Split('\n');
-                return valArray.Aggregate("", (prev, current) => { return prev + "," + FormatValueInternal(filter.TabularObject.DataType, current); }).TrimStart(',');
+                return valArray.Aggregate("", (prev, current) => { return prev + "," + FormatValueInternal(filter.TabularObject.SystemType, current); }).TrimStart(',');
             }
             try
             {
-                return FormatValueInternal(filter.TabularObject.DataType, val);
+                return FormatValueInternal(filter.TabularObject.SystemType, val);
             }
             catch (Exception ex)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ADOTabular.Interfaces;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -53,9 +54,11 @@ namespace ADOTabular
             return null;
         }
 
-        public Type DataType => Column.DataType;
+        public DataType DataType => Column.DataType;
         public MetadataImages MetadataImage => MetadataImages.Measure;
         public string MeasureExpression => Column.MeasureExpression;
         public string TableName => Column.TableName;
+
+        public Type SystemType => Column.SystemType;
     }
 }
