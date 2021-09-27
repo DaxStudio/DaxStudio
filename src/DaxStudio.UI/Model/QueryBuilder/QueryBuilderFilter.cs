@@ -24,7 +24,7 @@ namespace DaxStudio.UI.Model
 
         private void SetDefaultFilterType()
         {
-            if (TabularObject.DataType != typeof(string)) FilterType = FilterType.Is;
+            if (TabularObject.SystemType != typeof(string)) FilterType = FilterType.Is;
             else FilterType = FilterType.Contains;
         }
 
@@ -153,7 +153,7 @@ namespace DaxStudio.UI.Model
                             ValidateInputValue(line);
                         } catch (Exception ex)
                         {
-                            return $"Unable to parse '{line}' as {TabularObject.DataType.Name}\n{ex.Message}";
+                            return $"Unable to parse '{line}' as {TabularObject.SystemType.Name}\n{ex.Message}";
                         }
                     }
                 }
@@ -165,7 +165,7 @@ namespace DaxStudio.UI.Model
                     }
                     catch (Exception ex)
                     {
-                        return $"Unable to parse '{input}' as {TabularObject.DataType.Name}\n{ex.Message}";
+                        return $"Unable to parse '{input}' as {TabularObject.SystemType.Name}\n{ex.Message}";
                     }
                 }
 
@@ -175,9 +175,9 @@ namespace DaxStudio.UI.Model
 
         private void ValidateInputValue(string input)
         {
-            if (TabularObject.DataType == typeof(DateTime)) { DateTime _ = DateTime.Parse(input); }
-            if (TabularObject.DataType == typeof(Int64)) { var _ = Int64.Parse(input); }
-            if (TabularObject.DataType == typeof(Decimal)) { var _ = Decimal.Parse(input); }
+            if (TabularObject.SystemType == typeof(DateTime)) { DateTime _ = DateTime.Parse(input); }
+            if (TabularObject.SystemType == typeof(Int64)) { var _ = Int64.Parse(input); }
+            if (TabularObject.SystemType == typeof(Decimal)) { var _ = Decimal.Parse(input); }
         }
 
         public bool ShowFilterValue

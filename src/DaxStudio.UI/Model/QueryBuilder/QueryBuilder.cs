@@ -204,7 +204,7 @@ namespace DaxStudio.UI.Model
             }
             try
             {
-                return FormatValueInternal(filter.TabularObject.DataType, val);
+                return FormatValueInternal(filter.TabularObject.SystemType, val);
             }
             catch (Exception ex)
             {

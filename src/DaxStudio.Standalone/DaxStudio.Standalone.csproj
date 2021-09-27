@@ -317,6 +317,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
