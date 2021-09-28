@@ -160,6 +160,7 @@
                     <Border Background="{TemplateBinding Background}"
 							      BorderBrush="{TemplateBinding BorderBrush}"
 							      BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
                             x:Name="EditorBorder">
 
                         <ScrollViewer Focusable="False"
@@ -194,20 +195,20 @@
 
                                             <!-- Display TextEditor content in upper left corner -->
                                             <ScrollContentPresenter Grid.Column="0" Grid.Row="0"
-                                            KeyboardNavigation.DirectionalNavigation="Local"
-                                            CanContentScroll="True"
-                                            CanHorizontallyScroll="True"
-                                            CanVerticallyScroll="True"
+                                                        KeyboardNavigation.DirectionalNavigation="Local"
+                                                        CanContentScroll="True"
+                                                        CanHorizontallyScroll="True"
+                                                        CanVerticallyScroll="True"
 						                                Content="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DAXEditor}}, Path=TextArea}"
                                             />
 
                                             <!-- Display Vertical Scrollbar to the right -->
                                             <ScrollBar Name="PART_VerticalScrollBar"
-                               Grid.Column="1"
-                               Value="{TemplateBinding VerticalOffset}"
-                               Maximum="{TemplateBinding ScrollableHeight}"
-                               ViewportSize="{TemplateBinding ViewportHeight}"
-                               Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                                                       Grid.Column="1"
+                                                       Value="{TemplateBinding VerticalOffset}"
+                                                       Maximum="{TemplateBinding ScrollableHeight}"
+                                                       ViewportSize="{TemplateBinding ViewportHeight}"
+                                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
 
                                             <!-- Display mini-toolbar and Horizontal scrollbar at the bottom of the view -->
                                             <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->

@@ -21,6 +21,7 @@
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Colors.xaml"/>
 
     </ResourceDictionary.MergedDictionaries>
+    
     <Style TargetType="{x:Type dsi:DaxStudioCompletionWindow}">
         <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
         <!--<Setter Property="TextBox.Foreground" Value="Red"/>-->

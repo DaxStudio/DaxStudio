@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
+    xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -14,7 +15,7 @@
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-
+    xmlns:cc="clr-namespace:DaxStudio.UI.Utils.Intellisense"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
     xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
@@ -33,13 +34,10 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MeasureExpressionEditorResources.xaml" />
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Views/DaxStudioTemplates.xaml" />-->
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Colors.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Brushes.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Dark.DaxStudio.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.DaxEditor.xaml" />-->
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/CompletionList.xaml" />
+                
             </ResourceDictionary.MergedDictionaries>
+            
             <conv:MultiplyWithMinConverter x:Key="multiplyWithMinConverter"/>
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
@@ -64,7 +62,16 @@
                 </Setter>
             </Style>-->
 
+            <Style TargetType="{x:Type avalonedit:CompletionWindow}">
+                <Setter Property="WindowStyle" Value="None"></Setter>
+                <Setter Property="ResizeMode" Value="NoResize"></Setter>
+                <Setter Property="BorderThickness" Value="3"></Setter>
+            </Style>
 
+            <Style TargetType="{x:Type cc:DaxStudioCompletionWindow}">
+                <Setter Property="BorderBrush"  Value="Green"/>
+                <Setter Property="Background" Value="Yellow"/>
+            </Style>
             
             <Style TargetType="dax:DAXEditor">
                 <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />

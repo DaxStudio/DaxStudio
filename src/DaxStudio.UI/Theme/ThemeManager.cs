@@ -29,10 +29,15 @@ namespace DaxStudio.UI.Theme
         public void SetTheme(string themeName)
         {
             CurrentTheme = themeName;
-            var theme = ModernWpf.ApplicationTheme.Light;
-            Enum.TryParse(themeName, false, out theme);
-            ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
+
+            ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
+
+            //var theme = ModernWpf.ApplicationTheme.Light;
+            //Enum.TryParse(themeName, false, out theme);
+            //ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
             SetAccent(AccentColor);
+
+            
 
         }
 

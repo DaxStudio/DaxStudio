@@ -52,7 +52,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.HighlightBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.ExtremeHighlightBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.ExtremeHighlightColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DarkExtremeHighlightBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.DarkExtremeHighlightColor}" />
-    <SolidColorBrush x:Key="WhiteBrush" SolidColorBrush.Color="{StaticResource WhiteColor}" />
+    <SolidColorBrush x:Key="WhiteBrush" SolidColorBrush.Color="{StaticResource NewGrey1}" />
     <SolidColorBrush x:Key="WhiteBrush20" SolidColorBrush.Color="{StaticResource WhiteColor20}" />
     <SolidColorBrush x:Key="BlackBrush" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="BlackBrush20" SolidColorBrush.Color="{StaticResource BlackColor20}" />
@@ -126,7 +126,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background" SolidColorBrush.Color="{StaticResource NewGrey1}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.BorderBrush" SolidColorBrush.Color="Transparent" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Background" SolidColorBrush.Color="Transparent" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Background" SolidColorBrush.Color="{StaticResource NewGrey1}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonContextualTabGroup.TabItemSelectedForeground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonContextualTabGroup.TabItemMouseOverForeground" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" />

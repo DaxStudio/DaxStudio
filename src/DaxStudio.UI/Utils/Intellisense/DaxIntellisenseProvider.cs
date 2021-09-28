@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Navigation;
 using ADOTabular;
 using Caliburn.Micro;
@@ -255,12 +257,31 @@ namespace DaxStudio.UI.Utils.Intellisense
             completionWindow.Width = completionWindow.Width * (_options.CodeCompletionWindowWidthIncrease / 100);
             completionWindow.CloseAutomatically = false;
             completionWindow.WindowStyle = WindowStyle.None;
-            completionWindow.CompletionList.BorderThickness = new Thickness(1);
-
+            completionWindow.Background = new SolidColorBrush(Color.FromArgb(0,0,0,0));
+            completionWindow.AllowsTransparency = true;
+            //completionWindow.CompletionList.BorderThickness = new Thickness(1);
+            DaxIntellisenseProvider.AssignResouceDictionary(completionWindow);
             AttachCompletionWindowEvents(completionWindow);
             completionWindow.DetachCompletionEvents = DetachCompletionWindowEvents;
 
             return completionWindow;
+        }
+
+        private static string _codeCompletionResourcesUri = "pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/CompletionList.xaml";
+        private static ResourceDictionary _cachedResourceDictionary;
+        private static ResourceDictionary CodeCompletionCustomResources
+        {
+            get
+            {
+                if (_cachedResourceDictionary == null)
+                    _cachedResourceDictionary = new ResourceDictionary() { Source = new Uri(_codeCompletionResourcesUri) };
+                return _cachedResourceDictionary;
+            }
+        }
+
+        private static void AssignResouceDictionary(DaxStudioCompletionWindow completionWindow)
+        {
+            completionWindow.Resources.MergedDictionaries.Add(CodeCompletionCustomResources);
         }
 
         private void AttachCompletionWindowEvents(CompletionWindow completionWindow)
