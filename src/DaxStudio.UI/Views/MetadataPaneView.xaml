@@ -11,7 +11,9 @@
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
              xmlns:model="clr-namespace:DaxStudio.UI.Model"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                          xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
@@ -65,63 +67,16 @@
                 </Setter>
             </Style>
 
-            <ElasticEase x:Key="easeInEase" EasingMode="EaseOut" Oscillations="2" Springiness="7"/>
-            <SineEase x:Key="easeOutEase" EasingMode="EaseIn"/>
-            <!-- To="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}} , Path=ActualWidth,Converter={StaticResource OffsetConverter}, ConverterParameter='5' }"  -->
-            <Storyboard x:Key="SearchIn">
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Tag)" 
-                                 Storyboard.TargetName="srchBox" 
-                                 EasingFunction="{StaticResource ResourceKey=easeInEase}"
-                                 To="1"
-                                 Duration="0:0:1.0"/>
-
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" 
-                                 EasingFunction="{StaticResource ResourceKey=easeInEase}" 
-                                 To="32" Duration="0:0:1.0"/>
-                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="Tables">
-                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,34,0,0"/>
-                </ThicknessAnimationUsingKeyFrames>
-                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="SearchIcon">
-                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="2,2,2,2"/>
-                </ThicknessAnimationUsingKeyFrames>
-                <DoubleAnimation Storyboard.TargetName="CurrentCriteria"
-								Storyboard.TargetProperty="(UIElement.Opacity)"
-								To="1" Duration="0:0:0.2" />
-                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchSpacer" Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.15" Duration="0">
-                    <DiscreteObjectKeyFrame Value="{x:Static Visibility.Collapsed}" />
-                </ObjectAnimationUsingKeyFrames>
-
-            </Storyboard>
-
-            <Storyboard x:Key="SearchOut">
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Tag)" Storyboard.TargetName="srchBox" 
-                                 EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="0" Duration="0:0:0.2"/>
-                <DoubleAnimation Storyboard.TargetProperty="(Border.Height)" Storyboard.TargetName="srchBox" 
-                                 EasingFunction="{StaticResource ResourceKey=easeOutEase}" To="16" Duration="0:0:0.2"/>
-                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="Tables">
-                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,2,0,0"/>
-                </ThicknessAnimationUsingKeyFrames>
-                <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="SearchIcon">
-                    <EasingThicknessKeyFrame KeyTime="0:0:0.2" Value="0,0,0,0"/>
-                </ThicknessAnimationUsingKeyFrames>
-                <DoubleAnimation Storyboard.TargetName="CurrentCriteria"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="0" Duration="0:0:0.2" />
-                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SearchSpacer" Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.2" Duration="0">
-                    <DiscreteObjectKeyFrame Value="{x:Static Visibility.Visible}" />
-                </ObjectAnimationUsingKeyFrames>
-            </Storyboard>
-
-            <Style x:Key="searchBox" TargetType="{x:Type Border}">
-                <Setter Property="Width" Value="16"/>
-                <Setter Property="Height" Value="16"/>
-                <Setter Property="HorizontalAlignment" Value="Right"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="Margin" Value="2 2 0 2"/>
-                <Setter Property="Padding" Value="0 2 0 2"/>
+            
+            <Style TargetType="TreeViewItem" BasedOn="{StaticResource DefaultTreeViewItemStyle}" >
+                <Setter Property="primitives:TreeViewItemHelper.ExpandedPath" Value="F1 M16,16z M0,0z M7.9966763,9.1149991L12.496676,4.6899991A1.02,1.02,0,0,1,12.841676,4.4799991A0.87,0.87,0,0,1,13.231676,4.4049991A0.975,0.975,0,0,1,13.636676,4.4799991A0.9,0.9,0,0,1,14.176676,5.0199991A0.975,0.975,0,0,1,14.176676,5.4249991A0.87,0.87,0,0,1,14.176676,5.8149991A1.02,1.02,0,0,1,13.966676,6.1599991L8.7316763,11.304999A1.005,1.005,0,0,1,7.9966763,11.619999A0.87,0.87,0,0,1,7.6066763,11.529999A0.855,0.855,0,0,1,7.2766763,11.304999L2.1166763,6.1599991A1.29,1.29,0,0,1,1.8916763,5.8299991A0.975,0.975,0,0,1,1.8166763,5.4249991A0.87,0.87,0,0,1,1.8916763,5.0049991A1.065,1.065,0,0,1,2.1166763,4.6749991A0.99,0.99,0,0,1,2.4466763,4.4499991A0.945,0.945,0,0,1,2.8516763,4.3599991A1.005,1.005,0,0,1,3.5716763,4.6599991z" />
+                <Setter Property="primitives:TreeViewItemHelper.CollapsedPath" Value="F1 M16,16z M0,0z M9.12249,8.0470167L4.62249,3.6370167A1.02,1.02,0,0,1,4.41249,3.2920167A0.87,0.87,0,0,1,4.33749,2.9020167A0.975,0.975,0,0,1,4.41249,2.4970167A0.9,0.9,0,0,1,5.01249,1.9420167A0.975,0.975,0,0,1,5.41749,1.8670167A0.87,0.87,0,0,1,5.80749,1.9420167A1.02,1.02,0,0,1,6.15249,2.1520167L11.31249,7.3120167A1.005,1.005,0,0,1,11.62749,8.0470167A0.87,0.87,0,0,1,11.53749,8.4370167A0.855,0.855,0,0,1,11.31249,8.7670167L6.16749,13.927016A1.29,1.29,0,0,1,5.83749,14.152016A0.975,0.975,0,0,1,5.43249,14.152016A0.87,0.87,0,0,1,5.04249,14.152016A1.065,1.065,0,0,1,4.71249,13.927016A0.99,0.99,0,0,1,4.48749,13.597016A0.945,0.945,0,0,1,4.39749,13.192016A1.005,1.005,0,0,1,4.69749,12.472016z" />
+                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                <Setter Property="Visibility" Value="{Binding IsMatch, Converter={StaticResource ResourceKey=BoolToVisibilityConverter}}"/>
+                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                <!--<Setter Property="Fill" TargetName="CollapsedGlyph" Value="Blue"/>-->
             </Style>
-
-
+            
             <ResourceDictionary.MergedDictionaries>
                 <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
                 <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
@@ -129,6 +84,7 @@
 
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
@@ -143,6 +99,7 @@
     <Grid Margin="2 2 2 0" >
 
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -177,16 +134,16 @@
         <!-- database Dropdown MinWidth="160" 
         Style="{StaticResource DatabaseComboStyle}"  
         Template="{DynamicResource MetroComboBoxControlTemplate}"-->
-        <ComboBox Grid.Row="1" x:Name="Database" 
-            SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
-            HorizontalAlignment="Stretch"
-            
-            IsEditable="False"
-            IsSynchronizedWithCurrentItem="True" 
-            IsEnabled="{Binding CanSelectDatabase}" 
-            Margin="0,0,0,2" 
-             >
+        <ComboBox Grid.Row="1" 
+                  x:Name="Database" 
+                  SelectedItem="{Binding SelectedDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding DatabasesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"   
+                  HorizontalAlignment="Stretch"
+              
+                  IsEditable="False"
+                  IsSynchronizedWithCurrentItem="True" 
+                  IsEnabled="{Binding CanSelectDatabase}" 
+                  Margin="0,0,0,2">
             <ComboBox.ToolTip>
                 <Grid>
                     <Grid>
@@ -229,9 +186,9 @@
             </ComboBox.ToolTip>
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{StaticResource DatabaseIcon}" Width="16" Height="16"></Image>
-                        <TextBlock Text="{Binding Path=Caption}" Margin="4,0" ></TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="-6 0 0 0">
+                        <Image Source="{DynamicResource db_smallDrawingImage}" Width="16" Height="16" Margin="0,1,4,1"></Image>
+                        <TextBlock Text="{Binding Path=Caption}" ></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
@@ -259,13 +216,13 @@
                   ItemsSource="{Binding ModelList, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                   SelectedItem="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"      
                   IsSynchronizedWithCurrentItem="True" 
-HorizontalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
                   >
             <!-- Style="{DynamicResource MetroComboBox}" -->
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{StaticResource ModelIcon}" Margin="2,1,5,1"/>
+                    <StackPanel Orientation="Horizontal" Margin="-6 0 0 0">
+                        <Image Source="{DynamicResource model_smallDrawingImage}" Width="16" Height="16" Margin="0,1,4,1"/>
                         <TextBlock Text="{Binding Caption}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
@@ -313,29 +270,86 @@ HorizontalAlignment="Stretch"
                 </ToolTip>
             </ComboBox.ToolTip>
         </ComboBox>
-        
-        <ContentControl Grid.Row="3">
+
+
+        <!-- Search Box -->
+        <Grid Grid.Row="3">
+
+
+
+            <TextBox 
+                x:Name="CurrentCriteria"
+                Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                Padding="26 2 24 0"
+                VerticalAlignment="Center"
+                ui:ControlHelper.PlaceholderText="Search"
+                Margin="0 4"
+                >
+                <i:Interaction.Triggers>
+                    <trig:InputBindingTrigger>
+                        <trig:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Escape"/>
+                        </trig:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="ClearCriteria"/>
+                    </trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger>
+                        <trig:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Down"/>
+                        </trig:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="SetFocusToMetadata"/>
+                    </trig:InputBindingTrigger>
+                </i:Interaction.Triggers>
+
+            </TextBox>
+
+            <Image x:Name="SearchIcon" 
+                   Grid.Column="0"
+                   HorizontalAlignment="Left"
+                   Margin="6 0 0 0"
+                   Source="{DynamicResource findDrawingImage}"
+                   Width="18"/>
+            <!--<Button Margin="5"  
+                    HorizontalAlignment="Right"
+                    Visibility="{Binding Path=HasCriteria, Converter={StaticResource BoolToVisibilityConverter}}"
+                    BorderThickness="0"
+                    Style="{x:Null}"
+                    Background="Transparent">
+                <Image Source="{StaticResource closeDrawingImage}" Width="12" />
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <cal:ActionMessage MethodName="ClearCriteria" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>-->
+        </Grid>
+
+
+        <ContentControl Grid.Row="4">
             <Control.Template>
                 <ControlTemplate>
                     <Grid >
                         <!-- Tables -->
                         <!--  cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]"
                         dd:DragDrop.DragHandler="{Binding }"  
+                        Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
                         -->
-                        <ctrl:TreeViewEx x:Name="Tables" Height="Auto"  ItemsSource="{Binding Tables}"
-                                        Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
-                                        
-                                        FocusManager.IsFocusScope="True"
-                                        dd:DragDrop.IsDragSource="True"
-                                        dd:DragDrop.IsDropTarget="False" 
-                                        dd:DragDrop.DragHandler="{Binding}"
-                                        dd:DragDrop.UseDefaultDragAdorner="True"
-                                        cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
-                                        VirtualizingPanel.IsVirtualizing="True"
-                                        VirtualizingPanel.VirtualizationMode="Recycling"
-                                        Margin="0,2,0,-2">
+                        <Border CornerRadius="4" 
+                                BorderThickness="1" 
+                                BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}">
+                            <TreeView x:Name="Tables" 
+                                  Height="Auto"  
+                                  ItemsSource="{Binding Tables}"
+                                  FocusManager.IsFocusScope="True"
+                                  dd:DragDrop.IsDragSource="True"
+                                  dd:DragDrop.IsDropTarget="False" 
+                                  dd:DragDrop.DragHandler="{Binding}"
+                                  dd:DragDrop.UseDefaultDragAdorner="True"
+                                  cal:Message.Attach="[Event PreviewMouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem, $eventArgs)]; [Event KeyUp] = [Action MetadataKeyUp($this.SelectedItem, $eventArgs)]"
+                                  VirtualizingPanel.IsVirtualizing="True"
+                                  VirtualizingPanel.VirtualizationMode="Recycling"
+                                  Margin="0,2,0,-2">
 
-                            <i:Interaction.Behaviors>
+                                <i:Interaction.Behaviors>
                                 <beh:TreeViewClipboardBehavior />
                                 <beh:TreeViewMultipleSelectionBehaviour SelectedItems="{Binding SelectedItems}" />
                             </i:Interaction.Behaviors>
@@ -345,13 +359,13 @@ HorizontalAlignment="Stretch"
                                     <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
                                 </Style>
                             </ctrl:TreeViewEx.ItemContainerStyle>-->
-                            <ctrl:TreeViewEx.Resources>
+                            <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
                                     <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
                                         <Grid>
                                             <!-- Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" -->
-                                            <Image  Margin="2,1,5,1">
+                                            <Image  Margin="2,1,3,1">
                                                 <Image.Source>
                                                     <MultiBinding Converter="{StaticResource MetadataIcons2}">
                                                         <Binding Path="MetadataImage"/>
@@ -363,7 +377,8 @@ HorizontalAlignment="Stretch"
                                         </Grid>
                                         <TextBlock  Text="{Binding Caption}"
                                                     cal:Message.Attach="[Event ToolTipOpening] = [Action TableTooltipOpening($dataContext)]"
-                                                    > <TextBlock Foreground="BlueViolet" />
+                                                    > 
+                                            <TextBlock Foreground="BlueViolet" />
                                                     <TextBlock.ToolTip>
                                                         <StackPanel Orientation="Vertical" MaxWidth="450">
                                                             <StackPanel Orientation="Horizontal">
@@ -444,8 +459,11 @@ HorizontalAlignment="Stretch"
                                 </HierarchicalDataTemplate>
 
                                 <!-- Column Template -->
-                                <HierarchicalDataTemplate DataType="{x:Type model:TreeViewColumn}" ItemsSource="{Binding Children}">
-                                    <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=Tables}">
+                                <HierarchicalDataTemplate 
+                                    DataType="{x:Type model:TreeViewColumn}" 
+                                    ItemsSource="{Binding Children}">
+                                    <StackPanel Orientation="Horizontal" 
+                                                Tag="{Binding DataContext, ElementName=Tables}">
                                         <Grid>
                                             <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" />
                                             <!--<fa:ImageAwesome Icon="Key" Width="10" Margin="3,6,0,0" Foreground="Blue" Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=IsKey}"/>-->
@@ -575,98 +593,10 @@ HorizontalAlignment="Stretch"
                                         
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
-                            </ctrl:TreeViewEx.Resources>
-                        </ctrl:TreeViewEx>
-
-                        <!-- Search Box -->
-                        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Right">
-                            <Border Style="{StaticResource searchBox}" 
-                                    x:Name="srchBox"
-                                    ClipToBounds="True"
-                                    ap:MouseObserver.Observe="True"
-                                    ap:MouseObserver.ObservedMouseOver="{Binding IsMouseOverSearch, Mode=OneWayToSource}"
-                                    ap:KeyboardFocusWithinObserver.Observe="True"
-                                    ap:KeyboardFocusWithinObserver.ObservedKeyboardFocusWithin="{Binding IsKeyboardFocusWithinSearch, Mode=OneWayToSource}">
-                                <Border.Tag>
-                                    <sys:Double>0.0</sys:Double>
-                                </Border.Tag>
-
-                                <Border.Width>
-                                    <MultiBinding Converter="{StaticResource multiplyWithMinConverter}" ConverterParameter="16">
-                                        <Binding Path="ActualWidth" ElementName="Tables"/>
-                                        <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
-                                    </MultiBinding>
-                                </Border.Width>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Image x:Name="SearchIcon" Grid.Column="0">
-                                        <Image.Style>
-                                            <Style TargetType="{x:Type Image}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding HasCriteria}" Value="false">
-                                                        <Setter Property="Source" Value="{StaticResource Search}"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding HasCriteria}" Value="true">
-                                                        <Setter Property="Source" Value="{StaticResource SearchActive}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Image.Style>
-                                        <Image.ContextMenu>
-                                            <!-- Header="{Binding Path=MetadataPane.PinSearchOpenLabel}" -->
-                                            <ContextMenu>
-                                                <MenuItem Header="Pin/UnPin Search" 
-                                                          cal:Message.Attach="[Event Click] = [Action TogglePinSearchOpen()]" />
-                                            </ContextMenu>
-                                        </Image.ContextMenu>
-                                    </Image>
-                                    <TextBox Grid.Column="1"
-                                                    x:Name="CurrentCriteria"
-                                                    Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                                                    Opacity="0"
-                                                    Padding="2 2 24 0"
-                                                    >
-                                        <i:Interaction.Triggers>
-                                            <trig:InputBindingTrigger>
-                                                <trig:InputBindingTrigger.InputBinding>
-                                                    <KeyBinding Key="Escape"/>
-                                                </trig:InputBindingTrigger.InputBinding>
-                                                <cal:ActionMessage MethodName="ClearCriteria"/>
-                                            </trig:InputBindingTrigger>
-                                            <trig:InputBindingTrigger>
-                                                <trig:InputBindingTrigger.InputBinding>
-                                                    <KeyBinding Key="Down"/>
-                                                </trig:InputBindingTrigger.InputBinding>
-                                                <cal:ActionMessage MethodName="SetFocusToMetadata"/>
-                                            </trig:InputBindingTrigger>
-                                        </i:Interaction.Triggers>
-
-                                    </TextBox>
-                                    <Button Margin="5" Grid.Column="1" HorizontalAlignment="Right"
-                                                Visibility="{Binding Path=HasCriteria, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                BorderThickness="0"
-                                                Background="Transparent">
-                                        <Image Source="{StaticResource Clear}" />
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="Click">
-                                                <cal:ActionMessage MethodName="ClearCriteria" />
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </Button>
-                                </Grid>
-                            </Border>
-
-                            <Border x:Name="SearchSpacer" 
-                                            BorderThickness="0" 
-                                            Height="1" 
-                                            IsHitTestVisible="False"
-                                            Background="Transparent"
-                                            Width="{Binding ElementName=Tables, Path=ScrollBarWidth}">
-                            </Border>
-                        </StackPanel>
+                            </TreeView.Resources>
+                        </TreeView>
+                        </Border>
+                        
 
                         <!-- Busy overlay -->
                         <Border Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
@@ -680,16 +610,7 @@ HorizontalAlignment="Stretch"
                             </Grid>
                         </Border>
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding ExpandSearch}" Value="True">
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard Storyboard="{StaticResource SearchIn}" />
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
-                                <BeginStoryboard Storyboard="{StaticResource SearchOut}" />
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
-                    </ControlTemplate.Triggers>
+                    
                 </ControlTemplate>
             </Control.Template>
         </ContentControl>

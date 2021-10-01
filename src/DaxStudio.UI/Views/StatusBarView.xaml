@@ -82,8 +82,8 @@
     </UserControl.Resources>
 
     <Grid >
-        
-        <Fluent:StatusBar>
+
+        <Fluent:StatusBar Background="{DynamicResource Theme.Brush.MenuBar.Back}" > 
             <Fluent:StatusBar.ItemsPanel >
                 <ItemsPanelTemplate>
                     <Grid>

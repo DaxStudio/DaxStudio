@@ -21,6 +21,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/SearchBox.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
                 <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
@@ -50,18 +51,22 @@
             </i:Interaction.Triggers>
         </TextBox>
         </Grid>
-        <Button x:Name="ClearSearchCriteria" Grid.Row="0" 
+        <!--<Button x:Name="ClearSearchCriteria" Grid.Row="0" 
                 HorizontalAlignment="Right" 
                 Background="Transparent"
                 BorderThickness="0"
                 Margin="5"
                 Visibility="{Binding Path=HasSearchCriteria, Converter={StaticResource BoolToVisibilityConverter}}">
             <fa:FontAwesome Icon="Times" Foreground="DimGray"/>
-        </Button>
+        </Button>-->
         
         <!-- TreeView -->
-        <controls:TreeViewEx Grid.Row="1" x:Name="FunctionGroups" Height="Auto"  ItemsSource="{Binding FunctionGroups}"
-                  Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
+        <!--<controls:TreeViewEx
+        Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
+        -->
+        <TreeView
+            Grid.Row="1" x:Name="FunctionGroups" Height="Auto"  ItemsSource="{Binding FunctionGroups}"
+                  
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
@@ -72,14 +77,14 @@
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                     <!-- FunctionGroup Template -->
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{StaticResource FunctionGroup}" Margin="2,1,5,1"/>
+                        <Image Source="{StaticResource folderDrawingImage}" Margin="2,1,5,1"/>
                         <TextBlock  Text="{Binding Caption}" />
                     </StackPanel>
                     <!-- Function Template -->
                     <HierarchicalDataTemplate.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Tag="{Binding DataContext, ElementName=FunctionGroups}">
-                                <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
+                                <Image Source="{StaticResource functionDrawingImage}" Margin="2,1,5,1" />
                                 <TextBlock Text="{Binding Caption}" >
                                     <TextBlock.ToolTip>
                                         <!-- Function Tooltip -->
@@ -105,7 +110,8 @@
                     </HierarchicalDataTemplate.ItemTemplate>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
-        </controls:TreeViewEx>
+        </TreeView>
+        <!--</controls:TreeViewEx>-->
 
     </Grid>
 </controls:ZoomableUserControl>

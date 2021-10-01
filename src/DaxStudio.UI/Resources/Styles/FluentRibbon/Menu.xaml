@@ -5,7 +5,7 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     mc:Ignorable="d">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Styles.xaml"/>
     </ResourceDictionary.MergedDictionaries>
     
     

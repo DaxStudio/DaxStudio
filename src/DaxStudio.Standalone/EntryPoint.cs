@@ -70,7 +70,7 @@ namespace DaxStudio.Standalone
             System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
 
             // add the custom DAX Studio accent color theme
-            App.AddDaxStudioAccentColor();
+            //App.AddDaxStudioAccentColor();
 
             // TODO - do we need to customize the navigator window to fix the styling?
             //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");

@@ -312,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
             get => _currentCriteria;
             set
             {
-                _currentCriteria = value;
+                _currentCriteria = value??string.Empty;
                 if (_currentCriteria.Length >= 2 || _currentCriteria.Length == 0)
                 {
                     NotifyOfPropertyChange(() => CurrentCriteria);
@@ -362,6 +362,7 @@ namespace DaxStudio.UI.ViewModels
             if (Tables == null) return;
             foreach (var node in Tables)
                 node.ApplyCriteria(CurrentCriteria, new Stack<IFilterableTreeViewItem>());
+            
         }
 
         // Database Dropdown Properties

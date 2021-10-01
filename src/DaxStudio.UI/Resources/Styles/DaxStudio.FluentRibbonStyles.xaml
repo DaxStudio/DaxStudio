@@ -229,15 +229,17 @@
                                VerticalAlignment="Top"
                                Background="{TemplateBinding TitleBackground}"
                                LastChildFill="True">
+                                <!-- Source="{Fluent:IconConverter {Binding Icon, RelativeSource={RelativeSource TemplatedParent}},
+                                                             {Binding RelativeSource={RelativeSource Self}}}"-->
                             <Image x:Name="PART_Icon"
-                               Width="16"
+                               Width="36"
                                Height="16"
-                               Margin="4 2 0 0"
+                               Margin="6 2 2 0"
                                VerticalAlignment="{TemplateBinding VerticalIconAlignment}"
                                DockPanel.Dock="Left"
                                SnapsToDevicePixels="True"
-                               Source="{Fluent:IconConverter {Binding Icon, RelativeSource={RelativeSource TemplatedParent}},
-                                                             {Binding RelativeSource={RelativeSource Self}}}"
+                                   Source="{DynamicResource logo_smallDrawingImage}"
+                               
                                Stretch="Uniform"
                                Visibility="{TemplateBinding IsIconVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
@@ -327,7 +329,8 @@
             <Setter Property="TitleBackground" Value="{DynamicResource Fluent.Ribbon.Brushes.RibbonWindow.TitleBackground}" />
             <Setter Property="TitleBarHeight" Value="{DynamicResource {x:Static SystemParameters.WindowCaptionHeightKey}}" />
             <Setter Property="TitleForeground" Value="{DynamicResource Fluent.Ribbon.Brushes.RibbonWindow.TitleForeground}" />
-        </Style>
+        <!--<Setter Property="Source" TargetName="PART_Icon" Value="{DynamicResource logo_smallDrawingImage}"/>-->
+    </Style>
 
 
 </ResourceDictionary>

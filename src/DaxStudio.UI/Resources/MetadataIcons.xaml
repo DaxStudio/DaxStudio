@@ -5,7 +5,7 @@
     
     <conv:ResourceLookupConverter x:Key="MetadataIcons">
         <ResourceDictionary>
-            <BitmapImage x:Key="Table" UriSource="{DynamicResource Metadata.Table}"/>
+            <Image x:Key="Table" Source="{DynamicResource tableDrawingImage}"/>
             <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
             <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
             <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />
@@ -22,7 +22,7 @@
 
     <conv:ResourceThemeLookupConverter x:Key="MetadataIcons2">
         <ResourceDictionary>
-            <BitmapImage x:Key="Light.Table" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
+            <Image x:Key="Table" Source="{DynamicResource tableDrawingImage}"/>
             <BitmapImage x:Key="Light.HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
             <BitmapImage x:Key="Light.Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
             <BitmapImage x:Key="Light.HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />

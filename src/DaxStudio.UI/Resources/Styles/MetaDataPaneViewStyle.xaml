@@ -62,7 +62,7 @@
             -->
     </Style>
     
-    <ControlTemplate x:Key="MetroComboBoxControlTemplate" TargetType="{x:Type ComboBox}">
+    <!--<ControlTemplate x:Key="MetroComboBoxControlTemplate" TargetType="{x:Type ComboBox}">
         <Grid x:Name="templateRoot" SnapsToDevicePixels="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -118,14 +118,14 @@
                                                 <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
                                                 <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="false"/>
                                             </MultiDataTrigger.Conditions>
-                                            <!--<Setter Property="Background" TargetName="templateRoot">
+                                            --><!--<Setter Property="Background" TargetName="templateRoot">
                                                 <Setter.Value>
                                                     <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
                                                         <GradientStop Color="#FFECF4FC" Offset="0"/>
                                                         <GradientStop Color="#FFDCECFC" Offset="1"/>
                                                     </LinearGradientBrush>
                                                 </Setter.Value>
-                                            </Setter>-->
+                                            </Setter>--><!--
                                             <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF7EB4EA"/>
                                         </MultiDataTrigger>
                                         <MultiDataTrigger>
@@ -153,14 +153,14 @@
                                                 <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="true"/>
                                                 <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="false"/>
                                             </MultiDataTrigger.Conditions>
-                                            <!--<Setter Property="Background" TargetName="templateRoot">
+                                            --><!--<Setter Property="Background" TargetName="templateRoot">
                                                 <Setter.Value>
                                                     <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
                                                         <GradientStop Color="#FFDAECFC" Offset="0"/>
                                                         <GradientStop Color="#FFC4E0FC" Offset="1"/>
                                                     </LinearGradientBrush>
                                                 </Setter.Value>
-                                            </Setter>-->
+                                            </Setter>--><!--
                                             <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF569DE5"/>
                                         </MultiDataTrigger>
                                         <MultiDataTrigger>
@@ -170,14 +170,14 @@
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Background" TargetName="templateRoot" Value="{DynamicResource BaseBrush}"/>
                                             <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FF569DE5"/>
-                                            <!--<Setter Property="Background" TargetName="splitBorder">
+                                            --><!--<Setter Property="Background" TargetName="splitBorder">
                                                 <Setter.Value>
                                                     <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
                                                         <GradientStop Color="#FFDAEBFC" Offset="0"/>
                                                         <GradientStop Color="#FFC4E0FC" Offset="1"/>
                                                     </LinearGradientBrush>
                                                 </Setter.Value>
-                                            </Setter>-->
+                                            </Setter>--><!--
                                             <Setter Property="BorderBrush" TargetName="splitBorder" Value="#FF569DE5"/>
                                         </MultiDataTrigger>
                                         <Trigger Property="IsEnabled" Value="False">
@@ -188,7 +188,7 @@
                                                 <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false"/>
                                                 <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type ComboBox}}}" Value="false"/>
                                             </MultiDataTrigger.Conditions>
-                                            <Setter Property="Background" TargetName="templateRoot" Value="#FFF0F0F0"/> <!-- DARK need dark disabled color -->
+                                            <Setter Property="Background" TargetName="templateRoot" Value="#FFF0F0F0"/> --><!-- DARK need dark disabled color --><!--
                                             <Setter Property="BorderBrush" TargetName="templateRoot" Value="#FFD9D9D9"/>
                                         </MultiDataTrigger>
                                         <MultiDataTrigger>
@@ -230,5 +230,5 @@
                 <Setter Property="Canvas.Left" TargetName="OpaqueRect" Value="{Binding HorizontalOffset, ElementName=DropDownScrollViewer}"/>
             </Trigger>
         </ControlTemplate.Triggers>
-    </ControlTemplate>
+    </ControlTemplate>-->
 </ResourceDictionary>

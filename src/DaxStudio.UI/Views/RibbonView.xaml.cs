@@ -15,7 +15,7 @@ namespace DaxStudio.UI.Views
         }
 
         #region "QuickAccessToolbar Event Handlers"
-        // The following 3 event handlers are only used for the Quick Access Buttons in the title bar
+        // The following 4 event handlers are only used for the Quick Access Buttons in the title bar
         // Adding the handlers here does violate MVVM, but I have been unable to get the bindings to
         // work consistently any other way and given that we are highly unlikely to create alternate
         // views for the RibbonViewModel this is probably not a big issue
@@ -61,5 +61,18 @@ namespace DaxStudio.UI.Views
             }
         }
         #endregion
+
+        private void ChangeTheme_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var vm = this.DataContext as RibbonViewModel;
+            if (vm != null)
+            {
+                vm.ToggleTheme();
+            }
+            else
+            {
+                Log.Error("{class} {method} Pmessage}", nameof(RibbonView), nameof(NewConnectedQuery_Click), "Unable to get an instance of RibbonViewModel");
+            }
+        }
     }
 }

@@ -285,6 +285,7 @@
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\DatetimeToLocalTimeConverter.cs" />
+    <Compile Include="Converters\DynamicResourceLookupConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />

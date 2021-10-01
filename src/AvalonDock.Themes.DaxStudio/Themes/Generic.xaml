@@ -249,6 +249,7 @@
 									Stretch="Uniform" />
 							</avalonDockControls:DropDownButton>
 						</Grid>
+                        <!-- BorderThickness="1,0,1,1" -->
 						<Border
 							x:Name="ContentPanel"
 							Grid.Row="1"
@@ -257,7 +258,7 @@
 							VerticalAlignment="Stretch"
 							Background="{TemplateBinding Background}"
 							BorderBrush="{DynamicResource {x:Static reskeys:ResourceKeys.PanelBorderBrush}}"
-							BorderThickness="1,0,1,1"
+							
 							KeyboardNavigation.DirectionalNavigation="Contained"
 							KeyboardNavigation.TabIndex="2"
 							KeyboardNavigation.TabNavigation="Cycle">
@@ -312,6 +313,7 @@
                     <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedBackground}}" />
                     <Setter Property="Foreground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedText}}" />
                     <Setter Property="BorderBrush" Value="Transparent" />
+
                     <Setter Property="ToolTip" Value="{Binding ToolTip}" />
                     <Setter Property="Padding" Value="6,1" />
                     <Setter Property="Margin" Value="0" />
@@ -323,7 +325,8 @@
 										x:Name="Bd"
 										Background="{TemplateBinding Background}"
 										BorderBrush="{Binding Background, RelativeSource={RelativeSource Self}}"
-										BorderThickness="0,0,0,2" />
+										BorderThickness="1,0,1,1"
+                                        CornerRadius="0 0 8 8"/>
                                     <ContentPresenter
 										x:Name="Content"
 										HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"

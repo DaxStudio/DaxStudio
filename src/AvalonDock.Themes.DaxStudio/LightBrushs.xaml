@@ -8,7 +8,7 @@
 	</ResourceDictionary.MergedDictionaries>
 
 	<!--  Accent Keys  -->
-	<Color x:Key="{x:Static reskeys:ResourceKeys.ControlAccentColorKey}">#1ba1e2</Color>
+	<Color x:Key="{x:Static reskeys:ResourceKeys.ControlAccentColorKey}">#228ED6</Color>
 
 	<SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.ControlAccentBrushKey}" Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
 
@@ -16,25 +16,25 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.Background}"
 		options:Freeze="true"
-		Color="#EEEEF2" />
+		Color="#FFFFFF" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.PanelBorderBrush}"
 		options:Freeze="true"
-		Color="#FFCCCEDB" />
+		Color="Transparent" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.TabBackground}"
 		options:Freeze="true"
-		Color="#FFF5F5F5" />
+		Color="#FFFFFF" />
 
 	<!--  Auto Hide : Tab  -->
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBackground}"
 		options:Freeze="true"
-		Color="#EEEEF2" />
+		Color="#FFFFFF" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBorder}"
 		options:Freeze="true"
-		Color="#CCCEDB" />
+		Color="#FFFFFF" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultText}"
 		options:Freeze="true"

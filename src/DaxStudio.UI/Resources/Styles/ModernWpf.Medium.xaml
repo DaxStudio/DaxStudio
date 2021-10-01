@@ -9,7 +9,7 @@
     <sys:Double x:Key="ContentControlFontSize">12</sys:Double>
     <sys:Double x:Key="TextControlThemeMinHeight">24</sys:Double>
     <Thickness x:Key="TextControlThemePadding">2,2,6,1</Thickness>
-    <sys:Double x:Key="ListViewItemMinHeight">32</sys:Double>
+    <sys:Double x:Key="ListViewItemMinHeight">28</sys:Double>
     <sys:Double x:Key="TreeViewItemMinHeight">24</sys:Double>
     <Thickness x:Key="TimePickerHostPadding">0,1,0,2</Thickness>
     <Thickness x:Key="DatePickerHostPadding">0,1,0,2</Thickness>

@@ -16,6 +16,9 @@
         <ResourceDictionary>
             <BitmapImage x:Key="DmvQuery" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/DmvTable.png"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -62,7 +65,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate >
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{StaticResource DmvQuery}" Margin="1,1,5,1"></Image>
+                        <Image Source="{DynamicResource table_dmvDrawingImage}" Margin="1,1,5,1"></Image>
                         <TextBlock Text="{Binding Caption, Mode=OneWay}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>

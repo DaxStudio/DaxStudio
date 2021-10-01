@@ -8,7 +8,7 @@
 	</ResourceDictionary.MergedDictionaries>
 
 	<!--  Accent Keys  -->
-	<Color x:Key="{x:Static reskeys:ResourceKeys.ControlAccentColorKey}">#FF007ACC</Color>
+	<Color x:Key="{x:Static reskeys:ResourceKeys.ControlAccentColorKey}">#29A9FF</Color>
 
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.ControlAccentBrushKey}"

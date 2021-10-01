@@ -6,8 +6,13 @@
     <sys:String x:Key="Theme.DisplayName">DaxStudio (Dark)</sys:String>
     <sys:String x:Key="Theme.BaseColorScheme">Dark</sys:String>
     <sys:String x:Key="Theme.ColorScheme">DaxStudio</sys:String>
+    
     <!--<Color x:Key="Theme.PrimaryAccentColor"            >#FF0072C6</Color>-->
     <Color x:Key="Theme.PrimaryAccentColor"            >#FF29A9FF</Color>
+    <Color x:Key="Theme.MenuBar.Back">#3A3A3A</Color>
+    <Color x:Key="Theme.MenuBar.Fore">#FFFFFF</Color>
+    <Color x:Key="Theme.Dialog.Back">#2D2D2D</Color>
+    <Color x:Key="Theme.Dialog.Border">#2D2D2D</Color>
 
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF29A9FF</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC29A9FF</Color>
@@ -69,8 +74,8 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.LabelTextBrush" SolidColorBrush.Color="{StaticResource Gray6}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Control.BorderBrush" SolidColorBrush.Color="{StaticResource Gray6}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Control.Disabled.BorderBrush" SolidColorBrush.Color="{StaticResource Gray5}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Fore}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.Button.Background" SolidColorBrush.Color="{StaticResource BlackColor20}" />
@@ -164,6 +169,6 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.MouseOver.Background" SolidColorBrush.Color="#E81123" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.Pressed.Background" SolidColorBrush.Color="#A92C38" />
 
-    <SolidColorBrush x:Key="DialogBackground" Color="{StaticResource WhiteColor}"/>
-
+    <SolidColorBrush x:Key="DialogBackground" Color="{StaticResource Theme.Dialog.Back}"/>
+    <SolidColorBrush x:Key="DialogBorder" Color="{StaticResource Theme.Dialog.Border}"/>
 </ResourceDictionary>

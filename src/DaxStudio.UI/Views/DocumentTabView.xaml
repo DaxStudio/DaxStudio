@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
-             
+             xmlns:avalondockDS="clr-namespace:AvalonDock.Themes.DaxStudio"             
              xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -23,6 +23,10 @@
 
             <Style x:Key="MyCustomDocumentPaneControlStyle" TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
                 <Setter Property="TabStripPlacement" Value="Bottom"/>
+                <Setter Property="Background" Value="{DynamicResource AvalonDock.Control.Background.Brush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource AvalonDock.Control.Background.Brush}"/>
+                <!--
+                <Setter Property="BorderThickness" Value="0"/>-->
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
@@ -54,10 +58,10 @@
 
                                     <avalonDockControls:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" IsItemsHost="true" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1"/>
                                     <avalonDockControls:DropDownButton
-                            x:Name="MenuDropDownButton"
-                            Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
-                            Focusable="False"
-                            Grid.Column="1">
+                                            x:Name="MenuDropDownButton"
+                                            Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
+                                            Focusable="False"
+                                            Grid.Column="1">        
                                         <avalonDockControls:DropDownButton.DropDownContextMenu>
                                             <avalonDockControls:ContextMenuEx
                                     ItemsSource="{Binding Model.ChildrenSorted, RelativeSource={RelativeSource TemplatedParent}}">
@@ -78,16 +82,16 @@
                                     
                                 </Grid>
                                 <Border x:Name="ContentPanel" 
-                            VerticalAlignment="Stretch" 
-                            HorizontalAlignment="Stretch"  
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Background="{TemplateBinding Background}" 
-                            Grid.Column="0" 
-                            KeyboardNavigation.DirectionalNavigation="Contained" 
-                            Grid.Row="0"
-                            KeyboardNavigation.TabIndex="2" 
-                            KeyboardNavigation.TabNavigation="Cycle">
+                                        VerticalAlignment="Stretch" 
+                                        HorizontalAlignment="Stretch"  
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}" 
+                                        Grid.Column="0" 
+                                        KeyboardNavigation.DirectionalNavigation="Contained" 
+                                        Grid.Row="0"
+                                        KeyboardNavigation.TabIndex="2" 
+                                        KeyboardNavigation.TabNavigation="Cycle">
                                     <ContentPresenter x:Name="PART_SelectedContentHost" 
                                           ContentSource="SelectedContent" 
                                           Margin="{TemplateBinding Padding}"
@@ -177,7 +181,7 @@
 
 
             <avalondock:DockingManager.Theme>
-                <avalondock:GenericTheme />
+                <avalondock:DaxStudioGenericTheme />
             </avalondock:DockingManager.Theme>
 
             <!-- Note the Binding to "Content". This is how AvalonDock holds the model -->

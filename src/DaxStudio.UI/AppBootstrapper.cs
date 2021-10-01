@@ -182,16 +182,8 @@ namespace DaxStudio.UI
             var compactSizing = new ResourceDictionary();
             compactSizing.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml");
             Application.Current.Resources.MergedDictionaries.Add(compactSizing);
+            
         }
-
-        //private void AddMahAppsMetroToApplicationResources()
-        //{
-            //var myResourceDictionary = new ResourceDictionary();
-            //myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml", UriKind.Absolute);
-            //Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-            //myResourceDictionary.Source = new Uri("pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml", UriKind.Absolute);
-            //Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-        //}
 
         public IThemeManager GetThemeManager()
         {

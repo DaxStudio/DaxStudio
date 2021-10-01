@@ -53,6 +53,20 @@ namespace DaxStudio.UI.ViewModels
         private const string urlGithubBugReportPrefix = @"https://github.com/DaxStudio/DaxStudio/issues/new?labels=from+app&template=bug_report.md&body=";
         private const string urlGithubBugReportSuffix = @"%23%23%20Summary%20of%20Issue%0A%0A%0A%23%23%20Steps%20to%20Reproduce%0A1.%0A2.";
         private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
+
+        internal void ToggleTheme()
+        {
+            switch( this.Theme)
+            {
+                case "Light": 
+                    Theme = "Dark";
+                    break;
+                default: 
+                    Theme = "Light";
+                    break;
+            }
+        }
+
         private const string urlGithubDiscussions = @"https://github.com/DaxStudio/DaxStudio/discussions";
         private ISettingProvider SettingProvider;
         [ImportingConstructor]

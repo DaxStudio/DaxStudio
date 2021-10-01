@@ -81,11 +81,11 @@ namespace DaxStudio.UI.Extensions
         public static void AddDaxStudioAccentColor(this Application app)
         {
             // Fluent Dark Theme
-            var dictGeneric = new ResourceDictionary()
-            {
-                Source = new Uri("pack://application:,,,/Fluent;component/Themes/Generic.xaml", UriKind.Absolute)
-            };
-            app.Resources.MergedDictionaries.Add(dictGeneric);
+            //var dictGeneric = new ResourceDictionary()
+            //{
+            //    Source = new Uri("pack://application:,,,/Fluent;component/Themes/Generic.xaml", UriKind.Absolute)
+            //};
+            //app.Resources.MergedDictionaries.Add(dictGeneric);
 
             //var dictDark = new ResourceDictionary()
             //{
@@ -103,14 +103,20 @@ namespace DaxStudio.UI.Extensions
             var source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml");
             var lightTheme = new ControlzEx.Theming.Theme(new LibraryTheme(source, null));
 
-            ThemeManager.Current.AddTheme( lightTheme);
+            ThemeManager.Current.AddTheme(lightTheme);
 
             source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.Theme.xaml");
             var darkTheme = new ControlzEx.Theming.Theme(new LibraryTheme(source, null));
-            ThemeManager.Current.AddTheme( darkTheme);
-            
+            ThemeManager.Current.AddTheme(darkTheme);
+
+            //ThemeManager.Current.ChangeThemeColorScheme(Application.Current, "DaxStudio");
+
+            ThemeManager.Current.ChangeTheme(Application.Current, lightTheme);
+
             // get the current theme from the application
             var theme = ThemeManager.Current.DetectTheme(Application.Current);
+
+            
 
         }
 
