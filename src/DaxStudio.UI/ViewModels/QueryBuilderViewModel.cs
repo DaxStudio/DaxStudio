@@ -198,9 +198,12 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 var coll = new List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter>();
-                foreach (var p in QueryInfo?.Parameters?.Values)
+                if (QueryInfo?.Parameters?.Values != null)
                 {
-                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value));
+                    foreach (var p in QueryInfo?.Parameters?.Values)
+                    {
+                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value));
+                    }
                 }
                 return coll;
             }
