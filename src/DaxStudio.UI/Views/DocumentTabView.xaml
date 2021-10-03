@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
-             xmlns:avalondockDS="clr-namespace:AvalonDock.Themes.DaxStudio"             
              xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -20,7 +19,7 @@
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
 
-
+            
             <Style x:Key="MyCustomDocumentPaneControlStyle" TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
                 <Setter Property="TabStripPlacement" Value="Bottom"/>
                 <Setter Property="Background" Value="{DynamicResource AvalonDock.Control.Background.Brush}"/>
@@ -42,26 +41,29 @@
 
                                 <Grid Panel.ZIndex="1" Grid.Row="1" ClipToBounds="True">
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="6"/>
                                         <ColumnDefinition/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="6"/>
                                     </Grid.ColumnDefinitions>
 
                                     <Border  
-                                        Grid.ColumnSpan="2"
+                                        Grid.ColumnSpan="4"
                                         BorderThickness="0 1 0 0"
                                         BorderBrush="Black"
+                                        Background="Transparent"
                                         Margin="0 -1 0 0 ">
                                         <Border.Effect>
                                             <DropShadowEffect  ShadowDepth="0" BlurRadius="10" />
                                         </Border.Effect>
                                     </Border>
 
-                                    <avalonDockControls:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="0" IsItemsHost="true" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1"/>
+                                    <avalonDockControls:DocumentPaneTabPanel x:Name="HeaderPanel" Grid.Column="1" IsItemsHost="true" Margin="2,0,2,2" Grid.Row="0" KeyboardNavigation.TabIndex="1"/>
                                     <avalonDockControls:DropDownButton
                                             x:Name="MenuDropDownButton"
                                             Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
                                             Focusable="False"
-                                            Grid.Column="1">        
+                                            Grid.Column="2">        
                                         <avalonDockControls:DropDownButton.DropDownContextMenu>
                                             <avalonDockControls:ContextMenuEx
                                     ItemsSource="{Binding Model.ChildrenSorted, RelativeSource={RelativeSource TemplatedParent}}">
@@ -162,9 +164,11 @@
     <Grid>
         <avalondock:DockingManager 
             x:Name="Items"
+            Background="{DynamicResource Theme.Brush.Menu.Back}"
             DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}" 
             cal:Message.Attach="[Event ActiveContentChanged] = [Action ActiveDocumentChanged]" 
+            Margin="-6"
             >
             <!-- Theme="{Binding AvalonDockTheme}"-->
             

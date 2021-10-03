@@ -15,30 +15,30 @@
         d:DesignWidth="466" 
         GlowBrush="{x:Null}"
         NonActiveGlowBrush="{x:Null}"
-                     NonActiveBorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"
-                    
-        AllowsTransparency="True"
-        Background="Transparent"
-                     
+        NonActiveBorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"
+        BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"            
+        Background="Transparent"                   
         Style="{DynamicResource DaxStudioRibbonWindowStyle}"
         Icon="pack://application:,,,/DaxStudio.UI;component/images/DaxStudio.ico"    
         ResizeMode="CanResizeWithGrip"
-        BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"
         MinHeight="460"
         MinWidth="460"                    
         Height="720"
         Width="1120"
-
         Top="5">
+    <!--<WindowChrome.WindowChrome>
+        <WindowChrome x:Name="chrome" ResizeBorderThickness="8" CornerRadius="20" GlassFrameThickness="0" NonClientFrameEdges="None" />
+    </WindowChrome.WindowChrome>-->
+    <!--AllowsTransparency="True"-->
+
     <!--<WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{x:Static SystemParameters.CaptionHeight}"
                       ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}"
-                      CornerRadius="8"
-                      
+                      CornerRadius="8"        
                       UseAeroCaptionButtons="False">
         </WindowChrome>
-
     </WindowChrome.WindowChrome>-->
+    
     <fluent:RibbonWindow.Resources>
         
         <ResourceDictionary>

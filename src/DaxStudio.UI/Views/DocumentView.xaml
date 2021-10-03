@@ -213,7 +213,7 @@
                                     </Image>-->
                                     </avalondock:DropDownButton>
                                 </Grid>
-                                <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="Transparent" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
+                                <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Theme.Brush.Default.Back}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
                                     <ContentPresenter x:Name="PART_SelectedContentHost" ContentTemplate="{TemplateBinding SelectedContentTemplate}" Content="{TemplateBinding SelectedContent}" ContentStringFormat="{TemplateBinding SelectedContentStringFormat}" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                                 </Border>
                             </Grid>
@@ -289,7 +289,7 @@
                                    AnchorablesSource="{Binding ToolWindows}"
                                    Grid.Row="0"
                                    beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True"
-                                   
+                                   Theme="{Binding AvalonDockTheme}"
                                    KeyboardNavigation.ControlTabNavigation="None"
                                    FocusManager.FocusedElement="{Binding ElementName=daxEditor}"
                                    Focusable="False"

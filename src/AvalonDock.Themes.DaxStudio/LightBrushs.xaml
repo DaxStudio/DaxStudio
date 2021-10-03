@@ -20,7 +20,7 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.PanelBorderBrush}"
 		options:Freeze="true"
-		Color="Transparent" />
+		Color="#FFFFFF" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.TabBackground}"
 		options:Freeze="true"

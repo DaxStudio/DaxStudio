@@ -8,11 +8,16 @@
     <sys:String x:Key="Theme.ColorScheme">DaxStudio</sys:String>
     
     <!--<Color x:Key="Theme.PrimaryAccentColor"            >#FF0072C6</Color>-->
-    <Color x:Key="Theme.PrimaryAccentColor"            >#FF29A9FF</Color>
+    <Color x:Key="Theme.PrimaryAccentColor">#FF29A9FF</Color>
+    <Color x:Key="Theme.Default.Back">#2D2D2D</Color>
+    <Color x:Key="Theme.Default.Fore">#FFFFFF</Color>
     <Color x:Key="Theme.MenuBar.Back">#3A3A3A</Color>
     <Color x:Key="Theme.MenuBar.Fore">#FFFFFF</Color>
     <Color x:Key="Theme.Dialog.Back">#2D2D2D</Color>
     <Color x:Key="Theme.Dialog.Border">#2D2D2D</Color>
+
+    <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}"/>
+    <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{StaticResource Theme.MenuBar.Back}"/>
 
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF29A9FF</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC29A9FF</Color>
@@ -124,7 +129,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background" SolidColorBrush.Color="#363636" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background" SolidColorBrush.Color="#363636" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.BorderBrush" SolidColorBrush.Color="Transparent" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.BorderBrush" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Foreground" SolidColorBrush.Color="{StaticResource Gray6}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Background" SolidColorBrush.Color="Transparent" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />

@@ -10,11 +10,16 @@
     
     <!--<Color x:Key="Theme.PrimaryAccentColor">#FF0072C6</Color>-->
     <Color x:Key="Theme.PrimaryAccentColor">#FF228ED6</Color>
+    <Color x:Key="Theme.Default.Back">#FFFFFF</Color>
+    <Color x:Key="Theme.Default.Fore">#000000</Color>
     <Color x:Key="Theme.MenuBar.Back">#F3F2F1</Color>
     <Color x:Key="Theme.MenuBar.Fore">#252423</Color>
     <Color x:Key="Theme.Dialog.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Dialog.Border">#D6D6D6</Color>
-    
+
+    <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}"/>
+    <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{StaticResource Theme.MenuBar.Back}"/>
+
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor60"  >#99228ED6</Color>
@@ -131,7 +136,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Fore}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.BorderBrush" SolidColorBrush.Color="Transparent" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.BorderBrush" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Content.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Fore}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Fore}" />

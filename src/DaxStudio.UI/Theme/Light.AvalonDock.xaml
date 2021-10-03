@@ -12,7 +12,7 @@
     <!-- Colors  -->
     
     <Color x:Key="AvalonDock.Border.Background.Color">#FFFFFFFF</Color>
-    <Color x:Key="AvalonDock.Control.Background.Color">#FFFFFFFF</Color>
+    <Color x:Key="AvalonDock.Control.Background.Color">#FFF3F2F1</Color>
     <Color x:Key="AvalonDock.Transparent.Color">#00FFFFFF</Color>
     <Color x:Key="AvalonDock.Text.Color">#00CCCCCC</Color>
 
@@ -27,6 +27,7 @@
     
 
     <!-- Styles -->
+    <!--
     <avalonDockConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"  />
     <avalonDockConverters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
     <avalonDockConverters:AnchorSideToOrientationConverter x:Key="AnchorSideToOrientationConverter"  />
@@ -831,4 +832,5 @@
             </Setter.Value>
         </Setter>
     </Style>
+    -->
 </ResourceDictionary>

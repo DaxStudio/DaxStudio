@@ -204,7 +204,7 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <!--  Following border is required to catch mouse events  -->
-                        <Border Grid.RowSpan="2" Background="Transparent" />
+                        <Border x:Name="mouseBorder" Grid.RowSpan="2" Background="{DynamicResource Theme.Brush.Menu.Back}" />
 						<Grid
 							Margin="1,0"
 							Grid.Row="0"
@@ -459,6 +459,7 @@
             </Setter.Value>
         </Setter>
 
+        <!-- Anchorable tab style -->
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
                 <Style TargetType="{x:Type TabItem}">
@@ -473,7 +474,7 @@
                                 <Grid SnapsToDevicePixels="true">
                                     <Border
 										x:Name="SelectedBD"
-										Margin="1,-1,1,0"
+										Margin="1,0,1,0"
 										BorderBrush="{DynamicResource {x:Static reskeys:ResourceKeys.ToolWindowTabSelectedActiveBackground}}"
 										BorderThickness="0,1,0,0"
 										Visibility="Collapsed" />

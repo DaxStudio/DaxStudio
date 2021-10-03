@@ -27,6 +27,7 @@
     
 
     <!-- Styles -->
+    <!--
     <avalonDockConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"  />
     <avalonDockConverters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
     <avalonDockConverters:AnchorSideToOrientationConverter x:Key="AnchorSideToOrientationConverter"  />
@@ -831,4 +832,5 @@
             </Setter.Value>
         </Setter>
     </Style>
+    -->
 </ResourceDictionary>
