@@ -33,4 +33,6 @@
     <sys:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">33</sys:Double>
     <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,0,0,1</Thickness>
     <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,0,0,1</Thickness>
+
+    <Thickness x:Key="TabViewItemHeaderPadding">1,1,1,1</Thickness>
 </ResourceDictionary>

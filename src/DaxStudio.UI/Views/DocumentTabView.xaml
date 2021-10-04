@@ -83,12 +83,13 @@
                                     </avalonDockControls:DropDownButton>
                                     
                                 </Grid>
+                                <!-- BorderThickness="{TemplateBinding BorderThickness}"-->
                                 <Border x:Name="ContentPanel" 
                                         VerticalAlignment="Stretch" 
                                         HorizontalAlignment="Stretch"  
                                         BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        Background="{TemplateBinding Background}" 
+                                        BorderThickness="0"
+                                        Background="{DynamicResource Theme.Brush.Default.Back}" 
                                         Grid.Column="0" 
                                         KeyboardNavigation.DirectionalNavigation="Contained" 
                                         Grid.Row="0"
@@ -111,7 +112,7 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-                <Setter Property="ItemContainerStyle">
+                <!--<Setter Property="ItemContainerStyle">
                     <Setter.Value>
                         <Style TargetType="{x:Type TabItem}">
                             <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
@@ -119,7 +120,7 @@
                             <Setter Property="ToolTip" Value="{Binding ToolTip}"/>
                         </Style>
                     </Setter.Value>
-                </Setter>
+                </Setter>-->
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -155,6 +156,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
                 <!--<ResourceDictionary Source="Styles/AvalonDock.NavigatorWindow.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

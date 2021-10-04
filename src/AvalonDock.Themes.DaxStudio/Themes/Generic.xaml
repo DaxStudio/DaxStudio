@@ -313,9 +313,8 @@
                     <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedBackground}}" />
                     <Setter Property="Foreground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedText}}" />
                     <Setter Property="BorderBrush" Value="Transparent" />
-
                     <Setter Property="ToolTip" Value="{Binding ToolTip}" />
-                    <Setter Property="Padding" Value="6,1" />
+                    <Setter Property="Padding" Value="1,1" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Template">
                         <Setter.Value>
@@ -326,6 +325,7 @@
 										Background="{TemplateBinding Background}"
 										BorderBrush="{Binding Background, RelativeSource={RelativeSource Self}}"
 										BorderThickness="1,0,1,1"
+                                        ClipToBounds="True"
                                         CornerRadius="0 0 8 8"/>
                                     <ContentPresenter
 										x:Name="Content"
