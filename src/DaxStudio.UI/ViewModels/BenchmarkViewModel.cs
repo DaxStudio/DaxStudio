@@ -12,6 +12,8 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
 using Serilog;
 using DaxStudio.Interfaces;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -29,7 +31,7 @@ namespace DaxStudio.UI.ViewModels
         public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon, IGlobalOptions options)
         {
             EventAggregator = eventAggregator;
-            EventAggregator.Subscribe(this);
+            EventAggregator.SubscribeOnPublishedThread(this);
             Document = document;
             Ribbon = ribbon;
             Options = options;
@@ -79,7 +81,7 @@ namespace DaxStudio.UI.ViewModels
             catch( Exception ex)
             {
                 Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), ex.Message);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
                 _stopwatch?.Stop();
             }
         }
@@ -88,7 +90,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _stopwatch?.Stop();
             IsCancelled = true;
-            TryClose(true);
+            //await TryCloseAsync(true);
         }
         #endregion
 
@@ -132,7 +134,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (!_benchmarkingPassComplete)
             {
-                EventAggregator.PublishOnUIThread(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
+                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
             }
 
             // if we have completed the runs with ViewAs On
@@ -178,7 +180,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void BenchmarkingComplete()
+        private async void BenchmarkingComplete()
         {
             _stopwatch?.Stop();
             // Stop listening to events
@@ -205,7 +207,7 @@ namespace DaxStudio.UI.ViewModels
             // todo - activate results
 
             // close the Benchmarking dialog
-            this.TryClose(true);
+            await this.TryCloseAsync(true);
         }
 
         private void CalculateBenchmarkSummary()
@@ -325,7 +327,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Event Handlers
         int _sequence;
-        public void Handle(ServerTimingsEvent message)
+        public Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
         {
             _sequence++;
             // TODO - catch servertimings from query 
@@ -342,7 +344,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 BenchmarkingComplete();
             }
-
+            return Task.CompletedTask;
         }
 
         private void AddTimingsToDetailsTable(int sequence, RunStyle runStyle, ServerTimingsEvent message)
@@ -364,10 +366,11 @@ namespace DaxStudio.UI.ViewModels
             dt.Rows.Add(dr);
         }
 
-        public void Handle(TraceChangedEvent message)
+        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
             if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started) RunNextQuery();
             // TODO - need to handle trace errors
+            return Task.CompletedTask;
         }
 
         #endregion

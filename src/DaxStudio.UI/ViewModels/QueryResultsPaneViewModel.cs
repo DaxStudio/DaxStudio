@@ -20,6 +20,8 @@ using System.Collections.ObjectModel;
 using System.Windows.Media;
 using UnitComboLib.Unit.Screen;
 using DaxStudio.UI.Utils;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -211,10 +213,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(QueryResultsPaneMessageEvent message)
+        public Task HandleAsync(QueryResultsPaneMessageEvent message, CancellationToken cancellationToken)
         {
             ResultsIcon = message.Target.Icon;
             ResultsMessage = message.Target.Message;
+            return Task.CompletedTask;
         }
 
         public IEnumerable<string> Worksheets
@@ -226,11 +229,11 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return _selectedWorksheet; }
             set { _selectedWorksheet = value;
-            _eventAggregator.PublishOnBackgroundThread(new SetSelectedWorksheetEvent(_selectedWorksheet));
+            _eventAggregator.PublishOnBackgroundThreadAsync(new SetSelectedWorksheetEvent(_selectedWorksheet));
             }
         }
         private DocumentViewModel _document;
-        public void Handle(ActivateDocumentEvent message)
+        public Task HandleAsync(ActivateDocumentEvent message, CancellationToken cancellationToken)
         {
             _document = message.Document;
             if (_host.IsExcel)
@@ -240,11 +243,12 @@ namespace DaxStudio.UI.ViewModels
                 SelectedWorksheet = message.Document.SelectedWorksheet;
                 NotifyOfPropertyChange(() => Worksheets);
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(NewDocumentEvent message)
+        public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
         {
-            _eventAggregator.PublishOnUIThread(new QueryResultsPaneMessageEvent(message.Target));
+            await _eventAggregator.PublishOnUIThreadAsync(new QueryResultsPaneMessageEvent(message.Target));
             if (message.Target is IActivateResults) { this.Activate(); }
             //ResultsIcon = message.Target.Icon;
             //ResultsMessage = message.Target.Message;
@@ -268,21 +272,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(QueryStartedEvent message)
+        public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
             IsBusy = true;
+            return Task.CompletedTask;
         }
 
-        public void Handle(CancelQueryEvent message)
+        public Task HandleAsync(CancelQueryEvent message, CancellationToken cancellationToken)
         {
             IsBusy = false;
             // clear out any data if the query is cancelled
             ResultsDataTable = new DataTable("Empty");
+            return Task.CompletedTask;
         }
 
-        public void Handle(QueryFinishedEvent message)
+        public Task HandleAsync(QueryFinishedEvent message, CancellationToken cancellationToken)
         {
             IsBusy = false;
+            return Task.CompletedTask;
         }
         private string _selectedWorkbook = "";
         private DataSet _resultsDataSet;
@@ -384,12 +391,13 @@ namespace DaxStudio.UI.ViewModels
 
         public UnitViewModel SizeUnits { get; set; }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             UpdateSettings();
+            return Task.CompletedTask;
         }
         
-        public void Handle(SizeUnitsUpdatedEvent message)
+        public Task HandleAsync(SizeUnitsUpdatedEvent message, CancellationToken cancellationToken)
         {
             if (_options.ScaleResultsFontWithEditor)
             {
@@ -397,6 +405,7 @@ namespace DaxStudio.UI.ViewModels
                 //SizeUnits.Value = message.Units.Value;
                 //NotifyOfPropertyChange(() => SizeUnits.ScreenPoints);
             }
+            return Task.CompletedTask;
         }
 
         public DataGridClipboardCopyMode ClipboardCopyMode

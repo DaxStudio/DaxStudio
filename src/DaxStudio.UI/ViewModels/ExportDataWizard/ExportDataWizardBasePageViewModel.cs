@@ -17,10 +17,10 @@ namespace DaxStudio.UI.ViewModels
         }
         public bool BackClicked { get; set; }
 
-        public void Back()
+        public async void Back()
         {
             BackClicked = true;
-            TryClose();
+            await TryCloseAsync();
         }
     }
 

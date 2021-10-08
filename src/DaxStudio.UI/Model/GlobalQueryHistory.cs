@@ -11,13 +11,14 @@ using Serilog;
 using DaxStudio.Interfaces;
 using System.Diagnostics.Contracts;
 using DaxStudio.Common;
+using System.Threading;
 
 namespace DaxStudio.UI.Model
 {
     [Export]
     public class GlobalQueryHistory : 
-        IHandleWithTask<QueryHistoryEvent>,
-        IHandleWithTask<LoadQueryHistoryAsyncEvent>
+        IHandle<QueryHistoryEvent>,
+        IHandle<LoadQueryHistoryAsyncEvent>
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly string _queryHistoryPath;
@@ -56,7 +57,7 @@ namespace DaxStudio.UI.Model
 
         private async Task LoadHistoryFilesAsync()
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
               {
                   Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
                   FileInfo[] fileList = null;
@@ -90,14 +91,14 @@ namespace DaxStudio.UI.Model
                   {
                       Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading query history files: {ex.Message}");
                   }
-                  if (errorCnt > 0) { _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {errorCnt} error{(errorCnt==1?" has":"s have")} been written to the log file")); }
+                  if (errorCnt > 0) { await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {errorCnt} error{(errorCnt==1?" has":"s have")} been written to the log file")); }
                   Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList?.Length + " files)");
               });
         }
 
 
 
-        public async Task Handle(QueryHistoryEvent message)
+        public async Task HandleAsync(QueryHistoryEvent message, CancellationToken cancellationToken)
         {
             // don't add a history record if the query text is empty
             if (string.IsNullOrWhiteSpace(message.QueryText) && string.IsNullOrWhiteSpace(message.QueryBuilderJson))
@@ -156,7 +157,7 @@ namespace DaxStudio.UI.Model
                 , message.StartTime.ToString("yyyyMMddHHmmssfff",fmt)));
         }
 
-        public async Task Handle(LoadQueryHistoryAsyncEvent message)
+        public async Task HandleAsync(LoadQueryHistoryAsyncEvent message, CancellationToken cancellationToken)
         {
             await LoadQueryHistoryAsync();
         }

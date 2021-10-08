@@ -10,17 +10,19 @@ namespace DaxStudio.UI.Extensions
 {
     public class DaxStudioWindowManager:WindowManager
     {
-        public override bool? ShowDialog(object rootModel, object context = null, IDictionary<string, object> settings = null)
+
+        public override Task<bool?> ShowDialogAsync(object rootModel, object context = null, IDictionary<string, object> settings = null)
         {
-            return base.ShowDialog(rootModel, context, settings);
+            return base.ShowDialogAsync(rootModel, context, settings);
         }
-        public async Task<bool?> ShowDialogAsync(object rootModel, object context = null, IDictionary<string, object> settings = null)
-        {
-            var dialog = CreateDialog(rootModel, context, settings);
-            var result = await dialog.ShowAsync();
+
+        //public async Task<bool?> ShowDialogAsync(object rootModel, object context = null, IDictionary<string, object> settings = null)
+        //{
+        //    var dialog = CreateDialog(rootModel, context, settings);
+        //    var result = await dialog.ShowAsync();
             
-            return result == ContentDialogResult.Primary;
-        }
+        //    return result == ContentDialogResult.Primary;
+        //}
 
         
         /// <summary>

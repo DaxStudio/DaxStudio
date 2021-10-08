@@ -74,7 +74,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
-        , IHandleWithTask<ConnectEvent>
+        , IHandle<ConnectEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
         , IHandle<DefineMeasureOnEditor>
@@ -105,6 +105,7 @@ namespace DaxStudio.UI.ViewModels
         , IQueryTextProvider
         , IHaveShutdownTask
         , ISaveable
+        , IGuardClose
 
     {
         // Changed from the original Unicode - if required we could make this an optional setting in future
@@ -144,7 +145,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 _host = host;
                 _eventAggregator = eventAggregator;
-                _eventAggregator.Subscribe(this);
+                _eventAggregator.SubscribeOnPublishedThread(this);
                 _windowManager = windowManager;
                 _ribbon = ribbon;
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
@@ -241,15 +242,15 @@ namespace DaxStudio.UI.ViewModels
 
             State = DocumentState.Loaded;
 
-            _eventAggregator.PublishOnUIThread(new RecoverNextAutoSaveFileEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new RecoverNextAutoSaveFileEvent());
         }
 
         public IQueryHistoryEvent CurrentQueryInfo => _currentQueryDetails;
 
 
-        public override void TryClose(bool? dialogResult = null)
+        public override async Task TryCloseAsync(bool? dialogResult = null)
         {
-            base.TryClose(dialogResult);
+            await base.TryCloseAsync(dialogResult);
         }
 
         public Guid AutoSaveId { get; set; } = Guid.NewGuid();
@@ -302,7 +303,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_sourceDocument != null)
                 {
                     var cnn = _sourceDocument.Connection;
-                    _eventAggregator.PublishOnUIThread(new ConnectEvent(
+                    _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent(
                         cnn.ConnectionStringWithInitialCatalog,
                         cnn.IsPowerPivot,
                         cnn.IsPowerPivot ? _sourceDocument.FileName : "",
@@ -506,17 +507,18 @@ namespace DaxStudio.UI.ViewModels
 
                 var file = files[0];
 
-                if (file.EndsWith(".dax", StringComparison.InvariantCultureIgnoreCase) || file.EndsWith(".msdax", StringComparison.InvariantCultureIgnoreCase))
+                if (file.EndsWith(".dax", StringComparison.InvariantCultureIgnoreCase) 
+                 || file.EndsWith(".msdax", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(files[0]));
-                    _eventAggregator.PublishOnUIThread(new FileOpenedEvent(files[0]));  // add this file to the recently used list
+                    _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(files[0]));
+                    _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(files[0]));  // add this file to the recently used list
                 } else
                 {
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop .dax or .msdax files"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "You can only drop .dax or .msdax files"));
                 }
                 if (files.Length > 1)
                 {
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "You can only drop a single file at a time"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "You can only drop a single file at a time"));
                 }
             }
         }
@@ -537,7 +539,7 @@ namespace DaxStudio.UI.ViewModels
         private void OnPositionChanged(object sender, EventArgs e)
         {
             if (sender is Caret caret)
-                _eventAggregator.PublishOnUIThread(new EditorPositionChangedMessage(caret.Column, caret.Line));
+                _eventAggregator.PublishOnUIThreadAsync(new EditorPositionChangedMessage(caret.Column, caret.Line));
         }
 
         #endregion
@@ -636,7 +638,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateTraceEvents()
         {
-            _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
             OutputMessage("Reconfiguring Trace");
             var events = GetTraceEvents(TraceWatchers);
             var newEventCnt = 0;
@@ -667,7 +669,7 @@ namespace DaxStudio.UI.ViewModels
         private void TracerOnTraceError(object sender, string e)
         {
             OutputError(e);
-            _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Error));
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
             ShutDownTraces();
         }
 
@@ -710,7 +712,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 tw.ProcessAllEvents(capturedEvents);
             }
-            _eventAggregator.PublishOnUIThread(new QueryTraceCompletedEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent());
         }
 
         private void TracerOnTraceStarted(object sender, EventArgs e)
@@ -720,7 +722,7 @@ namespace DaxStudio.UI.ViewModels
             Execute.OnUIThread(() => {
                 OutputMessage("Query Trace Started");
                 TraceWatchers.EnableAll();
-                _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Started));
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Started));
             });
         }
 
@@ -869,7 +871,7 @@ namespace DaxStudio.UI.ViewModels
             }
             if (!svrTimingsEnabled && _currentQueryDetails != null)
             {
-                _eventAggregator.BeginPublishOnUIThread(_currentQueryDetails);
+                _eventAggregator.PublishOnUIThreadAsync(_currentQueryDetails);
             }
 
         }
@@ -893,11 +895,11 @@ namespace DaxStudio.UI.ViewModels
 
         public FunctionPaneViewModel FunctionPane { get; private set; }
 
-
-        protected override void OnDeactivate(bool close)
+        
+        protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
             Log.Debug("{Class} {Event} Close:{Value} Doc:{Document}", "DocumentViewModel", "OnDeactivated (close)", close, DisplayName);
-            base.OnDeactivate(close);
+            await  base.OnDeactivateAsync(close, cancellationToken);
             _eventAggregator.Unsubscribe(this);
             _eventAggregator.Unsubscribe(QueryResultsPane);
             _eventAggregator.Unsubscribe(MetadataPane);
@@ -920,29 +922,29 @@ namespace DaxStudio.UI.ViewModels
             IntellisenseProvider?.CloseCompletionWindow();
         }
 
-        protected override async void OnActivate()
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
             Log.Debug("{Class} {Event} {Document}", "DocumentViewModel", "OnActivate", $"Activating {DisplayName}");
             _logger.Info("In OnActivate");
-            base.OnActivate();
+            await base.OnActivateAsync(cancellationToken);
             try
             {
                 _eventAggregator.Unsubscribe(this);
 
-                _eventAggregator.Subscribe(this);
-                _eventAggregator.Subscribe(QueryResultsPane);
-                _eventAggregator.Subscribe(MetadataPane);
-                _eventAggregator.Subscribe(DmvPane);
-                _eventAggregator.Subscribe(FunctionPane);
-                _eventAggregator.Subscribe(Connection);
-                _eventAggregator.Subscribe(IntellisenseProvider);
-                _eventAggregator.Subscribe(MeasureExpressionEditor.IntellisenseProvider);
-                _eventAggregator.Subscribe(HelpWatermark);
-                _eventAggregator.Subscribe(QueryBuilder);
+                _eventAggregator.SubscribeOnPublishedThread(this);
+                _eventAggregator.SubscribeOnPublishedThread(QueryResultsPane);
+                _eventAggregator.SubscribeOnPublishedThread(MetadataPane);
+                _eventAggregator.SubscribeOnPublishedThread(DmvPane);
+                _eventAggregator.SubscribeOnPublishedThread(FunctionPane);
+                _eventAggregator.SubscribeOnPublishedThread(Connection);
+                _eventAggregator.SubscribeOnPublishedThread(IntellisenseProvider);
+                _eventAggregator.SubscribeOnPublishedThread(MeasureExpressionEditor.IntellisenseProvider);
+                _eventAggregator.SubscribeOnPublishedThread(HelpWatermark);
+                _eventAggregator.SubscribeOnPublishedThread(QueryBuilder);
                 //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
                 foreach (var tw in TraceWatchers)
                 {
-                    _eventAggregator.Subscribe(tw);
+                    _eventAggregator.SubscribeOnPublishedThread(tw);
                 }
                 _ribbon.SelectedTarget = SelectedTarget;
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
@@ -971,7 +973,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivate), ex.Message);
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), ex.Message);
             }
 
         }
@@ -999,10 +1001,11 @@ namespace DaxStudio.UI.ViewModels
                 OutputError($"Error Refreshing Metadata - {ex.Message}");
             }
         }
-
-        public override void CanClose(Action<bool> callback)
+        
+        
+        public override async Task<bool> CanCloseAsync(CancellationToken cancellationToken)
         {
-            DoCloseCheck(callback);
+            return await Task.FromResult( DoCloseCheck());
         }
 
         internal void SwapDelimiters()
@@ -1069,7 +1072,7 @@ namespace DaxStudio.UI.ViewModels
             Connection.Close(true);
 
             var docTab = Parent as DocumentTabViewModel;
-            docTab.CloseItem(this);
+            docTab.CloseItemAsync(this);
             docTab?.Items.Remove(this);
             return true;
         }
@@ -1132,7 +1135,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnUIThread(new ConnectFailedEvent());
+                    _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
 
                     // if the xmla endpoint is not enabled it returns a generic WebException so we add extra info 
                     // to the error to help people potentially mitigate the issue.
@@ -1222,18 +1225,19 @@ namespace DaxStudio.UI.ViewModels
                     Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPowerPivotModel);
                     msg.Dispose();
 
-                    Execute.OnUIThread(() =>
+                    Execute.OnUIThread(async () =>
                     {
                         var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
 
-                        _windowManager.ShowDialogBox(connDialog, settings: new Dictionary<string, object>
+                        await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
                                         {
                                             {"Top", 40},
                                             { "WindowStyle", WindowStyle.None},
                                             { "ShowInTaskbar", false},
                                             { "ResizeMode", ResizeMode.NoResize},
                                             { "Background", Brushes.Transparent},
-                                            { "AllowsTransparency",true}
+                                            { "AllowsTransparency",true},
+                                            {"Style", null }
                                         });
 
                         IsFocused = true;
@@ -1434,7 +1438,7 @@ namespace DaxStudio.UI.ViewModels
             if (editor == null)
             {
                 Log.Error("{class} {method} Unable to get a reference to the editor control", "DocumentViewModel", "Undo");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Undo: Unable to get a reference to the editor control"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Undo: Unable to get a reference to the editor control"));
                 return;
             }
 
@@ -1458,7 +1462,7 @@ namespace DaxStudio.UI.ViewModels
             if (editor == null)
             {
                 Log.Error("{class} {method} Unable to get a reference to the editor control", "DocumentViewModel", "Redo");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Redo: Unable to get a reference to the editor control"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Redo: Unable to get a reference to the editor control"));
                 return;
             }
 
@@ -1664,14 +1668,14 @@ namespace DaxStudio.UI.ViewModels
                 timer.Elapsed -= _timer_Elapsed;
                 timer.Dispose();
                 NotifyOfPropertyChange(() => ElapsedQueryTime);
-                _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                await _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
 
 
                 // if this is an internal refresh session query don't  
                 //if (!daxQuery.StartsWith(Constants.InternalQueryHeader))
                 //{
                 //    NotifyOfPropertyChange(() => ElapsedQueryTime);
-                //    _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                //    _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
                 //    QueryCompleted();
                 //}
             }
@@ -1725,7 +1729,7 @@ namespace DaxStudio.UI.ViewModels
                 _timer.Elapsed -= _timer_Elapsed;
                 _timer.Dispose();
                 NotifyOfPropertyChange(() => ElapsedQueryTime);
-                _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
                 // Can't call query completed here as for a DataReader we still need to stream the results back
                 // we can't marke the query as complete until we've finished processing the DataReader
                 //QueryCompleted();
@@ -1739,7 +1743,7 @@ namespace DaxStudio.UI.ViewModels
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             NotifyOfPropertyChange(() => ElapsedQueryTime);
-            _eventAggregator.PublishOnUIThread(new UpdateTimerTextEvent(ElapsedQueryTime));
+            _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
         }
 
         private void CancelQuery()
@@ -1761,7 +1765,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public async void Handle(RunQueryEvent message)
+        public async Task HandleAsync(RunQueryEvent message, CancellationToken cancellationToken)
         {
             // if we can't run the query then do nothing 
             // (ribbon button will be disabled, but the following check blocks hotkey requests)
@@ -1830,7 +1834,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(BenchmarkQuery), ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
             }
             finally
             {
@@ -1847,8 +1851,8 @@ namespace DaxStudio.UI.ViewModels
                 //if (Connection.State != ConnectionState.Open)
                 //{
                 //    Log.Error("{class} {method} Attempting run a query on a connection which is not open", "DocumentViewMode", "RunQueryInternal");
-                //    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
-                //    _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent(Connection, this));
+                //    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "You cannot run a query on a connection which is not open"));
+                //    _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(Connection, this));
                 //    return;
                 //}
 
@@ -2169,7 +2173,7 @@ namespace DaxStudio.UI.ViewModels
             if (editor == null)
             {
                 Log.Error("{class} {method} {message}", "DocumentViewModel", "InsertTextAtSelection", "Unable to get a reference to the editor control");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again. If this issue persists please post an issue on th"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again. If this issue persists please post an issue on th"));
                 return;
             }
             var startOffset = editor.CaretOffset;
@@ -2309,7 +2313,7 @@ namespace DaxStudio.UI.ViewModels
         }
         */
 
-        public void Handle(SendTextToEditor message)
+        public async Task HandleAsync(SendTextToEditor message, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(message.DatabaseName))
             {
@@ -2324,7 +2328,7 @@ namespace DaxStudio.UI.ViewModels
                         catch (Exception ex)
                         {
                             Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"));
+                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"));
                         }
                     }
                     else
@@ -2342,7 +2346,7 @@ namespace DaxStudio.UI.ViewModels
             if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
 
             //run the query
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget));
+            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget));
 
             // un-select text
             var editor = GetEditor();
@@ -2351,9 +2355,10 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public void Handle(DefineMeasureOnEditor message)
+        public Task HandleAsync(DefineMeasureOnEditor message, CancellationToken cancellationToken)
         {
             DefineMeasureOnEditor(message.MeasureName, message.MeasureExpression);
+            return Task.CompletedTask;
         }
 
         //RRomano: Should this be on DaxEditor?
@@ -2448,11 +2453,11 @@ namespace DaxStudio.UI.ViewModels
 
         //    UpdateConnections(message.Connection);
         //    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-        //    _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));
+        //    _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(this, Databases, activeTrace));
         //}
 
 
-        public void Handle(TraceWatcherToggleEvent message)
+        public Task HandleAsync(TraceWatcherToggleEvent message, CancellationToken cancellationToken)
         {
             Log.Verbose("{Class} {Event} TraceWatcher:{TraceWatcher} IsActive:{IsActive}", "DocumentViewModel", "Handle(TraceWatcherToggleEvent", message.TraceWatcher.ToString(), message.IsActive);
             TraceWatchers.DisableAll();
@@ -2465,7 +2470,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 DisableTrace(message.TraceWatcher);
             }
-
+            return Task.CompletedTask;
         }
 
         private void DisableTrace(ITraceWatcher watcher)
@@ -2484,12 +2489,12 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // If we got here no traces are running so shut everything down
-            _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Stopping));
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Stopping));
             OutputMessage("Stopping Trace");
             // spin down trace as no tracewatchers are active
             ResetTracer();
             OutputMessage("Trace Stopped");
-            _eventAggregator.PublishOnUIThread(new TraceChangedEvent(QueryTraceStatus.Stopped));
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
             TraceWatchers.EnableAll();
             IsTraceChanging = false;
         }
@@ -2517,7 +2522,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Tracer.Status != QueryTraceStatus.Started
                     && Tracer.Status != QueryTraceStatus.Starting)
                 {
-                    _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+                    _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
                     OutputMessage("Waiting for Trace to start");
 
                     var t = Tracer;
@@ -2544,7 +2549,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "EnableTrace", "Error while enabling trace");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error enabling Trace: " + ex.Message));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error enabling Trace: " + ex.Message));
             }
             finally
             {
@@ -2658,7 +2663,7 @@ namespace DaxStudio.UI.ViewModels
 
                 package.Close();
 
-                _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
+                _eventAggregator.PublishOnUIThreadAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
@@ -2667,7 +2672,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // catch and report any errors while trying to save
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SavePackageFile), ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
         private void SaveSingleFiles()
@@ -2690,7 +2695,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
-                _eventAggregator.PublishOnUIThread(new FileSavedEvent(FileName));
+                _eventAggregator.PublishOnUIThreadAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
@@ -2699,7 +2704,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // catch and report any errors while trying to save
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SaveSingleFiles), ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
 
@@ -3097,20 +3102,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(LoadFileEvent message)
+        public Task HandleAsync(LoadFileEvent message, CancellationToken cancellationToken)
         {
             FileName = message.FileName;
             IsDiskFileName = true;
             LoadFile(message.FileName);
+            return Task.CompletedTask;
         }
 
-        public void Handle(CancelQueryEvent message)
+        public Task HandleAsync(CancelQueryEvent message, CancellationToken cancellationToken)
         {
             CancelQuery();
+            return Task.CompletedTask;
         }
 
 
-        public async Task Handle(ConnectEvent message)
+        public async Task HandleAsync(ConnectEvent message, CancellationToken cancellationToken)
         {
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ConnectEvent>","Starting");
             var msg = NewStatusBarMessage("Connecting...");
@@ -3138,15 +3145,15 @@ namespace DaxStudio.UI.ViewModels
                         {
                             var errMsg = taskResult?.Exception?.InnerException?.Message;
 
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
+                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
                             Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
                         }
                         else
                         {
                             // todo - should we be checking for exceptions in this continuation
                             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                            _eventAggregator.PublishOnUIThread(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
-                            _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
+                            _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
+                            _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this));
                             //LoadState();
 
                         }
@@ -3183,7 +3190,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsViewAsActive);
 
             if (IsConnected)
-                _eventAggregator.PublishOnUIThread(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
 
             
 
@@ -3276,10 +3283,10 @@ namespace DaxStudio.UI.ViewModels
                 OutputError(ex.Message);
             }
         }
-        public void Handle(CancelConnectEvent message)
+        public async Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {
             // make sure any other view models know that this document is the active one
-            _eventAggregator.PublishOnUIThread(new ActivateDocumentEvent(this));
+            await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this), cancellationToken);
 
         }
 
@@ -3295,7 +3302,7 @@ namespace DaxStudio.UI.ViewModels
             ResetTracer();
         }
 
-        protected virtual void DoCloseCheck(Action<bool> callback)
+        protected virtual bool DoCloseCheck()
         {
 
             //    var res = MessageBoxEx.Show(Application.Current.MainWindow,
@@ -3303,10 +3310,10 @@ namespace DaxStudio.UI.ViewModels
             //        "Unsaved Changes", MessageBoxButton.YesNo
             //        );
             // don't close if the file has unsaved changes
-            callback(!IsDirty);
+            return !IsDirty;
         }
 
-        public void Handle(SelectionChangeCaseEvent message)
+        public Task HandleAsync(SelectionChangeCaseEvent message, CancellationToken cancellationToken)
         {
             switch (message.ChangeType)
             {
@@ -3315,11 +3322,12 @@ namespace DaxStudio.UI.ViewModels
                 case ChangeCase.ToLower: SelectionToLower();
                     break;
             }
+            return Task.CompletedTask;
         }
 
         public UnitViewModel SizeUnitLabel { get; set; }
 
-        public void Handle(CommentEvent message)
+        public Task HandleAsync(CommentEvent message, CancellationToken cancellationToken)
         {
             if (message.CommentSelection)
             {
@@ -3329,6 +3337,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 UnCommentSelection();
             }
+            return Task.CompletedTask;
         }
 
         private DocumentState _documentState;
@@ -3486,7 +3495,7 @@ namespace DaxStudio.UI.ViewModels
                     catch (Exception ex)
                     {
                         Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(InternalDefaultHighlightFunction), $"Error: {ex.Message} /n while finding text to highlight while searching for '{TextToHighlight}' in '{text}'");
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "An error occurred while trying to highlight search text"));
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "An error occurred while trying to highlight search text"));
                         break;
                     }
                     if (idx == -1) break;              // stop search if we did not find any more occurances
@@ -3574,7 +3583,7 @@ namespace DaxStudio.UI.ViewModels
             FindReplaceDialog.IsVisible = true;
         }
 
-        public void Handle(OutputMessage message)
+        public Task HandleAsync(OutputMessage message, CancellationToken cancellationToken)
         {
             switch (message.MessageType)
             {
@@ -3589,9 +3598,10 @@ namespace DaxStudio.UI.ViewModels
                     else OutputMessage(message.Text);
                     break;
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(NavigateToLocationEvent message)
+        public Task HandleAsync(NavigateToLocationEvent message, CancellationToken cancellationToken)
         {
             var lineOffset = 0;
             var colOffset = 0;
@@ -3616,6 +3626,7 @@ namespace DaxStudio.UI.ViewModels
               Keyboard.Focus(editor);
           }), DispatcherPriority.Input);
 
+            return Task.CompletedTask;
         }
 
 
@@ -3819,7 +3830,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanRunQuery);
                     NotifyOfPropertyChange(() => IsQueryRunning);
 
-                    _eventAggregator.PublishOnUIThread(new ConnectionClosedEvent());
+                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectionClosedEvent());
                     return false;
                 }
 
@@ -3849,7 +3860,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => IsQueryRunning);
 
-                _eventAggregator.PublishOnUIThread(new ConnectionClosedEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionClosedEvent());
                 return false;
             }
             finally
@@ -3902,14 +3913,16 @@ namespace DaxStudio.UI.ViewModels
 
                 NotifyOfPropertyChange(() => IsFocused); } }
 
-        public void Handle(SetSelectedWorksheetEvent message)
+        public Task HandleAsync(SetSelectedWorksheetEvent message,CancellationToken cancellationToken)
         {
             SelectedWorksheet = message.Worksheet;
+            return Task.CompletedTask;
         }
         public IResultsTarget SelectedTarget { get; private set; }
-        public void Handle(QueryResultsPaneMessageEvent message)
+        public Task HandleAsync(QueryResultsPaneMessageEvent message, CancellationToken cancellationToken)
         {
             SelectedTarget = message.Target;
+            return Task.CompletedTask;
         }
 
         public bool ServerTimingsChecked
@@ -3996,24 +4009,27 @@ namespace DaxStudio.UI.ViewModels
 
         public DaxColumnsRemap DaxColumnsRemapInfo => Connection?.IsConnected??false?(Connection?.DaxColumnsRemapInfo):null;
 
-        public void Handle(ExportDaxFunctionsEvent exportFunctions)
+        public Task HandleAsync(ExportDaxFunctionsEvent exportFunctions, CancellationToken cancellationToken)
         {
             if (exportFunctions.AutoDelete) PublishDaxFunctions();
             else ExportDaxFunctions();
+            return Task.CompletedTask;
         }
 
-        public void Handle(CloseTraceWindowEvent message)
+        public Task HandleAsync(CloseTraceWindowEvent message, CancellationToken cancellationToken)
         {
             message.TraceWatcher.IsChecked = false;
             ToolWindows.Remove(message.TraceWatcher);
+            return Task.CompletedTask;
         }
 
-        public void Handle(ShowTraceWindowEvent message)
+        public Task HandleAsync(ShowTraceWindowEvent message, CancellationToken cancellationToken)
         {
             ToolWindows.Add(message.TraceWatcher);
+            return Task.CompletedTask;
         }
 
-        public void Handle(DockManagerLoadLayout message)
+        public Task HandleAsync(DockManagerLoadLayout message, CancellationToken cancellationToken)
         {
             try
             {
@@ -4033,9 +4049,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 OutputError($"Error Loading Window Layout: {ex.Message}");
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(DockManagerSaveLayout message)
+        public Task HandleAsync(DockManagerSaveLayout message,CancellationToken cancellationToken)
         {
             try {
                 var dm = GetDockManager();
@@ -4047,6 +4064,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<DockManagerSaveLayout>", ex.Message);
                 OutputError($"Error Saving Window Layout: {ex.Message}");
             }
+            return Task.CompletedTask;
         }
 
         public void PreviewMouseLeftButtonUp()
@@ -4505,17 +4523,19 @@ namespace DaxStudio.UI.ViewModels
             IntellisenseProvider?.CloseCompletionWindow();
         }
 
-        public void Handle(CopyConnectionEvent message)
+        public Task HandleAsync(CopyConnectionEvent message, CancellationToken cancellationToken)
         {
             _sourceDocument = message.SourceDocument;
+            return Task.CompletedTask;
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message,CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(nameof(WordWrap));
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             UpdateTheme();
+            return Task.CompletedTask;
         }
 
 
@@ -4525,16 +4545,17 @@ namespace DaxStudio.UI.ViewModels
             _editor?.SetSyntaxHighlightColorTheme(Options.Theme);
         }
 
-        public void Handle(SelectedModelChangedEvent message)
+        public Task HandleAsync(SelectedModelChangedEvent message,CancellationToken cancellationToken)
         {
-            
             UpdateRunningTraces();
+            return Task.CompletedTask;
         }
 
-        public void Handle(ReconnectEvent message)
+        public Task HandleAsync(ReconnectEvent message, CancellationToken cancellationToken)
         {
             UpdateRunningTraces();
             Spid = Connection?.SPID??-1;
+            return Task.CompletedTask;
         }
 
         private void UpdateRunningTraces()
@@ -4546,7 +4567,7 @@ namespace DaxStudio.UI.ViewModels
             // reconnect any running traces to pick up the initial catalog property
             try
             {
-                _eventAggregator.PublishOnUIThread(new TraceChangingEvent(QueryTraceStatus.Starting));
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
                 IsTraceChanging = true;
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Reconfiguring trace due to connection changes"));
                 _tracer.Update(Connection.SelectedDatabaseName, Connection.SessionId);
@@ -4562,7 +4583,7 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        public void Handle(ShowMeasureExpressionEditor message)
+        public Task HandleAsync(ShowMeasureExpressionEditor message, CancellationToken cancellationToken)
         {
             try
             {
@@ -4577,11 +4598,13 @@ namespace DaxStudio.UI.ViewModels
                 ShowMeasureExpressionEditor = false;
                 QueryBuilder.IsEnabled = true;
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(SetFocusEvent message)
+        public Task HandleAsync(SetFocusEvent message,CancellationToken cancellationToken)
         {
             IsFocused = true;
+            return Task.CompletedTask;
         }
 
         public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.DaxStudioGenericTheme();// AvalonDock.Themes.GenericTheme();
@@ -4614,7 +4637,7 @@ namespace DaxStudio.UI.ViewModels
             Connection.Open();
         }
 
-        public void Handle(ApplicationActivatedEvent message)
+        public Task HandleAsync(ApplicationActivatedEvent message, CancellationToken cancellationToken)
         {
             try
             {
@@ -4628,6 +4651,7 @@ namespace DaxStudio.UI.ViewModels
                 OutputError(ex.Message);
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ApplicationActivatedEvent>", ex.Message);
             }
+            return Task.CompletedTask;
         }
 
         public bool ShowHelpWatermark
@@ -4638,12 +4662,13 @@ namespace DaxStudio.UI.ViewModels
 
         public void OnEditorSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            _eventAggregator.PublishOnUIThread(new EditorResizeEvent(e.NewSize));
+            _eventAggregator.PublishOnUIThreadAsync(new EditorResizeEvent(e.NewSize));
         }
 
-        public void Handle(RunStyleChangedEvent message)
+        public Task HandleAsync(RunStyleChangedEvent message, CancellationToken cancellationToken)
         {
             SelectedRunStyle = message.RunStyle;
+            return Task.CompletedTask;
         }
 
         public RunStyle SelectedRunStyle { get; set; }
@@ -4725,10 +4750,10 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public void Handle(EditorHotkeyEvent message)
+        public Task HandleAsync(EditorHotkeyEvent message, CancellationToken cancellationToken)
         {
             var editor = GetEditor();
-            if (editor == null) return;
+            if (editor == null) return Task.CompletedTask;
 
             switch (message.Hotkey)
             {
@@ -4742,16 +4767,18 @@ namespace DaxStudio.UI.ViewModels
                     editor.MoveLineDown();
                     break;
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(ToggleCommentEvent message)
+        public Task HandleAsync(ToggleCommentEvent message,CancellationToken cancellationToken)
         {
             var editor = GetEditor();
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
+            return Task.CompletedTask;
         }
 
-        public void Handle(LoadQueryBuilderEvent message)
+        public Task HandleAsync(LoadQueryBuilderEvent message,CancellationToken cancellationToken)
         {
             if (QueryBuilder.Columns.Count > 0 || QueryBuilder.Filters.Count > 0)
             {
@@ -4761,12 +4788,13 @@ namespace DaxStudio.UI.ViewModels
                     MessageBoxButton.YesNo, 
                     MessageBoxImage.Question) == MessageBoxResult.No)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 QueryBuilder.Clear();
             }
             QueryBuilder.LoadJson(message.Json);
+            return Task.CompletedTask;
         }
     }
 }

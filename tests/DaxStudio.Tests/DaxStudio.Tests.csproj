@@ -153,7 +153,7 @@
       <Version>6.1.2.30</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>3.2.0</Version>
+      <Version>4.0.173</Version>
     </PackageReference>
     <PackageReference Include="Castle.Core">
       <Version>4.4.1</Version>

@@ -3,11 +3,14 @@ using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
 
-    public class ExportDataWizardExportStatusViewModel : ExportDataWizardBasePageViewModel, IHandle<ExportStatusUpdateEvent>
+    public class ExportDataWizardExportStatusViewModel : ExportDataWizardBasePageViewModel
+        , IHandle<ExportStatusUpdateEvent>
     {
         public ExportDataWizardExportStatusViewModel( ExportDataWizardViewModel wizard) : base(wizard) {
             // start running export
@@ -43,25 +46,25 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void CloseExport()
+        public async void CloseExport()
         {
-            Wizard.TryClose(true);
+            await Wizard.TryCloseAsync(true);
         }
 
-        protected override void OnActivate()
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            base.OnActivate();
-            Wizard.EventAggregator.Subscribe(this);
+            await base.OnActivateAsync(cancellationToken);
+            Wizard.EventAggregator.SubscribeOnPublishedThread(this);
         }
-
-        protected override void OnDeactivate(bool close)
+        
+        protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
             Wizard.EventAggregator.Unsubscribe(this);
-            base.OnDeactivate(close);
+            await base.OnDeactivateAsync(close, cancellationToken);
 
         }
 
-        public void Handle(ExportStatusUpdateEvent message)
+        public Task HandleAsync(ExportStatusUpdateEvent message, CancellationToken cancellationToken)
         {
             SelectedTable = message.SelectedTable;
             Completed = message.Completed;
@@ -71,6 +74,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanRequestCancel);
                 NotifyOfPropertyChange(() => Completed);
             }
+            return Task.CompletedTask;
         }
     }
 }

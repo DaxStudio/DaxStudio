@@ -9,15 +9,16 @@
 
         }
 
-        public void ExportToCsv() {
+        public async void ExportToCsv() {
             Wizard.ExportType = Enums.ExportDataType.CsvFolder;
             NextPage = ExportDataWizardPage.ChooseCsvFolder;
-            TryClose();
+            await TryCloseAsync();
         }
-        public void ExportToSql() {
+        public async void ExportToSql()
+        {
             Wizard.ExportType = Enums.ExportDataType.SqlTables;
             NextPage = ExportDataWizardPage.BuildSqlConnection;
-            TryClose();
+            await TryCloseAsync ();
         }
     }
 }

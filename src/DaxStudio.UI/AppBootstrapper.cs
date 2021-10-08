@@ -58,7 +58,7 @@ namespace DaxStudio.UI
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {
                     var eventAggregator = _container.GetExportedValue<IEventAggregator>();
-                    if (eventAggregator != null) eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
+                    if (eventAggregator != null) eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
                     Log.Warning(e.Exception, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
                     e.Handled = true;
                     return;
@@ -140,7 +140,7 @@ namespace DaxStudio.UI
 
                 
 
-                ConfigureKeyBindingConvention();
+                //ConfigureKeyBindingConvention();
 
                 // TODO - not working
                 //VisibilityBindingConvention.Install();
@@ -289,32 +289,32 @@ namespace DaxStudio.UI
         //    }
         //}
 
-        private void ConfigureKeyBindingConvention()
-        {
-            var trigger = Parser.CreateTrigger;
+        //private void ConfigureKeyBindingConvention()
+        //{
+        //    var trigger = Parser.CreateTrigger;
 
-            Parser.CreateTrigger = (target, triggerText) =>
-            {
-                if (triggerText == null)
-                {
-                    var defaults = ConventionManager.GetElementConvention(target.GetType());
-                    return defaults.CreateTrigger();
-                }
+        //    Parser.CreateTrigger = (target, triggerText) =>
+        //    {
+        //        if (triggerText == null)
+        //        {
+        //            var defaults = ConventionManager.GetElementConvention(target.GetType());
+        //            return defaults.CreateTrigger();
+        //        }
 
-                var triggerDetail = triggerText
-                    .Replace("[", string.Empty)
-                    .Replace("]", string.Empty);
+        //        var triggerDetail = triggerText
+        //            .Replace("[", string.Empty)
+        //            .Replace("]", string.Empty);
 
-                var splits = triggerDetail.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                if (splits[0] == "Key")
-                {
-                    var key = (Key)Enum.Parse(typeof(Key), splits[1], true);
-                    return new KeyTrigger { Key = key };
-                }
+        //        var splits = triggerDetail.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+        //        if (splits[0] == "Key")
+        //        {
+        //            var key = (Key)Enum.Parse(typeof(Key), splits[1], true);
+        //            return new KeyTrigger { Key = key };
+        //        }
 
-                return trigger(target, triggerText);
-            };
-        }
+        //        return trigger(target, triggerText);
+        //    };
+        //}
 
 
         static IEnumerable<System.Windows.DependencyObject> FluentRibbonChildResolver(Fluent.Ribbon ribbon)

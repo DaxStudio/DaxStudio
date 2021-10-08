@@ -23,6 +23,8 @@ using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 using Newtonsoft.Json;
 using System.Windows.Data;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -180,7 +182,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(QueryText), ex.Message);
-                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
                 }
                 return string.Empty;
             } 
@@ -217,7 +219,7 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public void RunQuery() {
             if (! CheckForCrossjoins() )
-                EventAggregator.PublishOnUIThread(new RunQueryEvent(Document.SelectedTarget, Document.SelectedRunStyle) { QueryProvider = this });
+                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(Document.SelectedTarget, Document.SelectedRunStyle) { QueryProvider = this });
         }
 
         private bool CheckForCrossjoins()
@@ -233,12 +235,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void SendTextToEditor()
         {
-            EventAggregator.PublishOnUIThread(new SendTextToEditor(QueryText,false,true));
+            EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(QueryText,false,true));
         }
 
         public void ClearEditor()
         {
-            EventAggregator.PublishOnUIThread(new SendTextToEditor(string.Empty , false, true));
+            EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(string.Empty , false, true));
         }
 
         public bool CanAutoGenerate => IsConnectedToAModelWithTables;
@@ -256,7 +258,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(CanAddNewMeasure), "Error checking if the model has any tables");
-                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"The following error occurred while checking if your model has any tables:\n{ex.Message}"));                    
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while checking if your model has any tables:\n{ex.Message}"));                    
                 }
 
                 return false;
@@ -275,7 +277,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = "Cannot add a new measure if the model has no tables";
                 Log.Warning(nameof(QueryBuilderViewModel), nameof(AddNewMeasure), msg);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,msg ));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,msg ));
                 return;
             }
             
@@ -289,7 +291,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedIndex = Columns.Count - 1;
             Columns.EditMeasure(newMeasure);
             IsEnabled = false;
-            //EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(newMeasure));
+            //EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(newMeasure));
         }
 
         // Finds a unique name for the new measure
@@ -341,7 +343,7 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
-        public void Handle(SendColumnToQueryBuilderEvent message)
+        public Task HandleAsync(SendColumnToQueryBuilderEvent message, CancellationToken cancellationToken)
         {
             switch (message.ItemType)
             {
@@ -356,7 +358,7 @@ namespace DaxStudio.UI.ViewModels
                     AddColumnToFilters(message.Column);
                     break;
             }
-            
+            return Task.CompletedTask;
         }
 
         private void AddColumnToColumns(ITreeviewColumn column)
@@ -367,7 +369,7 @@ namespace DaxStudio.UI.ViewModels
             if (Columns.Contains(column.InternalColumn))
             {
                 // write warning and return
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder columns a second time"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder columns a second time"));
                 return;
             }
             Columns.Add(column.InternalColumn);
@@ -381,7 +383,7 @@ namespace DaxStudio.UI.ViewModels
             if (Filters.Contains(column.InternalColumn))
             {
                 // write warning and return
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder filters a second time"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder filters a second time"));
                 return;
             }
             Filters.Add(column.InternalColumn);
@@ -418,7 +420,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"The following error occurred while attempting to load the Query Builder from your saved file:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(LoadJson), msg);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
                 return;
             }
         }
@@ -477,17 +479,19 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public void Handle(DuplicateMeasureEvent message)
+        public Task HandleAsync(DuplicateMeasureEvent message, CancellationToken cancellationToken)
         {
             Log.Information(Common.Constants.LogMessageTemplate,nameof(QueryBuilderViewModel), "Handle<DuplicateMeasureEvent>", $"Duplicating Measure: {message.Measure.Caption}");
             var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
                 { MeasureExpression = message.Measure.MeasureExpression };
             Columns.Add(meas);
+            return Task.CompletedTask;
         }
 
-        public void Handle(QueryBuilderUpdateEvent message)
+        public Task HandleAsync(QueryBuilderUpdateEvent message, CancellationToken cancellationToken)
         {
             AutoGenerateQuery();
+            return Task.CompletedTask;
         }
 
         public void Clear()
@@ -498,9 +502,10 @@ namespace DaxStudio.UI.ViewModels
             AutoGenerateQuery();
         }
 
-        public void Handle(ActivateDocumentEvent message)
+        public Task HandleAsync(ActivateDocumentEvent message, CancellationToken cancellationToken)
         {
             RefreshButtonStates();
+            return Task.CompletedTask;
         }
 
         private void RefreshButtonStates()
@@ -512,15 +517,17 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(RunStyle));
         }
 
-        public void Handle(ConnectionChangedEvent message)
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             RefreshButtonStates();
+            return Task.CompletedTask;
         }
 
-        public void Handle(RunStyleChangedEvent message)
+        public Task HandleAsync(RunStyleChangedEvent message, CancellationToken cancellationToken)
         {
             //RunStyle = message.RunStyle;
             NotifyOfPropertyChange(nameof(RunStyle));
+            return Task.CompletedTask;
         }
     }
 }

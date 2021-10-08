@@ -7,6 +7,7 @@ using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using Serilog;
+using System.Threading;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -44,18 +45,19 @@ namespace DaxStudio.UI.ResultsTargets
 
         public string DisabledReason => "Linked Excel output is not supported against Power BI Desktop or SSDT based connections";
 
-        public void Handle(ConnectionChangedEvent message)
+        public async Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             _isPowerBIOrSSDTConnection = message.IsPowerBIorSSDT;
             NotifyOfPropertyChange(() => IsEnabled);
-            _eventAggregator.PublishOnUIThread(new RefreshOutputTargetsEvent());
+            await _eventAggregator.PublishOnUIThreadAsync(new RefreshOutputTargetsEvent());
+            return; 
         }
 
-        public void Handle(ActivateDocumentEvent message)
+        public async Task HandleAsync(ActivateDocumentEvent message, CancellationToken cancellationToken)
         {
             _isPowerBIOrSSDTConnection = message.Document.Connection?.IsPowerBIorSSDT ?? false;
             NotifyOfPropertyChange(() => IsEnabled);
-            _eventAggregator.PublishOnUIThread(new RefreshOutputTargetsEvent());
+            await _eventAggregator.PublishOnUIThreadAsync(new RefreshOutputTargetsEvent());
         }
         #endregion
 

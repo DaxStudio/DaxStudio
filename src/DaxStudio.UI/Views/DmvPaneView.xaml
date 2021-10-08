@@ -40,7 +40,9 @@
                         <trig:InputBindingTrigger.InputBinding>
                             <KeyBinding Key="Escape"/>
                         </trig:InputBindingTrigger.InputBinding>
-                        <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+                        <cal:Action.Target>
+                            <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+                        </cal:Action.Target>
                     </trig:InputBindingTrigger>
                 </i:Interaction.Triggers>
             </TextBox>

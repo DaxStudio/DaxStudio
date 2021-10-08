@@ -105,7 +105,7 @@ namespace DaxStudio.UI.Utils
             } catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error merging query parameters", "DaxHelper", "ParseParams");
-                eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "The Following Error occurred while trying to parse a parameter block: " + ex.Message));
+                eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "The Following Error occurred while trying to parse a parameter block: " + ex.Message));
             }
             
         }

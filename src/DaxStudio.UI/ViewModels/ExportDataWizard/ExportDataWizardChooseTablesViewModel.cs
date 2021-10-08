@@ -145,10 +145,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Next()
+        public async void Next()
         {
             NextPage = ExportDataWizardPage.ExportStatus;
-            TryClose();
+            await TryCloseAsync();
         }
 
         public bool CanNext

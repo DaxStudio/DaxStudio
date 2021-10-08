@@ -135,12 +135,12 @@ namespace DaxStudio.UI.ViewModels
                         }
                     }
 
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} {message}", "PowerBIPerformanceDataViewModel", "FileName.set", ex.Message);
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Loading Power BI Performance Data: {ex.Message}"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Loading Power BI Performance Data: {ex.Message}"));
                 }
                 finally
                 {
@@ -175,7 +175,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             sb.AppendLine();
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(sb.ToString()));
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
         }
 
         public void ClearFilters()
@@ -213,7 +213,7 @@ namespace DaxStudio.UI.ViewModels
             queryHeader += $"// Row Count       : {perfData.RowCount}\n";
             queryHeader += $"// =================\n";
             queryHeader += perfData.QueryText;
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(queryHeader + "\n"));
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(queryHeader + "\n"));
         }
 
         private bool _showFilters;

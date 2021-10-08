@@ -15,6 +15,8 @@ using System.Windows;
 using System.Linq;
 using DaxStudio.Interfaces;
 using DaxStudio.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -77,7 +79,7 @@ namespace DaxStudio.UI.ViewModels
                 lock (_activeDocumentLock)
                 {
                     _activeDocument = value;
-                    this.ActivateItem(_activeDocument);
+                    this.ActivateItemAsync(_activeDocument).FireAndForget();
                     NotifyOfPropertyChange(() => ActiveDocument);
 
                     if (ActiveDocument == null) return;
@@ -111,13 +113,13 @@ namespace DaxStudio.UI.ViewModels
                 // 2 Open Document in current window (if it's an empty document)
                 else if (ActiveDocument != null && !ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
                 // 3 Open Document in a new window if current window has content
-                else OpenFileInNewWindow(fileName);
+                else OpenFileInNewWindowAsync(fileName);
             }
             catch (Exception ex)
             {
                 var msg = $"Error creating new document: {ex.Message}";
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(NewQueryDocument), msg);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
 
@@ -136,32 +138,32 @@ namespace DaxStudio.UI.ViewModels
                     newDoc.State = DocumentState.RecoveryPending;
 
                     Items.Add(newDoc);
-                    ActivateItem(newDoc);
+                    ActivateItemAsync(newDoc);
                     ActiveDocument = newDoc;
                     newDoc.IsDirty = true;
 
                     file.ShouldOpen = false;
 
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
 
                     Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Finished AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnUIThread( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
+                    _eventAggregator.PublishOnUIThreadAsync( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(RecoverAutoSaveFile), $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}");
                 }
             }
         }
 
-        private void OpenFileInNewWindow(string fileName)
+        private async void OpenFileInNewWindowAsync(string fileName)
         {
             Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "OpenFileInNewWindow", "Opening " + fileName);
             try
             {
                 var newDoc = _documentFactory(_windowManager, _eventAggregator);
                 Items.Add(newDoc);
-                ActivateItem(newDoc);
+                await ActivateItemAsync(newDoc);
                 ActiveDocument = newDoc;
 
                 newDoc.DisplayName = "Opening...";
@@ -171,7 +173,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "DocumentTabViewModel", "OpenFileInNewWindow", ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"The following error occurred while attempting to open '{fileName}': {ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while attempting to open '{fileName}': {ex.Message}"));
             }
         }
 
@@ -182,14 +184,14 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.LoadFile(fileName);
         }
 
-        private void OpenNewBlankDocument(DocumentViewModel sourceDocument)
+        private async void OpenNewBlankDocument(DocumentViewModel sourceDocument)
         {
             Log.Debug(Constants.LogMessageTemplate,nameof(DocumentTabViewModel),nameof(OpenNewBlankDocument), "Requesting new document from document factory");
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
 
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocument), "Adding new document to tabs collection");
             Items.Add(newDoc);
-            ActivateItem(newDoc);
+            await ActivateItemAsync(newDoc);
             ActiveDocument = newDoc;
             newDoc.DisplayName = $"Query{_documentCount}.dax";
             _documentCount++;
@@ -203,7 +205,7 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                _eventAggregator.PublishOnUIThread(new CopyConnectionEvent(sourceDocument));
+                await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
             }
             
         }
@@ -248,12 +250,13 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.ChangeConnection();
         }
 
-        public void Handle(NewDocumentEvent message)
+        public Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
         {
             NewQueryDocument("",message.ActiveDocument);
+            return Task.CompletedTask;
         }
 
-        public void Handle(OpenFileEvent message)
+        public Task HandleAsync(OpenFileEvent message, CancellationToken cancellationToken)
         {
             // Configure open file dialog box
             var dlg = new OpenFileDialog
@@ -271,18 +274,19 @@ namespace DaxStudio.UI.ViewModels
             {
                 // Open document 
                 var fileName = dlg.FileName;
-                _eventAggregator.PublishOnUIThread(new FileOpenedEvent(fileName));
+                _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(fileName));
                 NewQueryDocument(fileName);
             }
-            
+            return Task.CompletedTask;
         }
 
-        public void Handle(OpenDaxFileEvent message)
+        public Task HandleAsync(OpenDaxFileEvent message, CancellationToken cancellationToken)
         {
             NewQueryDocument(message.FileName);
+            return Task.CompletedTask;
         }
 
-        public void TabClosing(object sender, DocumentClosingEventArgs args)
+        public async void TabClosing(object sender, DocumentClosingEventArgs args)
         {
 
             var doc = args.Document.Content as IScreen;
@@ -290,26 +294,26 @@ namespace DaxStudio.UI.ViewModels
 
             args.Cancel = true; // cancel the default tab close action as we want to call 
 
-            doc.TryClose();     // TryClose and give the document a chance to block the close
+            await doc.TryCloseAsync();     // TryClose and give the document a chance to block the close
 
             if (this.Items.Count == 0)
             {
                 Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
                 ActiveDocument = null;
-                _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
             }
         }
 
-        public void Activate(object document)
+        public async void Activate(object document)
         {
             if (document is DocumentViewModel doc)
             {
-                ActivateItem(doc);
+                await ActivateItemAsync (doc);
                 ActiveDocument = doc;
             }
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => AvalonDockTheme);
             foreach (var itm in this.Items)
@@ -318,9 +322,10 @@ namespace DaxStudio.UI.ViewModels
                 doc.UpdateSettings();
                 doc.UpdateTheme();
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(AutoSaveRecoveryEvent message)
+        public Task HandleAsync(AutoSaveRecoveryEvent message, CancellationToken cancellationToken)
         {
             _autoSaveRecoveryIndex = message.AutoSaveMasterIndex;
 
@@ -328,7 +333,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "Checking if any files need to be recovered from a previous crash");
                 
-
                 var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover && i.IsCurrentVersion).SelectMany(entry => entry.Files).ToList();
 
                 if (!filesToRecover.Any())
@@ -338,7 +342,7 @@ namespace DaxStudio.UI.ViewModels
                     // if there are no files to recover then clean up 
                     // the recovery folder and exit here
                     AutoSaver.CleanUpRecoveredFiles();
-                    return; 
+                    return Task.CompletedTask; 
                 }
 
                 Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", $"found {filesToRecover.Count} file(s) that may need to be recovered, showing recovery dialog");
@@ -386,6 +390,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
 
+            return Task.CompletedTask;
             // TODO - maybe move this to a RecoverNextFile message and store the files to recover in a private var
             //        then at the end of the ViewLoaded event we can trigger this event and run code like the
             //        section below
@@ -393,7 +398,7 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        public void Handle(RecoverNextAutoSaveFileEvent message)
+        public Task HandleAsync(RecoverNextAutoSaveFileEvent message, CancellationToken cancellationToken)
         {
             
             var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
@@ -416,6 +421,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
                 
             }
+            return Task.CompletedTask;
         }
     }
 }

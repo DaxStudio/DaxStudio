@@ -120,7 +120,7 @@ namespace DaxStudio.UI.ViewModels
             Column.MeasureExpression = MeasureExpression.Text;
             Column.Caption = MeasureName;
             Document.QueryBuilder.IsEnabled = true;
-            EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
         }
 
         public void CancelMeasureExpression()

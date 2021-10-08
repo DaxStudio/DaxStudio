@@ -275,10 +275,12 @@
 
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="DocumentClosing">
-                    <cal:ActionMessage MethodName="TabClosing">
-                        <cal:Parameter Value="{Binding}" />
-                        <cal:Parameter Value="$eventArgs" />
-                    </cal:ActionMessage>
+                    <cal:Action.Target>
+                        <cal:ActionMessage MethodName="TabClosing">
+                            <cal:Parameter Value="{Binding}" />
+                            <cal:Parameter Value="$eventArgs" />
+                        </cal:ActionMessage>
+                    </cal:Action.Target>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
 

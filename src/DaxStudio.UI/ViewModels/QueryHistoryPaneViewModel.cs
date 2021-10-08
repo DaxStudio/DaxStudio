@@ -5,11 +5,12 @@ using DaxStudio.UI.Model;
 using System.Windows.Data;
 using System;
 using System.ComponentModel;
-using System.Net.Mime;
 using System.Windows;
 using System.Windows.Media;
 using Serilog;
 using DaxStudio.Interfaces;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -108,18 +109,19 @@ namespace DaxStudio.UI.ViewModels
         {
             if (queryHistoryEvent == null) return;  // exit here silently if no history event is selected
             if (!string.IsNullOrEmpty(queryHistoryEvent.QueryBuilderJson))
-                _eventAggregator.PublishOnUIThread(new LoadQueryBuilderEvent(queryHistoryEvent.QueryBuilderJson));
+                _eventAggregator.PublishOnUIThreadAsync(new LoadQueryBuilderEvent(queryHistoryEvent.QueryBuilderJson));
             else
             {
                 var text = queryHistoryEvent.QueryText;
                 if (!string.IsNullOrWhiteSpace(queryHistoryEvent.Parameters)) text += $"\n{queryHistoryEvent.Parameters}";
-                _eventAggregator.PublishOnUIThread(new SendTextToEditor(text));
+                _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(text));
             }
         }
 
-        public void Handle(DocumentConnectionUpdateEvent message)
+        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellationToken)
         {
             UpdateHistoryFilters();
+            return Task.CompletedTask;
         }
 
         private void UpdateHistoryFilters()
@@ -145,14 +147,16 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ShowTraceColumns { get { return _globalOptions.QueryHistoryShowTraceColumns; } }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => ShowTraceColumns);
+            return Task.CompletedTask;
         }
 
-        public void Handle(DatabaseChangedEvent message)
+        public Task HandleAsync(DatabaseChangedEvent message, CancellationToken cancellationToken)
         {
             UpdateHistoryFilters();
+            return Task.CompletedTask;
         }
         
     }

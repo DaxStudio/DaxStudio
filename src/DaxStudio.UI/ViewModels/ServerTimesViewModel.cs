@@ -22,6 +22,8 @@ using System;
 using System.Globalization;
 using DaxStudio.Common;
 using DaxStudio.UI.Utils;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -346,11 +348,12 @@ namespace DaxStudio.UI.ViewModels
             get => Options.ReplaceXmSqlTableNames;
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
+            return Task.CompletedTask;
             // TODO - update server timing pane?
         }
 
@@ -420,9 +423,9 @@ namespace DaxStudio.UI.ViewModels
                     QueryHistoryEvent.SEDurationMs = StorageEngineDuration;
                     QueryHistoryEvent.ServerDurationMs = TotalDuration;
 
-                    _eventAggregator.PublishOnUIThread(QueryHistoryEvent);
+                    _eventAggregator.PublishOnUIThreadAsync(QueryHistoryEvent);
                 }
-                if (Events.Count > 0) _eventAggregator.PublishOnUIThread(new ServerTimingsEvent(this));
+                if (Events.Count > 0) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
 
                 Events.Clear();
 
@@ -636,7 +639,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
             if (!package.PartExists(uri)) return;
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
@@ -669,7 +672,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".serverTimings";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
             LoadJson(data);

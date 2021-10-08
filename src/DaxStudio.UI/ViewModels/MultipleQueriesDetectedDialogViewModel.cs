@@ -18,7 +18,7 @@ namespace DaxStudio.UI.ViewModels
         public int CharactersBeforeComment { get; set; }
         public int CharactersAfterComment { get; set; }
 
-        public void KeepDirectQueryCode()
+        public async void KeepDirectQueryCode()
         {
             Result = MultipleQueriesDetectedDialogResult.KeepDirectQuery;
             if (RememberChoice)
@@ -27,10 +27,10 @@ namespace DaxStudio.UI.ViewModels
                 Options.EditorMultipleQueriesDetectedOnPaste = DaxStudio.Interfaces.Enums.MultipleQueriesDetectedOnPaste.AlwaysKeepBoth;
             }
 
-            TryClose(true);
+            await TryCloseAsync(true);
         }
 
-        public void RemoveDirectQueryCode()
+        public async void RemoveDirectQueryCode()
         {
             Result = MultipleQueriesDetectedDialogResult.RemoveDirectQuery;
             if (RememberChoice)
@@ -38,7 +38,7 @@ namespace DaxStudio.UI.ViewModels
                 // save Always Remove to options
                 Options.EditorMultipleQueriesDetectedOnPaste = DaxStudio.Interfaces.Enums.MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax;
             }
-            TryClose(true);
+            await TryCloseAsync(true);
         }
 
         public void Cancel()

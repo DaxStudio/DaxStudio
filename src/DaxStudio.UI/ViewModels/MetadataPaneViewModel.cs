@@ -21,6 +21,7 @@ using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
 using Humanizer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -35,7 +36,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectionChangedEvent>
         , IHandle<ConnectionOpenedEvent>
         , IHandle<ConnectFailedEvent>
-        , IHandleWithTask<TablesRefreshedEvent>
+        , IHandle<TablesRefreshedEvent>
         //, IDragSource
         , IMetadataPane
     {
@@ -120,11 +121,11 @@ namespace DaxStudio.UI.ViewModels
                 ModelList = _metadataProvider.GetModels();
                 
                 ShowMetadataRefreshPrompt = false;
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Metadata Refreshed"));
             }
             catch (Exception ex)
             {
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,$"Error Refreshing Metadata: {ex.Message}"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,$"Error Refreshing Metadata: {ex.Message}"));
                 Log.Error(ex,Common.Constants.LogMessageTemplate,nameof(MetadataPaneViewModel), nameof(RefreshMetadata), ex.Message);
             }
         }
@@ -230,7 +231,7 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 // Load tables async
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     try
                     {
@@ -247,7 +248,7 @@ namespace DaxStudio.UI.ViewModels
                     catch (Exception ex)
                     {
                         Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.Task", ex.Message, ex.StackTrace);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
+                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
                     }
                     finally
                     {
@@ -260,12 +261,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     IsNotifying = false;
                     Tables = _treeViewTables;
-                    EventAggregator.PublishOnUIThread(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                    await EventAggregator.PublishOnUIThreadAsync(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                 }
                 catch(Exception ex)
                 {
                     Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
-                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
+                    await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
                 }
                 finally
                 {
@@ -486,7 +487,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Unable to refresh the list of databases due to the following error: {0}", ex.Message)));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("Unable to refresh the list of databases due to the following error: {0}", ex.Message)));
             }
 
         }
@@ -693,7 +694,7 @@ namespace DaxStudio.UI.ViewModels
                 var dependentMeasures = FindDependentMeasures(column.Name);
                 foreach (var measure in dependentMeasures)
                 {
-                    EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
                 }
             }
             catch (Exception ex)
@@ -714,7 +715,7 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var measure in measures)
                 {
-                    EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
                 }
             }
             catch (Exception ex)
@@ -761,12 +762,12 @@ namespace DaxStudio.UI.ViewModels
                 string measureName = string.Format("'{0}'[{1}]", item.Caption, "DumpFilters" + (allTables ? "" : " " + item.Caption));
                 string measureExpression = _metadataProvider.DefineFilterDumpMeasureExpression(item.Caption, allTables);
 
-                EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
+                EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureName, measureExpression));
             }
             catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stacktrace}", "ToolPaneBaseViewModel", "DefineFilterDumpMeasure", ex.Message, ex.StackTrace);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error defining filter dump measure: {ex.Message}"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error defining filter dump measure: {ex.Message}"));
             }
         }
 
@@ -830,7 +831,7 @@ namespace DaxStudio.UI.ViewModels
                     measureExpression = column.MeasureExpression;
                 }
 
-                EventAggregator.PublishOnUIThread(new DefineMeasureOnEditor(measureName, measureExpression));
+                EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureName, measureExpression));
             }
             catch (Exception ex)
             {
@@ -839,13 +840,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
             NotifyOfPropertyChange(() => ExpandSearch);
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -877,7 +879,7 @@ namespace DaxStudio.UI.ViewModels
                         "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
                         criteria + Environment.NewLine +
                         "ORDER BY [OBJECT_TYPE]" + Environment.NewLine;
-                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
+                    EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(thisItem,true));
                 }
             }
             catch (Exception ex)
@@ -903,7 +905,7 @@ namespace DaxStudio.UI.ViewModels
                         "FROM $SYSTEM.DISCOVER_CALC_DEPENDENCY " + Environment.NewLine +
                         "WHERE [REFERENCED_TABLE] = '" + txt + "'" + Environment.NewLine +
                         "ORDER BY [OBJECT_TYPE]";
-                    EventAggregator.PublishOnUIThread(new SendTextToEditor(thisItem,true));
+                    EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(thisItem,true));
                 }
             }
             catch (Exception ex)
@@ -939,7 +941,7 @@ namespace DaxStudio.UI.ViewModels
                 case Key.C:
                     if (selectedItem is ITreeviewColumn col)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(col, QueryBuilderItemType.Column));
+                        EventAggregator.PublishOnUIThreadAsync(new SendColumnToQueryBuilderEvent(col, QueryBuilderItemType.Column));
                         SelectedTreeViewItem = null;
                         if (!string.IsNullOrWhiteSpace(CurrentCriteria))
                         {
@@ -952,7 +954,7 @@ namespace DaxStudio.UI.ViewModels
                 case Key.F:
                     if (selectedItem is ITreeviewColumn filter)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(filter, QueryBuilderItemType.Filter));
+                        EventAggregator.PublishOnUIThreadAsync(new SendColumnToQueryBuilderEvent(filter, QueryBuilderItemType.Filter));
                         SelectedTreeViewItem = null;
                         if (!string.IsNullOrWhiteSpace(CurrentCriteria))
                         {
@@ -964,7 +966,7 @@ namespace DaxStudio.UI.ViewModels
                 case Key.B:
                     if (selectedItem is ITreeviewColumn item)
                     {
-                        EventAggregator.PublishOnUIThread(new SendColumnToQueryBuilderEvent(item, QueryBuilderItemType.Both));
+                        EventAggregator.PublishOnUIThreadAsync(new SendColumnToQueryBuilderEvent(item, QueryBuilderItemType.Both));
                         SelectedTreeViewItem = null;
                         if (!string.IsNullOrWhiteSpace(CurrentCriteria))
                         {
@@ -1056,7 +1058,7 @@ namespace DaxStudio.UI.ViewModels
             if (!string.IsNullOrEmpty(query))
             {
                 // run query
-                EventAggregator.PublishOnUIThread(new SendTextToEditor(query, true));
+                EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(query, true));
             }
             else
             {
@@ -1067,19 +1069,21 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public void Handle(QueryStartedEvent message)
+        public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
             NotifyOfPropertyChange(() => CanSelectModel);
+            return Task.CompletedTask;
         }
 
-        public void Handle(QueryFinishedEvent message)
+        public Task HandleAsync(QueryFinishedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
             NotifyOfPropertyChange(() => CanSelectModel);
+            return Task.CompletedTask;
         }
 
-        public void Handle(SelectedDatabaseChangedEvent message)
+        public Task HandleAsync(SelectedDatabaseChangedEvent message, CancellationToken cancellationToken)
         {
             var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
             if (selectedDB != null) SelectedDatabase = selectedDB;
@@ -1103,15 +1107,15 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message));
             }
-
+            return Task.CompletedTask;
         }
 
-        public void Handle(ConnectionChangedEvent message)
+        public async Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
 
-            Execute.OnUIThread(() =>
+            await Execute.OnUIThreadAsync(async () =>
             {
                 Databases.IsNotifying = false;
                 Databases = _metadataProvider.GetDatabases().ToBindableCollection();
@@ -1133,18 +1137,20 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanSelectModel);
         }
 
-        public void Handle(ConnectionOpenedEvent message)
+        public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)
         {
             IsBusy = true;
             NotifyOfPropertyChange(nameof(Databases));
+            return Task.CompletedTask;
         }
 
-        public void Handle(ConnectFailedEvent message)
+        public Task HandleAsync(ConnectFailedEvent message, CancellationToken cancellationToken)
         {
             IsBusy = false;
+            return Task.CompletedTask;
         }
 
-        public async Task Handle(TablesRefreshedEvent message)
+        public async Task HandleAsync(TablesRefreshedEvent message, CancellationToken cancellationToken)
         {
             await RefreshTablesAsync();
         }

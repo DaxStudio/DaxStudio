@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using ADOTabular;
 using DaxStudio.Interfaces;
 using System.Windows.Input;
+using ModernWpf.Controls;
 
 namespace DaxStudio.UI.Views
 {

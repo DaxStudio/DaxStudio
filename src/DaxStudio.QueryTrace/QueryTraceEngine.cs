@@ -356,6 +356,7 @@ namespace DaxStudio.QueryTrace
 
         public void RaiseError(Exception ex)
         {
+
             Exception e = ex;
             while (e.InnerException != null)
             {
@@ -439,7 +440,7 @@ namespace DaxStudio.QueryTrace
                 {
                     // exit early if there is no text in the query
                     if ((e.EventClass == TraceEventClass.QueryBegin ||
-                         e.EventClass == TraceEventClass.QueryEnd) && e.TextData.StartsWith("/* PING */"))
+                         e.EventClass == TraceEventClass.QueryEnd) && e.TextData.StartsWith("/* PING */",   StringComparison.OrdinalIgnoreCase))
                     {
                         Debug.WriteLine("Skipping Empty <Statement>");
                         return;
@@ -479,7 +480,7 @@ namespace DaxStudio.QueryTrace
             }
             catch (Exception ex)
             {
-                Execute.OnUIThreadAsync(() => RaiseError(ex));
+                Execute.OnUIThread(() => RaiseError(ex));
             }
         }
 

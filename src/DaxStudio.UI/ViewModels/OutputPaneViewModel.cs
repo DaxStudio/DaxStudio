@@ -71,7 +71,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (message.Row >= 0 && message.Column >= 0)
             {
-                _eventAggregator.PublishOnUIThread(new NavigateToLocationEvent(message.Row, message.Column));
+                _eventAggregator.PublishOnUIThreadAsync(new NavigateToLocationEvent(message.Row, message.Column));
             }
         }
 

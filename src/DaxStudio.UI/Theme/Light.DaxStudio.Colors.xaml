@@ -19,7 +19,9 @@
 
     <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}"/>
     <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{StaticResource Theme.MenuBar.Back}"/>
-
+    <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}"/>
+    <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}"/>
+    
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor60"  >#99228ED6</Color>

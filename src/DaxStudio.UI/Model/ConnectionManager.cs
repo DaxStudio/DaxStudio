@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
-
+using System.Threading;
 
 namespace DaxStudio.UI.Model
 {
@@ -38,7 +38,7 @@ namespace DaxStudio.UI.Model
         , IMetadataProvider
         , IConnection
         , IModelIntellisenseProvider
-        , IHandleWithTask<RefreshTablesEvent>
+        , IHandle<RefreshTablesEvent>
         , IHandle<SelectedModelChangedEvent>
     {
         public bool IsConnecting { get; private set; }
@@ -151,7 +151,7 @@ namespace DaxStudio.UI.Model
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxColumnsRemap();
                 }
@@ -193,7 +193,7 @@ namespace DaxStudio.UI.Model
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxTablesRemap();
                 }
@@ -467,7 +467,7 @@ namespace DaxStudio.UI.Model
                     }
                     else
                     {
-                        _eventAggregator.PublishOnUIThread( 
+                        _eventAggregator.PublishOnUIThreadAsync( 
                             new OutputMessage(MessageType.Error, 
                                 $"DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {_connection.ServerVersion}")
                             );
@@ -475,7 +475,7 @@ namespace DaxStudio.UI.Model
                 }
             }
             // This allows us to move the loading of the table/column metadata onto a background thread
-            _eventAggregator.PublishOnBackgroundThread(new RefreshTablesEvent());
+            _eventAggregator.PublishOnBackgroundThreadAsync(new RefreshTablesEvent());
         }
 
         public void SetSelectedDatabase(ADOTabularDatabase database)
@@ -508,7 +508,7 @@ namespace DaxStudio.UI.Model
                 if (_connection?.Database != null)
                     ModelList = _connection.Database.Models;
 
-                _eventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
+                _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
             }
 
         }
@@ -600,7 +600,7 @@ namespace DaxStudio.UI.Model
                             {
                                 // todo - prompt user to see whether to continue
                                 var msg = "The measure name: '" + modelMeasure.Name + "' is also used as a column name in one or more of the tables in this model";
-                                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, msg));
+                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
                                 throw new InvalidOperationException(msg);
                             }
                         }
@@ -621,7 +621,7 @@ namespace DaxStudio.UI.Model
                 if (database != null)_connection.ChangeDatabase(database.Name);
                 SelectedDatabase = _connection.Database;
                 ModelList = _connection.Database?.Models;
-                _eventAggregator.PublishOnBackgroundThread(new DatabaseChangedEvent());
+                _eventAggregator.PublishOnBackgroundThreadAsync(new DatabaseChangedEvent());
             }, context);
         }
 
@@ -636,10 +636,10 @@ namespace DaxStudio.UI.Model
             _connection.Open();
             SelectedDatabase = _connection.Database;
             
-            _eventAggregator.PublishOnUIThread(new ConnectionOpenedEvent());
-            _eventAggregator.PublishOnUIThread(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
-            _eventAggregator.PublishOnBackgroundThread(new DmvsLoadedEvent(DynamicManagementViews));
-            _eventAggregator.PublishOnBackgroundThread(new FunctionsLoadedEvent(FunctionGroups));
+            _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
+            _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
+            _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
         }
 
         private string GetFileName(ConnectEvent message)
@@ -652,7 +652,7 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public Task Handle(RefreshTablesEvent message)
+        public Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
         {
             return Task.Factory.StartNew(() => {
                 _retry.Execute(() =>
@@ -695,12 +695,13 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public void Handle(SelectedModelChangedEvent message)
+        public Task HandleAsync(SelectedModelChangedEvent message, CancellationToken cancellationToken)
         {
             var model = _connection?.Database?.Models[message.SelectedModel];
             SelectedModelName = message.SelectedModel;
-            if (model == null) return;
+            if (model == null) return Task.CompletedTask;
             SetSelectedModel(model);
+            return Task.CompletedTask;
         }
 
 
@@ -792,7 +793,7 @@ namespace DaxStudio.UI.Model
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
             connEvent.ActiveTraces = activeTraces;
-            _eventAggregator.PublishOnUIThread(connEvent);
+            _eventAggregator.PublishOnUIThreadAsync(connEvent);
 
         }
 

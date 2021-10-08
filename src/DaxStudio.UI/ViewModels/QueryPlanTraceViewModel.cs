@@ -224,7 +224,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".queryPlans";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             LoadJson(data);
         }
@@ -258,7 +258,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryPlan, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {

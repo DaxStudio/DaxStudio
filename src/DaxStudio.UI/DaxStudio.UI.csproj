@@ -551,7 +551,6 @@
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
-    <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="TemplateSelectors\ToolWindowTemplateSelector.cs" />
     <Compile Include="Converters\BoolToHiddenConverter.cs" />
     <Compile Include="Extensions\DatabaseCollectionExtensions.cs" />
@@ -1599,7 +1598,7 @@
       <Version>6.1.2.30</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>3.2.0</Version>
+      <Version>4.0.173</Version>
     </PackageReference>
     <PackageReference Include="ControlzEx">
       <Version>5.0.0</Version>
@@ -1629,7 +1628,7 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
-      <Version>8.0.3</Version>
+      <Version>9.0.0-alpha0148</Version>
     </PackageReference>
     <PackageReference Include="FontAwesome.WPF">
       <Version>4.7.0.9</Version>

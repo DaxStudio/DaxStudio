@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -694,36 +696,41 @@ namespace DaxStudio.UI.Utils.Intellisense
             }
         }
 
-        public void Handle(MetadataLoadedEvent message)
+        public Task HandleAsync(MetadataLoadedEvent message, CancellationToken cancellationToken)
         {
             if (message.Document == Document)
             {
                 Model = message.Model;
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(SelectedModelChangedEvent message)
+        public Task HandleAsync(SelectedModelChangedEvent message, CancellationToken cancellationToken)
         {
             Model = null;
+            return Task.CompletedTask;
         }
 
-        public void Handle(DmvsLoadedEvent message)
+        public Task HandleAsync(DmvsLoadedEvent message, CancellationToken cancellationToken)
         {
             DMVs = message.DmvCollection;
+            return Task.CompletedTask;
         }
 
-        public void Handle(FunctionsLoadedEvent message)
+        public Task HandleAsync(FunctionsLoadedEvent message, CancellationToken cancellationToken)
         {
             FunctionGroups = message.FunctionGroups;
+            return Task.CompletedTask;
         }
 
-        public void Handle(ConnectionPendingEvent message)
+        public Task HandleAsync(ConnectionPendingEvent message, CancellationToken cancellationToken)
         {
             if (message.Document == Document)
             {
                 FunctionGroups = null;
                 DMVs = null;
             }
+            return Task.CompletedTask;
         }
 
         public bool MetadataIsCached => Model != null && FunctionGroups != null && DMVs != null;

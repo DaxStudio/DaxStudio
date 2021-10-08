@@ -85,7 +85,7 @@ namespace DaxStudio.UI.Model
                 _overridenMeasureExpression = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(IsModelItem));
-                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -116,7 +116,7 @@ namespace DaxStudio.UI.Model
 
         public void DuplicateMeasure()
         {
-            _eventAggregator.PublishOnUIThread(new DuplicateMeasureEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new DuplicateMeasureEvent(this));
             
         }
 
@@ -128,7 +128,7 @@ namespace DaxStudio.UI.Model
                 _sortDirection = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(SortDescription));
-                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 

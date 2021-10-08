@@ -53,7 +53,7 @@ namespace DaxStudio.UI.Model
                     sortCol.IsSortBy = true;
                     if (!Items.Any(sort => sort.DaxName == sortCol.DaxName)) { 
                         Items.Add(sortCol);
-                        EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
+                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace DaxStudio.UI.Model
 
         public void EditMeasure(QueryBuilderColumn measure)
         {
-            EventAggregator.PublishOnUIThread(new ShowMeasureExpressionEditor(measure));
+            EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(measure));
         }
 
         public void ChangeSortDirection(QueryBuilderColumn column)

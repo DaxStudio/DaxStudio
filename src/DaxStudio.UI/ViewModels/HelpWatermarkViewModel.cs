@@ -2,6 +2,8 @@
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Converters;
 using DaxStudio.UI.Events;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
@@ -47,19 +49,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(nameof(NeverShowHelpWatermark));
             NotifyOfPropertyChange(nameof(ShowHelpWatermark));
+            return Task.CompletedTask;
         }
 
-        public void Handle(EditorResizeEvent message)
+        public Task HandleAsync(EditorResizeEvent message, CancellationToken cancellationToken)
         {
             EditorSize = message.NewSize;
             //if (message.NewSize.Height < MinHeight || message.NewSize.Width < MinWidth) EditorTooSmall = true;
             //else EditorTooSmall = false;
             NotifyOfPropertyChange(nameof(ShowHelpWatermark));
             NotifyOfPropertyChange(nameof(Scale));
+            return Task.CompletedTask;
         }
 
         public bool EditorTooSmall { get; set; }

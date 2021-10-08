@@ -89,14 +89,14 @@ namespace DaxStudio.UI.ViewModels
         {
             Log.Information(Constants.LogMessageTemplate, nameof(ViewAsDialogViewModel), nameof(Cancel), $"Cancelling ViewAs Dialog");
             _dialogResult = DialogResult.Cancel;
-            TryClose(true);
+            //await TryCloseAsync(true);
         }
 
         public void Ok()
         {
             Log.Information(Constants.LogMessageTemplate, nameof(ViewAsDialogViewModel), nameof(Ok), $"Setting ViewAs");
             _dialogResult = DialogResult.OK;
-            TryClose(true);
+            //await TryCloseAsync (true);
         }
 
         public DialogResult Result => _dialogResult;

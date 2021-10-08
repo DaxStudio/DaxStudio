@@ -10,6 +10,8 @@ using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -47,11 +49,11 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{class} {method} {message}", "VertiPaqAnalyzerViewModel", "ctor", "end");
         }
 
-        public override void TryClose(bool? dialogResult = null)
+        public override Task TryCloseAsync(bool? dialogResult = null)
         {
             // unsubscribe from event aggregator
             _eventAggregator.Unsubscribe(this);
-            base.TryClose(dialogResult);
+            return base.TryCloseAsync(dialogResult);
         }
 
         private VpaModel _viewModel;
@@ -171,11 +173,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(DocumentConnectionUpdateEvent message)
+        public Task HandleAsync(DocumentConnectionUpdateEvent message,CancellationToken cancellationToken)
         {
 
             // TODO connect VPA data
             Log.Information("VertiPaq Analyzer Handle DocumentConnectionUpdateEvent call");
+            return Task.CompletedTask;
         }
 
         public void MouseDoubleClick(object sender)//, MouseButtonEventArgs e)
@@ -183,10 +186,11 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Debug.WriteLine("clicked!");
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             // NotifyOfPropertyChange(() => ShowTraceColumns);
             Log.Information("VertiPaq Analyzer Handle UpdateGlobalOptions call");
+            return Task.CompletedTask;
         }
 
         public void OnTableSorting(System.Windows.Controls.DataGridSortingEventArgs e)

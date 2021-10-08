@@ -13,6 +13,9 @@ using System;
 using System.Linq;
 using System.Windows.Media;
 using DaxStudio.UI.Extensions;
+using System.Threading;
+using System.Threading.Tasks;
+using Timer = System.Timers.Timer;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -52,7 +55,7 @@ namespace DaxStudio.UI.ViewModels
 
         public  void HideTrace(object obj)
         {
-            _eventAggregator.PublishOnUIThread(new CloseTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new CloseTraceWindowEvent(this));
         }
         
 
@@ -175,15 +178,16 @@ namespace DaxStudio.UI.ViewModels
                         _eventAggregator.Unsubscribe(this);
                     }
                     
-                    _eventAggregator.PublishOnUIThread(new TraceWatcherToggleEvent(this, value));
+                    _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, value));
                     Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
                 }
             }
         }
 
-        public void Handle(DocumentConnectionUpdateEvent message)
+        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellation)
         {
             CheckEnabled(message.Connection, message.ActiveTrace);
+            return Task.CompletedTask;
         }
 
         public void CheckEnabled(IConnection connection, ITraceWatcher active)
@@ -231,7 +235,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(QueryStartedEvent message)
+        public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
@@ -239,9 +243,10 @@ namespace DaxStudio.UI.ViewModels
                 IsBusy = true;
                 Reset();
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(CancelQueryEvent message)
+        public Task HandleAsync(CancelQueryEvent message, CancellationToken cancellationToken)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryCancelEvent>", "Query Cancelled");
             if (!IsPaused && !IsChecked)
@@ -249,6 +254,7 @@ namespace DaxStudio.UI.ViewModels
                 IsBusy = false;
                 Reset();
             }
+            return Task.CompletedTask;
         }
 
         Timer _timeout;
@@ -372,7 +378,7 @@ namespace DaxStudio.UI.ViewModels
             // a partial set of events and they cannot be relied upon so we clear them
             if(!Events.Any(ev => ev.EventClass == DaxStudioTraceEventClass.QueryEnd)) {
                 Reset();
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
                     "Trace Stopped: QueryEnd event not received - Server Timing End Event timeout exceeded. You could try increasing this timeout in the Options"));
             }
         }

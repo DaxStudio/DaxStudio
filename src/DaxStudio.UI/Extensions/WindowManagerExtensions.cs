@@ -49,7 +49,7 @@ namespace DaxStudio.UI.Extensions
             {
                 shellViewModel.ShowOverlay();
                 var model = IoC.Get<T>();
-                @this.ShowDialog(model,null,settings);
+                @this.ShowDialogAsync(model,null,settings);
 
             }
 
@@ -68,8 +68,8 @@ namespace DaxStudio.UI.Extensions
             try
             {
                 shellViewModel.ShowOverlay();
-
-                @this.ShowDialog(model, null, settings);
+                EnsureStandardSettings(settings);
+                @this.ShowDialogAsync(model, null, settings);
 
             }
             finally
@@ -83,6 +83,42 @@ namespace DaxStudio.UI.Extensions
             //ViewModelBinder.Bind(model, view, null);
             //view.ShowAsync();
             // ?? TODO - how to pass dialog result back
+        }
+
+        public static void EnsureStandardSettings(Dictionary<string,object> settings)
+        {
+            if (!settings.ContainsKey("ShowInTaskbar")) { settings.Add("ShowInTaskbar", false); }
+            if (!settings.ContainsKey("ResizeMode")) { settings.Add("ResizeMode", ResizeMode.NoResize); }
+            if (!settings.ContainsKey("WindowStyle")) { settings.Add("WindowStyle", WindowStyle.None); }
+            if (!settings.ContainsKey("Background")) { settings.Add("Background", System.Windows.Media.Brushes.Transparent); }
+            if (!settings.ContainsKey("AllowsTransparency")) { settings.Add("AllowsTransparency", true); }
+            if (!settings.ContainsKey("Style")) { settings.Add("Style", null); }
+        }
+
+        public static async Task<bool> ShowContentDialogAsync(this IWindowManager @this, object model, Dictionary<string, object> settings)
+        {
+
+            //var shellViewModel = IoC.Get<IShell>();
+
+            //try
+            //{
+            //    shellViewModel.ShowOverlay();
+
+            //    @this.ShowDialogAsync(model, null, settings);
+
+            //}
+            //finally
+            //{
+            //    shellViewModel.HideOverlay();
+            //}
+
+            var view = ViewLocator.LocateForModel(model, null, null) as ContentDialog;
+            if (view == null) throw new ArgumentException($"The view for the ViewModel '{model.ToString()}' is not a ModernWpf ContentDialog control");
+
+            ViewModelBinder.Bind(model, view, null);
+            var result = await view.ShowAsync();
+
+            return result == ContentDialogResult.Primary;
         }
 
     }

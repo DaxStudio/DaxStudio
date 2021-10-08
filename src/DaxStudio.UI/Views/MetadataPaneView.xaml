@@ -290,13 +290,17 @@
                         <trig:InputBindingTrigger.InputBinding>
                             <KeyBinding Key="Escape"/>
                         </trig:InputBindingTrigger.InputBinding>
-                        <cal:ActionMessage MethodName="ClearCriteria"/>
+                        <cal:Action.Target>
+                            <cal:ActionMessage MethodName="ClearCriteria"/>
+                        </cal:Action.Target>
                     </trig:InputBindingTrigger>
                     <trig:InputBindingTrigger>
                         <trig:InputBindingTrigger.InputBinding>
                             <KeyBinding Key="Down"/>
                         </trig:InputBindingTrigger.InputBinding>
-                        <cal:ActionMessage MethodName="SetFocusToMetadata"/>
+                        <cal:Action.Target>
+                            <cal:ActionMessage MethodName="SetFocusToMetadata"/>
+                        </cal:Action.Target>
                     </trig:InputBindingTrigger>
                 </i:Interaction.Triggers>
 

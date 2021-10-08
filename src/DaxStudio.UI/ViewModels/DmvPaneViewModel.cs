@@ -14,6 +14,8 @@ using System.Collections.ObjectModel;
 using System.Windows.Media;
 using DaxStudio.Interfaces;
 using ADOTabular.Interfaces;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -56,13 +58,14 @@ namespace DaxStudio.UI.ViewModels
         //    get { return Connection == null ? null: Connection.DynamicManagementViews; }
         //}
 
-        public void Handle(ConnectionChangedEvent message)
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             SetupDmvs();
             NotifyOfPropertyChange(() => DmvQueries);
 
             // notify the intellisense provider that the dmv list may need updating
-            //EventAggregator.PublishOnUIThread(new DmvsLoadedEvent(Document, _dmvProvider.DynamicManagementViews));
+            //EventAggregator.PublishOnUIThreadAsync(new DmvsLoadedEvent(Document, _dmvProvider.DynamicManagementViews));
+            return Task.CompletedTask;
         }
 
         public bool UserFilter(object dmv)

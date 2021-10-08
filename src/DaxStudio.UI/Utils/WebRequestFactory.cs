@@ -9,6 +9,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ICSharpCode.SharpDevelop.Dom;
+using System.Threading;
 
 namespace DaxStudio.UI.Utils
 {
@@ -159,7 +160,7 @@ namespace DaxStudio.UI.Utils
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
                     Log.Error("{class} {method} {message} {stacktrace}", "WebRequestFactory", "GetProxy", ex.Message, ex.StackTrace );
                     UseSystemProxy();
                 }
@@ -208,11 +209,11 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
-            // reset proxy
             ResetProxy();
-        }
+            return Task.CompletedTask;
+         }
 
         internal static void ResetProxy()
         {

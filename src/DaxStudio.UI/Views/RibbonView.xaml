@@ -190,25 +190,30 @@
                         <Fluent:Button Header="New" 
                                    Name="btnNewQuery" 
                                    HorizontalContentAlignment="Left" 
-                                   Foreground="White"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Back}"
                                    Height="30"
                                    ToolTip="Open a New Query"
                                        DockPanel.Dock="Top">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
-                                    <cal:ActionMessage MethodName="NewQuery"/>
+                                    <cal:Action.Target>
+                                        <cal:ActionMessage MethodName="NewQuery"/>
+                                    </cal:Action.Target>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </Fluent:Button>
 
                         <Fluent:Button
-                        Name="btnNewQueryConnected"
-                        Header="New (Copy Connection)"
-                        ToolTip="Open a New Query with the current connection"
-                        Height="30">
+                            Name="btnNewQueryConnected"
+                            Header="New (Copy Connection)"
+                            ToolTip="Open a New Query with the current connection"
+                            Foreground="{DynamicResource Theme.Brush.Default.Back}"
+                            Height="30">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
-                                    <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
+                                    <cal:Action.Target>
+                                        <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
+                                    </cal:Action.Target>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
 
@@ -249,8 +254,9 @@
 
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="Click">
-                                                    <cal:ActionMessage MethodName="Open">
-                                                    </cal:ActionMessage>
+                                                    <cal:Action.Target>
+                                                        <cal:ActionMessage MethodName="Open"/>
+                                                    </cal:Action.Target>
                                                 </i:EventTrigger>
                                             </i:Interaction.Triggers>
                                         </Fluent:Button>
@@ -277,10 +283,12 @@
                                         <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                <cal:Action.Target>
                                                 <cal:ActionMessage MethodName="OpenRecentFile">
                                                     <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
                                                     <cal:Parameter Value="{Binding ElementName=Backstage}"/>
                                                 </cal:ActionMessage>
+                                                </cal:Action.Target>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
 
@@ -313,7 +321,9 @@
                                    >
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
-                                    <cal:ActionMessage MethodName="Save"/>
+                                    <cal:Action.Target>
+                                        <cal:ActionMessage MethodName="Save"/>
+                                    </cal:Action.Target>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
 
@@ -324,9 +334,10 @@
                                    Foreground="White">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
-                                    <cal:ActionMessage MethodName="SaveAs">
+                                    <cal:Action.Target>
+                                        <cal:ActionMessage MethodName="SaveAs"/>
+                                    </cal:Action.Target>
 
-                                    </cal:ActionMessage>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
 
@@ -336,8 +347,7 @@
                             <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}"  />
                         </Fluent:BackstageTabItem>
 
-                        <Fluent:SeparatorTabItem />
-
+                                               
                         <Fluent:Button Name="btnExit" 
                                    Header="Exit" 
                                    Foreground="White"  
@@ -345,13 +355,29 @@
                                    DockPanel.Dock="Bottom">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
-                                    <cal:ActionMessage MethodName="Exit">
+                                    <cal:Action.Target>
+                                        <cal:ActionMessage MethodName="Exit"/>
+                                    </cal:Action.Target>
 
-                                    </cal:ActionMessage>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </Fluent:Button>
 
+
+                        <Image x:Name="backImage" 
+                               Source="{DynamicResource logo_transparentDrawingImage}"
+                               DockPanel.Dock="Bottom"
+                               Width="200"
+                               Height="200"
+                               />
+
+                        <!--<Fluent:BackstageTabItem DockPanel.Dock="Bottom">
+                            <Fluent:BackstageTabItem.Header>
+                                <Image x:Name="backImage" Source="{DynamicResource logo_transparentDrawingImage}"
+                               />
+                            </Fluent:BackstageTabItem.Header>
+                        </Fluent:BackstageTabItem>-->
+                        
                     </Fluent:BackstageTabControl>
                     
                 </Fluent:Backstage>

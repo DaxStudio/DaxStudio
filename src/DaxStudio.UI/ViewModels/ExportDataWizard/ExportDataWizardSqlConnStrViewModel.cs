@@ -26,10 +26,10 @@
             set { Wizard.Schema = value; }
         }
 
-        public void Next()
+        public async void Next()
         {
             NextPage = ExportDataWizardPage.ChooseTables;
-            TryClose();
+            await TryCloseAsync();
         }
     }
 }

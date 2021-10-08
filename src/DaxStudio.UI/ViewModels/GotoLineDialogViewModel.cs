@@ -98,7 +98,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Methods
 
-        public void GotoLine()
+        public async void GotoLine()
         {
             if (editor == null || LineNo == 0)
             {
@@ -110,14 +110,14 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 Editor.TextArea.Focus();
-                this.TryClose();
+                await this.TryCloseAsync();
             }
         }
 
         
-        public void Cancel()
+        public async void Cancel()
         {
-            this.TryClose();
+            await this.TryCloseAsync();
         }
 
 

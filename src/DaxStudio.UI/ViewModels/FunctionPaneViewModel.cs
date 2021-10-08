@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using ADOTabular;
@@ -86,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FunctionPaneViewModel), nameof(ApplyFilter), ex.Message);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
             }
         }
 
@@ -96,10 +98,11 @@ namespace DaxStudio.UI.ViewModels
             SearchCriteria = string.Empty;
         }
 
-        public void Handle(ConnectionChangedEvent message)
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => FunctionGroups);
-            //EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+            //EventAggregator.PublishOnUIThreadAsync(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+            return Task.CompletedTask;
         }
 
         public void MetadataKeyUp(IFilterableTreeViewItem selectedItem, KeyEventArgs args)

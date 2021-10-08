@@ -43,7 +43,7 @@ namespace DaxStudio.UI.ViewModels
             //        if (previous.IsFaulted)
             //        {
             //            Log.Error(previous.Exception, "{class} {method} {message}", nameof(HelpAboutViewModel), "ctor", $"Error updating version information: {previous.Exception.Message}");
-            //            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Unable to check for an updated release on github"));
+            //            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Unable to check for an updated release on github"));
             //            CheckingUpdateStatus = false;
             //            NotifyOfPropertyChange(() => CheckingUpdateStatus);
             //            return;
@@ -110,9 +110,9 @@ namespace DaxStudio.UI.ViewModels
                 return l; 
             }
         }
-        public void Ok()
+        public async void Ok()
         {
-            TryClose();
+            await TryCloseAsync();
         }
 
         public bool CheckingUpdateStatus

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
@@ -79,13 +81,14 @@ namespace DaxStudio.UI.ViewModels
         
         public string PositionText { get; set; }
 
-        public void Handle(EditorPositionChangedMessage message)
+        public Task HandleAsync(EditorPositionChangedMessage message, CancellationToken cancellationToken)
         {
             PositionText = string.Format("Ln {0}, Col {1} ", message.Line, message.Column);
             NotifyOfPropertyChange(()=>PositionText);
+            return Task.CompletedTask;
         }
 
-        public void Handle(DocumentConnectionUpdateEvent message)
+        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellationToken)
         {
             
             if (message != null)
@@ -102,6 +105,7 @@ namespace DaxStudio.UI.ViewModels
                     Spid = "";
                 }
             }
+            return Task.CompletedTask;
         }
 
         private int _rowCount = -1;
@@ -126,9 +130,9 @@ namespace DaxStudio.UI.ViewModels
                 } 
             }
         }
-        public void Handle(ActivateDocumentEvent message)
+        public Task HandleAsync(ActivateDocumentEvent message,CancellationToken cancellationToken)
         {
-            if (message.Document == null ) return;
+            if (message.Document == null ) return Task.CompletedTask;
             // remove handler for previous active document
             if (ActiveDocument != null)
             {
@@ -147,6 +151,8 @@ namespace DaxStudio.UI.ViewModels
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
             RowCount = ActiveDocument.RowCount;
+
+            return Task.CompletedTask;
         }
 
         void ActiveDocument_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -180,12 +186,12 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 System.Windows.Clipboard.SetText(ServerName);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
             }
             catch(Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "StatusBarViewModel", "CopyServerNameToClipboard", "Error copying server name to clipboard: " + ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error copying server name to clipboard, please try again"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error copying server name to clipboard, please try again"));
             }
         }
 
@@ -198,21 +204,22 @@ namespace DaxStudio.UI.ViewModels
         //    try
         //    {
         //        System.Windows.Clipboard.SetText(DatabaseID);
-        //        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Copied Database ID: \"{DatabaseID}\" to clipboard"));
+        //        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database ID: \"{DatabaseID}\" to clipboard"));
         //    }
         //    catch (Exception ex)
         //    {
         //        Log.Error(ex, "{class} {method} {message}", nameof(StatusBarViewModel), nameof(CopyDatabaseIdToClipboard), "Error copying DatabaseID to clipboard: " + ex.Message);
-        //        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error copying DatabaseID to clipboard, please try again"));
+        //        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error copying DatabaseID to clipboard, please try again"));
         //    }
         //}
 
         public DocumentViewModel ActiveDocument { get; set; }
         public IGlobalOptions Options { get; }
 
-        public void Handle(ConnectionClosedEvent message)
+        public Task HandleAsync(ConnectionClosedEvent message, CancellationToken cancellationToken)
         {
             ServerName = string.Empty;
+            return Task.CompletedTask;
         }
 
 

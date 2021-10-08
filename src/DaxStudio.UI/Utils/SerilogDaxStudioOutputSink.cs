@@ -37,7 +37,7 @@ namespace DaxStudio.UI.Utils
                 try
                 {
                     this.EventAggregator = IoC.Get<IEventAggregator>();
-                    EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Information, "Output Event Sink Started"));
+                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Information, "Output Event Sink Started"));
                 }
                 catch { }
             }
@@ -52,12 +52,12 @@ namespace DaxStudio.UI.Utils
                 var text = sr.ToString().Trim();
 
                 if (logEvent.Level == LogEventLevel.Error || logEvent.Level == LogEventLevel.Fatal)
-                    EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Error, text));
+                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Error, text));
                 else if (logEvent.Level == LogEventLevel.Warning)
-                    EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Warning, text));
+                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Warning, text));
                 else
                 {
-                    EventAggregator.PublishOnUIThread(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Information, text));
+                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.UI.Events.OutputMessage(Events.MessageType.Information, text));
                 }
             }
         }
