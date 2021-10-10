@@ -98,9 +98,11 @@
                    CanCustomizeQuickAccessToolBarItems="True"
     -->
     <Fluent:Ribbon Height="Auto" 
-                   AutomaticStateManagement="False"
+                   AutomaticStateManagement="True"
                    CanCustomizeQuickAccessToolBar="False"
                    CanCustomizeQuickAccessToolBarItems="False"
+                   IsQuickAccessToolBarMenuDropDownVisible="False"
+                   CanMinimize="True"
          >    
         <Fluent:Ribbon.Resources>
 

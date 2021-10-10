@@ -96,7 +96,7 @@ namespace DaxStudio.UI.ViewModels
             if (!string.IsNullOrEmpty(_host.CommandLineFileName))
             {
                 Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
-                Tabs.NewQueryDocument(_host.CommandLineFileName);
+                Tabs.NewQueryDocumentAsync(_host.CommandLineFileName);
             }
 
             // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
@@ -199,6 +199,7 @@ namespace DaxStudio.UI.ViewModels
                 Ribbon.OnClose();
                 _notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
+                if (Application.Current == null) return;
                 if (!Application.Current.Properties.Contains("HasCrashed") )
                     AutoSaver.RemoveAll();
             }

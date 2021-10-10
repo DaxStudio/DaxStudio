@@ -1115,12 +1115,13 @@ namespace DaxStudio.UI.ViewModels
         public async Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
 
-            await Execute.OnUIThreadAsync(async () =>
+            await Execute.OnUIThreadAsync(() =>
             {
                 Databases.IsNotifying = false;
                 Databases = _metadataProvider.GetDatabases().ToBindableCollection();
                 Databases.IsNotifying = true;
                 NotifyOfPropertyChange(nameof(Databases));
+                return Task.CompletedTask;
             });
             var ml = _metadataProvider.GetModels();
             //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);

@@ -331,7 +331,7 @@ namespace DaxStudio.UI.ViewModels
         public void Connect()
         {
             if (ActiveDocument == null) NewQuery();
-            else ActiveDocument.ChangeConnection();
+            else ActiveDocument.ChangeConnectionAsync();
         }
 
         //private bool _canConnect;

@@ -53,7 +53,7 @@ namespace DaxStudio.UI.Model
 
         public DelegateCommand HideCommand { get; set; }
         public bool CanHideToolWindow(object obj) { return CanHide; }
-        public void HideToolWindow(object obj) { this.TryCloseAsync(); }
+        public void HideToolWindow(object obj) { this.IsVisible = false; this.TryCloseAsync(); }
         public bool CanHide { get; set; }
         public int AutoHideMinHeight { get; set; }
         public new  bool IsActive { get; set; }

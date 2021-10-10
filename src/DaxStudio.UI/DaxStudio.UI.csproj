@@ -1628,7 +1628,7 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
-      <Version>9.0.0-alpha0148</Version>
+      <Version>8.0.3</Version>
     </PackageReference>
     <PackageReference Include="FontAwesome.WPF">
       <Version>4.7.0.9</Version>

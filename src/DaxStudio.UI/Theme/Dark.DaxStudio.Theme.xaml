@@ -28,6 +28,9 @@
         <!--<Setter Property="TextBox.Foreground" Value="Red"/>-->
     </Style>
 
+    <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonCollapse"  Drawing="{StaticResource collapseDrawingGroup}" />
+    <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonExpand"  Drawing="{StaticResource expandDrawingGroup}" />
+    
     <sys2:Uri x:Key="Metadata.Table">pack://application:,,,/DaxStudio.UI;component/Images/Metadata/Folder.png</sys2:Uri>
 
 

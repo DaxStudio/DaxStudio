@@ -11,8 +11,11 @@
         <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/MenuItem.xaml"/>
         <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/RibbonTabControl.xaml"/>-->
     </ResourceDictionary.MergedDictionaries>
-    
-  <ControlTemplate TargetType="{x:Type Fluent:RibbonTabItem}"
+
+    <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonCollapse"  Drawing="{DynamicResource collapseDrawingGroup}" />
+    <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonExpand"  Drawing="{DynamicResource expandDrawingGroup}" />
+
+    <ControlTemplate TargetType="{x:Type Fluent:RibbonTabItem}"
                        x:Key="DaxStudioRibbonTabItemControlTemplate">
     <Grid x:Name="grid"
           Height="Auto">
@@ -92,7 +95,11 @@
         <Setter Property="Visibility"
                 TargetName="selectedBorder"
                 Value="Visible" />
-      </Trigger>
+        <Setter
+              TargetName="PART_HeaderContentHost"
+              Property="FontWeight"
+              Value="Bold"/>
+       </Trigger>
       <!-- Foreground for Selected, with group -->
       <Trigger Property="Selector.IsSelected"
                Value="True">

@@ -94,12 +94,12 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.DocumentWellTabSelectedActiveBackground}"
 		options:Freeze="true"
-		Color="#007ACC" />
+		Color="#2D2D2D" />
 
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.DocumentWellTabSelectedActiveText}"
 		options:Freeze="true"
-		Color="#F1F1F1" />
+		Color="#FFFFFF" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.DocumentWellTabSelectedInactiveBackground}"
 		options:Freeze="true"
@@ -323,7 +323,7 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.ToolWindowTabSelectedActiveText}"
 		options:Freeze="true"
-		Color="#0097FB" />
+		Color="#FFFFFF" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.ToolWindowTabSelectedInactiveBackground}"
 		options:Freeze="true"

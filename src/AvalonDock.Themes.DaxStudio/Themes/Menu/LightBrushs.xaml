@@ -44,7 +44,7 @@
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                              ResourceId=ScrollButtonBrushKey}" PresentationOptions:Freeze="True"
-                     Color="#FF000000" />
+                     Color="#000000" />
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                              ResourceId=CheckMarkBackgroundBrushKey}" PresentationOptions:Freeze="True"

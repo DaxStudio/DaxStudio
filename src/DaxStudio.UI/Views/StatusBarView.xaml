@@ -83,7 +83,7 @@
 
     <Grid >
 
-        <Fluent:StatusBar Background="{DynamicResource Theme.Brush.MenuBar.Back}" > 
+        <Fluent:StatusBar Background="{DynamicResource Theme.Brush.StatusBar.Back}" > 
             <Fluent:StatusBar.ItemsPanel >
                 <ItemsPanelTemplate>
                     <Grid>

@@ -1201,9 +1201,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public async void ChangeConnection()
+        public async Task ChangeConnectionAsync()
         {
-
+            
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionPendingEvent(this));
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "ChangeConnection", "start");
             var connStr = Connection == null ? string.Empty : Connection.ConnectionString;
@@ -1225,11 +1225,11 @@ namespace DaxStudio.UI.ViewModels
                     Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPowerPivotModel);
                     msg.Dispose();
 
-                    Execute.OnUIThread(async () =>
-                    {
-                        var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
+                Execute.OnUIThread(async () =>
+                {
+                    var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
 
-                        await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
+                    await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
                                         {
                                             {"Top", 40},
                                             { "WindowStyle", WindowStyle.None},
@@ -1240,10 +1240,10 @@ namespace DaxStudio.UI.ViewModels
                                             {"Style", null }
                                         });
 
-                        IsFocused = true;
-                    });
+                    IsFocused = true;
+                });
 
-                }
+        }
                 catch (Exception ex)
                 {
                     // if the task throws an exception the "real" exception is usually in the innerException
@@ -2925,7 +2925,7 @@ namespace DaxStudio.UI.ViewModels
                     // todo - should we be checking for exceptions in this continuation
                     if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                     {
-                        Execute.OnUIThread(() => { ChangeConnection(); });
+                        Execute.OnUIThread(() => { ChangeConnectionAsync(); });
                     }
                     }, TaskScheduler.Default).ContinueWith((previousOutput) =>
                  {

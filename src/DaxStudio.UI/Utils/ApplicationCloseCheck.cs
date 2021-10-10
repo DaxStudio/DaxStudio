@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Utils {
         public void Execute(CoroutineExecutionContext context) {
             var documentWorkspace = screen.Parent as IDocumentWorkspace;
             if (documentWorkspace != null)
-                documentWorkspace.Activate(screen);
+                documentWorkspace.ActivateAsync(screen);
 
             Completed(this, new ResultCompletionEventArgs { WasCancelled = !closeCheck() });
         }

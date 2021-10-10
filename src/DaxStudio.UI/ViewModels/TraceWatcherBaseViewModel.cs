@@ -44,7 +44,6 @@ namespace DaxStudio.UI.ViewModels
             _globalOptions = globalOptions;
             WaitForEvent = TraceEventClass.QueryEnd;
             HideCommand = new DelegateCommand(HideTrace, CanHideTrace);
-           
             //_eventAggregator.Subscribe(this); 
         }
 

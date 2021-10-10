@@ -11,8 +11,8 @@
 
     <!-- Colors  -->
     
-    <Color x:Key="AvalonDock.Border.Background.Color">#FF000000</Color>
-    <Color x:Key="AvalonDock.Control.Background.Color">#FF000000</Color>
+    <Color x:Key="AvalonDock.Border.Background.Color">#000000</Color>
+    <Color x:Key="AvalonDock.Control.Background.Color">#000000</Color>
     <Color x:Key="AvalonDock.Transparent.Color">#00FFFFFF</Color>
     <Color x:Key="AvalonDock.Text.Color">#00CCCCCC</Color>
 

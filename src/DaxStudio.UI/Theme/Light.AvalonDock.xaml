@@ -7,6 +7,7 @@
     xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonDockConverters="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonDockProperties="clr-namespace:AvalonDock.Properties;assembly=AvalonDock"
+    xmlns:reskeys="clr-namespace:AvalonDock.Themes.DaxStudio.Themes;assembly=AvalonDock.Themes.DaxStudio"
     >
 
     <!-- Colors  -->
@@ -24,7 +25,7 @@
     
     <SolidColorBrush x:Key="AvalonDock.Highlight.Brush" Color="{x:Static SystemColors.HighlightColor}"/>
     <SolidColorBrush x:Key="AvalonDock.HighlightText.Brush" Color="{x:Static SystemColors.HighlightTextColor}"/>
-    
+    <SolidColorBrush x:Key="DocumentWellTabSelectedActiveBackground" Color="{StaticResource AvalonDock.Control.Background.Color}"/>
 
     <!-- Styles -->
     <!--
