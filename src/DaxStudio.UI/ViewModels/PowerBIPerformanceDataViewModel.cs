@@ -37,10 +37,10 @@ namespace DaxStudio.UI.ViewModels
             PerformanceData = new BindableCollection<PowerBIPerformanceData>();
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
-            this.CanHide = true;
+            
         }
 
-
+        public override bool CanHide => true;
         //public new bool CanHide => true;
         public override string ContentId => "pbi-performance-data";
         public override ImageSource IconSource

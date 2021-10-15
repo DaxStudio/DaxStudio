@@ -235,6 +235,7 @@ namespace DaxStudio.UI.Model
                 if (value == _isExpanded) return;
                 _isExpanded = value;
                 NotifyOfPropertyChange(()=> IsExpanded);
+                if (ObjectType == ADOTabularObjectType.Folder) NotifyOfPropertyChange("TreeviewImage");
             }
         }
 
@@ -300,6 +301,8 @@ namespace DaxStudio.UI.Model
             _table = table;
         }
 
+        public string ForegroundBrush => _table?.IsVisible ?? true ? "Theme.Brush.Default.Fore" : "Theme.Brush.Hidden.Fore";
+
         public string TreeviewImage
         {
             get
@@ -311,16 +314,17 @@ namespace DaxStudio.UI.Model
                         
                     //case MetadataImages.Database:
                     case MetadataImages.Folder:
-
                     case MetadataImages.HiddenColumn:
                     case MetadataImages.HiddenMeasure:
-                    case MetadataImages.HiddenTable:
+                    
                     case MetadataImages.Hierarchy:
                     case MetadataImages.Kpi:
                     case MetadataImages.Measure:
                         return "measure";
+                    case MetadataImages.HiddenTable:
                     case MetadataImages.Table:
-                        return "table";
+
+                        return _table.IsDateTable? "date_tableDrawingImage": "tableDrawingImage";
                     case MetadataImages.UnnaturalHierarchy:
                         return "";
                 }
@@ -547,6 +551,52 @@ namespace DaxStudio.UI.Model
         }
 
         public MetadataImages MetadataImage { get; set; }
+
+        public string ForegroundBrush => _column?.IsVisible??true ? "Theme.Brush.Default.Fore" : "Theme.Brush.Hidden.Fore";
+
+        public string TreeviewImage { get {
+                if (_column == null) return this.IsExpanded ? "folder_openDrawingImage": "folderDrawingImage";
+                switch (_column.MetadataImage)
+                {
+                    case MetadataImages.Measure:
+                    case MetadataImages.HiddenMeasure:
+                    case MetadataImages.HiddenColumn:
+                    case MetadataImages.Column:
+                        return GetDataTypeImage(_column);
+
+                    //case MetadataImages.Database:
+                    case MetadataImages.Folder:
+                    
+                    case MetadataImages.Hierarchy:
+                    case MetadataImages.Kpi:
+                    
+                        return "measure";
+                    case MetadataImages.HiddenTable:
+                    case MetadataImages.Table:
+
+                        return "";
+                    case MetadataImages.UnnaturalHierarchy:
+                        return "";
+                }
+                return "";
+            } 
+        }
+
+        private string GetDataTypeImage(IADOTabularColumn column)
+        {
+            switch (column.DataType)
+            {
+                case Microsoft.AnalysisServices.Tabular.DataType.Boolean: return $"boolean{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.DateTime: return $"datetime{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.Double:
+                case Microsoft.AnalysisServices.Tabular.DataType.Decimal: return $"double{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.Int64: return $"number{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.String:return $"string{DrawingSuffix(column)}";
+                default: return "";
+            }
+        }
+
+        private string DrawingSuffix(IADOTabularObject column) => column.IsVisible ? "DrawingImage" : "HiddenDrawingImage";
 
         private string _caption = string.Empty;
         public string Caption => Column?.Caption??_caption;

@@ -14,7 +14,7 @@
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
             xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
             xmlns:templateSelectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
-            
+            xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
              xmlns:ui="http://schemas.modernwpf.com/2019"
             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
@@ -161,6 +161,26 @@
                     <sys:String x:Key="Timeouts">ClockOutline</sys:String>
                     <sys:String x:Key="Trace">Search</sys:String>
                     <sys:String x:Key="Logging">Medkit</sys:String>
+                </ResourceDictionary>
+            </conv:ResourceLookupConverter>
+
+
+            <conv:ResourceLookupConverter x:Key="CategoryIconLookup">
+                <ResourceDictionary>
+                    <sys:String x:Key="Custom Export Format">options_exportDrawingImage</sys:String>
+                    <sys:String x:Key="Dax Formatter">options_dax_formatterDrawingImage</sys:String>
+                    <sys:String x:Key="Defaults">options_defaultDrawingImage</sys:String>
+                    <sys:String x:Key="Editor">options_editorDrawingImage</sys:String>
+                    <sys:String x:Key="Metadata Pane">options_metadata_paneDrawingImage</sys:String>
+                    <sys:String x:Key="Proxy">options_proxyDrawingImage</sys:String>
+                    <sys:String x:Key="Privacy">options_PrivacyDrawingImage</sys:String>
+                    <sys:String x:Key="Query History">options_query_historyDrawingImage</sys:String>
+                    <sys:String x:Key="Results">options_resultsDrawingImage</sys:String>
+                    <sys:String x:Key="Server Timings">options_resultsDrawingImage</sys:String>
+                    <sys:String x:Key="Sounds">options_resultsDrawingImage</sys:String>
+                    <sys:String x:Key="Timeouts">options_resultsDrawingImage</sys:String>
+                    <sys:String x:Key="Trace">options_resultsDrawingImage</sys:String>
+                    <sys:String x:Key="Logging">options_resultsDrawingImage</sys:String>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
 
@@ -445,7 +465,7 @@
                                 <StackPanel Orientation="Horizontal" >
                                     <Rectangle x:Name="Hl" Width="3"  Margin="0,0,1,0" Fill="Transparent"/>
                                     <fa:FontAwesome Icon="{Binding Converter={StaticResource CategoryIconNames}}" Width="20" FontSize="14" Margin="5,0" />
-
+                                    <!--<Image Source="{markup:ResourceBinding {Binding Converter={StaticResource CategoryIconLookup}}}"/>-->
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                 </StackPanel>
                             </Border>
@@ -511,7 +531,8 @@
         </Grid.RowDefinitions>
         <Label Content="Options" Foreground="{StaticResource DaxStudioBrush}" FontSize="56" FontWeight="Light" 
 			Grid.Row="0"
-			Grid.Column="0" Grid.ColumnSpan="2"/>
+			Grid.Column="0" 
+               Grid.ColumnSpan="2"/>
         <!-- Editor -->
         <TabControl Grid.ColumnSpan="2" 
                     Margin="0,0,20,10" 
@@ -520,8 +541,7 @@
                     
                     Style="{StaticResource TabControlPivotStyle}"
                     >
-            <TabItem Header="Standard" >
-
+            <TabItem Height="28" Header="Standard">
 
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -539,13 +559,12 @@
                     <Grid>
                         <!-- mah:TextBoxHelper.ClearTextButton="True" -->
                         <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" 
-                                 
                                  ui:ControlHelper.PlaceholderText="Search"
-                             MinWidth="100" 
-                             Grid.Row="1" 
-                             Margin="5" 
-                             Padding="5" />
-                        
+                                 MinWidth="100" 
+                                 Grid.Row="1" 
+                                 Margin="5" 
+                                 Padding="5" />
+
                         <!--<Button Margin="10" Grid.Column="1" HorizontalAlignment="Right" Padding="5"
                                                 Visibility="{Binding Path=HasSearchText, Converter={StaticResource BoolToVisibilityConverter}}"
                                                 BorderThickness="0"
@@ -593,7 +612,7 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid VerticalAlignment="Top">
-                                                    <!-- Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" -->
+                                                    
                                                <TextBlock Text="{Binding DisplayName}" 
                                                           pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
                                                           pg:TextBlockHighlighter.HighlightColor="Yellow"
@@ -614,7 +633,7 @@
                             <GroupStyle>
                                 <GroupStyle.HeaderTemplate>
                                     <DataTemplate>
-                                            <!-- Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}" -->
+                                            
                                         <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"
                                                    pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
                                                    pg:TextBlockHighlighter.HighlightColor="Yellow"
@@ -629,7 +648,7 @@
 
 
             </TabItem>
-            <TabItem Header="Key Bindings" >
+            <TabItem Height="28" Header="Key Bindings" >
                 <ScrollViewer x:Name="AdvancedScrollViewer2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer2, Path=ViewportWidth}" Orientation="Horizontal" >
                         <GroupBox Header="Hotkeys" Width="450">
@@ -667,7 +686,7 @@
                                 </TextBlock>
                                 <Button Content="Reset All" 
                                         Grid.Column="2" 
-                                        x:Name="ResetKeyBindings" Height="22" Width="60" Margin="0,0,0,20"/>
+                                        x:Name="ResetKeyBindings"  Margin="0,0,0,20"/>
 
                                 <Label Content="Comment Selection" Grid.Row="1" Padding="2" />
                                 <!--<controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
@@ -742,7 +761,7 @@
                     </WrapPanel>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Advanced">
+            <TabItem Height="28" Header="Advanced">
                 <ScrollViewer x:Name="AdvancedScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
                         <GroupBox Header="Publish Functions">

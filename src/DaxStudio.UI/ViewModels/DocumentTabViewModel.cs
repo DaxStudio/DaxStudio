@@ -38,6 +38,8 @@ namespace DaxStudio.UI.ViewModels
         private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
         private readonly IGlobalOptions _options;
         private readonly object _activeDocumentLock = new object();
+        private readonly IDaxStudioHost _host;
+        private readonly RibbonViewModel Ribbon;
         private readonly Application _app;
 
         //private readonly Func<DocumentViewModel> _documentFactory;
@@ -45,7 +47,9 @@ namespace DaxStudio.UI.ViewModels
         [ImportingConstructor]
         public DocumentTabViewModel(IWindowManager windowManager
             , IEventAggregator eventAggregator
-            , Func<IWindowManager,IEventAggregator, DocumentViewModel> documentFactory 
+            , Func<IWindowManager,IEventAggregator, DocumentViewModel> documentFactory
+            , RibbonViewModel ribbonViewModel
+            , IDaxStudioHost host
             , IGlobalOptions options
             , IAutoSaver autoSaver)
         {
@@ -55,11 +59,58 @@ namespace DaxStudio.UI.ViewModels
             _options = options;
             _eventAggregator.SubscribeOnPublishedThread(this);
             AutoSaver = autoSaver;
+            Ribbon = ribbonViewModel;
+            _host = host;
             _app = Application.Current;
+        }
+
+        protected override async Task OnInitializeAsync(CancellationToken cancellationToken)
+        {
+            var recoveringFiles = false;
+
+            // get master auto save indexes and only get crashed index files...
+            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
+            var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
+
+            // check for auto-saved files and offer to recover them
+            if (filesToRecover.Any())
+            {
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
+                recoveringFiles = true;
+                await RecoverAutoSavedFilesAsync(autoSaveInfo);
+            }
+            else
+            {
+                // if there are no auto-save files to recover, start the auto save timer
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
+                await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+            }
+
+            // if a filename was passed in on the command line open it
+            if (!string.IsNullOrEmpty(_host.CommandLineFileName))
+            {
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
+                await NewQueryDocumentAsync(_host.CommandLineFileName);
+            }
+
+            // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
+            if (Items.Count == 0 && !recoveringFiles)
+            {
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
+                await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
+            }
         }
 
         public void ActiveDocumentChanged()
         {
+
+        }
+
+        private async Task RecoverAutoSavedFilesAsync(Dictionary<int, AutoSaveIndex> autoSaveInfo)
+        {
+            Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(RecoverAutoSavedFilesAsync), $"Found {autoSaveInfo.Values.Count} auto save index files");
+            // show recovery dialog
+            await _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
 
         }
 
@@ -240,7 +291,7 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
             else
-                new System.Action(ChangeConnection).BeginOnUIThread();
+                await ChangeConnection();
         }
 
         private void CleanActiveDocument()
@@ -249,9 +300,9 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.IsDirty = false;
         }
 
-        private void ChangeConnection()
+        private async Task ChangeConnection()
         {
-            ActiveDocument.ChangeConnectionAsync();
+            await ActiveDocument.ChangeConnectionAsync();
         }
 
         public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
@@ -357,7 +408,7 @@ namespace DaxStudio.UI.ViewModels
                 };
 
 
-                _windowManager.ShowDialogBox(autoSaveRecoveryDialog, settings: new Dictionary<string, object>
+                await _windowManager.ShowDialogBoxAsync(autoSaveRecoveryDialog, settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
                     { "ShowInTaskbar", false},
@@ -420,7 +471,7 @@ namespace DaxStudio.UI.ViewModels
                 AutoSaver.CleanUpRecoveredFiles();
 
                 // Now that any files have been recovered start the auto save timer
-                _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
                 
             }
             

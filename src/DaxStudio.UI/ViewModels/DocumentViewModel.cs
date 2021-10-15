@@ -75,6 +75,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelQueryEvent>
         , IHandle<CommentEvent>
         , IHandle<ConnectEvent>
+        , IHandle<ChangeThemeEvent>
         , IHandle<CloseTraceWindowEvent>
         , IHandle<CopyConnectionEvent>
         , IHandle<DefineMeasureOnEditor>
@@ -158,9 +159,9 @@ namespace DaxStudio.UI.ViewModels
                 _uniqueId = Guid.NewGuid();
                 Options = options;
                 AutoSaver = autoSaver;
-                IconSource =
-                    ImgSourceConverter.ConvertFromInvariantString(
-                        @"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
+                IconSource = Application.Current.Resources["daxDrawingImage"] as ImageSource;
+                    //ImgSourceConverter.ConvertFromInvariantString(
+                    //    @"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
                 Connection = new ConnectionManager(_eventAggregator);
                 IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
                 Init(_ribbon);
@@ -335,7 +336,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void OnPasting(object sender, DataObjectPastingEventArgs e)
+        private async void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
             try
             {
@@ -351,7 +352,7 @@ namespace DaxStudio.UI.ViewModels
                 var newContent = sm.ProcessString(content);
                 if (sm.SqlQueryCommentFound)
                 {
-                    switch (ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
+                    switch (await ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
                     {
                         case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
                             // remove the direct query code from the text we are pasting in
@@ -376,7 +377,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private MultipleQueriesDetectedDialogResult ShowStripDirectQueryDialog(int commentPosition, int stringLength)
+        private async Task<MultipleQueriesDetectedDialogResult> ShowStripDirectQueryDialog(int commentPosition, int stringLength)
         {
             // check in options if we should prompt or return a default option
             if (Options.EditorMultipleQueriesDetectedOnPaste == MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax)
@@ -394,7 +395,7 @@ namespace DaxStudio.UI.ViewModels
                 CharactersAfterComment = charactersAfterComment
             };
 
-            _windowManager.ShowDialogBox(stripDirectQueryDialog, settings: new Dictionary<string, object>
+            await _windowManager.ShowDialogBoxAsync(stripDirectQueryDialog, settings: new Dictionary<string, object>
             {
                 { "WindowStyle", WindowStyle.None},
                 { "ShowInTaskbar", false},
@@ -412,7 +413,7 @@ namespace DaxStudio.UI.ViewModels
             var viewAsDialog = new ViewAsDialogViewModel(Connection);
         
 
-            _windowManager.ShowDialogBox(viewAsDialog, settings: new Dictionary<string, object>
+            await _windowManager.ShowDialogBoxAsync(viewAsDialog, settings: new Dictionary<string, object>
             {
                 { "WindowStyle", WindowStyle.None},
                 { "ShowInTaskbar", false},
@@ -1193,7 +1194,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string _fileName = String.Empty;
         public string FileName {
-            get => _fileName;
+            get => string.IsNullOrEmpty(_fileName) ? DisplayName : _fileName;
             set { _fileName = value;
                 NotifyOfPropertyChange(() => FileName);
                 NotifyOfPropertyChange(() => FileAndExtension);
@@ -1321,7 +1322,7 @@ namespace DaxStudio.UI.ViewModels
         public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
-        private DialogResult PreProcessQuery(IQueryTextProvider textProvider, bool injectEvaluate, bool injectRowFunction)
+        private async Task<DialogResult> PreProcessQuery(IQueryTextProvider textProvider, bool injectEvaluate, bool injectRowFunction)
         {
 
             // merge in any parameters
@@ -1332,7 +1333,7 @@ namespace DaxStudio.UI.ViewModels
                 var paramDialog = new QueryParametersDialogViewModel(this, textProvider.QueryInfo);
 
 
-                _windowManager.ShowDialogBox(paramDialog, settings: new Dictionary<string, object>
+                await _windowManager.ShowDialogBoxAsync(paramDialog, settings: new Dictionary<string, object>
                         {
                             { "WindowStyle", WindowStyle.None},
                             { "ShowInTaskbar", false},
@@ -1796,7 +1797,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void BenchmarkQuery()
+        private async void BenchmarkQuery()
         {
 
             try
@@ -1811,7 +1812,7 @@ namespace DaxStudio.UI.ViewModels
                 using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon, Options))
                 {
 
-                    _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
+                    await _windowManager.ShowDialogBoxAsync(dialog, settings: new Dictionary<string, object>
                     {
                         { "WindowStyle", WindowStyle.None},
                         { "ShowInTaskbar", false},
@@ -1834,7 +1835,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(BenchmarkQuery), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
             }
             finally
             {
@@ -1936,7 +1937,7 @@ namespace DaxStudio.UI.ViewModels
 
                     }
 
-                    if (PreProcessQuery(message.QueryProvider, message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
+                    if (await PreProcessQuery(message.QueryProvider, message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
                     {
                         IsQueryRunning = false;
                     }
@@ -3163,6 +3164,12 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public Task HandleAsync(ChangeThemeEvent message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(nameof(IconSource));
+            return Task.CompletedTask;
+        }
+
         private void RefreshConnectionFilename(ConnectEvent message)
         {
             try
@@ -3533,7 +3540,7 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public void GotoLine()
+        public async void GotoLine()
         {
 
             Log.Debug("{class} {method} {event}", "DocumentViewModel", "GotoLine", "start");
@@ -3544,7 +3551,7 @@ namespace DaxStudio.UI.ViewModels
                 var gotoLineDialog = new GotoLineDialogViewModel(GetEditor());
 
                 // show the dialog
-                _windowManager.ShowDialogBox(gotoLineDialog, settings: new Dictionary<string, object>
+                await _windowManager.ShowDialogBoxAsync(gotoLineDialog, settings: new Dictionary<string, object>
                                 {
                                     {"Top", 40},
                                     { "WindowStyle", WindowStyle.None},
@@ -4531,6 +4538,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(UpdateGlobalOptions message,CancellationToken cancellationToken)
         {
+            NotifyOfPropertyChange(nameof(IconSource));
             NotifyOfPropertyChange(nameof(WordWrap));
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));

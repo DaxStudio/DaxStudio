@@ -21,6 +21,7 @@
     xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
     x:Class="DaxStudio.UI.Views.DocumentView" 
     mc:Ignorable="d" 
     d:DesignWidth="500" 
@@ -79,6 +80,8 @@
             </Style>
             
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
                 <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource BaseBrush}"/>-->
                 <Setter Property="Template">
@@ -602,13 +605,13 @@
                             <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToHiddenConverter}}"/>
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                             <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
-                            
+                            <!--<Setter Property="Layout .AutoHideMinWidth" Value="250"/>-->
                             <!--<Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>-->
                             <!--<Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />-->
-                            <!--<Setter Property="CanHide" Value="{Binding Model.CanHide}"/>-->
+                            <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
                             
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
-                            <Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />
+                            <!--<Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />-->
 
                             <Setter Property="DockAsDocumentCommand" Value="{x:Null}" />
                         </Style>
@@ -652,8 +655,8 @@
             <avalondock:LayoutRoot FocusManager.IsFocusScope="False">
                 <!-- Left side Tool Panes -->
                 <avalondock:LayoutPanel Orientation="Horizontal">
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="225" FloatingWidth="200">
-                        <avalondock:LayoutAnchorablePane Name="DockLeft"/>
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="225" FloatingWidth="200" >
+                        <avalondock:LayoutAnchorablePane Name="DockLeft" ap:LayoutAnchorablePaneAutoHideMinWidthHelper.AutoHideMinWidth="250"/>
                     </avalondock:LayoutAnchorablePaneGroup>
                     <avalondock:LayoutAnchorablePaneGroup DockMinWidth="185" DockWidth="210" FloatingWidth="210">
                         <avalondock:LayoutAnchorablePane Name="DockMidLeft"/>
@@ -702,13 +705,16 @@
                                     <dax:DAXEditor x:Name="daxEditor" 
                                                    Margin="2,2,2,2" 
                                                    Padding="8,8,8,8"
-                                                   
+                                                   BorderThickness="1"
+                                                   BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                                                    TabIndex="0"
                                                    Grid.Column="0" 
                                                    Grid.Row="1" 
                                                    Grid.RowSpan="2" 
                                                    Grid.ColumnSpan="2" MinWidth="80"
                                                    MinHeight="60"
+                                                   LineNumbersForeground="{DynamicResource Theme.Brush.LineNumbers}"
+                                                  
                                                    FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -791,7 +797,11 @@
                                                 </MenuItem>
                                             </ContextMenu>
                                         </ContextMenuService.ContextMenu>
-
+                                        <dax:DAXEditor.Resources>
+                                            <Style TargetType="{x:Type Line}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </Style>
+                                        </dax:DAXEditor.Resources>
                                     </dax:DAXEditor>
 
                                     <!-- Help Watermark -->

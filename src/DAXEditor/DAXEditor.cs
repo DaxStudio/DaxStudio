@@ -110,6 +110,8 @@ namespace DAXEditorControl
             
             TextView textView = this.TextArea.TextView;
 
+
+
             // Add Bracket Highlighter
             _bracketRenderer = new BracketHighlightRenderer(textView);
             textView.BackgroundRenderers.Add(_bracketRenderer);

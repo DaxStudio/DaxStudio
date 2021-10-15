@@ -60,7 +60,7 @@
             </ResourceDictionary.MergedDictionaries>
             
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <SolidColorBrush x:Key="GrayBrush5" Color="#FFf5f5f5" />
+
             <!--<SolidColorBrush x:Key="BusyBrush" Color="#30000000" />-->
             <SolidColorBrush x:Key="BusyBrush" Color="#00000000" />
 

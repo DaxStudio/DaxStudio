@@ -126,9 +126,9 @@ namespace DaxStudio.UI.ViewModels
             //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
             true;
 
-        public void NewQuery()
+        public async Task NewQuery()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
+            await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
         }
 
         //public string NewQueryTitle => $"New ({Options.HotkeyNewDocument})";
@@ -328,10 +328,10 @@ namespace DaxStudio.UI.ViewModels
         }
         
 
-        public void Connect()
+        public async void Connect()
         {
-            if (ActiveDocument == null) NewQuery();
-            else ActiveDocument.ChangeConnectionAsync();
+            if (ActiveDocument == null) await NewQuery();
+            else await ActiveDocument.ChangeConnectionAsync();
         }
 
         //private bool _canConnect;
@@ -721,9 +721,9 @@ namespace DaxStudio.UI.ViewModels
         [Import]
         HelpAboutViewModel aboutDialog { get; set; }
 
-        public void ShowHelpAbout()
+        public async void ShowHelpAbout()
         {
-            _windowManager.ShowDialogBox(aboutDialog , 
+            await _windowManager.ShowDialogBoxAsync(aboutDialog , 
                 settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
@@ -824,6 +824,23 @@ namespace DaxStudio.UI.ViewModels
             AddToRecentFiles(message.FileName);
             return Task.CompletedTask;
         }
+
+        public void OpenRecentFile(DaxFile file, FrameworkElement backstage)
+        {
+            
+            Fluent.Backstage item = GetBackStageParent(backstage as FrameworkElement) as Fluent.Backstage;
+            OpenRecentFile(file, item);
+
+        }
+
+        public FrameworkElement GetBackStageParent(FrameworkElement element)
+        {
+            if (element == null) return null;
+            if (element.Parent == null) return null;
+            if (null != (element.Parent as Fluent.Backstage)) return element.Parent as FrameworkElement;
+            return GetBackStageParent(element.Parent as FrameworkElement);
+        }
+
 
         public void OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
         {
@@ -955,7 +972,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanExportAllData => IsActiveDocumentConnected;
 
-        public void ExportAllData()
+        public async void ExportAllData()
         {
             if (ActiveDocument == null) return;
             try
@@ -964,21 +981,21 @@ namespace DaxStudio.UI.ViewModels
                 using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument, Options))
                 {
 
-                    _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
-                {
-                    { "WindowStyle", WindowStyle.None},
-                    { "ShowInTaskbar", false},
-                    { "ResizeMode", ResizeMode.NoResize},
-                    { "Background", System.Windows.Media.Brushes.Transparent},
-                    { "AllowsTransparency",true}
+                    await _windowManager.ShowDialogBoxAsync(dialog, settings: new Dictionary<string, object>
+                    {
+                        { "WindowStyle", WindowStyle.None},
+                        { "ShowInTaskbar", false},
+                        { "ResizeMode", ResizeMode.NoResize},
+                        { "Background", System.Windows.Media.Brushes.Transparent},
+                        { "AllowsTransparency",true}
 
-                });
+                    });
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(RibbonViewModel), nameof(ExportAllData), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
             }
         }
 

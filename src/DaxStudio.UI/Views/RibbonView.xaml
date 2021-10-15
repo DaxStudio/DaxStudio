@@ -10,9 +10,11 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             mc:Ignorable="d" 
-             d:DesignWidth="980">
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions" 
+             d:DesignWidth="980"
+            
+             mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
 
@@ -21,6 +23,7 @@
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
@@ -28,14 +31,14 @@
             <fa:ImageAwesome Icon="Cogs" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
 
             <conv:ResourceLookupConverter x:Key="TraceIcons">
-            <ResourceDictionary>
-                <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
-                <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png"/>
+                <ResourceDictionary>
+                    <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
+                    <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png"/>
                     <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png"/>
                 </ResourceDictionary>
-        </conv:ResourceLookupConverter>
+            </conv:ResourceLookupConverter>
 
-        <conv:ResourceLookupConverter x:Key="TraceIconsLarger">
+            <conv:ResourceLookupConverter x:Key="TraceIconsLarger">
             <ResourceDictionary>
                 <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@96ppi.png"/>
                 <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@96ppi.png"/>
@@ -43,52 +46,264 @@
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
-        <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
         
-        <DataTemplate x:Key="ResultsTargetTemplate">
+            <DataTemplate x:Key="ResultsTargetTemplate">
             <Border 
-                        BorderThickness="4"
-                        BorderBrush="Transparent">
-                    <StackPanel>
-                    <Image VerticalAlignment="Top"
-                           
-                        Source="{Binding Name, Converter={StaticResource OutputIcons}}"
-                        Stretch="None" />
+                BorderThickness="4"
+                BorderBrush="Transparent">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                <Image VerticalAlignment="Top"
+                        Grid.Column="0"
+                        ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}"
+                        Margin="0 0 8 0"
+                        Height="20"
+                        Width="20"/>
                     <TextBlock Text="{Binding Name}"
-                        VerticalAlignment="Bottom"
-                        HorizontalAlignment="Center" />
-                </StackPanel>
-                    <Border.ToolTip>
-                        <Fluent:ScreenTip Text="{Binding Tooltip}" Title="{Binding Name}"/>
-                    </Border.ToolTip>
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left" />
+                </Grid>
+                <Border.ToolTip>
+                    <Fluent:ScreenTip Text="{Binding Tooltip}" Title="{Binding Name}"/>
+                </Border.ToolTip>
             </Border>
         </DataTemplate>
         
-        <DataTemplate x:Key="RunStyleTemplate">
+            <DataTemplate x:Key="RunStyleTemplate">
             <Border
                 BorderThickness="4"
                 BorderBrush="Transparent" 
-                ToolTip="{Binding Tooltip}">
-                    <Grid MaxWidth="80">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                    
-                        <Image  Grid.Row="0" VerticalAlignment="Top"
-                        Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
-                        Stretch="None" 
-                        Width="32" Height="32" />
-                        <TextBlock Grid.Row="1" Text="{Binding Name}"
-                        TextWrapping="Wrap"
-                        VerticalAlignment="Bottom"
-                        HorizontalAlignment="Center" 
-                        TextAlignment="Center"
+                ToolTip="{Binding Tooltip}"
+                HorizontalAlignment="Left">
+                    <Grid Margin="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border BorderThickness="3 0 0 0"
+                                BorderBrush="{DynamicResource Theme.Brush.Accent}"/>
+                        <Image  Grid.Column="0" 
+                            Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
+                            Stretch="None" 
+                                Margin="6 0 0 0 "
+                            Width="16" Height="16" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left" 
+                            TextAlignment="Left"
                         />
 
                     </Grid>
                 </Border>
         </DataTemplate>
+
+
+            <ControlTemplate x:Key="RibbonSplitButtonControlTemplate" TargetType="{x:Type Fluent:SplitButton}">
+                <!--<ControlTemplate.Resources>
+                    <Style BasedOn="{StaticResource MenuSeparatorStyle}" TargetType="{x:Type Separator}" />
+                </ControlTemplate.Resources>-->
+                <Grid>
+                    <Border Name="PART_ButtonBorder" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+                        <StackPanel Name="stackPanel" KeyboardNavigation.TabNavigation="Local" Orientation="Vertical">
+                            <Fluent:ToggleButton x:Name="PART_Button" Width="Auto" Height="Auto" Margin="0 0 0 0" CanAddToQuickAccessToolBar="{TemplateBinding CanAddButtonToQuickAccessToolBar}" Command="{TemplateBinding Command}" CommandParameter="{TemplateBinding CommandParameter}" CommandTarget="{TemplateBinding CommandTarget}" GroupName="{Binding GroupName, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Header="{TemplateBinding Header}" Icon="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsDefinitive="{TemplateBinding IsDefinitive}" IsEnabled="{Binding IsButtonEnabled, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" LargeIcon="{Binding LargeIcon, RelativeSource={RelativeSource TemplatedParent}}" Size="{TemplateBinding Size}" Style="{DynamicResource InnerButtonStyle}" ToolTip="{TemplateBinding ToolTip}" />
+                            <Border Name="downBorder" Margin="0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0">
+                                <Grid>
+                                    <Fluent:TwoLineLabel x:Name="controlLabel" Margin="2 1 2 2" HorizontalAlignment="Center" VerticalAlignment="Center" HasGlyph="{TemplateBinding HasTriangle}" Text="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    <Popup x:Name="PART_Popup" Grid.ColumnSpan="2" Margin="0 0 -4 0" VerticalAlignment="Top" AllowsTransparency="True" Focusable="False" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}">
+                        <Grid Name="DropDown" Margin="0" VerticalAlignment="Top" IsEnabled="{TemplateBinding IsEnabled}" SnapsToDevicePixels="True">
+                            <Border Background="Transparent" Padding="8 2 8 8">
+                            <Border x:Name="PART_DropDownBorder" MinWidth="{TemplateBinding ActualWidth}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{DynamicResource Fluent.Ribbon.Brushes.DropDown.BackgroundBrush}" BorderBrush="{DynamicResource Fluent.Ribbon.Brushes.DropDown.BorderBrush}" BorderThickness="1" SnapsToDevicePixels="True" CornerRadius="8">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="0"/>
+                                </Border.Effect>
+                                <Grid Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                        <!--<Border Width="Auto" Height="Auto" VerticalAlignment="Top" BorderBrush="{DynamicResource Fluent.Ribbon.Brushes.DropDown.BackgroundBrush}" BorderThickness="1" />-->
+                                        <Grid Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <ScrollViewer x:Name="PART_ScrollViewer" MaxHeight="{TemplateBinding MaxDropDownHeight}" Margin="1" HorizontalScrollBarVisibility="Hidden" SnapsToDevicePixels="True" Style="{DynamicResource MenuScrollViewer}" VerticalScrollBarVisibility="Auto">
+                                            <StackPanel x:Name="PART_MenuPanel" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" Orientation="Vertical" />
+                                        </ScrollViewer>
+                                        <Border x:Name="resizeBorder" Grid.Row="1" Height="11" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{DynamicResource Fluent.Ribbon.Brushes.DropDown.Resize.BackgroundBrush}" BorderBrush="{DynamicResource Fluent.Ribbon.Brushes.DropDown.Resize.BorderBrush}" BorderThickness="0 1 0 0">
+                                            <Grid>
+                                                <Thumb x:Name="PART_ResizeVerticalThumb" Width="Auto" Height="10" Margin="0 0 0 -90" HorizontalAlignment="Stretch" VerticalAlignment="Top" Cursor="SizeNS" Template="{DynamicResource ResizeVerticalThumbControlTemplate}" />
+                                                <Thumb x:Name="PART_ResizeBothThumb" Width="10" Height="10" Margin="0 0 0 -90" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeNWSE" Template="{DynamicResource ResizeBothThumbControlTemplate}" />
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                            </Border>
+                        </Grid>
+                    </Popup>
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="ResizeMode" Value="None">
+                        <Setter TargetName="resizeBorder" Property="Visibility" Value="Collapsed" />
+                    </Trigger>
+                    <Trigger Property="ResizeMode" Value="Both">
+                        <Setter TargetName="PART_ResizeBothThumb" Property="Visibility" Value="Visible" />
+                        <Setter TargetName="PART_ResizeVerticalThumb" Property="Visibility" Value="Collapsed" />
+                        <Setter TargetName="resizeBorder" Property="Visibility" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="ResizeMode" Value="Vertical">
+                        <Setter TargetName="PART_ResizeBothThumb" Property="Visibility" Value="Collapsed" />
+                        <Setter TargetName="PART_ResizeVerticalThumb" Property="Visibility" Value="Visible" />
+                        <Setter TargetName="resizeBorder" Property="Visibility" Value="Visible" />
+                    </Trigger>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="PART_ButtonBorder" Property="Background" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.Pressed.Background}" />
+                        <Setter TargetName="PART_ButtonBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.Pressed.BorderBrush}" />
+                    </Trigger>
+                    <Trigger Property="Size" Value="Small">
+                        <Setter TargetName="controlLabel" Property="Margin" Value="0 -19 0 0" />
+                        <Setter TargetName="controlLabel" Property="Text" Value="" />
+                        <Setter TargetName="controlLabel" Property="Width" Value="10" />
+                        <Setter TargetName="downBorder" Property="Padding" Value="1 0 0 0" />
+                        <Setter TargetName="stackPanel" Property="Orientation" Value="Horizontal" />
+                    </Trigger>
+                    <Trigger Property="Size" Value="Middle">
+                        <Setter TargetName="controlLabel" Property="Margin" Value="0 -19 0 0" />
+                        <Setter TargetName="controlLabel" Property="Text" Value="" />
+                        <Setter TargetName="controlLabel" Property="Width" Value="10" />
+                        <Setter TargetName="stackPanel" Property="Orientation" Value="Horizontal" />
+                    </Trigger>
+                    <Trigger Property="IsButtonEnabled" Value="False">
+                        <Setter TargetName="PART_Button" Property="IsEnabled" Value="False" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="PART_Button" Property="IsEnabled" Value="False" />
+                        <Setter TargetName="controlLabel" Property="Opacity" Value="0.5" />
+                    </Trigger>
+                    <Trigger Property="IsDropDownOpen" Value="True">
+                        <Setter TargetName="PART_ButtonBorder" Property="Background" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.Pressed.Background}" />
+                        <Setter TargetName="PART_ButtonBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.Pressed.BorderBrush}" />
+                    </Trigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition SourceName="PART_Button" Property="IsMouseOver" Value="True" />
+                            <Condition Property="IsDropDownOpen" Value="False" />
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="PART_ButtonBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.BorderBrush}" />
+                    </MultiTrigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition SourceName="downBorder" Property="IsMouseOver" Value="True" />
+                            <Condition Property="IsDropDownOpen" Value="False" />
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="PART_ButtonBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.BorderBrush}" />
+                        <Setter TargetName="downBorder" Property="Background" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.BorderBrush}" />
+                        <Setter TargetName="downBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.BorderBrush}" />
+                    </MultiTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
+            <!-- Menu Item Template -->
+            <ControlTemplate x:Key="MenuItemTemplate"
+                     TargetType="{x:Type MenuItem}">
+                <Grid Background="{TemplateBinding Background}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="25" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <!--  -->
+                    <Border x:Name="border"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        Width="Auto"
+                        Margin="0"
+                        HorizontalAlignment="Stretch"
+                        Background="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.Background}"
+                        BorderBrush="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.BorderBrush}"
+                        BorderThickness="1"
+                        Visibility="Collapsed" />
+                    <ContentPresenter x:Name="textBlock"
+                              Grid.Column="1"
+                              Width="Auto"
+                              Height="Auto"
+                              Margin="5 3 3 3"
+                              VerticalAlignment="Center"
+                              ContentSource="Header"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
+                              RecognizesAccessKey="{Binding Path=(Fluent:MenuItem.RecognizesAccessKey), RelativeSource={RelativeSource TemplatedParent}}"
+                              d:LayoutOverrides="Width" />
+                    <Border x:Name="iconImageBorder"
+                    BorderThickness="1">
+                        <!--<Fluent:IconPresenter x:Name="iconImage"
+                                      Margin="3 2 2 2"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IconSize="{Binding Path=(Fluent:RibbonProperties.IconSize), RelativeSource={RelativeSource TemplatedParent}}"
+                                      SmallIcon="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" />-->
+                    </Border>
+                    <Image x:Name="checkedImage"
+                       Width="16"
+                       Height="16"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       SnapsToDevicePixels="True"
+                       Source="{DynamicResource Fluent.Ribbon.Images.Checked}"
+                       Stretch="Uniform"
+                       Visibility="Collapsed" />
+                    <TextBlock x:Name="gestureTextBlock"
+                       Grid.Column="2"
+                       Width="Auto"
+                       Height="Auto"
+                       Margin="3 3 15 3"
+                       VerticalAlignment="Center"
+                       Text="{TemplateBinding InputGestureText}" />
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="InputGestureText" Value="{x:Null}">
+                        <Setter TargetName="gestureTextBlock" Property="Visibility" Value="Collapsed" />
+                    </Trigger>
+                    <Trigger Property="InputGestureText" Value="">
+                        <Setter TargetName="gestureTextBlock" Property="Visibility" Value="Collapsed" />
+                    </Trigger>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="iconImageBorder" Property="Background" Value="{DynamicResource Fluent.Ribbon.Brushes.ToggleButton.Checked.Background}" />
+                        <Setter TargetName="iconImageBorder" Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.ToggleButton.Checked.BorderBrush}" />
+                    </Trigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="Icon" Value="{x:Null}" />
+                            <Condition Property="IsChecked" Value="True" />
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="checkedImage" Property="Visibility" Value="Visible" />
+                    </MultiTrigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsHighlighted" Value="True" />
+                            <Condition Property="IsEnabled" Value="True" />
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="border" Property="Visibility" Value="Visible" />
+                    </MultiTrigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="checkedImage" Property="Effect">
+                            <Setter.Value>
+                                <Fluent:GrayscaleEffect />
+                            </Setter.Value>
+                        </Setter>
+                        <Setter TargetName="checkedImage" Property="Opacity" Value="0.5" />
+                        <Setter TargetName="gestureTextBlock" Property="Opacity" Value="0.5" />
+                        <Setter TargetName="textBlock" Property="Opacity" Value="0.5" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
             
         </ResourceDictionary>
     </UserControl.Resources>
@@ -195,14 +410,8 @@
                                    Foreground="{DynamicResource Theme.Brush.Default.Back}"
                                    Height="30"
                                    ToolTip="Open a New Query"
-                                       DockPanel.Dock="Top">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="Click">
-                                    <cal:Action.Target>
-                                        <cal:ActionMessage MethodName="NewQuery"/>
-                                    </cal:Action.Target>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
+                                   DockPanel.Dock="Top"
+                                   cal:Message.Attach="[Event Click] = [Action NewQuery]">
                         </Fluent:Button>
 
                         <Fluent:Button
@@ -210,14 +419,15 @@
                             Header="New (Copy Connection)"
                             ToolTip="Open a New Query with the current connection"
                             Foreground="{DynamicResource Theme.Brush.Default.Back}"
-                            Height="30">
-                            <i:Interaction.Triggers>
+                            Height="30"
+                            cal:Message.Attach="[Event Click] = [Action NewQueryWithCurrentConnection]">
+                            <!--<i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
                                     <cal:Action.Target>
                                         <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
                                     </cal:Action.Target>
                                 </i:EventTrigger>
-                            </i:Interaction.Triggers>
+                            </i:Interaction.Triggers>-->
 
                         </Fluent:Button>
 
@@ -244,7 +454,6 @@
                                 <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px" Grid.Row="1">
                                     <Border>
                                         <!-- style comes from ribbon control -->
-                                        <!-- Style="{DynamicResource ButtonBackstageStyle}" -->
                                         <Fluent:Button 
                                         Style="{DynamicResource ButtonBackstageStyle}"
                                         BorderBrush="DimGray"  
@@ -252,15 +461,16 @@
                                         LargeIcon="{StaticResource BrowseIconLarger}"
                                         Header="Browse"
                                         SizeDefinition="Large"
-                                        Height="100" Width="100" Foreground="Black">
+                                        Height="100" Width="100" Foreground="Black"
+                                        cal:Message.Attach="[Click] = [Action Open]">
 
-                                            <i:Interaction.Triggers>
+                                            <!--<i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="Click">
                                                     <cal:Action.Target>
                                                         <cal:ActionMessage MethodName="Open"/>
                                                     </cal:Action.Target>
                                                 </i:EventTrigger>
-                                            </i:Interaction.Triggers>
+                                            </i:Interaction.Triggers>-->
                                         </Fluent:Button>
                                     </Border>
                                 </StackPanel>
@@ -281,32 +491,51 @@
                                           MinWidth="600"
                                           BorderBrush="Transparent" 
                                           Grid.Row="1"
-                                          HorizontalContentAlignment="Stretch">
+                                          HorizontalContentAlignment="Stretch"
+                                          cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, $view)]"
+                                          >
                                         <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                                <cal:Action.Target>
-                                                <cal:ActionMessage MethodName="OpenRecentFile">
-                                                    <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
-                                                    <cal:Parameter Value="{Binding ElementName=Backstage}"/>
-                                                </cal:ActionMessage>
-                                                </cal:Action.Target>
+                                                <cal:Action.TargetWithoutContext>
+                                                    
+                                                    <cal:ActionMessage MethodName="OpenRecentFile">
+                                                        <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                        <cal:Parameter Value="{Binding ElementName=Backstage}"/>
+                                                    </cal:ActionMessage>
+                                                </cal:Action.TargetWithoutContext>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
 
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Grid>
-                                                        <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                                <Border x:Name="lvBorder">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Grid>
+                                                            <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
                                                        Margin="0,3,10,3" Width="32" Height="32" />
-                                                        <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
-                                                    </Grid>
-                                                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
-                                                        <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                            <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                                                        </Grid>
+                                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
+                                                            <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                        </StackPanel>
                                                     </StackPanel>
-                                                </StackPanel>
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Click" >
+                                                            <cal:Action.Target>
+
+                                                                <cal:ActionMessage MethodName="OpenRecentFile">
+                                                                    <!--<cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                                    <cal:Parameter Value="{Binding ElementName=Backstage}"/>-->
+                                                                    <cal:Parameter Value="{x:Null}"/>
+                                                                    <cal:Parameter Value="{x:Null}"/>
+                                                                </cal:ActionMessage>
+                                                            </cal:Action.Target>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </Border>
+
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
@@ -424,9 +653,8 @@
                     </Fluent:SplitButton.ToolTip>
                     <Fluent:Gallery
                         x:Name="RunStyles"
-                        ItemWidth="80"
-                        ItemHeight="80"
                         MaxItemsInRow="1"
+                        ItemHeight="40"
                         ItemsSource="{Binding RunStyles}"
                         SelectedItem="{Binding SelectedRunStyle}"
                         ItemTemplate="{DynamicResource RunStyleTemplate}"
@@ -468,66 +696,24 @@
                 </Fluent:Button>
 
                 <!-- Output Targets -->
-
                 <Fluent:DropDownButton x:Name="OutputTargets"
-                                           Header="Output"
-                                           Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
-                                           LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
-                                           SizeDefinition="Large,Large,Small"
-                                           IsEnabled="True"
-                                           VerticalAlignment="Top"  Margin="4,0"
-                                       
+                                       Header="Output"
+
+                                       SizeDefinition="Large,Large,Small"
+                                       IsEnabled="True"
+                                       VerticalAlignment="Top"  Margin="4,0"
                                        >
-
-                    <!--Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"-->
-<!--                        ItemWidth="80"
-                        ItemHeight="80" -->
-
-                    <!--                         ItemWidth="64"
-                        ItemHeight="74" -->
-
-<!--
-                    
-                    Header="Output"
-                        Icon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIcons}}"
-                        LargeIcon="{Binding Path=SelectedTarget.Name,Converter={StaticResource OutputIconsLarger}}"
-                    SizeDefinition="Medium,Medium,Small"
-                    CanCollapseToButton="True"
-                        IsCollapsed="{Binding IsOutputTargetCollapsed}"
-                    -->
-
                     <Fluent:Gallery 
                         SelectedFilter="{Binding ElementName=galleryFilterAll3}"
                         x:Name="OutputGallery2"
-                        MinItemsInRow="1"
-                        MaxItemsInRow="2"
-                        Orientation="Horizontal"
-                        IsGrouped="True"
-                        ItemWidth="62"
-
+                        MaxItemsInRow="1"
+                        Orientation="Vertical"
+                        ItemHeight="40"
                         ItemsSource="{Binding ResultsTargets}" 
                         SelectedItem="{Binding SelectedTarget}"
                         ItemTemplate="{DynamicResource ResultsTargetTemplate}"
-
-                        GroupBy="Group" 
-                        
                         >
 
-                        <Fluent:Gallery.Filters>
-                            <Fluent:GalleryGroupFilter Title="All"
-                                                       Groups="Standard,Excel,Undefined"
-                                                       x:Name="galleryFilterAll3" />
-                            <Fluent:GalleryGroupFilter Title="Standard"
-                                                       Groups="Standard"
-                                                       x:Name="galleryFilterStandard"/>
-                            <Fluent:GalleryGroupFilter Title="Excel"
-                                                       Groups="Excel"
-                                                       x:Name="galleryFilterExcel"/>
-                        </Fluent:Gallery.Filters>
-
-                        <!--<Fluent:Gallery.ToolTip>
-                            <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
-                        </Fluent:Gallery.ToolTip>-->
                     </Fluent:Gallery>
                     <Fluent:DropDownButton.ToolTip>
                         <Fluent:ScreenTip Title="Output Target" Text="This specifies where the query results get sent" Width="190" />
@@ -535,50 +721,6 @@
                 </Fluent:DropDownButton>
 
             </Fluent:RibbonGroupBox>
-
-            <!--<Fluent:RibbonGroupBox x:Name="QuickAccessHiddenCommands" Visibility="Visible" Header="File">
-                <Fluent:Button Header="New" 
-                                   x:Name="NewQueryQat" 
-                                   HorizontalContentAlignment="Left" 
-                                   Icon="{StaticResource NewIconSmall}"
-                               SizeDefinition="Small,Small,Small"
-                               ToolTip="Open a New Query window" >
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="NewQuery"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Fluent:Button>
-
-                <Fluent:Button Header="New (Copy Connection)" 
-                                   x:Name="NewConnectedQueryQat" 
-                                   HorizontalContentAlignment="Left" 
-                                   Icon="{StaticResource NewConnectedIconSmall}"
-                               SizeDefinition="Small,Small,Small"
-                               ToolTip="Open a New Query window with the current connection details">
-
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Fluent:Button>
-
-                <Fluent:Button Header="Save" 
-                               x:Name="SaveQat" 
-                               HorizontalContentAlignment="Left" 
-                               Icon="{StaticResource SaveIcon}"
-                               SizeDefinition="Small,Small,Small"
-                               ToolTip="Save the current Query window">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="Click">
-                            <cal:ActionMessage MethodName="Save"/>
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-
-                </Fluent:Button>
-            </Fluent:RibbonGroupBox>-->
-
 
             <Fluent:RibbonGroupBox Header="View">
                 <Fluent:ToggleButton 
@@ -589,12 +731,6 @@
                     Icon="{DynamicResource query_builderDrawingImage}"
                     LargeIcon="{DynamicResource query_builderDrawingImage}"
                     SizeDefinition="Large">
-                    <!--<Fluent:ToggleButton.Icon>
-                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-                    </Fluent:ToggleButton.Icon>
-                    <Fluent:ToggleButton.LargeIcon>
-                        <fa:FontAwesome  Icon="Wrench" FontSize="32" />
-                    </Fluent:ToggleButton.LargeIcon>-->
                     <Fluent:ToggleButton.ToolTip>
                         <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
                     </Fluent:ToggleButton.ToolTip> 
@@ -1353,26 +1489,6 @@
                 BorderBrush="{StaticResource DaxStudioBrush}" />
         </Fluent:Ribbon.ContextualGroups>
 
-        <!-- Quick Access Targets -->
-        <!--<Fluent:RibbonTabItem Visibility="Collapsed">
-            <Fluent:RibbonGroupBox x:Name="QuickAccessHiddenCommands">
-            <Fluent:Button Header="New" 
-                                   x:Name="NewQueryQat" 
-                                   HorizontalContentAlignment="Left" 
-                                   Foreground="White"
-                                   Icon="{StaticResource NewIconSmall}">
-
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Click">
-                        <cal:ActionMessage MethodName="NewQuery">
-
-                        </cal:ActionMessage>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-
-            </Fluent:Button>
-            </Fluent:RibbonGroupBox>
-        </Fluent:RibbonTabItem>-->
     </Fluent:Ribbon>
 
 </UserControl>

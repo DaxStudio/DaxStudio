@@ -45,7 +45,7 @@ namespace DaxStudio.UI.Utils {
                 var closeDialog = new SaveDialogViewModel();
                 closeDialog.Documents = dirtyDocs;
 
-                _windowManager.ShowDialogBox(closeDialog, settings: new Dictionary<string, object>
+                await _windowManager.ShowDialogBoxAsync(closeDialog, settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
                     { "ShowInTaskbar", false},

@@ -72,39 +72,6 @@ namespace DaxStudio.UI.ViewModels
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             _username = UserHelper.GetUser();
-            var recoveringFiles = false;
-
-            // get master auto save indexes and only get crashed index files...
-            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
-            var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
-
-            // check for auto-saved files and offer to recover them
-            if (filesToRecover.Any())
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
-                recoveringFiles = true;
-                RecoverAutoSavedFiles(autoSaveInfo);
-            }
-            else
-            {
-                // if there are no auto-save files to recover, start the auto save timer
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
-                eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
-            }
-
-            // if a filename was passed in on the command line open it
-            if (!string.IsNullOrEmpty(_host.CommandLineFileName))
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
-                Tabs.NewQueryDocumentAsync(_host.CommandLineFileName);
-            }
-
-            // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
-            if (Tabs.Items.Count == 0 && !recoveringFiles)
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
-                NewDocument();
-            }
 
 
             VersionChecker = versionCheck;
@@ -132,11 +99,11 @@ namespace DaxStudio.UI.ViewModels
 
         private System.Timers.Timer AutoSaveTimer { get; }
 
-        private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
+        private async Task RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Values.Count} auto save index files");
             // show recovery dialog
-            _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
+            await _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
             
         }
 

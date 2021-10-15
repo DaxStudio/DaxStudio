@@ -260,7 +260,7 @@
 							VerticalAlignment="Stretch"
 							Background="{TemplateBinding Background}"
 							BorderBrush="{DynamicResource {x:Static reskeys:ResourceKeys.PanelBorderBrush}}"
-							
+							CornerRadius="8"
 							KeyboardNavigation.DirectionalNavigation="Contained"
 							KeyboardNavigation.TabIndex="2"
 							KeyboardNavigation.TabNavigation="Cycle">

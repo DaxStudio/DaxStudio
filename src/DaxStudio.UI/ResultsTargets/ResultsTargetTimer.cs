@@ -17,13 +17,14 @@ namespace DaxStudio.UI.Model
     public class ResultsTargetTimer :  IResultsTarget
     {
         #region Standard Properties
-        public string Name => "Timer";
+        public string Name => "Log Timer";
         public string Group => "Standard";
         public bool IsDefault => false;
         public bool IsAvailable => true;
         public int DisplayOrder => 20;
         public string Message => "Query timings sent to output tab";
         public OutputTarget Icon => OutputTarget.Timer;
+        public string ImageResource => "results_timerDrawingImage";
         public string Tooltip => "Runs the query and discards the results recording the time taken";
         public bool IsEnabled => true;
 

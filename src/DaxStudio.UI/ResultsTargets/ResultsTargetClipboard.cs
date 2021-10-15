@@ -40,6 +40,7 @@ namespace DaxStudio.UI.Model
         public bool IsAvailable => true;
         public string Message => "Query output sent to Clipboard";
         public OutputTarget Icon => OutputTarget.Clipboard;
+        public string ImageResource => "results_clipboardDrawingImage";
         public string Tooltip => "Exports Query results to the Clipboard";
         public bool IsEnabled => true;
 

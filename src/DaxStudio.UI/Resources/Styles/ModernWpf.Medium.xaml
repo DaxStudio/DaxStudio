@@ -35,4 +35,10 @@
     <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,0,0,1</Thickness>
 
     <Thickness x:Key="TabViewItemHeaderPadding">1,1,1,1</Thickness>
+    <sys:Double x:Key="TooltipHeaderFontSize">16</sys:Double>
+    <sys:Double x:Key="PivotHeaderItemFontSize">16</sys:Double>
+    <Thickness x:Key="PivotNavButtonMargin">0,6,0,0</Thickness>
+    <Thickness x:Key="PivotHeaderItemMargin">6,0,6,0</Thickness>
+    
+    <Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenuEx}"/>
 </ResourceDictionary>

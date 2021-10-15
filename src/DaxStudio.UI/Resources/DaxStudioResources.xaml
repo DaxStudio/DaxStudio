@@ -1,8 +1,14 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+                    xmlns:ui="http://schemas.modernwpf.com/2019"
                     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
                     xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ui:XamlControlsResources />
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
     
     <!--<Color x:Key="{x:Static Fluent:MetroColors.ThemeColorKey}">#FF0072C6</Color>-->
     <Color x:Key="WhiteColor}">#FFCCCCCC</Color>
@@ -33,16 +39,16 @@
         <Setter Property="Background" Value="{DynamicResource BaseBrush}" />
     </Style>-->
 
-    <Style TargetType="{x:Type ToolTip}">
-        <Setter Property="Foreground" Value="#FF575757" />
-        <Setter Property="Background" Value="#FFFFFFFF" />
+    <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource DefaultToolTipStyle}">
+        <!--<Setter Property="Foreground" Value="#FF575757" />
+        <Setter Property="Background" Value="#FFFFFFFF" />-->
         <Setter Property="LayoutTransform">
             <Setter.Value>
                 <ScaleTransform ScaleX="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}" 
                                         ScaleY="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}"/>
             </Setter.Value>
         </Setter>
-        <Setter Property="Padding" Value="5,1,6,2" />
+        <!--<Setter Property="Padding" Value="5,1,6,2" />
         <Setter Property="HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
 
         <Setter Property="Template">
@@ -50,9 +56,6 @@
                 <ControlTemplate TargetType="{x:Type ToolTip}" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
                     <themes:SystemDropShadowChrome Name="Shdw" themes:SystemDropShadowChrome.Color="Transparent" themes:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
                         <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
-                            <!--<Border.RenderTransform>
-                                        <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
-                                    </Border.RenderTransform>-->
                             <ContentPresenter TextOptions.TextFormattingMode="Display" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                     </themes:SystemDropShadowChrome>
@@ -64,7 +67,7 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
-        </Setter>
+        </Setter>-->
     </Style>
 
 </ResourceDictionary>

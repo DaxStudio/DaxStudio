@@ -19,21 +19,21 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.Background}"
 		options:Freeze="true"
-		Color="#2D2D30" />
+		Color="#2D2D2D" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.PanelBorderBrush}"
 		options:Freeze="true"
-		Color="#3F3F46" />
+		Color="#2D2D2D" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.TabBackground}"
 		options:Freeze="true"
-		Color="#252526" />
+		Color="#2D2D2D" />
 
 	<!--  Auto Hide : Tab  -->
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBackground}"
 		options:Freeze="true"
-		Color="#2D2D30" />
+		Color="#2D2D2D" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBorder}"
 		options:Freeze="true"
@@ -47,7 +47,7 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredBackground}"
 		options:Freeze="true"
-		Color="#2D2D30" />
+		Color="#2D2D2D" />
 	<!--  AccentColor  -->
 	<SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredBorder}" Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
 

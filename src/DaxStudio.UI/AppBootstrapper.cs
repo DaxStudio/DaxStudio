@@ -138,8 +138,6 @@ namespace DaxStudio.UI
 
                 //var settingFactory = _container.GetExport<Func<ISettingProvider>>();
 
-                
-
                 //ConfigureKeyBindingConvention();
 
                 // TODO - not working

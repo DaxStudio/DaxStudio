@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Model
         {
             _host = host;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
         }
 
         #region Standard Properties
@@ -37,6 +37,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 410;
         public string Message => "Results will be sent to an XLSX File";
         public OutputTarget Icon => OutputTarget.File;
+        public string ImageResource => "results_excelDrawingImage";
         public string Tooltip => "Query results will be written to an Excel file.";
         public bool IsEnabled => true;
 

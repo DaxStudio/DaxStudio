@@ -43,6 +43,7 @@ namespace DaxStudio.UI.ResultsTargets
         public int DisplayOrder => 410;
         public string Message => "Query will be sent to Excel for execution";
         public OutputTarget Icon => OutputTarget.Linked;
+        public string ImageResource => "results_excel_linked_smallDrawingImage";
         public string Tooltip => "Sends the Query text to Excel for execution";
         public bool IsEnabled => !_isPowerBIOrSSDTConnection;
 

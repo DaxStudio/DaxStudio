@@ -27,13 +27,14 @@ namespace DaxStudio.UI.Model
         }
 
         #region Standard Properties
-        public string Name => "Grid";
+        public string Name => "Results Table";
         public string Group => "Standard";
         public int DisplayOrder => 10;
         public bool IsDefault => true;
         public bool IsAvailable => true;
         public string Message => string.Empty;
         public OutputTarget Icon => OutputTarget.Grid;
+        public string ImageResource => "results_tableDrawingImage";
         public string Tooltip => "Displays the Query results in a data grid";
         public bool IsEnabled => true;
 

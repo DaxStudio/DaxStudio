@@ -11,19 +11,43 @@
     <!--<Color x:Key="Theme.PrimaryAccentColor"            >#FF0072C6</Color>-->
     <Color x:Key="Theme.PrimaryAccentColor">#FF29A9FF</Color>
     <Color x:Key="Theme.Default.Back">#2D2D2D</Color>
+    <Color x:Key="Theme.Alternate.Back">#272727</Color>
     <Color x:Key="Theme.Default.Fore">#FFFFFF</Color>
     <Color x:Key="Theme.MenuBar.Back">#3A3A3A</Color>
     <Color x:Key="Theme.MenuBar.Fore">#FFFFFF</Color>
     <Color x:Key="Theme.StatusBar.Back">#202020</Color>
     <Color x:Key="Theme.Dialog.Back">#2D2D2D</Color>
     <Color x:Key="Theme.Dialog.Border">#2D2D2D</Color>
-
+    <Color x:Key="Theme.TextBox.Border">#1A1A1A</Color>
+    <Color x:Key="Theme.Content.Back">#202020</Color>
+    <Color x:Key="Theme.Hidden.Fore">#494949</Color>
+    <Color x:Key="Theme.DropShadow">#000000</Color>
+    <Color x:Key="Theme.DropShadow.Accent">#104866</Color>
+    <Color x:Key="Theme.LineNumbers">#858585</Color>
+    <Color x:Key="Theme.InfoBar.Back">#FFF6C7</Color>
+    <Color x:Key="Theme.InfoBar.Border">#EFCB00</Color>
+    <Color x:Key="Theme.Tooltip.Border">#2D2D2D</Color>
+    
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Alternate.Back" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{StaticResource Theme.MenuBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.StatusBar.Back" Color="{StaticResource Theme.StatusBar.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.DropShadow" Color="{StaticResource Theme.DropShadow}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.DropShadow.Accent" Color="{StaticResource Theme.DropShadow.Accent}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Dialog.Border" Color="{StaticResource Theme.Dialog.Border}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Content.Back" Color="{StaticResource Theme.Content.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Hidden.Fore" Color="{StaticResource Theme.Hidden.Fore}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.LineNumbers" Color="{StaticResource Theme.LineNumbers}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.InfoBar.Back" Color="{StaticResource Theme.InfoBar.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.InfoBar.Border" Color="{StaticResource Theme.InfoBar.Border}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Tooltip.Border" Color="{StaticResource Theme.Tooltip.Border}" options:Freeze="true"/>
+    
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="TextControlBorderBrush" Color="{DynamicResource Theme.TextBox.Border}"/>
+    <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="{DynamicResource Theme.Dialog.Border}"/>
     
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF29A9FF</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC29A9FF</Color>

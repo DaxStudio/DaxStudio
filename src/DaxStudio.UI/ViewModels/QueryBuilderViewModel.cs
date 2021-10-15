@@ -94,7 +94,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnVisibilityChanged(object sender, EventArgs e)
         {
-            if (IsVisible) EventAggregator.Subscribe(this);
+            if (IsVisible) EventAggregator.SubscribeOnPublishedThread(this);
             else EventAggregator.Unsubscribe(this);
         }
 
@@ -111,7 +111,7 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public override string Title => "Query Builder";
         public override string DefaultDockingPane => "DockMidLeft";
-        public new bool CanHide => true;
+        public override bool CanHide => true;
         public override string ContentId => "query-builder";
         public override ImageSource IconSource
         {
@@ -146,7 +146,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _isEnabled = value;
-                if (_isEnabled) EventAggregator.Subscribe(this);
+                if (_isEnabled) EventAggregator.SubscribeOnPublishedThread(this);
                 else EventAggregator.Unsubscribe(this);
                 NotifyOfPropertyChange();
             }

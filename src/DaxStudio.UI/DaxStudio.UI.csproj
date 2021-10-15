@@ -236,11 +236,14 @@
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
     <Compile Include="AttachedProperties\GridSplitterController.cs" />
+    <Compile Include="AttachedProperties\ForegroundBindingHelper.cs" />
+    <Compile Include="AttachedProperties\ImageBindingHelper.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButton.cs" />
     <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
+    <Compile Include="AttachedProperties\LayoutAnchorablePaneAutoHideMinWidthHelper.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
@@ -288,6 +291,7 @@
     <Compile Include="Converters\DynamicResourceLookupConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
+    <Compile Include="Converters\FindResourceFromStringConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
@@ -410,6 +414,7 @@
     <Compile Include="JsonConverters\DaxFileConverter.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="JsonConverters\VersionConverter.cs" />
+    <Compile Include="MarkupExtensions\ResourceBinding.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
@@ -1078,6 +1083,10 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Page Include="Theme\icons.light.hidden.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Resources\Styles\DaxStudio.FluentRibbonStyles.xaml">
       <Generator>XamlIntelliSenseFileGenerator</Generator>
       <SubType>Designer</SubType>

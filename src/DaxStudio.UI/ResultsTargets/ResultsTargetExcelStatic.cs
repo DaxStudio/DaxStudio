@@ -22,13 +22,14 @@ namespace DaxStudio.UI.Model
         }
 
         #region Standard Properties
-        public string Name => "Static";
+        public string Name => "Excel (Static)";
         public string Group => "Excel";
         public bool IsDefault => false;
         public bool IsAvailable => _host.IsExcel;
         public int DisplayOrder => 310;
         public string Message => "Static Results will be sent to Excel";
         public OutputTarget Icon => OutputTarget.Static;
+        public string ImageResource => "results_excelDrawingImage";
         public string Tooltip => "Sends a copy of the results to Excel";
         public bool IsEnabled => true;
 

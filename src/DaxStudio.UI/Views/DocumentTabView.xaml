@@ -56,11 +56,12 @@
                                     </Grid.ColumnDefinitions>
 
                                     <Border  
+                                        x:Name="ShadowBd"
                                         Grid.ColumnSpan="4"
-                                        BorderThickness="0 1 0 0"
+                                        BorderThickness="0 4 0 0"
                                         BorderBrush="Black"
                                         Background="Transparent"
-                                        Margin="0 -1 0 0 ">
+                                        Margin="0 -4 0 0 ">
                                         <Border.Effect>
                                             <DropShadowEffect  ShadowDepth="0" Direction="270" BlurRadius="10" Opacity="{DynamicResource Theme.DropShadow.Opacity}" Color="{DynamicResource Theme.DropShadow}" />
                                         </Border.Effect>
@@ -82,15 +83,16 @@
                                         <avalonDockControls:DropDownButton.DropDownContextMenu>
                                             <avalonDockControls:ContextMenuEx
                                                 ItemsSource="{Binding Model.ChildrenSorted, RelativeSource={RelativeSource TemplatedParent}}">
-                                                <avalonDockControls:ContextMenuEx.ItemContainerStyle>
+                                                <!--<avalonDockControls:ContextMenuEx.ItemContainerStyle>
                                                     <Style TargetType="{x:Type avalonDockControls:MenuItemEx}" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Default.Back}"/>
                                                         <Setter Property="HeaderTemplate" Value="{Binding Path=Root.Manager.DocumentPaneMenuItemHeaderTemplate}"/>
                                                         <Setter Property="HeaderTemplateSelector" Value="{Binding Path=Root.Manager.DocumentPaneMenuItemHeaderTemplateSelector}"/>
                                                         <Setter Property="IconTemplate" Value="{Binding Path=Root.Manager.IconContentTemplate}"/>
                                                         <Setter Property="IconTemplateSelector" Value="{Binding Path=Root.Manager.IconContentTemplateSelector}"/>
                                                         <Setter Property="Command" Value="{Binding Path=., Converter={StaticResource ActivateCommandLayoutItemFromLayoutModelConverter}}"/>
                                                     </Style>
-                                                </avalonDockControls:ContextMenuEx.ItemContainerStyle>
+                                                </avalonDockControls:ContextMenuEx.ItemContainerStyle>-->
                                             </avalonDockControls:ContextMenuEx>
                                         </avalonDockControls:DropDownButton.DropDownContextMenu>
                                         <Image Source="{DynamicResource ellipsisDrawingImage}"/>
@@ -140,7 +142,7 @@
                     <Setter.Value>
                         <Style TargetType="{x:Type TabItem}">
                             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                            <Setter Property="Background" Value="{DynamicResource Theme.Default.Back}"/>
+                            <Setter Property="Background" Value="{DynamicResource Theme.Brush.Default.Back}"/>
                             <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
                             <!--<Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedBackground}}" />
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedText}}" />
@@ -562,10 +564,14 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0"
                                    Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsQueryRunning}"
-                                   />
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
 
-                        <TextBlock Text="{Binding Content.DisplayName}" ToolTip="{Binding Content.FileName}"/>
-                        <TextBlock Text="*" Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Text="{Binding Content.DisplayName}" 
+                                   ToolTip="{Binding Content.FileName}" 
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        <TextBlock Text="*" 
+                                   Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
 
                         <!-- 
                         <Button x:Name="DocumentCloseButton"
@@ -588,8 +594,8 @@
             <avalondock:DockingManager.DocumentPaneMenuItemHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Content.DisplayName}"/>
-                        <TextBlock Text="*" Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Text="{Binding Content.DisplayName}" Foreground="{DynamicResource Theme.Brush.Default.Fore}" />
+                        <TextBlock Text="*" Visibility="{Binding Content.IsDirty, Converter={StaticResource BoolToVisibilityConverter}}"  Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </StackPanel>
                 </DataTemplate>
             </avalondock:DockingManager.DocumentPaneMenuItemHeaderTemplate>
@@ -615,6 +621,7 @@
                     <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}"/>
                     <Setter Property="IconSource" Value="{Binding Model.IconSource}"/>
                     <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                    
                 </Style>
                 </utils:PanesStyleSelector.DocumentStyle>
                 </utils:PanesStyleSelector>

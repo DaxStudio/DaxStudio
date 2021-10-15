@@ -40,7 +40,7 @@ namespace DaxStudio.UI.Extensions
             @this.ShowMetroMessageBox(message, "System Message", MessageBoxButton.OK);
         }
         */
-        public static void ShowDialogBox<T>(this IWindowManager @this, Dictionary<string,object> settings)
+        public static async Task ShowDialogBoxAsync<T>(this IWindowManager @this, Dictionary<string,object> settings)
         {
 
             var shellViewModel = IoC.Get<IShell>();
@@ -49,7 +49,7 @@ namespace DaxStudio.UI.Extensions
             {
                 shellViewModel.ShowOverlay();
                 var model = IoC.Get<T>();
-                @this.ShowDialogAsync(model,null,settings);
+                await @this.ShowDialogAsync(model,null,settings);
 
             }
 
@@ -60,7 +60,7 @@ namespace DaxStudio.UI.Extensions
 
         }
 
-        public static void ShowDialogBox(this IWindowManager @this, object model, Dictionary<string,object> settings)
+        public static async Task ShowDialogBoxAsync(this IWindowManager @this, object model, Dictionary<string,object> settings)
         {
 
             var shellViewModel = IoC.Get<IShell>();
@@ -69,7 +69,7 @@ namespace DaxStudio.UI.Extensions
             {
                 shellViewModel.ShowOverlay();
                 EnsureStandardSettings(settings);
-                @this.ShowDialogAsync(model, null, settings);
+                await @this.ShowDialogAsync(model, null, settings);
 
             }
             finally
