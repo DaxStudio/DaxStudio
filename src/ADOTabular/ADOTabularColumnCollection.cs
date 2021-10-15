@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics.Contracts;
+using ADOTabular.Extensions;
 using ADOTabular.Interfaces;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace ADOTabular
 {
@@ -32,11 +34,8 @@ namespace ADOTabular
 
             Table = table;
             _adoTabConn = adoTabConn;
-            if (_cols == null)
-            {
-                _cols = _adoTabConn.Visitor.Visit(this);
-            }
             _colsByRef = new SortedDictionary<string, ADOTabularColumn>();
+            _cols ??= _adoTabConn.Visitor.Visit(this);
         }
 
         public ADOTabularTable Table { get; }
@@ -46,6 +45,36 @@ namespace ADOTabular
             if (column == null) return;
             _cols.Add(column.Name,column);
             _colsByRef.Add(column.InternalReference, column);
+
+            // add TOM columns / measures
+            // we don't need any other types, this is just for intellisense support
+            var tomTable = Table.Model.TOMModel.Tables[Table.Name];
+            switch (column.ObjectType)
+            {
+                case ADOTabularObjectType.Column:
+                    tomTable.Columns.Add(new DataColumn() { 
+                        Name = column.Name, 
+                        Description = column.Description, 
+                        DataType = column.DataType, 
+                        IsHidden = !column.IsVisible});
+                    break;
+                case ADOTabularObjectType.Measure:
+                    var measure = new Measure()
+                    {
+                        Name = column.Name,
+                        Description = column.Description,
+                        IsHidden = !column.IsVisible
+                    };
+                    measure.SetDataType(column.DataType);
+                    //var t = typeof(Measure);
+                    //t.GetProperty("DataType")
+                    //    .SetValue(measure, column.DataType, null);
+                    tomTable.Measures.Add(measure);
+                    break;
+
+            }
+
+            
         }
 
         public void Remove(ADOTabularColumn column)
@@ -108,7 +137,7 @@ namespace ADOTabular
         {
             foreach (var adoTabularColumn in _cols.Values)
             {
-                // rownumber cannot be referenced in queries so we exclude it from the collection
+                // RowNumber cannot be referenced in queries so we exclude it from the collection
                 if (adoTabularColumn.Contents == "RowNumber") continue;
                 // the KPI components are available through the parent KPI object
                 if (adoTabularColumn.ObjectType == ADOTabularObjectType.KPIGoal) continue;
@@ -118,10 +147,7 @@ namespace ADOTabular
             }
         }
 
-        public int Count
-        {
-            get { return _cols.Count; }
-        }
+        public int Count => _cols.Count;
 
         IEnumerator IEnumerable.GetEnumerator()
         {

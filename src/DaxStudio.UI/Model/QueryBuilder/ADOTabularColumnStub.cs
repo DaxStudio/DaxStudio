@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ADOTabular;
 using ADOTabular.Interfaces;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace DaxStudio.UI.Model
 {
@@ -26,9 +27,12 @@ namespace DaxStudio.UI.Model
             throw new NotImplementedException();
         }
 
-        public Type DataType { get;  set; }
         public MetadataImages MetadataImage { get;  set; }
         public string MeasureExpression { get;  set; }
         public string TableName { get;  set; }
+
+        public Type SystemType { get; set; }
+
+        public DataType DataType { get; set; }
     }
 }

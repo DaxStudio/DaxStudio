@@ -113,7 +113,7 @@ namespace DaxStudio.UI.ViewModels
                     // replace table names
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
-                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid() : queryRemapped;
+                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags() : queryRemapped;
                     QueryRichText = Query;
                     // Set flag in case any highlight is present
                     HighlightQuery = QueryRichText.Contains("|~E~|");
@@ -186,6 +186,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlEmptyArguments = @" \(\s*\) ";
         const string searchXmSqlRowNumberGuidBracket = @"\[RowNumber [0-9A-F ]*\]";
         const string searchXmSqlRowNumberGuidQuoted = @"\$RowNumber [0-9A-F ]*\'";
+        const string seachXmSqlPremiumTags = @"<pii>|</pii>";
 
         const string searchXmSqlPatternSize = @"Estimated size .* : (?<rows>\d+), (?<bytes>\d+)";
 
@@ -204,6 +205,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlEmptyArguments = new Regex(searchXmSqlEmptyArguments, RegexOptions.Compiled);
         static Regex xmSqlRowNumberGuidBracketRemoval = new Regex(searchXmSqlRowNumberGuidBracket, RegexOptions.Compiled);
         static Regex xmSqlRowNumberGuidQuotedRemoval = new Regex(searchXmSqlRowNumberGuidQuoted, RegexOptions.Compiled);
+        static Regex xmSqlPremiumTagsRemoval = new Regex(seachXmSqlPremiumTags, RegexOptions.Compiled);
 
         static Regex xmSqlPatternSize = new Regex(searchXmSqlPatternSize, RegexOptions.Compiled);
 
@@ -237,7 +239,10 @@ namespace DaxStudio.UI.ViewModels
             s = xmSqlRowNumberGuidQuotedRemoval.Replace(s, "$RowNumber'");
             return s;
         }
-
+        public static string RemovePremiumTags(this string xmSqlQuery)
+        {
+            return xmSqlPremiumTagsRemoval.Replace(xmSqlQuery, "");
+        }
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
             // Reviewed on 2017-10-13
             // The first removal should be useless and I commented it.

@@ -14,7 +14,7 @@ namespace DaxStudio.Tests.Mocks
             var col = new Mock<IADOTabularColumn>();
             col.SetupGet(x => x.Caption).Returns(caption);
             col.SetupGet(x => x.DaxName).Returns(daxName);
-            col.SetupGet(x => x.DataType).Returns(dataType);
+            col.SetupGet(x => x.SystemType).Returns(dataType);
             col.SetupGet(x => x.ObjectType).Returns(objectType);
             return col.Object;
         }

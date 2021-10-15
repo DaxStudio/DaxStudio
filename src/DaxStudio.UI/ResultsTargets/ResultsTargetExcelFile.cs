@@ -267,7 +267,7 @@ namespace DaxStudio.UI.Model
         {
 
             // check for special case formatting
-            switch (col.DataType.Name.ToLower())
+            switch (col.SystemType.Name.ToLower())
             {
                 case "long":
                 case "double":
