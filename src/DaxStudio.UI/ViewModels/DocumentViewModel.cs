@@ -1739,7 +1739,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public string ElapsedQueryTime => _queryStopWatch == null ? "" : _queryStopWatch.Elapsed.ToString(Constants.StatusBarTimerFormat);
+        public string ElapsedQueryTime => (_queryStopWatch?.Elapsed??TimeSpan.Zero).ToString(Constants.StatusBarTimerFormat);
 
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -3959,7 +3959,7 @@ namespace DaxStudio.UI.ViewModels
 
         public object UniqueID { get { return _uniqueId; } }
 
-        private int _rowCount = -1;
+        private int _rowCount = 0;
         private string _serverVersion = "";
         public int RowCount {
             get { return _rowCount; }

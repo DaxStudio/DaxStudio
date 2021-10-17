@@ -7,6 +7,7 @@
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:Fluent="urn:fluent-ribbon"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d" 
              d:DesignHeight="24" d:DesignWidth="700">
     <UserControl.Resources>
@@ -102,37 +103,51 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="20" />
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
             </Fluent:StatusBar.ItemsPanel>
             <Fluent:StatusBarItem Grid.Column="0" Title="Spinner">
-                <Label Style="{DynamicResource LabelSpinnerStyle}" Foreground="White" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="18" Height="18" />
+                <!--<Label Style="{DynamicResource LabelSpinnerStyle}" Foreground="White" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="18" Height="18" />-->
+                <!--    -->
+                <ui:ProgressRing IsActive="{Binding Working}" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="10" Height="10" Margin="4 0 0 0">
+                    <ui:ProgressRing.LayoutTransform>
+                        <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                    </ui:ProgressRing.LayoutTransform>
+                </ui:ProgressRing>
             </Fluent:StatusBarItem>
-            <Separator Grid.Column="1"/>
+            <!--<Separator Grid.Column="1"/>-->
             <Fluent:StatusBarItem Grid.Column="2" Title="Status Message">
-                
-                <TextBlock x:Name="Message1" Text="{Binding ActiveDocument.StatusBarMessage}" ></TextBlock>
-                
+
+                <TextBlock x:Name="Message1" 
+                           Margin="4 0 0 0"
+                           Text="{Binding ActiveDocument.StatusBarMessage}" />
+
             </Fluent:StatusBarItem>
             <Separator Grid.Column="3"/>
-            <Fluent:StatusBarItem Grid.Column="4" Title="Editor Position">
+            <Fluent:StatusBarItem Grid.Column="4">
+                <Image Source="{DynamicResource editor_smallDrawingImage}" Width="16"/>
+            </Fluent:StatusBarItem>
+            <Fluent:StatusBarItem Grid.Column="5" Title="Editor Position">
                 <StackPanel Orientation="Horizontal">
                     <!--<Image Source="{StaticResource StatusPos}"></Image>-->
-                    <TextBlock  x:Name="PositionText">1, 1</TextBlock>
+                    <TextBlock  x:Name="PositionText"></TextBlock>
                 </StackPanel>
                 <StatusBarItem.ToolTip>
                     <TextBlock>Current position in Editor</TextBlock>
                 </StatusBarItem.ToolTip>
             </Fluent:StatusBarItem>
-            <Separator Grid.Column="5"/>
+            <Separator Grid.Column="6"/>
 
-            <Fluent:StatusBarItem Grid.Column="8" Title="Server Details">
+            
+            
+            <Fluent:StatusBarItem Grid.Column="7" Title="Server Details">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{StaticResource StatusServer}"></Image>
+                        <Image Source="{DynamicResource db_smallDrawingImage}" Margin="0 0 4 0"></Image>
                         <!-- TODO: we could look at text trimming the server name now that we have the copy button 
                                    but we would probably want to trim the start of the name as it's the end bit that will
                                    contain key information like org/workspace...
@@ -160,7 +175,7 @@
                                    x:Name="CopyServerNameToClipboard" 
                                    HorizontalContentAlignment="Left" 
                                    Foreground="White"
-                                   Icon="{StaticResource StatusCopy}"
+                                   Icon="{DynamicResource copy_toolbarDrawingImage}"
                                    Size="Small" Margin="5,0,1,0">
                         <Fluent:Button.ToolTip>Copy Server Name to Clipboard</Fluent:Button.ToolTip>
                     </Fluent:Button>
@@ -173,7 +188,7 @@
             <Separator Grid.Column="9"/>
             <Fluent:StatusBarItem Grid.Column="10" Title="SPID">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="{StaticResource StatusSpid}"></Image>
+                    <Image Source="{DynamicResource id_smallDrawingImage}" Margin="0 0 4 0"></Image>
                 <TextBlock x:Name="Spid" VerticalAlignment="Center">SPID</TextBlock>
                 </StackPanel>
                 <StatusBarItem.ToolTip>
@@ -182,7 +197,10 @@
             </Fluent:StatusBarItem>
             <Separator Grid.Column="11"/>
             <Fluent:StatusBarItem Grid.Column="12" Title="Rowcount">
-            <TextBlock x:Name="Rows">rows</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource tableDrawingImage}" Margin="0 0 4 0"/>
+                    <TextBlock x:Name="Rows">0 rows</TextBlock>
+                </StackPanel>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="13"/>
             <Fluent:StatusBarItem Grid.Column="14" Title="Timer" >

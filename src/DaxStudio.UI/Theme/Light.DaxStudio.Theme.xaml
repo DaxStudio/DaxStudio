@@ -11,13 +11,8 @@
         <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/LightBrushs.xaml"/>
 
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Light.AvalonEdit.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.light.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.light.hidden.xaml"/>
-        <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.FlatButton.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />-->
-
+        <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.light.xaml"/>-->
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.light.extra.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/DaxStudio.BaseStyles.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Colors.xaml"/>
 

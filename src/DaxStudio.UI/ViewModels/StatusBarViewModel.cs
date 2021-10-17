@@ -24,7 +24,7 @@ namespace DaxStudio.UI.ViewModels
         public StatusBarViewModel(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
             Options = options;
         }
 
@@ -70,7 +70,7 @@ namespace DaxStudio.UI.ViewModels
                 }
         }
 
-        private string _timerText = "";
+        private string _timerText = "00:00.0";
         public string TimerText { get { return _timerText; }
             set
             {
@@ -108,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        private int _rowCount = -1;
+        private int _rowCount = 0;
         private IEventAggregator _eventAggregator;
 
         public int RowCount
@@ -124,7 +124,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get { 
                 if (RowCount >= 0) { 
-                    return string.Format("{0} row{1}", RowCount, RowCount!=1?"s":""); } 
+                    return string.Format("{0:n0} row{1}", RowCount, RowCount!=1?"s":""); } 
                 else { 
                     return ""; 
                 } 
@@ -142,8 +142,8 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument = message.Document;
             // add property changed handler for new document
             ActiveDocument.PropertyChanged += ActiveDocument_PropertyChanged;
-            TimerText = message.Document.ElapsedQueryTime;
-            NotifyOfPropertyChange(() => TimerText);
+            //TimerText = message.Document.ElapsedQueryTime;
+            //NotifyOfPropertyChange(() => TimerText);
             NotifyOfPropertyChange(() => ActiveDocument);
             Spid = ActiveDocument.Spid.ToString() ;
             ServerName = ActiveDocument.ServerName;

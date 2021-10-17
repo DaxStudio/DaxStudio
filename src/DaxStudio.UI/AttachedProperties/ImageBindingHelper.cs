@@ -40,6 +40,33 @@ namespace DaxStudio.UI.AttachedProperties
         }
 
 
+        public static readonly DependencyProperty SourceAccentResourceKeyProperty = DependencyProperty.RegisterAttached("SourceAccentResourceKey",
+                    typeof(object),
+                    typeof(ImageBindingHelper),
+                    new PropertyMetadata(String.Empty, SourceAccentResourceKeyChanged));
+
+        public static void SetSourceAccentResourceKey(Image element, object value)
+        {
+
+            element.SetValue(SourceResourceKeyProperty, value);
+        }
+
+        public static object GetSourceAccentResourceKey(Image element)
+        {
+
+            return element.GetValue(SourceResourceKeyProperty);
+        }
+
+        private static void SourceAccentResourceKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+
+            var element = d as Image;
+            if (element != null)
+            {
+                element.SetResourceReference(Image.SourceProperty, e.NewValue.ToString().Replace("DrawingImage","_accentDrawingImage"));
+            }
+        }
+
         //public static readonly DependencyProperty IconResourceKeyProperty = DependencyProperty.RegisterAttached("IconResourceKey",
         //    typeof(object),
         //    typeof(ImageBindingHelper),

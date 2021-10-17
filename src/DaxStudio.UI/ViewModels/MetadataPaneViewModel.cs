@@ -44,7 +44,8 @@ namespace DaxStudio.UI.ViewModels
         private readonly IGlobalOptions _options;
         private readonly IMetadataProvider _metadataProvider;
         private List<IExpandedItem> _expandedItems = new List<IExpandedItem>();
-        
+        private const int SAMPLE_ROWS = 5;
+
         [ImportingConstructor]
         public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
             : base( eventAggregator)
@@ -54,8 +55,6 @@ namespace DaxStudio.UI.ViewModels
 
             _options = globalOptions;
             NotifyOfPropertyChange(() => ActiveDocument);
-            // TODO - is this a possible resource leak, should we unsubscribe when closing the document for this metadatapane??
-            //eventAggregator.Subscribe(this);  
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
@@ -594,7 +593,7 @@ namespace DaxStudio.UI.ViewModels
             if (col.ObjectType != ADOTabularObjectType.Column) return;
             // TODO - make an option for the sample size
             if (_options == null) return;
-            if (_options.ShowTooltipSampleData && !column.HasSampleData) _metadataProvider.UpdateColumnSampleData(column,10) ;
+            if (_options.ShowTooltipSampleData && !column.HasSampleData) _metadataProvider.UpdateColumnSampleData(column,SAMPLE_ROWS) ;
             if (_options.ShowTooltipBasicStats && !column.HasBasicStats) _metadataProvider.UpdateColumnBasicStats(column); 
         }
 

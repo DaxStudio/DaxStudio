@@ -20,6 +20,7 @@
     <Color x:Key="Theme.Dialog.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Dialog.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Control.Border">#D6D6D6</Color>
+    <Color x:Key="Theme.TextBox.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Content.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Hidden.Fore">#B3B3B3</Color>
     <Color x:Key="Theme.DropShadow">#000000</Color>
@@ -47,8 +48,8 @@
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Back" Color="{StaticResource Theme.InfoBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Border" Color="{StaticResource Theme.InfoBar.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Tooltip.Border" Color="{StaticResource Theme.Tooltip.Border}" options:Freeze="true"/>
-    
-    
+    <SolidColorBrush x:Key="Theme.Brush.TextBox.Border" Color="{StaticResource Theme.TextBox.Border}" options:Freeze="true"/>
+
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="TextControlBorderBrush" Color="{DynamicResource Theme.Dialog.Border}"/>
@@ -217,4 +218,5 @@
     <SolidColorBrush x:Key="DialogBackground" Color="{StaticResource Theme.Dialog.Back}"/>
     <SolidColorBrush x:Key="DialogBorder" Color="{StaticResource Theme.Dialog.Border}"/>
     <SolidColorBrush x:Key="BaseBrush" Color="{StaticResource WhiteColor}"/>
+    <SolidColorBrush x:Key="ToolTipBackground" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
 </ResourceDictionary>

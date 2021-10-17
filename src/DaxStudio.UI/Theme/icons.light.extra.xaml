@@ -3,8 +3,11 @@
     <ResourceDictionary.MergedDictionaries>
       <ResourceDictionary Source="./icons.light.xaml"/>
   </ResourceDictionary.MergedDictionaries>
-  <SolidColorBrush x:Key="MetadataHiddenBrush" SolidColorBrush.Color="#B3B3B3" />
-  <DrawingGroup x:Key="stringHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    
+    <SolidColorBrush x:Key="MetadataHiddenBrush" SolidColorBrush.Color="#B3B3B3" />
+    <SolidColorBrush x:Key="AccentBrush" SolidColorBrush.Color="#228ED6" />
+
+    <DrawingGroup x:Key="stringHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
     <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry1}" />
     <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry2}" />
     <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry3}" />
@@ -32,4 +35,12 @@
     <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry3}" />
   </DrawingGroup>
   <DrawingImage x:Key="numberHiddenDrawingImage" Drawing="{StaticResource numberHiddenDrawingGroup}" />
+    <DrawingGroup x:Key="db_small_accentDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource db_smallGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="db_small_accentDrawingImage" Drawing="{StaticResource db_small_accentDrawingGroup}" />
+    <DrawingGroup x:Key="model_small_accentDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource model_smallGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="model_small_accentDrawingImage" Drawing="{StaticResource model_small_accentDrawingGroup}" />
 </ResourceDictionary>

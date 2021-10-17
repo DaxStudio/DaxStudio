@@ -472,6 +472,7 @@ namespace DaxStudio.UI.Model
         {
             Options = options;
             Column = kpiComponent;
+            _column = kpiComponent;
             DataTypeName = kpiComponent.DataTypeName;
             Description = kpiComponent.Column.Description;
             MetadataImage = MetadataImages.Measure;
@@ -481,6 +482,7 @@ namespace DaxStudio.UI.Model
         {
             Options = options;
             Column = kpi;
+            _column = kpi;
             DataTypeName = kpi.DataTypeName;
             Description = kpi.Description;
             MetadataImage = MetadataImages.Kpi;
@@ -489,6 +491,7 @@ namespace DaxStudio.UI.Model
         {
             Options = options;
             Column = level;
+            _column = level;
             Description = level.Column.Description;
             DataTypeName = level.Column.DataTypeName;
 
@@ -512,6 +515,7 @@ namespace DaxStudio.UI.Model
             if (folder == null)
             {
                 Column = table.Columns.GetByPropertyRef(reference.InternalReference);
+                _column = Column as IADOTabularColumn;
                 MetadataImage = Column.GetMetadataImage();
             }
             else
@@ -566,20 +570,59 @@ namespace DaxStudio.UI.Model
 
                     //case MetadataImages.Database:
                     case MetadataImages.Folder:
-                    
-                    case MetadataImages.Hierarchy:
-                    case MetadataImages.Kpi:
-                    
-                        return "measure";
-                    case MetadataImages.HiddenTable:
-                    case MetadataImages.Table:
-
                         return "";
                     case MetadataImages.UnnaturalHierarchy:
+                    case MetadataImages.Hierarchy:
+                        return "hierarchyDrawingImage";
+                    case MetadataImages.Kpi:
+                        return "kpiDrawingImage";
+                        
+                    case MetadataImages.HiddenTable:
+                    case MetadataImages.Table:
                         return "";
                 }
                 return "";
             } 
+        }
+
+        public string ObjectTypeName
+        {
+            get
+            {
+                switch (_column?.ObjectType)
+                {
+                    case ADOTabularObjectType.Level:
+                    case ADOTabularObjectType.Column:
+                        return "Column";
+                    case ADOTabularObjectType.Folder:
+                        return "Folder";
+                    case ADOTabularObjectType.Hierarchy:
+                    case ADOTabularObjectType.UnnaturalHierarchy:
+                        return "Hierarchy";
+                    case ADOTabularObjectType.Measure:
+                    case ADOTabularObjectType.KPIGoal:
+                    case ADOTabularObjectType.KPIStatus:
+                        return "Measure";
+                    case ADOTabularObjectType.KPI:
+                        return "KPI";
+                    case ADOTabularObjectType.DMV:
+                    case ADOTabularObjectType.Function:
+                    case ADOTabularObjectType.Table:
+                    case ADOTabularObjectType.Unknown:
+                        return string.Empty;
+                    default:
+                        if (_folder != null) return "Folder";
+                        return string.Empty;
+                }
+            }
+        }
+
+        public string ObjectTypeImage
+        {
+            get
+            {
+                return ObjectTypeName.ToLower() + "_accentDrawingImage";
+            }
         }
 
         private string GetDataTypeImage(IADOTabularColumn column)
@@ -601,7 +644,7 @@ namespace DaxStudio.UI.Model
         private string _caption = string.Empty;
         public string Caption => Column?.Caption??_caption;
         public override string Name => Column?.Name??_caption;
-        public override ADOTabularObjectType ObjectType => Column.ObjectType;
+        public override ADOTabularObjectType ObjectType => Column?.ObjectType?? ADOTabularObjectType.Unknown;
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
         public string DaxName => Column?.DaxName??string.Empty;

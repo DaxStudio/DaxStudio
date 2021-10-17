@@ -188,6 +188,7 @@
                                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabSelectedActiveBackground}}" />
                                                 <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}" />
                                                 <Setter Property="Panel.ZIndex" Value="1" />
+                                                <Setter Property="FontWeight" Value="Bold" />
                                             </DataTrigger>
 
                                             <!--  Document Well : Tab / Selected, inactive  -->
@@ -207,6 +208,7 @@
                                                     <Condition Binding="{Binding IsSelected}" Value="False" />
                                                 </MultiDataTrigger.Conditions>
                                                 <Setter TargetName="Bd" Property="BorderBrush" Value="Transparent" />
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedBackground}}"/>
                                             </MultiDataTrigger>
 
                                             <!--  Document Well : Tab / Unselected, hovered  -->
