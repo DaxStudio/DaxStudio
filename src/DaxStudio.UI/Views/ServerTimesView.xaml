@@ -270,6 +270,7 @@
                             <MenuItem Command="SelectAll"></MenuItem>
                             <Separator />
                             <MenuItem Header="Scan" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowScan}" />
+                            <MenuItem Header="Batch" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowBatch}" />
                             <MenuItem Header="Cache" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowCache}" />
                             <MenuItem Header="Internal" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowInternal}" />
                         </CompositeCollection>
@@ -283,6 +284,10 @@
                 </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
+                </Style>
+                <Style x:Key="AlignBottomRight" TargetType="{x:Type TextBlock}">
+                    <Setter Property="HorizontalAlignment" Value="Right" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </DataGrid.Resources>
             <DataGrid.ColumnHeaderStyle>
@@ -317,9 +322,20 @@
             </DataGrid.RowStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="35" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" />
+                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
+                                    <Setter Property="FontStyle" Value="Italic"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Par." IsReadOnly="True" Width="34" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignBottomRight}" />
                 <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="60" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
