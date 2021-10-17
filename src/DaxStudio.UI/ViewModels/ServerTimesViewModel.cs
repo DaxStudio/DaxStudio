@@ -42,10 +42,12 @@ namespace DaxStudio.UI.ViewModels
         public string Query { get; set; }
         public long? Duration { get; set; }
         public long? CpuTime { get; set; }
+        public double? CpuFactor { get; set; }
         public int RowNumber { get; set; }
         public long? EstimatedRows { get; set; }
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
+        public bool InternalBatchEvent { get; set; }
 
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for the following functions:
@@ -94,6 +96,7 @@ namespace DaxStudio.UI.ViewModels
             RowNumber = rowNumber;
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
+            InternalBatchEvent = ev.InternalBatchEvent;
             switch (Class)
             {
                 //case DaxStudioTraceEventClass.DirectQueryEnd:
@@ -125,7 +128,11 @@ namespace DaxStudio.UI.ViewModels
             if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {
                 Duration = ev.Duration;
-                if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted) CpuTime = ev.CpuTime;
+                if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
+                {
+                    CpuTime = ev.CpuTime;
+                    CpuFactor = ev.CpuFactor;
+                }
             }
             if (Query != null && Query?.Length > 0)
             {
@@ -325,6 +332,7 @@ namespace DaxStudio.UI.ViewModels
 
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QuerySubcube
+                , DaxStudioTraceEventClass.VertiPaqSEQueryBegin
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
                 , DaxStudioTraceEventClass.AggregateTableRewriteQuery
@@ -366,24 +374,60 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            //FormulaEngineDuration = 0;
-            //StorageEngineDuration = 0;
-            //TotalCpuDuration = 0;
-            //StorageEngineCpu = 0;
-            //StorageEngineQueryCount = 0;
-            //VertipaqCacheMatches = 0;
-            //TotalDuration = 0;
-            //_storageEngineEvents.Clear();
             ClearAll();
+
+            int batchScan = 0;
+            long batchStorageEngineDuration = 0;
+            long batchStorageEngineCpu = 0;
+            long batchStorageEngineQueryCount = 0;
 
             if (Events != null)
             {
                 foreach (var traceEvent in Events)
                 {
+                    if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryBegin)
+                    {
+                        // At the start of a batch, we just activate the flag BatchScan
+                        if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
+                        {
+                            batchScan++;
+                            // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
+                            System.Diagnostics.Debug.Assert(batchScan == 1, "Nested VertiScan batches detected or missed SE QueryEnd events!");
+
+                            // Reset counters for internal batch cost
+                            batchStorageEngineDuration = 0;
+                            batchStorageEngineCpu = 0;
+                            batchStorageEngineQueryCount = 0;
+                        }
+                    }
+
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryEnd)
                     {
-                        if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.VertiPaqScan)
+                        // At the end of a batch, we compute the cost for the batch and assign the cost to the complete query
+                        if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
                         {
+                            batchScan--;
+                            // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
+                            System.Diagnostics.Debug.Assert(batchScan == 0, "Nested VertiScan batches detected or missed SE QueryBegin events!");
+
+                            // Subtract from the batch event the total computed for the scan events within the batch
+                            traceEvent.Duration -= batchStorageEngineDuration;
+                            traceEvent.CpuTime -= batchStorageEngineCpu;
+
+                            StorageEngineDuration += traceEvent.Duration;
+                            StorageEngineCpu += traceEvent.CpuTime;
+                            // Currently, we do not compute a storage engine query for the batch event - we might uncomment this if we decide to show the Batch event by default
+                            StorageEngineQueryCount++;
+
+                        }
+                        else if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.VertiPaqScan)
+                        {
+                            if (batchScan > 0) {
+                                traceEvent.InternalBatchEvent = true;
+                                batchStorageEngineDuration += traceEvent.Duration;
+                                batchStorageEngineCpu += traceEvent.CpuTime;
+                                batchStorageEngineQueryCount++;
+                            }
                             StorageEngineDuration += traceEvent.Duration;
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
@@ -401,9 +445,6 @@ namespace DaxStudio.UI.ViewModels
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
                     {
-                        //StorageEngineDuration += traceEvent.Duration;
-                        //StorageEngineCpu += traceEvent.CpuTime;
-                        //StorageEngineQueryCount++;
                         _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                     }
 
@@ -411,7 +452,6 @@ namespace DaxStudio.UI.ViewModels
                     {
                         TotalDuration = traceEvent.Duration;
                         TotalCpuDuration = traceEvent.CpuTime;
-                        //FormulaEngineDuration = traceEvent.CpuTime;
                         QueryEndDateTime = traceEvent.EndTime;
                     }
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
