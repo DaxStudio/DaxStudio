@@ -13,46 +13,22 @@
 	<SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.ControlAccentBrushKey}" Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
 
 	<!--  General  -->
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.Background}"
-		options:Freeze="true"
-		Color="#FFFFFF" />
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.PanelBorderBrush}"
-		options:Freeze="true"
-		Color="#FFFFFF" />
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.TabBackground}"
-		options:Freeze="true"
-		Color="#FFFFFF" />
+	<SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.Background}" Color="#FFFFFF" options:Freeze="true"/>
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.PanelBorderBrush}" Color="#FFFFFF" options:Freeze="true"/>
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.TabBackground}" Color="#FFFFFF" options:Freeze="true"/>
 
 	<!--  Auto Hide : Tab  -->
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBackground}"
-		options:Freeze="true"
-		Color="#FFFFFF" />
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBorder}"
-		options:Freeze="true"
-		Color="#FFFFFF" />
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultText}"
-		options:Freeze="true"
-		Color="#444444" />
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBackground}" Color="#FFFFFF" options:Freeze="true" />
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultBorder}" Color="#FFFFFF" options:Freeze="true"/>
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabDefaultText}"	Color="#444444" options:Freeze="true"/>
 
 	<!--  Mouse Over Auto Hide Button for (collapsed) Auto Hidden Elements  -->
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredBackground}"
-		options:Freeze="true"
-		Color="#EEEEF2" />
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredBackground}" Color="#EEEEF2" options:Freeze="true"/>
 	<!--  AccentColor  -->
 	<SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredBorder}" Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
 
 	<!--  AccentColor  -->
-	<SolidColorBrush
-		x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredText}"
-		options:Freeze="true"
-		Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
+    <SolidColorBrush x:Key="{x:Static reskeys:ResourceKeys.AutoHideTabHoveredText}"	Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" options:Freeze="true"/>
 
 	<!--  Document Well : Overflow Button  -->
 	<SolidColorBrush

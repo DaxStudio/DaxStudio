@@ -183,7 +183,7 @@ namespace DaxStudio.UI.ViewModels
         
         // IToolWindow interface
         public override string Title => "Query Plan";
-
+        public override string ImageResource => "query_planDrawingImage";
         public override string ContentId => "query-plan";
         public override ImageSource IconSource
         {

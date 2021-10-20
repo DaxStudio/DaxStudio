@@ -354,7 +354,7 @@ namespace DaxStudio.UI.ViewModels
 #if PREVIEW
                 $"DaxStudio - {Version.ToString(3)} (PREVIEW){UserString}{AdminString}";
 #else
-                return $"DaxStudio - {Version.ToString(3)}{UserString}{AdminString}";
+                return $"DAX Studio - {Version.ToString(3)}{UserString}{AdminString}";
 #endif    
             }
         }

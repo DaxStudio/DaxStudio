@@ -67,33 +67,62 @@ namespace DaxStudio.UI.AttachedProperties
             }
         }
 
-        //public static readonly DependencyProperty IconResourceKeyProperty = DependencyProperty.RegisterAttached("IconResourceKey",
-        //    typeof(object),
-        //    typeof(ImageBindingHelper),
-        //    new PropertyMetadata(String.Empty, IconResourceKeyChanged));
+        public static readonly DependencyProperty IconResourceKeyProperty = DependencyProperty.RegisterAttached("IconResourceKey",
+            typeof(object),
+            typeof(ImageBindingHelper),
+            new PropertyMetadata(String.Empty, IconResourceKeyChanged));
 
-        //public static void SetSourceResourceKey(Fluent.DropDownButton element, object value)
-        //{
+        public static void SetIconResourceKey(Fluent.DropDownButton element, object value)
+        {
 
-        //    element.SetValue(IconResourceKeyProperty, value);
-        //}
+            element.SetValue(IconResourceKeyProperty, value);
+        }
 
-        //public static object GetSourceResourceKey(Fluent.DropDownButton element)
-        //{
+        public static object GetIconResourceKey(Fluent.DropDownButton element)
+        {
 
-        //    return element.GetValue(IconResourceKeyProperty);
-        //}
+            return element.GetValue(IconResourceKeyProperty);
+        }
 
-        //private static void IconResourceKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        //{
+        private static void IconResourceKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
 
-        //    var button = d as Fluent.DropDownButton;
-        //    if (button != null)
-        //    {
-        //        button.SetResourceReference(button.Icon as DependencyProperty, e.NewValue);
-        //        button.SetResourceReference(button.LargeIcon as DependencyProperty, e.NewValue);
-        //    }
+            var button = d as Fluent.DropDownButton;
+            if (button != null)
+            {
+                button.SetResourceReference(Fluent.DropDownButton.IconProperty, e.NewValue);
+                button.SetResourceReference(Fluent.DropDownButton.LargeIconProperty, e.NewValue);
+            }
 
-        //}
+        }
+
+
+        public static readonly DependencyProperty ToggleIconResourceKeyProperty = DependencyProperty.RegisterAttached("ToggleIconResourceKey",
+            typeof(object),
+            typeof(ImageBindingHelper),
+            new PropertyMetadata(String.Empty, ToggleIconResourceKeyChanged));
+        public static void SetToggleIconResourceKey(Fluent.ToggleButton element, object value)
+        {
+
+            element.SetValue(IconResourceKeyProperty, value);
+        }
+
+        public static object GetToggleIconResourceKey(Fluent.ToggleButton element)
+        {
+
+            return element.GetValue(IconResourceKeyProperty);
+        }
+
+        private static void ToggleIconResourceKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+
+            var button = d as Fluent.ToggleButton;
+            if (button != null)
+            {
+                button.SetResourceReference(Fluent.ToggleButton.IconProperty, e.NewValue);
+                button.SetResourceReference(Fluent.ToggleButton.LargeIconProperty , e.NewValue);
+            }
+
+        }
     }
 }

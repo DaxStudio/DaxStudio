@@ -351,6 +351,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public abstract string ImageResource { get; }
+
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {
             Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "QueryCompleted", isCancelled);

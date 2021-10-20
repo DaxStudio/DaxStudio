@@ -14,6 +14,7 @@
              xmlns:views="clr-namespace:DaxStudio.UI.Views"
              xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:utils="clr-namespace:DaxStudio.UI.Utils" 
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              Background="{DynamicResource Theme.Brush.StatusBar.Back}"
              mc:Ignorable="d" 
              d:DesignHeight="300" 
@@ -23,6 +24,7 @@
             <local:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
+            <local:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter"/>
             <avalonDockConverters:ActivateCommandLayoutItemFromLayoutModelConverter x:Key="ActivateCommandLayoutItemFromLayoutModelConverter" />
 
             <Style x:Key="MyCustomDocumentPaneControlStyle" 
@@ -236,18 +238,29 @@
                     <Setter.Value>
                         <DataTemplate>
                             <Grid Margin="4 2 4 6">
+                                
                                 <Border 
-                                    x:Name="Bd"
+                                    x:Name="SelectedBd"
                                     BorderThickness="0 0 0 3"
                                     Margin="4 0 4 0"
-                                    BorderBrush="Transparent">
+                                    BorderBrush="Transparent"
+                                    Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToNotHiddenConverter}}"
+                                    >
                                 </Border>
+                                <ui:ProgressBar
+                                    x:Name="Progress"
+                                    VerticalAlignment="Bottom"
+                                    Foreground="{DynamicResource Theme.Brush.Alternate.Back}"
+                                    Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    IsIndeterminate="{Binding Content.IsQueryRunning}"
+                                    />
                                 <avalonDockControls:LayoutDocumentTabItem Model="{Binding}"/>
 
                             </Grid>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsSelected}" Value="true">
-                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource DaxStudioBrush}"/>
+                                    <Setter TargetName="SelectedBd" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                    <Setter TargetName="Progress" Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
@@ -514,13 +527,15 @@
         ActiveContent="{Binding ActiveItem}"
                     cal:Message.Attach="[Event ActiveContentChanged] = [Action ActiveDocumentChanged]"
         DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
+        
+        ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
         -->
         <avalondock:DockingManager 
             x:Name="Items"
             Background="{DynamicResource Theme.Brush.Menu.Back}"
             DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
             DocumentsSource="{Binding Items}"
-            ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
+            ActiveContent="{Binding ActiveItem, Mode=TwoWay}"
 
             Margin="-6"
             >

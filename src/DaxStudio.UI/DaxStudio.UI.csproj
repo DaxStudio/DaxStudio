@@ -270,6 +270,7 @@
     <Compile Include="Controls\TreeViewEx.cs" />
     <Compile Include="Controls\ZoomableUserControl.cs" />
     <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
+    <Compile Include="Conventions\ModernWpfConventions.cs" />
     <Compile Include="Conventions\VisibilityBindingConvention.cs" />
     <Compile Include="Converters\ActiveDocumentConverter.cs" />
     <Compile Include="Converters\AllNumericConverter.cs" />

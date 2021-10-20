@@ -39,6 +39,7 @@
     <sys:Double x:Key="PivotHeaderItemFontSize">16</sys:Double>
     <Thickness x:Key="PivotNavButtonMargin">0,6,0,0</Thickness>
     <Thickness x:Key="PivotHeaderItemMargin">6,0,6,0</Thickness>
+    <Thickness x:Key="PivotItemMargin">0,0,0,0</Thickness>
     
     <Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenuEx}"/>
 </ResourceDictionary>

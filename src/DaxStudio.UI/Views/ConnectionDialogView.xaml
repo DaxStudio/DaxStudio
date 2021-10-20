@@ -378,7 +378,7 @@
                             IsEnabled="{Binding CanConnect}"  
                             Width="70" 
                             IsDefault="True"
-Style="{DynamicResource AccentButtonStyle}"
+                            Style="{DynamicResource AccentButtonStyle}"
                             VerticalAlignment="Bottom" 
                             
                             />

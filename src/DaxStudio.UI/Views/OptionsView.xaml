@@ -15,7 +15,9 @@
             xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
             xmlns:templateSelectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
             xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
+             Background="{DynamicResource Theme.Brush.MenuBar.Back}"
             mc:Ignorable="d" 
             d:DesignHeight="1008" d:DesignWidth="1400">
     <!-- xmlns:ui="clr-namespace:ModernWpf.Controls;assembly=ModernWpf.Controls" -->
@@ -77,7 +79,7 @@
                 </Style.Triggers>
             </Style>
 
-            <Style TargetType="{x:Type TextBox}">
+            <!--<Style TargetType="{x:Type TextBox}">
                 <Style.Triggers>
                     <Trigger Property="IsReadOnly" Value="True">
                         <Setter Property="Background" Value="LightGray" />
@@ -86,7 +88,7 @@
                         <Setter Property="Background" Value="White" />
                     </Trigger>
                 </Style.Triggers>
-            </Style>
+            </Style>-->
             
             <!--<Style TargetType="{x:Type TextBox}">
                 <Style.Triggers>
@@ -117,50 +119,23 @@
                 <Setter Property="Width" Value="375" />
                 <Setter Property="Padding" Value="5"/>
             </Style>
-            <!--<Style TargetType="{x:Type TextBox}">
-                <Style.Resources>
-                    <SolidColorBrush 
-                    x:Key="{x:Static SystemColors.ControlBrushKey}" 
-                    Color="Blue" />
-                </Style.Resources>
-            </Style>-->
-
-
-            <!-- Category Icons -->
-            <!--<conv:ResourceLookupConverter x:Key="CategoryIcons">
-                <ResourceDictionary>
-                    <fa:ImageAwesome x:Key="Custom Export Format"  Icon="Download" Width="16"/>
-                    <fa:ImageAwesome x:Key="Dax Formatter" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Defaults" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Editor" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Metadata Pane" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Proxy" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Privacy" Icon="UserSecret" Width="16" />
-                    <fa:ImageAwesome x:Key="Query History" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Results" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Server Timings" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Timeouts" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Trace" Icon="Pencil" Width="16"/>
-                    <fa:ImageAwesome x:Key="Logging" Icon="FileOutline" Width="16"/>
-                </ResourceDictionary>
-            </conv:ResourceLookupConverter>-->
-
+           
             <conv:ResourceLookupConverter x:Key="CategoryIconNames">
                 <ResourceDictionary>
-                    <sys:String x:Key="Custom Export Format">Download</sys:String>
-                    <sys:String x:Key="Dax Formatter">AlignLeft</sys:String>
-                    <sys:String x:Key="Defaults">Sliders</sys:String>
-                    <sys:String x:Key="Editor">Pencil</sys:String>
-                    <sys:String x:Key="Metadata Pane">Sitemap</sys:String>
-                    <sys:String x:Key="Proxy">Wifi</sys:String>
-                    <sys:String x:Key="Privacy">UserSecret</sys:String>
-                    <sys:String x:Key="Query History">History</sys:String>
-                    <sys:String x:Key="Results">Table</sys:String>
-                    <sys:String x:Key="Server Timings">Database</sys:String>
-                    <sys:String x:Key="Sounds">VolumeUp</sys:String>
-                    <sys:String x:Key="Timeouts">ClockOutline</sys:String>
-                    <sys:String x:Key="Trace">Search</sys:String>
-                    <sys:String x:Key="Logging">Medkit</sys:String>
+                    <sys:String x:Key="Custom Export Format">options_exportDrawingImage</sys:String>
+                    <sys:String x:Key="Dax Formatter">options_dax_formatterDrawingImage</sys:String>
+                    <sys:String x:Key="Defaults">options_defaultsDrawingImage</sys:String>
+                    <sys:String x:Key="Editor">options_editorDrawingImage</sys:String>
+                    <sys:String x:Key="Metadata Pane">options_metadata_paneDrawingImage</sys:String>
+                    <sys:String x:Key="Proxy">options_proxyDrawingImage</sys:String>
+                    <sys:String x:Key="Privacy">options_privacyDrawingImage</sys:String>
+                    <sys:String x:Key="Query History">options_query_historyDrawingImage</sys:String>
+                    <sys:String x:Key="Results">options_resultsDrawingImage</sys:String>
+                    <sys:String x:Key="Server Timings">options_server_timingsDrawingImage</sys:String>
+                    <sys:String x:Key="Sounds">options_soundsDrawingImage</sys:String>
+                    <sys:String x:Key="Timeouts">options_timeoutsDrawingImage</sys:String>
+                    <sys:String x:Key="Trace">options_traceDrawingImage</sys:String>
+                    <sys:String x:Key="Logging">options_loggingDrawingImage</sys:String>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
 
@@ -184,6 +159,11 @@
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
 
+            <Style TargetType="{x:Type controls:HotkeyEditorControl}" >
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Control.Back}" />
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Control.Fore}" />
+            </Style>
+            
             <!-- PropertyList Styles Start -->
 
 
@@ -229,9 +209,11 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <!--<CheckBox IsChecked="{Binding Value}" IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>-->
-                    <ui:ToggleSwitch                               
-                              IsOn="{Binding Value}"
-                              IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>
+                    <ui:ToggleSwitch       
+                        OnContent=""
+                        OffContent=""
+                        IsOn="{Binding Value}"
+                        IsEnabled="{Binding ValueEnabled}" Grid.Row="0"/>
                     <TextBlock Style="{StaticResource DescriptionStyle }"/>
                 </Grid>
             </DataTemplate>
@@ -458,13 +440,15 @@
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
                 <Setter Property="Padding" Value="2,5"/>
+                <Setter Property="MinWidth" Value="210"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBoxItem}">
                             <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
                                 <StackPanel Orientation="Horizontal" >
-                                    <Rectangle x:Name="Hl" Width="3"  Margin="0,0,1,0" Fill="Transparent"/>
-                                    <fa:FontAwesome Icon="{Binding Converter={StaticResource CategoryIconNames}}" Width="20" FontSize="14" Margin="5,0" />
+                                    <Rectangle x:Name="Hl" Width="3"  Margin="0,0,4,0" Fill="Transparent"/>
+                                    <!--<fa:FontAwesome Icon="{Binding Converter={StaticResource CategoryIconNames}}" Width="20" FontSize="14" Margin="5,0" />-->
+                                    <Image ap:ImageBindingHelper.SourceResourceKey="{Binding Converter={StaticResource CategoryIconNames}}" Margin="0 0 8 0"/>
                                     <!--<Image Source="{markup:ResourceBinding {Binding Converter={StaticResource CategoryIconLookup}}}"/>-->
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                 </StackPanel>
@@ -482,8 +466,8 @@
                                         <Condition Property="Selector.IsSelectionActive" Value="False"/>
                                         <Condition Property="IsSelected" Value="True"/>
                                     </MultiTrigger.Conditions>
-                                    <Setter Property="Background" TargetName="Bd" Value="{StaticResource Item.SelectedInactive.Background}"/>
-                                    <Setter Property="Fill" TargetName="Hl" Value="{StaticResource Item.Selected.Bar}"/>
+                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+                                    <Setter Property="Fill" TargetName="Hl" Value="{DynamicResource Theme.Brush.Accent}"/>
                                     <!--<Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.SelectedInactive.Border}"/>-->
                                 </MultiTrigger>
                                 <MultiTrigger>
@@ -491,10 +475,13 @@
                                         <Condition Property="Selector.IsSelectionActive" Value="True"/>
                                         <Condition Property="IsSelected" Value="True"/>
                                     </MultiTrigger.Conditions>
-                                    <Setter Property="Background" TargetName="Bd" Value="{StaticResource Item.SelectedActive.Background}"/>
-                                    <Setter Property="Fill" TargetName="Hl" Value="{StaticResource Item.Selected.Bar}"/>
+                                    <Setter Property="Background" TargetName="Bd" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+                                    <Setter Property="Fill" TargetName="Hl" Value="{DynamicResource Theme.Brush.Accent}"/>
                                     <!--<Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource Item.SelectedActive.Border}"/>-->
                                 </MultiTrigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="TextElement.FontWeight" TargetName="Bd" Value="Bold"/>
+                                </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
                                 </Trigger>
@@ -518,10 +505,10 @@
 
     </UserControl.Resources>
     
-    <Grid Margin="35,25,5,5">
+    <Grid Margin="25,0,5,5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="261*"/>
-            <ColumnDefinition Width="169*"/>
+            <ColumnDefinition Width="*"/>
+            
 
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -529,16 +516,14 @@
             <RowDefinition Height="*"/>
 
         </Grid.RowDefinitions>
-        <Label Content="Options" Foreground="{StaticResource DaxStudioBrush}" FontSize="56" FontWeight="Light" 
+        <Label Content="Options" FontSize="22" 
 			Grid.Row="0"
 			Grid.Column="0" 
                Grid.ColumnSpan="2"/>
         <!-- Editor -->
         <TabControl Grid.ColumnSpan="2" 
                     Margin="0,0,20,10" 
-                    Grid.RowSpan="2" 
-                    Grid.Row="1"
-                    
+                    Grid.Row="1"     
                     Style="{StaticResource TabControlPivotStyle}"
                     >
             <TabItem Height="28" Header="Standard">
@@ -554,10 +539,10 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>
+                    <!--<TextBlock Text="Options" FontSize="18" FontWeight="Bold" Margin="5"/>-->
                     <!-- -->
-                    <Grid>
-                        <!-- mah:TextBoxHelper.ClearTextButton="True" -->
+                    
+
                         <TextBox x:Name="Search" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}" 
                                  ui:ControlHelper.PlaceholderText="Search"
                                  MinWidth="100" 
@@ -576,30 +561,44 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </Button>-->
-                    </Grid>
+                        
                     <ListBox x:Name="Categories" Grid.Row="2" 
-                        ItemsSource="{Binding Categories}" 
-                        SelectedValue="{Binding SelectedCategory}" 
-                        MinWidth="50" 
-                        ItemContainerStyle="{DynamicResource ListBoxItemStyle1}"
-                        BorderThickness="0"
-                        Margin="5"/>
+                            ItemsSource="{Binding Categories}" 
+                            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                            SelectedValue="{Binding SelectedCategory}" 
+                            MinWidth="50" 
+                            ItemContainerStyle="{DynamicResource ListBoxItemStyle1}"
+                            BorderThickness="0"
+                            Margin="5"/>
                     <!-- SearchText="{Binding ElementName=Search, Path=Text}" -->
-                    <Border Grid.Column="1" Grid.RowSpan="3" Padding="15,0" Margin="10,5" BorderThickness="1,0,0,0" BorderBrush="DarkGray">
-                    <pg:PropertyList Source="{Binding .}" 
-                        Grid.RowSpan="3"
-                        CategoryFilter="{Binding SelectedCategory}"
-                        SearchText="{Binding SearchText}"
-                        ItemTemplateSelector="{StaticResource OptionsPropertyTemplateSelector}"
-                        Grid.Column="1" 
-                        ItemContainerStyle="{StaticResource ItemStyle}"
-                        pg:ListViewBehaviors.IsAutoUpdatingColumnWidths="true"
-                        BorderThickness="0"
-                        Margin="0"
-                        VirtualizingPanel.IsVirtualizing="True"
-                        Padding="0" 
-                        beh:GridViewColumnResize.Enabled="True">
-                        <pg:PropertyList.Resources>
+                    <Border Grid.Column="1" 
+                            Grid.Row="2" 
+                            CornerRadius="8"
+                            ClipToBounds="True"
+                            SnapsToDevicePixels="True"
+                            HorizontalAlignment="Left"
+                            Padding="8" 
+                            Margin="10,5" 
+                            Background="{DynamicResource Theme.Brush.Default.Back}"
+                            BorderThickness="1" BorderBrush="{DynamicResource Theme.Brush.Default.Back}">
+                        <pg:PropertyList Source="{Binding .}" 
+                                     Background="{DynamicResource Theme.Brush.Default.Back}"
+                                     Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                    CategoryFilter="{Binding SelectedCategory}"
+                                    SearchText="{Binding SearchText}"
+                                    ItemTemplateSelector="{StaticResource OptionsPropertyTemplateSelector}"
+                        
+                                    ItemContainerStyle="{StaticResource ItemStyle}"
+                                    pg:ListViewBehaviors.IsAutoUpdatingColumnWidths="True"
+                                    BorderThickness="0"
+                                     HorizontalAlignment="Left"
+                                     Width="600"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                    Margin="0"
+                                    VirtualizingPanel.IsVirtualizing="True"
+                                    Padding="0" 
+                                    beh:GridViewColumnResize.Enabled="True">    
+                            <pg:PropertyList.Resources>
                             <!--<Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                     <Setter Property="Background" Value="Transparent"/>
                 </Style>-->
@@ -617,6 +616,8 @@
                                                           pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
                                                           pg:TextBlockHighlighter.HighlightColor="Yellow"
                                                           VerticalAlignment="Top" TextWrapping="Wrap" 
+                                                          Margin="0 4 8 8"
+                                                          MinWidth="200"
                                                           />    
                                             </Grid>
                                         </DataTemplate>
@@ -651,12 +652,12 @@
             <TabItem Height="28" Header="Key Bindings" >
                 <ScrollViewer x:Name="AdvancedScrollViewer2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="5">
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer2, Path=ViewportWidth}" Orientation="Horizontal" >
-                        <GroupBox Header="Hotkeys" Width="450">
+                        <GroupBox Header="Hotkeys" Width="520">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="120"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -686,7 +687,7 @@
                                 </TextBlock>
                                 <Button Content="Reset All" 
                                         Grid.Column="2" 
-                                        x:Name="ResetKeyBindings"  Margin="0,0,0,20"/>
+                                        x:Name="ResetKeyBindings"  Margin="8,0,0,20"/>
 
                                 <Label Content="Comment Selection" Grid.Row="1" Padding="2" />
                                 <!--<controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" >
@@ -711,7 +712,8 @@
 
 
                                 <Label Content="Uncomment Selection" Padding="2" Grid.Row="2" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"
+                                                              />
 
                                 <Label Content="Run Query" Padding="2" Grid.Row="3" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyRunQuery, Converter={StaticResource HotKeyConverter}}"/>
@@ -766,9 +768,9 @@
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
                         <GroupBox Header="Publish Functions">
                             <StackPanel>
-                                <Button Margin="5" Padding="3" Name="PublishDaxFunctions">Publish Functions</Button>
+                                <Button Name="PublishDaxFunctions" MinWidth="150">Publish Functions</Button>
                                 <TextBlock Margin="10,0,0,10" Foreground="{StaticResource MutedTextBrush}" Name="CanPublishDaxFunctionsMessage"></TextBlock>
-                                <Button Margin="5" Padding="3" Name="ExportDAXFunctions">Export Functions</Button>
+                                <Button  Name="ExportDAXFunctions" MinWidth="150">Export Functions</Button>
                             </StackPanel>
                         </GroupBox>
 
@@ -796,10 +798,15 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox Grid.Row="1" Grid.Column="0" x:Name="ShowDebugCommas" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show Debug Commas" Grid.ColumnSpan="2"/>
+                                <ui:ToggleSwitch Grid.Row="1" Grid.Column="0" x:Name="ShowDebugCommas" VerticalAlignment="Top" Margin="2,7,2,0" 
+                                                 OnContent="Show Debug Commas" 
+                                                 OffContent="Show Debug Commas" Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show a button to move commas from the end of a line to the beginning of the following line. Activating this featurs hides the Swap Delimiters button.</TextBlock>
                                 
-                                <CheckBox Grid.Row="3" Grid.Column="0" x:Name="ShowXmlaInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" Content="Show XMLA Commands" Grid.ColumnSpan="2"/>
+                                <ui:ToggleSwitch Grid.Row="3" Grid.Column="0" x:Name="ShowXmlaInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" 
+                                                 OnContent="Show XMLA Commands" 
+                                                 OffContent="Show XMLA Commands"
+                                                 Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show the XMLA commands in the All Queries window. The new setting will be active after you restart DAX Studio.</TextBlock>
 
 
@@ -822,9 +829,13 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" Content="Include TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                <ui:ToggleSwitch Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" 
+                                                 OnContent="Include TOM"
+                                                 OffContent="Exclude TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include the complete Tabular Object Model (TOM) in the export for VertiPaq Analyzer (VPAX)</TextBlock>
-                                <CheckBox Grid.Row="2" Grid.Column="0" x:Name="VpaxReadStatisticsFromData" VerticalAlignment="Top" Content="Read statistics from data" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                <ui:ToggleSwitch Grid.Row="2" Grid.Column="0" x:Name="VpaxReadStatisticsFromData" VerticalAlignment="Top" 
+                                                 OnContent="Read statistics from data"
+                                                 OffContent="Read statistics from data" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Scan the data to retrieve statistics about columns, tables, and relationships. It could be a long operation in large database.</TextBlock>
                                 <Label Grid.Row="4" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
                                 <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="4" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="100" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>

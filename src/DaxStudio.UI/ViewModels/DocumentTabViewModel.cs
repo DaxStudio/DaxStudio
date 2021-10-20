@@ -138,10 +138,16 @@ namespace DaxStudio.UI.ViewModels
                     Items.Apply(i => ((DocumentViewModel)i).IsFocused = false);
 
                     //ActiveDocument.IsFocused = true;
-
-                    //_eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                    //this.ActivateAsync(value);
+                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 }
             }
+        }
+
+        protected override Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
+        {
+            ActiveDocument = newItem as DocumentViewModel;
+            return base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
         }
 
         public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.GenericTheme();
@@ -242,8 +248,8 @@ namespace DaxStudio.UI.ViewModels
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
             newDoc.DisplayName = $"Query{_documentCount}.dax";
             _documentCount++;
-            newDoc.Parent = this;
-            newDoc.ConductWith(this);
+            //newDoc.Parent = this;
+            //newDoc.ConductWith(this);
 
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
 

@@ -341,25 +341,13 @@ namespace DaxStudio.UI.ViewModels
                 , DaxStudioTraceEventClass.QueryEnd};
         }
 
-        public bool HighlightXmSqlCallbacks
-        {
-            get => Options.HighlightXmSqlCallbacks;
-        }
+        public bool HighlightXmSqlCallbacks => Options.HighlightXmSqlCallbacks;
 
-        public bool SimplifyXmSqlSyntax
-        {
-            get => Options.SimplifyXmSqlSyntax;
-        }
+        public bool SimplifyXmSqlSyntax => Options.SimplifyXmSqlSyntax;
 
-        public bool ReplaceXmSqlColumnNames
-        {
-            get => Options.ReplaceXmSqlColumnNames;
-        }
+        public bool ReplaceXmSqlColumnNames => Options.ReplaceXmSqlColumnNames;
 
-        public bool ReplaceXmSqlTableNames
-        {
-            get => Options.ReplaceXmSqlTableNames;
-        }
+        public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
         public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
@@ -641,6 +629,8 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Server Timings";
         public override string ContentId => "server-timings-trace";
+
+        public override string ImageResource => "server_timingsDrawingImage";
         public override ImageSource IconSource
         {
             get

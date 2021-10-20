@@ -21,7 +21,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
-
+using DaxStudio.UI.Conventions;
 
 namespace DaxStudio.UI
 {
@@ -135,6 +135,8 @@ namespace DaxStudio.UI
 
 	            // Add AvalonDock binding conventions
 	            AvalonDockConventions.Install();
+
+                ModernWpfConventions.Install();
 
                 //var settingFactory = _container.GetExport<Func<ISettingProvider>>();
 

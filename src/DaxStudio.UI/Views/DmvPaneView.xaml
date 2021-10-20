@@ -30,11 +30,12 @@
         <!-- Search Box -->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <fa:ImageAwesome Icon="Search" Foreground="Gray" Height="15"/>
-            <TextBox Name="SearchCriteria" Margin="3" Padding="2" Grid.Column="1">
+            
+            <TextBox Name="SearchCriteria" 
+                     Style="{DynamicResource SearchBoxStyle}"
+                     Margin="0 0 0 4">
                 <i:Interaction.Triggers>
                     <trig:InputBindingTrigger>
                         <trig:InputBindingTrigger.InputBinding>
@@ -47,33 +48,28 @@
                 </i:Interaction.Triggers>
             </TextBox>
         </Grid>
-        <Button x:Name="ClearSearchCriteria" Grid.Row="0" 
-                HorizontalAlignment="Right" 
-                Background="Transparent"
-                BorderThickness="0"
-                Margin="5" Foreground="Gray"
-                Visibility="{Binding Path=HasSearchCriteria, Converter={StaticResource BoolToVisibilityConverter}}">
-            <fa:FontAwesome Icon="Times" Foreground="DimGray"/>
-        </Button>
 
         <!-- DMV List -->
-        <ListView Grid.Row="1" ItemsSource="{Binding DmvQueries}" 
+        <Border CornerRadius="4" 
+                Grid.Row="1"
+                BorderThickness="1" 
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}">
+            <ListView Grid.Row="1" ItemsSource="{Binding DmvQueries}" 
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
-                  BorderThickness="0.8"
-                  BorderBrush="DarkGray"
                   cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]" Background="Transparent">
-            <ListView.ItemTemplate>
-                <DataTemplate >
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource table_dmvDrawingImage}" Margin="1,1,5,1"></Image>
-                        <TextBlock Text="{Binding Caption, Mode=OneWay}"></TextBlock>
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    
-    
+                <ListView.ItemTemplate>
+                    <DataTemplate >
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource table_dmvDrawingImage}" Margin="1,1,5,1"></Image>
+                            <TextBlock Text="{Binding Caption, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+
     </Grid>
 </controls:ZoomableUserControl>

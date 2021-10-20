@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Interfaces
         string DisableReason { get; }
         string ToolTipText { get; }
         bool IsPaused { get; set; }
-
+        string ImageResource { get; }
         void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents);
 
         void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent);

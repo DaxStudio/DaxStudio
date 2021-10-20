@@ -10,6 +10,8 @@
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              BorderBrush="DimGray" BorderThickness="1">
@@ -50,7 +52,7 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource MahApps.Styles.ToolTip}">
+            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}" >
                 <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
                 <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
                 <!--<Setter Property="ContentTemplate"> 
@@ -122,16 +124,43 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+                
+        <ui:CommandBar HorizontalAlignment="Left">
+                <ui:AppBarButton  Label="Record">
+                    <ui:AppBarButton.Icon>
+                        
+                        <ui:PathIcon Data="{DynamicResource record_toolbarGeometry}"/>
+                    </ui:AppBarButton.Icon>
+                </ui:AppBarButton>
+                <!--<ui:AppBarButton Icon="{DynamicResource pause_toolbarDrawingImage}" Label="Pause" />
+            <ui:AppBarButton Icon="{DynamicResource cancelDrawingImage}" Label="Stop" />
+            <ui:AppBarSeparator/>
+            <ui:AppBarButton Icon="{DynamicResource clear_toolbarDrawingImage}" Label="Clear" />
+            <ui:AppBarButton Icon="{DynamicResource edit_query_toolbarDrawingImage}" Label="Edit Query" />
+            <ui:AppBarButton Icon="{DynamicResource file_save_toolbarDrawingImage}" Label="Export" />-->
+
+        </ui:CommandBar>
+
+            <ToggleButton Grid.Column="1">Filter</ToggleButton>
+        </Grid>
+
         <TextBlock Name="TraceStatusText" 
+                   Grid.Row="1"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
         <!--                     -->
         <controls:DataGridNoContextMenu x:Name="QueryEvents" 
-                    Grid.Row="1"
+                    Grid.Row="2"
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}" 

@@ -57,7 +57,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                <Image VerticalAlignment="Top"
+                <Image VerticalAlignment="Center"
                         Grid.Column="0"
                         ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}"
                         Margin="0 0 8 0"
@@ -322,11 +322,14 @@
         <Fluent:Ribbon.Resources>
 
             <DataTemplate x:Key="TraceWatcherTemplate">
-                <Fluent:ToggleButton Header="{Binding Title}" IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                <!-- Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
+                                     LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}" -->
+                <Fluent:ToggleButton Header="{Binding Title}" 
+                                     IsChecked="{Binding IsChecked, Mode=TwoWay}" 
                                      SizeDefinition="Large,Large,Middle" 
                                      ClickMode="Press" Width="Auto" 
-                                     Icon="{Binding Title, Converter={StaticResource TraceIcons}}"
-                                     LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}"
+                                     ap:ImageBindingHelper.ToggleIconResourceKey="{Binding ImageResource}"
+                                     
                                      IsEnabled="{Binding IsEnabled}"
                                      >
                     <Fluent:ToggleButton.ToolTip>
@@ -401,13 +404,13 @@
             <Grid>
                 <Fluent:Backstage x:Name="Backstage">
                     
-                    <Fluent:BackstageTabControl>
+                    <Fluent:BackstageTabControl Background="{DynamicResource Theme.Brush.MenuBar.Back}">
 
                             <!-- File New -->
                         <Fluent:Button Header="New" 
                                    Name="btnNewQuery" 
                                    HorizontalContentAlignment="Left" 
-                                   Foreground="{DynamicResource Theme.Brush.Default.Back}"
+                                   Foreground="White"
                                    Height="30"
                                    ToolTip="Open a New Query"
                                    DockPanel.Dock="Top"
@@ -418,7 +421,7 @@
                             Name="btnNewQueryConnected"
                             Header="New (Copy Connection)"
                             ToolTip="Open a New Query with the current connection"
-                            Foreground="{DynamicResource Theme.Brush.Default.Back}"
+                            Foreground="White"
                             Height="30"
                             cal:Message.Attach="[Event Click] = [Action NewQueryWithCurrentConnection]">
                             <!--<i:Interaction.Triggers>
@@ -433,114 +436,112 @@
 
                         <Fluent:BackstageTabItem 
                         Header="Open" 
-                        Height="30" >
+                        Height="30"
+                            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                            >
 
                             <!-- Right-side content here -->
-                            <Grid Margin="35,25,0,0">
+                            <Grid Margin="35,0,0,0">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="200" />
+                                    
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="56" 
-                                       Foreground="{StaticResource DaxStudioBrush}"
-                                       Margin="5,0,0,0"
-                                       FontWeight="ExtraLight"
+                                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Open" FontSize="22" 
+                                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                       Margin="0,0,0,16"
                                        />
 
-                                <StackPanel HorizontalAlignment="Left" Grid.Column="0" Margin="10px" Grid.Row="1">
-                                    <Border>
-                                        <!-- style comes from ribbon control -->
-                                        <Fluent:Button 
-                                        Style="{DynamicResource ButtonBackstageStyle}"
-                                        BorderBrush="DimGray"  
-                                        BorderThickness="1" 
-                                        LargeIcon="{StaticResource BrowseIconLarger}"
-                                        Header="Browse"
-                                        SizeDefinition="Large"
-                                        Height="100" Width="100" Foreground="Black"
-                                        cal:Message.Attach="[Click] = [Action Open]">
 
-                                            <!--<i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="Click">
-                                                    <cal:Action.Target>
-                                                        <cal:ActionMessage MethodName="Open"/>
-                                                    </cal:Action.Target>
+                                    <!-- style comes from ribbon control -->
+                                <Button Grid.Row="1"
+                                        Content="Browse"
+                                        Margin="0 0 0 16"
+                                        Style="{DynamicResource AccentButtonStyle }"
+                                        cal:Message.Attach="[Click] = [Action Open]"/>
+
+                                <Label FontSize="14" Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
+                                       FontWeight="DemiBold"
+                                       SnapsToDevicePixels="True"
+                                       Margin="0 0 0 8"
+                                       Grid.Row="2" >Recent Documents</Label>
+
+                                        <ListView x:Name="RecentFiles" 
+                                                  DataContext="{Binding}" 
+                                                  ItemsSource="{Binding Path=RecentFiles}" 
+                                                  Margin="-12 0 0 0"     
+                                                  MinWidth="400"
+                                                  MaxWidth="600"
+                                                  HorizontalAlignment="Left"
+                                                  BorderBrush="Transparent" 
+                                                  Grid.Row="3"
+                                                  HorizontalContentAlignment="Stretch"
+                                                  cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, $view)]"
+                                                  >
+                                            <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                    <cal:Action.TargetWithoutContext>
+
+                                                        <cal:ActionMessage MethodName="OpenRecentFile">
+                                                            <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                            <cal:Parameter Value="{Binding ElementName=Backstage}"/>
+                                                        </cal:ActionMessage>
+                                                    </cal:Action.TargetWithoutContext>
                                                 </i:EventTrigger>
-                                            </i:Interaction.Triggers>-->
-                                        </Fluent:Button>
-                                    </Border>
-                                </StackPanel>
+                                            </i:Interaction.Triggers>
 
-                                <Grid HorizontalAlignment="Stretch" Margin="5,0" Grid.Column="1" Grid.Row="1" >
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label FontSize="24" Foreground="DimGray" FontWeight="Light" Grid.Row="0">Recent Documents</Label>
-                                    <ListView x:Name="RecentFiles" 
-                                          Background="Transparent"
-                                          DataContext="{Binding}" 
-                                          ItemsSource="{Binding Path=RecentFiles}" 
-                                          MinWidth="600"
-                                          BorderBrush="Transparent" 
-                                          Grid.Row="1"
-                                          HorizontalContentAlignment="Stretch"
-                                          cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, $view)]"
-                                          >
-                                        <!-- cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, {Binding ElementName=Backstage})]"  -->
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                                <cal:Action.TargetWithoutContext>
-                                                    
-                                                    <cal:ActionMessage MethodName="OpenRecentFile">
-                                                        <cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
-                                                        <cal:Parameter Value="{Binding ElementName=Backstage}"/>
-                                                    </cal:ActionMessage>
-                                                </cal:Action.TargetWithoutContext>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border x:Name="lvBorder">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Grid>
-                                                            <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                <Border x:Name="lvBorder" 
+                                                        Background="{DynamicResource Theme.Brush.Default.Back}"
+                                                        BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                                                        BorderThickness="1"
+                                                        Padding="8"
+                                                        Margin="0 4"
+                                                        CornerRadius="4">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Grid>
+                                                                <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
                                                        Margin="0,3,10,3" Width="32" Height="32" />
-                                                            <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
-                                                        </Grid>
-                                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
-                                                            <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                                <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                                                            </Grid>
+                                                            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding FileAndExtension}" FontSize="14" />
+                                                                <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                            </StackPanel>
                                                         </StackPanel>
-                                                    </StackPanel>
-                                                    <i:Interaction.Triggers>
-                                                        <i:EventTrigger EventName="Click" >
-                                                            <cal:Action.Target>
+                                                        <i:Interaction.Triggers>
+                                                            <i:EventTrigger EventName="Click" >
+                                                                <cal:Action.Target>
 
-                                                                <cal:ActionMessage MethodName="OpenRecentFile">
-                                                                    <!--<cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
+                                                                    <cal:ActionMessage MethodName="OpenRecentFile">
+                                                                        <!--<cal:Parameter Value="{Binding ElementName=RecentFiles, Path=SelectedItem}"/>
                                                                     <cal:Parameter Value="{Binding ElementName=Backstage}"/>-->
-                                                                    <cal:Parameter Value="{x:Null}"/>
-                                                                    <cal:Parameter Value="{x:Null}"/>
-                                                                </cal:ActionMessage>
-                                                            </cal:Action.Target>
-                                                        </i:EventTrigger>
-                                                    </i:Interaction.Triggers>
-                                                </Border>
+                                                                        <cal:Parameter Value="{x:Null}"/>
+                                                                        <cal:Parameter Value="{x:Null}"/>
+                                                                    </cal:ActionMessage>
+                                                                </cal:Action.Target>
+                                                            </i:EventTrigger>
+                                                        </i:Interaction.Triggers>
+                                                    </Border>
 
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                                
+                                        </ListView>
+                     
+
+
                                 </Grid>
-                            </Grid>
+                            
+
+
                         </Fluent:BackstageTabItem>
                         <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->
 
@@ -559,6 +560,7 @@
                             </i:Interaction.Triggers>
 
                         </Fluent:Button>
+                            
                         <Fluent:Button Name="btnSaveAs" 
                                    Header="Save As" 
                                    Height="30"
@@ -631,12 +633,12 @@
                               Edit,Edit
                               " Template="{DynamicResource DaxStudioRibbonTabItemControlTemplate}"
                               >
-            
+
 
             <Fluent:RibbonGroupBox Header="Query" 
                                    x:Name="Query" 
                                    Margin="4,0" 
-                                   Icon="{StaticResource PlanIcon}">
+                                   Icon="{DynamicResource runDrawingIcon}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
@@ -659,7 +661,7 @@
                         SelectedItem="{Binding SelectedRunStyle}"
                         ItemTemplate="{DynamicResource RunStyleTemplate}"
                         >
-                       
+
                     </Fluent:Gallery>
                 </Fluent:SplitButton>
                 <Fluent:Button Name="CancelQuery"
@@ -676,8 +678,27 @@
                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+
                 
-                <Fluent:Button Name="ClearCache"
+                    <Fluent:ToggleButton 
+                    Header="Query Builder"
+                    Name="DisplayQueryBuilder" 
+                    IsEnabled="{Binding CanDisplayQueryBuilder}"
+                    IsChecked="{Binding DisplayQueryBuilder}"
+                    Icon="{DynamicResource query_builderDrawingImage}"
+                    LargeIcon="{DynamicResource query_builderDrawingImage}"
+                    SizeDefinition="Large">
+                        <Fluent:ToggleButton.ToolTip>
+                            <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
+                        </Fluent:ToggleButton.ToolTip>
+                    </Fluent:ToggleButton>
+                
+
+            </Fluent:RibbonGroupBox>
+            
+            <Fluent:RibbonGroupBox Header="Cache">
+
+                    <Fluent:Button Name="ClearCache"
                                Header="Clear Cache"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
                                     Size="Large"
@@ -685,26 +706,44 @@
                                LargeIcon="{DynamicResource clear_cacheDrawingImage}"
                                Margin="4,0"
                                >
-                    <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Clear Cache before every Run"
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip Title="Clear Cache before every Run"
                                           Text="Clears the cache for the current database"
                                           DisableReason="{Binding ClearCacheDisableReason}"
                                           ></Fluent:ScreenTip>
-                    </Fluent:Button.ToolTip>
+                        </Fluent:Button.ToolTip>
 
-                    
-                </Fluent:Button>
 
+                    </Fluent:Button>
+
+                    <Fluent:ToggleButton Name="ClearCacheAuto"
+                               Header="Clear on Run"
+                               Size="Large"
+                               Icon="{DynamicResource clear_cache_on_runDrawingImage}"
+                               LargeIcon="{DynamicResource clear_cache_on_runDrawingImage}"
+                               Margin="4,0"
+                               >
+                        <Fluent:ToggleButton.ToolTip>
+                            <Fluent:ScreenTip Title="Clear Cache before every Run"
+                                          Text="Clears the cache every time before running a query"
+                                          DisableReason="{Binding ClearCacheDisableReason}"
+                                          ></Fluent:ScreenTip>
+                        </Fluent:ToggleButton.ToolTip>
+
+
+                    </Fluent:ToggleButton>
+                </Fluent:RibbonGroupBox>
+
+            <Fluent:RibbonGroupBox Header="Output">
                 <!-- Output Targets -->
                 <Fluent:DropDownButton x:Name="OutputTargets"
-                                       Header="Output"
-
+                                       Header="Results"
+                                       ap:ImageBindingHelper.IconResourceKey="{Binding SelectedTarget.ImageResource}"
                                        SizeDefinition="Large,Large,Small"
                                        IsEnabled="True"
                                        VerticalAlignment="Top"  Margin="4,0"
                                        >
                     <Fluent:Gallery 
-                        SelectedFilter="{Binding ElementName=galleryFilterAll3}"
                         x:Name="OutputGallery2"
                         MaxItemsInRow="1"
                         Orientation="Vertical"
@@ -721,22 +760,6 @@
                 </Fluent:DropDownButton>
 
             </Fluent:RibbonGroupBox>
-
-            <Fluent:RibbonGroupBox Header="View">
-                <Fluent:ToggleButton 
-                    Header="Query Builder"
-                    Name="DisplayQueryBuilder" 
-                    IsEnabled="{Binding CanDisplayQueryBuilder}"
-                    IsChecked="{Binding DisplayQueryBuilder}"
-                    Icon="{DynamicResource query_builderDrawingImage}"
-                    LargeIcon="{DynamicResource query_builderDrawingImage}"
-                    SizeDefinition="Large">
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Query Builder" Text="Displays a drag and drop query builder"/>
-                    </Fluent:ToggleButton.ToolTip> 
-                </Fluent:ToggleButton>
-            </Fluent:RibbonGroupBox>
-            
 
             <Fluent:RibbonGroupBox Header="Edit" Name="Edit" Margin="4,0" Icon="{DynamicResource cutDrawingImage}">
                 <Fluent:Button x:Name="Cut"
@@ -938,7 +961,7 @@
                 <Fluent:Button Name="DebugCommas"
                                Header="Debug Commas"
                                cal:Message.Attach="[Event Click] = [Action MoveCommasToDebugMode()]"
-                               Icon="{DynamicResource DebugCommasIcon}"
+                               Icon="{DynamicResource debug_commasDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
                                Margin="4,0"
                                FocusManager.IsFocusScope="True"
