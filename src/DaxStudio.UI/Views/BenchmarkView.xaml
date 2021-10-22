@@ -15,6 +15,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <!-- Converters -->
@@ -30,6 +31,35 @@
                         <Setter Property="Foreground" Value="Gray"/>
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+
+            <Style x:Key="ProgressDots" TargetType="{x:Type ContentControl}">
+                <Setter Property="VerticalAlignment" Value="Bottom"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Border x:Name="Bd" Padding="0 0 0 0">
+                            <ContentControl x:Name="PART_Content" Margin="0 0 0 2"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_Content" Storyboard.TargetProperty="Content" Duration="00:00:02.0" RepeatBehavior="Forever">
+                                                    <DiscreteObjectKeyFrame KeyTime="00:00:00.0" Value=""/>
+                                                    <DiscreteObjectKeyFrame KeyTime="00:00:00.5" Value="."/>
+                                                    <DiscreteObjectKeyFrame KeyTime="00:00:01.0" Value=".."/>
+                                                    <DiscreteObjectKeyFrame KeyTime="00:00:01.5" Value="..."/>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
 
         </ResourceDictionary>
@@ -99,6 +129,8 @@
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />
                         <TextBlock x:Name="ProgressMessage" Text="Ready..." Margin="2"></TextBlock>
+                        <!--<ContentControl Style="{StaticResource ProgressDots}" IsEnabled="True"/>-->
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" IsIndeterminate="True" Foreground="{DynamicResource Theme.Brush.Accent}" Background="LightGray"/>
                     </StackPanel>
                     <Grid x:Name="gridProgress">
                         <Rectangle x:Name="ProgressBackground" Fill="LightGray" Height="3"></Rectangle>

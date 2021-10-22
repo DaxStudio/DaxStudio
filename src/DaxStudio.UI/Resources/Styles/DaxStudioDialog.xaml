@@ -8,7 +8,7 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Background" Value="{DynamicResource DialogBackground}" />
-        <Setter Property="Padding" Value="10"/>
+        <Setter Property="Padding" Value="16"/>
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="Black" Opacity="{DynamicResource Theme.DropShadow.Opacity}"/>

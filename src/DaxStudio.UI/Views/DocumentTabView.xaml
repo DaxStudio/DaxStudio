@@ -237,31 +237,80 @@
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
                         <DataTemplate>
+                            <DataTemplate.Resources>
+                                <SolidColorBrush x:Key="SelectedTabBrush" Color="Transparent"/>
+                            </DataTemplate.Resources>
                             <Grid Margin="4 2 4 6">
-                                
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!--   Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToNotHiddenConverter}}"-->
+                                <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    IsIndeterminate="True"
+                                    Width="16"
+                                    Height="16"
+                                    Foreground="{DynamicResource Theme.Brush.Accent}"
+                                    Background="{DynamicResource Theme.Brush.Alternate.Back}"
+                                    Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
                                 <Border 
                                     x:Name="SelectedBd"
+                                    Grid.Column="1"
                                     BorderThickness="0 0 0 3"
                                     Margin="4 0 4 0"
-                                    BorderBrush="Transparent"
-                                    Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToNotHiddenConverter}}"
+                                    BorderBrush="{DynamicResource SelectedTabBrush}"
+                                    Opacity="1"
                                     >
+                                    
                                 </Border>
-                                <ui:ProgressBar
+                                <!--<ui:ProgressBar
                                     x:Name="Progress"
                                     VerticalAlignment="Bottom"
                                     Foreground="{DynamicResource Theme.Brush.Alternate.Back}"
                                     Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"
                                     IsIndeterminate="{Binding Content.IsQueryRunning}"
-                                    />
-                                <avalonDockControls:LayoutDocumentTabItem Model="{Binding}"/>
+                                    />-->
+                                <avalonDockControls:LayoutDocumentTabItem Model="{Binding}" Grid.Column="1"/>
 
                             </Grid>
+                            
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsSelected}" Value="true">
                                     <Setter TargetName="SelectedBd" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
-                                    <Setter TargetName="Progress" Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                    <!--<Setter TargetName="Progress" Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>-->
                                 </DataTrigger>
+                                <!--<DataTrigger Binding="{Binding Content.IsQueryRunning}" Value="True">
+                                    <Setter TargetName="SelectedBd" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard x:Name="pulse" >
+                                            <Storyboard>
+                                                <DoubleAnimation 
+                                                    Storyboard.TargetName="SelectedBd"
+                                                    Storyboard.TargetProperty="(Border.Opacity)" 
+                                                    From="1" To="0.2" Duration="00:00:01" AutoReverse="True" RepeatBehavior="Forever" >
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <SineEase EasingMode="EaseInOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                        
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <StopStoryboard BeginStoryboardName="pulse" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>-->
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Content.IsQueryRunning}" Value="True"/>
+                                        <Condition Binding="{Binding Path=IsSelected}" Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Foreground" TargetName="spinner" Value="{DynamicResource Theme.Brush.Control.Border}"/>
+                                </MultiDataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
                     </Setter.Value>
@@ -517,6 +566,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
                 <!--<ResourceDictionary Source="Styles/AvalonDock.NavigatorWindow.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -536,7 +586,7 @@
             DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
             DocumentsSource="{Binding Items}"
             ActiveContent="{Binding ActiveItem, Mode=TwoWay}"
-
+            IsVirtualizingDocument="False"
             Margin="-6"
             >
 
@@ -579,9 +629,9 @@
             <avalondock:DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0"
+                        <!--<TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0"
                                    Visibility="{Binding Converter={StaticResource BoolToHiddenConverter},Path=Content.IsQueryRunning}"
-                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>-->
 
                         <TextBlock Text="{Binding Content.DisplayName}" 
                                    ToolTip="{Binding Content.FileName}" 

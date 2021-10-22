@@ -27,7 +27,6 @@
     d:DesignWidth="500" 
     d:DesignHeight="400"
     d:DataContext="{x:Static desdata:DesignTimeDataFactory.DocumentViewModel}"
-    
     >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -291,6 +290,8 @@
                                    Margin="0,-1,0,1"
                                    AnchorablesSource="{Binding ToolWindows}"
                                    Grid.Row="0"
+                                   IsVirtualizingAnchorable="False"
+                                   IsVirtualizingDocument="False"
                                    beh:AvalonDockLayoutSerializerBehaviour.LoadSavedLayout="True"
                                    Theme="{Binding AvalonDockTheme}"
                                    KeyboardNavigation.ControlTabNavigation="None"

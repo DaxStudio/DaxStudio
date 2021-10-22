@@ -7,6 +7,7 @@
         xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:fluent="urn:fluent-ribbon" 
+        xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
         xmlns:cal="http://www.caliburnproject.org"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -16,8 +17,6 @@
         Width="550">
     <UserControl.Resources>
         <ResourceDictionary>
-            <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
-            <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" />
 
             <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -60,6 +59,7 @@
 
 
             <ResourceDictionary.MergedDictionaries>
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
@@ -153,7 +153,8 @@
                                  GroupName="ConnectionType">
                         <StackPanel Orientation="Horizontal" Margin="5 0" VerticalAlignment="Top">
                             <Label>Tabular Server</Label>
-                            <fa:FontAwesome Icon="Warning" Foreground="Goldenrod" Margin="5,2,0,0" Visibility="{Binding ShowConnectionWarning, Converter={StaticResource BoolToVisibilityConverter}}" ToolTip="{Binding ConnectionWarning}"/>
+                            <Image Source="{DynamicResource warningDrawingImage}" Margin="5,2,0,0" Visibility="{Binding ShowConnectionWarning, Converter={StaticResource BoolToVisibilityConverter}}" ToolTip="{Binding ConnectionWarning}"/>
+                            
                         </StackPanel>
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="Checked">
