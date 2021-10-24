@@ -326,9 +326,11 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                         <Button Margin="10 0 0 0" 
-                                Padding="10 0" 
+                                Padding="2" 
                                 IsEnabled="{Binding ValueEnabled}"
-                                cal:Message.Attach="[Event Click] = [Action PlaySound($dataContext)]"><fa:ImageAwesome Icon="Play" Width="10" Foreground="Green"></fa:ImageAwesome></Button>
+                                cal:Message.Attach="[Event Click] = [Action PlaySound($dataContext)]">
+                            <Image Source="{DynamicResource run_smallDrawingImage}" />
+                        </Button>
                         
                     </StackPanel>
                     <TextBlock Grid.ColumnSpan="2" Style="{StaticResource DescriptionStyle }"/>

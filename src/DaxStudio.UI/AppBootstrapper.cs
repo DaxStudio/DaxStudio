@@ -150,7 +150,9 @@ namespace DaxStudio.UI
 
                 //AddMahAppsMetroToApplicationResources();
                 AddModernWpfUiToApplicationResources();
-
+                
+                AddDaxStudioDefaultStyles();
+                
                 // Add Application object to MEF catalog
                 _container.ComposeExportedValue<Application>("System.Windows.Application", Application.Current);
             }
@@ -182,7 +184,14 @@ namespace DaxStudio.UI
             var compactSizing = new ResourceDictionary();
             compactSizing.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml");
             Application.Current.Resources.MergedDictionaries.Add(compactSizing);
-            
+
+        }
+
+        private void AddDaxStudioDefaultStyles()
+        {
+            var dialogStyle = new ResourceDictionary();
+            dialogStyle.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/DaxStudioDialog.xaml");
+            Application.Current.Resources.MergedDictionaries.Add(dialogStyle);
         }
 
         public IThemeManager GetThemeManager()

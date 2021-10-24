@@ -196,12 +196,12 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredBackground}"
 		options:Freeze="true"
-		Color="#52B0EF" />
+		Color="#1A1A1A" />
 	<!--  AccentColor  -->
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredBorder}"
 		options:Freeze="true"
-		Color="#52B0EF" />
+		Color="#1A1A1A" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.DocumentWellTabButtonUnselectedTabHoveredButtonHoveredGlyph}"
 		options:Freeze="true"

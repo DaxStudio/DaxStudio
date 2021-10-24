@@ -83,17 +83,15 @@
                     <!-- MinHeight="131"-->
                     <RowDefinition Height="Auto"/>
 
-                    <RowDefinition Height="Auto" MinHeight="29"/>
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <!--<Grid.Effect>
                     <fluent:GrayscaleEffect/>
                 </Grid.Effect>-->
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 16">
                     <Image Source="{DynamicResource connectDrawingImage}"/>
-                    <Label Content="Connect" 
-                           Margin="8,0,0,0"
-                           FontWeight="Regular"
-                           FontSize="28" Padding="0,0" />
+                    <TextBlock Text="Connect" 
+                           Style="{StaticResource DialogCaption}"/>
                 </StackPanel>
                 <!-- Radio Button Grid-->
                 <Grid Grid.Row="1">
@@ -170,8 +168,6 @@
                         </i:Interaction.Triggers>
                     </RadioButton>
                     
-                    <!-- mah:TextBoxHelper.ClearTextButton="True" -->
-                    <!--   -->
                     <ComboBox 
                               x:Name="cboServers" 
                               VerticalAlignment="Center"  
@@ -255,10 +251,10 @@
 
                 <!-- Template="{StaticResource RevealExpanderTemp}"-->
                 <Expander x:Name="myExpander" Header="Advanced Options"
-					ExpandDirection="Down" IsExpanded="False" 
-					
-                          
-					Grid.Row="2" Grid.Column="0"  Margin="10,10,0,0" >
+					      ExpandDirection="Down" 
+                          IsExpanded="False"       
+					      Grid.Row="2" 
+                          Grid.Column="0"  Margin="10,24,0,8" >
                     <!-- Template="{StaticResource RevealExpanderTemp}" -->
                     <!--<Expander.HeaderTemplate>
                         <DataTemplate>
@@ -267,7 +263,7 @@
                     </Expander.HeaderTemplate>-->
                     <!--</GroupBox>-->
                     <!--<GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" >-->
-                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,10,0,0" >
+                    <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,24,0,0" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="125"/>
                             <ColumnDefinition Width="*"/>
@@ -362,8 +358,10 @@
                         </ScrollViewer>
                     </Grid>
                 </Expander>
+                
                 <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" 
                             VerticalAlignment="Top"
+                            Margin="0 16 0 0"
                             Grid.ColumnSpan="3" >
                     <!--
                             Background="#228ED6"

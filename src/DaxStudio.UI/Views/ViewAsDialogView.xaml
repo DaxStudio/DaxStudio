@@ -1,28 +1,40 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.ViewAsDialogView"
+﻿<ctrl:DaxStudioDialog 
+             Caption="View As"
+             x:Class="DaxStudio.UI.Views.ViewAsDialogView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:local="clr-namespace:DaxStudio.UI.Views" 
              xmlns:conv1="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             Style="{StaticResource DaxStudioDialogStyle}"
+    Icon="{DynamicResource view_asDrawingImage}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
              MinWidth="400"
              MinHeight="350">
-    <UserControl.Resources>
+    <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+                
             </ResourceDictionary.MergedDictionaries>
             <conv1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
         </ResourceDictionary>
+    </ctrl:DaxStudioDialog.Resources>
+
+    <!-- Icon="{DynamicResource view_asDrawingImage}"-->
+
         
-    </UserControl.Resources>
-    <Border Background="White" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+        
+    
+    
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -37,14 +49,9 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="View As" 
-                   Foreground="{StaticResource DaxStudioBrush}" 
-                   Grid.ColumnSpan="2"
-                   Margin="3,0"
-                   FontWeight="Light" 
-                   FontSize="44" ></Label>
 
-            <CheckBox x:Name="Unrestricted" Content="Unrestricted" Grid.Row="1" Margin="12 0"/>
+
+            <CheckBox x:Name="Unrestricted2" Content="Unrestricted" Grid.Row="1" Margin="12 0"/>
             <Label Grid.Row="1" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>
             <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="2" VerticalAlignment="Center" Margin="12 5 "/>
             <TextBox x:Name="OtherUserName" Grid.Row="2" Grid.Column="2" Margin="5" Visibility="{Binding OtherUser, Converter={StaticResource BoolToHiddenConverter}}"/>
@@ -66,5 +73,6 @@
                 <Button x:Name="Cancel" Content="Cancel" Margin="5,10" MinWidth="50" IsCancel="True"/>
             </StackPanel>
         </Grid>
-    </Border>
-</UserControl>
+    
+</ctrl:DaxStudioDialog>
+

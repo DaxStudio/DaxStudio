@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for ViewAsDialogView.xaml
     /// </summary>
-    public partial class ViewAsDialogView : UserControl
+    public partial class ViewAsDialogView : DaxStudio.UI.Controls.DaxStudioDialog
     {
         public ViewAsDialogView()
         {

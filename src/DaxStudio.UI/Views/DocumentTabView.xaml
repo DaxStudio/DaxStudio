@@ -375,7 +375,7 @@
 										        Margin="1,0,0,1"
 										        VerticalAlignment="Center"
 										        Data="{DynamicResource PinClose}"
-										        Fill="{DynamicResource {x:Static reskeys:ResourceKeys.ToolWindowCaptionActiveText}}"
+										        Fill="{DynamicResource Theme.Brush.Default.Fore}"
 										        Stretch="Uniform" />
                                         </Button>
                                     </Grid>

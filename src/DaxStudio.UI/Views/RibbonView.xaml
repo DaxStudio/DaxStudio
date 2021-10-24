@@ -961,7 +961,7 @@
                 <Fluent:Button Name="DebugCommas"
                                Header="Debug Commas"
                                cal:Message.Attach="[Event Click] = [Action MoveCommasToDebugMode()]"
-                               Icon="{DynamicResource debug_commasDrawingImage}"
+                               Icon="{DynamicResource debug_commas_smallDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
                                Margin="4,0"
                                FocusManager.IsFocusScope="True"
