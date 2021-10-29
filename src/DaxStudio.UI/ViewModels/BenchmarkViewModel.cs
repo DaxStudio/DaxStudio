@@ -164,7 +164,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void RefreshProgress()
         {
-            ProgressPercentage = (double)(_viewAsRuns + _currentColdRun + _currentWarmRun) / _totalRuns;
+            ProgressPercentage = ((double)((_viewAsRuns + _currentColdRun + _currentWarmRun)) / _totalRuns) * 100;
             var viewAsState = string.Empty;
             if (RepeatRunWithoutViewAs) viewAsState = $"(with ViewAs {_viewAsStatus}) ";
             if (_currentColdRun <= ColdCacheRuns && _currentWarmRun == 0)

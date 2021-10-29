@@ -126,7 +126,7 @@ namespace DaxStudio.UI.ViewModels
                     _activeDocument = null;
                     return;  // no items in collection usually means we are shutting down
                 }
-                Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value.DisplayName);
+                Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value?.DisplayName);
                 lock (_activeDocumentLock)
                 {
                     _activeDocument = value;

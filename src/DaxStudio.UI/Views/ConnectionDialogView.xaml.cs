@@ -11,7 +11,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for Window1.xaml
     /// </summary>
-    public partial class ConnectionDialogView : UserControl
+    public partial class ConnectionDialogView : DaxStudio.UI.Controls.DaxStudioDialog
     {
 
 

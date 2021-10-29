@@ -4,11 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="600"
              Height="400" Width="600"
              Title="Fatal Crash">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:XamlControlsResources/>
+                <ui:ThemeResources/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -18,10 +26,10 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <fa:FontAwesome Icon="ExclamationCircle" Foreground="Red" FontSize="60" Margin="20 50 0 0"/>
+        <Image Source="{DynamicResource failDrawingImage}"  Width="60" Margin="20 50 0 0" VerticalAlignment="Top"/>
         <StackPanel Grid.Row="0" Grid.Column="1" Margin="20 50 20 10" >
         <TextBlock TextWrapping="Wrap">The following fatal error has occurred: </TextBlock>
-            <TextBlock x:Name="ErrorMessage" x:FieldModifier="public"  FontFamily="Courier New" Margin="20">Unexpected Error</TextBlock>
+            <TextBlock x:Name="ErrorMessage" x:FieldModifier="public"  FontFamily="Courier New" Margin="20" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="150">Unexpected Error</TextBlock>
             <TextBlock TextWrapping="Wrap">Crash Reporting has been blocked in the options. If you want help with this issue you will need to go to <Hyperlink NavigateUri="https://daxstudio.org/issues" RequestNavigate="Hyperlink_OnRequestNavigate">https://daxstudio.org/issues</Hyperlink> and manually raise an issue.</TextBlock>
         </StackPanel>
         <Button Grid.Row="1" 

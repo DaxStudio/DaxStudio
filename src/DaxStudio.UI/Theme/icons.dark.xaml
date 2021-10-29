@@ -1524,4 +1524,44 @@
         <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource options_loggingGeometry}" />
     </DrawingGroup>
     <DrawingImage x:Key="options_loggingDrawingImage" Drawing="{StaticResource options_loggingDrawingGroup}" />
+    <Geometry x:Key="daxstudio_logo_darkGeometry1">F1 M216,198z M0,0z M62.36,116L57.69,116 57.69,141.76 62.36,141.76C70.36,141.76 75.1,137.09 75.1,128.76 75.1,120.43 70,116 62.36,116z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry2">F1 M216,198z M0,0z M106.93,116.9L106.83,116.9C106.83,116.9,105.83,121.68,104.94,124.46L102.25,133 111.5,133 108.82,124.44C107.92,121.78,106.93,116.9,106.93,116.9z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry3">F1 M216,198z M0,0z M32.42,92.93L32.42,164.85 183.32,164.85 183.32,92.93z M62.76,151L46.25,151 46.25,106.76 62.86,106.76C77.48,106.76 86.73,114.76 86.73,128.76 86.73,142.76 77.38,151 62.76,151z M124.24,150.11L123.74,151 117,151 114.12,141.75 99.47,141.75 96.68,151 84.94,151 100.76,106.74 112.76,106.74 126.76,146.03z M169.5,151L156.76,151 151.39,141.75A53.79,53.79,0,0,1,148.51,136.28L148.41,136.28A57.11,57.11,0,0,1,145.52,141.75L140.35,151 127.72,151 141.84,129.12 127.72,106.84 140.65,106.84 145.65,115.84C147.24,118.63,148.54,121.51,148.54,121.51L148.64,121.51C149.53,119.62,150.43,117.73,151.52,115.84L156.69,106.84 169.62,106.84 155.3,129.12z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry4">F1 M216,198z M0,0z M56.5,190.61A5.49,5.49,0,0,1,54.31,195.29A9.76,9.76,0,0,1,48.31,196.98A13.22,13.22,0,0,1,42.14,195.79L42.14,192.3A18.63,18.63,0,0,0,45.42,193.5A11.63,11.63,0,0,0,48.61,193.9A5.08,5.08,0,0,0,51.79,193.1A2.67,2.67,0,0,0,52.79,190.91A2.5,2.5,0,0,0,51.79,188.82A14.86,14.86,0,0,0,47.91,186.73A10.33,10.33,0,0,1,43.66,184A6,6,0,0,1,42.47,180.12A5.59,5.59,0,0,1,44.47,175.64A8.39,8.39,0,0,1,49.83,174A15.7,15.7,0,0,1,56.2,175.39L55,178.39A12.29,12.29,0,0,0,49.73,177.19A3.76,3.76,0,0,0,47.05,177.99A2.7,2.7,0,0,0,46.15,180.08A2.79,2.79,0,0,0,46.55,181.57A3.42,3.42,0,0,0,47.74,182.77A21.9,21.9,0,0,0,50.74,184.26A15.12,15.12,0,0,1,54.32,186.15A5.47,5.47,0,0,1,56.01,188.15A6.08,6.08,0,0,1,56.5,190.61z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry5">F1 M216,198z M0,0z M72.41,196.68L68.73,196.68 68.73,177.48 62.17,177.48 62.17,174.4 78.88,174.4 78.88,177.48 72.31,177.48 72.31,196.68z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry6">F1 M216,198z M0,0z M103.84,174.4L103.84,188.82A8.61,8.61,0,0,1,102.75,193.2A7.86,7.86,0,0,1,99.67,196.08A11.43,11.43,0,0,1,94.89,197.08A9,9,0,0,1,88.43,194.89A8,8,0,0,1,86.14,188.82L86.14,174.5 89.82,174.5 89.82,188.62A5.6,5.6,0,0,0,91.11,192.7A5.23,5.23,0,0,0,95.11,194C98.59,194,100.28,192.21,100.28,188.62L100.28,174.62 103.86,174.62z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry7">F1 M216,198z M0,0z M131.6,185.34C131.6,189.02 130.6,191.81 128.51,193.8 126.42,195.79 123.51,196.68 119.66,196.68L113.39,196.68 113.39,174.4 120.26,174.4C123.84,174.4,126.52,175.4,128.51,177.28A10.65,10.65,0,0,1,131.6,185.34z M127.72,185.44Q127.72,177.38,120.26,177.38L117.07,177.38 117.07,193.6 119.66,193.6C125,193.6,127.72,190.81,127.72,185.44z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry8">F1 M216,198z M0,0z M140.35,196.68L140.35,174.4 143.93,174.4 143.93,196.68z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry9">F1 M216,198z M0,0z M173.57,185.44C173.57,189.12 172.68,191.91 170.89,193.9 169.1,195.89 166.51,196.9 163.13,196.9 159.75,196.9 157.13,195.9 155.37,193.9 153.61,191.9 152.68,189.02 152.68,185.34 152.68,181.66 153.58,178.88 155.37,176.89 157.16,174.9 159.75,173.89 163.13,173.89 166.51,173.89 169,174.89 170.79,176.89A12.62,12.62,0,0,1,173.57,185.44z M156.57,185.44C156.57,188.23,157.17,190.32,158.27,191.71A6.76,6.76,0,0,0,167.81,192.01L168.11,191.71C169.21,190.32 169.8,188.23 169.8,185.44 169.8,182.65 169.21,180.57 168.21,179.27A5.49,5.49,0,0,0,163.34,177.18A6.26,6.26,0,0,0,158.34,179.27C157.06,180.67,156.56,182.76,156.56,185.44z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry10">F1 M216,198z M0,0z M163.57,25.32L163.3,23.32 147.8,25.32 144.05,25.81 143.56,22.06 141.51,6.52 89.65,13.35 99.54,88.47 154.77,88.47C159.4,75.71 162.83,65.8 163.32,63.97 162.95,62.73 162.18,60.97 161.49,59.29 158.63,52.57 154.72,43.35 158.87,33.35A34.28,34.28,0,0,1,163.57,25.32z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry11">F1 M216,198z M0,0z M161.74,18.8L161.74,18.8 146.54,7.14 148.31,20.57 161.74,18.8z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry12">F1 M216,198z M0,0z M140.68,67.12L140.68,67.12 133.69,68.04 129.51,36.3 136.5,35.38 135.59,28.47 120.88,30.4 126.88,75.97 141.59,74.03 140.68,67.12z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry13">F1 M216,198z M0,0z M165.5,88.47L183.5,88.47C186.5,80.1 189.14,73.24 190.5,70.9 193.02,66.46 209.27,65.31 213.19,55.9A24.39,24.39,0,0,0,207.81,29.23L201.91,43.43C199.22,49.93 195.64,47.75 190.97,45.81 186.3,43.87 182.23,42.88 184.97,36.38L190.87,22.18A24.37,24.37,0,0,0,168.19,37.18C164.28,46.61 172.84,56.66 173.57,63.85 173.66,65.49 170,76.27 165.5,88.47z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry14">F1 M216,198z M0,0z M65.91,84.56A19.36,19.36,0,0,0,76.79,81.24L83.88,88.47 93.72,88.47 81.8,76.31A19.44,19.44,0,1,0,65.91,84.56z M65.91,51.64A13.49,13.49,0,1,1,52.43,65.12A13.48,13.48,0,0,1,65.91,51.64z</Geometry>
+    <Geometry x:Key="daxstudio_logo_darkGeometry15">F1 M216,198z M0,0z M38.91,65.12A27.25,27.25,0,0,1,39.26,61.6L38.78,61.6 38.78,52.11 42.4,52.11A27.12,27.12,0,0,1,51,42.62L38.78,42.62 38.78,34.72 57.85,34.72 57.85,39.48A26.88,26.88,0,0,1,65.8,38.13L65.8,34.72 82.36,34.72 80.07,17.33 32.42,17.33 32.42,69.5 39.35,69.5A26.32,26.32,0,0,1,38.91,65.12z</Geometry>
+    <DrawingGroup x:Key="daxstudio_logo_darkDrawingGroup" ClipGeometry="M0,0 V198 H216 V0 H0 Z">
+        <GeometryDrawing Brush="#FF29A9FF" Geometry="{StaticResource daxstudio_logo_darkGeometry1}" />
+        <GeometryDrawing Brush="#FF29A9FF" Geometry="{StaticResource daxstudio_logo_darkGeometry2}" />
+        <GeometryDrawing Brush="#FF29A9FF" Geometry="{StaticResource daxstudio_logo_darkGeometry3}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry4}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry5}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry6}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry7}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry8}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry9}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry10}" />
+        <GeometryDrawing Brush="#FF29A9FF" Geometry="{StaticResource daxstudio_logo_darkGeometry11}" />
+        <GeometryDrawing Brush="#FF1A1A1A" Geometry="{StaticResource daxstudio_logo_darkGeometry12}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry13}" />
+        <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource daxstudio_logo_darkGeometry14}" />
+        <GeometryDrawing Brush="#FF29A9FF" Geometry="{StaticResource daxstudio_logo_darkGeometry15}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="daxstudio_logoDrawingImage" Drawing="{StaticResource daxstudio_logo_darkDrawingGroup}" />
+    <DrawingImage x:Key="visual_studioDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V32 H32 V0 H0 Z">
+                <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1 M32,32z M0,0z M23.066406,4.0058594L22.640625,4.3320312 11.933594,12.541016 6.0742188,9.0019531 3,10.345703 3,21.654297 6.0742188,22.998047 11.933594,19.458984 23.066406,27.994141 29,25.964844 29,6.0351562 23.066406,4.0058594z M23.433594,6.2441406L27,7.4648438 27,24.535156 23.433594,25.755859 12.066406,17.041016 5.9257812,20.751953 5,20.345703 5,11.654297 5.9257812,11.248047 12.066406,14.958984 23.433594,6.2441406z M23,11.283203L16.037109,16 23,20.716797 23,11.283203z M7,14.234375L7,17.765625 9.9238281,16 7,14.234375z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 </ResourceDictionary>

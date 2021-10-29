@@ -36,6 +36,7 @@ namespace DaxStudio.UI.ViewModels
         public FindReplaceDialogViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+            IsVisible = false;
             //this.editor = editor;
             //_searchDirections = new List<string>();
             //_searchDirections.Add("Next");

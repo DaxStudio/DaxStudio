@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.QueryParametersDialogView"
+﻿<ctrl:DaxStudioDialog x:Class="DaxStudio.UI.Views.QueryParametersDialogView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,30 +6,33 @@
              xmlns:viewModel="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels" xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels" 
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-
-             Width="400"
-             Height="350">
-    <UserControl.Resources>
+             Caption="Query Parameters"
+             Style="{StaticResource DaxStudioDialogStyle}"
+             Width="500"
+             Height="450">
+    <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
         </ResourceDictionary.MergedDictionaries>
 
-            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"></conv:BoolToCollapsedConverter>
-            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"></conv:BoolToNotCollapsedConverter>
+        <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"></conv:BoolToCollapsedConverter>
+        <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"></conv:BoolToNotCollapsedConverter>
             
-            <CollectionViewSource Source="{Binding ParameterDataTypes}" x:Key="types"/>
-            
-        <Style TargetType="Button">
-        <Setter Property="Margin" Value="4,2"/>
-            <Setter Property="Padding" Value="8,2"/>
-        </Style>
-        <!--<DataTemplate  DataType="{x:Type coll:System.Collection.Generic.KeyValuePair}">
+        <CollectionViewSource Source="{Binding ParameterDataTypes}" x:Key="types"/>
+
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="4,2"/>
+                <Setter Property="Padding" Value="8,2"/>
+            </Style>
+            <!--<DataTemplate  DataType="{x:Type coll:System.Collection.Generic.KeyValuePair}">
                 
                     
                     <Grid>
@@ -41,8 +44,8 @@
             </DataTemplate>-->
    
         </ResourceDictionary>
-    </UserControl.Resources>
-    <Border Background="{DynamicResource DialogBackground}" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1" CornerRadius="0">
+    </ctrl:DaxStudioDialog.Resources>
+
         
     <Grid>
         <Grid.RowDefinitions>
@@ -53,11 +56,7 @@
         </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Vertical">
                 <StackPanel Orientation="Horizontal">
-                    <!--<Image Source="{StaticResource DaxStudioIcon}" Margin="5,5,5,0" Width="48" ></Image>-->
-                    <Label Content="Query Parameters" Foreground="{StaticResource DaxStudioBrush}" 
-                           Margin="3,0"
-                           FontWeight="Light" FontSize="44" ></Label>
-                    <!--<TextBlock FontWeight="Bold" Margin="0,5,0,0">Save Changes</TextBlock>-->
+
                 </StackPanel>
                 <TextBlock Padding="10,10,0,5">The following parameters require values:</TextBlock>
             </StackPanel>
@@ -190,12 +189,12 @@
                 </ListView.View>
  
             </ListView>-->
-            <Button x:Name="WriteParameterXml" IsDefault="True" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4">_Write Parameter XML</Button>
+            <Button x:Name="WriteParameterXml" IsDefault="True" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4" Style="{DynamicResource DefaultButtonStyle}">_Write Parameter XML</Button>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 
-                <Button x:Name="OK" IsDefault="True" TabIndex="1">Ok</Button>
-                <Button x:Name="Cancel" IsCancel="True" TabIndex="2">Cancel</Button>
+                <Button x:Name="OK" IsDefault="True" TabIndex="1" Style="{DynamicResource AccentButtonStyle}" MinWidth="65" Margin="8 0">Ok</Button>
+                <Button x:Name="Cancel" IsCancel="True" TabIndex="2" Style="{DynamicResource DefaultButtonStyle}" MinWidth="65">Cancel</Button>
             </StackPanel>
         </Grid>
-    </Border>
-</UserControl>
+
+</ctrl:DaxStudioDialog>

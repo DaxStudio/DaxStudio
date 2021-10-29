@@ -713,7 +713,7 @@
                                                    Grid.ColumnSpan="2" MinWidth="80"
                                                    MinHeight="60"
                                                    LineNumbersForeground="{DynamicResource Theme.Brush.LineNumbers}"
-                                                  
+                                                   
                                                    FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -855,8 +855,8 @@
                                     <ContentControl x:Name="FindReplaceDialog" 
                                                 HorizontalAlignment="Right" 
                                                 VerticalAlignment="Top"
-                                                Width="300"
-                                                Margin="0,2,21,0" 
+                                                Width="450"
+                                                Margin="0,12,21,0" 
                                                 Grid.Column="1" Grid.Row="1"
                                                 cal:View.Model="{Binding FindReplaceDialog}" cal:View.ApplyConventions="true"/>
                                 </Grid>

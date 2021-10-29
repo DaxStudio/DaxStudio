@@ -62,6 +62,7 @@ namespace DaxStudio.UI.Events
         Information
         ,Warning
         ,Error
+        ,Success
     }
      
 }

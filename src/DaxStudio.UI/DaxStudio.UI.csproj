@@ -232,6 +232,7 @@
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="AttachedProperties\BrushBindingHelper.cs" />
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
@@ -261,6 +262,7 @@
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\ClipBorder.cs" />
     <Compile Include="Controls\DataGridCustomCopy.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
     <Compile Include="Controls\DaxStudioDialog.cs" />
@@ -269,6 +271,7 @@
     </Compile>
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
+    <Compile Include="Controls\Utils.cs" />
     <Compile Include="Controls\ZoomableUserControl.cs" />
     <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
     <Compile Include="Conventions\ModernWpfConventions.cs" />
@@ -1192,9 +1195,6 @@
     <Resource Include="Images\metro\clipboard.paste.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\daxstudio-splashscreen.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\daxstudio-logo_250x250.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1364,10 +1364,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-database%4024px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\daxstudio-splash%4096ppi.png" />
-    <Resource Include="Images\daxstudio-splash.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon-bottompane.png" />

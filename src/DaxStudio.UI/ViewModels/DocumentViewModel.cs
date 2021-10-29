@@ -1232,13 +1232,13 @@ namespace DaxStudio.UI.ViewModels
 
                     await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
                                         {
-                                            {"Top", 40},
+                                            { "Top", 40},
                                             { "WindowStyle", WindowStyle.None},
                                             { "ShowInTaskbar", false},
                                             { "ResizeMode", ResizeMode.NoResize},
-                                            { "Background", Brushes.Transparent},
+                                            { "Background", Brushes.Transparent },
                                             { "AllowsTransparency",true},
-                                            {"Style", null }
+                                            { "Style", null }
                                         });
 
                     IsFocused = true;
@@ -2106,7 +2106,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void OutputMessage(string message, double duration)
         {
-            OutputPane?.AddInformation(message, duration);
+            OutputPane?.AddSuccess(message, duration);
         }
 
         public void OutputWarning(string warning)

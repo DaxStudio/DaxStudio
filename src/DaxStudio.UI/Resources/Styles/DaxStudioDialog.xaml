@@ -1,19 +1,18 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+                    xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+                    xmlns:view="clr-namespace:DaxStudio.UI.Views"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
                     >
 
 
     <ResourceDictionary.MergedDictionaries>
         <!--<res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>-->
-        <ui:XamlControlsResources/>
+        <!--<ui:XamlControlsResources/>-->
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+        <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>-->
     </ResourceDictionary.MergedDictionaries>
-
-
-
 
     <Style x:Key="DaxStudioDialog" TargetType="{x:Type Border}">
         <!--<Setter Property="BorderBrush" Value="{StaticResource DaxStudioBrush}" />-->
@@ -37,25 +36,26 @@
 
     </Style>
 
-
-
-
-
-
-            <!-- Converters -->
-            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-
-    
+    <!-- Converters -->
+    <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 
     <Style x:Key="DaxStudioDialogStyle" TargetType="{x:Type ctrl:DaxStudioDialog}" >
-        <Setter Property="Background" Value="Cyan"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Dialog.Border}"/>
+        <Setter Property="BorderThickness" Value="0 0 0 0" />
+        <Setter Property="Padding" Value="8 24 8 16"/>
+        <Setter Property="Margin" Value="30 24 30 20" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ctrl:DaxStudioDialog}">
-                    <Border Padding="10,10,10,10" Margin="0,0,0,0" x:Name="outerBorder" >
-                    <Border Style="{StaticResource DaxStudioDialog}" >
-                        <Grid  Height="Auto"
-                                Margin="30 0 30 20">
+                    <Border Padding="{TemplateBinding Padding}" Margin="0,0,0,0" x:Name="outerBorder" Background="Transparent">
+                        <Border Style="{StaticResource DaxStudioDialog}" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Margin}" DataContext="{RelativeSource AncestorType={x:Type ctrl:DaxStudioDialog}}">
+                        <Grid  Height="Auto">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
 
@@ -64,19 +64,21 @@
                                 <RowDefinition Height="Auto" />
 
 
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <!--<Grid.Effect>
-                                <fluent:GrayscaleEffect/>
-                            </Grid.Effect>-->
-                            <StackPanel Orientation="Horizontal" Margin="0 0 0 16" x:Name="Header" DataContext="{RelativeSource AncestorType={x:Type ctrl:DaxStudioDialog}}">
+
+                            <StackPanel Orientation="Horizontal" 
+                                        Margin="0 0 0 16" 
+                                        x:Name="Header" 
+                                        Visibility="{TemplateBinding Caption, Converter={StaticResource StringToVisibilityConverter}}"
+                                        >
                                     <Image Source="{TemplateBinding Icon}" x:Name="PART_Icon"/>
                                     <TextBlock Text="{TemplateBinding Caption}" 
                                        Style="{StaticResource DialogCaption}"
                                              x:Name="PART_Caption"
                                              />
                             </StackPanel>
-                            <!-- Radio Button Grid-->
+                            
                             <ContentPresenter Grid.Row="1" x:Name="PART_Content" Content="{TemplateBinding Content}" />
 
                         </Grid>
@@ -88,4 +90,17 @@
     </Style>
 
     <Style TargetType="{x:Type ctrl:DaxStudioDialog}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+
+    <!-- set default view styles for dialogs -->
+    <Style TargetType="{x:Type view:BenchmarkView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:ConnectionDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:FindReplaceDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:GotoLineDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:HelpAboutView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:MultipleQueriesDetectedDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:QueryParametersDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:SaveDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:ViewAsDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    
+    
 </ResourceDictionary>

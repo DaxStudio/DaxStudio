@@ -162,7 +162,20 @@ Root: "HKA64"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio.ExcelAd
 Root: "HKA"; Subkey: "Software\Classes\.dax"; ValueType: string; ValueData: "DAX file"; Flags: uninsdeletekey
 Root: "HKA"; Subkey: "Software\Classes\DAX file"; ValueType: string; ValueData: "DAX Query File"; Flags: uninsdeletekey
 Root: "HKA"; Subkey: "Software\Classes\DAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
-Root: "HKA"; Subkey: "Software\Classes\DAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0"; Flags: uninsdeletevalue
+Root: "HKA"; Subkey: "Software\Classes\DAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,1"; Flags: uninsdeletevalue
+
+;add file association for .daxx files
+Root: "HKA"; Subkey: "Software\Classes\.daxx"; ValueType: string; ValueData: "DAXX file"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\DAXX file"; ValueType: string; ValueData: "DAXX Query File"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\DAXX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\DAXX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,1"; Flags: uninsdeletevalue
+
+;add file association for .vpax files
+Root: "HKA"; Subkey: "Software\Classes\.vpax"; ValueType: string; ValueData: "VPAX file"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\VPAX file"; ValueType: string; ValueData: "Vertipaq Analyzer File"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\VPAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\VPAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,2"; Flags: uninsdeletevalue
+
 
 ;Clean up beta Excel x86 Addin Keys
 ;Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe

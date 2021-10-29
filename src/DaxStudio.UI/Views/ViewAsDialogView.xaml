@@ -10,69 +10,60 @@
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:local="clr-namespace:DaxStudio.UI.Views" 
              xmlns:conv1="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             Style="{StaticResource DaxStudioDialogStyle}"
-    Icon="{DynamicResource view_asDrawingImage}"
+
+             Icon="{DynamicResource view_asDrawingImage}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
-             MinWidth="400"
-             MinHeight="350">
+             MinWidth="500"
+             MinHeight="450">
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
-                
-            </ResourceDictionary.MergedDictionaries>
-            <conv1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
         </ResourceDictionary>
     </ctrl:DaxStudioDialog.Resources>
 
-    <!-- Icon="{DynamicResource view_asDrawingImage}"-->
+ 
+    <Grid>
+        <Grid.RowDefinitions>
 
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+
+        <CheckBox x:Name="Unrestricted2" Content="Unrestricted" Grid.Row="0" />
+        <Label Grid.Row="0" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>
+            
+        <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="1" VerticalAlignment="Center" />
+        <TextBox x:Name="OtherUserName" Grid.Row="1" Grid.Column="1" Margin="5" Visibility="{Binding OtherUser, Converter={StaticResource BoolToHiddenConverter}}"/>
+            
+        <Label Content="Roles" 
+                FontWeight="Normal"
+                Grid.Row="2" Margin="0 8 0 0" FontSize="18" Padding="0"/>
+
+        <ListBox x:Name="RoleList" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" >
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+
+                    <CheckBox IsChecked="{Binding Selected}" Content="{Binding Name}" cal:Message.Attach="[Event Click]=[Action SelectRole($this)]"/>
+
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
         
-        
-    
-    
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-
-            <CheckBox x:Name="Unrestricted2" Content="Unrestricted" Grid.Row="1" Margin="12 0"/>
-            <Label Grid.Row="1" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>
-            <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="2" VerticalAlignment="Center" Margin="12 5 "/>
-            <TextBox x:Name="OtherUserName" Grid.Row="2" Grid.Column="2" Margin="5" Visibility="{Binding OtherUser, Converter={StaticResource BoolToHiddenConverter}}"/>
-            <Label Content="Roles" Foreground="{StaticResource DaxStudioBrush}"
-                   FontWeight="Normal"
-                   Grid.Row="3" Margin="5 5 0 0 " FontSize="18" Padding="0"/>
-
-            <ListBox x:Name="RoleList" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="5">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-
-                        <CheckBox IsChecked="{Binding Selected}" Content="{Binding Name}" cal:Message.Attach="[Event Click]=[Action SelectRole($this)]"/>
-
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.ColumnSpan="2">
-                <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True"/>
-                <Button x:Name="Cancel" Content="Cancel" Margin="5,10" MinWidth="50" IsCancel="True"/>
-            </StackPanel>
-        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.ColumnSpan="2">
+            <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True" Style="{DynamicResource AccentButtonStyle}"/>
+            <Button x:Name="Cancel" Content="Cancel" Margin="5,10" MinWidth="50" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
     
 </ctrl:DaxStudioDialog>
 

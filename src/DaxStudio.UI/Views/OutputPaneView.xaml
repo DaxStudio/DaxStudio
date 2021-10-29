@@ -6,9 +6,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+                               
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
@@ -20,38 +24,98 @@
                 <BitmapImage x:Key="Error"       UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-cancel.png" />
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
-        <conv:ResourceLookupConverter x:Key="OutputColor">
+
+        <conv:ResourceLookupConverter x:Key="IconNames">
             <ResourceDictionary>
-                <SolidColorBrush x:Key="Information"  Color="Black"></SolidColorBrush>
-                <SolidColorBrush x:Key="Warning"  Color="DarkOrange"></SolidColorBrush>
-                <SolidColorBrush x:Key="Error"  Color="Red"></SolidColorBrush>
+                <sys:String x:Key="Information">infoDrawingImage</sys:String>
+                <sys:String x:Key="Warning">alertDrawingImage</sys:String>
+                <sys:String x:Key="Error">failDrawingImage</sys:String>
+                <sys:String x:Key="Success">successDrawingImage</sys:String>
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
+        
+        <conv:ResourceLookupConverter x:Key="OutputColor">
+            <ResourceDictionary>
+                <!--<SolidColorBrush x:Key="Information"  Color="Cyan"></SolidColorBrush>-->
+                <sys:String x:Key="Information">Theme.Brush.Default.Fore</sys:String>
+                <sys:String x:Key="Warning">Theme.Brush.Log.Warning</sys:String>
+                <sys:String x:Key="Error">Theme.Brush.Log.Error</sys:String>
+                <sys:String x:Key="Success">Theme.Brush.Log.Success</sys:String>
+            </ResourceDictionary>
+        </conv:ResourceLookupConverter>
+
+        <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
+            <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+            <!--<Setter Property="FontWeight" Value="Bold"/>-->
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="8 0"/>
+        </Style>
+
+        <Style x:Key="alternatingRows" TargetType="{x:Type ListViewItem}" BasedOn="{DynamicResource {x:Type ListViewItem}}">
+            <Style.Triggers>
+                <Trigger Property="ItemsControl.AlternationIndex"  Value="0">
+                    <Setter Property="Background" Value="Transparent" />
+                </Trigger>
+                <Trigger Property="ItemsControl.AlternationIndex"  Value="1">
+                    <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Alternate}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
-    <Grid>
-        <ListView x:Name="Messages" 
-            HorizontalAlignment="Stretch"  
-            behaviours:GridViewColumnResize.Enabled="True"
-            extenders:ListViewExtenders.AutoScrollToEnd="True"
-            Focusable="False" >
+    
+        <ctrl:ClipBorder 
+            x:Name="outerBorder"
+            BorderBrush="{DynamicResource Theme.Brush.Control.Border}" 
+            Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderThickness="1"
+                ClipToBounds="True"
+                CornerRadius="4">
+        
+        <Grid >
+            <!--<Grid.OpacityMask>
+                <VisualBrush Visual="{Binding ElementName=outerBorder}" />
+            </Grid.OpacityMask>-->
+            <ListView x:Name="Messages" 
+                HorizontalAlignment="Stretch"  
+                      AlternationCount="2"
+                behaviours:GridViewColumnResize.Enabled="True"
+                extenders:ListViewExtenders.AutoScrollToEnd="True"
+                      ItemContainerStyle="{StaticResource alternatingRows}"
+                Focusable="False" >
             <ListView.View>
                 <GridView>
                     <!-- Icon -->
                     <GridViewColumn Header="" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Image Width="18" Height="18" Source="{Binding MessageType, Converter={StaticResource Icons}}" />
+                                    <Image Width="18" Height="18" ap:ImageBindingHelper.SourceResourceKey="{Binding Path=MessageType, Converter={StaticResource IconNames}}"  />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <!-- Time -->
-                    <GridViewColumn Header="Start" 
-                                    DisplayMemberBinding="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS}}" 
-                                    Width="58"></GridViewColumn>
+                    <GridViewColumn Header="Start"
+                                    Width="62"
+                                    >
+                            
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock  ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor}}" Text="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        
+                    </GridViewColumn>
+                    
                     <GridViewColumn Width="Auto">
                         <GridViewColumn.Header>
                             <StackPanel Orientation="Horizontal" ToolTip="Client Duration - includes network transfer and rendering time">
-                                <TextBlock Text="Duration" />
+                                <TextBlock Text="Duration" Padding="6 0 0 0" />
                                 <TextBlock Text=" i" FontFamily="WebDings" FontSize="11" RenderTransformOrigin="0.5,0.5">
                                     <TextBlock.RenderTransform>
                                         <TransformGroup>
@@ -67,25 +131,29 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid HorizontalAlignment="Right">
-                                    <Label  HorizontalAlignment="Right" Content="{Binding DurationString}" ToolTip="{Binding DurationTooltip}"/>
+                                    <TextBlock  HorizontalAlignment="Right" 
+                                            ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor}}"
+                                            Text="{Binding DurationString}" ToolTip="{Binding DurationTooltip}"/>
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Text" 
+                    
+                    <GridViewColumn 
                                     behaviours:GridViewColumnResize.Width="*1">
-                        
+                            <GridViewColumn.Header>
+                                <TextBlock Text="Message" Padding="8 0"/>
+                            </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate x:Name="Text">
                                 <Label 
                                     cal:Message.Attach="[Event MouseDoubleClick] = [Action MessageDoubleClick($dataContext)]"
                                     Background="Transparent"
-                                    Foreground="{Binding MessageType, Converter={StaticResource OutputColor}}"
                                     VerticalAlignment="Top"
                                     Margin="5,0,2,2"
                                     Padding="0">
                                     <TextBlock TextWrapping="Wrap" 
-                                               Foreground="{DynamicResource ResourceKey=MahApps.Brushes.ThemeForeground}"
+                                               ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor}}"
                                                HorizontalAlignment="Stretch" 
                                                TextTrimming="None" 
                                                Text="{Binding Text}"/>
@@ -96,20 +164,13 @@
                    
                 </GridView>
             </ListView.View>
-            <!--<ListView.Style>
-                <Style TargetType="{x:Type ListView}" BasedOn="{StaticResource MahApps.Styles.ListView}">
-                    <Setter Property="ItemContainerStyle">
-                        <Setter.Value>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="VerticalContentAlignment" Value="Top"/>
-                            </Style>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListView.Style>-->
+
             <i:Interaction.Behaviors>
                 <behaviours:ListViewClipboardBehaviour />
             </i:Interaction.Behaviors>
-        </ListView>           
-    </Grid>
+        </ListView>
+        </Grid>
+
+    </ctrl:ClipBorder>
+    
 </controls:ZoomableUserControl>

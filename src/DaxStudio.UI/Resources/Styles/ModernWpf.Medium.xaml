@@ -9,6 +9,7 @@
     <sys:Double x:Key="ContentControlFontSize">12</sys:Double>
     <sys:Double x:Key="TextControlThemeMinHeight">24</sys:Double>
     <Thickness x:Key="TextControlThemePadding">2,2,6,1</Thickness>
+    <Thickness x:Key="ListBoxItemPadding">8,0,0,8</Thickness>
     <sys:Double x:Key="ListViewItemMinHeight">28</sys:Double>
     <sys:Double x:Key="TreeViewItemMinHeight">24</sys:Double>
     <Thickness x:Key="TimePickerHostPadding">0,1,0,2</Thickness>
@@ -21,7 +22,8 @@
     <sys:Double x:Key="GridViewColumnHeaderMinHeight">25</sys:Double>
     <sys:Double x:Key="GridViewItemContainerMinHeight">24</sys:Double>
     <sys:Double x:Key="DataGridRowMinHeight">24</sys:Double>
-
+    <sys:Double x:Key="ProgressBarThemeMinHeight">8</sys:Double>
+    
     <!-- CompactDatePickerTimePickerFlyout.xaml -->
     <sys:Double x:Key="TimePickerFlyoutPresenterItemHeight">32</sys:Double>
     <sys:Double x:Key="TimePickerFlyoutPresenterHighlightHeight">32</sys:Double>

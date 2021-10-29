@@ -5,7 +5,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for ExportDataWizardView.xaml
     /// </summary>
-    public partial class ExportDataWizardView : UserControl
+    public partial class ExportDataWizardView : Controls.DaxStudioDialog
     {
         public ExportDataWizardView()
         {

@@ -20,7 +20,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for SaveDialogView.xaml
     /// </summary>
-    public partial class QueryParametersDialogView : UserControl
+    public partial class QueryParametersDialogView : Controls.DaxStudioDialog
     {
         bool focusSet;
         public QueryParametersDialogView()

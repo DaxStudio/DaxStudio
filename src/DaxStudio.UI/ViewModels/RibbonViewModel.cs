@@ -988,7 +988,7 @@ namespace DaxStudio.UI.ViewModels
                         { "ResizeMode", ResizeMode.NoResize},
                         { "Background", System.Windows.Media.Brushes.Transparent},
                         { "AllowsTransparency",true}
-
+                        
                     });
                 }
             }

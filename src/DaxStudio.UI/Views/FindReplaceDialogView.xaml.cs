@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for FindReplaceDialogView.xaml
     /// </summary>
-    public partial class FindReplaceDialogView : UserControl
+    public partial class FindReplaceDialogView : Controls.DaxStudioDialog
     {
         public FindReplaceDialogView()
         {

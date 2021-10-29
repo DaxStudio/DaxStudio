@@ -13,7 +13,9 @@
     <Color x:Key="Theme.PrimaryAccentColor">#FF228ED6</Color>
     <Color x:Key="Theme.Default.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Alternate.Back">#F3F2F1</Color>
+    <Color x:Key="Theme.Table.Alternate">#F7F7F7</Color>
     <Color x:Key="Theme.Default.Fore">#000000</Color>
+    <Color x:Key="Theme.Muted.Fore">#B6B6B6</Color>
     <Color x:Key="Theme.MenuBar.Back">#F3F2F1</Color>
     <Color x:Key="Theme.MenuBar.Fore">#252423</Color>
     <Color x:Key="Theme.StatusBar.Back">#F3F2F1</Color>
@@ -29,13 +31,19 @@
     <Color x:Key="Theme.InfoBar.Back">#FFF6C7</Color>
     <Color x:Key="Theme.InfoBar.Border">#EFCB00</Color>
     <Color x:Key="Theme.Tooltip.Border">#D6D6D6</Color>
+    <Color x:Key="Theme.Log.Warning">#DEB100</Color>
+    <Color x:Key="Theme.Log.Error">#FF0000</Color>
+    <Color x:Key="Theme.Log.Success">#00A142</Color>
+    
     
     <sys:Double x:Key="Theme.DropShadow.Opacity">0.2</sys:Double>
     
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Muted.Fore" Color="{StaticResource Theme.Muted.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
-    <SolidColorBrush x:Key="Theme.Brush.Alternate.Back" Color="{StaticResource Theme.Alternate.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Alternate.Back" Color="{StaticResource Theme.Table.Alternate}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Table.Alternate" Color="{StaticResource Theme.Table.Alternate}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{StaticResource Theme.MenuBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.StatusBar.Back" Color="{StaticResource Theme.StatusBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.DropShadow" Color="{StaticResource Theme.DropShadow}" options:Freeze="true"/>
@@ -49,7 +57,10 @@
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Border" Color="{StaticResource Theme.InfoBar.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Tooltip.Border" Color="{StaticResource Theme.Tooltip.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.TextBox.Border" Color="{StaticResource Theme.TextBox.Border}" options:Freeze="true"/>
-
+    <SolidColorBrush x:Key="Theme.Brush.Log.Error" Color="{StaticResource Theme.Log.Error}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Log.Warning" Color="{StaticResource Theme.Log.Warning}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Log.Success" Color="{StaticResource Theme.Log.Success}" options:Freeze="true"/>
+    
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="TextControlBorderBrush" Color="{DynamicResource Theme.Dialog.Border}"/>

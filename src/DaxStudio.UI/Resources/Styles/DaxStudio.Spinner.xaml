@@ -9,8 +9,11 @@
   <converters:NotZeroConverter x:Key="NotZeroConverter" />
 
   <Style x:Key="MaterialDesignCircularProgressBar" TargetType="{x:Type ProgressBar}">
-    <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
-    <Setter Property="Background" Value="Transparent" />
+    <!--<Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
+    <Setter Property="Background" Value="Transparent" />-->
+    <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
+    <Setter Property="Background" Value="{DynamicResource Theme.Brush.Alternate.Back}"/>
+    <Setter Property="IsIndeterminate" Value="True"/>  
     <Setter Property="Width" Value="20" />
     <Setter Property="Height" Value="20" />
     <Setter Property="Template">

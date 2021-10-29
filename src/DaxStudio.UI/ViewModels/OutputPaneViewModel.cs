@@ -28,10 +28,15 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage(MessageType.Information, message));
         }
 
-        public void AddInformation(string message, double durationMs)
+        public void AddSuccess(string message, double durationMs)
         {
-            _messages.Add(new OutputMessage(MessageType.Information, message,durationMs));
+            _messages.Add(new OutputMessage(MessageType.Success, message, durationMs));
         }
+
+        //public void AddInformation(string message, double durationMs)
+        //{
+        //    _messages.Add(new OutputMessage(MessageType.Information, message,durationMs));
+        //}
 
         public void AddWarning(string message)
         {

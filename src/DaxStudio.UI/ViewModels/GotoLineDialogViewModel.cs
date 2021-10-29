@@ -22,7 +22,7 @@ namespace DaxStudio.UI.ViewModels
         public GotoLineDialogViewModel(IEditor editor)
         {
             this.Editor = editor;
-
+            LineNo = 1;
         }
 
         #region Properties
@@ -53,18 +53,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool IsValidLineNo
-        {
-            get { return LineNo <= MaxLines && LineNo >= 0; }
-        }
+        public bool IsValidLineNo => LineNo <= MaxLines && LineNo >= 0;
 
-        
-
-        //private void FocusOnFindBox()
-        //{
-        //    var v = (FindReplaceDialogView)this.GetView();
-        //    v.FocusOnFind();
-        //}
         public bool IsFocused { get { return true; } }
 
         #region INotifyDataErrorInfo members

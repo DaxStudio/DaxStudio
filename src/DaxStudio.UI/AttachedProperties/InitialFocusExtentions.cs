@@ -34,6 +34,7 @@ namespace DaxStudio.UI.AttachedProperties
 
                 if (SetProperty)
                 {
+                    comboBox.Focus();
                     GotFocused(comboBox, null);
                 }
             }
@@ -45,6 +46,7 @@ namespace DaxStudio.UI.AttachedProperties
                 if (textBox == null) return;
                 if (SetProperty)
                 {
+                    textBox.Focus();
                     GotFocused(textBox, null);
                 }
             }

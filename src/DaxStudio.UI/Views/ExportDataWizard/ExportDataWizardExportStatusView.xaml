@@ -11,9 +11,14 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <!-- Converters -->
-        <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
-        <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Converters -->
+            <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>

@@ -118,10 +118,10 @@ namespace DaxStudio.UI
 
 
 
-                
-	            batch.AddExportedValue<IWindowManager>(new WindowManager());
-	            batch.AddExportedValue<IEventAggregator>(new EventAggregator());
-	            batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
+
+                batch.AddExportedValue<IWindowManager>(new WindowManager());
+                batch.AddExportedValue<IEventAggregator>(new EventAggregator());
+                batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
 	            batch.AddExportedValue<Func<IWindowManager, IEventAggregator, DocumentViewModel>>(
 	                (w, e) => _container.GetExportedValue<DocumentViewModel>());
 	            batch.AddExportedValue(_container);
