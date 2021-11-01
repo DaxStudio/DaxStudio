@@ -83,7 +83,11 @@
             </StackPanel>
             
             <CheckBox Grid.Row="1" Margin="5,1,5,5"  VerticalAlignment="Center" x:Name="SelecteAll" IsChecked="{Binding SelectAll}">Select All</CheckBox>
-        
+
+        <Border Grid.Row="2" 
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                CornerRadius="8"
+                BorderThickness="1">
             <ListView x:Name="DocumentList" Grid.Row="2"
                       ItemsSource="{Binding Files}" 
                       Margin="10,0"
@@ -91,7 +95,8 @@
                       BorderThickness="0.8"
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldOpen($this.SelectedItem)]">
             </ListView>
-            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
+        </Border>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 <Button x:Name="Open" IsDefault="True" Style="{DynamicResource AccentButtonStyle}" Margin="0 0 8 0">_Open</Button>
                 <Button x:Name="Cancel" IsCancel="True" Style="{DynamicResource DefaultButtonStyle}">Cancel</Button>
             </StackPanel>

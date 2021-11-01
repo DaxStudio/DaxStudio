@@ -159,7 +159,7 @@ namespace DaxStudio.UI.ViewModels
                 _uniqueId = Guid.NewGuid();
                 Options = options;
                 AutoSaver = autoSaver;
-                IconSource = Application.Current.Resources["daxDrawingImage"] as ImageSource;
+                IconSource =  Application.Current.Resources["dax_smallDrawingImage"] as ImageSource;
                     //ImgSourceConverter.ConvertFromInvariantString(
                     //    @"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
                 Connection = new ConnectionManager(_eventAggregator);

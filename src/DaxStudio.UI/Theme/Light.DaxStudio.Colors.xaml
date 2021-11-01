@@ -22,6 +22,7 @@
     <Color x:Key="Theme.Dialog.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Dialog.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Control.Border">#D6D6D6</Color>
+    <Color x:Key="Theme.Control.Selected">#F3F2F1</Color>
     <Color x:Key="Theme.TextBox.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Content.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Hidden.Fore">#B3B3B3</Color>
@@ -50,6 +51,7 @@
     <SolidColorBrush x:Key="Theme.Brush.DropShadow.Accent" Color="{StaticResource Theme.DropShadow.Accent}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Dialog.Border" Color="{StaticResource Theme.Dialog.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Control.Border" Color="{StaticResource Theme.Control.Border}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Control.Selected" Color="{StaticResource Theme.Control.Selected}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Content.Back" Color="{StaticResource Theme.Content.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Hidden.Fore" Color="{StaticResource Theme.Hidden.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.LineNumbers" Color="{StaticResource Theme.LineNumbers}" options:Freeze="true"/>

@@ -66,20 +66,14 @@
                                 <ControlTemplate TargetType="TabItem">
                                     
                                         <Border x:Name="border" 
-                                            BorderBrush="LightGray"
-                                            BorderThickness="1,1,0,1"
-                                            Margin="2,0,0,0"
+                                            BorderBrush="Transparent"
+                                            BorderThickness="3,0,0,0"
+                                            Margin="2,0,4,0"
+                                                
                                             CornerRadius="2,0,0,2"
                                             Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
                                                 
-                                            <!--<Border.Background>
-                                            <LinearGradientBrush StartPoint=".7,0" EndPoint=".7,1">
-                                                <GradientStop Color="#FFFFFFFF" Offset="0" />
-                                                <GradientStop Color="#F9FFFFFF" Offset="0.375" />
-                                                <GradientStop Color="#E5FFFFFF" Offset="0.625" />
-                                                <GradientStop Color="#C6FFFFFF" Offset="1" />
-                                            </LinearGradientBrush>
-                                        </Border.Background>-->
+
                                             <Grid Name="Panel" Background="Transparent">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
@@ -87,14 +81,14 @@
                                                 </Grid.ColumnDefinitions>
                                                 <ContentPresenter x:Name="ContentSite"
                                             VerticalAlignment="Center"
-                                            HorizontalAlignment="Right"
+                                            HorizontalAlignment="Center"
                                             ContentSource="Header"
                                             Margin="8,2,2,2"
                                             Grid.Column="0"/>
-                                                <TextBlock x:Name="ActiveIndicator" 
+                                                <!--<TextBlock x:Name="ActiveIndicator" 
                                                            VerticalAlignment="Bottom" 
                                                            FontFamily="Wingdings 3" 
-                                                           Text="}" Grid.Column="1" Margin="2"/>
+                                                           Text="}" Grid.Column="1" Margin="2"/>-->
                                             </Grid>
                                         </Border>
        
@@ -103,17 +97,17 @@
 
                                             <!--<Setter TargetName="Panel" Property="Background" Value="White" />-->
                                             <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
-                                            <Setter TargetName="border" Property="Background" Value="#FF0072C6"/>
-                                            <Setter TargetName="border" Property="BorderBrush" Value="#FF0072C6"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
+                                            <Setter TargetName="border" Property="Background" Value="{DynamicResource Theme.Brush.Control.Selected}"/>
+                                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                            <!--<Setter Property="Foreground" Value="White"/>-->
+                                            <!--<Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>-->
                                             <Setter Property="Panel.ZIndex" Value="100"/>
                                             <Setter TargetName="border" Property="Margin" Value="0,0,0,0"/>
                                             <Setter TargetName="border" Property="Padding" Value="2,0,0,0"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="False">
                                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
-                                            <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>
+                                            <!--<Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>-->
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="Panel" Property="Background" Value="DarkGray"/>
@@ -156,6 +150,11 @@
                         
                         Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
                         -->
+                        <controls:ClipBorder 
+                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            >
                          <DataGrid
                             x:Name="DefaultView" 
                             
@@ -199,13 +198,13 @@
                                 <ContextMenu>
                                     <MenuItem Command="Copy" >
                                         <MenuItem.Icon>
-                                            <Image Source="{StaticResource CopyIcon}"/>
+                                            <Image Source="{DynamicResource copyDrawingImage}"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
-
+                        </controls:ClipBorder>
                     </DataTemplate>
                 </TabControl.ContentTemplate>
                 <TabControl.ItemTemplate>

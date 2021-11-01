@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:cc="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
+                    xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                     >
     <!--<ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/ICSharpCode.AvalonEdit;Component/Resources/Styles/CompletionList.xaml"/>
@@ -17,7 +18,7 @@
                             <Border Name="Bd"
 					                Background="{TemplateBinding Background}"
 					                BorderThickness="3,0,0,0"
-                                    BorderBrush="white"
+                                    BorderBrush="Transparent"
                                     Margin="3,1,0,1"
 					                Padding="{TemplateBinding Padding}"
 					                SnapsToDevicePixels="true">
@@ -31,8 +32,8 @@
 					-->
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsSelected" Value="true">
-                            <Setter Property="BorderBrush" TargetName="Bd" Value="blue"/>
-                            <Setter Property="Background" Value="#33000000"/>
+                            <Setter Property="BorderBrush" TargetName="Bd" Value="{DynamicResource Theme.Brush.Accent}"/>
+                            <Setter Property="Background" Value="{DynamicResource Theme.Brush.Control.Selected}"/>
                             <!--<Setter Property="Background"
 							        Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>-->
                                     <!--<Setter Property="Foreground"
@@ -47,6 +48,7 @@
 
 
             <Style TargetType="{x:Type cc:CompletionList}">
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type cc:CompletionList}">
@@ -54,23 +56,25 @@
                             CornerRadius="8"
                             BorderBrush="Transparent"
                             Background="Transparent"
-                            BorderThickness="1">
-                        <Border x:Name="PART_InnerBorder"
+                            BorderThickness="1"
+                            Margin="0 -6 0 0">
+                        <ctrl:ClipBorder x:Name="PART_InnerBorder"
                                 CornerRadius="8"
                                 BorderThickness="1"
-                                BorderBrush="#33000000"
-                                Background="White"
+                                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                                Background="{DynamicResource Theme.Brush.Content.Back}"
                                 Margin="6">
-                        <Border.Effect>
+                        <ctrl:ClipBorder.Effect>
                             <DropShadowEffect 
-                                Opacity="0.2"
-                                BlurRadius="25" 
+                                Opacity="{DynamicResource Theme.DropShadow.Opacity}"
+                                BlurRadius="16" 
                                 ShadowDepth="2"
                                 Color="#000000"/>
-                        </Border.Effect>
+                        </ctrl:ClipBorder.Effect>
                         <cc:CompletionListBox x:Name="PART_ListBox"
 						    ItemContainerStyle="{StaticResource CompletionListBoxItem}"
 						    Background="{TemplateBinding Background}"
+                                              BorderThickness="0"
 						    TextBlock.Foreground="{TemplateBinding Foreground}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -81,7 +85,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </cc:CompletionListBox>
-                        </Border>
+                        </ctrl:ClipBorder>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

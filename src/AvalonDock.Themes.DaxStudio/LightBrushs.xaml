@@ -230,12 +230,12 @@
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.ToolWindowCaptionButtonActiveHoveredBackground}"
 		options:Freeze="true"
-		Color="#52B0EF" />
+		Color="#228ED6" />
 	<!--  AccentColor  -->
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.ToolWindowCaptionButtonActiveHoveredBorder}"
 		options:Freeze="true"
-		Color="#52B0EF" />
+		Color="#228ED6" />
 	<SolidColorBrush
 		x:Key="{x:Static reskeys:ResourceKeys.ToolWindowCaptionButtonActiveHoveredGlyph}"
 		options:Freeze="true"

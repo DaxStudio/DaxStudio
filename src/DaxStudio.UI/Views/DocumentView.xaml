@@ -761,14 +761,14 @@
                                                 <MenuItem x:Name="Copy" Header="Copy" 
                                                       cal:Message.Attach="Copy()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource CopyIcon}"/>
+                                                        <Image Source="{DynamicResource copyDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
                                                 <MenuItem x:Name="Paste" Header="Paste"
                                                       cal:Message.Attach="Paste()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource PasteIcon}"/>
+                                                        <Image Source="{DynamicResource clipboardDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
@@ -776,7 +776,7 @@
                                                 <MenuItem x:Name="CommentSelection" Header="Comment" 
                                                       cal:Message.Attach="CommentSelection()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource CommentIcon}"/>
+                                                        <Image Source="{DynamicResource commentDrawingImage}"/>
                                                     </MenuItem.Icon>
                                                     
                                                 </MenuItem>
@@ -784,7 +784,7 @@
                                                 <MenuItem x:Name="UncommentSelection" Header="Uncomment" 
                                                       cal:Message.Attach="UnCommentSelection()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource UncommentIcon}"/>
+                                                        <Image Source="{DynamicResource uncommentDrawingImage}"/>
                                                     </MenuItem.Icon>
                                                     
                                                 </MenuItem>
@@ -793,6 +793,9 @@
                                                           Header="{Binding LookupDaxGuideHeader}"
                                                           cal:Message.Attach="LookupDaxGuide()" 
                                                           IsEnabled="{Binding CanLookupDaxGuide}">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{DynamicResource dax_guide_smallDrawingImage}" />
+                                                    </MenuItem.Icon>
                                                 </MenuItem>
                                             </ContextMenu>
                                         </ContextMenuService.ContextMenu>
