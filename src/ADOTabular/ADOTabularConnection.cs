@@ -757,7 +757,15 @@ namespace ADOTabular
                 }
                 else
                 {
-                    ShortFileName = new FileInfo(_powerBIFileName).Name;
+                    try
+                    {
+                        ShortFileName = new FileInfo(_powerBIFileName).Name;
+                    }
+                    catch
+                    {
+                        // if there are any errors fallback to using the filename as the ShortName
+                        ShortFileName = _powerBIFileName;
+                    }
                 }
             }
         }
