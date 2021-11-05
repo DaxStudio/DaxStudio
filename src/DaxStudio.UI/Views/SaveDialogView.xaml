@@ -23,7 +23,7 @@
                 <ui:XamlControlsResources/>
             </ResourceDictionary.MergedDictionaries>
 
-            <Thickness x:Key="ButtonMargin">4 8 0 0</Thickness>
+            <Thickness x:Key="ButtonMargin">4 8 4 0</Thickness>
 
             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource DefaultButtonStyle}">
                 <!--<Setter Property="HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />-->

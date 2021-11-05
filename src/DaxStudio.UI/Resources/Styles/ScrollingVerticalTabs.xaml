@@ -37,11 +37,11 @@
                 <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
                 <RowDefinition x:Name="RowDefinition1" Height="*"/>
             </Grid.RowDefinitions>
-            <Border Grid.Row="1" Grid.Column="1" x:Name="ContentPanel" BorderBrush="#FFD0CEBF" BorderThickness="0,0,1,1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained">
+            <Border Grid.Row="1" Grid.Column="1" x:Name="ContentPanel" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained">
                 <Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                    <Border Background="{TemplateBinding Background}" x:Name="Border1">
+                    <!--<Border Background="{TemplateBinding Background}" x:Name="Border1">-->
                         <ContentPresenter DataContext="{x:Null}" Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" Content="{TemplateBinding SelectedContent}" ContentTemplate="{TemplateBinding SelectedContentTemplate}" ContentTemplateSelector="{TemplateBinding SelectedContentTemplateSelector}" ContentSource="SelectedContent"/>
-                    </Border>
+                    <!--</Border>-->
                 </Border>
             </Border>
             <ScrollViewer x:Name="HeaderPanel" 

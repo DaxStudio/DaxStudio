@@ -560,7 +560,8 @@
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type model:TreeViewTable}" ItemsSource="{Binding Children}">
                                     <!-- Table Template -->
-                                    <Grid Tag="{Binding DataContext, ElementName=Tables}">
+                                    <Grid Tag="{Binding DataContext, ElementName=Tables}"
+                                          cal:Message.Attach="[Event ToolTipOpening] = [Action TableTooltipOpening($dataContext)]">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition />
@@ -570,7 +571,7 @@
 
                                             <TextBlock  Text="{Binding Caption}"  
                                                         Grid.Column="1"
-                                                        cal:Message.Attach="[Event ToolTipOpening] = [Action TableTooltipOpening($dataContext)]" 
+                                                         
                                                         TextTrimming="CharacterEllipsis"
                                                         ap:ForegroundBindingHelper.ResourceKey ="{Binding ForegroundBrush}"
                                                         />

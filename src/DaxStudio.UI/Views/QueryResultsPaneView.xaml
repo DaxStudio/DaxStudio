@@ -7,7 +7,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
-                              xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
+             xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
@@ -55,12 +55,15 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
     
-            <TabControl ItemsSource="{Binding Tables}" Template="{DynamicResource ScrollingVerticalTabsTemplate}" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTableIndex}">
+            <TabControl ItemsSource="{Binding Tables}" 
+                        Template="{DynamicResource ScrollingVerticalTabsTemplate}" 
+                        TabStripPlacement="Left" 
+                        SelectedIndex="{Binding SelectedTableIndex}">
                 <!-- Style to hide tabs if only one is present -->
                 <TabControl.ItemContainerStyle>
 
                     <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
-                        <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="TabItem">
@@ -153,7 +156,7 @@
                         <controls:ClipBorder 
                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="4"
                             >
                          <DataGrid
                             x:Name="DefaultView" 

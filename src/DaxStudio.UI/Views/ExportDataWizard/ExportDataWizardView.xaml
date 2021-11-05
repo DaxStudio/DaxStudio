@@ -4,11 +4,11 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                       xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+                      xmlns:res="clr-namespace:DaxStudio.UI.Resources"
                       xmlns:local="clr-namespace:DaxStudio.UI.Views"
                       mc:Ignorable="d" 
                       Caption="Export Data"
                       Icon="{DynamicResource export_dataDrawingImage}"
-                      Style="{StaticResource DaxStudioDialogStyle}"
                       d:DesignHeight="450" d:DesignWidth="800"
                       MinHeight="600"
                       MinWidth="500"
@@ -18,7 +18,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+                <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>-->
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

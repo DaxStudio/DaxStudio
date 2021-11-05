@@ -39,7 +39,7 @@
 									 ResourceId=EditorSelectionBrush}"
 		options:Freeze="true"
 		Opacity="0.75"
-		Color="{DynamicResource Theme.PrimaryAccentColor}" />
+		Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
 
 	<SolidColorBrush
 		x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
