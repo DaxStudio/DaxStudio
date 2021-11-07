@@ -80,7 +80,7 @@ namespace DaxStudio.UI.Converters
                         // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
                         var colBinding = new Binding(bindingPath);
                         cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
-
+                        
                         // TODO - this might work if I pass thru the data context as a parameter
                         // then I could call a method on the viewModel
                         //Button btn = new Button();
@@ -104,6 +104,7 @@ namespace DaxStudio.UI.Converters
                             colBinding.ConverterCulture = cultureInfo;
                         }
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+                        cellTxtBlock.SetValue(TextBlock.PaddingProperty, new Thickness(6, 3, 6, 0));
                         if (item.DataType != typeof(string)) cellTxtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
                         cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );
                         cellTemplate.VisualTree = cellTxtBlock;

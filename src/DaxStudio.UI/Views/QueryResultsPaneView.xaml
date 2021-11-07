@@ -15,7 +15,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ScrollingVerticalTabs.xaml"/>
@@ -27,7 +27,38 @@
             <sel:ResultsGridCellTemplateSelector x:Key="ResultsGridCellTemplateSelector"/>
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White" />
 
-            <Style TargetType="FrameworkElement" x:Key="FadeInAnimation">
+            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+                <Setter Property="Padding" Value="6 0"/>
+                <Setter Property="MinHeight" Value="28"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+                <Setter Property="FontWeight" Value="DemiBold"/>
+                <Style.Triggers>
+                    <Trigger Property="SortDirection" Value="{x:Null}">
+                        <Setter Property="Padding" Value="6 0" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="DataGridRowHeader" BasedOn="{StaticResource DefaultDataGridRowHeaderStyle}">
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+                <Setter Property="MinWidth" Value="10"/>
+            </Style>
+
+            <Style TargetType="DataGridRow">
+                <Style.Triggers>
+                    <Trigger Property="AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="Green"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
+                <Setter Property="Padding" Value="6 0 6 0"/>
+                <Setter Property="Margin" Value="6,0,6,0"/>
+            </Style>-->
+            
+            <!--<Style TargetType="FrameworkElement" x:Key="FadeInAnimation">
                 <Setter Property="Visibility" Value="Collapsed"/>
                 <Setter Property="Opacity" Value="0"/>
                 <Style.Triggers>
@@ -42,7 +73,7 @@
                         </Trigger.EnterActions>
                     </Trigger>
                 </Style.Triggers>
-            </Style>
+            </Style>-->
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -71,9 +102,9 @@
                                         <Border x:Name="border" 
                                             BorderBrush="Transparent"
                                             BorderThickness="3,0,0,0"
-                                            Margin="2,0,4,0"
-                                                
-                                            CornerRadius="2,0,0,2"
+                                            Margin="0 0 8 0"
+                                                Padding="2"
+                                            CornerRadius="4"
                                             Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
                                                 
 
@@ -86,7 +117,7 @@
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Center"
                                             ContentSource="Header"
-                                            Margin="8,2,2,2"
+                                            Margin="0,2,0,2"
                                             Grid.Column="0"/>
                                                 <!--<TextBlock x:Name="ActiveIndicator" 
                                                            VerticalAlignment="Bottom" 
@@ -105,8 +136,8 @@
                                             <!--<Setter Property="Foreground" Value="White"/>-->
                                             <!--<Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>-->
                                             <Setter Property="Panel.ZIndex" Value="100"/>
-                                            <Setter TargetName="border" Property="Margin" Value="0,0,0,0"/>
-                                            <Setter TargetName="border" Property="Padding" Value="2,0,0,0"/>
+                                            <!--<Setter TargetName="border" Property="Margin" Value="0,0,0,0"/>
+                                            <Setter TargetName="border" Property="Padding" Value="2,0,0,0"/>-->
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="False">
                                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
@@ -158,10 +189,12 @@
                             BorderThickness="1"
                             CornerRadius="4"
                             >
+
+                            <!-- ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"     -->
                          <DataGrid
                             x:Name="DefaultView" 
-                            
-                            
+                            AlternationCount="2"
+                             AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                             ItemsSource="{Binding DefaultView}"
                             ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             SelectionMode="Extended"       
@@ -169,16 +202,15 @@
                             CanUserAddRows="False"
                             CanUserDeleteRows="False"
                             IsReadOnly="True"
-                            VerticalGridLinesBrush="WhiteSmoke" 
-                            HorizontalGridLinesBrush="WhiteSmoke"
+                            
                             AutoGenerateColumns="False"
                             FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
-                            
                             cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
                                         , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
                             CanUserSortColumns="True"
-                            ItemTemplateSelector="{StaticResource ResultsGridCellTemplateSelector}"          
+                            RowHeaderWidth="10"
+                            GridLinesVisibility="All" 
                              
                             >
                             <!--<DataGrid.Style>
@@ -212,7 +244,7 @@
                 </TabControl.ContentTemplate>
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding TableName}"/>
+                        <TextBlock Text="{Binding TableName}" FontWeight="Black" Margin="12 0"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
             </TabControl>

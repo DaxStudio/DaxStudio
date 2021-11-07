@@ -127,7 +127,7 @@
 
                     <!-- PBI / SSDT -->
                     <RadioButton  HorizontalAlignment="Left" 
-                                  Margin="5,10,5,0" x:Name="rdoPowerBI" 
+                                  Margin="5,0,5,0" x:Name="rdoPowerBI" 
                                   VerticalAlignment="Center" 
                                   IsChecked="{Binding PowerBIModeSelected, Mode=TwoWay}" 
                                   Grid.Column="0" 
@@ -144,6 +144,7 @@
                               Grid.Column="1"
                               Grid.Row="0"
                               HorizontalAlignment="Stretch"
+                        
 							  ItemsSource="{Binding PowerBIDesignerInstances}"
 							  SelectedItem="{Binding SelectedPowerBIInstance}"
 							  IsEnabled="{Binding IsChecked, ElementName=rdoPowerBI}">

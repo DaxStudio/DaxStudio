@@ -28,10 +28,10 @@
             </Style>-->
 
             <DataTemplate  DataType="{x:Type model:AutoSaveIndexEntry}">
-                <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}" VerticalAlignment="Center">
+                
                     <StackPanel Orientation="Horizontal">
-
-                        <Grid>
+                    <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}" VerticalAlignment="Center" MinWidth="24"/>
+                    <Grid>
                             <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
                                                         Margin="0,3,10,3" Width="32" Height="32" />
                             <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
@@ -41,7 +41,7 @@
                             <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
                         </StackPanel>
                     </StackPanel>
-                </CheckBox>
+                
                 <!--<StackPanel Orientation="Vertical">
                                         
                     <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}"/>
@@ -96,8 +96,8 @@
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldOpen($this.SelectedItem)]">
             </ListView>
         </Border>
-        <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
-                <Button x:Name="Open" IsDefault="True" Style="{DynamicResource AccentButtonStyle}" Margin="0 0 8 0">_Open</Button>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0 12 0 0" HorizontalAlignment="Right">
+                <Button x:Name="Open" IsDefault="True" Style="{DynamicResource AccentButtonStyle}" Margin="0 0 12 0">_Open</Button>
                 <Button x:Name="Cancel" IsCancel="True" Style="{DynamicResource DefaultButtonStyle}">Cancel</Button>
             </StackPanel>
         </Grid>

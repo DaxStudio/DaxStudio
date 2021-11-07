@@ -36,7 +36,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>-->
 
-        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" >
+        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
         
@@ -74,8 +74,8 @@
 
         BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}"
         -->
-        
-        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}" >
+
+        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}"  >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -124,7 +124,7 @@
         </Style>
         <!-- BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}" -->
 
-        <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}" >
+        <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -172,6 +172,7 @@
             </Setter>
         </Style>
 
+        <Style TargetType="{x:Type controls:DataGridNoContextMenu}" BasedOn="{StaticResource DefaultDataGridStyle}"/>
 
         <DataTemplate x:Key="QueryTextCell">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -200,22 +201,28 @@
                 <VisualState x:Name="MouseOver"/>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        
+        <controls:ClipBorder 
+            BorderThickness="1"
+            CornerRadius="4"
+            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+            >
         <controls:DataGridNoContextMenu x:Name="QueryHistory" 
                 CanUserSortColumns="True"
                 ClipboardCopyMode="ExcludeHeader"
+                AlternationCount="2"
+                AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                GridLinesVisibility="Horizontal"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                 SelectionMode="Single"   
                 SelectionUnit="FullRow"
                 SelectedItem="{Binding SelectedHistoryItem}"
                 cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick()]"
                 CanUserAddRows="False"
                 CanUserDeleteRows="False"
-                VerticalGridLinesBrush="WhiteSmoke" 
-                HorizontalGridLinesBrush="WhiteSmoke"
+                IsReadOnly="True"
                 AutoGenerateColumns="False" 
                 RowDetailsVisibilityMode="Collapsed"
-                IsReadOnly="True"
-                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                RowHeaderWidth="10"
                 >
             <!--<DataGrid.Style>
                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
@@ -401,6 +408,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                
                 <DataGridTemplateColumn >
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -410,11 +418,12 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                
                 <DataGridTemplateColumn Header="Query" Width="*" 
                                         ClipboardContentBinding="{Binding QueryText}"
                                         CellTemplate="{StaticResource QueryTextCell}" />
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
-
+        </controls:ClipBorder>
     </Grid>
 </controls:ZoomableUserControl>

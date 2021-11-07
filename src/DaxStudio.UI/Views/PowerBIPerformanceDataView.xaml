@@ -15,7 +15,7 @@
        xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1">
+             >
     <UserControl.Resources>
         
         
@@ -70,6 +70,8 @@
                 <Setter Property="Padding" Value="2,0,2,0"/>
             </Style>
 
+            <Style TargetType="{x:Type controls:DataGridCustomCopy}" BasedOn="{StaticResource DefaultDataGridStyle}"/>
+
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -81,7 +83,10 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-
+        <controls:ClipBorder
+            CornerRadius="4"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
         <!--<controls:DataGridNoContextMenu x:Name="PerformanceData"--> 
         <controls:DataGridCustomCopy x:Name="PerformanceData" 
                     Grid.Row="1"
@@ -90,14 +95,14 @@
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
-                       
+                    AlternationCount="2"
+                    AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                     SelectedItem="{Binding SelectedPerfData}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
                     VerticalAlignment="Stretch" 
-                    Background="White" 
                     Width="Auto"
                     SelectionMode="Extended"
                     SelectionUnit="FullRow"
@@ -105,15 +110,19 @@
                     ClipboardCopyMode="IncludeHeader"
                     ScrollViewer.CanContentScroll="True"
                     FrozenColumnCount="1"
-                    GridLinesVisibility="None" 
+                    GridLinesVisibility="Horizontal" 
                     BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    IsReadOnly="True"
                     >
 
             <DataGrid.Resources>
-                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="MinHeight" Value="20"/>
                 </Style>
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </DataGrid.Resources>
@@ -222,6 +231,7 @@
 
             </DataGrid.Columns>
         </controls:DataGridCustomCopy>
+        </controls:ClipBorder>
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 
