@@ -480,6 +480,7 @@
     <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource closeGeometry}" />
   </DrawingGroup>
   <DrawingImage x:Key="closeDrawingImage" Drawing="{StaticResource closeDrawingGroup}" />
+    <DrawingImage x:Key="close_infobarDrawingImage" Drawing="{StaticResource closeDrawingGroup}" />
   <Geometry x:Key="options_resultsGeometry">F1 M16,16z M0,0z M14.9,1.1A1.42,1.42,0,0,0,13.9,0.67L2.14,0.67A1.56,1.56,0,0,0,1.57,0.78A1.56,1.56,0,0,0,1.1,1.1A1.63,1.63,0,0,0,0.78,1.57A1.56,1.56,0,0,0,0.67,2.14L0.67,13.86A1.42,1.42,0,0,0,1.1,14.86A1.51,1.51,0,0,0,1.57,15.18A1.56,1.56,0,0,0,2.14,15.29L13.86,15.29A1.56,1.56,0,0,0,14.43,15.18A1.51,1.51,0,0,0,14.9,14.86A1.42,1.42,0,0,0,15.33,13.86L15.33,2.14A1.56,1.56,0,0,0,15.22,1.57A1.63,1.63,0,0,0,14.9,1.1z M4.9,14.52L2.14,14.52A0.63,0.63,0,0,1,1.68,14.32A0.63,0.63,0,0,1,1.48,13.86L1.48,11.07 4.93,11.07z M4.9,10.26L1.48,10.26 1.48,5.74 4.93,5.74z M10.23,14.52L5.74,14.52 5.74,11.07 10.26,11.07z M10.23,10.26L5.74,10.26 5.74,5.74 10.26,5.74z M14.49,13.86A0.68,0.68,0,0,1,13.83,14.52L11.07,14.52 11.07,11.07 14.52,11.07z M14.49,10.26L11.07,10.26 11.07,5.74 14.52,5.74z M14.49,4.93L1.49,4.93 1.49,2.14A0.63,0.63,0,0,1,1.69,1.68A0.63,0.63,0,0,1,2.15,1.48L13.86,1.48A0.63,0.63,0,0,1,14.32,1.68A0.63,0.63,0,0,1,14.52,2.14z</Geometry>
   <DrawingGroup x:Key="options_resultsDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
     <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource options_resultsGeometry}" />

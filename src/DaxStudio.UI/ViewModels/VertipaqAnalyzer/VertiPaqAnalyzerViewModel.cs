@@ -37,7 +37,7 @@ namespace DaxStudio.UI.ViewModels
             IsBusy = true;
             _globalOptions = options;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
             CurrentDocument = currentDocument;
 
             // configure default sort columns

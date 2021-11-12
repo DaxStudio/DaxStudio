@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Utils
             {
                 sbParams.Append("  <Parameter>\n");
                 sbParams.AppendFormat("    <Name>{0}</Name>\n", p.Value.Name);
-                sbParams.AppendFormat("    <Value xsi:type=\"xsd:{0}\">{1}</Value>\n", p.Value.TypeName, p.Value.Value);
+                sbParams.AppendFormat("    <Value xsi:type=\"xsd:{0}\">{1}</Value>\n", p.Value.TypeName, System.Security.SecurityElement.Escape( p.Value.Value.ToString()));
                 sbParams.Append("  </Parameter>\n");
             }
             sbParams.Append("</Parameters>");

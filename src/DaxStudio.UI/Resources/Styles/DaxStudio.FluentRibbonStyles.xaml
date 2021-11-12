@@ -4,6 +4,7 @@
                     xmlns:converters="clr-namespace:Fluent.Converters;assembly=Fluent"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                     mc:Ignorable="d"
                     >
     <ResourceDictionary.MergedDictionaries>
@@ -205,8 +206,10 @@
                      TargetType="{x:Type Fluent:RibbonWindow}">
         <!--CornerRadius="8" 
                 ClipToBounds="True"-->
-            <Border 
-                Background="{DynamicResource Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background}">
+        <!-- Background="{DynamicResource Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background}" -->
+            <ctrl:ClipBorder
+                CornerRadius="8"
+                Background="Transparent">
             <Grid LayoutTransform="{Binding LayoutTransform, RelativeSource={RelativeSource TemplatedParent}}"
               RenderTransform="{Binding RenderTransform, RelativeSource={RelativeSource TemplatedParent}}">
                 <AdornerDecorator x:Name="Adorner">
@@ -259,7 +262,7 @@
                 </Border>
             </AdornerDecorator>
 
-                <Border x:Name="PART_Border"
+                <ctrl:ClipBorder x:Name="PART_Border"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{x:Null}"
@@ -275,7 +278,7 @@
                         IsTabStop="false"
                         Visibility="Collapsed" />
             </Grid>
-        </Border>
+        </ctrl:ClipBorder>
 
         <ControlTemplate.Triggers>
                 <Trigger Property="IsActive" Value="False">
@@ -313,12 +316,15 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <Style x:Key="DaxStudioRibbonWindowStyle"
+    <Style x:Key="DaxStudioRibbonWindowStyle"
            TargetType="{x:Type Fluent:RibbonWindow}">
-            <Setter Property="Background" Value="{DynamicResource WhiteBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.AccentBaseColorBrush}" />
+            <!--<Setter Property="Background" Value="{DynamicResource WhiteBrush}" />-->
+            <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.AccentBaseColorBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{DynamicResource BlackBrush}" />
+            <!--<Setter Property="Foreground" Value="{DynamicResource BlackBrush}" />-->
+            
             <Setter Property="GlowBrush" Value="{DynamicResource Fluent.Ribbon.Brushes.AccentBaseColorBrush}" />
             <Setter Property="NonActiveBorderBrush" Value="#434346" />
             <Setter Property="NonActiveGlowBrush" Value="#434346" />

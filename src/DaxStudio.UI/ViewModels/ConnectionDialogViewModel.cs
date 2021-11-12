@@ -46,7 +46,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 _eventAggregator = eventAggregator;
-                _eventAggregator.Subscribe(this);
+                _eventAggregator.SubscribeOnPublishedThread(this);
                 _connectionString = connectionString;
                 _activeDocument = document;
                 SettingProvider = settingProvider;

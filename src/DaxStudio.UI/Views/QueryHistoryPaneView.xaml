@@ -205,6 +205,7 @@
             BorderThickness="1"
             CornerRadius="4"
             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+            Background="{DynamicResource Theme.Brush.Content.Back}"
             >
         <controls:DataGridNoContextMenu x:Name="QueryHistory" 
                 CanUserSortColumns="True"
@@ -232,9 +233,14 @@
             <DataGrid.Resources>
                 <Style TargetType="DataGridCellsPresenter">
                     <Setter Property="Height" Value="{Binding QueryTextHeight}"/>
-                </Style>                
+                </Style>
+                <Style TargetType="DataGridRowHeader" BasedOn="{StaticResource DefaultDataGridRowHeaderStyle}">
+                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+                    </Style>
             </DataGrid.Resources>
     
+            
+            
             <!--<DataGrid.AlternatingRowBackground>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Offset="1" Color="#f2f2f2"/>

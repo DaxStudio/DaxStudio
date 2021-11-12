@@ -31,6 +31,7 @@
     <Color x:Key="Theme.LineNumbers">#999999</Color>
     <Color x:Key="Theme.InfoBar.Back">#FFF6C7</Color>
     <Color x:Key="Theme.InfoBar.Border">#EFCB00</Color>
+    <Color x:Key="Theme.InfoBar.Fore">#000000</Color>
     <Color x:Key="Theme.Tooltip.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Log.Warning">#DEB100</Color>
     <Color x:Key="Theme.Log.Error">#FF0000</Color>
@@ -58,6 +59,7 @@
     <SolidColorBrush x:Key="Theme.Brush.LineNumbers" Color="{StaticResource Theme.LineNumbers}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Back" Color="{StaticResource Theme.InfoBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Border" Color="{StaticResource Theme.InfoBar.Border}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.InfoBar.Fore" Color="{StaticResource Theme.InfoBar.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Tooltip.Border" Color="{StaticResource Theme.Tooltip.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.TextBox.Border" Color="{StaticResource Theme.TextBox.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Log.Error" Color="{StaticResource Theme.Log.Error}" options:Freeze="true"/>
@@ -72,7 +74,10 @@
     <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="{DynamicResource Theme.Dialog.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{DynamicResource Theme.Table.Header.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="GridLinesBrush" Color="{DynamicResource Theme.Control.Border}" options:Freeze="true"/>
-    
+
+    <SolidColorBrush x:Key="EditorSelectionBrush" Color="{DynamicResource Theme.PrimaryAccentColor}" Opacity="0.75" options:Freeze="true"/>
+    <SolidColorBrush x:Key="EditorSelectionForeground" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>
+
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor60"  >#99228ED6</Color>

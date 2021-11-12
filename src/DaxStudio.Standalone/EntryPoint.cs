@@ -296,7 +296,7 @@ namespace DaxStudio.Standalone
                 Application.Current.Dispatcher.Invoke(()=>{
                     // Show a dialog to let the user know there was a fatal crash
                     // but we are unable to automatically log the crash due to their privacy settings
-                    var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = msg}};
+                    var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = ex.Message}};
                     blockedDlg.ShowDialog();
                 });
 

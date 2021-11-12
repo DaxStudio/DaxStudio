@@ -75,28 +75,48 @@
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <Grid Width="Auto">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Grid >
+        
 
-        <controls:ClipBorder
-            CornerRadius="4"
-            BorderThickness="1"
-            BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
-        <!--<controls:DataGridNoContextMenu x:Name="PerformanceData"--> 
-        <controls:DataGridCustomCopy x:Name="PerformanceData" 
-                    Grid.Row="1"
+        
+        <!--<controls:DataGridNoContextMenu x:Name="PerformanceData"-->
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+<!-- Toolbar -->
+            <controls:ClipBorder
+                CornerRadius="4"
+                BorderThickness="1"
+                Margin="0 0 0 12"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+                <Grid>
+                    <Button x:Name="Export" >Export</Button>
+                    <ToggleButton x:Name="ShowFilters" HorizontalAlignment="Right">Filter</ToggleButton>
+                </Grid>
+            </controls:ClipBorder>
+
+            <controls:ClipBorder
+                CornerRadius="4"
+                BorderThickness="1"
+                Grid.Row="1"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+                <controls:DataGridCustomCopy x:Name="PerformanceData" 
+                    
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
-                    filter:DataGridExtensions.IsClearButtonVisible="False"
+                    filter:DataGridExtensions.IsClearButtonVisible="True"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
+                                             
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
                     AlternationCount="2"
                     AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                    Background="{DynamicResource Theme.Brush.Content.Back}"
                     SelectedItem="{Binding SelectedPerfData}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
@@ -109,6 +129,7 @@
                     HeadersVisibility="Column"
                     ClipboardCopyMode="IncludeHeader"
                     ScrollViewer.CanContentScroll="True"
+                    VerticalScrollBarVisibility="Auto"
                     FrozenColumnCount="1"
                     GridLinesVisibility="Horizontal" 
                     BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
@@ -118,6 +139,31 @@
                     >
 
             <DataGrid.Resources>
+
+                        <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
+                            <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
+                        </Style>
+                
+                <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                                        <controls:ClipBorder
+                                            CornerRadius="4"
+                                            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                                            >
+                                            <Grid>
+                                                <DataGridColumnHeader x:Name="PART_FillerColumnHeader" IsHitTestVisible="False"/>
+                                                <ItemsPresenter />
+                                            </Grid>
+                                        </controls:ClipBorder>
+                                    </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
                 <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                     <Setter Property="MinHeight" Value="20"/>
@@ -157,7 +203,7 @@
                 </Style>
             </DataGrid.CellStyle>
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}">
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>
@@ -231,7 +277,9 @@
 
             </DataGrid.Columns>
         </controls:DataGridCustomCopy>
-        </controls:ClipBorder>
+            </controls:ClipBorder>
+        </Grid>
+        
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 

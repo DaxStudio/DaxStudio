@@ -30,7 +30,7 @@
     <!-- BasedOn="{StaticResource TextBlockDefaultStyle}" -->
     <Style x:Key="DialogCaption" TargetType="TextBlock" >
         <Setter Property="Margin" Value="8 0 0 0"/>
-
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="FontSize" Value="28"/>
 

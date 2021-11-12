@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              mc:Ignorable="d" 
@@ -19,6 +20,10 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+
+            <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+            </Style>
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -34,6 +39,28 @@
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
+        <Border CornerRadius="4"
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                BorderThickness="1"
+                Margin="0 0 0 8">
+            <!--<ui:CommandBar>
+                <ui:AppBarButton Label="Record">
+
+                    <Image Source="{DynamicResource record_toolbarDrawingImage}"/>
+
+                </ui:AppBarButton>
+                <ui:AppBarButton Label="Pause"/>
+            </ui:CommandBar>-->
+            <!--<DockPanel>
+                <Button>Record</Button>
+                <Button>Pause</Button>
+                <Button>Stop</Button>
+                <Button>Clear</Button>
+                <Button>Export</Button>
+            </DockPanel>-->
+        </Border>
+        
         <DataGrid Grid.Row="1" 
                   SelectedItem="{Binding SelectedPhysicalRow}" 
                   HorizontalAlignment="Stretch" 
@@ -159,7 +186,7 @@
                                     IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
             </DataGrid.Columns>
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>

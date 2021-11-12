@@ -272,6 +272,7 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
 
                 IntellisenseProvider.Editor = _editor;
                 UpdateSettings();

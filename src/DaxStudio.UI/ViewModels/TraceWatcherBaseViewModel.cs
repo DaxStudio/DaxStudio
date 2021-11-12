@@ -170,7 +170,7 @@ namespace DaxStudio.UI.ViewModels
                     //if (!_isChecked) Reset();
                     if (value)
                     {
-                        _eventAggregator.Subscribe(this);
+                        _eventAggregator.SubscribeOnPublishedThread(this);
                     }
                     else
                     {

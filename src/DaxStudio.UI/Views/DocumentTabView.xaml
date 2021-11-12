@@ -74,7 +74,7 @@
                                         Grid.Column="1" 
                                         Grid.Row="0"
                                         IsItemsHost="true" 
-                                        Margin="2,0,2,10"  
+                                        Margin="2,0,2,6"  
                                         Background="Transparent"
                                         KeyboardNavigation.TabIndex="1"/>
                                     <avalonDockControls:DropDownButton

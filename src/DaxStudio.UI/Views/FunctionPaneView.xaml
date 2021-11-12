@@ -8,7 +8,7 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
              xmlns:ui="http://schemas.modernwpf.com/2019"

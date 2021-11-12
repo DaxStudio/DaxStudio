@@ -1166,7 +1166,7 @@
                 
             </Fluent:RibbonGroupBox>
 
-            <Fluent:RibbonGroupBox Header="Security" Visibility="Collapsed">
+            <Fluent:RibbonGroupBox Header="Security">
                 <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" Width="48"
                                cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]"
                                Icon="{DynamicResource view_asDrawingImage}"

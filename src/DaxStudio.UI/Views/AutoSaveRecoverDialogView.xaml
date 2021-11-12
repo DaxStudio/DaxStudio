@@ -8,7 +8,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              Caption="Recovered Files"
-                      Icon="{DynamicResource recoverDrawingIcon}"
+                      Icon="{DynamicResource recoverDrawingImage}"
              Style="{StaticResource DaxStudioDialogStyle}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
@@ -87,12 +87,14 @@
         <Border Grid.Row="2" 
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                 CornerRadius="8"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
                 BorderThickness="1">
             <ListView x:Name="DocumentList" Grid.Row="2"
                       ItemsSource="{Binding Files}" 
                       Margin="10,0"
                       MaxHeight="400"
                       BorderThickness="0.8"
+                      
                       cal:Message.Attach="[Event MouseUp] = [Action ToggleShouldOpen($this.SelectedItem)]">
             </ListView>
         </Border>

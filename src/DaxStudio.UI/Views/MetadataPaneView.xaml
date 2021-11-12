@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
@@ -12,7 +11,8 @@
              xmlns:model="clr-namespace:DaxStudio.UI.Model"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
@@ -491,23 +491,24 @@
                 Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                 VerticalAlignment="Center"
                 Margin="0 4" Style="{DynamicResource SearchBoxStyle}"
+                cal:Message.Attach="[Gesture Key.Escape] = [ClearCriteria()];[Gesture Key.Down]=[SetFocusToMetadata()]"
                 >
                 <i:Interaction.Triggers>
                     <trig:InputBindingTrigger>
                         <trig:InputBindingTrigger.InputBinding>
                             <KeyBinding Key="Escape"/>
                         </trig:InputBindingTrigger.InputBinding>
-                        <cal:Action.Target>
+
                             <cal:ActionMessage MethodName="ClearCriteria"/>
-                        </cal:Action.Target>
+
                     </trig:InputBindingTrigger>
                     <trig:InputBindingTrigger>
                         <trig:InputBindingTrigger.InputBinding>
                             <KeyBinding Key="Down"/>
                         </trig:InputBindingTrigger.InputBinding>
-                        <cal:Action.Target>
-                            <cal:ActionMessage MethodName="SetFocusToMetadata"/>
-                        </cal:Action.Target>
+
+                        <cal:ActionMessage MethodName="SetFocusToMetadata"/>
+
                     </trig:InputBindingTrigger>
                 </i:Interaction.Triggers>
 

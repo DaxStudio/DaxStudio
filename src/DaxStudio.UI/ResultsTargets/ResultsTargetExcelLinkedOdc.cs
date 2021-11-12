@@ -32,7 +32,7 @@ namespace DaxStudio.UI.ResultsTargets
         {
             _host = host;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
         }
 
         #region Standard Properties

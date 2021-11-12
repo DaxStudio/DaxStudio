@@ -681,20 +681,26 @@
                                     </Grid.RowDefinitions>
 
                                     <Border 
+                                        Margin="0 4 0 8"
                                         Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToCollapsedConverter}}"
                                         Grid.ColumnSpan="2"
-                                        Background="{DynamicResource WarningBarBackgroundBrush}">
+                                        BorderBrush="{DynamicResource Theme.Brush.InfoBar.Border}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Background="{DynamicResource Theme.Brush.InfoBar.Back}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <fa:FontAwesome Icon="{Binding InformationBarIcon}" Spin="{Binding InformationBarIconSpin}"  Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
-                                            <Label x:Name="ViewAsDescription" Content="{Binding ViewAsDescription}" Grid.Column="1"/>
-                                            <Button x:Name="StopViewAs" Content="Stop Viewing" Grid.Column="2" Margin="3" Padding="5 0"
+                                            <Image Source="{DynamicResource viewing_as_smallDrawingImage}"  Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
+                                            <Label x:Name="ViewAsDescription" Content="{Binding ViewAsDescription}" Grid.Column="1" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"/>
+                                            <Button x:Name="StopViewAs"  Grid.Column="2" Margin="3" Padding="2 0" Background="Transparent"
                                                     cal:Message.Attach="[Event Click]=[Action StopViewAs()]"
-                                                    />
+                                                    >
+                                                <Image Source="{DynamicResource close_infobarDrawingImage}"/>
+                                            </Button>
                                             <!--<fa:FontAwesome Icon="Close" Grid.Column="2" VerticalAlignment="Center" Margin="5 0"/>-->
                                         </Grid>
 
@@ -702,7 +708,7 @@
 
                                     <!-- EditorBorder.CornerRadius="8"-->
                                     <dax:DAXEditor x:Name="daxEditor" 
-                                                   Margin="2,2,2,2" 
+                                                   Margin="0" 
                                                    Padding="8,8,8,8"
                                                    BorderThickness="1"
                                                    BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
