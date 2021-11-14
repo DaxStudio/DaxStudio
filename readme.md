@@ -29,7 +29,7 @@ and run the following commands:
 sudo apt update
 sudo apt upgrade
 sudo apt install make gcc
-sudo apt install build-essentials
+sudo apt install build-essential
 sudo apt install ruby ruby-all-dev
 sudo apt install zlib1g-dev
 sudo apt install g++
