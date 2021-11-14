@@ -3,10 +3,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
     xmlns:s="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:local="clr-namespace:DaxStudio.Controls.DataGridFilter"
     xmlns:support="clr-namespace:DaxStudio.Controls.DataGridFilter.Support"
     xmlns:reskeys="clr-namespace:DaxStudio.Controls.DataGridFilter.Themes">
     
+    <ResourceDictionary.MergedDictionaries>
+        <ui:XamlControlsResources/>
+    </ResourceDictionary.MergedDictionaries>
     
     
     <Style TargetType="{x:Type local:DataGridColumnFilter}">
@@ -298,12 +302,14 @@
                                         Converter={StaticResource filterOperators}}">
                             </ComboBox>
             
+                            
                             <support:DelayTextBox
                                     x:Name="PART_TextBoxFilter"
                                     Visibility="Collapsed"
                                     VerticalAlignment="Top"
                                     VerticalContentAlignment="Center"
                                     Background="{TemplateBinding Background}"
+                                Style="{StaticResource DefaultTextBoxStyle}"
                                     Height="{Binding 
                                             RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
                                             Converter={StaticResource fontSizeToHeightConverter},
@@ -316,6 +322,7 @@
                                         Grid.Column="2" >
                                 
                             </support:DelayTextBox>
+
                             <!-- Numeric -->
                             
                             <!-- List -->

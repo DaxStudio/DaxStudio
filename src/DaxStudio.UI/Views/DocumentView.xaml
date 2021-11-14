@@ -62,6 +62,63 @@
                 </Setter>
             </Style>-->
 
+            <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
+                <!--<ColorAnimation Duration="0:0:0.5"
+                                                        To="Red"
+                                                        AutoReverse="True"
+                                                        RepeatBehavior="Forever"
+                                                        Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                                                        />-->
+
+                <ColorAnimationUsingKeyFrames BeginTime="0"
+                                                  Duration="0:0:1.6"
+                                                  FillBehavior="HoldEnd"
+                                                  Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)">
+                    <EasingColorKeyFrame KeyTime="0:0:0.6" Value="#ED1C24">
+
+                        <EasingColorKeyFrame.EasingFunction>
+                            <PowerEase EasingMode="EaseIn"/>
+                        </EasingColorKeyFrame.EasingFunction>
+
+                    </EasingColorKeyFrame>
+
+                    <EasingColorKeyFrame KeyTime="0:0:1.0" Value="#ED1C24">
+
+                        <EasingColorKeyFrame.EasingFunction>
+                            <PowerEase EasingMode="EaseOut"/>
+                        </EasingColorKeyFrame.EasingFunction>
+
+                    </EasingColorKeyFrame>
+                </ColorAnimationUsingKeyFrames>
+                <!--<DoubleAnimation Duration="0:0:0.5"
+                                                         To="24"
+                                                         AutoReverse="True"
+                                                         RepeatBehavior="Forever"
+                                                         Storyboard.TargetProperty="Width"/>-->
+
+
+            </Storyboard>
+
+            <Style TargetType="{x:Type Ellipse}" x:Key="Recording">
+                <!--<Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Fore}"/>-->
+                <Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+                <Setter Property="Width" Value="10"/>
+                <Setter Property="Height" Value="10"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsVisible}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="BeginPulse" Storyboard="{StaticResource Pulse}">
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="BeginPulse"/>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                
+            </Style>
+            
             <Style TargetType="{x:Type avalonedit:CompletionWindow}">
                 <Setter Property="WindowStyle" Value="None"></Setter>
                 <Setter Property="ResizeMode" Value="NoResize"></Setter>
@@ -309,23 +366,28 @@
                     <selectors:DataGridWindowTemplateSelector.TraceTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0" Margin="0,0,5,0"
+                                <!--<TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}" 
                                    VerticalAlignment="Center"
-                                   />
-
-
-                                <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
+                                   />-->
+                                <Ellipse Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
+                                   Style="{StaticResource Recording}"    >
+                                    
+                                </Ellipse>
+                                <Image Source="{DynamicResource pause_tabDrawingImage}" Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"/>
+                                <!--<TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    VerticalAlignment="Center"
-                            />
-                                <TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
+                                    />-->
+                                <!--<TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsChecked, Converter={StaticResource BoolToNotCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    VerticalAlignment="Center"
-                            />
+                                    />-->
                                 <TextBlock Text="{Binding Content.Title}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </DataTemplate>

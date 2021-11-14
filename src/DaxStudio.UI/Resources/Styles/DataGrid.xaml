@@ -1,0 +1,55 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="DsDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+        <Setter Property="Padding" Value="6 0"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+        <Setter Property="FontWeight" Value="DemiBold"/>
+        <Style.Triggers>
+            <Trigger Property="SortDirection" Value="{x:Null}">
+                <Setter Property="Padding" Value="6 0" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DsDataGridRowHeaderStyle" TargetType="DataGridRowHeader" BasedOn="{StaticResource DefaultDataGridRowHeaderStyle}">
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+        <Setter Property="MinWidth" Value="10"/>
+    </Style>
+
+    <Style x:Key="DsDataGridRowStyle" TargetType="DataGridRow">
+        <Style.Triggers>
+            <Trigger Property="AlternationIndex" Value="1">
+                <Setter Property="Background" Value="Green"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DsDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+        <Setter Property="Padding" Value="6 4"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <!--<Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>-->
+    </Style>
+    
+    <Style TargetType="{x:Type DataGrid}" BasedOn="{StaticResource {x:Type DataGrid}}">
+        <Setter Property="CellStyle" Value="{StaticResource DsDataGridCellStyle}" />
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource DsDataGridColumnHeaderStyle}"/>
+        <Setter Property="RowHeaderStyle" Value="{StaticResource DsDataGridRowHeaderStyle}"/>
+        <Setter Property="AlternationCount" Value="2"/>
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource Theme.Brush.Table.Alternate}"/>
+        <Setter Property="RowHeaderWidth" Value="10"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
+        
+    </Style>
+</ResourceDictionary>

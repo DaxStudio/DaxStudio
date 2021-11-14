@@ -53,27 +53,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-            <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
-                <Setter Property="Padding" Value="6 0 6 0"/>
-                <Setter Property="Margin" Value="6,0,6,0"/>
-            </Style>-->
             
-            <!--<Style TargetType="FrameworkElement" x:Key="FadeInAnimation">
-                <Setter Property="Visibility" Value="Collapsed"/>
-                <Setter Property="Opacity" Value="0"/>
-                <Style.Triggers>
-                    <Trigger Property="Visibility" Value="Visible">
-                        <Trigger.EnterActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                             From="0.0" To="1.0" Duration="0:0:0.2"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.EnterActions>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>-->
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -128,16 +108,9 @@
        
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-
-                                            <!--<Setter TargetName="Panel" Property="Background" Value="White" />-->
-                                            <!--<Setter TargetName="Panel" Property="Background" Value="LightSkyBlue" />-->
                                             <Setter TargetName="border" Property="Background" Value="{DynamicResource Theme.Brush.Control.Selected}"/>
                                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
-                                            <!--<Setter Property="Foreground" Value="White"/>-->
-                                            <!--<Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>-->
                                             <Setter Property="Panel.ZIndex" Value="100"/>
-                                            <!--<Setter TargetName="border" Property="Margin" Value="0,0,0,0"/>
-                                            <Setter TargetName="border" Property="Padding" Value="2,0,0,0"/>-->
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="False">
                                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
@@ -172,18 +145,7 @@
                 <!-- Tab Content (DataGrid) -->
                 <TabControl.ContentTemplate>
                     <DataTemplate>
-                        <!-- 
-                        filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
-                            filter:DataGridExtensions.IsClearButtonVisible="False"
-                            filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
-                            ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		                        TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		                        ResourceId=DataGridHeaderFilterControlStyle}}"
-                        
-                        FontSize="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.SizeUnits.ScreenPoints}" 
-                        
-                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}"
-                        -->
+                       
                         <controls:ClipBorder 
                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                             BorderThickness="1"
@@ -194,7 +156,7 @@
                          <DataGrid
                             x:Name="DefaultView" 
                             AlternationCount="2"
-                             AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                            AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                             ItemsSource="{Binding DefaultView}"
                             ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             SelectionMode="Extended"       

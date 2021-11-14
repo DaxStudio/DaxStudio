@@ -183,6 +183,32 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool IsRecording
+        {
+            get => IsChecked;
+            set
+            {
+                IsChecked = value;
+                NotifyOfPropertyChange(nameof(IsChecked));
+                NotifyOfPropertyChange(nameof(IsPaused));
+                NotifyOfPropertyChange(nameof(IsStopped));
+                NotifyOfPropertyChange(nameof(IsRecording));
+            }
+        }
+
+        public bool IsStopped
+        {
+            get => !IsChecked;
+            set
+            {
+                IsChecked = !value;
+                NotifyOfPropertyChange(nameof(IsChecked));
+                NotifyOfPropertyChange(nameof(IsPaused));
+                NotifyOfPropertyChange(nameof(IsStopped));
+                NotifyOfPropertyChange(nameof(IsRecording));
+            }
+        }
+
         public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellation)
         {
             CheckEnabled(message.Connection, message.ActiveTrace);

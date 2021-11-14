@@ -1352,7 +1352,7 @@
   </DrawingGroup>
   <DrawingImage x:Key="results_excelDrawingImage" Drawing="{StaticResource results_excelDrawingGroup}" />
   <DrawingGroup x:Key="recording_tabDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
-    <GeometryDrawing Brush="#FFFFFFFF">
+        <GeometryDrawing Brush="{DynamicResource Theme.Brush.Trace.Record.Fill}">
       <GeometryDrawing.Geometry>
         <EllipseGeometry RadiusX="4.46" RadiusY="4.46" Center="8,8" />
       </GeometryDrawing.Geometry>

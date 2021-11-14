@@ -9,11 +9,11 @@
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:custom="clr-namespace:DaxStudio.UI.Controls"
-             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:cm="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:cal="http://caliburnmicro.com"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1"
+             
              cal:View.ApplyConventions="False">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -21,6 +21,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DataGrid.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -36,8 +37,25 @@
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
 
+            <Style TargetType="{x:Type ctrl:ClipBorder}">
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
+                <Setter Property="CornerRadius" Value="4"/>
+            </Style>
             
+            <Style x:Key="TraceButton" BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+                <Setter Property="Background" Value="{DynamicResource Theme.MenuBar.Back}"/>
+                <Setter Property="Padding" Value="8 4 8 4"/>
+                <Setter Property="Margin" Value="2 2" />
+            </Style>
 
+            <Style x:Key="TraceToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}" TargetType="ToggleButton">
+                <Setter Property="Background" Value="{DynamicResource Theme.MenuBar.Back}"/>
+                <Setter Property="Padding" Value="4 4 4 4"/>
+                <Setter Property="Margin" Value="2 2" />
+            </Style>
+            
             <!-- Data Templates -->
         
             <DataTemplate  DataType="{x:Type vm:TraceStorageEngineEvent}">
@@ -47,6 +65,8 @@
                  IsReadOnly="True"
                  BorderThickness="0"
                  DataContext="{Binding}"
+                                             Background="{DynamicResource Theme.Brush.Content.Back}"
+                                             Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                  Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
                     
                         <custom:BindableRichTextBox.ContextMenu>
@@ -116,22 +136,127 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
+        
+        <!-- command bar -->
+        <Border Grid.ColumnSpan="5"
+                CornerRadius="4"
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                Margin="0 0 0 8">
+            <DockPanel LastChildFill="False">
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsRecording}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource record_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Record</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource pause_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Pause</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+            
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsStopped}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource cancelDrawingImage}" Width="16"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Stop</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ClearAll]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Clear</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Copy</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource save_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Export</TextBlock>
+                    </StackPanel>
+                </Button>
+
+
+                <!--<Rectangle DockPanel.Dock="Right"/>-->
+
+
+
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutRight}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource right_layout_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutBottom}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource bottom_layout_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowInternal}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Internal</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowBatch}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Batch</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowCache}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Cache</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowScan}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Scan</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+            </DockPanel>
+        </Border>
+        
+        
         <TextBlock x:Name="TraceStatusText"
                    Grid.ColumnSpan="5"
+                   Grid.Row="1"
                    Text="{Binding TraceStatusText}"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="1"  Grid.RowSpan="3">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="2"  Grid.RowSpan="3">
+            <ctrl:ClipBorder>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
- 
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0">
                     <Grid.RowDefinitions>
@@ -158,42 +283,52 @@
                             <MenuItem Header="Copy (data only)" cal:Message.Attach="[Event Click] = [Action CopyResultsData()]"></MenuItem>
                         </ContextMenu>
                     </Grid.ContextMenu>
-                    <!-- Total Duration -->
-                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding TotalTooltip}"/>
+
+                        <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" HorizontalAlignment="Right" Grid.RowSpan="11" Margin="0 4 0 4" />
+                        <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" VerticalAlignment="Bottom" Grid.Row="2" Grid.ColumnSpan="2" Margin="4 0 4 0" />
+                        <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" VerticalAlignment="Bottom" Grid.Row="6" Grid.ColumnSpan="2" Margin="4 0 4 0" />
+                        <!-- Total Duration -->
+                    <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding TotalTooltip}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding TotalDuration, StringFormat='#,0 ms'}" 
-                       ToolTip="{Binding TotalTooltip}"/>
+                       ToolTip="{Binding TotalTooltip}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
 
                     <!-- SE CPU Duration -->
-                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"  ToolTip="{Binding SECpuTooltip}"/>
+                    <TextBlock Text="SE CPU" Grid.Row="0" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"  ToolTip="{Binding SECpuTooltip}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineCpu, StringFormat='#,0 ms'}"
-                       ToolTip="{Binding SECpuTooltip}"/>
+                       ToolTip="{Binding SECpuTooltip}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <TextBlock Grid.Row="2" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
-                   Text="{Binding StorageEngineCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="#3571AD" />
+                   Text="{Binding StorageEngineCpuFactor, StringFormat='x0.0'}"   FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}" />
                     
                     <!-- FE Controls -->
                     <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" ToolTip="{Binding FETooltip}">
-                        <Rectangle Width="10" Height="10" Fill="{StaticResource FEBrush}" Margin="0,4,5,0"/>
-                        <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                        <Ellipse Width="10" Height="10" Fill="{StaticResource FEBrush}" Margin="0,4,5,0"/>
+                        <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        ToolTip="{Binding FETooltip}" />
                     
                     <TextBlock Grid.Row="5" Grid.Column="0" Padding="0,0,0,5" HorizontalAlignment="Center"
-                   Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"   FontSize="10" Foreground="#3571AD" />
+                   Text="{Binding FormulaEngineDurationPercentage, StringFormat='0.0%'}"   FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}" />
                     
                     <!-- SE Controls -->
                     <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" ToolTip="{Binding SETooltip}">
-                        <Rectangle Width="10" Height="10" Fill="{StaticResource DaxStudioBrush}" Margin="0,4,5,0"/>
-                        <TextBlock Text="SE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold"/>
+                        <Ellipse Width="10" Height="10" Fill="{DynamicResource Theme.Brush.Accent}" Margin="0,4,5,0"/>
+                        <TextBlock Text="SE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        ToolTip="{Binding SETooltip}" />
                     <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
-                   Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
+                   Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
                     
                     <!-- Horizontal Bar FE vs SE -->
                     <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
@@ -216,18 +351,22 @@
                     </StackPanel>
                     
                     <!-- SE Queries -->
-                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}" />
+                    <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <TextBlock Grid.Row="8" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineQueryCount, StringFormat='#,0'}"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        ToolTip="{Binding SEQueriesTooltip}" />
                     
                     <!-- SE Cache -->
-                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SECacheTooltip}"/>
+                    <TextBlock Text="SE Cache" Grid.Row="7" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SECacheTooltip}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <TextBlock Grid.Row="8" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding VertipaqCacheMatches, StringFormat='#,0'}"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        ToolTip="{Binding SECacheTooltip}" />
                     <TextBlock Grid.Row="9" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
-                   Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="#3571AD"/>
+                        Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
 <!--
                     <TextBlock Text="Total CPU" Grid.Row="10" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="gray"/>
                     <TextBlock Grid.Row="11" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" Foreground="Gray"
@@ -237,21 +376,30 @@
                 
                 
             </Grid>
+            </ctrl:ClipBorder>
         </ScrollViewer>
+        
         <GridSplitter Width="5" Grid.Column="1" 
                       Grid.RowSpan="3"
                       ResizeDirection="Columns" 
-                      Grid.Row="1"
+                      Grid.Row="2"
                       Height="Auto" 
+                      BorderThickness="0"
+                      Background="Transparent"
                     HorizontalAlignment="Stretch" 
                     VerticalAlignment="Stretch" 
                     Margin="0"/>
-        <DataGrid Name="ListEvents" Grid.Column="2" 
+        
+        <ctrl:ClipBorder
+            Grid.Row="2"
+            Grid.Column="2" 
+            Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
+            >
+            <DataGrid Name="ListEvents" 
                   SelectedItem="{Binding SelectedEvent}" 
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
-                  Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
-                  Grid.Row="1"
+                  Background="{DynamicResource Theme.Brush.Content.Back}"
                   behaviours:GridViewColumnResize.Enabled="True" 
                   VerticalAlignment="Stretch" 
                   Width="Auto"
@@ -265,7 +413,9 @@
                   GridLinesVisibility="None" 
                   BorderThickness="1,0,0,0" 
                   BorderBrush="{x:Null}"
-                  Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
                   >
             <DataGrid.ContextMenu>
                 <ContextMenu>
@@ -300,39 +450,10 @@
                     <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </DataGrid.Resources>
-            <!--<DataGrid.ColumnHeaderStyle>
-                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
-                    <Setter Property="FontWeight"
-                  Value="SemiBold" />
-                </Style>
-            </DataGrid.ColumnHeaderStyle>-->
-            <!--<DataGrid.CellStyle> 
-                <Style TargetType="DataGridCell">
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Padding" Value="5,0,5,0"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                <Border Padding="{TemplateBinding Padding}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Background="{TemplateBinding Background}" 
-                                        SnapsToDevicePixels="True">
-                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.CellStyle>-->
-            <!--<DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
-                    <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
-                </Style>
-            </DataGrid.RowStyle>-->
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="35" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Subclass" Width="60" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
+                <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                             <Style.Triggers>
@@ -343,10 +464,10 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="60" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Par." IsReadOnly="True" Width="34" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignBottomRight}" />
-                <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="60" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="72" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignBottomRight}" />
+                <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
@@ -362,46 +483,43 @@
                 </DataGridTextColumn>
 
             </DataGrid.Columns>
-            <!--<DataGrid.Style>
 
-                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}">
-                    --><!--<Setter Property="Grid.RowSpan" Value="{Binding Parent.TextGridRowSpan}" />  --><!--
-                    <Setter Property="Grid.RowSpan" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}" />
-                </Style>
-                
-            </DataGrid.Style>-->
         </DataGrid>
-        <GridSplitter Height="5" Grid.Row="2" Grid.Column="2" ResizeDirection="Rows" HorizontalAlignment="Stretch" 
+        </ctrl:ClipBorder>
+    
+        <GridSplitter Height="5" Grid.Row="3" Grid.Column="2" ResizeDirection="Rows" HorizontalAlignment="Stretch" 
+                      Background="Transparent"
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutBottom}" />
         <GridSplitter Width="5" Grid.Column="3" 
                       Grid.RowSpan="3"
                       ResizeDirection="Columns" 
-                      Grid.Row="1"
+                      Background="Transparent"
+                      Grid.Row="2"
                       Height="Auto" 
                       HorizontalAlignment="Stretch" 
                       VerticalAlignment="Stretch" 
                       Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, Path=ServerTimingDetails.LayoutRight}"
                       Margin="0"/>
-        <ScrollViewer >
-            <ContentControl Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
-            </ContentControl>
+
+        <ctrl:ClipBorder
+            Grid.Row="{Binding TextGridRow}"
+            Grid.RowSpan="{Binding TextGridRowSpan}"
+            Grid.Column="{Binding TextGridColumn}"
+            >
+            <ScrollViewer Background="{DynamicResource Theme.Brush.Content.Back}">
+                <ContentControl Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
+                </ContentControl>
                 <!-- Query Event Template -->
-                
-                
-            
-            <ScrollViewer.Style>
-                <Style>
-                    <Setter Property="Grid.Row" Value="{Binding TextGridRow}" />
-                    <Setter Property="Grid.RowSpan" Value="{Binding TextGridRowSpan}" />
-                    <Setter Property="Grid.Column" Value="{Binding TextGridColumn}" />
-                </Style>
-            </ScrollViewer.Style>
-        </ScrollViewer>
-        
+
+
+            </ScrollViewer>
+        </ctrl:ClipBorder>
+
         <!-- Busy overlay -->
         <Border 
-                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="4" 
+            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+            Grid.RowSpan="4" 
+            Grid.Row="1"
             Grid.ColumnSpan="5"
             Style="{StaticResource BusyPanel}" d:IsHidden="True">
                 

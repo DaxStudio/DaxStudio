@@ -10,6 +10,8 @@
     
     <!--<Color x:Key="Theme.PrimaryAccentColor"            >#FF0072C6</Color>-->
     <Color x:Key="Theme.PrimaryAccentColor">#FF29A9FF</Color>
+    <Color x:Key="Theme.Accent2">#FFFAC700</Color>
+    <Color x:Key="Theme.Icons.Red">#ED1C24</Color>
     <Color x:Key="Theme.Default.Back">#2D2D2D</Color>
     <Color x:Key="Theme.Alternate.Back">#272727</Color>
     <Color x:Key="Theme.Table.Alternate">#272727</Color>
@@ -20,7 +22,7 @@
     <Color x:Key="Theme.StatusBar.Back">#202020</Color>
     <Color x:Key="Theme.Dialog.Back">#2D2D2D</Color>
     <Color x:Key="Theme.Dialog.Border">#2D2D2D</Color>
-    <Color x:Key="Theme.Control.Border">#2D2D2D</Color>
+    <Color x:Key="Theme.Control.Border">#1A1A1A</Color>
     <Color x:Key="Theme.Control.Selected">#3A3A3A</Color>
     <Color x:Key="Theme.TextBox.Border">#1A1A1A</Color>
     <Color x:Key="Theme.Content.Back">#202020</Color>
@@ -41,6 +43,8 @@
     <sys:Double x:Key="Theme.DropShadow.Opacity">0.8</sys:Double>
 
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Accent2" Color="{StaticResource Theme.Accent2}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Icons.Red" Color="{StaticResource Theme.Icons.Red}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Muted.Fore" Color="{StaticResource Theme.Muted.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
@@ -66,6 +70,7 @@
     <SolidColorBrush x:Key="Theme.Brush.Log.Success" Color="{StaticResource Theme.Log.Success}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Table.Header.Back" Color="{StaticResource Theme.Table.Header.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Table.Header.Fore" Color="{StaticResource Theme.Table.Header.Fore}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Trace.Record.Fill" Color="{StaticResource Theme.Default.Fore}" options:Freeze="false"/>
 
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
@@ -76,7 +81,9 @@
 
     <SolidColorBrush x:Key="EditorSelectionBrush" Color="{DynamicResource Theme.PrimaryAccentColor}" Opacity="0.75" options:Freeze="true"/>
     <SolidColorBrush x:Key="EditorSelectionForeground" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>
-    
+
+    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>
+
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF29A9FF</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC29A9FF</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor60"  >#9929A9FF</Color>

@@ -293,7 +293,7 @@ namespace DaxStudio.UI.ViewModels
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class ServerTimesViewModel
+    public class ServerTimesViewModel
         : TraceWatcherBaseViewModel, ISaveState, IServerTimes
         , IHandle<UpdateGlobalOptions>
     {
@@ -741,7 +741,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties to handle layout changes
 
-        public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ? 4 : 1; } }
+        public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ? 4 : 2; } }
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
