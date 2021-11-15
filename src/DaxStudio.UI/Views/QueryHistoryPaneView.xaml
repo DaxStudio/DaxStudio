@@ -53,28 +53,6 @@
             </Setter>
         </Style>
 
-
-        <!--<Style BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}" x:Key="DataGridColumnHeaderStyle1" TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-                        <Grid>
-                            <aero:DataGridHeaderBorder BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}">
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                            </aero:DataGridHeaderBorder>
-                            <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource ColumnHeaderGripperStyle}"/>
-                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource ColumnHeaderGripperStyle}"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}"
-        -->
-
         <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}"  >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -122,7 +100,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <!-- BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}" -->
 
         <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -185,7 +162,8 @@
                         VerticalAlignment="Top" 
                         HorizontalAlignment="Left"   
                         TextTrimming="CharacterEllipsis"
-                        ToolTip="{Binding QueryText}">
+                        ToolTip="{Binding QueryText}"
+                               Padding="6 0 6 0">
                     </TextBlock>
                     
                 </Border>
@@ -264,7 +242,10 @@
                                         <MenuItem Header="Hello"/>
                                     </ContextMenu>
                                 </Border.ContextMenu>
-                                <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  
+                                           VerticalAlignment="Top" 
+                                           HorizontalAlignment="Left"
+                                           Padding="6 0 6 0"
                                            TextTrimming="CharacterEllipsis" IsEnabled="False" />
                             </Border>
                         </DataTemplate>
@@ -282,6 +263,7 @@
                                     HorizontalAlignment="Stretch" 
                                     TextTrimming="CharacterEllipsis"
                                     TextAlignment="Right"
+                                    Padding="6 0 6 0"
                                 />
                             </Border>
                         </DataTemplate>
@@ -291,13 +273,15 @@
                 <DataGridTemplateColumn SortMemberPath="ClientDurationMs" Header="Client ms" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Elapsed time from Client (includes data transfer and rendering)"/>
+                            <TextBlock Text="{Binding}" ToolTip="Elapsed time from Client (includes data transfer and rendering)"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
-                                <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right" TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -307,15 +291,17 @@
                                         Visibility="{markup:NinjaBinding Binding={Binding ShowTraceColumns, Converter={StaticResource  BoolToVisibilityConverter}}}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Elapsed time on the Server (excludes data transfer and rendering)"/>
+                            <TextBlock Text="{Binding}" ToolTip="Elapsed time on the Server (excludes data transfer and rendering)"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -325,16 +311,18 @@
                                         Visibility="{markup:NinjaBinding Binding={Binding ShowTraceColumns, Converter={StaticResource  BoolToVisibilityConverter}}}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Formula Engine duration"/>
+                            <TextBlock Text="{Binding}" ToolTip="Formula Engine duration"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
-                                       VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           VerticalAlignment="Top" HorizontalAlignment="right"
+                                           Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -345,7 +333,8 @@
                                         >
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Storage Engine duration"/>
+                            <TextBlock Text="{Binding}" ToolTip="Storage Engine duration"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
@@ -353,7 +342,8 @@
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
                                        Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -370,7 +360,7 @@
                                     <ColumnDefinition Width="*"/>
                             
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Server" Grid.Column="0"/>
+                                    <TextBlock Text="Server" Grid.Column="0" Padding="6 0 6 0"/>
                             </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
@@ -381,7 +371,8 @@
                                 <TextBlock Text="{Binding Path=ServerName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -409,7 +400,8 @@
                                 <TextBlock Text="{Binding Path=DatabaseName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

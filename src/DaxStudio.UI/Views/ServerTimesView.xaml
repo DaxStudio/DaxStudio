@@ -198,42 +198,48 @@
 
 
 
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutRight}">
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutRight}"
+                              ToolTip="Show the xmSQL text on the right">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource right_layout_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutBottom}">
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutBottom}"
+                              ToolTip="Show the xmSQL text on the bottom">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource bottom_layout_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowInternal}">
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowInternal}"
+                              ToolTip="Show Internal events">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource clear_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Internal</TextBlock>
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowBatch}">
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowBatch}"
+                              ToolTip="Show Batch events">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource clear_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Batch</TextBlock>
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowCache}">
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowCache}"
+                              ToolTip="Show Cache events">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource clear_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Cache</TextBlock>
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowScan}">
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowScan}"
+                              ToolTip="Show Scan events">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource clear_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
@@ -444,19 +450,28 @@
                 </Style>-->
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
+                    <Setter Property="Padding" Value="6 0 6 0"/>
                 </Style>
+                
                 <Style x:Key="AlignBottomRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                     <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Padding" Value="6 0 6 0"/>
                 </Style>
-            </DataGrid.Resources>
+                    
+                <Style TargetType="TextBlock">
+                    <Setter Property="Padding" Value="6 0 6 0"/>
+                </Style>
+                
+                </DataGrid.Resources>
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
-                            <Style.Triggers>
+                                <Setter Property="Padding" Value="6 0 6 0"/>
+                                <Style.Triggers>
                                 <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
                                     <Setter Property="FontStyle" Value="Italic"/>
                                 </DataTrigger>
@@ -473,12 +488,13 @@
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Padding" Value="6 0 6 0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
 

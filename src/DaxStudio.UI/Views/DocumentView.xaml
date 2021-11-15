@@ -102,6 +102,9 @@
             <Style TargetType="{x:Type Ellipse}" x:Key="Recording">
                 <!--<Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Fore}"/>-->
                 <Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+                <Setter Property="Stroke" Value="#ED1C24"/>
+                <Setter Property="StrokeThickness" Value="1"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
                 <Setter Property="Width" Value="10"/>
                 <Setter Property="Height" Value="10"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>

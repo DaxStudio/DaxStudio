@@ -107,7 +107,7 @@
                             <GridViewColumn.HeaderContainerStyle>
                                 <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
                                     <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                    
+                                    <Setter Property="FontWeight" Value="Bold"/>
                                 </Style>
                             </GridViewColumn.HeaderContainerStyle>
                             <GridViewColumn.CellTemplate>
@@ -121,7 +121,7 @@
                     <GridViewColumn Width="Auto">
                         <GridViewColumn.Header>
                             <StackPanel Orientation="Horizontal" ToolTip="Client Duration - includes network transfer and rendering time">
-                                <TextBlock Text="Duration" Padding="6 0 0 0" />
+                                <TextBlock Text="Duration" Padding="6 0 0 0" FontWeight="Bold" />
                                 <TextBlock Text=" i" FontFamily="WebDings" FontSize="11" RenderTransformOrigin="0.5,0.5">
                                     <TextBlock.RenderTransform>
                                         <TransformGroup>
@@ -148,7 +148,7 @@
                     <GridViewColumn 
                                     behaviours:GridViewColumnResize.Width="*1">
                             <GridViewColumn.Header>
-                                <TextBlock Text="Message" Padding="8 0"/>
+                                <TextBlock Text="Message" Padding="8 0" FontWeight="Bold"/>
                             </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate x:Name="Text">
