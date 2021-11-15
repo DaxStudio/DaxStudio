@@ -46,21 +46,7 @@
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
 
-            <!--<Style TargetType="{x:Type aecc:CompletionList}">
-                <Setter Property="TextBox.Foreground" Value="Orange" />
-            </Style>-->
 
-            <!--<Style TargetType="{x:Type ListBoxItem}">
-                <Setter Property="TextElement.Foreground" Value="Green" />
-                <Setter Property="ListItem.Style">
-                    <Setter.Value>
-                        <Style>
-                            <Setter Property="TextBox.Foreground" Value="Green"/>
-                        </Style>
-                    </Setter.Value>
-
-                </Setter>
-            </Style>-->
 
             <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
                 <!--<ColorAnimation Duration="0:0:0.5"
@@ -71,21 +57,21 @@
                                                         />-->
 
                 <ColorAnimationUsingKeyFrames BeginTime="0"
-                                                  Duration="0:0:1.6"
+                                                  Duration="0:0:0.9"
                                                   FillBehavior="HoldEnd"
                                                   Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)">
-                    <EasingColorKeyFrame KeyTime="0:0:0.6" Value="#ED1C24">
+                    <EasingColorKeyFrame KeyTime="0:0:0.4" Value="#ED1C24">
 
                         <EasingColorKeyFrame.EasingFunction>
-                            <PowerEase EasingMode="EaseIn"/>
+                            <QuarticEase  EasingMode="EaseIn"/>
                         </EasingColorKeyFrame.EasingFunction>
 
                     </EasingColorKeyFrame>
 
-                    <EasingColorKeyFrame KeyTime="0:0:1.0" Value="#ED1C24">
+                    <EasingColorKeyFrame KeyTime="0:0:0.5" Value="#ED1C24">
 
                         <EasingColorKeyFrame.EasingFunction>
-                            <PowerEase EasingMode="EaseOut"/>
+                            <QuarticEase EasingMode="EaseOut"/>
                         </EasingColorKeyFrame.EasingFunction>
 
                     </EasingColorKeyFrame>
