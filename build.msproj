@@ -132,7 +132,7 @@
     <ItemGroup>
       <FilesToDelete Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe"/>
     </ItemGroup>
-    <Message Text="Deleting zip file $(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe" Importance="High"/>
+    <Message Text="Deleting installer exe file $(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe" Importance="High"/>
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
