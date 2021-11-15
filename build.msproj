@@ -120,11 +120,20 @@
     <Message Text="Attempting to sign installer" Importance="high" />
     <!--<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>-->
 	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\package\DaxStudio_$(OutVersion)_setup.exe' 
-          IgnoreExitCode="false" />
+          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
+          <OnError ExecuteTargets="DeleteInstaller" />
   </Target>
 
   <Target Name="CreatePortableFile">
     <Touch Files=".\Release\bin\.portable" AlwaysCreate="True" />
+  </Target>
+
+  <Target Name="DeleteInstaller" DependsOnTargets="">
+    <ItemGroup>
+      <FilesToDelete Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe"/>
+    </ItemGroup>
+    <Message Text="Deleting zip file $(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe" Importance="High"/>
+    <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
   <Target Name="DeleteZip" DependsOnTargets="RetrieveIdentities;Build;DeleteXml;DeletePdb">
