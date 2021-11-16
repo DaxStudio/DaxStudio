@@ -9,7 +9,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="600" BorderThickness="1" BorderBrush="DimGray">
+             d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -17,6 +17,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
@@ -60,8 +61,12 @@
                 <Button>Export</Button>
             </DockPanel>-->
         </Border>
-        
-        <DataGrid Grid.Row="1" 
+
+        <controls:ClipBorder Grid.Row="1"
+                             CornerRadius="4"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+            <DataGrid 
                   SelectedItem="{Binding SelectedPhysicalRow}" 
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
@@ -78,7 +83,7 @@
                   GridLinesVisibility="None" 
                   BorderBrush="#FFABADB3" >
 
-            <!--<DataGrid.Resources>
+                <!--<DataGrid.Resources>
                 <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
@@ -86,9 +91,9 @@
                     <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </DataGrid.Resources>-->
-            
-            
-            <!--<DataGrid.CellStyle>
+
+
+                <!--<DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
@@ -107,36 +112,42 @@
                     </Setter>
                 </Style>
             </DataGrid.CellStyle>-->
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                    <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                    <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
                                     IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
-            </DataGrid.Columns>
-            <!--<DataGrid.RowStyle>
+                </DataGrid.Columns>
+                <!--<DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>-->
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="Copy">
-                        <MenuItem.Icon>
-                            <Image Source="{StaticResource CopyIcon}"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <Separator/>
-                    <MenuItem Command="SelectAll"></MenuItem>
-                </ContextMenu>
-            </DataGrid.ContextMenu>
-        </DataGrid>
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="Copy">
+                            <MenuItem.Icon>
+                                <Image Source="{StaticResource CopyIcon}"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Command="SelectAll"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+            </DataGrid>
+        </controls:ClipBorder>
         <GridSplitter Grid.Row="2" Height="5"  ResizeDirection="Rows" 
             Grid.Column="0"
             Width="Auto" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
+                      Background="Transparent"
             Margin="0"/>
-        <DataGrid Grid.Row="3" 
+        <controls:ClipBorder Grid.Row="3"
+                             CornerRadius="4"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+            <DataGrid 
                   SelectedItem="{Binding SelectedLogicalRow}" 
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
@@ -202,7 +213,8 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
-
+        </controls:ClipBorder>
+        
         <!-- Busy overlay -->
         <Border 
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 

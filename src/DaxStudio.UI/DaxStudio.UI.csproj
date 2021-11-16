@@ -805,6 +805,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resources\Styles\TraceWatcherStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Theme\icons.dark.extra.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

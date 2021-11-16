@@ -146,6 +146,7 @@
                             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                             <Setter Property="Background" Value="{DynamicResource Theme.Brush.Default.Back}"/>
                             <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
                             <!--<Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedBackground}}" />
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.DocumentWellTabUnselectedText}}" />
                             <Setter Property="BorderBrush" Value="Transparent" />-->
@@ -162,12 +163,12 @@
                                             <Border
 										        x:Name="Bd"
 										        Background="{TemplateBinding Background}"
-										        BorderBrush="{Binding Background, RelativeSource={RelativeSource Self}}"
-										        BorderThickness="0,0,0,0"
-                                                
+										        BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"
+										        BorderThickness="1 0 1 1"
+                                                SnapsToDevicePixels="True"
                                                 CornerRadius="0 0 8 8">
                                                 <Border.Effect>
-                                                    <DropShadowEffect BlurRadius="16" ShadowDepth="0" Color="#000000" Opacity="0.2"/>
+                                                    <DropShadowEffect BlurRadius="16" ShadowDepth="0" Color="#000000" Opacity="{DynamicResource Theme.DropShadow.Opacity}"/>
                                                 </Border.Effect>
                                             </Border>
                                             

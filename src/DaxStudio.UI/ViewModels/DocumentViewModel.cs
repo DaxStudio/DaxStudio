@@ -3176,7 +3176,13 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var server = ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
-                var port = int.Parse(server.Split(':')[1]);
+                var serverParts = server.Split(':');
+                if (serverParts.Length != 2) {
+                    // if there is no colon in the datasource this is not a local engine instance
+                    message.PowerBIFileName = String.Empty;
+                    return;
+                }
+                var port = int.Parse(serverParts[1]);
                 var instances = PowerBIHelper.GetLocalInstances(false);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
                 message.PowerBIFileName = selectedInstance.Name;
@@ -3184,7 +3190,7 @@ namespace DaxStudio.UI.ViewModels
             catch(Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshConnectionFilename), $"Error getting Power BI Filename: {ex.Message}");
-                OutputWarning($"An error occurred while trying to the Power BI Desktop filename:\n{ex.Message}");
+                OutputWarning($"An error occurred while trying to get the Power BI Desktop filename:\n{ex.Message}");
             }
         }
 

@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style TargetType="{x:Type ctrl:ClipBorder}">
+        <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style x:Key="TraceButton" BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Theme.MenuBar.Back}"/>
+        <Setter Property="Padding" Value="8 4 8 4"/>
+        <Setter Property="Margin" Value="2 2" />
+    </Style>
+
+    <Style x:Key="TraceToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}" TargetType="ToggleButton">
+        <Setter Property="Background" Value="{DynamicResource Theme.MenuBar.Back}"/>
+        <Setter Property="Padding" Value="4 4 4 4"/>
+        <Setter Property="Margin" Value="2 2" />
+    </Style>
+</ResourceDictionary>

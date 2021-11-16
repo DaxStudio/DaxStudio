@@ -15,6 +15,7 @@ using Microsoft.AnalysisServices.Tabular;
 
 using Tuple = System.Tuple;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace ADOTabular
 {
@@ -242,7 +243,7 @@ namespace ADOTabular
         private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
         {
             var version = rdr.GetAttribute("Version", "http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions");
-            tabs.Model.CSDLVersion = Convert.ToDouble(version);
+            tabs.Model.CSDLVersion = Convert.ToDouble(version, CultureInfo.InvariantCulture);
         }
 
         private void UpdateTomRelationships(ADOTabularTable table)
