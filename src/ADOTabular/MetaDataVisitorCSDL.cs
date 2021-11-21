@@ -242,7 +242,7 @@ namespace ADOTabular
         private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
         {
             var version = rdr.GetAttribute("Version", "http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions");
-            tabs.Model.CSDLVersion = Convert.ToDouble(version);
+            tabs.Model.CSDLVersion = Convert.ToDouble(version, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void UpdateTomRelationships(ADOTabularTable table)
