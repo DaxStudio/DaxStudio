@@ -1455,7 +1455,12 @@ namespace ADOTabular
             }
             else {
                 product.Type = "SSAS Tabular";
-                if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase)) {
+                if (ssasVersion.StartsWith("16.", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    product.Name = "SSAS 2022";
+                }
+                else if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase))
+                {
                     product.Name = "SSAS 2019";
                 }
                 else if (ssasVersion.StartsWith("14.", StringComparison.InvariantCultureIgnoreCase)) {
