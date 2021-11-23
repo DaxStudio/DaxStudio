@@ -243,7 +243,7 @@ namespace ADOTabular
         private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
         {
             var version = rdr.GetAttribute("Version", "http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions");
-            tabs.Model.CSDLVersion = Convert.ToDouble(version, CultureInfo.InvariantCulture);
+            tabs.Model.CSDLVersion = Convert.ToDouble(version, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void UpdateTomRelationships(ADOTabularTable table)
@@ -1456,7 +1456,12 @@ namespace ADOTabular
             }
             else {
                 product.Type = "SSAS Tabular";
-                if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase)) {
+                if (ssasVersion.StartsWith("16.", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    product.Name = "SSAS 2022";
+                }
+                else if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase))
+                {
                     product.Name = "SSAS 2019";
                 }
                 else if (ssasVersion.StartsWith("14.", StringComparison.InvariantCultureIgnoreCase)) {

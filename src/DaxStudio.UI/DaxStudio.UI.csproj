@@ -302,6 +302,7 @@
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
     <Compile Include="Converters\FindResourceFromStringConverter.cs" />
+    <Compile Include="Converters\FontToSupportedGlyphConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />

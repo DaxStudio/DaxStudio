@@ -265,7 +265,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool IsConnectedToAModelWithTables => Document?.Connection?.SelectedModel?.Tables.Count > 0;
+        private bool IsConnectedToAModelWithTables
+        {
+            get
+            {
+                try
+                {
+                    return Document?.Connection?.SelectedModel?.Tables.Count > 0;
+                }
+                catch (Exception ex)
+                {
+                    var msg = $"The following error occurred while getting count of tables for the selected model: {ex.Message }";
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(IsConnectedToAModelWithTables), msg);
+                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                }
+                return false;
+            }
+        }
 
         public RunStyle RunStyle { get => Document.SelectedRunStyle; }
         public QueryInfo QueryInfo { get;set; }
