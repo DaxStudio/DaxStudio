@@ -11,6 +11,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:res="clr-namespace:DaxStudio.UI.Resources"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties" 
@@ -38,6 +39,28 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
                 <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
+            </Style>
+
+            <Style x:Key="HotKey" TargetType="TextBlock">
+                <Setter Property="Margin" Value="4"/>
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
+                
+            </Style>
+
+            <Style x:Key="HotKeyDesc" TargetType="TextBlock">
+                <Setter Property="Margin" Value="4 4 0 0"/>
+                <!--<Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>-->
+            </Style>
+
+            <Style x:Key="HotKeyBorder" TargetType="{x:Type ctrl:ClipBorder}">
+                <Setter Property="Margin" Value="2" />
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
+                <Setter Property="Padding" Value="2 0 2 0"/>
             </Style>
             
             <!--<Style x:Key="showRow" TargetType="{x:Type RowDefinition}">
@@ -98,8 +121,67 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate>
-                                    <ctrl:ClipBorder >
-                                        <StackPanel Orientation="Vertical">
+                                    <Grid >
+                                        <Border Background="{DynamicResource Theme.Brush.Content.Back}">
+                                        <Image Source="{DynamicResource querybuilder_dragDrawingImage}" Margin="20" MaxWidth="140">
+                                            <Image.ToolTip>
+                                                <ctrl:ClipBorder>
+                                                    <Grid Margin="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                        </Grid.RowDefinitions>
+                                                        <TextBlock Text="Keyboard Shortcuts" Grid.ColumnSpan="2" FontWeight="Bold"/>
+                                                        <TextBlock 
+                                                            Grid.ColumnSpan="2"
+                                                            Grid.Row="1"
+                                                            FontStyle="Italic"
+                                                            TextWrapping="Wrap"
+                                                            Margin="0 4"
+                                                            Text="When an item is selected in the metadata pane you can use the following keys to add that item to the query builder" />
+                                                        <ctrl:ClipBorder Grid.Row="2" Style="{StaticResource HotKeyBorder}" >
+                                                        <TextBlock Text="C" 
+                                                                   Style="{StaticResource HotKey}"
+                                                                   />
+                                                        </ctrl:ClipBorder>
+                                                        <TextBlock 
+                                                            Grid.Row="2"
+                                                            Grid.Column="1"
+                                                            Style="{StaticResource HotKeyDesc}"
+                                                            Text="Add to Columns / Measures" />
+
+                                                            <ctrl:ClipBorder Grid.Row="3" Style="{StaticResource HotKeyBorder}">
+                                                            <TextBlock Text="F" 
+                                                                   Style="{StaticResource HotKey}"
+                                                                   />
+                                                        </ctrl:ClipBorder>
+                                                        <TextBlock 
+                                                            Grid.Row="3"
+                                                            Grid.Column="1"
+                                                            Style="{StaticResource HotKeyDesc}"
+                                                            Text="Add to Filters" />
+
+                                                            <ctrl:ClipBorder Grid.Row="4" Style="{StaticResource HotKeyBorder}">
+                                                        <TextBlock Text="B" 
+                                                                   Style="{StaticResource HotKey}"/>
+                                                        </ctrl:ClipBorder>
+                                                        <TextBlock 
+                                                            Grid.Row="4"
+                                                            Grid.Column="1"
+                                                            Style="{StaticResource HotKeyDesc}"
+                                                            Text="Add to both Filters and Columns / Measures" />
+                                                    </Grid>
+                                                </ctrl:ClipBorder>
+                                            </Image.ToolTip>
+                                        </Image>
+                                        <!--<StackPanel Orientation="Vertical">
                                             <TextBlock 
                                                TextWrapping="Wrap" 
                                                Padding="5 10 5 0"
@@ -112,8 +194,9 @@
                                                     TextWrapping="Wrap"
                                                     Margin="5 0"
                                                     Foreground="LightGray" TextDecorations="Underline" TextAlignment="Center"><Hyperlink NavigateUri="https://daxstudio.org/documentation/features/query-builder/#keyboard-shortcuts" attachedProperties:HyperlinkExtensions.IsExternal="true">Click here for help on keyboard shortcuts</Hyperlink></TextBlock>
-                                        </StackPanel>
-                                    </ctrl:ClipBorder>
+                                        </StackPanel>-->
+                                        </Border>
+                                    </Grid>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -188,17 +271,17 @@
                                 SnapsToDevicePixels="True">
                                 <Grid>
                                     <Rectangle
-                                x:Name="PressedBackground"
-                                Fill="Transparent"
-                                primitives:FocusVisualHelper.IsTemplateFocusTarget="True" />
+                                        x:Name="PressedBackground"
+                                        Fill="Transparent"
+                                        primitives:FocusVisualHelper.IsTemplateFocusTarget="True" />
                                     <ContentPresenter
-                                x:Name="ContentPresenter"
-                                TextElement.FontWeight="Normal"
-                                TextElement.FontSize="{DynamicResource ControlContentThemeFontSize}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Margin="{TemplateBinding Padding}"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                        x:Name="ContentPresenter"
+                                        TextElement.FontWeight="Normal"
+                                        TextElement.FontSize="{DynamicResource ControlContentThemeFontSize}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        Margin="{TemplateBinding Padding}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                 </Grid>
                             </ctrl:ClipBorder>
                             <!--<ControlTemplate.Triggers>
@@ -256,9 +339,12 @@
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ToggleSwitchSmall.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Colors.xaml"/>
+                <ui:IntellisenseResources/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ctrl:ZoomableUserControl.Resources>
@@ -421,7 +507,7 @@
                  Background="{DynamicResource Theme.Brush.Content.Back}"
                  HorizontalContentAlignment="Stretch"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 Style="{StaticResource EmptyFilterListStyle}"
+                 Style="{StaticResource EmptyColumnListStyle}"
                  >
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -450,7 +536,7 @@
                                 <Button Grid.Column="1" Padding="1" Background="{DynamicResource Theme.Brush.Alternate.Back}"
                                                 ToolTip="Remove from query"
                                                 cal:Action.TargetWithoutContext="{Binding Path=DataContext.Filters, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]">
+                                                cal:Message.Attach="[Event Click] = [Action Remove($dataContext)]">
                                     <Image Source="{DynamicResource closeDrawingImage}"/>
                                 </Button>
                                 <!--<fa:ImageAwesome  
@@ -730,9 +816,9 @@
  
             </ToggleButton>-->
 
-            <ui:ToggleSwitch x:Name="AutoGenerate" OnContent="Auto Update" OffContent="Auto Update" Width="120"/>
+            <ui:ToggleSwitch x:Name="AutoGenerate" OnContent="Auto Update" OffContent="Auto Update" Width="120" />
 
-            <Button x:Name="SendTextToEditor" Margin="5" Padding="5,3">
+            <Button x:Name="SendTextToEditor" Margin="8 8 0 8 " Padding="4" Style="{StaticResource AccentButtonStyle}" Foreground="{DynamicResource Theme.Brush.Content.Back}">
                 <Button.ToolTip>
                     <Fluent:ScreenTip Title="Send Text to Editor"
                                       Text="Sends the text for the query to the editor window"
@@ -763,7 +849,7 @@
                 </StackPanel>
             </Button>-->
 
-            <Button x:Name="Clear" Margin="0,0,5,0" Padding="2">Reset</Button>
+            <Button x:Name="Clear" Margin="8" Padding="4">Reset</Button>
 
         </StackPanel>
     </Grid>

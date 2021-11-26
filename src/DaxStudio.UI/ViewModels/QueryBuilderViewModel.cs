@@ -277,7 +277,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var msg = $"The following error occurred while getting count of tables for the selected model: {ex.Message }";
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(IsConnectedToAModelWithTables), msg);
-                    EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
                 }
                 return false;
             }

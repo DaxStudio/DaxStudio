@@ -139,7 +139,50 @@ namespace ADOTabular
                 }
             }
         }
-        
+
+        public string ImageResource
+        {
+            get {
+                switch (MetadataImage)
+                {
+                    case MetadataImages.Measure:
+                    case MetadataImages.HiddenMeasure:
+                    case MetadataImages.HiddenColumn:
+                    case MetadataImages.Column:
+                        return GetDataTypeImage(this);
+
+                    //case MetadataImages.Database:
+                    case MetadataImages.Folder:
+                        return "";
+                    case MetadataImages.UnnaturalHierarchy:
+                    case MetadataImages.Hierarchy:
+                        return "hierarchyDrawingImage";
+                    case MetadataImages.Kpi:
+                        return "kpiDrawingImage";
+
+                    case MetadataImages.HiddenTable:
+                    case MetadataImages.Table:
+                        return "";
+                }
+                return "";
+            }
+        }
+
+        private static string GetDataTypeImage(IADOTabularColumn column)
+        {
+            switch (column.DataType)
+            {
+                case DataType.Boolean:  return $"boolean{DrawingSuffix(column)}";
+                case DataType.DateTime: return $"datetime{DrawingSuffix(column)}";
+                case DataType.Double:
+                case DataType.Decimal:  return $"double{DrawingSuffix(column)}";
+                case DataType.Int64:    return $"number{DrawingSuffix(column)}";
+                case DataType.String:   return $"string{DrawingSuffix(column)}";
+                default:                return "";
+            }
+        }
+
+        private static string DrawingSuffix(IADOTabularObject column) => column.IsVisible ? "DrawingImage" : "HiddenDrawingImage";
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {

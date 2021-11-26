@@ -60,5 +60,7 @@ namespace ADOTabular
         public string TableName => Column.TableName;
 
         public Type SystemType => Column.SystemType;
+
+        public string ImageResource => Column.ImageResource;
     }
 }

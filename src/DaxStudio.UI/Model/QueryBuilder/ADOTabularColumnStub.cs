@@ -34,5 +34,7 @@ namespace DaxStudio.UI.Model
         public Type SystemType { get; set; }
 
         public DataType DataType { get; set; }
+
+        public string ImageResource { get; set; }
     }
 }
