@@ -34,10 +34,51 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public DaxStudioTraceEventClassSubclass ClassSubclass {
             get {
-                return new DaxStudioTraceEventClassSubclass { Class = this.Class, Subclass = this.Subclass };
+                return new DaxStudioTraceEventClassSubclass { Class = this.Class, Subclass = this.Subclass, QueryLanguage = this.GetQueryLanguage() };
             }
         }
         public string Query { get; set; }
+        private DaxStudioTraceEventClassSubclass.Language GetQueryLanguage()
+        {
+            if (this.Class == DaxStudioTraceEventClass.DirectQueryBegin || this.Class == DaxStudioTraceEventClass.DirectQueryEnd)
+            {
+                if (Query.StartsWith("DEFINE",StringComparison.InvariantCultureIgnoreCase)
+                    || Query.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return DaxStudioTraceEventClassSubclass.Language.DAX;
+                }
+                else
+                {
+                    return DaxStudioTraceEventClassSubclass.Language.SQL;
+                }
+            }
+            else if (this.Class == DaxStudioTraceEventClass.QueryBegin || this.Class == DaxStudioTraceEventClass.QueryEnd)
+            {
+                switch (this.Subclass)
+                {
+                    case DaxStudioTraceEventSubclass.DmxQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.DMX;
+                    case DaxStudioTraceEventSubclass.MdxQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.MDX;
+                    case DaxStudioTraceEventSubclass.SqlQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.SQL;
+                    case DaxStudioTraceEventSubclass.DAXQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.DAX;
+                    case DaxStudioTraceEventSubclass.VertiPaq:
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheNotFound:
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheProbe:
+                    case DaxStudioTraceEventSubclass.VertiPaqScan:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanLocal:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanQueryPlan:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanRemote:
+                        return DaxStudioTraceEventClassSubclass.Language.xmSQL;
+                }
+            }
+            return DaxStudioTraceEventClassSubclass.Language.Unknown;
+        }
+
         public long? Duration { get; set; }
         public long? CpuTime { get; set; }
         public double? CpuFactor { get; set; }
