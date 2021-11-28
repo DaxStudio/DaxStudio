@@ -58,13 +58,10 @@ namespace DaxStudio.UI.Model
         }
 
         public string MinValue => TabularObject?.MinValue;
-
         public string MaxValue => TabularObject?.MaxValue;
-
         public long DistinctValues => TabularObject?.DistinctValues??0;
-
         public Type SystemType => TabularObject?.SystemType;
-        
+        public string ImageResource => TabularObject?.ImageResource?? "new_measure_smallDrawingImage";
         public DataType DataType => TabularObject?.DataType??DataType.Unknown;
         public string TableName => TabularObject.TableName;
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;

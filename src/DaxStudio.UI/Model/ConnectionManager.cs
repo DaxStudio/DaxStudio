@@ -242,21 +242,32 @@ namespace DaxStudio.UI.Model
 
         public async Task<bool> HasSchemaChangedAsync()
         {
+            if (!this.IsConnected) return false;
+
             return await _retry.Execute(async () =>
             {
-                
-                bool hasChanged = await Task.Run(() =>
+                try
                 {
-                    var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
-                    conn.ChangeDatabase(this.SelectedDatabaseName);
-                    if (conn.State != ConnectionState.Open) conn.Open();
-                    var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
-                    _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
-                    conn.Close(true); // close and end the session
+                    bool hasChanged = await Task.Run(() =>
+                    {
+                        var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
+                        conn.ChangeDatabase(this.SelectedDatabaseName);
+                        if (conn.State != ConnectionState.Open) conn.Open();
+                        var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
+                        _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
+                        conn.Close(true); // close and end the session
                     return dbChanges;
-                });
+                    });
+                    return hasChanged;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(HasSchemaChangedAsync), "Error checking if schema has been changed");
+                    Close();
+                    return false;
+                }
                 
-                return hasChanged;
+                
             });
 
         }
