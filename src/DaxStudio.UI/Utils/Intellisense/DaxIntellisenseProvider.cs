@@ -281,6 +281,18 @@ namespace DaxStudio.UI.Utils.Intellisense
             }
         }
 
+        private static string _insightWindowResourcesUri = "pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/InsightWindow.xaml";
+        private static ResourceDictionary _insightWindowCachedResourceDictionary;
+        private static ResourceDictionary InsightWindowCustomResources
+        {
+            get
+            {
+                if (_insightWindowCachedResourceDictionary == null)
+                    _insightWindowCachedResourceDictionary = new ResourceDictionary() { Source = new Uri(_insightWindowResourcesUri) };
+                return _insightWindowCachedResourceDictionary;
+            }
+        }
+
         private static void AssignResouceDictionary(DaxStudioCompletionWindow completionWindow)
         {
             completionWindow.Resources.MergedDictionaries.Add(CodeCompletionCustomResources);
@@ -375,6 +387,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 //_editor.InsightWindow?.Close();
                 _editor.InsightWindow = null;
                 _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                _editor.InsightWindow.Resources.MergedDictionaries.Add(InsightWindowCustomResources);
                 if (offset > -1)
                 {
                     _editor.InsightWindow.StartOffset = offset;

@@ -184,7 +184,7 @@
 
 
 
-                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.LayoutRight}"
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ShowFilters}"
                               ToolTip="Show Filter Controls">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource right_layout_toolbarDrawingImage}"
@@ -211,8 +211,8 @@
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}" 
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		            TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		            ResourceId=DataGridHeaderFilterControlStyle}}"
+		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                                ResourceId=DataGridHeaderFilterControlStyle}}"
                     VirtualizingPanel.IsVirtualizing="True"
                     SelectedItem="{Binding SelectedQuery}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"

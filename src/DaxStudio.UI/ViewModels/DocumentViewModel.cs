@@ -1144,7 +1144,7 @@ namespace DaxStudio.UI.ViewModels
                     string extraInfo = string.Empty;
                     if (ex is System.Net.WebException && ConnectionManager.IsPbiXmlaEndpoint(message.ConnectionString) )
                     {
-                        extraInfo = "\nPlease check your Tenant / PPU admin settings to make sure the XMLA Endpoint is enabled\n";
+                        extraInfo = "\nPlease check your Tenant / PPU admin settings to make sure the XMLA Endpoint is enabled and the current user has at least Build permission or better\n";
                     }
 
                     var msg = $"The following error occurred while updating the connection{extraInfo}: {ex.Message}";
@@ -4093,6 +4093,15 @@ namespace DaxStudio.UI.ViewModels
         public FileIcons Icon { get {
 
                 return !IsDiskFileName || Path.GetExtension(FileName).ToLower() == ".dax" ? FileIcons.Dax : FileIcons.Other; } }
+
+        public string ImageResource
+        {
+            get
+            {
+                return !IsDiskFileName || Path.GetExtension(FileName).ToLower() == ".dax" ? "daxDrawingImage" : "fileDrawingImage";
+            }
+        }
+
         public string FileAndExtension { get
             {
                 if (IsDiskFileName)

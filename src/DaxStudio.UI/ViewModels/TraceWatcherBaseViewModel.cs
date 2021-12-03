@@ -351,7 +351,10 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _showFilters;
 
-        public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } }
+        public bool ShowFilters { 
+            get { return _showFilters; } 
+            set { if (value != _showFilters) { _showFilters = value;  NotifyOfPropertyChange(() => ShowFilters); } } 
+        }
 
 #endregion
 

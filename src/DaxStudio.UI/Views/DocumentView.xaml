@@ -6,16 +6,15 @@
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
+    xmlns:ae="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-    xmlns:aecc="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
     xmlns:dax="clr-namespace:DAXEditorControl;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-    xmlns:cc="clr-namespace:DaxStudio.UI.Utils.Intellisense"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
     xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
@@ -114,15 +113,14 @@
                 <Setter Property="BorderThickness" Value="3"></Setter>
             </Style>
 
-            <Style TargetType="{x:Type cc:DaxStudioCompletionWindow}">
-                <Setter Property="BorderBrush"  Value="Green"/>
-                <Setter Property="Background" Value="Yellow"/>
+            <Style TargetType="{x:Type avalonedit:InsightWindow}">
+                <Setter Property="Background" Value="Coral"/>
             </Style>
-            
-            <Style TargetType="dax:DAXEditor">
+
+            <!--<Style TargetType="dax:DAXEditor">
                 <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
                 <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}" />
-            </Style>
+            </Style>-->
             
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
                 <Setter Property="BorderThickness" Value="0"/>
@@ -711,7 +709,7 @@
                     <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="225" FloatingWidth="200" >
                         <avalondock:LayoutAnchorablePane Name="DockLeft" ap:LayoutAnchorablePaneAutoHideMinWidthHelper.AutoHideMinWidth="250"/>
                     </avalondock:LayoutAnchorablePaneGroup>
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="185" DockWidth="210" FloatingWidth="210">
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="240" DockWidth="240" FloatingWidth="240">
                         <avalondock:LayoutAnchorablePane Name="DockMidLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
                     <!-- Main Document Pane -->

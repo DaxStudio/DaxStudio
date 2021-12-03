@@ -65,5 +65,13 @@ namespace DaxStudio.UI.Model
                 return Extension == "DAX" ?  FileIcons.Dax : FileIcons.Other;
             }
         }
+
+        public string ImageResource
+        {
+            get
+            {
+                return Extension == "DAX" ? "daxDrawingImage" : "fileDrawingImage";
+            }
+        }
     }
 }

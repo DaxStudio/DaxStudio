@@ -34,6 +34,7 @@
     <Color x:Key="Theme.InfoBar.Border">#EFCB00</Color>
     <Color x:Key="Theme.InfoBar.Fore">#000000</Color>
     <Color x:Key="Theme.Tooltip.Border">#2D2D2D</Color>
+    <Color x:Key="Theme.Tooltip.Back">#3A3A3A</Color>
     <Color x:Key="Theme.Log.Warning">#FAC700</Color>
     <Color x:Key="Theme.Log.Error">#FF0000</Color>
     <Color x:Key="Theme.Log.Success">#00C752</Color>
@@ -64,6 +65,7 @@
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Border" Color="{StaticResource Theme.InfoBar.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.InfoBar.Fore" Color="{StaticResource Theme.InfoBar.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Tooltip.Border" Color="{StaticResource Theme.Tooltip.Border}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Tooltip.Back" Color="{StaticResource Theme.Tooltip.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.TextBox.Border" Color="{StaticResource Theme.TextBox.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Log.Error" Color="{StaticResource Theme.Log.Error}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Log.Warning" Color="{StaticResource Theme.Log.Warning}" options:Freeze="true"/>

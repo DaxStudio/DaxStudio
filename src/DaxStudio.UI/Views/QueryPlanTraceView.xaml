@@ -23,6 +23,7 @@
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                <Setter Property="Padding" Value="4 4 8 4"/>
                 <Setter Property="HorizontalAlignment" Value="Right" />
             </Style>
         </ResourceDictionary>
@@ -119,6 +120,9 @@
             <DataGrid 
                   SelectedItem="{Binding SelectedPhysicalRow}" 
                   HorizontalAlignment="Stretch" 
+                  AlternationCount="2"
+                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                  Background="{DynamicResource Theme.Brush.Content.Back}"
                   AutoGenerateColumns="False"
                   behaviours:GridViewColumnResize.Enabled="True" 
                   VerticalAlignment="Stretch" 
@@ -129,9 +133,11 @@
                   HeadersVisibility="Column"
                   FrozenColumnCount="1"
                   ClipboardCopyMode="IncludeHeader"
-                  CanUserAddRows="False"
                   GridLinesVisibility="None" 
-                  BorderBrush="#FFABADB3" >
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  >
 
                 <!--<DataGrid.Resources>
                 <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
@@ -211,16 +217,16 @@
                   FrozenColumnCount="1"
                   ClipboardCopyMode="IncludeHeader"
                   CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
                   GridLinesVisibility="None" 
-                  BorderBrush="#FFABADB3" >
+                  AlternationCount="2"
+                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                  Background="{DynamicResource Theme.Brush.Content.Back}" >
 
             <DataGrid.Resources>
-                <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
-                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                </Style>-->
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
-                    <Setter Property="HorizontalAlignment" Value="Right" />
-                </Style>
+
+                
             </DataGrid.Resources>
             <!--<DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">

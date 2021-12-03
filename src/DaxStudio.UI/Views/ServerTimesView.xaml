@@ -388,6 +388,8 @@
                   SelectedItem="{Binding SelectedEvent}" 
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
+                  AlternationCount="2"
+                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                   Background="{DynamicResource Theme.Brush.Content.Back}"
                   behaviours:GridViewColumnResize.Enabled="True" 
                   VerticalAlignment="Stretch" 
@@ -433,17 +435,17 @@
                 </Style>-->
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
-                    <Setter Property="Padding" Value="6 0 6 0"/>
+                    <Setter Property="Padding" Value="6 2 6 0"/>
                 </Style>
                 
                 <Style x:Key="AlignBottomRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                     <Setter Property="VerticalAlignment" Value="Center" />
-                    <Setter Property="Padding" Value="6 0 6 0"/>
+                    <Setter Property="Padding" Value="6 2 6 0"/>
                 </Style>
                     
-                <Style TargetType="TextBlock">
-                    <Setter Property="Padding" Value="6 0 6 0"/>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="Padding" Value="6 2 6 0"/>
                 </Style>
                 
                 </DataGrid.Resources>
@@ -453,7 +455,7 @@
                 <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Padding" Value="6 0 6 0"/>
+                                <Setter Property="Padding" Value="6 2 6 0"/>
                                 <Style.Triggers>
                                 <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
                                     <Setter Property="FontStyle" Value="Italic"/>
@@ -474,7 +476,7 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
                                         <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Padding" Value="6 0 6 0"/>
+                                        <Setter Property="Padding" Value="6 2 6 0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

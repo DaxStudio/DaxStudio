@@ -8,6 +8,7 @@
         xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
         xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
+        xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"   
         xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock"
@@ -105,6 +106,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
         </ResourceDictionary>    
         
     </fluent:RibbonWindow.Resources>
