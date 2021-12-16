@@ -21,9 +21,10 @@
 
 
             <Style x:Key="SummaryHeader" TargetType="{x:Type TextBlock}">
-                <Setter Property="Margin" Value="0 10 0 0"/>
+                <Setter Property="Margin" Value="0"/>
                 <Setter Property="FontSize" Value="36"/>
                 <Setter Property="FontWeight" Value="Light"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <!--<Setter Property="Foreground" Value="{StaticResource DaxStudioBlue}" />-->
             </Style>
 
@@ -39,7 +40,8 @@
                 <Setter Property="FontSize" Value="18"/>
             </Style>
 
-            <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}" >
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
                 <Setter Property="Margin" Value="0 0 0 0"/>
                 <Setter Property="Padding" Value="0 0 3 0" />
                 <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
@@ -64,17 +66,19 @@
                 </Style.Triggers>
             </Style>
             <Style x:Key="NumCell" >
+                
                 <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
             </Style>
 
-            <Style x:Key="NumCellBold" >
+            <Style x:Key="NumCellBold"  >
                 <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
                 <Setter Property="TextBlock.FontWeight" Value="Bold" />
                 <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>
                 <Setter Property="TextBlock.TextAlignment" Value="Right"/>
             </Style>
 
-            <Style x:Key="RightHeader" TargetType="{x:Type DataGridColumnHeader}">
+            <!-- BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" -->
+            <Style x:Key="RightHeader" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                 <Setter Property="HorizontalContentAlignment" Value="Right"/>
             </Style>
 
@@ -92,6 +96,13 @@
                 <Setter Property="MaxWidth" Value="500" />
             </Style>
 
+            <Style x:Key="TabItemStyle" TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                <Setter Property="Foreground"  Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="Padding" Value="8 0 0 0"/>
+                <Setter Property="TextBlock.Margin" Value="8 0 0 0"/>
+            </Style>
+            
             <DataTemplate x:Key="DashTemplate">
                 <TextBlock  Text="-" HorizontalAlignment="Right" Style="{StaticResource TextBlockStyle}"/>
             </DataTemplate>
@@ -103,14 +114,23 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ExpanderArrowStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ScrollingVerticalTabs.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
-        <TabControl>
-            <TabItem Header="Tables">
-                <Border BorderBrush="Gray" BorderThickness="1">
+
+        <TabControl 
+            Template="{DynamicResource ScrollingVerticalTabsTemplate}" 
+            TabStripPlacement="Left" 
+            >
+            <TabItem Header="Tables" Style="{StaticResource TabItemStyle}">
+                <controls:ClipBorder
+                    CornerRadius="4"
+                    BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True">
                     <!--
                 VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingPanel.IsVirtualizing="True"
@@ -121,9 +141,8 @@
                               ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
-                          BorderBrush="LightGray"
-                          BorderThickness="1"
-                          HorizontalGridLinesBrush="LightGray"
+
+                          HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
                           VerticalGridLinesBrush="Transparent"
                           CanUserSortColumns="True" 
                           
@@ -188,14 +207,14 @@
 
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding ColumnName}" Padding="25,0,0,0"/>
+                                        <TextBlock Text="{Binding ColumnName}" Padding="25,0,0,0" Style="{StaticResource TextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn  x:Name="colRows"
                                                      Header="Cardinality"
                                                      ClipboardContentBinding="{Binding ColumnCardinality}"
-                                SortMemberPath="ColumnCardinality" MinWidth="65" Width="80">
+                                SortMemberPath="ColumnCardinality" MinWidth="65" Width="83">
 
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
@@ -205,7 +224,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridCardinality"  >
-                                            <Rectangle Margin="0,0,0,-2" Fill="Goldenrod" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                            <Rectangle Margin="0,0,0,-2" Fill="{DynamicResource Theme.Brush.Accent2}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
                                                 <Rectangle.Width>
                                                     <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
                                                         <Binding Path="PercentOfMaxCardinality"/>
@@ -213,7 +232,8 @@
                                                     </MultiBinding>
                                                 </Rectangle.Width>
                                             </Rectangle>
-                                            <TextBlock Text="{Binding ColumnCardinality, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding ColumnCardinality, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis"
+                                                       Style="{StaticResource TextBlockStyle}"/>
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -221,7 +241,7 @@
                             <!-- CellTemplate="{StaticResource DashTemplate}" -->
                             <DataGridTemplateColumn  x:Name="colTableSize"   MinWidth="65" 
                                                      Header="Table Size"
-                                                     SortMemberPath="TableSize" Width="80" ClipboardContentBinding="{Binding TableSize}">
+                                                     SortMemberPath="TableSize" Width="90" ClipboardContentBinding="{Binding TableSize}">
 
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
@@ -242,7 +262,7 @@
                                                     SortMemberPath="TotalSize" 
                                                     MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" 
                                                     SortDirection="Descending" 
-                                                    Width="80" >
+                                                    Width="90" >
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -251,7 +271,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridDataSize"  >
-                                            <Rectangle Margin="0,0,0,-2" Fill="RoyalBlue" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                            <Rectangle Margin="0,0,0,-2" Fill="{DynamicResource Theme.Brush.Accent}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
                                                 <Rectangle.Width>
                                                     <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
                                                         <Binding Path="PercentOfMaxTotalSize"/>
@@ -259,7 +279,9 @@
                                                     </MultiBinding>
                                                 </Rectangle.Width>
                                             </Rectangle>
-                                            <TextBlock Text="{Binding TotalSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding TotalSize, StringFormat=N0}" 
+                                                       Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" 
+                                                       Style="{StaticResource TextBlockStyle}"/>
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -298,9 +320,10 @@
 
                             <DataGridTextColumn Binding="{Binding Encoding}" 
                                                 x:Name="colEncoding" 
-                                                Header="Encoding">
+                                                Header="Encoding"
+                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}">
                                 <DataGridTextColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader" >
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
@@ -308,9 +331,10 @@
 
                             <DataGridTextColumn Binding="{Binding TypeName}" 
                                                 x:Name="colDataType"
-                                                Header="Data Type">
+                                                Header="Data Type"
+                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}">
                                 <DataGridTextColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader" >
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
@@ -409,19 +433,22 @@
 
                         </DataGrid.Columns>
                     </DataGrid>
-                </Border>
+                </controls:ClipBorder>
             </TabItem>
 
-            <TabItem Header="Columns">
-                <Border BorderBrush="Black" BorderThickness="1">
+            <TabItem Header="Columns"  Style="{StaticResource TabItemStyle}">
+                <controls:ClipBorder
+                    CornerRadius="4"
+                    BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True">
 
                     <DataGrid ItemsSource="{Binding SortedColumns, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
-                          BorderBrush="LightGray"
-                          BorderThickness="1"
-                          HorizontalGridLinesBrush="LightGray"
+
+                          HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
                           VerticalGridLinesBrush="Transparent"
                           CanUserSortColumns="True" 
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
@@ -436,14 +463,15 @@
                                                 Header="Table-Column"
                                                 MinWidth="200">
                                 <DataGridTextColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader" >
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableColumn, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
+
                             <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}"  
-                                                ElementStyle="{StaticResource NumCell}" 
+                                                ElementStyle="{StaticResource NumCell}"
                                                 Header="Rows" >
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
@@ -451,7 +479,8 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-
+                            
+                            
                             <DataGridTextColumn Binding="{Binding ColumnCardinality, StringFormat=N0}" 
                                                 ElementStyle="{StaticResource NumCell}" 
                                                 Header="Cardinality" >
@@ -477,7 +506,7 @@
                                     <DataTemplate>
                                         <Grid x:Name="gridDataSize" >
 
-                                            <Rectangle Margin="0,0,0,-2" Fill="RoyalBlue" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                            <Rectangle Margin="0,0,0,-2" Fill="{DynamicResource Theme.Brush.Accent}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
                                                 <Rectangle.Width>
                                                     <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
                                                         <Binding Path="PercentOfMaxTotalDBSize"/>
@@ -543,7 +572,7 @@
 
                             <DataGridTextColumn Binding="{Binding Encoding}" Header="Encoding">
                                 <DataGridTextColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader" >
+                                    <Style TargetType="DataGridColumnHeader"  BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
@@ -551,7 +580,7 @@
 
                             <DataGridTextColumn Binding="{Binding TypeName}" Header="Data Type">
                                 <DataGridTextColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
@@ -580,18 +609,20 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                </Border>
+                </controls:ClipBorder>
             </TabItem>
 
-            <TabItem Header="Relationships">
-                <Border BorderBrush="Gray" BorderThickness="1">
+            <TabItem Header="Relationships"  Style="{StaticResource TabItemStyle}">
+                <controls:ClipBorder
+                    CornerRadius="4"
+                    BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True">
                     <DataGrid ItemsSource="{Binding GroupedRelationships, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
-                          BorderBrush="LightGray"
-                          BorderThickness="1"
-                          HorizontalGridLinesBrush="LightGray"
+                          HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
                           VerticalGridLinesBrush="Transparent"
                           CanUserSortColumns="True" 
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
@@ -637,14 +668,14 @@
                                                     Header="Table / Relationship"
                                                     ClipboardContentBinding="{Binding RelationshipFromToName}">
                                 <DataGridTemplateColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Relationship, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
 
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding RelationshipFromToName}" Padding="25,0,0,0"/>
+                                        <TextBlock Text="{Binding RelationshipFromToName}" Padding="25,0,0,0" Style="{StaticResource TextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -663,7 +694,9 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridCardinality"  >
-                                            <TextBlock Text="{Binding UsedSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding UsedSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" 
+                                                       Style="{StaticResource NumTextBlockStyle}"
+                                                       TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -732,25 +765,27 @@
                                                 x:Name="colSampleViolations" 
                                                 Header="Sample Violations">
                                 <DataGridTextColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
+                                    <Style TargetType="DataGridColumnHeader"  BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.SampleViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                </Border>
+                </controls:ClipBorder>
             </TabItem>
 
-            <TabItem Header="Partitions">
-                <Border BorderBrush="Gray" BorderThickness="1">
+            <TabItem Header="Partitions" Style="{StaticResource TabItemStyle}">
+                <controls:ClipBorder
+                    CornerRadius="4"
+                    BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True">
                     <DataGrid ItemsSource="{Binding GroupedPartitions, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
                               AutoGenerateColumns="False" 
                               RowHeaderWidth="0" 
-                              BorderBrush="LightGray"
-                              BorderThickness="1"
-                              HorizontalGridLinesBrush="LightGray"
+                              HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
                               VerticalGridLinesBrush="Transparent"
                               CanUserSortColumns="True" 
                               VirtualizingPanel.IsVirtualizingWhenGrouping="True"
@@ -797,7 +832,7 @@
                                                     ClipboardContentBinding="{Binding TableAndPartitionName}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding PartitionName}" Padding="25,0,0,0"/>
+                                        <TextBlock Text="{Binding PartitionName}" Padding="25,0,0,0" Style="{StaticResource TextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -816,7 +851,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridCardinality"  >
-                                            <Rectangle Margin="0,0,0,-2" Fill="Goldenrod" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                            <Rectangle Margin="0,0,0,-2" Fill="{DynamicResource Theme.Brush.Accent2}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
                                                 <Rectangle.Width>
                                                     <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
                                                         <Binding Path="PercentOfTableRows"/>
@@ -824,7 +859,9 @@
                                                     </MultiBinding>
                                                 </Rectangle.Width>
                                             </Rectangle>
-                                            <TextBlock Text="{Binding RowsCount, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding RowsCount, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" 
+                                                       Style="{StaticResource NumTextBlockStyle}"
+                                                       TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -843,7 +880,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Grid x:Name="gridDataSize"  >
-                                            <Rectangle Margin="0,0,0,-2" Fill="RoyalBlue" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
+                                            <Rectangle Margin="0,0,0,-2" Fill="{DynamicResource Theme.Brush.Accent}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Height="3" >
                                                 <Rectangle.Width>
                                                     <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
                                                         <Binding Path="PercentOfTableSize"/>
@@ -851,7 +888,9 @@
                                                     </MultiBinding>
                                                 </Rectangle.Width>
                                             </Rectangle>
-                                            <TextBlock Text="{Binding DataSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding DataSize, StringFormat=N0}" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource  Mode=FindAncestor,AncestorType={x:Type Grid}}}" 
+                                                       Style="{StaticResource NumTextBlockStyle}"
+                                                       TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -881,11 +920,16 @@
 
                         </DataGrid.Columns>
                     </DataGrid>
-                </Border>
+                </controls:ClipBorder>
             </TabItem>
 
-            <TabItem Header="Summary">
-                <Border  BorderBrush="Gray" BorderThickness="1">
+            <TabItem Header="Summary"  Style="{StaticResource TabItemStyle}">
+                <controls:ClipBorder
+                    CornerRadius="4"
+                    BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True">
+                    
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -907,11 +951,13 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Header Rows -->
-                        <Image Source="{StaticResource ModelIcon}" Grid.RowSpan="1" VerticalAlignment="Top"/>
+                        <Image Source="{DynamicResource powerbi_smallDrawingImage}" 
+                               Width="48"  Grid.RowSpan="1" VerticalAlignment="Top"
+                               Margin="16 24 16 16"/>
                         <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="5" Style="{StaticResource SummaryHeader}"/>
 
                         <!-- Row 1 -->
-                        <TextBlock Text="Total Size" Grid.Column="1" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
+                        <TextBlock Text="Total Size in Memory" Grid.Column="1" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
                         <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2" Margin="0 0 10 0"  >
                             <TextBlock Text="{Binding SummaryViewModel.FormattedTotalSize}"
                                        Style="{StaticResource SummaryValue}"
@@ -944,11 +990,13 @@
 
 
                     </Grid>
-                </Border>
+  
+                </controls:ClipBorder>
             </TabItem>
 
 
         </TabControl>
+
 
 
         <!-- Busy overlay -->

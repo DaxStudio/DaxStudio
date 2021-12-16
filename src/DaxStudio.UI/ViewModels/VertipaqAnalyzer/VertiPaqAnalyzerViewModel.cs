@@ -159,7 +159,7 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
 
         // TODO: we might add the database name here
-        public override string Title => "VertiPaq Analyzer Metrics";
+        public override string Title => "VertiPaq Analyzer";
 
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "vertipaq-analyzer";
