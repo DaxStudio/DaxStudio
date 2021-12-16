@@ -252,6 +252,7 @@ namespace DaxStudio.UI.ViewModels
                     finally
                     {
                         ShowMetadataRefreshPrompt = false;
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Setting IsBusy = false");
                         IsBusy = false;
                     }
                 });
@@ -507,6 +508,7 @@ namespace DaxStudio.UI.ViewModels
             get => _isBusy;
             set
             {
+                if (_isBusy == value) return;
                 _isBusy = value;
                 NotifyOfPropertyChange(() => IsBusy);
             }
@@ -1086,7 +1088,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
             if (selectedDB != null) SelectedDatabase = selectedDB;
-            else { IsBusy = false; }
+
             
             // TODO - should we log a warning here?
 
@@ -1146,6 +1148,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ConnectFailedEvent message, CancellationToken cancellationToken)
         {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "Handle<ConnectionFailedEvent>", "Setting IsBusy = false");
             IsBusy = false;
             return Task.CompletedTask;
         }

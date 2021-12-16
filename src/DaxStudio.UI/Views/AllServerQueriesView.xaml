@@ -41,9 +41,9 @@
                 <sys:String>Xmla</sys:String>
             </col:ArrayList>
 
-            <Style TargetType="{x:Type ToolTip}">
-                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+            <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
+                <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -53,9 +53,9 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}" >
-                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
+                <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
                 <!--<Setter Property="ContentTemplate"> 
                     <Setter.Value>
                         <DataTemplate>
@@ -78,7 +78,7 @@
                 </Setter>-->
             </Style>
 
-            <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}">
+            <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding QueryType}" Value="ERR">
                         <Setter Property="Foreground" Value="OrangeRed"/>
@@ -217,7 +217,9 @@
                     SelectedItem="{Binding SelectedQuery}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
-                    Background="{DynamicResource Theme.Brush.Content.Back}"                    
+                    Background="{DynamicResource Theme.Brush.Content.Back}"  
+                    AlternationCount="2"
+                    AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
                     VerticalAlignment="Stretch" 
@@ -264,10 +266,11 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                <Border Padding="{TemplateBinding Padding}" 
+                                    <!--Background="{TemplateBinding Background}"-->
+                                    <Border Padding="{TemplateBinding Padding}" 
                                         BorderBrush="{TemplateBinding BorderBrush}" 
                                         BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Background="{TemplateBinding Background}" 
+
                                         SnapsToDevicePixels="True">
                                     <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                                 </Border>
