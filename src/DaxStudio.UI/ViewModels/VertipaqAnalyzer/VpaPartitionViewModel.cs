@@ -37,6 +37,11 @@ namespace DaxStudio.UI.ViewModels
         public long DataSize => _partition.DataSize;
         public long PartitionsNumber => 1;
         public long SegmentsNumber => _partition.SegmentsNumber;
+        public int SegmentsTotalNumber => _partition.SegmentsTotalNumber;
+        public int? SegmentsPageable => _partition.SegmentsPageable;
+        public int? SegmentsResident => _partition.SegmentsResident;
+        public double? SegmentsAverageTemperature => _partition.SegmentsAverageTemperature * 1000;
+        public DateTime? SegmentsLastAccessed => _partition.SegmentsLastAccessed;
 
         public int CompareTo(object obj)
         {
