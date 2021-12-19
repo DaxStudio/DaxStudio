@@ -266,6 +266,11 @@ namespace DaxStudio.UI.ViewModels
             public string PercentOfTable => "The space taken up as a percentage of the parent table";
             public string PercentOfDatabase => "The space taken up as a percentage of the total size of the database";
             public string Segments => "The number of segments";
+            public string TotalSegments => "The total number of segments";
+            public string Pageable => "The number of pageable segments";
+            public string Resident => "The number of resident segments";
+            public string Temperature => "Scaled numeric feequency of segment access";
+            public string LastAccessed => "Last access time of a pageable segment";
             public string Partitions => "The number of partitions";
             public string Columns => "The number of columns in the table";
             public string TableRows => "The total number of rows in the table";
