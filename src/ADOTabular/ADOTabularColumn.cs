@@ -74,7 +74,7 @@ namespace ADOTabular
         public string FormatString { get; internal set; }
         public string DefaultAggregateFunction { get; internal set; }
         public long StringValueMaxLength { get; internal set; }
-        public string DataTypeName { get { return DataType==null?string.Empty:DataType.ToString().Replace("System.", ""); } }
+        public string DataTypeName { get { return DataType==0?string.Empty:DataType.ToString().Replace("System.", ""); } }
         
         internal string OrderByRef { get; set; }
 
