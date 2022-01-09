@@ -93,8 +93,8 @@
                         
                         <Border x:Name="border"
                             CornerRadius="4"
-                                     Padding="12 4 8 4"
-                                     Margin="0 0 8 0"
+                            Padding="12 4 8 4"
+                            Margin="0 0 8 0"
                             HorizontalAlignment="Stretch">
                     
                         
@@ -104,6 +104,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
+                                
                                 <ContentPresenter x:Name="ContentSite"
                                                 VerticalAlignment="Center"
                                                 HorizontalAlignment="Stretch"
@@ -131,6 +132,7 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource Theme.Brush.Control.Selected}"/>
                             <Setter TargetName="accent" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
+                            <!--<Setter TargetName="ContentSite" Property="FontWeight" Value="Bold" />-->
                             <!--<Setter TargetName="border" Property="FontWeight" Value="Bold"/>-->
                             <!--<Setter Property="Panel.ZIndex" Value="100"/>-->
                         </Trigger>
@@ -138,15 +140,15 @@
                             <!--<Setter TargetName="Panel" Property="Background" Value="{DynamicResource GradientInactiveCaptionBrush}" />-->
                             <!--<Setter TargetName="ActiveIndicator" Property="Visibility" Value="Hidden"/>-->
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
+                        <!--<Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Panel" Property="Background" Value="DarkGray"/>
-                        </Trigger>
+                        </Trigger>-->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsMouseOver" Value="True"/>
                                 <Condition Property="IsSelected" Value="False"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}" TargetName="border"/>
+                            <Setter Property="Background" Value="{DynamicResource Fluent.Ribbon.Brushes.RibbonTabItem.MouseOver.Background}" TargetName="border"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" TargetName="border"/>
                         </MultiTrigger>
 

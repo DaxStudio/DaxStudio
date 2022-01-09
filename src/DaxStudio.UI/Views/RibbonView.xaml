@@ -410,7 +410,7 @@
                         <Fluent:Button Header="New" 
                                    Name="btnNewQuery" 
                                    HorizontalContentAlignment="Left" 
-                                   Foreground="White"
+                                   Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                                    Height="30"
                                    ToolTip="Open a New Query"
                                    DockPanel.Dock="Top"
@@ -421,7 +421,7 @@
                             Name="btnNewQueryConnected"
                             Header="New (Copy Connection)"
                             ToolTip="Open a New Query with the current connection"
-                            Foreground="White"
+                            Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                             Height="30"
                             cal:Message.Attach="[Event Click] = [Action NewQueryWithCurrentConnection]">
                             <!--<i:Interaction.Triggers>
@@ -548,7 +548,7 @@
 
                         <Fluent:Button Name="btnSave" 
                                    Header="Save" 
-                                   Foreground="White" 
+                                   Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}" 
                                    HorizontalContentAlignment="Left"
                                    Height="30"
                                    >
@@ -565,7 +565,7 @@
                         <Fluent:Button Name="btnSaveAs" 
                                    Header="Save As" 
                                    Height="30"
-                                   Foreground="White">
+                                   Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
                                     <cal:Action.Target>
@@ -584,7 +584,7 @@
                                                
                         <Fluent:Button Name="btnExit" 
                                    Header="Exit" 
-                                   Foreground="White"  
+                                   Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"  
                                    VerticalAlignment="Bottom"
                                    DockPanel.Dock="Bottom">
                             <i:Interaction.Triggers>

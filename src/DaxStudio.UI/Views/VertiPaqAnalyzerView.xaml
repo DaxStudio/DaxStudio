@@ -328,7 +328,8 @@
                             <DataGridTextColumn Binding="{Binding Encoding}" 
                                                 x:Name="colEncoding" 
                                                 Header="Encoding"
-                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}">
+                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                ElementStyle="{StaticResource TextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -339,7 +340,8 @@
                             <DataGridTextColumn Binding="{Binding TypeName}" 
                                                 x:Name="colDataType"
                                                 Header="Data Type"
-                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}">
+                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                ElementStyle="{StaticResource TextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -473,7 +475,7 @@
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding SegmentsAverageTemperature, StringFormat=N2}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding SegmentsAverageTemperature, StringFormat=N2}" Style="{StaticResource NumTextBlockStyle}"  />
                                         <!--
                                             <TextBlock Background="{Binding TemperatureBrush}" Text="{Binding SegmentsAverageTemperature, StringFormat=N2}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                                         -->
@@ -866,7 +868,8 @@
 
                             <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" 
                                                 x:Name="colSampleViolations" 
-                                                Header="Sample Violations">
+                                                Header="Sample Violations"
+                                                ElementStyle="{StaticResource TextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader"  BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.SampleViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>

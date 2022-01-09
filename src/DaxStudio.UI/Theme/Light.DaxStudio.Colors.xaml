@@ -81,6 +81,9 @@
     <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="{DynamicResource Theme.Dialog.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{DynamicResource Theme.Table.Header.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="GridLinesBrush" Color="{DynamicResource Theme.Control.Border}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="Pink"/>
+    <SolidColorBrush x:Key="TabViewItemHeaderBackgroundPointerOver" Color="LightGreen"/>
+
 
     <SolidColorBrush x:Key="EditorSelectionBrush" Color="{DynamicResource Theme.PrimaryAccentColor}" Opacity="0.75" options:Freeze="true"/>
     <SolidColorBrush x:Key="EditorSelectionForeground" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>
@@ -156,7 +159,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Fore}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Background" SolidColorBrush.Color="Transparent" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.IdealForegroundColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground" SolidColorBrush.Color="{StaticResource WhiteColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.Button.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabItem.Header.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
@@ -213,7 +216,7 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.BorderBrush" SolidColorBrush.Color="{StaticResource Gray8}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Active.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.MouseOver.Background" SolidColorBrush.Color="Transparent" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.MouseOver.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.MouseOver.Foreground" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Selected.Foreground" SolidColorBrush.Color="{StaticResource Gray1}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Selected.MouseOver.Foreground" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" />

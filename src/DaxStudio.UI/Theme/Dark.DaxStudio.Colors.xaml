@@ -149,10 +149,10 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Back}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" SolidColorBrush.Color="{StaticResource Theme.MenuBar.Fore}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Background" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentBaseColor}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground" SolidColorBrush.Color="{StaticResource WhiteColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.Button.Background" SolidColorBrush.Color="{StaticResource BlackColor20}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" SolidColorBrush.Color="{StaticResource Theme.PrimaryAccentColor}" />
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabItem.Header.Foreground" SolidColorBrush.Color="{StaticResource BlackColor}" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabItem.Header.Foreground" SolidColorBrush.Color="{StaticResource WhiteColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabItem.MouseOver.Background" SolidColorBrush.Color="{StaticResource BlackColor20}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabItem.Selected.Background" SolidColorBrush.Color="{StaticResource WhiteColor20}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Button.MouseOver.BorderBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" />
