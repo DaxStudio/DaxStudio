@@ -1633,7 +1633,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.2.30</Version>
+      <Version>6.1.3.50</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>4.0.173</Version>
@@ -1645,19 +1645,19 @@
       <Version>27.2.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.2.0</Version>
+      <Version>1.2.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.2.0</Version>
+      <Version>1.2.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.2.0</Version>
+      <Version>1.2.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.2.0</Version>
+      <Version>1.2.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
-      <Version>4.60.0</Version>
+      <Version>4.60.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.NumericUpDownLib">
       <Version>2.4.2.2</Version>
@@ -1678,10 +1678,10 @@
       <Version>1.1.0</Version>
     </PackageReference>
     <PackageReference Include="Humanizer">
-      <Version>2.13.14</Version>
+      <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>1.3.1</Version>
+      <Version>1.5.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.7</Version>
@@ -1704,7 +1704,7 @@
       <Version>0.9.4</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>7.2.2</Version>
+      <Version>7.2.3</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>2.10.0</Version>
