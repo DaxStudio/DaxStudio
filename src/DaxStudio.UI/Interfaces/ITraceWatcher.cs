@@ -5,7 +5,7 @@ using DaxStudio.QueryTrace;
 
 namespace DaxStudio.UI.Interfaces
 {
-    public interface ITraceWatcher
+    public interface ITraceWatcher : IToolWindow
     {
         List<DaxStudioTraceEventClass> MonitoredEvents { get; }
         

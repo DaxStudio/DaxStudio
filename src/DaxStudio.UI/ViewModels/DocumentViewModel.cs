@@ -2691,7 +2691,8 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var tw in ToolWindows)
                 {
                     var saver = tw as ISaveState;
-                    if (saver != null)
+                    var window = tw as ToolWindowBase;
+                    if (saver != null && (window?.IsVisible??false))
                     {
                         saver.Save(FileName);
                     }
