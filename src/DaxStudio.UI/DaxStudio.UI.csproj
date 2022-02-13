@@ -299,6 +299,7 @@
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
+    <Compile Include="JsonConverters\QueryBuilderColumnDataTypeConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
     <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
