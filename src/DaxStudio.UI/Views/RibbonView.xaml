@@ -23,7 +23,7 @@
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
-                
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
@@ -472,9 +472,11 @@
                                        Grid.Row="2" >Recent Documents</Label>
 
                                         <ListView x:Name="RecentFiles" 
+                                                  Style="{StaticResource DaxStudioListViewStyle}"
                                                   DataContext="{Binding}" 
                                                   ItemsSource="{Binding Path=RecentFiles}" 
                                                   Margin="-12 0 0 0"     
+                                                  
                                                   MinWidth="400"
                                                   MaxWidth="600"
                                                   HorizontalAlignment="Left"
@@ -499,12 +501,11 @@
                                             <ListView.ItemTemplate>
                                                 <DataTemplate>
                                                 <Border x:Name="lvBorder" 
-                                                        Background="{DynamicResource Theme.Brush.Default.Back}"
+                                                        Background="Transparent"
                                                         BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
-                                                        BorderThickness="1"
+                                                        
                                                         Padding="8"
-                                                        Margin="0 4"
-                                                        CornerRadius="4">
+                                                        >
                                                         <StackPanel Orientation="Horizontal">
                                                             <Grid>
                                                                 <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
