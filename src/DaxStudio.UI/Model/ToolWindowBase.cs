@@ -16,7 +16,7 @@ namespace DaxStudio.UI.Model
 
         protected ToolWindowBase()
         {
-            CanCloseWindow = true;
+            CanCloseWindow = false;
             CanHide = false;
             AutoHideMinHeight = 100;
             DockAsDocumentCommand = new DisabledCommand();

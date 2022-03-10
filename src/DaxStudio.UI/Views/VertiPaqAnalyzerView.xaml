@@ -467,7 +467,7 @@
                                                     ClipboardContentBinding="{Binding SegmentsAverageTemperature}"
                                                     SortMemberPath="SegmentsAverageTemperature" 
                                                     MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}"
-                                                    Width="80" >
+                                                    Width="80">
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Temperature, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>

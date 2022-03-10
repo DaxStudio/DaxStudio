@@ -158,7 +158,7 @@ namespace DaxStudio.UI.ViewModels
                     // replace table names
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
-                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags() : queryRemapped;
+                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags().RemoveDoubleBracketsInCallbacks() : queryRemapped;
                     QueryRichText = Query;
                     // Set flag in case any highlight is present
                     HighlightQuery = QueryRichText.Contains("|~E~|");
@@ -291,6 +291,10 @@ namespace DaxStudio.UI.ViewModels
         public static string RemovePremiumTags(this string xmSqlQuery)
         {
             return xmSqlPremiumTagsRemoval.Replace(xmSqlQuery, "");
+        }
+        public static string RemoveDoubleBracketsInCallbacks(this string xmSqlQuery)
+        {
+            return xmSqlQuery.Replace("]]", "]");
         }
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
             // Reviewed on 2017-10-13
