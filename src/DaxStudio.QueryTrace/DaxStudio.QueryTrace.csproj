@@ -108,13 +108,13 @@
       <Version>4.0.173</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.32.0</Version>
+      <Version>19.34.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.32.0</Version>
+      <Version>19.34.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
-      <Version>2.4.2</Version>
+      <Version>2.4.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>5.0.3</Version>

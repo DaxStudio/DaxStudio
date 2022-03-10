@@ -4821,5 +4821,15 @@ namespace DaxStudio.UI.ViewModels
             QueryBuilder.LoadJson(message.Json);
             return Task.CompletedTask;
         }
+
+        public void DragEnter(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
+
+        public void DragLeave(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
     }
 }

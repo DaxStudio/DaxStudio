@@ -252,5 +252,14 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(WordWrap));
         }
 
+        public void DragEnter(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
+
+        public void DragLeave(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
     }
 }

@@ -128,6 +128,16 @@ namespace DaxStudio.UI.Model
                 List.Insert(dropInfo.InsertIndex, col);
             }
         }
+
+        public void DragEnter(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
+
+        public void DragLeave(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
     }
 
 }
