@@ -12,6 +12,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>
@@ -22,14 +23,18 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Content="Choose the type of Export output:" HorizontalAlignment="Center"/>
+        <Label Grid.Row="0" Content="Choose the type of Export output:" 
+               Margin="4 0 0 10"/>
         <Border CornerRadius="8" Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
-        <ListView  x:Name="ExportTypes" SelectedItem="{Binding SelectedItem}" >
+        <ListView  x:Name="ExportTypes" 
+                   SelectedItem="{Binding SelectedItem}" 
+                   Padding="10"
+                   Style="{StaticResource DaxStudioListViewStyle}" >
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Margin="10">
                         <Image ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" />
-                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding Name}" Margin="10"/>
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

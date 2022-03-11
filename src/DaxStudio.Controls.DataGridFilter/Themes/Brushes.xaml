@@ -9,7 +9,7 @@
 		x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
 									 ResourceId=ControlAccentBrushKey}"
 		options:Freeze="true"
-		Color="{DynamicResource {x:Static reskeys:ResourceKeys.ControlAccentColorKey}}" />
+		Color="{DynamicResource Fluent.Ribbon.Colors.AccentColor40}" />
 
     <SolidColorBrush
 		x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},

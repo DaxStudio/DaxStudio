@@ -164,14 +164,16 @@
                         <TextBlock>Clear</TextBlock>
                     </StackPanel>
                 </Button>
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}">
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyAll]">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource copy_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Copy</TextBlock>
                     </StackPanel>
                 </Button>
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}">
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action Export]">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource save_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
@@ -206,7 +208,8 @@
             Grid.Row="2"
             >
         <controls:DataGridNoContextMenu x:Name="QueryEvents" 
-                    
+                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                        
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}" 
@@ -218,6 +221,7 @@
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     Background="{DynamicResource Theme.Brush.Content.Back}"  
+                                        RowBackground="{DynamicResource Theme.Brush.Content.Back}"
                     AlternationCount="2"
                     AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                     AutoGenerateColumns="False"
@@ -235,6 +239,8 @@
                     BorderThickness="1,0,0,0" 
                     BorderBrush="{x:Null}"
                     IsReadOnly="True"
+                                        Padding="2"
+                                        Style="{StaticResource DefaultDataGridStyle}"
                     >
             <!--<DataGrid.Style>
                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type controls:DataGridNoContextMenu}">
@@ -259,14 +265,14 @@
                 </Style>
             </DataGrid.ColumnHeaderStyle>-->
             
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
+            <!--<DataGrid.CellStyle>
+                <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                    <!--Background="{TemplateBinding Background}"-->
+                                    --><!--Background="{TemplateBinding Background}"--><!--
                                     <Border Padding="{TemplateBinding Padding}" 
                                         BorderBrush="{TemplateBinding BorderBrush}" 
                                         BorderThickness="{TemplateBinding BorderThickness}" 
@@ -278,7 +284,7 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </DataGrid.CellStyle>
+            </DataGrid.CellStyle>-->
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource QueryTypeStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
@@ -326,6 +332,7 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn 
                     Header="StartTime" 
+                    
                     IsReadOnly="True" 
                     Width="65" 
                     Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  

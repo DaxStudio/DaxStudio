@@ -15,15 +15,15 @@
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                  ResourceId=DataGridHeaderBackground}"
-                 Color="{DynamicResource MahApps.Colors.ThemeBackground}"
+                 Color="{DynamicResource Theme.Default.Back}"
                  options:Freeze="true" />
 
     <SolidColorBrush x:Key="ComboBox.Static.Background"
-                 Color="{DynamicResource MahApps.Colors.ThemeBackground}"
+                 Color="{DynamicResource Theme.Default.Back}"
                  options:Freeze="true" />
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                  ResourceId=DataGridHeaderForeground}"
-                 Color="{DynamicResource MahApps.Colors.ThemeForeground}"
+                 Color="{DynamicResource Theme.Default.Fore}"
                  options:Freeze="true" />
 </ResourceDictionary>

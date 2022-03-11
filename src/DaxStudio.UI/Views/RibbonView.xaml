@@ -472,11 +472,10 @@
                                        Grid.Row="2" >Recent Documents</Label>
 
                                         <ListView x:Name="RecentFiles" 
-                                                  Style="{StaticResource DaxStudioListViewStyle}"
+                                                  Style="{StaticResource DaxStudioListViewNoSelectionStyle}"
                                                   DataContext="{Binding}" 
                                                   ItemsSource="{Binding Path=RecentFiles}" 
                                                   Margin="-12 0 0 0"     
-                                                  
                                                   MinWidth="400"
                                                   MaxWidth="600"
                                                   HorizontalAlignment="Left"
@@ -1311,8 +1310,8 @@
                 <Fluent:Button Name="helpDaxStudioWiki"
                                Header="Documentation"
                                cal:Message.Attach="[Event Click] = [Action LinkToDaxStudioWiki()]"
-                               Icon="{StaticResource documentationDrawingImage}"
-                               LargeIcon="{StaticResource documentationDrawingImage}"
+                               Icon="{DynamicResource documentationDrawingImage}"
+                               LargeIcon="{DynamicResource documentationDrawingImage}"
                                SizeDefinition="Large,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
@@ -1324,7 +1323,7 @@
                 <Fluent:Button Name="hlpPowerPivotForum"
                                Header="Power Pivot Forum"
                                cal:Message.Attach="[Event Click] = [Action LinkToPowerPivotForum()]"
-                               Icon="{StaticResource linkDrawingImage}"
+                               Icon="{DynamicResource linkDrawingImage}"
                                SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
@@ -1336,7 +1335,7 @@
                 <Fluent:Button Name="hlpSSASForum"
                                Header="Analysis Services Forum"
                                cal:Message.Attach="[Event Click] = [Action LinkToSsasForum()]"
-                               Icon="{StaticResource linkDrawingImage}"
+                               Icon="{DynamicResource linkDrawingImage}"
                                SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
@@ -1399,8 +1398,8 @@
                 <Fluent:Button Name="hlpAbout"
                                Header="About DaxStudio"
                                cal:Message.Attach="[Event Click] = [Action ShowHelpAbout()]"
-                               Icon="{StaticResource aboutDrawingImage}"
-                               LargeIcon="{StaticResource aboutDrawingImage}"
+                               Icon="{DynamicResource aboutDrawingImage}"
+                               LargeIcon="{DynamicResource aboutDrawingImage}"
                                SizeDefinition="Large,Middle"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>

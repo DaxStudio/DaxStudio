@@ -50,7 +50,7 @@ namespace DaxStudio.UI.JsonConverters
                 bool isOverridden = (bool)col["IsOverriden"];
                 SortDirection sortDirection = SortDirection.ASC;
                 var _ = Enum.TryParse( col["SortDirection"].ToString(), out sortDirection);
-                string measureExpression = col["MeasureExpression"].ToString();
+                string measureExpression = col["MeasureExpression"]?.ToString()??String.Empty;
                 string measureCaption = col["Caption"]?.ToString()??"MyMeasure";
                 
                 var queryBuilderCol = new QueryBuilderColumn(obj, isModelItem, _eventAggregator);

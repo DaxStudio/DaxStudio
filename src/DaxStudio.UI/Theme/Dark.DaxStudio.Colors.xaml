@@ -97,7 +97,7 @@
     <Color x:Key="Fluent.Ribbon.Colors.ExtremeHighlightColor">#FFFFD232</Color>
     <Color x:Key="Fluent.Ribbon.Colors.DarkExtremeHighlightColor">#FFF29536</Color>
 
-    <SolidColorBrush x:Key="Theme.ShowcaseBrush" SolidColorBrush.Color="#FF2B579A" />
+    <SolidColorBrush x:Key="Theme.ShowcaseBrush" SolidColorBrush.Color="#FF2B579A" options:Freeze="true" />
 
     <Color x:Key="BlackColor">#FFFFFFFF</Color>
     <Color x:Key="BlackColor20">#51FFFFFF</Color>
@@ -241,7 +241,8 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.MouseOver.Background" SolidColorBrush.Color="#E81123" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.WindowCommands.CloseButton.Pressed.Background" SolidColorBrush.Color="#A92C38" />
 
-    <SolidColorBrush x:Key="DialogBackground" Color="{StaticResource Theme.Dialog.Back}"/>
-    <SolidColorBrush x:Key="DialogBorder" Color="{StaticResource Theme.Dialog.Border}"/>
+    <SolidColorBrush x:Key="DialogBackground" Color="{StaticResource Theme.Dialog.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="DialogBorder" Color="{StaticResource Theme.Dialog.Border}" options:Freeze="true"/>
     <!--<SolidColorBrush x:Key="ToolTipBackground" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>-->
+    <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" options:Freeze="true"/>
 </ResourceDictionary>

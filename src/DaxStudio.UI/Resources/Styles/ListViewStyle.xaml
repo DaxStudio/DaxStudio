@@ -55,4 +55,54 @@
     <Style x:Key="DaxStudioListViewStyle" TargetType="ListView" BasedOn="{StaticResource DefaultListViewStyle}">
         <Setter Property="ItemContainerStyle" Value="{StaticResource DaxStudioListViewItemStyle}"/>
     </Style>
+
+    <Style x:Key="DaxStudioListViewItemNoSelectionStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListViewItem">
+                    <!-- BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"-->
+                    <Border
+                        x:Name="Bd"
+                        BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                        BorderThickness="1"
+                        Background="{DynamicResource Theme.Brush.Default.Back}"
+                        Margin="0 3"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="true">
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundPointerOver}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource ListViewItemForegroundPointerOver}" />
+                        </Trigger>
+                        <!--<Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundSelected}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource ListViewItemForegroundSelected}" />
+                        </Trigger>-->
+                        <!--<MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundSelectedPointerOver}" />
+                        </MultiTrigger>-->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="{DynamicResource ListViewItemDisabledThemeOpacity}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DaxStudioListViewNoSelectionStyle" TargetType="ListView" BasedOn="{StaticResource DefaultListViewStyle}">
+        <Setter Property="ItemContainerStyle" Value="{StaticResource DaxStudioListViewItemNoSelectionStyle}"/>
+    </Style>
 </ResourceDictionary>
