@@ -208,7 +208,7 @@
                 ClipToBounds="True"-->
         <!-- Background="{DynamicResource Fluent.Ribbon.Brushes.RibbonTabControl.Content.Background}" -->
             <ctrl:ClipBorder
-                CornerRadius="8"
+                CornerRadius="0"
                 Background="Transparent">
             <Grid LayoutTransform="{Binding LayoutTransform, RelativeSource={RelativeSource TemplatedParent}}"
               RenderTransform="{Binding RenderTransform, RelativeSource={RelativeSource TemplatedParent}}">
@@ -261,13 +261,16 @@
                     </Grid>
                 </Border>
             </AdornerDecorator>
-
+                <!-- 
+                Cannot set CornerRadius to 8 since we need to set the application window to AllowsTransparency=true and this breaks 
+                the AvalonDock unpinned tool windows 
+                -->
                 <ctrl:ClipBorder x:Name="PART_Border"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{x:Null}"
                     ClipToBounds="True"
-                    CornerRadius="8"
+                    CornerRadius="0"
                     BorderBrush="{TemplateBinding GlowBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     UseLayoutRounding="True" />
