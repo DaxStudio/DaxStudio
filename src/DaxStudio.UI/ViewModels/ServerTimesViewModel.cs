@@ -407,6 +407,10 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
+            if (StorageEngineEvents?.Count > 0 ) return;
+            // results have not been cleared so this is probably and end event from some other
+            // action like a tooltip populating
+
             ClearAll();
 
             int batchScan = 0;
@@ -692,6 +696,7 @@ namespace DaxStudio.UI.ViewModels
         public override void OnReset()
         {
             IsBusy = false;
+            ClearAll();
             Events.Clear();
             ProcessResults();
         }
@@ -833,6 +838,8 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         #region Title Bar Button Methods
+
+        
 
         public override void ClearAll()
         {

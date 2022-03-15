@@ -56,9 +56,10 @@
                                                         />-->
 
                 <ColorAnimationUsingKeyFrames BeginTime="0"
-                                                  Duration="0:0:0.9"
-                                                  FillBehavior="HoldEnd"
-                                                  Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)">
+                                              Duration="0:0:0.9"
+                                              FillBehavior="HoldEnd"
+                                              Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                                              >
                     <EasingColorKeyFrame KeyTime="0:0:0.4" Value="#ED1C24">
 
                         <EasingColorKeyFrame.EasingFunction>

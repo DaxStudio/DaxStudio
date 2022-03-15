@@ -74,7 +74,9 @@
     <SolidColorBrush x:Key="Theme.Brush.Table.Header.Back" Color="{StaticResource Theme.Table.Header.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Table.Header.Fore" Color="{StaticResource Theme.Table.Header.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Trace.Record.Fill" Color="{StaticResource Theme.Default.Fore}" options:Freeze="false"/>
-
+    <SolidColorBrush x:Key="Theme.Brush.xmSQLHighlight.Back" Color="Yellow" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.xmSQLHighlight.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
+    
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="TextControlBorderBrush" Color="{DynamicResource Theme.Dialog.Border}" options:Freeze="true"/>

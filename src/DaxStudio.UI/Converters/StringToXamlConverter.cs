@@ -35,8 +35,12 @@ namespace DaxStudio.UI.Converters {
                     //up to |~S~| is normal
                     paragraph.Inlines.Add(new Run(s.Substring(0, s.IndexOf("|~S~|"))));
                     //between |~S~| and |~E~| is highlighted
-                    paragraph.Inlines.Add(new Run(s.Substring(s.IndexOf("|~S~|") + 5,
-                                              s.IndexOf("|~E~|") - (s.IndexOf("|~S~|") + 5))) { FontWeight = FontWeights.Bold, Background = Brushes.Yellow });
+                    var highlightRun = new Run(s.Substring(s.IndexOf("|~S~|") + 5,
+                                              s.IndexOf("|~E~|") - (s.IndexOf("|~S~|") + 5)))
+                    { FontWeight = FontWeights.Bold};
+                    highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
+                    highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
+                    paragraph.Inlines.Add(highlightRun);
                     //the rest of the string (after the |~E~|)
                     s = s.Substring(s.IndexOf("|~E~|") + 5);
                 }
