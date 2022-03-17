@@ -408,8 +408,8 @@ namespace DaxStudio.UI.ViewModels
                 if (found == null) DatabasesView.Add(dbRef);
             }
             DatabasesView.IsNotifying = true;
-
-            NotifyOfPropertyChange(() => DatabasesView);
+            DatabasesView.Refresh();
+            //NotifyOfPropertyChange(() => DatabasesView);
             if (SelectedDatabase == null)
                 if (!string.IsNullOrEmpty(_metadataProvider.SelectedDatabaseName))
                     SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == _metadataProvider.SelectedDatabaseName);
@@ -482,7 +482,10 @@ namespace DaxStudio.UI.ViewModels
                         Databases.Add(itm);
                     });
                 }
-                DatabasesView.Refresh();
+                Execute.OnUIThread(() =>
+                {
+                    DatabasesView.Refresh();
+                });
             
             }
             catch (Exception ex)
