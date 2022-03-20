@@ -76,7 +76,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showPreReleaseNotifications;
         private bool _showTooltipBasicStats;
         private bool _showTooltipSampleData;
-
+        private bool _gettingStartedShow = false;
         private bool _showFunctionInsightsOnHover;
         //public event EventHandler OptionsUpdated;
         private bool _isInitializing;
@@ -2030,6 +2030,12 @@ namespace DaxStudio.UI.ViewModels
             Refresh();
             // trigger an update of the current properties pane by faking a category change
             NotifyOfPropertyChange(nameof(SelectedCategory));
+        }
+
+        public bool GettingStartedShown
+        {
+            get => _gettingStartedShow;
+            set => _gettingStartedShow = value;
         }
 
         #region IDisposable Support

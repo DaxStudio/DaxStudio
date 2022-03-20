@@ -95,16 +95,16 @@ namespace DaxStudio.UI.ViewModels
         private void InitRunStyles()
         {
             // populate run styles
-            RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly, false, false, false, "Executes the query and sends the results to the selected output"));
-            RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly,  "Executes the text in the Editor and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Run Query Builder", RunStyleIcons.RunBuilder,"Executes the Query Builder and sends the results to the selected output"));
+            //RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
 #if DEBUG
-//            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
+            //            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
             //RunStyles.Add(new RunStyle("Run Table Function", RunStyleIcons.RunFunction, true, true,false, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
             //RunStyles.Add(new RunStyle("Run Measure", RunStyleIcons.RunScalar, true, true, true, "Attempts to executes the selected measure or scalar function by wrapping the selection with 'EVALUATE ROW(...)' and sends the results to the selected output"));
 #endif
             // set default run style
             var defaultRunStyle = RunStyleIcons.RunOnly;
-            if (Options.SetClearCacheAsDefaultRunStyle) defaultRunStyle = RunStyleIcons.ClearThenRun;
 
             SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == defaultRunStyle);
         }
@@ -386,7 +386,6 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCache);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
-                NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
             }
         }
         
@@ -515,7 +514,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 tw.CheckEnabled(ActiveDocument.Connection, activeTrace);
             }
-            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
 
         private DocumentViewModel _activeDocument;
@@ -538,7 +536,6 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanDisplayQueryBuilder);
                 NotifyOfPropertyChange(() => DisplayQueryBuilder);
                 NotifyOfPropertyChange(() => FormatQueryDisabledReason);
-                NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -692,7 +689,6 @@ namespace DaxStudio.UI.ViewModels
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
             return Task.CompletedTask;
         }
 
@@ -702,7 +698,6 @@ namespace DaxStudio.UI.ViewModels
             _traceStatus = message.TraceStatus;
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
             return Task.CompletedTask;
         }
 
@@ -1189,13 +1184,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
         }
 
-        public bool TraceLayoutGroupVisible { get
-            {
-                if (ActiveDocument == null) return false;
-                if (TraceWatchers == null) return false;
-                return TraceWatchers.Any(tw => tw.IsChecked && tw is ServerTimesViewModel);
-            } 
-        }
+
 
         public Task HandleAsync(UpdateHotkeys message, CancellationToken cancellationToken)
         {

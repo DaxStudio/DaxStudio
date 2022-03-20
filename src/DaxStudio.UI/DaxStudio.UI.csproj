@@ -378,7 +378,7 @@
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringToVisibilityConverter.cs" />
-    <Compile Include="Converters\StringToXamlConverter.cs" />
+    <Compile Include="Converters\xmSqlToDocumentConverter.cs" />
     <Compile Include="Converters\StringWhitespaceRemovalConverter.cs" />
     <Compile Include="Enums\DialogResult.cs" />
     <Compile Include="Enums\ExportDataType.cs" />
@@ -616,6 +616,7 @@
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTypeViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnStrViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardViewModel.cs" />
+    <Compile Include="ViewModels\GettingStartedViewModel.cs" />
     <Compile Include="ViewModels\HelpWatermarkViewModel.cs" />
     <Compile Include="ViewModels\MeasureExpressionEditorViewModel.cs" />
     <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
@@ -647,6 +648,9 @@
     </Compile>
     <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
       <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GettingStartedView.xaml.cs">
+      <DependentUpon>GettingStartedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MultipleQueriesDetectedDialogView.xaml.cs">
       <DependentUpon>MultipleQueriesDetectedDialogView.xaml</DependentUpon>
@@ -803,6 +807,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\Styles\FluentRibbon\GalleryItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\FluentRibbon\Menu.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -894,6 +902,10 @@
     <Page Include="Views\CrashReportingBlockedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\GettingStartedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MultipleQueriesDetectedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>

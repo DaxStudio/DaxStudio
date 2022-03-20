@@ -813,7 +813,7 @@
                                                 <MenuItem x:Name="Cut"  Header="Cut"
                                                       cal:Message.Attach="Cut()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource CutIcon}"/>
+                                                        <Image Source="{DynamicResource cutDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
@@ -866,14 +866,26 @@
                                     </dax:DAXEditor>
 
                                     <!-- Help Watermark -->
+                                    <!--<TextBlock
+                                        Grid.Row="1"
+                                        Grid.RowSpan="2"
+                                        Grid.ColumnSpan="2"
+                                        VerticalAlignment="Top"
+                                        HorizontalAlignment="Left"
+                                        FontWeight="Bold"
+                                        FontSize="{Binding ElementName=daxEditor, Path=FontSize}"
+                                        FontFamily="Courier New"
+                                        Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
+                                        Margin="40 10 0 0"
+                                        >Enter your DAX query here...</TextBlock>-->
                                     <ContentControl x:Name="HelpWatermark"
                                                     cal:View.Model="{Binding HelpWatermark}" 
                                                     cal:View.ApplyConventions="true"
                                                     Grid.Row="1"
                                                     Grid.RowSpan="2"
                                                     Grid.ColumnSpan="2"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Top"
                                                     ></ContentControl>
 
                                     <!-- Floats over the main editor control -->

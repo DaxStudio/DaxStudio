@@ -139,5 +139,6 @@ namespace DaxStudio.Interfaces
         LogEventLevel LoggingLevel { get; set; }
         LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
+        [JsonIgnore] bool GettingStartedShown { get; set; }
     }
 }

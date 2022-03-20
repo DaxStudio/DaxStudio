@@ -183,7 +183,7 @@
                     <ContextMenu>
                         <MenuItem Command="Copy">
                             <MenuItem.Icon>
-                                <Image Source="{StaticResource CopyIcon}"/>
+                                <Image Source="{DynamicResource copyDrawingImage}"/>
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator/>
@@ -261,7 +261,7 @@
                 <ContextMenu>
                     <MenuItem Command="Copy">
                         <MenuItem.Icon>
-                            <Image Source="{StaticResource CopyIcon}"/>
+                            <Image Source="{DynamicResource copyDrawingImage}"/>
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator/>

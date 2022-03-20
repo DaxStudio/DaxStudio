@@ -3,26 +3,24 @@
     public enum RunStyleIcons
     {
         RunOnly,
-        ClearThenRun,
-        RunFunction,
-        RunScalar
+        RunBuilder
     }
     public class RunStyle
     {
-        public RunStyle(string name, RunStyleIcons icon, bool clearCache, bool injectEvaluate, bool injectRowFunction, string tooltip)
+        public RunStyle(string name, RunStyleIcons icon, string tooltip)
         {
             Name = name;
             Icon = icon;
-            ClearCache = clearCache;
             Tooltip = tooltip;
-            InjectEvaluate = injectEvaluate;
-            InjectRowFunction = injectRowFunction;
+
+            if (icon == RunStyleIcons.RunBuilder) ImageResource = "run_query_builderDrawingImage";
+            else ImageResource = "runDrawingImage";
+
         }
         public string Name { get; }
         public RunStyleIcons Icon { get;  }
+        public string ImageResource { get; }
         public string Tooltip { get;  }
-        public bool ClearCache { get;  }
-        public bool InjectEvaluate { get; }
-        public bool InjectRowFunction { get; }
+        public bool ClearCache { get; set; }
     }
 }

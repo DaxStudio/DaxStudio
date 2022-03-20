@@ -45,7 +45,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 Options.ShowHelpWatermark = !value;
-                NotifyOfPropertyChange(nameof(ShowHelpWatermark));
+                NotifyOfPropertyChange(nameof(NeverShowHelpWatermark));
             }
         }
 

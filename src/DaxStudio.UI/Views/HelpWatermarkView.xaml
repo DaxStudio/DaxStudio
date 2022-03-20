@@ -43,32 +43,10 @@
     </UserControl.LayoutTransform>
     <Grid Visibility="{Binding ShowHelpWatermark, Converter={StaticResource BoolToCollapsedConverter}}"
           attachedProperties:VisibilityAnimation.AnimationType="Fade">
-    <Border Padding="10"
-            Grid.RowSpan="2" 
-            Grid.ColumnSpan="2" >
+
         <!-- Help Watermark -->
-        <StackPanel  
-            VerticalAlignment="Center" 
-            HorizontalAlignment="Center">
-            <TextBlock  HorizontalAlignment="Center" FontWeight="Normal" FontSize="28" Margin="0 10">Start by typing your query in this area. </TextBlock>
-            <TextBlock >The simplest DAX query is in the form of:</TextBlock>
-            <TextBlock  FontFamily="Courier New" Margin="10 10">EVALUATE &lt;table expression&gt;</TextBlock>
-            <TextBlock >Where the &lt;table expression&gt; can be as simple as the name of a table or it could be a DAX function that returns a table such as FILTER or SUMMARIZECOLUMNS.</TextBlock>
-            <TextBlock HorizontalAlignment="Center" Margin="0 10 0 0" >See more examples at <Hyperlink NavigateUri="https://daxstudio.org/tutorials/writing-dax-queries" attachedProperties:HyperlinkExtensions.IsExternal="true">https://daxstudio.org/tutorials/writing-dax-queries</Hyperlink></TextBlock>
-            <TextBlock  HorizontalAlignment="Center" Margin="0"> or</TextBlock>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                <TextBlock VerticalAlignment="Center">For a drag/drop experience open the</TextBlock>
-                <fa:FontAwesome Icon="Wrench" FontSize="18" Margin="3"/>
-                
-                    <Border>
-                    <Button cal:Message.Attach="[Event Click] = [Action OpenQueryBuilder()]" Style="{StaticResource HyperlinkButton}" VerticalAlignment="Center">
-                    <Hyperlink Focusable="False">Query Builder</Hyperlink>
-                </Button>
-                    </Border>
-                
-            </StackPanel>
-            <CheckBox HorizontalAlignment="Center" Foreground="{StaticResource WatermarkTextColor}" Margin="0 15 0 0" x:Name="NeverShowHelpWatermark">Do not show this help text in future</CheckBox>
-        </StackPanel>
-    </Border>
+
+            <TextBlock  FontFamily="Courier New" FontWeight="Black" Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="10 10">Enter your DAX query here...</TextBlock>
+          
     </Grid>
 </UserControl>

@@ -49,7 +49,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ctrl:DaxStudioDialog}">
-                    <Border Padding="{TemplateBinding Padding}" Margin="0,0,0,0" x:Name="outerBorder" Background="Transparent">
+                    <Border Padding="{TemplateBinding Padding}" Margin="0,0,0,60" x:Name="outerBorder" Background="Transparent">
                         <Border Style="{StaticResource DaxStudioDialog}" 
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
@@ -102,6 +102,6 @@
     <Style TargetType="{x:Type view:QueryParametersDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:SaveDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:ViewAsDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
-    
+    <Style TargetType="{x:Type view:GettingStartedView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     
 </ResourceDictionary>

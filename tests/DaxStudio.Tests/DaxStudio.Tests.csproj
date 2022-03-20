@@ -84,7 +84,6 @@
     <Compile Include="ConnectionStringParserTests.cs" />
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
-    <Compile Include="DaxQueryPreProcessorTests.cs" />
     <Compile Include="EntryPointTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Helpers\StringHelpers.cs" />

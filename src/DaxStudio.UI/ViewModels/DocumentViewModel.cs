@@ -1323,11 +1323,11 @@ namespace DaxStudio.UI.ViewModels
         public MeasureExpressionEditorViewModel MeasureExpressionEditor { get; private set; }
         public QueryInfo QueryInfo { get; set; }
 
-        private async Task<DialogResult> PreProcessQuery(IQueryTextProvider textProvider, bool injectEvaluate, bool injectRowFunction)
+        private async Task<DialogResult> PreProcessQuery(IQueryTextProvider textProvider)
         {
 
             // merge in any parameters
-            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, injectEvaluate, injectRowFunction, _eventAggregator);
+            textProvider.QueryInfo = new QueryInfo(textProvider.EditorText, _eventAggregator);
             DialogResult paramDialogResult = DialogResult.Skip;
             if (textProvider.QueryInfo.NeedsParameterValues)
             {
@@ -1400,7 +1400,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             var txt = GetQueryTextFromEditor();
-            var queryProcessor = new QueryInfo(txt, false, false, _eventAggregator); 
+            var queryProcessor = new QueryInfo(txt, _eventAggregator); 
             txt = DaxHelper.replaceParamsInQuery(queryProcessor.ProcessedQuery, queryProcessor.Parameters);
             if (editor.Dispatcher.CheckAccess())
             {
@@ -1938,7 +1938,7 @@ namespace DaxStudio.UI.ViewModels
 
                     }
 
-                    if (await PreProcessQuery(message.QueryProvider, message.RunStyle.InjectEvaluate, message.RunStyle.InjectRowFunction) == DialogResult.Cancel)
+                    if (await PreProcessQuery(message.QueryProvider) == DialogResult.Cancel)
                     {
                         IsQueryRunning = false;
                     }
@@ -3129,45 +3129,60 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ConnectEvent>","Starting");
             var msg = NewStatusBarMessage("Connecting...");
 
-            await Task.Run(() =>
-                {
+            try
+            {
 
-                    if (message.RefreshDatabases) RefreshConnectionFilename(message);
+                await Task.Run(() =>
+                    {
 
-                    if (Dispatcher.CurrentDispatcher.CheckAccess())
-                    {
-                        Dispatcher.CurrentDispatcher.Invoke(() => {
-                            SetupConnection(message);//, cnn);
-                        });
-                    }
-                    else
-                    {
-                        SetupConnection(message); //, cnn);
-                    }
-                    
+                        if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
-                }).ContinueWith(taskResult =>
-                    {
-                        if (taskResult.IsFaulted)
+                        if (Dispatcher.CurrentDispatcher.CheckAccess())
                         {
-                            var errMsg = taskResult?.Exception?.InnerException?.Message;
-
-                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
-                            Log.Error(taskResult?.Exception?.InnerException, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
+                            Dispatcher.CurrentDispatcher.Invoke(() =>
+                            {
+                                SetupConnection(message);//, cnn);
+                            });
                         }
                         else
                         {
-                            // todo - should we be checking for exceptions in this continuation
-                            var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                            _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
-                            _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this));
-                            //LoadState();
-
+                            SetupConnection(message); //, cnn);
                         }
-                        msg.Dispose(); //reset the status message
 
-                    }, TaskScheduler.Default);
 
+                    });
+
+                // todo - should we be checking for exceptions in this continuation
+                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                await _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
+                await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this));
+                msg.Dispose(); //reset the status message
+                //LoadState();
+
+                if (Options.ShowHelpWatermark && !Options.GettingStartedShown)
+                {
+                    Options.GettingStartedShown = true;
+                    using (var gettingStartedDialog = new GettingStartedViewModel(Options))
+                    {
+                        await _windowManager.ShowDialogBoxAsync(gettingStartedDialog, settings: new Dictionary<string, object>
+                        {
+                            { "WindowStyle", WindowStyle.None},
+                            { "ShowInTaskbar", false},
+                            { "ResizeMode", ResizeMode.NoResize},
+                            { "Background", System.Windows.Media.Brushes.Transparent},
+                            { "AllowsTransparency",true}
+                        });
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                var errMsg = (ex?.InnerException??ex)?.Message;
+
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
+                                Log.Error(ex?.InnerException??ex, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
+            }
         }
 
         public Task HandleAsync(ChangeThemeEvent message, CancellationToken cancellationToken)

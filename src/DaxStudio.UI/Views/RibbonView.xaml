@@ -24,6 +24,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/GalleryItem.xaml" />
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
@@ -60,7 +61,7 @@
                 <Image VerticalAlignment="Center"
                         Grid.Column="0"
                         ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}"
-                        Margin="0 0 8 0"
+                        Margin="6 0 8 0"
                         Height="20"
                         Width="20"/>
                     <TextBlock Text="{Binding Name}"
@@ -85,13 +86,11 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Border BorderThickness="3 0 0 0"
-                                BorderBrush="{DynamicResource Theme.Brush.Accent}"/>
                         <Image  Grid.Column="0" 
-                            Source="{Binding Icon, Converter={StaticResource RunIconsLarger}}"
-                            Stretch="None" 
+                            ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}"
+                            Stretch="UniformToFill" 
                                 Margin="6 0 0 0 "
-                            Width="16" Height="16" />
+                            Width="20" Height="20" />
                         <TextBlock Grid.Column="1" Text="{Binding Name}"
                             TextWrapping="Wrap"
                             VerticalAlignment="Center"
@@ -643,8 +642,7 @@
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
-                               Icon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIcons}}"
-                               LargeIcon="{Binding Path=SelectedRunStyle.Icon,Converter={StaticResource RunIconsLarger}}"
+                               ap:ImageBindingHelper.IconResourceKey="{Binding SelectedRunStyle.ImageResource}"
                                MinWidth="50"
                                SizeDefinition="Large,Large,Small"
                                Margin="4,0">
@@ -749,6 +747,7 @@
                         MaxItemsInRow="1"
                         Orientation="Vertical"
                         ItemHeight="40"
+                        ItemWidth="150"
                         ItemsSource="{Binding ResultsTargets}" 
                         SelectedItem="{Binding SelectedTarget}"
                         ItemTemplate="{DynamicResource ResultsTargetTemplate}"
@@ -1345,9 +1344,9 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-            
+
             <Fluent:RibbonGroupBox Header="Issues">
-                
+
                 <Fluent:Button Name="hlpGithubBugReport"
                                Header="Report a Bug"
                                cal:Message.Attach="[Event Click] = [Action LinkToGithubBugReport()]"
@@ -1355,8 +1354,8 @@
                                Margin="4,0"
                                Icon="{DynamicResource report_bugDrawingImage}"
                                LargeIcon="{DynamicResource report_bugDrawingImage}">
-                    
-                    
+
+
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Report a Bug"
                                           Text="Submit a bug report to the Github project site for DAX Studio"
@@ -1409,110 +1408,25 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
-            
-            
+
+
         </Fluent:RibbonTabItem>
 
-        <!-- Part of  -->
         <Fluent:RibbonTabItem
             Header="Layout"
             x:Name="tabTrace"
             Group="{Binding Source={x:Reference traceLayoutGroup}}"
             >
-            <Fluent:RibbonGroupBox Header="Server Timings" Name="ServerTimings" Margin="4,0" IsEnabled="{Binding ServerTimingsIsChecked, Mode=OneWay}"
-                                   Icon="{StaticResource TimerIcon}">
-                <Fluent:ToggleButton x:Name="TimingsScan" IsChecked="{Binding ServerTimingDetails.ShowScan, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Scan"
-                                Icon="{StaticResource TimerIcon}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Scan"
-                                          Text="Show scan timings"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="TimingsCache" IsChecked="{Binding ServerTimingDetails.ShowCache, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Cache" 
-                                Icon="{StaticResource TimingsCache}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Cache"
-                                          Text="Show cache timings"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="TimingsInternal" IsChecked="{Binding ServerTimingDetails.ShowInternal, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Internal"
-                                Icon="{StaticResource TimingsInternal}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Internal"
-                                          Text="Show internal timings"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-                <Fluent:ToggleButton x:Name="TimingsBatch" IsChecked="{Binding ServerTimingDetails.ShowBatch, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Batch"
-                                Icon="{StaticResource TimingsBatch}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Batch"
-                                          Text="Show batch events"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-
-
-                <Fluent:ToggleButton x:Name="TimingsRightPane" 
-                                IsChecked="{Binding ServerTimingDetails.LayoutRight, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Right Layout"
-                                Icon="{StaticResource RightPane}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Right Layout"
-                                          Text="Show Preview Pane on the right"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-
-                <Fluent:ToggleButton x:Name="TimingsBottomPane"
-                                IsChecked="{Binding ServerTimingDetails.LayoutBottom, Mode=TwoWay}" 
-                                IsEnabled="{Binding ServerTimingsChecked}"
-                                Header="Bottom Layout"
-                                Icon="{StaticResource BottomPane}"
-                                SizeDefinition="Middle,Middle,Small"
-                                >
-                    <Fluent:ToggleButton.ToolTip>
-                        <Fluent:ScreenTip Title="Bottom Layout"
-                                          Text="Show Preview Pane on bottom"
-                                           />
-                    </Fluent:ToggleButton.ToolTip>
-                </Fluent:ToggleButton>
-            </Fluent:RibbonGroupBox>
-
         </Fluent:RibbonTabItem>
-        
-        <!--Contextual Tab Groups-->
-        <!-- Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}" -->
+
         <Fluent:Ribbon.ContextualGroups>
             <Fluent:RibbonContextualTabGroup 
                 x:Name="traceLayoutGroup"
                 Header="Traces" 
-                Visibility="{Binding Path=Ribbon.TraceLayoutGroupVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                Visibility="Collapsed"
                 Background="{StaticResource DaxStudioBrush}" 
                 BorderBrush="{StaticResource DaxStudioBrush}" />
         </Fluent:Ribbon.ContextualGroups>
-
     </Fluent:Ribbon>
 
 </UserControl>
