@@ -593,6 +593,7 @@
     <Compile Include="Utils\PaneStyleSelector.cs" />
     <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
+    <Compile Include="Utils\TraceWatcherFactory.cs" />
     <Compile Include="Utils\UserHelper.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
     <Compile Include="Utils\ZoomHelper.cs" />

@@ -70,8 +70,9 @@
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
                                 </aero:DataGridHeaderBorder>
-                                <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2">
-                                <Image Width="17" Height="17" Margin="0" >
+                                <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2"
+                                              Padding="1">
+                                <Image Width="18" Height="18" Margin="0" Source="{DynamicResource filter_toolbarDrawingImage}" >
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Style.Triggers>
@@ -79,13 +80,13 @@
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="True">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilteredIcon}" />
+                                                        Value="{DynamicResource filtered_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                                 <DataTrigger 
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="False">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilterIcon}" />
+                                                        Value="{DynamicResource filter_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -118,8 +119,11 @@
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
                             </aero:DataGridHeaderBorder>
-                            <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" Margin="2" ToolTip="Filter by current database name" >
-                                <Image Width="17" Height="17">
+                            <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" 
+                                          IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" 
+                                          Padding="1"
+                                          Margin="2" ToolTip="Filter by current database name" >
+                                <Image Width="18" Height="18" Margin="0" Source="{DynamicResource filter_toolbarDrawingImage}" >
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Style.Triggers>
@@ -127,13 +131,13 @@
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="True">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilteredIcon}" />
+                                                        Value="{DynamicResource filtered_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                                 <DataTrigger 
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="False">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilterIcon}" />
+                                                        Value="{DynamicResource filter_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>

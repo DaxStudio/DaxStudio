@@ -12,7 +12,7 @@
              Caption="Start typing your query in this area"
              Icon="{DynamicResource editorDrawingImage}"
              mc:Ignorable="d" 
-                      
+             Padding="10 24 10 200"
              d:DesignHeight="450" d:DesignWidth="620"
              Width="620">
 

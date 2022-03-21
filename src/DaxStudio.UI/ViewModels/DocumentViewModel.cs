@@ -128,7 +128,7 @@ namespace DaxStudio.UI.ViewModels
         private DocumentViewModel _sourceDocument;
         private ISettingProvider SettingProvider { get; }
         private static readonly ImageSourceConverter ImgSourceConverter = new ImageSourceConverter();
-
+        private bool _isSubscribed = false;
 
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager
@@ -146,7 +146,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 _host = host;
                 _eventAggregator = eventAggregator;
-                _eventAggregator.SubscribeOnPublishedThread(this);
+
                 _windowManager = windowManager;
                 _ribbon = ribbon;
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
@@ -165,6 +165,7 @@ namespace DaxStudio.UI.ViewModels
                 Connection = new ConnectionManager(_eventAggregator);
                 IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
                 Init(_ribbon);
+                SubscribeAll();
             }
             catch (Exception ex)
             {
@@ -258,7 +259,7 @@ namespace DaxStudio.UI.ViewModels
         public string ContentId => "document";
         
         private DAXEditorControl.DAXEditor _editor;
-
+        
 
         #region "Event Handlers"
         /// <summary>
@@ -752,7 +753,7 @@ namespace DaxStudio.UI.ViewModels
             // document
             get
             {
-                if (_traceWatchers == null)
+                if (_traceWatchers == null && TraceWatcherFactories != null)
                 {
                     _traceWatchers = new BindableCollection<ITraceWatcher>();
                     foreach (var fac in TraceWatcherFactories)
@@ -902,6 +903,14 @@ namespace DaxStudio.UI.ViewModels
         {
             Log.Debug("{Class} {Event} Close:{Value} Doc:{Document}", "DocumentViewModel", "OnDeactivated (close)", close, DisplayName);
             await  base.OnDeactivateAsync(close, cancellationToken);
+            UnsubscribeAll();
+            
+        }
+
+        protected void UnsubscribeAll()
+        {
+            _isSubscribed = false;
+
             _eventAggregator.Unsubscribe(this);
             _eventAggregator.Unsubscribe(QueryResultsPane);
             _eventAggregator.Unsubscribe(MetadataPane);
@@ -916,7 +925,33 @@ namespace DaxStudio.UI.ViewModels
             {
                 _eventAggregator.Unsubscribe(tw);
             }
-            
+        }
+
+        protected void SubscribeAll()
+        {
+            if (!_isSubscribed)
+                _isSubscribed = true;
+            else
+                return;
+
+            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnPublishedThread(QueryResultsPane);
+            _eventAggregator.SubscribeOnPublishedThread(MetadataPane);
+            _eventAggregator.SubscribeOnPublishedThread(DmvPane);
+            _eventAggregator.SubscribeOnPublishedThread(FunctionPane);
+            _eventAggregator.SubscribeOnPublishedThread(Connection);
+            _eventAggregator.SubscribeOnPublishedThread(IntellisenseProvider);
+            _eventAggregator.SubscribeOnPublishedThread(MeasureExpressionEditor.IntellisenseProvider);
+            _eventAggregator.SubscribeOnPublishedThread(HelpWatermark);
+            _eventAggregator.SubscribeOnPublishedThread(QueryBuilder);
+            //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
+            if (TraceWatchers != null)
+            {
+                foreach (var tw in TraceWatchers)
+                {
+                    _eventAggregator.SubscribeOnPublishedThread(tw);
+                }
+            }
         }
 
         internal void CloseIntellisenseWindows()
@@ -931,23 +966,9 @@ namespace DaxStudio.UI.ViewModels
             await base.OnActivateAsync(cancellationToken);
             try
             {
-                _eventAggregator.Unsubscribe(this);
+                UnsubscribeAll();
+                SubscribeAll();
 
-                _eventAggregator.SubscribeOnPublishedThread(this);
-                _eventAggregator.SubscribeOnPublishedThread(QueryResultsPane);
-                _eventAggregator.SubscribeOnPublishedThread(MetadataPane);
-                _eventAggregator.SubscribeOnPublishedThread(DmvPane);
-                _eventAggregator.SubscribeOnPublishedThread(FunctionPane);
-                _eventAggregator.SubscribeOnPublishedThread(Connection);
-                _eventAggregator.SubscribeOnPublishedThread(IntellisenseProvider);
-                _eventAggregator.SubscribeOnPublishedThread(MeasureExpressionEditor.IntellisenseProvider);
-                _eventAggregator.SubscribeOnPublishedThread(HelpWatermark);
-                _eventAggregator.SubscribeOnPublishedThread(QueryBuilder);
-                //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
-                foreach (var tw in TraceWatchers)
-                {
-                    _eventAggregator.SubscribeOnPublishedThread(tw);
-                }
                 _ribbon.SelectedTarget = SelectedTarget;
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
                 var loc = Document.GetLocation(0);
@@ -2932,7 +2953,7 @@ namespace DaxStudio.UI.ViewModels
                     // todo - should we be checking for exceptions in this continuation
                     if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                     {
-                        Execute.OnUIThread(() => { ChangeConnectionAsync(); });
+                        Execute.OnUIThread(() => { ChangeConnectionAsync().Wait(); });
                     }
                     }, TaskScheduler.Default).ContinueWith((previousOutput) =>
                  {
@@ -3162,7 +3183,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Options.ShowHelpWatermark && !Options.GettingStartedShown)
                 {
                     Options.GettingStartedShown = true;
-                    using (var gettingStartedDialog = new GettingStartedViewModel(Options))
+                    using (var gettingStartedDialog = new GettingStartedViewModel(this,Options))
                     {
                         await _windowManager.ShowDialogBoxAsync(gettingStartedDialog, settings: new Dictionary<string, object>
                         {
@@ -3224,7 +3245,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsViewAsActive);
 
             if (IsConnected)
-                _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT));
+                _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent( this, Connection.IsPowerBIorSSDT)).Wait();
 
             
 

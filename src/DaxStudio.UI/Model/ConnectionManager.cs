@@ -486,7 +486,7 @@ namespace DaxStudio.UI.Model
                 }
             }
             // This allows us to move the loading of the table/column metadata onto a background thread
-            _eventAggregator.PublishOnBackgroundThreadAsync(new RefreshTablesEvent());
+            _eventAggregator.PublishOnBackgroundThreadAsync(new RefreshTablesEvent()).Wait();
         }
 
         public void SetSelectedDatabase(ADOTabularDatabase database)
@@ -647,10 +647,11 @@ namespace DaxStudio.UI.Model
             _connection.Open();
             SelectedDatabase = _connection.Database;
             
-            _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
-            _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
-            _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
-            _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
+            _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent()).Wait();
+            _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name)).Wait();
+            _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews)).Wait();
+            _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups)).Wait();
+            Thread.Sleep(500);
         }
 
         private string GetFileName(ConnectEvent message)

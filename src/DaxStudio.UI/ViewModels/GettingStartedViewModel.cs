@@ -10,10 +10,10 @@ namespace DaxStudio.UI.ViewModels
 {
     public  class GettingStartedViewModel:Screen, IDisposable
     {
-        public GettingStartedViewModel(IGlobalOptions options)
+        public GettingStartedViewModel(DocumentViewModel document, IGlobalOptions options)
         {
             Options = options;
-            
+            Document = document;
         }
 
         public void Close()
@@ -23,7 +23,8 @@ namespace DaxStudio.UI.ViewModels
 
         public void OpenQueryBuilder()
         {
-
+            Document.OpenQueryBuilder();
+            TryCloseAsync();
         }
 
         private bool _showHelpWatermark = true;
@@ -50,6 +51,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IGlobalOptions Options { get; }
+        public DocumentViewModel Document { get; }
 
         public void Dispose()
         {

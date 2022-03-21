@@ -484,6 +484,8 @@ namespace DaxStudio.UI.ViewModels
                 }
                 Execute.OnUIThread(() =>
                 {
+                    MergeDatabaseView();
+                    NotifyOfPropertyChange(() => DatabasesView);
                     DatabasesView.Refresh();
                 });
             
@@ -614,6 +616,9 @@ namespace DaxStudio.UI.ViewModels
 
         internal void ChangeDatabase(string databaseName)
         {
+            if (_metadataProvider.IsConnected && DatabasesView.Count == 0) { 
+                RefreshDatabases(); 
+            }
             SelectedDatabase = DatabasesView.Where(db => db.Name == databaseName).FirstOrDefault();
         }
 

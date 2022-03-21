@@ -9,34 +9,20 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="500"
              MaxWidth="500"
+             Margin="30 -5 0 0"
              >
             
     <UserControl.Resources>
         <converters:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
-        <SolidColorBrush x:Key="WatermarkTextColor">DarkGray</SolidColorBrush>
+
 
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource WatermarkTextColor}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="FontSize" Value="14"></Setter>
             <Setter Property="FontFamily" Value="Segoe UI"></Setter>
         </Style>
         
-        <Style x:Key="HyperlinkButton" TargetType="Button">
-            <Setter Property ="Padding" Value="0 5 0 0 "/>
-            <Setter Property="Margin" Value="0 "/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="VerticalContentAlignment" Value="Bottom"></Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <ContentPresenter/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
+        
     </UserControl.Resources>
     <UserControl.LayoutTransform>
         <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
@@ -46,7 +32,7 @@
 
         <!-- Help Watermark -->
 
-            <TextBlock  FontFamily="Courier New" FontWeight="Black" Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="10 10">Enter your DAX query here...</TextBlock>
+            <TextBlock  FontFamily="Courier New"  Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="10 10">Enter your DAX query here...</TextBlock>
           
     </Grid>
 </UserControl>

@@ -88,6 +88,7 @@ namespace DaxStudio.UI.ViewModels
             _sqlProfilerCommand = SqlProfilerHelper.GetSqlProfilerLaunchCommand();
             RecentFiles = SettingProvider.GetFileMRUList();
             InitRunStyles();
+            ClearCacheAuto = Options.SetClearCacheAsDefaultRunStyle;
         }
 
 
@@ -239,8 +240,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
             NotifyOfPropertyChange(() => CanConnect);
-            
-            _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget, SelectedRunStyle) );
+
+            var runStyle = SelectedRunStyle;
+            runStyle.ClearCache = ClearCacheAuto;
+            _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget, runStyle) );
 
         }
         public string RunQueryTitle => $"Run Query ({Options.HotkeyRunQuery})";
@@ -309,6 +312,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool CanClearCacheAuto => IsActiveDocumentConnected;
+
+        public bool _clearCacheAuto = false;
+        public bool ClearCacheAuto { get => _clearCacheAuto;
+            set { 
+                _clearCacheAuto = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+
         public void ClearCache()
         {
             ActiveDocument?.ClearDatabaseCacheAsync().FireAndForget();
@@ -364,6 +377,7 @@ namespace DaxStudio.UI.ViewModels
                 _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
+                NotifyOfPropertyChange(() => CanClearCacheAuto);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
                 TraceWatchers?.DisableAll();
@@ -384,6 +398,7 @@ namespace DaxStudio.UI.ViewModels
                 _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
+                NotifyOfPropertyChange(() => CanClearCacheAuto);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
             }
@@ -481,6 +496,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanCancelQuery));
             NotifyOfPropertyChange(nameof(CanClearCache));
+            NotifyOfPropertyChange(nameof( CanClearCacheAuto));
             NotifyOfPropertyChange(nameof(CanRefreshMetadata));
             NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
             NotifyOfPropertyChange(nameof(CanCommentSelection));
@@ -549,6 +565,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanRunBenchmark);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
+                    NotifyOfPropertyChange(nameof(CanClearCacheAuto));
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
@@ -564,6 +581,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanRunQuery);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
+                    NotifyOfPropertyChange(nameof(CanClearCacheAuto));
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanShowViewAsDialog);
@@ -1003,6 +1021,7 @@ namespace DaxStudio.UI.ViewModels
         private void UpdateGlobalOptions()
         {
             ResultAutoFormat = Options.ResultAutoFormat;
+            ClearCacheAuto = Options.SetClearCacheAsDefaultRunStyle;
             NotifyOfPropertyChange(nameof(FormatQueryAlternateTitle));
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
             NotifyOfPropertyChange(nameof(FormatQueryDisabledReason));

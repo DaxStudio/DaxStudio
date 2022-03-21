@@ -54,6 +54,7 @@
         <Label Grid.Row="0" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>-->
         <TextBlock TextWrapping="Wrap" MaxWidth="390" 
                    HorizontalAlignment="Left"
+                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                    Grid.ColumnSpan="2">You can choose to impersonate another user which will apply all the roles which that user is a member of. Or you can choose to test one or more roles directly</TextBlock> 
         
         <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="1" VerticalAlignment="Center" Margin="0 8 0 0" />

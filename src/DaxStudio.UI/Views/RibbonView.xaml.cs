@@ -19,13 +19,13 @@ namespace DaxStudio.UI.Views
         // Adding the handlers here does violate MVVM, but I have been unable to get the bindings to
         // work consistently any other way and given that we are highly unlikely to create alternate
         // views for the RibbonViewModel this is probably not a big issue
-        private void NewQuery_Click(object sender, System.Windows.RoutedEventArgs e)
+        private async void NewQuery_Click(object sender, System.Windows.RoutedEventArgs e)
         {
 
             var vm = this.DataContext as RibbonViewModel;
             if (vm != null)
             {
-                vm.NewQuery();
+                await vm.NewQuery();
             }
             else
             {

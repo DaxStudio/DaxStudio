@@ -721,6 +721,8 @@
                                Icon="{DynamicResource clear_cache_on_runDrawingImage}"
                                LargeIcon="{DynamicResource clear_cache_on_runDrawingImage}"
                                Margin="4,0"
+                               IsEnabled="{Binding CanClearCacheAuto}"
+                               IsChecked="{Binding ClearCacheAuto}"
                                >
                         <Fluent:ToggleButton.ToolTip>
                             <Fluent:ScreenTip Title="Clear Cache before every Run"

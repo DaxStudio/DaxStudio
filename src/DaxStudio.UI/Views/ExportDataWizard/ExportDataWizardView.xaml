@@ -10,7 +10,7 @@
                       Caption="Export Data"
                       Icon="{DynamicResource export_dataDrawingImage}"
                       d:DesignHeight="450" d:DesignWidth="800"
-                      MinHeight="600"
+                      MinHeight="400"
                       MinWidth="500"
                       MaxHeight="700">
     <ctrl:DaxStudioDialog.Resources>

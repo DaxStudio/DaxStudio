@@ -56,21 +56,20 @@
 
                 </Grid.ColumnDefinitions>
 
-                <TextBlock 
-                    Text="Run the selected query multiple times and log the timing details" 
+                <Label
+                    Content="Run the selected query multiple times and log the timing details" 
                     Margin="0 0 0 16"
-                    TextWrapping="Wrap" 
                     Grid.Row="1" Grid.ColumnSpan="3"/>
 
                 <Border Grid.Row="2" Width="8" Margin="7,12,4,2" BorderBrush="Gray" BorderThickness="1,1,0,0" />
                 <TextBox x:Name="ColdCacheRuns" Width="25" Margin="3" Grid.Column="1" Grid.Row="2"/>
-                <TextBlock Text="Cold Cache Executions" Grid.Column="2"  Grid.Row="2" VerticalAlignment="Center"/>
+                <Label Content="Cold Cache Executions" Grid.Column="2"  Grid.Row="2" VerticalAlignment="Center"/>
 
                 <CheckBox Grid.Row="3" x:Name="RunSameWarmAndCold" Margin="0,-2,0,-2"/>
 
                 <Border Grid.Row="4" Width="8" Margin="7,2,4,12" BorderBrush="Gray" BorderThickness="1,0,0,1" />
                 <TextBox x:Name="WarmCacheRuns" Width="25"  Grid.Column="1" Grid.Row="4" Margin="3" IsEnabled="{Binding Path=IsChecked, ElementName=RunSameWarmAndCold, Converter={StaticResource BoolNotConverter}}"/>
-                <TextBlock Text="Warm Cache Executions" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" />
+                <Label Content="Warm Cache Executions" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" />
 
                 <StackPanel Grid.Row="5" Grid.ColumnSpan="4" Orientation="Vertical" Margin="0 8 0 0">
                     <CheckBox  x:Name="RepeatRunWithoutViewAs" Content='Do a second pass without "View As" (RLS) enabled' IsEnabled="{Binding IsViewAsActive}"  Margin="-2 10 0 0" />
@@ -97,7 +96,9 @@
                                      Background="{DynamicResource Theme.Brush.Control.Border}"
                                      Visibility="{Binding ProgressSpin, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <!--<fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />-->
-                        <TextBlock x:Name="ProgressMessage" Text="Ready..." Margin="2"></TextBlock>
+                        <TextBlock x:Name="ProgressMessage" Text="Ready..." 
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                   Margin="2"></TextBlock>
                         <!--<ContentControl Style="{StaticResource ProgressDots}" IsEnabled="True"/>-->
                         
                     </StackPanel>
