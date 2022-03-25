@@ -180,7 +180,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void RecoverAutoSaveFile(AutoSaveIndexEntry file)
+        private async Task RecoverAutoSaveFileAsync(AutoSaveIndexEntry file)
         {
             Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Starting AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
             var newDoc = _documentFactory(_windowManager, _eventAggregator);
@@ -195,20 +195,20 @@ namespace DaxStudio.UI.ViewModels
                     newDoc.State = DocumentState.RecoveryPending;
 
                     Items.Add(newDoc);
-                    ActivateItemAsync(newDoc);
+                    await ActivateItemAsync(newDoc);
                     ActiveDocument = newDoc;
                     newDoc.IsDirty = true;
 
                     file.ShouldOpen = false;
 
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
+                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
 
                     Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Finished AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnUIThreadAsync( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
-                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(RecoverAutoSaveFile), $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}");
+                    await _eventAggregator.PublishOnUIThreadAsync( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(RecoverAutoSaveFileAsync), $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}");
                 }
             }
         }
@@ -435,7 +435,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         // the first file will mark itself as opened then re-publish the message 
                         // to open the next file (if there is one)
-                        RecoverAutoSaveFile(fileToOpen);
+                        await RecoverAutoSaveFileAsync(fileToOpen);
                     }
                 }
                 else
@@ -466,7 +466,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // the first file will mark itself as opened then re-publish the message 
                 // to open the next file (if there is one)
-                RecoverAutoSaveFile(fileToOpen);
+                await RecoverAutoSaveFileAsync(fileToOpen);
             }
             else
             {

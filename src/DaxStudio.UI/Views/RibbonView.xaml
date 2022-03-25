@@ -462,7 +462,7 @@
                                         Content="Browse"
                                         Margin="0 0 0 16"
                                         Style="{DynamicResource AccentButtonStyle }"
-                                        cal:Message.Attach="[Click] = [Action Open]"/>
+                                        cal:Message.Attach="[Click] = [Action Open($view)]"/>
 
                                 <Label FontSize="14" Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
                                        FontWeight="DemiBold"

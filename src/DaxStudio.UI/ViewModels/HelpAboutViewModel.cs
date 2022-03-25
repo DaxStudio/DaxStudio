@@ -7,6 +7,8 @@ using DaxStudio.Common;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Extensions;
 using Humanizer;
+using System.Reflection;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,6 +34,18 @@ namespace DaxStudio.UI.ViewModels
             VersionChecker = checker;
             VersionChecker.UpdateStartingCallback += this.VersionUpdateStarting;
             VersionChecker.UpdateCompleteCallback += this.VersionUpdateComplete;
+
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetEntryAssembly();
+            Version version = assembly?.GetName().Version;
+
+            BuildNumber = version.ToString();
+            FullVersionNumber = version.ToString(3);
+                        
+            System.IO.FileInfo fileInfo = new System.IO.FileInfo(assembly.Location);
+            ExeDate = fileInfo.LastWriteTime.ToString("yyy-MM-dd");
+
+            var dateStr = GetResourceFromAssembly(assembly, "BuildDate.txt").Normalize();
+            DateTime CurrentBuildDate = DateTime.Parse(dateStr , null, System.Globalization.DateTimeStyles.RoundtripKind);
 
             //VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
             //Task.Run(() => 
@@ -86,10 +100,11 @@ namespace DaxStudio.UI.ViewModels
         //    }
         //}
 
-        public string FullVersionNumber => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version.ToString(3); 
+        public string FullVersionNumber { get; }
         
-        public string BuildNumber => System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version.ToString(); 
+        public string BuildNumber { get; }
         
+        public string ExeDate { get; }
 
         //[Import(typeof(IVersionCheck))]
         public IVersionCheck VersionChecker { get; }
@@ -141,10 +156,10 @@ namespace DaxStudio.UI.ViewModels
                 if (VersionChecker.ServerVersion.IsNotSet() || Options.BlockVersionChecks) return "(Unable to get version information from daxstudio.org)"; 
 
                 var versionComparison = VersionChecker.LocalVersion.CompareTo(VersionChecker.ServerVersion);
-                if (versionComparison > 0)  return $"(Ahead of Latest Version - {VersionChecker.ServerVersion.ToString(3)} )"; 
-                if (versionComparison == 0) return "You have the latest Version"; 
+                if (versionComparison > 0)  return $"a preview release"; 
+                if (versionComparison == 0) return "up to date"; 
                     
-                return $"(New Version available - {VersionChecker.ServerVersion})";
+                return $"out dated";
 
             }
 
@@ -166,6 +181,23 @@ namespace DaxStudio.UI.ViewModels
         public bool IsLoggingEnabled { get { return _host.DebugLogging; } }
 
         public string LogFolder { get { return @"file:///" + ApplicationPaths.LogPath; } }
+
+
+        private string GetResourceFromAssembly(Assembly assembly, string resourceName)
+        {
+            var names = assembly.GetManifestResourceNames();
+            var name = names.FirstOrDefault(n => n.EndsWith(resourceName));
+            //string ns = "DaxStudio.Standalone";
+            //string name = String.Format("{0}.MyDocuments.Document.pdf", ns);
+            using (var stream = assembly.GetManifestResourceStream(name))
+            {
+                if (stream == null) return null;
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+                var str = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                return str;
+            }
+        }
     }
 
 }

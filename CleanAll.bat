@@ -33,6 +33,11 @@ RMDIR /S /Q .vs
 
 ECHO Deleting BIN and OBJ Folders in DaxEditor
 ECHO.
+RMDIR /S /Q src\ADOTabular\bin
+RMDIR /S /Q src\ADOTabular\obj
+
+ECHO Deleting BIN and OBJ Folders in DaxEditor
+ECHO.
 RMDIR /S /Q src\DaxEditor\bin
 RMDIR /S /Q src\DaxEditor\obj
 
@@ -50,6 +55,11 @@ ECHO Deleting BIN and OBJ Folders in DaxStudio.Controls.DataGridFilter
 ECHO.
 RMDIR /S /Q src\DaxStudio.Controls.DataGridFilter\bin
 RMDIR /S /Q src\DaxStudio.Controls.DataGridFilter\obj
+
+ECHO Deleting BIN and OBJ Folders in DaxStudio.Controls.DataGridFilter
+ECHO.
+RMDIR /S /Q src\DaxStudio.Controls.PropertyGrid\bin
+RMDIR /S /Q src\DaxStudio.Controls.PropertyGrid\obj
 
 ECHO Deleting BIN and OBJ Folders in DaxStudio.ExcelAddin
 ECHO.

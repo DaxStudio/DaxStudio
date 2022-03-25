@@ -72,7 +72,8 @@
                                 </aero:DataGridHeaderBorder>
                                 <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2"
                                               Padding="1">
-                                <Image Width="18" Height="18" Margin="0" Source="{DynamicResource filter_toolbarDrawingImage}" >
+                                <!-- Source="{DynamicResource filter_toolbarDrawingImage}"-->
+                                <Image Width="18" Height="18" Margin="0"  >
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Style.Triggers>
@@ -123,7 +124,7 @@
                                           IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" 
                                           Padding="1"
                                           Margin="2" ToolTip="Filter by current database name" >
-                                <Image Width="18" Height="18" Margin="0" Source="{DynamicResource filter_toolbarDrawingImage}" >
+                                <Image Width="18" Height="18" Margin="0"  >
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Style.Triggers>

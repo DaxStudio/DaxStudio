@@ -26,6 +26,7 @@ build/
 
 .vs/
 .vscode/
+*.binlog
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

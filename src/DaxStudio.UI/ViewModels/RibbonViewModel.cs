@@ -361,10 +361,11 @@ namespace DaxStudio.UI.ViewModels
             await Shell.TryCloseAsync();
         }
 
-        public void Open()
+        public async void Open(FrameworkElement view)
         {
-            _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent());
-
+            Fluent.Backstage backstage = GetBackStageParent(view as FrameworkElement) as Fluent.Backstage;
+            await _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent());
+            backstage.IsOpen = false;
         }
 
         private void RefreshConnectionDetails(IConnection connection)

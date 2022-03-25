@@ -55,7 +55,7 @@ namespace DaxStudio.UI.Model
         [OnDeserialized]
         internal void OnSerializedMethod(StreamingContext context)
         {
-            if (SystemType == null && DataType != null)
+            if (SystemType == null )
             {
                 DataTypeLookup.TryGetValue(DataType, out var type);
                 SystemType = type??typeof(object);
