@@ -25,6 +25,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/GalleryItem.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/DropDownButton.xaml" />
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
@@ -737,12 +738,14 @@
 
             <Fluent:RibbonGroupBox Header="Output">
                 <!-- Output Targets -->
+                <!-- Style="{DynamicResource GalleryDropDownButtonStyle}" -->
                 <Fluent:DropDownButton x:Name="OutputTargets"
                                        Header="Results"
                                        ap:ImageBindingHelper.IconResourceKey="{Binding SelectedTarget.ImageResource}"
                                        SizeDefinition="Large,Large,Small"
                                        IsEnabled="True"
                                        VerticalAlignment="Top"  Margin="4,0"
+                                       Style="{StaticResource DaxStudioGalleryDropDownButtonStyle}"
                                        >
                     <Fluent:Gallery 
                         x:Name="OutputGallery2"

@@ -318,7 +318,7 @@ namespace DaxStudio.UI.ViewModels
 
                     _sourceDocument = null;
 
-                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent()).Wait();
                 }
             }
             catch (Exception ex)

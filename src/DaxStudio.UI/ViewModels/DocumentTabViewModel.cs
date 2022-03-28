@@ -464,6 +464,8 @@ namespace DaxStudio.UI.ViewModels
 
             if (fileToOpen != null)
             {
+                // change the ShouldOpen flag to prevent the file being opened twice
+                fileToOpen.ShouldOpen = false;
                 // the first file will mark itself as opened then re-publish the message 
                 // to open the next file (if there is one)
                 await RecoverAutoSaveFileAsync(fileToOpen);

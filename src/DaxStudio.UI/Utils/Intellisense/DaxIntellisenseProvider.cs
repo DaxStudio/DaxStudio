@@ -217,7 +217,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                         }
                         else
                         {
-                            Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
+                            Log.Verbose("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
                             CloseCompletionWindow();
                             //completionWindow = null;
                         }
@@ -579,7 +579,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             if (!MetadataIsCached) return;
 
             var tmpData = new List<ICompletionData>();
-            Log.Debug("{class} {method} Type: {metadataType}  Table: {table} Column: {column}", "DaxIntellisenseProvider", "PopulateCompletionData", metadataType.ToString(), state == null ? "-" : state.TableName, state == null ? "-": state.ColumnName);
+            Log.Verbose("{class} {method} Type: {metadataType}  Table: {table} Column: {column}", "DaxIntellisenseProvider", "PopulateCompletionData", metadataType.ToString(), state == null ? "-" : state.TableName, state == null ? "-": state.ColumnName);
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Tables)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Columns)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Measures))

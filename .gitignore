@@ -202,3 +202,4 @@ github.env
 /src/.vs/DaxStudio/v15/Server/sqlite3
 docs/.jekyll-metadata
 *.GeneratedMSBuildEditorConfig.editorconfig
+src/DaxStudio.Standalone/Resources/BuildDate.txt
