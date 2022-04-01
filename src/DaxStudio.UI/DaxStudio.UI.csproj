@@ -1679,7 +1679,7 @@
       <Version>1.2.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
-      <Version>4.60.1</Version>
+      <Version>4.70.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.NumericUpDownLib">
       <Version>2.4.2.2</Version>
@@ -1688,7 +1688,7 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
-      <Version>8.0.3</Version>
+      <Version>9.0.4</Version>
     </PackageReference>
     <PackageReference Include="FontAwesome.WPF">
       <Version>4.7.0.9</Version>

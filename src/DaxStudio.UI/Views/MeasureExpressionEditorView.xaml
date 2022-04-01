@@ -8,16 +8,12 @@
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
-
-            
-
-
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
@@ -27,7 +23,7 @@
 
         <!-- Expression Editor control -->
         <Grid x:Name="gridExpressionEditor"        
-            Background="AliceBlue"                                
+            Background="{DynamicResource Theme.Brush.Dialog.Back}"                                
             Margin="2" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -48,8 +44,8 @@
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            
-                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+
+                            <Image ap:ImageBindingHelper.SourceResourceKey="{Binding TreeviewImage}" Margin="2,1,5,1"/>
                             <TextBlock Text="{Binding Path=Caption}" Margin="4,0" ></TextBlock>
                         </StackPanel>
                     </DataTemplate>
@@ -77,7 +73,7 @@
                             dd:DragDrop.DragHandler="{Binding}"
                                                    
                             WordWrap="{Binding WordWrap}"
-                            attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
+                            ap:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                             ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                             IndentationSize="{Binding IndentationSize}"
                             />

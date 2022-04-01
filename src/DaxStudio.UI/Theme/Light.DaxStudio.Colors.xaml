@@ -42,7 +42,7 @@
     <Color x:Key="Theme.Table.Header.Back">#F3F2F1</Color>
     <Color x:Key="Theme.Table.Header.Fore">#252423</Color>
     
-    <sys:Double x:Key="Theme.DropShadow.Opacity">0.2</sys:Double>
+    <sys:Double x:Key="Theme.DropShadow.Opacity">0.4</sys:Double>
     
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Accent2" Color="{StaticResource Theme.Accent2}" options:Freeze="true"/>

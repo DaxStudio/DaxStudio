@@ -266,14 +266,14 @@ namespace DaxStudio.UI.ViewModels
         /// Initialization that requires a reference to the editor control needs to happen here
         /// </summary>
         /// <param name="view"></param>
-        protected override void OnViewLoaded(object view)
+        protected override async void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
             _editor = GetEditor();
 
             try
             {
-                _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
+                await _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
 
                 IntellisenseProvider.Editor = _editor;
                 UpdateSettings();
@@ -306,7 +306,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_sourceDocument != null)
                 {
                     var cnn = _sourceDocument.Connection;
-                    _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent(
+                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent(
                         cnn.ConnectionStringWithInitialCatalog,
                         cnn.IsPowerPivot,
                         cnn.IsPowerPivot ? _sourceDocument.FileName : "",
@@ -318,7 +318,7 @@ namespace DaxStudio.UI.ViewModels
 
                     _sourceDocument = null;
 
-                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent()).Wait();
+                    await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 }
             }
             catch (Exception ex)
