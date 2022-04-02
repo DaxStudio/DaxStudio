@@ -252,6 +252,7 @@ namespace DaxStudio.UI.ViewModels
                     finally
                     {
                         ShowMetadataRefreshPrompt = false;
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Setting IsBusy = false");
                         IsBusy = false;
                     }
                 });
@@ -406,8 +407,8 @@ namespace DaxStudio.UI.ViewModels
                 if (found == null) DatabasesView.Add(dbRef);
             }
             DatabasesView.IsNotifying = true;
-
-            NotifyOfPropertyChange(() => DatabasesView);
+            DatabasesView.Refresh();
+            //NotifyOfPropertyChange(() => DatabasesView);
             if (SelectedDatabase == null)
                 if (!string.IsNullOrEmpty(_metadataProvider.SelectedDatabaseName))
                     SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == _metadataProvider.SelectedDatabaseName);
@@ -480,7 +481,10 @@ namespace DaxStudio.UI.ViewModels
                         Databases.Add(itm);
                     });
                 }
-                DatabasesView.Refresh();
+                Execute.OnUIThread(() =>
+                {
+                    DatabasesView.Refresh();
+                });
             
             }
             catch (Exception ex)
@@ -506,6 +510,7 @@ namespace DaxStudio.UI.ViewModels
             get => _isBusy;
             set
             {
+                if (_isBusy == value) return;
                 _isBusy = value;
                 NotifyOfPropertyChange(() => IsBusy);
             }
@@ -1082,7 +1087,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
             if (selectedDB != null) SelectedDatabase = selectedDB;
-            else { IsBusy = false; }
+
             
             // TODO - should we log a warning here?
 
@@ -1116,6 +1121,7 @@ namespace DaxStudio.UI.ViewModels
                 Databases = _metadataProvider.GetDatabases().ToBindableCollection();
                 Databases.IsNotifying = true;
                 NotifyOfPropertyChange(nameof(Databases));
+                NotifyOfPropertyChange(nameof(DatabasesView));
             });
             var ml = _metadataProvider.GetModels();
             //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
@@ -1140,6 +1146,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Handle(ConnectFailedEvent message)
         {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "Handle<ConnectionFailedEvent>", "Setting IsBusy = false");
             IsBusy = false;
         }
 

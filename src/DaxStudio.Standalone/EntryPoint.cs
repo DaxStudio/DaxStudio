@@ -57,7 +57,7 @@ namespace DaxStudio.Standalone
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
 
-            ConsoleHandler.RedirectToParent();
+            //ConsoleHandler.RedirectToParent();
 
             // Setup logging, default to information level to start with to log the startup and key system information
             var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);

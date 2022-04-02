@@ -37,7 +37,7 @@ namespace DaxStudio.UI.Converters {
                     case DaxStudioTraceEventSubclass.NotAvailable:
                         switch (csc.Class) {
                             case DaxStudioTraceEventClass.DirectQueryEnd:
-                                return "SQL";
+                                return csc.QueryLanguage.ToString();
                             default:
                                 return csc.Class.ToString();
                         }

@@ -7,9 +7,21 @@ using System.Threading.Tasks;
 using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.Model {
+    
     public class DaxStudioTraceEventClassSubclass {
+        public enum Language
+        {
+            Unknown = 0,
+            xmSQL,
+            SQL,
+            DAX,
+            DMX,
+            MDX
+        }
         public DaxStudioTraceEventClass Class { get; set; }
         public DaxStudioTraceEventSubclass Subclass { get; set; }
+
+        public Language QueryLanguage { get; set; }
 
     }
 }

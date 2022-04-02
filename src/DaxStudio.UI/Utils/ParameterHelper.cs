@@ -22,8 +22,8 @@ namespace DaxStudio.UI.Utils
             foreach (var p in queryInfo.Parameters)
             {
                 sbParams.Append("  <Parameter>\n");
-                sbParams.AppendFormat("    <Name>{0}</Name>\n", p.Value.Name);
-                sbParams.AppendFormat("    <Value xsi:type=\"xsd:{0}\">{1}</Value>\n", p.Value.TypeName, p.Value.Value);
+                sbParams.AppendFormat("    <Name>{0}</Name>\n", System.Security.SecurityElement.Escape(p.Value.Name));
+                sbParams.AppendFormat("    <Value xsi:type=\"xsd:{0}\">{1}</Value>\n", p.Value?.TypeName?? "xsd:string", System.Security.SecurityElement.Escape(p.Value?.Value?.ToString()));
                 sbParams.Append("  </Parameter>\n");
             }
             sbParams.Append("</Parameters>");

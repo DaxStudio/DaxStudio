@@ -28,7 +28,8 @@
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
-            
+            <conv:FontToSupportedGlyphConverter x:Key="FontToSupportedGlyphConverter"/>
+
             <ElasticEase x:Key="easeSlideIn" EasingMode="EaseInOut" Oscillations="2" Springiness="15"/>
             <SineEase x:Key="easeSlideOut" EasingMode="EaseInOut"/>
             
@@ -305,7 +306,7 @@
                                     VerticalContentAlignment="Center"      >
                         <ComboBox.Resources>
 
-                            <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
+                            <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}, Converter={StaticResource FontToSupportedGlyphConverter}}">
                                 <CollectionViewSource.SortDescriptions>
                                     <ComponentModel:SortDescription PropertyName="Source" />
                                 </CollectionViewSource.SortDescriptions>

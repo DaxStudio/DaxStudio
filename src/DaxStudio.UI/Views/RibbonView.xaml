@@ -932,7 +932,7 @@
                 
             </Fluent:RibbonGroupBox>
 
-            <Fluent:RibbonGroupBox Header="Security">
+            <Fluent:RibbonGroupBox Header="Security" Visibility="Collapsed">
                 <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" Width="48"
                                cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]">
                     <Fluent:Button.Icon>

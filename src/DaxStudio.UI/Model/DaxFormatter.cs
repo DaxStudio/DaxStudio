@@ -25,7 +25,7 @@ namespace DaxStudio.UI.Model
         {
             if (input == null) return "";
 
-            var hasher = new SHA256Managed();
+            var hasher = new SHA256Cng();
             var sb = new StringBuilder();
 
             byte[] hashedBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(input), 0, Encoding.UTF8.GetByteCount(input));

@@ -435,7 +435,7 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     string roles = string.Empty;
-                    if (viewAsDialog.RoleList.Count(r => r.Selected) > 0)
+                    if (viewAsDialog.RoleList.Any(r => r.Selected))
                         roles = viewAsDialog.RoleList.Where(r => r.Selected).Select(r => r.Name).Aggregate((current, next) => current + "," + next);
                     
                     await Connection.SetViewAsAsync(viewAsDialog.OtherUserName.Trim(), roles, activeTraces);
@@ -1958,8 +1958,10 @@ namespace DaxStudio.UI.ViewModels
             var m = _rexQueryError.Match(error);
             if (m.Success)
             {
+#pragma warning disable CA1806 // Do not ignore method results
                 int.TryParse(m.Groups["line"].Value, out var line);
                 int.TryParse(m.Groups["col"].Value, out var col);
+#pragma warning restore CA1806 // Do not ignore method results
                 OutputError(error, line, col);
             }
             else
@@ -1976,8 +1978,10 @@ namespace DaxStudio.UI.ViewModels
             var m = _rexQueryError.Match(error);
             if (m.Success)
             {
+#pragma warning disable CA1806 // Do not ignore method results
                 int.TryParse(m.Groups["line"].Value, out msgRow);
                 int.TryParse(m.Groups["col"].Value, out msgCol);
+#pragma warning restore CA1806 // Do not ignore method results
                 msgCol += column > 0 ? column - 1 : 0;
                 msgRow += row > 0 ? row - 1 : 0;
             }

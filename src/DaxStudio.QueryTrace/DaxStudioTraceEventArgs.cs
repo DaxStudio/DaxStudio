@@ -108,6 +108,10 @@ namespace DaxStudio.QueryTrace
                         // suppress all errors
                     }
 
+                case TraceEventClass.DiscoverBegin:
+                case TraceEventClass.VertiPaqSEQueryBegin:
+                case TraceEventClass.DAXQueryPlan:
+                    // no additional properties captured, the plan is stored in the text field
                     break;
                 case TraceEventClass.Error:
                     StartTime = e.StartTime;
@@ -217,6 +221,12 @@ namespace DaxStudio.QueryTrace
         public string TextData { get; set; }
         public long Duration { get; set; }
         public long CpuTime { get; set; }
+        public double? CpuFactor
+        {
+            get { return (Duration == 0 || CpuTime == 0) ? (double?)null : (double)CpuTime / (double)Duration; }
+        }
+
+        public bool InternalBatchEvent { get; set; }
 
         public DaxStudioTraceEventClass EventClass => _eventClass;
         public DaxStudioTraceEventSubclass EventSubclass => _eventSubclass;

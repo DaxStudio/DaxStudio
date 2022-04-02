@@ -242,7 +242,7 @@ namespace ADOTabular
         private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
         {
             var version = rdr.GetAttribute("Version", "http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions");
-            tabs.Model.CSDLVersion = Convert.ToDouble(version);
+            tabs.Model.CSDLVersion = Convert.ToDouble(version, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void UpdateTomRelationships(ADOTabularTable table)
@@ -268,22 +268,22 @@ namespace ADOTabular
 
         private RelationshipEndCardinality getCardinality(string multiplicity)
         {
-            switch (multiplicity)
+            return multiplicity switch
             {
-                case "*": return RelationshipEndCardinality.Many;
-                case "0..1": return RelationshipEndCardinality.One;
-                case "1": return RelationshipEndCardinality.One;
-                default: return RelationshipEndCardinality.None;
-            }
+                "*" => RelationshipEndCardinality.Many,
+                "0..1" => RelationshipEndCardinality.One,
+                "1" => RelationshipEndCardinality.One,
+                _ => RelationshipEndCardinality.None,
+            };
         }
 
         private CrossFilteringBehavior getCrossFilteringBehavior(string crossFilterDirection)
         {
-            switch (crossFilterDirection)
+            return crossFilterDirection switch
             {
-                case "Both": return CrossFilteringBehavior.BothDirections;
-                default: return CrossFilteringBehavior.OneDirection;
-            }
+                "Both" => CrossFilteringBehavior.BothDirections,
+                _ => CrossFilteringBehavior.OneDirection,
+            };
         }
 
         // Read the "Culture" attribute from <bi:EntityContainer>
@@ -1326,9 +1326,7 @@ namespace ADOTabular
                          join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
                          from kword in a.DefaultIfEmpty()
                          where kword == null
-#pragma warning disable IDE0050 // Convert to tuple
                          select new { Keyword = (string)keyword["Keyword"] , Matched = (kword==null) };
-#pragma warning restore IDE0050 // Convert to tuple
 
             //foreach (DataRow dr in drKeywords)
             foreach (var dr in kwords)
@@ -1455,7 +1453,12 @@ namespace ADOTabular
             }
             else {
                 product.Type = "SSAS Tabular";
-                if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase)) {
+                if (ssasVersion.StartsWith("16.", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    product.Name = "SSAS 2022";
+                }
+                else if (ssasVersion.StartsWith("15.", StringComparison.InvariantCultureIgnoreCase))
+                {
                     product.Name = "SSAS 2019";
                 }
                 else if (ssasVersion.StartsWith("14.", StringComparison.InvariantCultureIgnoreCase)) {

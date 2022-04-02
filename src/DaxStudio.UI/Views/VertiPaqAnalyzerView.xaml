@@ -161,9 +161,16 @@
                                                                 <TextBlock Text="{Binding Name.RelationshipSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colRelationships}" />
                                                                 <TextBlock Text="" Style="{StaticResource NumBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colPercentageTable}" />
                                                                 <TextBlock Text="{Binding Name.PercentageDatabase,StringFormat=P2}" Style="{StaticResource NumBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colPercentageDB}" />
-                                                                <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsNumber}" />
-                                                                <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitionsNumber}" />
-                                                                <TextBlock Text="{Binding Name.ColumnsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colColumnsNumber}" />
+
+                                                                <TextBlock Text="{Binding Name.ColumnsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitionsNumber}" />
+                                                                <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colColumnsNumber}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsTotalNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsNumber}" />
+
+                                                                <TextBlock Text="{Binding Name.SegmentsPageable,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsPageableNumber}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsResident,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsResidentNumber}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsAverageTemperature,StringFormat=N2}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsAverageTemperature}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsLastAccessed,StringFormat='{}{0:yy.MM.dd HH:mm:ss}'}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsLastAccessed}" />
+
                                                             </StackPanel>
 
                                                         </Expander.Header>
@@ -373,14 +380,14 @@
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
-
-                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" 
-                                                x:Name="colSegmentsNumber" 
-                                                Header="Segments"
-                                                ElementStyle="{StaticResource NumTextBlockStyle}" >
+                            
+                            <DataGridTextColumn Binding="{Binding ColumnsNumber}" 
+                                                x:Name="colColumnsNumber" 
+                                                Header="Columns"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Columns, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
@@ -394,19 +401,73 @@
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
-                            </DataGridTextColumn>
-
-                            <DataGridTextColumn Binding="{Binding ColumnsNumber}" 
-                                                x:Name="colColumnsNumber" 
-                                                Header="Columns"
-                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                            </DataGridTextColumn>   
+                            
+                            <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" 
+                                                x:Name="colSegmentsNumber" 
+                                                Header="Segments"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" >
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Columns, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
+                            <DataGridTextColumn Binding="{Binding SegmentsPageable, StringFormat=N0}" 
+                                                x:Name="colSegmentsPageableNumber" 
+                                                Header="Pageable"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" >
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Pageable, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsResident, StringFormat=N0}" 
+                                                x:Name="colSegmentsResidentNumber" 
+                                                Header="Resident"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" >
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Resident, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTemplateColumn x:Name="colSegmentsAverageTemperature"  
+                                                    Header="Temperature"
+                                                    ClipboardContentBinding="{Binding SegmentsAverageTemperature}"
+                                                    SortMemberPath="SegmentsAverageTemperature" 
+                                                    MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}"
+                                                    Width="80">
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Temperature, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SegmentsAverageTemperature, StringFormat=N2}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                        <!--
+                                            <TextBlock Background="{Binding TemperatureBrush}" Text="{Binding SegmentsAverageTemperature, StringFormat=N2}" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                        -->
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsLastAccessed, StringFormat='{}{0:yy.MM.dd HH:mm:ss}'}" 
+                                                x:Name="colSegmentsLastAccessed" 
+                                                Header="Last accessed"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" >
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.LastAccessed, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -557,6 +618,16 @@
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
+                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" 
+                                                Header="Partitions"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
                             <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}" 
                                                 Header="Segments"
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
@@ -567,15 +638,47 @@
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}" 
-                                                Header="Partitions"
+
+                            <DataGridTextColumn Binding="{Binding SegmentsPageable, StringFormat=N0}" 
+                                                Header="Pageable"
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Pageable, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsResident, StringFormat=N0}" 
+                                                Header="Resident"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Resident, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsAverageTemperature, StringFormat=N2}" 
+                                                Header="Temperature"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Temperature, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsLastAccessed, StringFormat='{}{0:yy.MM.dd HH:mm:ss}'}" 
+                                                Header="Last accessed"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.LastAccessed, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
 
                         </DataGrid.Columns>
                     </DataGrid>
@@ -774,7 +877,14 @@
                                                                 <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRowsCount}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.DataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colDataSize}"/>
                                                                 <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitions}" />
-                                                                <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegments}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartSegments}" />
+
+                                                                <TextBlock Text="{Binding Name.SegmentsTotalNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartTotalSegments}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsPageable,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartSegmentsPageableNumber}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsResident,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartSegmentsResidentNumber}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsAverageTemperature,StringFormat=N2}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartSegmentsAverageTemperature}" />
+                                                                <TextBlock Text="{Binding Name.SegmentsLastAccessed,StringFormat='{}{0:yy.MM.dd HH:mm:ss}'}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartSegmentsLastAccessed}" />
+
                                                             </StackPanel>
 
                                                         </Expander.Header>
@@ -869,7 +979,7 @@
                             </DataGridTextColumn>
 
                             <DataGridTextColumn Binding="{Binding SegmentsNumber, StringFormat=N0}"  
-                                                x:Name="colSegments" 
+                                                x:Name="colPartSegments" 
                                                 Header="Segments" 
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
@@ -879,6 +989,60 @@
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
+                            <DataGridTextColumn Binding="{Binding SegmentsTotalNumber, StringFormat=N0}"  
+                                                x:Name="colPartTotalSegments" 
+                                                Header="Tot. Seg." 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSegments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsPageable, StringFormat=N0}"  
+                                                x:Name="colPartSegmentsPageableNumber" 
+                                                Header="Pageable" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Pageable, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsResident, StringFormat=N0}"  
+                                                x:Name="colPartSegmentsResidentNumber" 
+                                                Header="Resident" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Resident, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsAverageTemperature, StringFormat=N2}"  
+                                                x:Name="colPartSegmentsAverageTemperature" 
+                                                Header="Temperature" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Temperature, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding SegmentsLastAccessed, StringFormat='{}{0:yy.MM.dd HH:mm:ss}'}"  
+                                                x:Name="colPartSegmentsLastAccessed" 
+                                                Header="Last accessed" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.LastAccessed, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>

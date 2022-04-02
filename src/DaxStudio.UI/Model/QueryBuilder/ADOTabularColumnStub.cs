@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ADOTabular;
 using ADOTabular.Interfaces;
+using DaxStudio.UI.JsonConverters;
 using Microsoft.AnalysisServices.Tabular;
+using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Model
 {
@@ -32,7 +35,30 @@ namespace DaxStudio.UI.Model
         public string TableName { get;  set; }
 
         public Type SystemType { get; set; }
-
+        [JsonConverter(typeof(QueryBuilderColumnDataTypeConverter ))]
         public DataType DataType { get; set; }
+
+        static Dictionary<DataType, Type> DataTypeLookup = new Dictionary<DataType, Type>()
+        {
+            {DataType.String, typeof(String) },
+            {DataType.Boolean, typeof(Boolean) },
+            {DataType.DateTime, typeof(DateTime) },
+            {DataType.Decimal, typeof(Decimal) },
+            {DataType.Double, typeof(Double) },
+            {DataType.Int64, typeof(long) },
+            {DataType.Unknown, typeof(object) },
+            {DataType.Variant, typeof(object) },
+
+        };
+
+        [OnDeserialized]
+        internal void OnSerializedMethod(StreamingContext context)
+        {
+            if (SystemType == null && DataType != null)
+            {
+                DataTypeLookup.TryGetValue(DataType, out var type);
+                SystemType = type??typeof(object);
+            } 
+        }
     }
 }
