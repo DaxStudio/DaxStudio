@@ -9,6 +9,7 @@ using DaxStudio.UI.Extensions;
 using Humanizer;
 using System.Reflection;
 using System.Linq;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -38,14 +39,21 @@ namespace DaxStudio.UI.ViewModels
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetEntryAssembly();
             Version version = assembly?.GetName().Version;
 
-            BuildNumber = version.ToString();
-            FullVersionNumber = version.ToString(3);
-                        
-            System.IO.FileInfo fileInfo = new System.IO.FileInfo(assembly.Location);
-            ExeDate = fileInfo.LastWriteTime.ToString("yyy-MM-dd");
+            BuildNumber = version?.ToString();
+            FullVersionNumber = version?.ToString(3);
 
-            var dateStr = GetResourceFromAssembly(assembly, "BuildDate.txt").Normalize();
-            DateTime CurrentBuildDate = DateTime.Parse(dateStr , null, System.Globalization.DateTimeStyles.RoundtripKind);
+            try
+            {
+                var dateStr = GetResourceFromAssembly(assembly, "BuildDate.txt").Normalize();
+                BuildDate = DateTime.Parse(dateStr, null, System.Globalization.DateTimeStyles.RoundtripKind).ToString(Constants.BuildDateFormat);
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(HelpAboutViewModel), "ctor", "Error reading Build Date from .exe resource");
+                BuildDate = "<n/a>";
+            }
+
 
             //VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
             //Task.Run(() => 
@@ -104,7 +112,7 @@ namespace DaxStudio.UI.ViewModels
         
         public string BuildNumber { get; }
         
-        public string ExeDate { get; }
+        public string BuildDate { get; }
 
         //[Import(typeof(IVersionCheck))]
         public IVersionCheck VersionChecker { get; }
@@ -185,6 +193,8 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetResourceFromAssembly(Assembly assembly, string resourceName)
         {
+            if (assembly == null) return DateTime.UtcNow.ToString("o");
+
             var names = assembly.GetManifestResourceNames();
             var name = names.FirstOrDefault(n => n.EndsWith(resourceName));
             //string ns = "DaxStudio.Standalone";

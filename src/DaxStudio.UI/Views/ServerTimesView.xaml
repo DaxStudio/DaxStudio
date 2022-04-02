@@ -138,7 +138,7 @@
                         <TextBlock>Record</TextBlock>
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}">
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}" IsEnabled="{Binding CanPause}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource pause_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
@@ -433,6 +433,10 @@
                 <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>-->
+                <Style x:Key="DataGridColumnHeaderRight" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                </Style>
+
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                     <Setter Property="Padding" Value="6 2 6 0"/>
@@ -451,7 +455,7 @@
                 </DataGrid.Resources>
 
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                    <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                 <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
@@ -464,15 +468,16 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="72" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignBottomRight}" />
-                <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                    <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="72" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
+                    <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
+                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignBottomRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
+                    <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
+                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
                 <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Padding" Value="6 2 6 0"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
                                         <Setter Property="FontWeight" Value="Bold"/>
