@@ -17,7 +17,8 @@
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties" 
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="230" 
-             IsEnabled="{Binding IsEnabled}">
+             IsEnabled="{Binding IsEnabled}"
+             cal:Message.Attach="[Event GotFocus] = [Action GotFocus];[Event Click] = [Action GotFocus]">
     <ctrl:ZoomableUserControl.Resources>
         <ResourceDictionary>
             <conv:EnumDescriptionConverter x:Key="enumDescriptionConverter"/>

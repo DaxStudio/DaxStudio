@@ -4871,5 +4871,10 @@ namespace DaxStudio.UI.ViewModels
         {
             // do nothing
         }
+
+        public void GotFocus()
+        {
+            System.Diagnostics.Debug.WriteLine("Document.GotFocus");
+        }
     }
 }

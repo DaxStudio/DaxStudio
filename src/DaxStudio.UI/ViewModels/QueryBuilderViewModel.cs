@@ -77,6 +77,11 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
+        public void GotFocus()
+        {
+            System.Diagnostics.Debug.WriteLine("QueryBuilder.GotFocus");
+        }
+
         private void ShowAutoGenerateWarning()
         {
             MessageBox.Show("Enabling this option will overwrite any changes you may have made to the query text.\n\nHowever, if you make any further manual edits to the query this option will be automatically disabled.", "Auto Generate Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
