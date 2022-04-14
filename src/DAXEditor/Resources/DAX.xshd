@@ -47,13 +47,13 @@
 			<End>\*/</End>
 		</Span>
       
-		<Span color="String">
-			<Begin>"</Begin>
-			<End>"</End>
-      <RuleSet>
-        <Span begin="\\" end="." />
-      </RuleSet>
-		</Span>
+	<Span color="String" multiline="true">
+		<Begin>"</Begin>
+		<End>"</End>
+        <RuleSet>
+            <Span begin="\\" end="." />
+        </RuleSet>
+	</Span>
   
     <Span color="Identifier">
 			<Begin>'</Begin>
