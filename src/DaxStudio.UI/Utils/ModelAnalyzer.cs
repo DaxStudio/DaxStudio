@@ -33,7 +33,7 @@ namespace DaxStudio.UI.Utils
             //
             // Get TOM model from the SSAS engine
             //
-            Microsoft.AnalysisServices.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
+            Microsoft.AnalysisServices.Tabular.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
 
             // 
             // Create VertiPaq Analyzer views
