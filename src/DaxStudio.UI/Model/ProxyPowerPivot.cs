@@ -60,46 +60,47 @@ namespace DaxStudio.UI.Model
             get { return true; }
         }
 
-        public bool HasPowerPivotModel
+        public bool HasPowerPivotModel(int TimeoutSecs)
         {
-            get {
-                Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Start");
-                var hasModel = false;
-                var doc = _activeDocument;
-                using (var client = GetHttpClient())
+            
+            Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Start");
+            var hasModel = false;
+            var doc = _activeDocument;
+            using (var client = GetHttpClient())
+            {
+                try
                 {
-                    try
-                    {
-                        //HACK: see if this helps with the PowerPivot client spinning issue
-                        client.Timeout = new TimeSpan(0, 0, 30); // set 30 second timeout
-
-                        HttpResponseMessage response = client.GetAsync("workbook/hasdatamodel").Result;
-                        Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Got Response");
-                        if (response.IsSuccessStatusCode)
-                        {
-                            Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Reading Result");
-                            hasModel = JsonConvert.DeserializeObject<bool>(response.Content.ReadAsStringAsync().Result);
-                        }
-                        else
-                        {
-                            var msg = response.Content.ReadAsStringAsync().Result;
-                            Log.Error("{class} {method} {message}", "ProxyPowerPivot", "WorkbookName", $"Error checking if Workbook has a PowerPivot model\n {msg}");
-                            doc.OutputError("Error checking if the active Workbook in Excel has a PowerPivot model");
-                        }
                         
-                    }
-                    catch (Exception ex)
+                    //HACK: see if this helps with the PowerPivot client spinning issue
+                    client.Timeout = new TimeSpan(0, 0, TimeoutSecs); // set 30 second timeout
+
+                    HttpResponseMessage response = client.GetAsync("workbook/hasdatamodel").Result;
+                    Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Got Response");
+                    if (response.IsSuccessStatusCode)
                     {
-                        var innerEx = ex.GetLeafException();
-                        //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
-                        Log.Error("{class} {method} {exception} {stacktrace}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", ex.Message, ex.StackTrace );
-                        doc.OutputError($"Error checking if active Excel workbook has a PowerPivot model ({innerEx.Message})");
+                        Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Reading Result");
+                        hasModel = JsonConvert.DeserializeObject<bool>(response.Content.ReadAsStringAsync().Result);
                     }
-
-
-                    return hasModel;
+                    else
+                    {
+                        var msg = response.Content.ReadAsStringAsync().Result;
+                        Log.Error("{class} {method} {message}", "ProxyPowerPivot", "WorkbookName", $"Error checking if Workbook has a PowerPivot model\n {msg}");
+                        doc.OutputError("Error checking if the active Workbook in Excel has a PowerPivot model");
+                    }
+                        
                 }
+                catch (Exception ex)
+                {
+                    var innerEx = ex.GetLeafException();
+                    //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("Error checking if active Excel workbook has a PowerPivot ({0})",ex.Message)));
+                    Log.Error("{class} {method} {exception} {stacktrace}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", ex.Message, ex.StackTrace );
+                    doc.OutputError($"Error checking if active Excel workbook has a PowerPivot model ({innerEx.Message})");
+                }
+
+
+                return hasModel;
             }
+            
         }
 
         public void EnsurePowerPivotDataIsLoaded()

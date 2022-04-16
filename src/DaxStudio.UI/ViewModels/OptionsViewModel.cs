@@ -60,6 +60,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _queryHistoryShowTraceColumns;
         private int _queryEndEventTimeout;
         private int _daxFormatterRequestTimeout;
+        private int _powerPivotModelDetectionTimeout;
         private bool _traceDirectQuery;
         private bool _highlightXmSqlCallbacks;
         private bool _simplifyXmSqlSyntax;
@@ -571,6 +572,26 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => DaxFormatterRequestTimeout);
                 _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(DaxFormatterRequestTimeout), value, _isInitializing, this);
+            }
+        }
+
+        [Category("Timeouts")]
+        [DisplayName("PowerPivot model detection timeout (sec)")]
+        [Description("This is the number of seconds DAX Studio will wait for a response from Excel while trying to determine if the active workbook has a data model")]
+        [DataMember, DefaultValue(30)]
+        [MinValue(0)]
+        [MaxValue(999)]
+        public int PowerPivotModelDetectionTimeout
+        {
+            get => _powerPivotModelDetectionTimeout;
+
+            set
+            {
+                if (_powerPivotModelDetectionTimeout == value) return;
+                _powerPivotModelDetectionTimeout = value;
+                NotifyOfPropertyChange(() => PowerPivotModelDetectionTimeout);
+                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(PowerPivotModelDetectionTimeout), value, _isInitializing, this);
             }
         }
 

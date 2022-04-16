@@ -25,9 +25,9 @@ namespace DaxStudio.UI.Model
             get { return false; }
         }
 
-        public bool HasPowerPivotModel
+        public bool HasPowerPivotModel(int TimeoutSecs)
         {
-            get { return false; }
+             return false;
         }
 
         public void EnsurePowerPivotDataIsLoaded()

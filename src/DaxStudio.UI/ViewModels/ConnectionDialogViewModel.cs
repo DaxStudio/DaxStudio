@@ -136,7 +136,7 @@ namespace DaxStudio.UI.ViewModels
      
         public async Task<bool> HasPowerPivotModelAsync() {
 
-            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel).ConfigureAwait(false);
+            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout)).ConfigureAwait(false);
             return res;
             
         }
