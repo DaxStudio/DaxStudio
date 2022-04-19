@@ -429,7 +429,7 @@ namespace DaxStudio.UI.ViewModels
                     Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "Recovery Started - recovering selected files.");
                     message.RecoveryInProgress = true;
 
-                    var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
+                    var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).SelectMany(index => index.Files).Where(x => x.ShouldOpen).FirstOrDefault();
 
                     if (fileToOpen != null)
                     {
@@ -460,7 +460,7 @@ namespace DaxStudio.UI.ViewModels
         public async Task HandleAsync(RecoverNextAutoSaveFileEvent message, CancellationToken cancellationToken)
         {
             
-            var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).FirstOrDefault().Files.Where(x => x.ShouldOpen).FirstOrDefault();
+            var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).SelectMany(index => index.Files).Where(x => x.ShouldOpen).FirstOrDefault();
 
             if (fileToOpen != null)
             {
