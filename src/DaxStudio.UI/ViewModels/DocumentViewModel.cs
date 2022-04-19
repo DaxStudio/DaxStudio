@@ -1236,7 +1236,7 @@ namespace DaxStudio.UI.ViewModels
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
             Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
 
-            await Task.Run(() => Host.Proxy.HasPowerPivotModel).ContinueWith(x =>
+            await Task.Run(() => Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout)).ContinueWith(x =>
             {
 
                 // todo - should we be checking for exceptions in this continuation

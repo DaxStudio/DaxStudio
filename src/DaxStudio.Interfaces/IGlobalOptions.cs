@@ -74,7 +74,7 @@ namespace DaxStudio.Interfaces
         LongOperationSounds LongOperationSound { get; set; }
         int LongQuerySeconds { get; set; }
 
-
+        int PowerPivotModelDetectionTimeout { get; set; }
 
 
         #region Hotkeys
