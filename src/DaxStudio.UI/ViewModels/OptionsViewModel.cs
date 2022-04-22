@@ -590,7 +590,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_powerPivotModelDetectionTimeout == value) return;
                 _powerPivotModelDetectionTimeout = value;
                 NotifyOfPropertyChange(() => PowerPivotModelDetectionTimeout);
-                _eventAggregator.PublishOnUIThread(new UpdateGlobalOptions());
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(PowerPivotModelDetectionTimeout), value, _isInitializing, this);
             }
         }
