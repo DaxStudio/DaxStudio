@@ -128,7 +128,7 @@ namespace DaxStudio.UI.ViewModels
         private DocumentViewModel _sourceDocument;
         private ISettingProvider SettingProvider { get; }
         private static readonly ImageSourceConverter ImgSourceConverter = new ImageSourceConverter();
-        private bool _isSubscribed = false;
+        private bool _isSubscribed;
 
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager
@@ -463,7 +463,7 @@ namespace DaxStudio.UI.ViewModels
         private string _viewAsDescription = string.Empty;
         public string ViewAsDescription  => _viewAsDescription;
 
-        private bool _informationBarIconSpin = false;
+        private bool _informationBarIconSpin;
         public bool InformationBarIconSpin { get => _informationBarIconSpin;
             set { 
                 _informationBarIconSpin = value;
@@ -986,8 +986,8 @@ namespace DaxStudio.UI.ViewModels
 
                 try
                 {
-                    await _eventAggregator.PublishOnUIThreadAsync(new EditorPositionChangedMessage(loc.Column, loc.Line));
-                    await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this));
+                    await _eventAggregator.PublishOnUIThreadAsync(new EditorPositionChangedMessage(loc.Column, loc.Line), cancellationToken);
+                    await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this), cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -2355,7 +2355,7 @@ namespace DaxStudio.UI.ViewModels
                         catch (Exception ex)
                         {
                             Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
-                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"));
+                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"), cancellationToken);
                         }
                     }
                     else
@@ -2373,7 +2373,7 @@ namespace DaxStudio.UI.ViewModels
             if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
 
             //run the query
-            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget));
+            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget), cancellationToken);
 
             // un-select text
             var editor = GetEditor();
@@ -3171,12 +3171,12 @@ namespace DaxStudio.UI.ViewModels
                         }
 
 
-                    });
+                    },cancellationToken);
 
                 // todo - should we be checking for exceptions in this continuation
                 var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                await _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace));//,IsPowerPivotConnection));
-                await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this));
+                await _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace), cancellationToken);//,IsPowerPivotConnection));
+                await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this),cancellationToken);
                 msg.Dispose(); //reset the status message
                 //LoadState();
 
@@ -3201,8 +3201,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 var errMsg = (ex?.InnerException??ex)?.Message;
 
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"));
-                                Log.Error(ex?.InnerException??ex, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"), cancellationToken);
+                Log.Error(ex?.InnerException??ex, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
             }
         }
 
@@ -4007,7 +4007,7 @@ namespace DaxStudio.UI.ViewModels
 
         public object UniqueID { get { return _uniqueId; } }
 
-        private int _rowCount = 0;
+        private int _rowCount;
         private string _serverVersion = "";
         public int RowCount {
             get { return _rowCount; }
