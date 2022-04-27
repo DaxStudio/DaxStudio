@@ -112,6 +112,7 @@
     <Compile Include="DebugCommasTest.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
+    <Compile Include="XlsxHelperTests.cs" />
     <Compile Include="_TestConfig.cs" />
   </ItemGroup>
   <ItemGroup>

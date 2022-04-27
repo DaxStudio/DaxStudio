@@ -578,6 +578,7 @@
     <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
     <Compile Include="Utils\UserHelper.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
+    <Compile Include="Utils\XlsxHelper.cs" />
     <Compile Include="Utils\ZoomHelper.cs" />
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
