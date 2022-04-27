@@ -646,7 +646,7 @@ namespace DaxStudio.UI.ViewModels
                 foundDependentMeasures = false;
                 foreach (var modelMeasure in modelMeasures)
                 {
-                    string daxMeasureName = "[" + modelMeasure.Name + "]";
+                    string daxMeasureName = "[" + modelMeasure.Name.Replace("]","]]") + "]";
                     // Iterates a copy so the original list can be modified
                     foreach (var scanMeasure in dependentMeasures.ToList())
                     {
@@ -792,7 +792,7 @@ namespace DaxStudio.UI.ViewModels
 
                     if (kpiComponent.ComponentType == KpiComponentType.Value && string.IsNullOrEmpty(column.MeasureExpression))
                     {
-                        measureName = string.Format("{0}[{1} {2}]", column.Table.DaxName, column.Name, kpiComponent.ComponentType.ToString());
+                        measureName = string.Format("{0}[{1} {2}]", column.Table.DaxName, column.Name.Replace("]","]]"), kpiComponent.ComponentType.ToString());
 
                         measureExpression = column.DaxName;
                     }
@@ -809,7 +809,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (string.IsNullOrEmpty(measureName))
                 {
-                    measureName = string.Format("{0}[{1}]", column.Table.DaxName, column.Name);
+                    measureName = string.Format("{0}{1}", column.Table.DaxName, column.DaxName);
                 }
 
                 if (expandMeasure)
