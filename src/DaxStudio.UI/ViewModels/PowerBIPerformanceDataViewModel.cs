@@ -83,7 +83,7 @@ namespace DaxStudio.UI.ViewModels
                         var perfLine = new PowerBIPerformanceData() {
                             Id = o2["id"].Value<string>(),
                             Name = o2["name"].Value<string>(),
-                            Component = o2["component"].Value<string>(),
+                            Component = o2["component"]?.Value<string>()??"<unknown>",
                             ParentId = o2["parentId"]?.Value<string>()
                         };
                         switch (o2["name"].Value<string>()) {
