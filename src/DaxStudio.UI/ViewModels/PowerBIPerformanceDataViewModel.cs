@@ -124,7 +124,7 @@ namespace DaxStudio.UI.ViewModels
                                 line2.RenderEndTime = perfLine.RenderEndTime;
                                 break;
                         }
-                        if (!perfDataDict.Keys.Contains(perfLine.Id))   perfDataDict.Add(perfLine.Id, perfLine);
+                        if (!perfDataDict.ContainsKey(perfLine.Id))   perfDataDict.Add(perfLine.Id, perfLine);
                     }
                     foreach (var line in perfDataDict.Values)
                     {
