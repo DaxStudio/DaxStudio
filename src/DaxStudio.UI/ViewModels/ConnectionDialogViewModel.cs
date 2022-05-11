@@ -506,6 +506,7 @@ namespace DaxStudio.UI.ViewModels
                 return true;
             }
         }
+
         public void Connect()
         {
             string connectionString = string.Empty;
@@ -523,7 +524,12 @@ namespace DaxStudio.UI.ViewModels
                 if (ServerModeSelected)
                 {
                     SettingProvider.SaveServerMRUList(DataSource, RecentServers);
-                    serverType = ServerType.AnalysisServices;
+                    serverType =
+                        HasUriProtocolScheme(DataSource, "asazure") ? ServerType.AzureAnalysisServices :
+                        HasUriProtocolScheme(DataSource, "pbidedicated") ? ServerType.PowerBIService :
+                        HasUriProtocolScheme(DataSource, "powerbi") ? ServerType.PowerBIService :
+                        HasUriProtocolScheme(DataSource, "pbiazure") ? ServerType.PowerBIService :
+                        ServerType.AnalysisServices;
                 }
                 if (PowerPivotModeSelected) { serverType = ServerType.PowerPivot; }
                 if (PowerBIModeSelected)
@@ -560,6 +566,20 @@ namespace DaxStudio.UI.ViewModels
                 SelectedServerSetFocus = false;
                 this.TryClose();
             //    TryClose(true);
+            }
+
+            // We could move this function as an utility one - currently, there could be overlap with other similar functions (see ADOTabularConnection.GetConnectionType)
+            bool HasUriProtocolScheme(string url, string scheme)
+            {
+                if (string.IsNullOrEmpty(url))
+                {
+                    return false;
+                }
+                if (url.StartsWith(scheme, StringComparison.InvariantCultureIgnoreCase) && url.Length > scheme.Length + "://".Length)
+                {
+                    return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.InvariantCultureIgnoreCase) == 0;
+                }
+                return false;
             }
         }
 

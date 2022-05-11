@@ -4431,6 +4431,15 @@ namespace DaxStudio.UI.ViewModels
                 case ServerType.AnalysisServices:
                     modelCaption = $"{Connection?.Database?.Name ?? "<unknown>"}";
                     break;
+                case ServerType.AzureAnalysisServices:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (Azure AS)";
+                    break;
+                case ServerType.PowerBIService:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (PBI Service)";
+                    break;
+                case ServerType.Offline:
+                    modelCaption = $"{Connection?.ShortFileName ?? "<unknown>"} (offline)";
+                    break;
             }
             return modelCaption;
         }

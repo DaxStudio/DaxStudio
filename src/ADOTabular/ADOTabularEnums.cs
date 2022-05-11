@@ -14,7 +14,13 @@ namespace ADOTabular.Enums
         [Description("PowerPivot")]
         PowerPivot,
         [Description("SSDT")]
-        SSDT
+        SSDT,
+        [Description("AzureAS")]
+        AzureAnalysisServices,
+        [Description("PBI Service")]
+        PowerBIService,
+        [Description("Offline")]
+        Offline
     }
     
 }
