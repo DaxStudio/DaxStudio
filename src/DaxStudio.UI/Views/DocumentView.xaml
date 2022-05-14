@@ -707,10 +707,10 @@
             <avalondock:LayoutRoot FocusManager.IsFocusScope="False">
                 <!-- Left side Tool Panes -->
                 <avalondock:LayoutPanel Orientation="Horizontal">
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="225" FloatingWidth="200" >
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="235" FloatingWidth="200" >
                         <avalondock:LayoutAnchorablePane Name="DockLeft" ap:LayoutAnchorablePaneAutoHideMinWidthHelper.AutoHideMinWidth="250"/>
                     </avalondock:LayoutAnchorablePaneGroup>
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="240" DockWidth="240" FloatingWidth="240">
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="260" DockWidth="260" FloatingWidth="240">
                         <avalondock:LayoutAnchorablePane Name="DockMidLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
                     <!-- Main Document Pane -->

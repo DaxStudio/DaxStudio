@@ -265,7 +265,7 @@
                     </RadioButton>
 
                     <TextBlock    Text="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  
-                                  Margin="5,0,0,0"
+                                  Margin="5,5,0,0"
                                   Padding="0" 
                                   x:Name="lblWorkBook" 
                                   VerticalAlignment="Top" 

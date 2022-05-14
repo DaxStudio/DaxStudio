@@ -109,6 +109,22 @@ namespace DaxStudio.UI.Model
                     column.SortDirection = SortDirection.DESC;
                     break;
                 case SortDirection.DESC:
+                    column.SortDirection = SortDirection.ASC;
+                    break;
+                //default:
+                //    column.SortDirection = SortDirection.ASC;
+                //    break;
+            }
+        }
+
+        public void ToggleIsSorted(QueryBuilderColumn column)
+        {
+            switch (column.SortDirection)
+            {
+                case SortDirection.ASC:
+                    column.SortDirection = SortDirection.None;
+                    break;
+                case SortDirection.DESC:
                     column.SortDirection = SortDirection.None;
                     break;
                 default:

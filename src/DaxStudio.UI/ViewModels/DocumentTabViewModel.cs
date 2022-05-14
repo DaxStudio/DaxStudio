@@ -219,14 +219,14 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var newDoc = _documentFactory(_windowManager, _eventAggregator);
+                newDoc.DisplayName = "Opening...";
+                newDoc.FileName = fileName;
+                newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
+
                 Items.Add(newDoc);
                 await ActivateItemAsync(newDoc);
                 ActiveDocument = newDoc;
                 ActiveItem = newDoc;
-
-                newDoc.DisplayName = "Opening...";
-                newDoc.FileName = fileName;
-                newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
             }
             catch (Exception ex)
             {

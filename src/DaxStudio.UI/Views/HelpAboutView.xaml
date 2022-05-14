@@ -13,10 +13,10 @@
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     mc:Ignorable="d" 
     d:DesignHeight="455" 
-    d:DesignWidth="500"
+    d:DesignWidth="550"
     MinHeight="600"
     MaxHeight="600"
-    MaxWidth="500"
+    MaxWidth="550"
     Padding="0 0 0 100"
 
     MinWidth="500"
@@ -78,7 +78,7 @@
             <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" Margin="0 0 5 0">Version </TextBlock>
             <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" Margin="0 0 5 0" x:Name="FullVersionNumber"></TextBlock>
             <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}"> (</TextBlock>
-            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" x:Name="ExeDate">date</TextBlock>
+            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" x:Name="BuildDate"></TextBlock>
             <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}">)</TextBlock>
         </StackPanel>
         <TextBlock Text="{Binding LastChecked}" Grid.Row="4" Grid.Column="2" FontStyle="Italic" Foreground="{DynamicResource Theme.Brush.Muted.Fore}"/>
@@ -86,7 +86,7 @@
         <!--  5 is a spacer row -->
 
         <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Foreground="{DynamicResource Theme.Brush.Muted.Fore}">
-            <Run Text="2021 (C) DAX Studio - "/> 
+            <Run Text="2022 (C) DAX Studio - "/> 
             <Hyperlink NavigateUri="https://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true">
                         <Run Text="https://daxstudio.org"/>
                     </Hyperlink>

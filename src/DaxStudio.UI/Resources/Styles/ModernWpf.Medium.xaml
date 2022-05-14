@@ -42,6 +42,9 @@
     <Thickness x:Key="PivotNavButtonMargin">0,6,0,0</Thickness>
     <Thickness x:Key="PivotHeaderItemMargin">6,0,6,0</Thickness>
     <Thickness x:Key="PivotItemMargin">0,0,0,0</Thickness>
+
+    <sys:Double x:Key="ToggleSwitchPreContentMargin">1.0</sys:Double>
+    <sys:Double x:Key="ToggleSwitchPostContentMargin">1.0</sys:Double>
     
     <Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenuEx}"/>
 </ResourceDictionary>

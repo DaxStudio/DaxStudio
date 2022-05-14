@@ -308,12 +308,14 @@
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Converters\NotZeroConverter.cs" />
     <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
+    <Compile Include="Converters\TableImageConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\EditorHotkeyEvent.cs" />
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
+    <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />

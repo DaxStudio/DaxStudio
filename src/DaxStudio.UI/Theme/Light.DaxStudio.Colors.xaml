@@ -56,6 +56,7 @@
     <SolidColorBrush x:Key="Theme.Brush.StatusBar.Back" Color="{StaticResource Theme.StatusBar.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.DropShadow" Color="{StaticResource Theme.DropShadow}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.DropShadow.Accent" Color="{StaticResource Theme.DropShadow.Accent}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Dialog.Back" Color="{StaticResource Theme.Dialog.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Dialog.Border" Color="{StaticResource Theme.Dialog.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Control.Border" Color="{StaticResource Theme.Control.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Control.Selected" Color="{StaticResource Theme.Control.Selected}" options:Freeze="true"/>

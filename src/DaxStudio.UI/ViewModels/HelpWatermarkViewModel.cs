@@ -29,7 +29,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showHelpWatermark = true;
         public bool ShowHelpWatermark
         {
-            get => _showHelpWatermark && !NeverShowHelpWatermark && !EditorTooSmall;
+            get => _showHelpWatermark; 
             set
             {
                 if (value == _showHelpWatermark) return;

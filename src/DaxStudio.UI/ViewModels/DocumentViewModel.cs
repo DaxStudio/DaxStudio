@@ -268,6 +268,7 @@ namespace DaxStudio.UI.ViewModels
         /// <param name="view"></param>
         protected override async void OnViewLoaded(object view)
         {
+            System.Diagnostics.Debug.WriteLine("DocumentViewModel.OnViewLoaded Called");
             base.OnViewLoaded(view);
             _editor = GetEditor();
 
@@ -296,7 +297,7 @@ namespace DaxStudio.UI.ViewModels
                 switch (State)
                 {
                     case DocumentState.LoadPending:
-                        OpenFile();
+                        await OpenFileAsync();
                         break;
                     case DocumentState.RecoveryPending:
                         LoadAutoSaveFile(AutoSaveId);
@@ -1235,20 +1236,17 @@ namespace DaxStudio.UI.ViewModels
 
             var msg = NewStatusBarMessage("Checking for PowerPivot model...");
             Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
-
-            await Task.Run(() => Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout)).ContinueWith(x =>
-            {
+            bool hasPowerPivotModel = false;
+            await Task.Run(() => hasPowerPivotModel = Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout));
 
                 // todo - should we be checking for exceptions in this continuation
-                try
-                {
+            try
+            {
                     
-                    bool hasPowerPivotModel = x.Result;
+                Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPowerPivotModel);
+                msg.Dispose();
 
-                    Log.Information("{class} {method} Has PowerPivotModel: {hasPpvtModel} ", "DocumentViewModel", "ChangeConnection", hasPowerPivotModel);
-                    msg.Dispose();
-
-                Execute.OnUIThread(async () =>
+                await Execute.OnUIThreadAsync(async () =>
                 {
                     var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
 
@@ -1266,23 +1264,23 @@ namespace DaxStudio.UI.ViewModels
                     IsFocused = true;
                 });
 
-        }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                // if the task throws an exception the "real" exception is usually in the innerException
+                var innerMsg = ex.Message;
+                if (ex.InnerException != null) innerMsg = ex.InnerException.Message;
+                Log.Error("{class} {method} {message}", "DocumentViewModel", "ChangeConnection", innerMsg);
+                OutputError(innerMsg);
+            }
+            finally
+            {
+                if (!msg.IsDisposed)
                 {
-                    // if the task throws an exception the "real" exception is usually in the innerException
-                    var innerMsg = ex.Message;
-                    if (ex.InnerException != null) innerMsg = ex.InnerException.Message;
-                    Log.Error("{class} {method} {message}", "DocumentViewModel", "ChangeConnection", innerMsg);
-                    OutputError(innerMsg);
+                    msg.Dispose(); // turn off the status bar message
                 }
-                finally
-                {
-                    if (!msg.IsDisposed)
-                    {
-                        msg.Dispose(); // turn off the status bar message
-                    }
-                }
-            }, TaskScheduler.Default);
+            }
+  
 
         }
 
@@ -2935,33 +2933,30 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsDiskFileName { get; set; }
 
-        public void OpenFile()
+        public async Task OpenFileAsync()
         {
 
             //LoadFile(FileName);
             //ChangeConnection();
             //IsDirty = false; 
 
-
-            Execute.OnUIThread(() =>
+            await Execute.OnUIThreadAsync(() =>
+            {
+                return Task.Run(() =>
                 {
-                    Task.Run(() =>
-                    {
-                        Execute.OnUIThread(() => { LoadFile(FileName); });
-                    }).ContinueWith(previousOutput =>
-                    {
-                    // todo - should we be checking for exceptions in this continuation
-                    if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Execute.OnUIThread(() => { ChangeConnectionAsync().Wait(); });
-                    }
-                    }, TaskScheduler.Default).ContinueWith((previousOutput) =>
-                 {
-                    // todo - should we be checking for exceptions in this continuation
-                    Execute.OnUIThread(() => { IsDirty = false; });
-                    }, TaskScheduler.Default);
+                    LoadFile(FileName);
                 });
+            });
 
+            // todo - should we be checking for exceptions in this continuation
+            if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+            {
+                await ChangeConnectionAsync();
+            }
+                    
+            // todo - should we be checking for exceptions in this continuation
+            IsDirty = false;
+                    
         }
 
         private void LoadState()

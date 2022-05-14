@@ -114,7 +114,6 @@ namespace DaxStudio.UI.Model
         public void DuplicateMeasure()
         {
             _eventAggregator.PublishOnUIThreadAsync(new DuplicateMeasureEvent(this));
-            
         }
 
         private SortDirection _sortDirection = SortDirection.ASC;
@@ -125,11 +124,32 @@ namespace DaxStudio.UI.Model
                 _sortDirection = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(SortDescription));
+                NotifyOfPropertyChange(nameof(SortDirectionImageResource));
                 _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 
+        public string SortDirectionImageResource
+        {
+            get
+            {
+                switch (_sortDirection)
+                {
+                    case SortDirection.ASC: return "sort_ascDrawingImage";
+                    case SortDirection.DESC: return "sort_descDrawingImage";
+                    default: return "";
+                }
+            }
+        }
+
         public string SortDescription => SortDirection== SortDirection.None? $"Do not order by {DaxName}\n(Click to change)" : $"Order by {DaxName} {SortDirection}\n(Click to change)";
+
+        public bool IsSortDirectionEnabled { get => SortDirection != SortDirection.None; 
+            set { 
+                if(SortDirection == SortDirection.None) SortDirection = SortDirection.ASC;
+                else SortDirection = SortDirection.None;
+            } 
+        }
 
         public bool IsSortBy { get; internal set; }
     }

@@ -114,8 +114,9 @@ namespace DaxStudio.UI.ViewModels
 
         public virtual string TraceStatusText {
             get {
-                if (IsEnabled && !IsChecked) return $"Trace is not currently active, click on the {Title} button in the ribbon to resume tracing";
-                if (!IsEnabled) return DisableReason;
+                // TODO - remove this 
+                //if (IsEnabled && !IsChecked) return $"Trace is not currently active, click on the {Title} button in the ribbon to resume tracing";
+                //if (!IsEnabled) return DisableReason;
                 //TODO - should we show this for paused states too??
                 //if (IsPaused) return $"Trace is paused, click on the start button in the toolbar below to re-start tracing";
                 return string.Empty; } }

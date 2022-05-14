@@ -341,10 +341,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ToggleSwitchSmall.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Colors.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ModernWpf;component/DensityStyles/Compact.xaml" />
                 <ui:IntellisenseResources/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -442,12 +444,12 @@
                             </ContextMenu>
                         </Grid.ContextMenu>
                         <Grid>
-                                        <Image  Margin="2,1,3,1" attachedProperties:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Grid.Column="0"/>
-                                        <!--<Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,4,1" Grid.Column="0" />-->
-                                        <fa:ImageAwesome Icon="Star" Width="10" Margin="7,12,0,0" Foreground="Gold" Visibility="{Binding Converter={StaticResource BoolToNotVisibleConverter},Path=IsModelItem}"/>
-                            <fa:ImageAwesome Icon="SortAlphaAsc" Width="10" Margin="7,12,0,0" Foreground="MediumOrchid" Visibility="{Binding Converter={StaticResource BoolToVisibility},Path=IsSortBy}"/>
+                                    <Image  Margin="2,1,3,1" attachedProperties:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Grid.Column="0"/>
+                                    <!--<Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,4,1" Grid.Column="0" />-->
+                                    <!--<fa:ImageAwesome Icon="Star" Width="10" Margin="7,12,0,0" Foreground="Gold" Visibility="{Binding Converter={StaticResource BoolToNotVisibleConverter},Path=IsModelItem}"/>-->
+                                    <fa:ImageAwesome Icon="SortAlphaAsc" Width="10" Margin="7,12,0,0" Foreground="MediumOrchid" Visibility="{Binding Converter={StaticResource BoolToVisibility},Path=IsSortBy}"/>
                         </Grid>
-                        <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="1" ToolTip="{Binding DaxName}" Grid.Column="1"/>
+                        <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding DaxName}" Margin="5 1 1 1" Grid.Column="1"/>
 
                         <!-- Edit Controls -->
                         <StackPanel Orientation="Horizontal" Grid.Column="2">
@@ -719,18 +721,10 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Grid>
-                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1" Grid.Column="0" />
-                        </Grid>
+                        <ui:ToggleSwitch x:Name="IsSortDirectionEnabled" IsOn="{Binding IsSortDirectionEnabled}" OnContent="" OffContent="" Width="40"  Margin="0" Padding="0" />
                         <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding SortDescription}" Grid.Column="1"/>
-
-                        <!-- Edit Controls -->
-                        <StackPanel Orientation="Horizontal" Grid.Column="2">
-                            <fa:ImageAwesome Icon="{Binding SortDirection, Converter={StaticResource SortIcons}}" Style="{StaticResource OrderByButton}"
-
-                                         />
-                        </StackPanel>
-
+                        <Image Grid.Column="2" Margin="2,1,3,1" attachedProperties:ImageBindingHelper.SourceResourceKey="{Binding SortDirectionImageResource}" />
+                              
                     </Grid>
 
                 </DataTemplate>
