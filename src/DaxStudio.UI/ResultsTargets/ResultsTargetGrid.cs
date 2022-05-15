@@ -19,6 +19,8 @@ namespace DaxStudio.UI.Model
         private readonly IEventAggregator _eventAggregator;
         private readonly IGlobalOptions _options;
 
+
+
         [ImportingConstructor]
         public ResultsTargetGrid(IEventAggregator eventAggregator, IGlobalOptions options)
         {
@@ -32,7 +34,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 10;
         public bool IsDefault => true;
         public bool IsAvailable => true;
-        public string Message => string.Empty;
+        public string Message => "Query results will be displayed in a data grid";
         public OutputTarget Icon => OutputTarget.Grid;
         public string ImageResource => "results_tableDrawingImage";
         public string Tooltip => "Displays the Query results in a data grid";

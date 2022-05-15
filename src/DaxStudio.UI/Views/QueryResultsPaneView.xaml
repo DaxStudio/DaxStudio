@@ -8,6 +8,7 @@
              xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
@@ -17,12 +18,14 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml"/>
+                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ScrollingVerticalTabs.xaml"/>
-
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DataGrid.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:DynamicGridViewConverter x:Key="DynamicGridViewConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
+            <conv:OutputTargetImageResourceConverter x:Key="OutputTargetImageResourceConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <sel:ResultsGridCellTemplateSelector x:Key="ResultsGridCellTemplateSelector"/>
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White" />
@@ -226,13 +229,13 @@
             </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Row="0" Margin="0,30,0,0">
                 <Image VerticalAlignment="Center"
-                       Source="{Binding ResultsIcon, Converter={StaticResource OutputIcons}}"
+                       ap:ImageBindingHelper.SourceResourceKey="{Binding ResultsIcon, Converter={StaticResource OutputTargetImageResourceConverter}}"
                        Stretch="None"
                        Width="40"
                        Height="37"
                        Margin="0,0,10,0"
                        />
-                <TextBlock x:Name="ResultsMessage" VerticalAlignment="Center"></TextBlock>
+                <TextBlock x:Name="ResultsMessage" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.Default.Fore}"></TextBlock>
             </StackPanel>
             <Label x:Name="SelectedWorkbook" Grid.Row="1" Padding="0 5 0 5" />
             <StackPanel Orientation="Horizontal" Grid.Row="2"
@@ -257,7 +260,23 @@
             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
+                    <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    IsIndeterminate="True"
+                                    Width="24"
+                                    Height="24"
+                        Margin="0 0 10 0"
+                                    Foreground="{DynamicResource Theme.Brush.Accent}"
+                                    Background="{DynamicResource Theme.Brush.Alternate.Back}"
+                                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Label 
+                           Height="30" VerticalContentAlignment="Center"  
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           Foreground="{DynamicResource Theme.Brush.Muted.Fore}" 
+                           Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
                 </StackPanel>
             </Grid>
         </Border>

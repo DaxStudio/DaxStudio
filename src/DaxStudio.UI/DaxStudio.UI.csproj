@@ -307,6 +307,7 @@
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Converters\NotZeroConverter.cs" />
+    <Compile Include="Converters\OutputTargetImageResourceConverter.cs" />
     <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
     <Compile Include="Converters\TableImageConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
@@ -796,6 +797,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\Themes\TextBoxEx.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Properties\DesignTimeResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

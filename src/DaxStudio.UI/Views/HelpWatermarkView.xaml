@@ -9,30 +9,25 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="500"
              MaxWidth="500"
-             Margin="30 -5 0 0"
+             Margin="30 -3 0 0"
              >
             
     <UserControl.Resources>
         <converters:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
-
 
         <Style TargetType="TextBlock">
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="FontSize" Value="14"></Setter>
             <Setter Property="FontFamily" Value="Segoe UI"></Setter>
         </Style>
-        
-        
+
     </UserControl.Resources>
-    <UserControl.LayoutTransform>
-        <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
-    </UserControl.LayoutTransform>
+
     <Grid Visibility="{Binding ShowHelpWatermark, Converter={StaticResource BoolToCollapsedConverter}}"
           attachedProperties:VisibilityAnimation.AnimationType="Fade">
 
         <!-- Help Watermark -->
-
-            <TextBlock  FontFamily="Courier New"  Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="10 10">Enter your DAX query here...</TextBlock>
+        <TextBlock  FontFamily="Courier New"  Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="10 10">Enter your DAX query here...</TextBlock>
           
     </Grid>
 </UserControl>

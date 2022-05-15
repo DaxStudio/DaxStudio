@@ -208,7 +208,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedTarget = ribbon.SelectedTarget;
             SelectedWorksheet = Properties.Resources.DAX_Results_Sheet;
 
-            HelpWatermark = new HelpWatermarkViewModel(Options);
+            HelpWatermark = new HelpWatermarkViewModel();
 
             var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
             t.FireAndForget();

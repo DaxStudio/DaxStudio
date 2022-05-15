@@ -27,7 +27,71 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="DsDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
+
+    <Style x:Key="DsDataGridCellStyle" TargetType="DataGridCell">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource DataGridCellBackgroundBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        <Setter Property="MinHeight" Value="{DynamicResource DataGridRowMinHeight}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        MinHeight="{TemplateBinding MinHeight}"
+                        SnapsToDevicePixels="True">
+                        <Grid>
+                            <Rectangle
+                                x:Name="CurrencyVisual"
+                                Stroke="{DynamicResource DataGridCellBorderSelected}"
+                                StrokeThickness="1"
+                                Fill="{DynamicResource DataGridCellBackgroundSelected}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                IsHitTestVisible="False"
+                                Opacity="0" />
+                            <Grid
+                                x:Name="FocusVisual"
+                                IsHitTestVisible="False"
+                                Opacity="0">
+                                <Rectangle
+                                    Stroke="{DynamicResource DataGridCellFocusVisualPrimaryBrush}"
+                                    StrokeThickness="2"
+                                    Fill="Transparent"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False" />
+                                <Rectangle
+                                    Stroke="{DynamicResource DataGridCellFocusVisualSecondaryBrush}"
+                                    StrokeThickness="1"
+                                    Fill="Transparent"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    IsHitTestVisible="False"
+                                    Margin="2" />
+                            </Grid>
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="CurrencyVisual" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="FocusVisual" Property="Opacity" Value="1" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DsDataGridCellStyle2" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
         <Setter Property="Padding" Value="6 4"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <!--<Setter Property="Template">

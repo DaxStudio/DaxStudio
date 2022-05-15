@@ -91,7 +91,7 @@
     <SolidColorBrush x:Key="EditorSelectionBrush" Color="{DynamicResource Theme.PrimaryAccentColor}" Opacity="0.75" options:Freeze="true"/>
     <SolidColorBrush x:Key="EditorSelectionForeground" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>
 
-    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>
+    <!--<SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="{DynamicResource Theme.Content.Back}" options:Freeze="true"/>-->
 
     <Color x:Key="Fluent.Ribbon.Colors.AccentBaseColor">#FF228ED6</Color>
     <Color x:Key="Fluent.Ribbon.Colors.AccentColor80"  >#CC228ED6</Color>
@@ -258,4 +258,18 @@
     <SolidColorBrush x:Key="BaseBrush" Color="{StaticResource WhiteColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ToolTipBackground" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" options:Freeze="true"/>
+
+    <SolidColorBrush x:Key="DataGridCellBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
+    <SolidColorBrush x:Key="DataGridCellBorderBrushSelected" Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" options:Freeze="True" />
+    
+    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ToggleButtonBorderCheckedPointerOver" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" options:Freeze="True" />
+
+    <SolidColorBrush x:Key="TreeViewItemBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TreeViewItemBorderSelected" Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPointerOver" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TreeViewItemBorderBrushSelectedPointerOver" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" options:Freeze="True" />
+
 </ResourceDictionary>
