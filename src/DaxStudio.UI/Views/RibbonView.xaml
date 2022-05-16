@@ -1563,15 +1563,27 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
-                <Fluent:Button Name="hlpPowerPivotForum"
-                               Header="Power Pivot Forum"
-                               cal:Message.Attach="[Event Click] = [Action LinkToPowerPivotForum()]"
+                <Fluent:Button Name="hlpDaxForum"
+                               Header="DAX Forum"
+                               cal:Message.Attach="[Event Click] = [Action LinkToDaxForum()]"
                                Icon="{DynamicResource linkDrawingImage}"
                                SizeDefinition="Middle,Small"
                                Margin="4,0">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Power Pivot Forum"
-                                          Text="Link to the Power Pivot MSDN Forum"
+                        <Fluent:ScreenTip Title="DAX Forum"
+                                          Text="Link to the DAX Forum"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+                <Fluent:Button Name="hlpPbiForum"
+                               Header="Power BI Desktop Forum"
+                               cal:Message.Attach="[Event Click] = [Action LinkToPbiDesktopForum()]"
+                               Icon="{DynamicResource linkDrawingImage}"
+                               SizeDefinition="Middle,Small"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Power BI Desktop Forum"
+                                          Text="Link to the Power BI Desktop Forum"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -1587,6 +1599,7 @@
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+                
             </Fluent:RibbonGroupBox>
 
             <Fluent:RibbonGroupBox Header="Issues">
