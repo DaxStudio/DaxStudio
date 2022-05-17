@@ -266,8 +266,9 @@ namespace DaxStudio.UI.ViewModels
 
         private string _busyMessage;
         public string BusyMessage { get { return _busyMessage; }
-            set { _busyMessage = value;
-            NotifyOfPropertyChange(() => BusyMessage);
+            set { 
+                _busyMessage = value;
+                NotifyOfPropertyChange(() => BusyMessage);
             }
         }
 

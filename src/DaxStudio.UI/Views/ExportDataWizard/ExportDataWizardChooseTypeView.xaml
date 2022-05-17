@@ -6,6 +6,7 @@
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              mc:Ignorable="d" 
+             MinHeight="400"
              d:DesignHeight="450" 
              d:DesignWidth="800">
     <UserControl.Resources>

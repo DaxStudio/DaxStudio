@@ -44,7 +44,6 @@ namespace DaxStudio.UI.ViewModels
             ProgressMessage = "Ready";
             ProgressPercentage = 0;
             ProgressColor = "LightGray";
-            RunSameWarmAndCold = true;
             IsViewAsActive = document.IsViewAsActive;
             RepeatRunWithoutViewAs = document.IsViewAsActive;
 
@@ -57,10 +56,10 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                Log.Information(Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), $"Running Benchmark - Cold:{ColdCacheRuns} Warm: {WarmCacheRuns} RepeatWithoutViewAs: {RepeatRunWithoutViewAs}");
+                Log.Information(Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), $"Running Benchmark - Cold:{CalculatedColdCacheRuns} Warm: {CalculatedWarmCacheRuns} RepeatWithoutViewAs: {RepeatRunWithoutViewAs}");
                 _stopwatch = new Stopwatch();
                 _stopwatch.Start();
-                _totalRuns = ColdCacheRuns + WarmCacheRuns;
+                _totalRuns = CalculatedColdCacheRuns + CalculatedWarmCacheRuns;
                 if (RepeatRunWithoutViewAs) _totalRuns = _totalRuns * 2;
                 ProgressIcon = FontAwesomeIcon.Refresh;
                 ProgressSpin = true;
@@ -120,7 +119,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void RunNextQuery()
         {
-            if (_currentColdRun < ColdCacheRuns)
+            if (_currentColdRun < CalculatedColdCacheRuns)
             {
                 _currentColdRun++;
                 _currentRunStyle = ColdRunStyle;
@@ -145,7 +144,7 @@ namespace DaxStudio.UI.ViewModels
                 _benchmarkingPassComplete = false;
                 _currentColdRun = 0;
                 _currentWarmRun = 0;
-                _viewAsRuns = ColdCacheRuns + WarmCacheRuns;
+                _viewAsRuns = CalculatedColdCacheRuns + CalculatedWarmCacheRuns;
                 ProgressMessage = "Stopping View As and restarting Trace";
                 Document.StopViewAs();
             }
@@ -155,8 +154,8 @@ namespace DaxStudio.UI.ViewModels
 
             // if we have completed all the cold and warm runs
             // with the ViewAs pass if required then set completed to true
-            if (_currentColdRun == ColdCacheRuns 
-                && _currentWarmRun == WarmCacheRuns)
+            if (_currentColdRun == CalculatedColdCacheRuns 
+                && _currentWarmRun == CalculatedWarmCacheRuns) 
             {
                 _benchmarkingPassComplete = true;
             }
@@ -168,14 +167,14 @@ namespace DaxStudio.UI.ViewModels
             ProgressPercentage = ((double)((_viewAsRuns + _currentColdRun + _currentWarmRun)) / _totalRuns) * 100;
             var viewAsState = string.Empty;
             if (RepeatRunWithoutViewAs) viewAsState = $"(with ViewAs {_viewAsStatus}) ";
-            if (_currentColdRun <= ColdCacheRuns && _currentWarmRun == 0)
+            if (_currentColdRun <= CalculatedColdCacheRuns && _currentWarmRun == 0)
             {
-                ProgressMessage = $"Running Cold Cache Query {viewAsState}{_currentColdRun} of {ColdCacheRuns}";
+                ProgressMessage = $"Running Cold Cache Query {viewAsState}{_currentColdRun} of {CalculatedColdCacheRuns}";
                 return;
             }
-            if (_currentWarmRun <= WarmCacheRuns && !_benchmarkingPassComplete)
+            if (_currentWarmRun <= CalculatedWarmCacheRuns && !_benchmarkingPassComplete)
             {
-                ProgressMessage = $"Running Warm Cache Query {viewAsState}{_currentWarmRun} of {WarmCacheRuns}";
+                ProgressMessage = $"Running Warm Cache Query {viewAsState}{_currentWarmRun} of {CalculatedWarmCacheRuns}";
                 return;
             }
 
@@ -385,21 +384,28 @@ namespace DaxStudio.UI.ViewModels
         public int ColdCacheRuns { 
             get { return _coldCacheRuns; } 
             set { _coldCacheRuns = value;
-                NotifyOfPropertyChange(() => ColdCacheRuns);
-                if (RunSameWarmAndCold)
-                {
-                    WarmCacheRuns = ColdCacheRuns;
-                    NotifyOfPropertyChange(() => WarmCacheRuns);
-                }
+                NotifyOfPropertyChange();
+
             } 
         }
-        public int WarmCacheRuns { get; set; } = 5;
+
+        public int CalculatedColdCacheRuns => EnableColdCacheExecutions ? ColdCacheRuns : 0;
+
+        private int _warmCacheExecutions = 5;
+        public int WarmCacheRuns { get => _warmCacheExecutions;
+            set {
+                _warmCacheExecutions = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+
+        public int CalculatedWarmCacheRuns => EnableWarmCacheExecutions ? WarmCacheRuns : 0;
 
         private double _progressPercentage;
         public double ProgressPercentage { get => _progressPercentage;
             set {
                 _progressPercentage = value;
-                NotifyOfPropertyChange(nameof(ProgressPercentage));
+                NotifyOfPropertyChange();
             }
         }
 
@@ -407,18 +413,17 @@ namespace DaxStudio.UI.ViewModels
         public string ProgressColor { get => _progressColor;
             set {
                 _progressColor = value;
-                NotifyOfPropertyChange(nameof(ProgressColor));
+                NotifyOfPropertyChange();
             }
         }
 
-        public bool RunSameWarmAndCold { get; set; }
         public bool IsViewAsActive { get; }
 
         private string _progressMessage;
         public string ProgressMessage { get => _progressMessage;
             set {
                 _progressMessage = value;
-                NotifyOfPropertyChange(nameof(ProgressMessage));
+                NotifyOfPropertyChange();
             }
         }
 
@@ -461,6 +466,9 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
             }
         }
+
+        public bool EnableColdCacheExecutions { get; set; }
+        public bool EnableWarmCacheExecutions { get; set; }
         #endregion
 
         #region IDisposable

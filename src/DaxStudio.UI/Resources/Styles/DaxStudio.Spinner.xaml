@@ -8,11 +8,17 @@
   <circularProgressBar:RotateTransformCentreConverter x:Key="RotateTransformCentreConverter" />
   <converters:NotZeroConverter x:Key="NotZeroConverter" />
 
-  <Style x:Key="MaterialDesignCircularProgressBar" TargetType="{x:Type ProgressBar}">
+    <Style x:Key="SpinnerLabel" TargetType="Label">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+    </Style>
+
+    <Style x:Key="MaterialDesignCircularProgressBar" TargetType="{x:Type ProgressBar}">
     <!--<Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
     <Setter Property="Background" Value="Transparent" />-->
     <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
-    <Setter Property="Background" Value="{DynamicResource Theme.Brush.Alternate.Back}"/>
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="IsIndeterminate" Value="True"/>  
     <Setter Property="Width" Value="20" />
     <Setter Property="Height" Value="20" />

@@ -160,38 +160,28 @@ namespace DaxStudio.UI.ViewModels
 
         public override async Task TryCloseAsync(bool? dialogResult = null)
         {
-            await base.TryCloseAsync(dialogResult);
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Attempting application shutdown");
+            //await base.TryCloseAsync(dialogResult);
             if (dialogResult != false )
             {
                 Ribbon.OnClose();
                 _notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
-                if (Application.Current == null) return;
-                if (!Application.Current.Properties.Contains("HasCrashed") )
+                if (Application.Current == null) {
+                    Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Current Application is null - clearing AutoSave files");
                     AutoSaver.RemoveAll();
+                    return; 
+                }
+                if (!Application.Current.Properties.Contains("HasCrashed"))
+                {
+                    Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Clearing AutoSave files");
+                    AutoSaver.RemoveAll();
+                    return;
+                }
             }
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Application shutdown cancelled");
             return;
         }
-        //public override Task TryCloseAsync(bool? dialogResult)
-        //{
-        //    //Properties.Settings.Default.Save();
-        //    base.TryCloseAsync(dialogResult);
-        //    if (dialogResult != false )
-        //    {
-        //        Ribbon.OnClose();
-        //        _notifyIcon?.Dispose();
-        //        AutoSaveTimer.Enabled = false;
-        //        if (!Application.Current.Properties.Contains("HasCrashed") )
-        //            AutoSaver.RemoveAll();
-        //    }
-        //    return dialogResult;
-        //}
-
-        //public override void TryClose()
-        //{
-        //    base.TryClose();
-        //}
-
         
         protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {

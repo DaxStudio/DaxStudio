@@ -14,7 +14,6 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -111,13 +110,12 @@
                 </ItemsPanelTemplate>
             </Fluent:StatusBar.ItemsPanel>
             <Fluent:StatusBarItem Grid.Column="0" Title="Spinner">
-                <!--<Label Style="{DynamicResource LabelSpinnerStyle}" Foreground="White" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="18" Height="18" />-->
-                <!--    -->
-                <ui:ProgressRing IsActive="{Binding Working}" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="10" Height="10" Margin="4 0 0 0">
+
+                <!--<ui:ProgressRing IsActive="{Binding Working}" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="10" Height="10" Margin="4 0 0 0">
                     <ui:ProgressRing.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </ui:ProgressRing.LayoutTransform>
-                </ui:ProgressRing>
+                </ui:ProgressRing>-->
             </Fluent:StatusBarItem>
             <!--<Separator Grid.Column="1"/>-->
             <Fluent:StatusBarItem Grid.Column="2" Title="Status Message">

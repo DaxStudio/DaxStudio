@@ -40,6 +40,8 @@
     <Color x:Key="Theme.Log.Success">#00C752</Color>
     <Color x:Key="Theme.Table.Header.Back">#3A3A3A</Color>
     <Color x:Key="Theme.Table.Header.Fore">#CCCCCC</Color>
+    <Color x:Key="Theme.BusyPanel.Back">#30FFFFFF</Color>
+    <Color x:Key="Theme.BusyPanel.Border">#000000</Color>
     
     <sys:Double x:Key="Theme.DropShadow.Opacity">0.8</sys:Double>
 
@@ -76,7 +78,9 @@
     <SolidColorBrush x:Key="Theme.Brush.Trace.Record.Fill" Color="{StaticResource Theme.Default.Fore}" options:Freeze="false"/>
     <SolidColorBrush x:Key="Theme.Brush.xmSQLHighlight.Back" Color="#E2D76F" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.xmSQLHighlight.Fore" Color="{StaticResource Theme.Content.Back}" options:Freeze="true"/>
-
+    <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Back" Color="{StaticResource Theme.BusyPanel.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Border" Color="{StaticResource Theme.BusyPanel.Border}" options:Freeze="true"/>
+    
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="TextControlBorderBrush" Color="{DynamicResource Theme.TextBox.Border}" options:Freeze="true"/>

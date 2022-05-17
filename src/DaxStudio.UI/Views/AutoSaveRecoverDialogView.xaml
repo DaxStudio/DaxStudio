@@ -13,7 +13,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              MinWidth="400"
-             MinHeight="350">
+             MinHeight="450">
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>

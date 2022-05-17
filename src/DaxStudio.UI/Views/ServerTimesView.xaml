@@ -21,7 +21,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DataGrid.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
                 <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
@@ -527,14 +527,21 @@
             Grid.RowSpan="4" 
             Grid.Row="1"
             Grid.ColumnSpan="5"
-            Style="{StaticResource BusyPanel}" d:IsHidden="True">
+            Style="{StaticResource BusyPanel}">
                 
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock x:Name="BusyMessage"/>
-                    </Label>
+                    <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    Width="24"
+                                    Height="24"
+                                    Margin="0 0 10 0"
+                                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Label x:Name="BusyMessage" Content="{Binding BusyMessage}" Style="{StaticResource SpinnerLabel}"></Label>
+
                 </StackPanel>
             </Grid>
         </Border>

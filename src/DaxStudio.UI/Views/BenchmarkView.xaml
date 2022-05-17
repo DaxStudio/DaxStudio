@@ -7,8 +7,9 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
-                      Caption="Benchmark"
-                      Icon="{DynamicResource run_benchmarkDrawingImage}"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             Caption="Benchmark"
+             Icon="{DynamicResource run_benchmarkDrawingImage}"
              mc:Ignorable="d" 
              d:DesignHeight="380" d:DesignWidth="500">
     <ctrl:DaxStudioDialog.Resources>
@@ -61,19 +62,17 @@
                     Margin="0 0 0 16"
                     Grid.Row="1" Grid.ColumnSpan="3"/>
 
-                <Border Grid.Row="2" Width="8" Margin="7,12,4,2" BorderBrush="Gray" BorderThickness="1,1,0,0" />
-                <TextBox x:Name="ColdCacheRuns" Width="25" Margin="3" Grid.Column="1" Grid.Row="2"/>
-                <Label Content="Cold Cache Executions" Grid.Column="2"  Grid.Row="2" VerticalAlignment="Center"/>
-
-                <CheckBox Grid.Row="3" x:Name="RunSameWarmAndCold" Margin="0,-2,0,-2"/>
-
-                <Border Grid.Row="4" Width="8" Margin="7,2,4,12" BorderBrush="Gray" BorderThickness="1,0,0,1" />
-                <TextBox x:Name="WarmCacheRuns" Width="25"  Grid.Column="1" Grid.Row="4" Margin="3" IsEnabled="{Binding Path=IsChecked, ElementName=RunSameWarmAndCold, Converter={StaticResource BoolNotConverter}}"/>
-                <Label Content="Warm Cache Executions" Grid.Column="2" Grid.Row="4" VerticalAlignment="Center" />
+                <ui:ToggleSwitch Grid.Row="2" OnContent="" OffContent="" Width="60"  x:Name="EnableColdCacheExecutions" />
+        <TextBox x:Name="ColdCacheRuns" Width="25" Margin="3" Grid.Column="1" Grid.Row="2" IsEnabled="{Binding Path=IsOn, ElementName=EnableColdCacheExecutions}"/>
+                <Label Content="Cold Cache Executions" Grid.Column="2"  Grid.Row="2" Margin="10,0,0,0"  VerticalAlignment="Center"/>
+                
+                <ui:ToggleSwitch Grid.Row="4" OnContent="" OffContent="" Width="60"  x:Name="EnableWarmCacheExecutions" />
+                <TextBox x:Name="WarmCacheRuns" Width="25"  Grid.Column="1" Grid.Row="4" Margin="3" IsEnabled="{Binding Path=IsOn, ElementName=EnableWarmCacheExecutions}"/>
+                <Label Content="Warm Cache Executions" Grid.Column="2" Grid.Row="4" Margin="10,0,0,0" VerticalAlignment="Center" />
 
                 <StackPanel Grid.Row="5" Grid.ColumnSpan="4" Orientation="Vertical" Margin="0 8 0 0">
                     <CheckBox  x:Name="RepeatRunWithoutViewAs" Content='Do a second pass without "View As" (RLS) enabled' IsEnabled="{Binding IsViewAsActive}"  Margin="-2 10 0 0" />
-                    <Label  Content="(This option is only enabled if you start the benchmark while using 'View As')" Foreground="#666666" Margin="15 0 0 10" Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
+                    <Label  Content="(This option is only enabled if you start the benchmark while using 'View As')" Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="15 8 0 10" Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
                     <!--<fa:FontAwesome Icon="InfoCircle" Foreground="{DynamicResource DaxStudioBrush}" FontSize="16" VerticalAlignment="Center" Margin="10 0" ToolTip="This option is only enabled if you start the benchmark while using 'View As'"/>-->
                 </StackPanel>
 
