@@ -251,7 +251,7 @@
                                                                    Grid.Column="1"
                                                                    Margin="-50 -4 0 0 "
                                                           FontSize="12"
-                                                       ItemsSource="{Binding SelectedItem.DefaultValues}"
+                                                       ItemsSource="{Binding SelectedItem.DefaultValues, Mode=OneTime}"
                                                        ToolTip="{Binding ValueTip}"
                                                        HorizontalAlignment="Stretch" VerticalAlignment="Top"
                                                        

@@ -31,11 +31,11 @@
             <conv:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter" />
 
             <!-- Bitmaps -->
-            <BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
+            <!--<BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
             <BitmapImage x:Key="Information" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-info@96ppi.png" />
-            <BitmapImage x:Key="question" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-question@96ppi.png" />
+            <BitmapImage x:Key="question" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-question@96ppi.png" />-->
 
-            <BitmapImage x:Key="Excel" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excel@24px.png" />
+            <!--<BitmapImage x:Key="Excel" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-excel@24px.png" />
             <BitmapImage x:Key="PowerBI" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-powerBI@24px.png" />
             <BitmapImage x:Key="Database" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-database@24px.png" />
 
@@ -47,7 +47,7 @@
                     <BitmapImage x:Key="Loading" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-wait@24px.png" />
                     <BitmapImage x:Key="None" UriSource="pack://application:,,,/DaxStudio.UI;component/images/warning.triangle.png" />
                 </ResourceDictionary>
-            </conv:ResourceLookupConverter>
+            </conv:ResourceLookupConverter>-->
 
             <conv:ResourceLookupConverter x:Key="IconNames">
                 <ResourceDictionary>
@@ -151,23 +151,24 @@
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                            <ProgressBar x:Name="Loading" Visibility="Collapsed" 
-                                         Style="{StaticResource MaterialDesignCircularProgressBar}" 
-                                         IsIndeterminate="True"
-                                         Margin="0,0,5,0" Width="16" Height="16"/>
-                            <!-- Source="{Binding Icon,Converter={StaticResource EmbeddedSsasIcons}}"  -->
-                            <Image x:Name="Icon" 
-                                   ap:ImageBindingHelper.SourceResourceKey="{Binding Path=Icon, Converter={StaticResource IconNames}}"
-                                   
-                                   Margin="0,0,5,0" Width="16" Height="16"/>
-                                    <TextBlock Text="{Binding Name}" />
+                                    <ProgressBar x:Name="Loading" Visibility="Collapsed" 
+                                                 Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                                 IsIndeterminate="True"
+                                                 Margin="0,0,5,0" Width="16" Height="16"/>
+                                    <!-- Source="{Binding Icon,Converter={StaticResource EmbeddedSsasIcons}}"  -->
+                                    <Image x:Name="pbiIcon" 
+                                           ap:ImageBindingHelper.SourceResourceKey="{Binding Path=Icon, Converter={StaticResource IconNames}, Mode=OneTime}"
+                                           Margin="0,0,5,0" 
+                                           Width="16" 
+                                           Height="16"/>
+                                   <TextBlock Text="{Binding Name, Mode=OneTime}" />
                                 </StackPanel>
-                        <DataTemplate.Triggers>
-                            <DataTrigger Binding="{Binding Icon}" Value="Loading">
-                                <Setter Property="Visibility" Value="Collapsed" TargetName="Icon"/>
-                                <Setter Property="Visibility" Value="Visible" TargetName="Loading"/>
-                            </DataTrigger>
-                        </DataTemplate.Triggers>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Icon,Mode=OneTime}" Value="Loading">
+                                        <Setter Property="Visibility" Value="Collapsed" TargetName="pbiIcon"/>
+                                        <Setter Property="Visibility" Value="Visible" TargetName="Loading"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -377,14 +378,20 @@
                                  Grid.Column="1"  />
 
                         <Label Content="Locale: " Height="28" HorizontalAlignment="Left"  x:Name="lblLocale" VerticalAlignment="Top"  Grid.Row="5" Grid.Column="0"/>
-                        <ComboBox Height="23" Grid.Column="1" Grid.Row="5" x:Name="cboLocales" 
+                <ComboBox Height="23" Grid.Column="1" Grid.Row="5" x:Name="cboLocales" 
 							VerticalAlignment="Top" 
                             HorizontalAlignment="Stretch"
-                            DisplayMemberPath="DisplayName"
+                            
 							SelectedItem="{Binding Path=Locale}"
-							ItemsSource="{Binding Path=LocaleOptions.Values}"/>
+							ItemsSource="{Binding Path=LocaleOptions.Values, Mode=OneTime}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName,Mode=OneTime}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
-                        <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="6" Grid.Column="0"/>
+                <Label Content="Additional Options: " Height="28" HorizontalAlignment="Left"  x:Name="lblAdditionalOptions" VerticalAlignment="Top"  Grid.Row="6" Grid.Column="0"/>
                         <ScrollViewer Grid.Row="6" Grid.Column="1" Height="85" HorizontalAlignment="Stretch" >
                             <TextBox x:Name="AdditionalOptions" TextWrapping="Wrap" 
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
@@ -396,14 +403,7 @@
                             VerticalAlignment="Top"
                             Margin="0 16 0 0"
                             Grid.ColumnSpan="3" >
-                    <!--
-                            Background="#228ED6"
-                            Foreground="White"
-                            BorderBrush="#2D5E79"
-                            BorderThickness="0 0 0 2"
-                            mah:ControlsHelper.CornerRadius="5" 
-                    -->
-                    <!-- Style="{DynamicResource DaxStudioButtonStyle}" -->
+
                     <Button Content="Connect" 
                             HorizontalAlignment="Right" 
                             x:Name="Connect" 

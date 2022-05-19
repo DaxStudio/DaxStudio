@@ -1186,6 +1186,7 @@ namespace DaxStudio.UI.ViewModels
                 var msg = $"No Databases were found when connecting to {Connection.ServerName} ({Connection.ServerType})"
                 + (Connection.ServerType == ServerType.PowerBIDesktop ? "\nIf your Power BI File is using a Live Connection please connect directly to the source model instead." : "");
                 OutputWarning(msg);
+                this.MetadataPane.IsBusy = false;
             }
         }
 
@@ -1880,6 +1881,9 @@ namespace DaxStudio.UI.ViewModels
 
                 try {
 
+                    // if the user has clicked on the "Run Query Builder" button set the query builder as the QueryProvider
+                    if (message.RunStyle.Icon == RunStyleIcons.RunBuilder) message.QueryProvider = this.QueryBuilder;
+
 
                     // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
                     // see if the query builder is active and try and use that to get the Query text.
@@ -1955,6 +1959,12 @@ namespace DaxStudio.UI.ViewModels
                             return;
                         }
 
+                    }
+
+                    if (message.QueryProvider is QueryBuilderViewModel queryBuilderViewModel && queryBuilderViewModel.Columns.Count == 0)
+                    {
+                        OutputWarning("The QueryBuilder currently contains no items, drag in columns and/or measures from the metadata pane");
+                        return;
                     }
 
                     if (await PreProcessQuery(message.QueryProvider) == DialogResult.Cancel)
@@ -4869,7 +4879,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void GotFocus()
         {
-            System.Diagnostics.Debug.WriteLine("Document.GotFocus");
+            _eventAggregator.PublishOnUIThreadAsync(new SetRunStyleEvent(RunStyleIcons.RunOnly));
         }
     }
 }

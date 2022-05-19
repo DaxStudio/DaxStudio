@@ -315,6 +315,7 @@
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
+    <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />

@@ -235,7 +235,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
-
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
@@ -312,7 +312,7 @@
                         </Grid.RowDefinitions>
 
                             
-                        <TextBlock Text="{Binding Path=SelectedDatabaseObject.Caption, Mode=OneWay}" 
+                        <TextBlock Text="{Binding Path=SelectedDatabaseObject.Caption, Mode=OneTime}" 
                                    Margin="4,0" 
                                    FontWeight="Bold" 
                                    FontSize="14"
@@ -388,7 +388,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="-6 0 0 0">
                         <Image Source="{DynamicResource db_smallDrawingImage}" Width="16" Height="16" Margin="0,1,4,1"></Image>
-                        <TextBlock Text="{Binding Path=Caption}" ></TextBlock>
+                        <TextBlock Text="{Binding Path=Caption, Mode=OneTime}" ></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
@@ -422,7 +422,7 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="-6 0 0 0">
                         <Image Source="{DynamicResource model_smallDrawingImage}" Width="16" Height="16" Margin="0,1,4,1"/>
-                        <TextBlock Text="{Binding Caption}"></TextBlock>
+                        <TextBlock Text="{Binding Caption, Mode=OneTime}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
@@ -957,12 +957,23 @@
                         <Border Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
                             Style="{StaticResource BusyPanel}">
                             <Grid>
+                                <ProgressBar
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    
+                                    Height="60"
+                                    Width="60" />
+                                <!--
                                 <ui:ProgressRing
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
                                     IsActive="{Binding IsBusy}"
                                     Height="60"
                                     Width="60" />
+                                -->
+                                
                                 <!--<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <TextBlock x:Name="BusyMessage"/>

@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
+                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
                     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
                     xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
 
@@ -19,13 +20,13 @@
     <Color x:Key="MutedTextColor">#FF626161</Color>
     <Color x:Key="RunGreen">#FF75A697</Color>
     
-    <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" />
-    <SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>
+    <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" options:Freeze="true"/>
+    <!--<SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>-->
     <SolidColorBrush x:Key="WarningBarBackgroundBrush" Color="{StaticResource WarningBarBackgroundColor}" />
     <SolidColorBrush x:Key="WarningBarBorderBrush" Color="{StaticResource WarningBarBorderColor}" />
     <SolidColorBrush x:Key="WarningBarForeBrush" Color="{StaticResource WarningBarForeColor}" />
     <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
-    <SolidColorBrush x:Key="RunGreenBrush" Color="{StaticResource RunGreen}"/>
+
 
     <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
     <!--<Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">

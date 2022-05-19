@@ -95,7 +95,7 @@
                     <GridViewColumn Header="" Width="Auto">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                    <Image Width="18" Height="18" ap:ImageBindingHelper.SourceResourceKey="{Binding Path=MessageType, Converter={StaticResource IconNames}}"  />
+                                    <Image Width="18" Height="18" ap:ImageBindingHelper.SourceResourceKey="{Binding Path=MessageType, Converter={StaticResource IconNames},Mode=OneTime}"  />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -112,7 +112,7 @@
                             </GridViewColumn.HeaderContainerStyle>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock  ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor}}" Text="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS}}"/>
+                                    <TextBlock  ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}" Text="{Binding Start, Converter={StaticResource DateTimeToHHHMMSS},Mode=OneTime}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         
@@ -138,8 +138,8 @@
                             <DataTemplate>
                                 <Grid HorizontalAlignment="Right">
                                     <TextBlock  HorizontalAlignment="Right" 
-                                            ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor}}"
-                                            Text="{Binding DurationString}" ToolTip="{Binding DurationTooltip}"/>
+                                            ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}"
+                                            Text="{Binding DurationString, Mode=OneTime}" ToolTip="{Binding DurationTooltip, Mode=OneTime}"/>
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -159,10 +159,10 @@
                                     Margin="5,0,2,2"
                                     Padding="0">
                                     <TextBlock TextWrapping="Wrap" 
-                                               ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor}}"
+                                               ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}"
                                                HorizontalAlignment="Stretch" 
                                                TextTrimming="None" 
-                                               Text="{Binding Text}"/>
+                                               Text="{Binding Text, Mode=OneTime}"/>
                                 </Label>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>

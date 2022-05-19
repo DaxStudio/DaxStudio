@@ -206,7 +206,7 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <!--  Following border is required to catch mouse events  -->
-                        <Border x:Name="mouseBorder" Grid.RowSpan="2" Background="{DynamicResource Theme.Brush.Menu.Back}" />
+                        <Border x:Name="mouseBorder" Grid.RowSpan="2" Background="Transparent" />
 						<Grid
 							Margin="1,0"
 							Grid.Row="0"

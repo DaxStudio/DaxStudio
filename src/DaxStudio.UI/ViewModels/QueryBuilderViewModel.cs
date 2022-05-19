@@ -79,7 +79,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void GotFocus()
         {
-            System.Diagnostics.Debug.WriteLine("QueryBuilder.GotFocus");
+            SetRunStyle();
+        }
+
+        private void SetRunStyle()
+        {
+            EventAggregator.PublishOnUIThreadAsync(new SetRunStyleEvent(RunStyleIcons.RunBuilder));
+        }
+
+        private void UnsetRunStyle()
+        {
+            EventAggregator.PublishOnUIThreadAsync(new SetRunStyleEvent(RunStyleIcons.RunOnly));
         }
 
         private void ShowAutoGenerateWarning()
@@ -94,17 +104,27 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnFiltersPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            SetRunStyle();
             AutoGenerateQuery();
         }
 
         private void OnVisibilityChanged(object sender, EventArgs e)
         {
-            if (IsVisible) EventAggregator.SubscribeOnPublishedThread(this);
-            else EventAggregator.Unsubscribe(this);
+            if (IsVisible)
+            {
+                EventAggregator.SubscribeOnPublishedThread(this);
+                SetRunStyle();
+            }
+            else
+            {
+                EventAggregator.Unsubscribe(this);
+                UnsetRunStyle();
+            }
         }
 
         private void OnColumnsPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            SetRunStyle();
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanSendTextToEditor));
             NotifyOfPropertyChange(nameof(CanOrderBy));
@@ -313,6 +333,7 @@ namespace DaxStudio.UI.ViewModels
             Columns.EditMeasure(newMeasure);
             IsEnabled = false;
             //EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(newMeasure));
+            SetRunStyle();
         }
 
         // Finds a unique name for the new measure
@@ -394,6 +415,7 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
             Columns.Add(column.InternalColumn);
+            SetRunStyle();
         }
 
         private void AddColumnToFilters(ITreeviewColumn column)
@@ -408,6 +430,7 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
             Filters.Add(column.InternalColumn);
+            SetRunStyle();
         }
 
         public void Save(string filename)

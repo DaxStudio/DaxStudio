@@ -156,7 +156,7 @@
     <SolidColorBrush x:Key="GrayBrush9" SolidColorBrush.Color="{StaticResource Gray9}" />
     <SolidColorBrush x:Key="GrayBrush10" SolidColorBrush.Color="{StaticResource Gray10}" />
     <SolidColorBrush x:Key="TransparentWhiteBrush" SolidColorBrush.Color="{StaticResource TransparentWhiteColor}" />
-    <SolidColorBrush x:Key="HighTransparentWhiteBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighTransparentWhiteColor}" />
+    <!--<SolidColorBrush x:Key="HighTransparentWhiteBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.HighTransparentWhiteColor}" />-->
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.IdealForegroundColorBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.IdealForegroundColor}" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.IdealForegroundDisabledBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.IdealForegroundColor}" Brush.Opacity="0.4" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.DarkIdealForegroundDisabledBrush" SolidColorBrush.Color="{StaticResource Fluent.Ribbon.Colors.DarkIdealForegroundDisabledColor}" />
@@ -276,4 +276,6 @@
     <SolidColorBrush x:Key="TreeViewItemBackgroundSelectedPointerOver" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
     <SolidColorBrush x:Key="TreeViewItemBorderBrushSelectedPointerOver" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" options:Freeze="True" />
 
+    <!-- sets the mouse over color for the "File" menu -->
+    <SolidColorBrush x:Key="HighTransparentWhiteBrush" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="true"/>
 </ResourceDictionary>

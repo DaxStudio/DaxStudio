@@ -39,6 +39,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<UpdateGlobalOptions>
         , IHandle<UpdateHotkeys>
+        , IHandle<SetRunStyleEvent>
 
         //        , IViewAware
     {
@@ -1206,7 +1207,7 @@ namespace DaxStudio.UI.ViewModels
             get => ActiveDocument?.ShowQueryBuilder??false;
             set {
                 ActiveDocument.ShowQueryBuilder = value;
-                NotifyOfPropertyChange(nameof(DisplayQueryBuilder));
+                NotifyOfPropertyChange();
             }
         }
 
@@ -1260,5 +1261,10 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ShowViewAsDialog();
         }
 
+        public Task HandleAsync(SetRunStyleEvent message, CancellationToken cancellationToken)
+        {
+            SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == message.Icon);
+            return Task.CompletedTask;
+        }
     }
 }

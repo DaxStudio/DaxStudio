@@ -5,7 +5,7 @@
         RunOnly,
         RunBuilder
     }
-    public class RunStyle
+    public class RunStyle : Caliburn.Micro.PropertyChangedBase
     {
         public RunStyle(string name, RunStyleIcons icon, string tooltip)
         {
@@ -22,5 +22,12 @@
         public string ImageResource { get; }
         public string Tooltip { get;  }
         public bool ClearCache { get; set; }
+        private bool _isEnabled = false;
+        public bool IsEnabled { get => _isEnabled; 
+            set { 
+                _isEnabled = value;
+                NotifyOfPropertyChange();    
+            } 
+        } 
     }
 }

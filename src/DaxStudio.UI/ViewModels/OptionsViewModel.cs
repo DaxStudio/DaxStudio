@@ -1787,10 +1787,74 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
+        private bool _benchmarkColdCacheSwitchedOn = true;
+        [Category("Defaults")]
+        [Subcategory("Benchmark")]
+        [DisplayName("Cold Cache Runs Enabled")]
+        [Description("Enables running cold cache queries by default when running a Benchmark")]
+        [DataMember, DefaultValue(true)]
+        public bool BenchmarkColdCacheSwitchedOn { get => _benchmarkColdCacheSwitchedOn; 
+            set {
+                _benchmarkColdCacheSwitchedOn = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(BenchmarkColdCacheSwitchedOn), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            } 
+        }
 
-    #region Export Function Methods
+        private bool _benchmarkWarmCacheSwitchedOn = true;
+        [Category("Defaults")]
+        [Subcategory("Benchmark")]
+        [DisplayName("Warm Cache Runs Enabled")]
+        [Description("Enables running warm cache queries by default when running a Benchmark")]
+        [DataMember, DefaultValue(true)]
+        public bool BenchmarkWarmCacheSwitchedOn { get => _benchmarkWarmCacheSwitchedOn; 
+            set
+            {
+                _benchmarkWarmCacheSwitchedOn = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(BenchmarkWarmCacheSwitchedOn), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            } 
+        }
 
-    public void ExportDaxFunctions()
+        private int _benchmarkColdCacheRuns = 5;
+        [Category("Defaults")]
+        [Subcategory("Benchmark")]
+        [DisplayName("Default Cold Cache Runs")]
+        [Description("Sets the default number of cold cache queries when running a Benchmark")]
+        [DataMember, DefaultValue(5),MinValue(0),MaxValue(100)]
+        public int BenchmarkColdCacheRuns { get => _benchmarkColdCacheRuns;
+            set {
+                _benchmarkColdCacheRuns = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(BenchmarkColdCacheRuns), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                if (value == 0) BenchmarkColdCacheSwitchedOn = false;
+            }
+        }
+
+        private int _benchmarkWarmCacheRuns = 5;
+        [Category("Defaults")]
+        [Subcategory("Benchmark")]
+        [DisplayName("Default Warm Cache Runs")]
+        [Description("Sets the default number of cold cache queries when running a Benchmark")]
+        [DataMember, DefaultValue(5), MinValue(0), MaxValue(100)]
+        public int BenchmarkWarmCacheRuns { get => _benchmarkWarmCacheRuns;
+            set {
+                _benchmarkWarmCacheRuns = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(BenchmarkWarmCacheRuns), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                if (value == 0) BenchmarkWarmCacheSwitchedOn = false;
+            } 
+        }
+
+
+
+        #region Export Function Methods
+
+        public void ExportDaxFunctions()
         {
             _eventAggregator.PublishOnUIThreadAsync(new ExportDaxFunctionsEvent());
         }

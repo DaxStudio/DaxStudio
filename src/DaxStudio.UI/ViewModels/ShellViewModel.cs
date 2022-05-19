@@ -158,6 +158,7 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Process.Start( VersionChecker.DownloadUrl.ToString());
         }
 
+        
         public override async Task TryCloseAsync(bool? dialogResult = null)
         {
             Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Attempting application shutdown");
@@ -170,7 +171,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Application.Current == null) {
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Current Application is null - clearing AutoSave files");
                     AutoSaver.RemoveAll();
-                    return; 
+                    return;
                 }
                 if (!Application.Current.Properties.Contains("HasCrashed"))
                 {

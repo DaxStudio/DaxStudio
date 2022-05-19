@@ -62,8 +62,6 @@
             
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
-            <!--<SolidColorBrush x:Key="BusyBrush" Color="#30000000" />-->
-            <SolidColorBrush x:Key="BusyBrush" Color="#00000000" />
 
             
 
@@ -151,7 +149,6 @@
     -->        
 
         </Grid>
-        <!-- Background="{StaticResource BusyBrush}" -->
         <Border HorizontalAlignment="Stretch" 
                 VerticalAlignment="Stretch" 
                 Grid.RowSpan="3"

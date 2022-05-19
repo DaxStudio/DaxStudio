@@ -296,7 +296,7 @@
                     
                     <!-- FE Controls -->
                     <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" ToolTip="{Binding FETooltip}">
-                        <Ellipse Width="10" Height="10" Fill="{StaticResource FEBrush}" Margin="0,4,5,0"/>
+                        <Ellipse Width="10" Height="10" Fill="{DynamicResource Theme.Brush.Accent2}" Margin="0,4,5,0"/>
                         <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
@@ -321,7 +321,7 @@
                     
                     <!-- Horizontal Bar FE vs SE -->
                     <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{StaticResource FEBrush}">
+                            <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
                             <Rectangle.Width>
                                 <MultiBinding Converter="{StaticResource MultiConverter}">
                                     <Binding Path="FormulaEngineDurationPercentage"/>

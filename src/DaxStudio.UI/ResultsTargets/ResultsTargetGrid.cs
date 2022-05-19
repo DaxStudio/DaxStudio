@@ -14,7 +14,7 @@ namespace DaxStudio.UI.Model
     // This is the default target which writes the results out to
     // the built-in grid
     [Export(typeof(IResultsTarget))]
-    public class ResultsTargetGrid: IResultsTarget 
+    public class ResultsTargetGrid: PropertyChangedBase, IResultsTarget 
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IGlobalOptions _options;

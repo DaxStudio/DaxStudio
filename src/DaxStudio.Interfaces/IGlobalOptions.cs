@@ -15,6 +15,11 @@ namespace DaxStudio.Interfaces
         bool AutoRefreshMetadataCloud { get; set; }
         bool AutoRefreshMetadataLocalMachine { get; set; }
         bool AutoRefreshMetadataLocalNetwork { get; set; }
+
+        bool BenchmarkColdCacheSwitchedOn { get; set; }
+        bool BenchmarkWarmCacheSwitchedOn { get; set; }
+        int BenchmarkColdCacheRuns { get;set; }
+        int BenchmarkWarmCacheRuns { get;set; }
         bool CanPublishDaxFunctions { get; set; }
         int CodeCompletionWindowWidthIncrease { get; set; }
         Version CurrentDownloadVersion { get; set; }

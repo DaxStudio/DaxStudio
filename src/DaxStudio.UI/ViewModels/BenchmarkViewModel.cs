@@ -20,6 +20,7 @@ namespace DaxStudio.UI.ViewModels
     public class BenchmarkViewModel : Screen, IDisposable
         ,IHandle<ServerTimingsEvent>
         ,IHandle<TraceChangedEvent>
+        ,IHandle<UpdateGlobalOptions>
     {
 
         private Stopwatch _stopwatch;
@@ -35,9 +36,10 @@ namespace DaxStudio.UI.ViewModels
             Document = document;
             Ribbon = ribbon;
             Options = options;
-            ColdRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
-            ColdRunStyle.ClearCache = true;
-            WarmRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
+            SetDefaultsFromOptions();
+            
+
+            _currentRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
             TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultsTargetTimer));
             ProgressIcon = FontAwesomeIcon.ClockOutline;
             ProgressSpin = false;
@@ -48,6 +50,14 @@ namespace DaxStudio.UI.ViewModels
             RepeatRunWithoutViewAs = document.IsViewAsActive;
 
             Log.Information(Constants.LogMessageTemplate, nameof(BenchmarkViewModel), "ctor", $"Benchmark Dialog Opened - IsViewAsActive={IsViewAsActive}");
+        }
+
+        private void SetDefaultsFromOptions()
+        {
+            EnableColdCacheExecutions = Options.BenchmarkColdCacheSwitchedOn;
+            EnableWarmCacheExecutions = Options.BenchmarkWarmCacheSwitchedOn;
+            ColdCacheRuns = Options.BenchmarkColdCacheRuns;
+            WarmCacheRuns = Options.BenchmarkWarmCacheRuns;
         }
 
 
@@ -121,20 +131,22 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_currentColdRun < CalculatedColdCacheRuns)
             {
+                // perform a cold cache run
                 _currentColdRun++;
-                _currentRunStyle = ColdRunStyle;
+                _currentRunStyle.ClearCache = true;
             }
             else
             {
+                // perform a warm cache run
                 _currentWarmRun++;
-                _currentRunStyle = WarmRunStyle;
+                _currentRunStyle.ClearCache = false;
             }
 
             RefreshProgress();
 
             if (!_benchmarkingPassComplete)
             {
-                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
+                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle,true));
             }
 
             // if we have completed the runs with ViewAs On
@@ -434,8 +446,6 @@ namespace DaxStudio.UI.ViewModels
         public RibbonViewModel Ribbon { get; }
         public IGlobalOptions Options { get; }
 
-        private readonly RunStyle ColdRunStyle;
-        private readonly RunStyle WarmRunStyle;
         private readonly IResultsTarget TimerRunTarget;
 
         public FontAwesomeIcon ProgressIcon { get => _progressIcon;
@@ -467,8 +477,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool EnableColdCacheExecutions { get; set; }
-        public bool EnableWarmCacheExecutions { get; set; }
+        private bool _enableColdCacheExecutions = true;
+        public bool EnableColdCacheExecutions { get => _enableColdCacheExecutions;
+            set { 
+                _enableColdCacheExecutions = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+
+        private bool _enableWarmCacheExecutions = true;
+        public bool EnableWarmCacheExecutions { get => _enableWarmCacheExecutions;
+            set { 
+                _enableWarmCacheExecutions = value;
+                NotifyOfPropertyChange();
+            }
+        } 
         #endregion
 
         #region IDisposable
@@ -486,7 +509,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
+        {
+            SetDefaultsFromOptions();
+            return Task.CompletedTask;
+        }
+
         #endregion
-        
+
     }
 }

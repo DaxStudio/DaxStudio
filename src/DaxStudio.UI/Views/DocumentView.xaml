@@ -889,14 +889,12 @@
                                                     ></ContentControl>
 
                                     <!-- Floats over the main editor control -->
+                                    <!-- Background="Gray" Opacity=".7"-->
                                     <Border x:Name="borExpressionBackground" 
-                                            Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}"
-                                            
+                                            Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}"                                            
                                             Grid.RowSpan="3"  
                                             Grid.ColumnSpan="2" 
-                                            Background="Gray" Opacity=".7"
                                             Style="{StaticResource FadeInOut}"/>
-
 
                                     <!-- Measure Editor View Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}" -->
                                     <Border x:Name="brdExpressionEditor" 

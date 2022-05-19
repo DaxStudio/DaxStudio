@@ -76,11 +76,12 @@
             </Border>
         </DataTemplate>
         
-            <DataTemplate x:Key="RunStyleTemplate">
+            <DataTemplate x:Key="RunStyleTemplate" >
             <Border
                 BorderThickness="4"
                 BorderBrush="Transparent" 
                 ToolTip="{Binding Tooltip}"
+                IsEnabled="{Binding IsEnabled}"
                 HorizontalAlignment="Left">
                     <Grid Margin="2">
                         <Grid.ColumnDefinitions>
@@ -877,7 +878,7 @@
             <Fluent:RibbonGroupBox Header="Query" 
                                    x:Name="Query" 
                                    Margin="4,0" 
-                                   Icon="{DynamicResource runDrawingIcon}">
+                                   Icon="{DynamicResource runDrawingImage}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
@@ -1287,7 +1288,7 @@
                 <Fluent:Button Name="ImportPowerBIPerfData" 
                                Header="Load Perf Data" 
                                cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
-                               Icon="{DynamicResource RefreshIcon}"
+                               Icon="{DynamicResource load_perf_dataDrawingImage}"
                                LargeIcon="{DynamicResource load_perf_dataDrawingImage}"
                                Margin="4,0"
                                SizeDefinition="Large,Large,Small"

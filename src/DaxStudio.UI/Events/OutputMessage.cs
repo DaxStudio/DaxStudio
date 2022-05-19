@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 
 namespace DaxStudio.UI.Events
 {
