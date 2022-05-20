@@ -583,7 +583,7 @@
         -->
         <avalondock:DockingManager 
             x:Name="Items"
-            Background="{DynamicResource Theme.Brush.StatusBar.Back}"
+            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
             DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
             DocumentsSource="{Binding Items}"
             ActiveContent="{Binding ActiveItem, Mode=TwoWay}"

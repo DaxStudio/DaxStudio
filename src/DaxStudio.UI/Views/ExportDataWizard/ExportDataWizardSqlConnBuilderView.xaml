@@ -84,7 +84,7 @@
             <Separator Grid.Row="6" Grid.ColumnSpan="2"/>
             <Label Content="Schema:" Grid.Row="7" Margin="0, 5"/>
             <TextBox x:Name="Schema" Grid.Row="7" Grid.Column="1" Margin="5,5" Padding="3"/>
-            <CheckBox Content="Truncate tables Before inserting data" IsChecked="{Binding TruncateTables}" Grid.Row="8" Grid.Column="1" Margin="5"/>
+            <CheckBox Content="Recreate tables before inserting data" IsChecked="{Binding TruncateTables}" Grid.Row="8" Grid.Column="1" Margin="5"/>
             <Button Style="{StaticResource LinkButton}" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Right" x:Name="ManualConnectionString" cal:Message.Attach="[Event Click] = [Action ManualConnectionString]" Content="Edit Connection String"></Button>
         </Grid>
         

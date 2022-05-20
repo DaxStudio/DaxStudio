@@ -590,8 +590,11 @@ namespace DaxStudio.UI.ViewModels
                         catch (Exception ex)
                         {
                             _currentTable.Status = ExportStatus.Error;
-                            Log.Error(ex, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), ex.Message);
-                            EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {ex.Message}"));
+                            var innerEx = ex.GetLeafException();
+                            string extraMessage = string.Empty;
+                            Log.Error(innerEx, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), innerEx.Message);
+                            if (!truncateTables) extraMessage = "\nIf you are inserting into an existing table the column names, the order of the column and the datatypes must match with those in the tabular model or you may get strange errors";
+                            EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {innerEx.Message}{extraMessage}"));
                             EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
                         }
 
