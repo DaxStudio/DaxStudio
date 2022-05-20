@@ -30,7 +30,8 @@
         <ListView  x:Name="ExportTypes" 
                    SelectedItem="{Binding SelectedItem}" 
                    Padding="10"
-                   Style="{StaticResource DaxStudioListViewStyle}" >
+                   Style="{StaticResource DaxStudioListViewStyle}" 
+                   >
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="10">
@@ -39,7 +40,8 @@
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
-        </ListView>
+                
+            </ListView>
         </Border>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" >

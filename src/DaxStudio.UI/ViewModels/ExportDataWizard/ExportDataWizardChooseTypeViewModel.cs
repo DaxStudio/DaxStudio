@@ -23,6 +23,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Set(ref _selectedItem, value);
                 NotifyOfPropertyChange(nameof(CanNext));
+                Next(); // move to the next page
             }
         }
 
