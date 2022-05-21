@@ -52,7 +52,7 @@ VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppURL}
 
-SetupIconFile=DaxStudio2.ico
+SetupIconFile=DaxStudio.ico
 WizardImageFile=WizardImageFile.bmp
 WizardSmallImageFile=WizardSmallImageFile.bmp
 
