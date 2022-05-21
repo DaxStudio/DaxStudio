@@ -158,8 +158,10 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Process.Start( VersionChecker.DownloadUrl.ToString());
         }
 
-        
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public override async Task TryCloseAsync(bool? dialogResult = null)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Attempting application shutdown");
             //await base.TryCloseAsync(dialogResult);
