@@ -75,7 +75,7 @@ namespace DaxStudio.UI.ViewModels
                 ProgressSpin = true;
                 ProgressMessage = "Starting Server Timings trace...";
                 ProgressColor = "RoyalBlue";
-
+                _currentResultsTarget = this.Ribbon.SelectedTarget.Icon;
                 SetSelectedOutputTarget(OutputTarget.Timer);
 
                 // clear out any existing benchmark tables
@@ -146,7 +146,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (!_benchmarkingPassComplete)
             {
-                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle,true));
+                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
             }
 
             // if we have completed the runs with ViewAs On
@@ -170,6 +170,7 @@ namespace DaxStudio.UI.ViewModels
                 && _currentWarmRun == CalculatedWarmCacheRuns) 
             {
                 _benchmarkingPassComplete = true;
+                SetSelectedOutputTarget(_currentResultsTarget);
             }
             
         }
@@ -428,6 +429,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
             }
         }
+
+        private OutputTarget _currentResultsTarget;
 
         public bool IsViewAsActive { get; }
 
