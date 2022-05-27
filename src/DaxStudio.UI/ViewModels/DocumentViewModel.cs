@@ -1318,6 +1318,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get => _queryRunning;
             set {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(IsQueryRunning), value);
                 _queryRunning = value;
                 NotifyOfPropertyChange(() => IsQueryRunning);
                 NotifyOfPropertyChange(() => CanRunQuery);
@@ -3311,9 +3312,14 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                if (IsQueryRunning) {
+                    OutputWarning("You cannot clear the cache while a query is running");
+                    return; 
+                }
+                IsQueryRunning = true;
                 var sw = Stopwatch.StartNew();
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
-
+                
                 Connection.ClearCache();
                 OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
 
@@ -3342,6 +3348,11 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ClearDatabaseCacheAsync), ex.Message);
                 OutputError(ex.Message);
             }
+            finally
+            {
+                IsQueryRunning = false;
+            }
+
         }
         public async Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {
