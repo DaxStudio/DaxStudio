@@ -91,7 +91,8 @@
                 <StackPanel Grid.Row="7" Grid.ColumnSpan="3" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="0 8">
                         <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
-                                     Visibility="{Binding ProgressSpin, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                     Visibility="{Binding ProgressSpin, Converter={StaticResource BoolToVisibilityConverter}}"
+                                     Margin="0 0 8 0"/>
                         <!--<fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />-->
                         <TextBlock x:Name="ProgressMessage" Text="Ready..." 
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"
