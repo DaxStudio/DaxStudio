@@ -75,7 +75,18 @@
                 <DataGridTextColumn Header="Line" Width="40" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Records" IsReadOnly="True" Width="70" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
-                                    IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
+                                    IsReadOnly="True" Binding="{Binding IndentedOperation}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightRow}" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}">
