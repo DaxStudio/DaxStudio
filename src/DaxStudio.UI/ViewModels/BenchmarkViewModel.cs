@@ -346,7 +346,7 @@ namespace DaxStudio.UI.ViewModels
             // TODO - catch servertimings from query 
             AddTimingsToDetailsTable(_sequence, _currentRunStyle, message);
 
-            System.Diagnostics.Debug.WriteLine($"TimingEvent Recieved: {message.TotalDuration}ms");
+            System.Diagnostics.Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");
 
 
             if (_viewAsRuns + _currentColdRun + _currentWarmRun < _totalRuns)

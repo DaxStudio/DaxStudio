@@ -1673,16 +1673,16 @@
       <Version>27.2.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.2.4</Version>
+      <Version>1.2.5-preview3</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.2.4</Version>
+      <Version>1.2.5-preview3</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.2.4</Version>
+      <Version>1.2.5-preview3</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.2.4</Version>
+      <Version>1.2.5-preview3</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.70.1</Version>

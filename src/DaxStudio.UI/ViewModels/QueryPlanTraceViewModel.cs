@@ -24,6 +24,7 @@ namespace DaxStudio.UI.ViewModels
         public string IndentedOperation { get;  set; }
         public int Level { get;  set; }
         public int RowNumber { get;  set; }
+        public bool HighlightRow { get; set; }
 
         private const int SPACE_PER_LEVEL = 4;
         public virtual void PrepareQueryPlanRow(string line, int rowNumber) {
@@ -60,11 +61,19 @@ namespace DaxStudio.UI.ViewModels
         private const string searchRecords = RecordsPrefix + @"([0-9]*)";
         static Regex recordsRegex = new Regex(searchRecords,RegexOptions.Compiled);
 
+        private const string CachePrefix = @"Cache:";
+        static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
+
         public override void PrepareQueryPlanRow(string line, int rowNumber) { 
             base.PrepareQueryPlanRow(line, rowNumber);
             var matchRecords = recordsRegex.Match(line);
             if (matchRecords.Success) {
                 Records = int.Parse(matchRecords.Value.Substring(RecordsPrefix.Length));
+            }
+            var cacheRecords = cacheRegex.Match(line);
+            if (cacheRecords.Success)
+            {
+                HighlightRow = true;
             }
         }
     }

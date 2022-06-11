@@ -203,3 +203,5 @@ github.env
 docs/.jekyll-metadata
 *.GeneratedMSBuildEditorConfig.editorconfig
 **/[Rr]esources/[Bb]uild[Dd]ate.txt
+*.binlog
+

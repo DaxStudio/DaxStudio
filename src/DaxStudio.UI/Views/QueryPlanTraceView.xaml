@@ -132,7 +132,7 @@
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
                   HeadersVisibility="Column"
-                  FrozenColumnCount="1"
+                  FrozenColumnCount="2"
                   ClipboardCopyMode="IncludeHeader"
                   GridLinesVisibility="None" 
                   CanUserAddRows="False"
@@ -150,7 +150,7 @@
             </DataGrid.Resources>-->
 
 
-                <!--<DataGrid.CellStyle>
+            <!--<DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
@@ -169,17 +169,29 @@
                     </Setter>
                 </Style>
             </DataGrid.CellStyle>-->
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
-                                    IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
-                </DataGrid.Columns>
-                <!--<DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
-                    <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
-                </Style>
-            </DataGrid.RowStyle>-->
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
+                                    IsReadOnly="True" Binding="{Binding IndentedOperation}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightRow}" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                
+            </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}"  BasedOn="{StaticResource DefaultDataGridRowStyle}">
+                        <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
+                    </Style>
+                </DataGrid.RowStyle>
+                
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Command="Copy">

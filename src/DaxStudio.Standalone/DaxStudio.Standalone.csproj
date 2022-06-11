@@ -357,9 +357,9 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="AfterBuild">
-    <TransformXml Source="@(AppConfigWithTargetPath)" Transform="$(ProjectConfigTransformFileName)" Destination="@(AppConfigWithTargetPath->'$(OutDir)%(TargetPath)')" />
-    <!--    <Move SourceFiles="$(MSBuildProjectDirectory)\..\..\Release\bin\DaxStudio.exe" DestinationFolder="$(MSBuildProjectDirectory)\Release"/>
+	<Target Name="AfterBuild">
+		<!-- <TransformXml Source="@(AppConfigWithTargetPath)" Transform="$(ProjectConfigTransformFileName)" Destination="@(AppConfigWithTargetPath->'$(OutDir)%(TargetPath)')" /> -->
+		<!--    <Move SourceFiles="$(MSBuildProjectDirectory)\..\..\Release\bin\DaxStudio.exe" DestinationFolder="$(MSBuildProjectDirectory)\Release"/>
     <Move SourceFiles="$(MSBuildProjectDirectory)\..\..\Release\bin\DaxStudio.exe.config" DestinationFolder="$(MSBuildProjectDirectory)\Release"/>-->
-  </Target>
+	</Target>
 </Project>
