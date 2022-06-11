@@ -38,6 +38,7 @@ namespace DaxStudio.UI.Theme
             SetAccent(AccentColor);
 
             //ControlzEx.Theming.ThemeManager.Current.ChangeThemeBaseColor(Application.Current, themeName);
+            
 
         }
 

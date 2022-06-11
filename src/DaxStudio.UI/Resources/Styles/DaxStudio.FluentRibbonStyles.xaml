@@ -13,6 +13,7 @@
         <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/RibbonTabControl.xaml"/>-->
     </ResourceDictionary.MergedDictionaries>
 
+    <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonDisplayOptions"  Drawing="{DynamicResource expandDrawingGroup}" />
     <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonCollapse"  Drawing="{DynamicResource collapseDrawingGroup}" />
     <DrawingImage x:Key="Fluent.Ribbon.Images.RibbonExpand"  Drawing="{DynamicResource expandDrawingGroup}" />
 

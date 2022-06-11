@@ -557,6 +557,7 @@
                    CanCustomizeQuickAccessToolBarItems="False"
                    IsQuickAccessToolBarMenuDropDownVisible="False"
                    CanMinimize="True"
+                   CanUseSimplified="True"
          >    
         <Fluent:Ribbon.Resources>
 
@@ -631,7 +632,7 @@
                                Icon="{DynamicResource file_themeDrawingImage}" 
                                Name="qatChangeTheme" 
                                Click="ChangeTheme_Click" 
-                               ToolTip="Save the current query window"
+                               ToolTip="Change the application theme"
                                IsEnabled="{Binding CanSave}" />
             </Fluent:QuickAccessMenuItem>
 
