@@ -170,6 +170,7 @@ namespace DaxStudio.UI.ViewModels
                 Ribbon.OnClose();
                 _notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
+                ThemeManager.Dispose();
                 if (Application.Current == null) {
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Current Application is null - clearing AutoSave files");
                     AutoSaver.RemoveAll();

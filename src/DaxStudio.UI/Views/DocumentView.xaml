@@ -44,8 +44,7 @@
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
-
-
+            <conv:StringPercentToDoubleConverter x:Key="StringPercentToDoubleConverter"/>
 
             <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
                 <!--<ColorAnimation Duration="0:0:0.5"
@@ -886,7 +885,15 @@
                                                     Grid.ColumnSpan="2"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Top"
-                                                    ></ContentControl>
+                                                    Margin="10 10"
+                                                    >
+                                        <ContentControl.LayoutTransform>
+                                            <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 
+                                                            ScaleY="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}">
+                                                
+                                            </ScaleTransform>
+                                        </ContentControl.LayoutTransform>
+                                    </ContentControl>
 
                                     <!-- Floats over the main editor control -->
                                     <!-- Background="Gray" Opacity=".7"-->

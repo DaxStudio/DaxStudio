@@ -309,6 +309,7 @@
     <Compile Include="Converters\NotZeroConverter.cs" />
     <Compile Include="Converters\OutputTargetImageResourceConverter.cs" />
     <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
+    <Compile Include="Converters\StringPercentToDoubleConverter.cs" />
     <Compile Include="Converters\TableImageConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\EditorHotkeyEvent.cs" />

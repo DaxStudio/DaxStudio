@@ -116,9 +116,6 @@ namespace DaxStudio.UI
                 _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
 
-
-
-
                 batch.AddExportedValue<IWindowManager>(new WindowManager());
                 batch.AddExportedValue<IEventAggregator>(new EventAggregator());
                 batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
@@ -148,7 +145,6 @@ namespace DaxStudio.UI
                 // Enable Caliburn.Micro debug logging
                 //LogManager.GetLog = type => new DebugLogger(type);
 
-                //AddMahAppsMetroToApplicationResources();
                 AddModernWpfUiToApplicationResources();
                 
                 AddDaxStudioDefaultStyles();

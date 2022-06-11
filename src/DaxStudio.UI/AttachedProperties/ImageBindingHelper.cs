@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -67,6 +63,7 @@ namespace DaxStudio.UI.AttachedProperties
             }
         }
 
+        #region FluentDropDownButton
         public static readonly DependencyProperty IconResourceKeyProperty = DependencyProperty.RegisterAttached("IconResourceKey",
             typeof(object),
             typeof(ImageBindingHelper),
@@ -95,8 +92,9 @@ namespace DaxStudio.UI.AttachedProperties
             }
 
         }
+        #endregion
 
-
+        #region ToggleButton
         public static readonly DependencyProperty ToggleIconResourceKeyProperty = DependencyProperty.RegisterAttached("ToggleIconResourceKey",
             typeof(object),
             typeof(ImageBindingHelper),
@@ -124,5 +122,39 @@ namespace DaxStudio.UI.AttachedProperties
             }
 
         }
+        #endregion
+
+        #region FluentButton
+        public static readonly DependencyProperty ButtonIconResourceKeyProperty = DependencyProperty.RegisterAttached("ButtonIconResourceKey",
+            typeof(object),
+            typeof(ImageBindingHelper),
+            new PropertyMetadata(String.Empty, ButtonIconResourceKeyChanged));
+
+        public static void SetButtonIconResourceKey(Fluent.Button element, object value)
+        {
+
+            element.SetValue(IconResourceKeyProperty, value);
+        }
+
+        public static object GetButtonIconResourceKey(Fluent.DropDownButton element)
+        {
+
+            return element.GetValue(IconResourceKeyProperty);
+        }
+
+        private static void ButtonIconResourceKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+
+            var button = d as Fluent.Button;
+            if (button != null)
+            {
+                button.SetResourceReference(Fluent.Button.IconProperty, e.NewValue);
+                button.SetResourceReference(Fluent.Button.LargeIconProperty, e.NewValue);
+            }
+
+        }
+
+
+        #endregion
     }
 }

@@ -1,6 +1,8 @@
-﻿namespace DaxStudio.Interfaces
+﻿using System;
+
+namespace DaxStudio.Interfaces
 {
-    public interface IThemeManager
+    public interface IThemeManager: IDisposable
     {
         string CurrentTheme { get; }
 

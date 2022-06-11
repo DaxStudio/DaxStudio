@@ -629,11 +629,11 @@
 
             <Fluent:QuickAccessMenuItem IsChecked="True">
                 <Fluent:Button Header="Change Theme" 
-                               Icon="{DynamicResource file_themeDrawingImage}" 
+                               ap:ImageBindingHelper.ButtonIconResourceKey="{Binding Path=ThemeImageResource}" 
                                Name="qatChangeTheme" 
                                Click="ChangeTheme_Click" 
                                ToolTip="Change the application theme"
-                               IsEnabled="{Binding CanSave}" />
+                                />
             </Fluent:QuickAccessMenuItem>
 
         </Fluent:Ribbon.QuickAccessItems>
@@ -1402,6 +1402,7 @@
                                    Icon="{DynamicResource export_dataDrawingImage}"
                                    LargeIcon="{DynamicResource export_dataDrawingImage}"
                                    Margin="4,0"
+                                
                                    SizeDefinition="Large,Large,Small">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip Title="Export Data"
@@ -1413,10 +1414,11 @@
             </Fluent:RibbonGroupBox>
 
             <Fluent:RibbonGroupBox Header="Security">
-                <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" Width="48"
+                <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" MinWidth="48"
                                cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]"
                                Icon="{DynamicResource view_asDrawingImage}"
-                               LargeIcon="{DynamicResource view_asDrawingImage}">
+                               LargeIcon="{DynamicResource view_asDrawingImage}"
+                               SizeDefinition="Large,Large,Small">
 
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>

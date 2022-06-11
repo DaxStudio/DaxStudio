@@ -27,7 +27,7 @@
           attachedProperties:VisibilityAnimation.AnimationType="Fade">
 
         <!-- Help Watermark -->
-        <TextBlock  FontFamily="Courier New"  Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="10 10">Enter your DAX query here...</TextBlock>
+        <TextBlock  FontFamily="Courier New"  Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="0">Enter your DAX query here...</TextBlock>
           
     </Grid>
 </UserControl>

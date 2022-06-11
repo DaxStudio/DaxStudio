@@ -66,11 +66,18 @@ namespace DaxStudio.UI.ViewModels
                 case "Light": 
                     Theme = "Dark";
                     break;
+                case "Dark":
+                    Theme = "Auto";
+                    break;
                 default: 
                     Theme = "Light";
                     break;
             }
         }
+
+        public string ThemeImageResource => Theme == "Auto"? "file_auto_themeDrawingImage":"file_themeDrawingImage";
+
+
 
         private const string urlGithubDiscussions = @"https://github.com/DaxStudio/DaxStudio/discussions";
         private ISettingProvider SettingProvider;
@@ -1124,6 +1131,7 @@ namespace DaxStudio.UI.ViewModels
                     Options.Theme = _theme;
                     _eventAggregator.PublishOnUIThreadAsync(new ChangeThemeEvent(_theme));
                     NotifyOfPropertyChange(() => Theme);
+                    NotifyOfPropertyChange(() => ThemeImageResource);
                 }
             }
         }
