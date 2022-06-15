@@ -43,14 +43,23 @@
             <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}" >
                 <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
                 <Setter Property="Margin" Value="0 0 0 0"/>
-                <Setter Property="Padding" Value="0 0 3 0" />
+                <Setter Property="Padding" Value="0 3 3 0" />
                 <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            </Style>
+            <Style x:Key="TextCenteredBlockStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="TextAlignment" Value="Center"/>
             </Style>
             <Style x:Key="NumTextBlockStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
             <Style x:Key="TextBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+                <Setter Property="Padding" Value="0 0 3 0" />
                 <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+            <Style x:Key="TextCenteredBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockBoldStyle}">
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="TextAlignment" Value="Center"/>
             </Style>
             <Style x:Key="NumBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockBoldStyle}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -166,13 +175,14 @@
                                                             <StackPanel Orientation="Horizontal" >
                                                                 <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colColumn, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRows}" Style="{StaticResource NumBlockBoldStyle}"/>
+<!--  Remove column Total Size
                                                                 <TextBlock Text="{Binding Name.TableSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colTableSize}" Style="{StaticResource NumBlockBoldStyle}"/>
-
-                                                                <TextBlock Text="{Binding Name.TotalSize, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colColumns}"/>
+-->
+                                                                <TextBlock Text="{Binding Name.TableSize, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colColumns}"/>
                                                                 <TextBlock Text="{Binding Name.DataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colData}"/>
                                                                 <TextBlock Text="{Binding Name.DictionarySize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colDictionary}" />
                                                                 <TextBlock Text="{Binding Name.HierarchiesSize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colHierarchies}" />
-                                                                <TextBlock Text="{Binding Name.ColumnsEncoding,StringFormat=N0}" Style="{StaticResource TextBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colEncoding}" />
+                                                                <TextBlock Text="{Binding Name.ColumnsEncoding}" Style="{StaticResource TextCenteredBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colEncoding}" />
                                                                 <TextBlock Text="{Binding Name.ColumnsTypeName,StringFormat=N0}" Style="{StaticResource TextBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colDataType}" />
                                                                 <TextBlock Text="{Binding Name.ReferentialIntegrityViolationCount,StringFormat={}{0:#;#;-}}" Style="{StaticResource RIBlockBoldStyle}"  Width="{Binding ActualWidth, ElementName=colReferentialIntegrityViolationCount}" />
 
@@ -205,16 +215,16 @@
                         </DataGrid.GroupStyle>
 
                         <DataGrid.Columns>
-                            <!--<DataGridTextColumn Binding="{Binding ColumnName}" Header="Name" x:Name="colColumn" MinWidth="200" />-->
+                            <!--<DataGridTextColumn Binding="{Binding ColumnName}" Header="Name" x:Name="colColumn" MinWidth="120" />-->
                             <DataGridTemplateColumn  x:Name="colColumn" 
-                                                     MinWidth="200" 
+                                                     MinWidth="120" 
                                                      Header="Name"
                                                      SortMemberPath="ColumnName" 
                                                      ClipboardContentBinding="{Binding TableColumnName}">
 
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding ColumnName}" Padding="25,0,0,0" Style="{StaticResource TextBlockStyle}"/>
+                                        <TextBlock Text="{Binding ColumnName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -246,6 +256,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <!-- CellTemplate="{StaticResource DashTemplate}" -->
+<!-- Remove column total size
                             <DataGridTemplateColumn  x:Name="colTableSize"   MinWidth="65" 
                                                      Header="Table Size"
                                                      SortMemberPath="TableSize" Width="90" ClipboardContentBinding="{Binding TableSize}">
@@ -262,14 +273,14 @@
                                 </DataGridTemplateColumn.CellTemplate>
 
                             </DataGridTemplateColumn>
-
+-->
                             <DataGridTemplateColumn x:Name="colColumns"  
-                                                    Header="Col Size"
+                                                    Header="Total Size"
                                                     ClipboardContentBinding="{Binding TotalSize}"
                                                     SortMemberPath="TotalSize" 
                                                     MinWidth="{Binding DesiredSize.Width, ElementName=hdrColumns, Converter={StaticResource DataBindingDebugConverter}}" 
                                                     SortDirection="Descending" 
-                                                    Width="90" >
+                                                    Width="96" >
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -329,7 +340,7 @@
                                                 x:Name="colEncoding" 
                                                 Header="Encoding"
                                                 Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                                                ElementStyle="{StaticResource TextBlockStyle}">
+                                                ElementStyle="{StaticResource TextCenteredBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -524,7 +535,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding TableColumnName}" 
                                                 Header="Table-Column"
-                                                MinWidth="200">
+                                                MinWidth="160">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableColumn, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -633,7 +644,7 @@
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
-                            <DataGridTextColumn Binding="{Binding Encoding}" Header="Encoding">
+                            <DataGridTextColumn Binding="{Binding Encoding}" Header="Encoding" ElementStyle="{StaticResource TextCenteredBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader"  BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.Encoding, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -746,7 +757,7 @@
                                                     <Expander IsExpanded="{Binding Name.IsExpanded}" Style="{StaticResource ArrowGroupExpander}">
                                                         <Expander.Header>
 
-                                                            <StackPanel Orientation="Horizontal" >
+                                                            <StackPanel Orientation="Horizontal">
                                                                 <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colRelName, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelSize}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RelationshipMaxFromCardinality, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRelFromCardinality}" Style="{StaticResource NumBlockBoldStyle}"/>
@@ -780,7 +791,7 @@
 
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding RelationshipFromToName}" Padding="25,0,0,0" Style="{StaticResource TextBlockStyle}"/>
+                                        <TextBlock Text="{Binding RelationshipFromToName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -945,7 +956,7 @@
                                                     ClipboardContentBinding="{Binding TableAndPartitionName}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding PartitionName}" Padding="25,0,0,0" Style="{StaticResource TextBlockStyle}"/>
+                                        <TextBlock Text="{Binding PartitionName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

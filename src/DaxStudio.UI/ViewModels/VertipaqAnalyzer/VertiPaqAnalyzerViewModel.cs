@@ -87,7 +87,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_groupedColumns == null && ViewModel != null)
                 {
-                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table )).SelectMany(t => t.Columns);
+                    // Skip the special column "RowNumber-GUID" that is not relevant for the analysis
+                    const string ROWNUMBER_COLUMNNAME = "RowNumber-";
+
+                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table )).SelectMany(t => t.Columns.Where(c => !c.ColumnName.StartsWith(ROWNUMBER_COLUMNNAME)));
                     _groupedColumns = CollectionViewSource.GetDefaultView(cols);
                     _groupedColumns.GroupDescriptions.Add(new TableGroupDescription("Table"));
                     // sort by TableSize then by TotalSize
