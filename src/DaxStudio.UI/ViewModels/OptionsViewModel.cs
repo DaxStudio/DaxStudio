@@ -1314,8 +1314,8 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
-        private string _theme = "Light";
-        [DataMember, DefaultValue("Light")]
+        private string _theme = "Auto";
+        [DataMember, DefaultValue("Auto")]
         public string Theme
         {
             get => _theme;
@@ -1329,6 +1329,18 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
+
+        private string _autoTheme = "Light";
+        public string AutoTheme { 
+            get {
+                return Theme == "Auto" ? _autoTheme : Theme;
+            } 
+            set
+            {
+                _autoTheme = value;
+            }
+        }
+
 
         private bool _resultAutoFormat;
         [Category("Results")]
@@ -1778,12 +1790,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public LogEventLevel TemporaryLoggingLevel { get; set; }
 
         private Serilog.Core.LoggingLevelSwitch _loggingLevelSwitch;
         public Serilog.Core.LoggingLevelSwitch LoggingLevelSwitch { get => _loggingLevelSwitch;
             set {
                 _loggingLevelSwitch = value;
-                _loggingLevelSwitch.MinimumLevel = _loggingLevel;
+                //_loggingLevelSwitch.MinimumLevel = TemporaryLoggingLevel > LoggingLevel ? TemporaryLoggingLevel : LoggingLevel;
             } 
         }
 

@@ -67,6 +67,7 @@ namespace DaxStudio.Interfaces
         bool SkipSpaceAfterFunctionName { get; set; }
         bool SortFoldersFirstInMetadata { get; set; }
         string Theme { get; set; }
+        string AutoTheme { get; set; }
         int TraceStartupTimeout { get; set; }
         string WindowPosition { get; set; }
 
@@ -142,6 +143,7 @@ namespace DaxStudio.Interfaces
         void PlayLongOperationSound(int currentOperationSeconds);
 
         LogEventLevel LoggingLevel { get; set; }
+        LogEventLevel TemporaryLoggingLevel { get; set; }
         LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
         [JsonIgnore] bool GettingStartedShown { get; set; }
