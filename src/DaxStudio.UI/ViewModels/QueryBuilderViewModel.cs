@@ -65,6 +65,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _autoGenerate;
+        [DataMember]
         public bool AutoGenerate { get=> _autoGenerate;
             set {
                 _autoGenerate = value;
@@ -494,7 +495,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 this.Filters.Add(filter);
             }
-
+            this.AutoGenerate = model.AutoGenerate;
             this.IsVisible = true;
         }
 
