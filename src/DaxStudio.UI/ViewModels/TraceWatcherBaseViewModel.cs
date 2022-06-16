@@ -212,10 +212,19 @@ namespace DaxStudio.UI.ViewModels
             get => !IsChecked;
             set
             {
-                IsChecked = !value;
+                if (IsPaused)
+                {
+                    _isChecked = false;
+                    _isPaused = false;
+                }
+                else
+                {
+                    _isChecked = !value;
+                }
                 NotifyOfPropertyChange(nameof(IsChecked));
                 NotifyOfPropertyChange(nameof(IsPaused));
                 NotifyOfPropertyChange(nameof(IsStopped));
+                NotifyOfPropertyChange(nameof(IsTraceRunning));
                 NotifyOfPropertyChange(nameof(IsRecording));
             }
         }
@@ -316,8 +325,8 @@ namespace DaxStudio.UI.ViewModels
         public void Stop()
         {
             IsBusy = false;
-            IsPaused = false;
             IsChecked = false;
+            IsPaused = false;
         }
 
         public bool IsPaused
@@ -325,7 +334,9 @@ namespace DaxStudio.UI.ViewModels
             get { return _isPaused; }
             set
             {
+                _isChecked = !value;
                 _isPaused = value;
+                NotifyOfPropertyChange(() => IsRecording);
                 NotifyOfPropertyChange(() => IsTraceRunning);
                 NotifyOfPropertyChange(() => IsPaused);
                 NotifyOfPropertyChange(() => CanPause);

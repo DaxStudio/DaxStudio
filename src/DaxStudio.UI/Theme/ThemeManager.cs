@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Serilog;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.Theme
 {
@@ -36,17 +37,21 @@ namespace DaxStudio.UI.Theme
 
             CurrentTheme = themeName;
             var windowsTheme = ThemeIsLight() ? "Light" : "Dark";
+            Options.AutoTheme = windowsTheme;
             var actualTheme = themeName=="Auto"?windowsTheme: themeName;
             //ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
 
             var theme = ModernWpf.ApplicationTheme.Light;
             Enum.TryParse(actualTheme, false, out theme);
+
+            // exit here if the new theme is the same as the current theme 
+            if (ModernWpf.ThemeManager.Current.ApplicationTheme == theme) return;
+
             ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
             SetAccent(AccentColor);
 
             //ControlzEx.Theming.ThemeManager.Current.ChangeThemeBaseColor(Application.Current, themeName);
             
-
         }
 
         private void SetAccent(Color accentColor)
@@ -76,14 +81,13 @@ namespace DaxStudio.UI.Theme
 
         private readonly Application _app;
 
-
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             switch (e.Category)
             {
                 case UserPreferenceCategory.General:
-                    // TODO: if options.theme is auto then set theme
-                    SetTheme("Auto");
+                    // update the theme to match the windows theme
+                    if (Options.Theme == "Auto") SetTheme("Auto");
                     break;
             }
         }

@@ -91,7 +91,7 @@ namespace DaxStudio.UI.JsonConverters
 
             }
 
-
+            vm.AutoGenerate = jo.SelectToken("AutoGenerate")?.Value<bool>() ?? false;
             // Return the result
             return vm;
         }

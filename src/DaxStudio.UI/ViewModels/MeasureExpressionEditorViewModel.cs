@@ -95,7 +95,7 @@ namespace DaxStudio.UI.ViewModels
 
             // TODO - if theme is dark increase brightness of syntax highlights
             //_editor.ChangeColorBrightness(1.25);
-            _editor.SetSyntaxHighlightColorTheme(Options.Theme);
+            _editor.SetSyntaxHighlightColorTheme(Options.AutoTheme);
 
             IntellisenseProvider.Editor = _editor;
             UpdateSettings();
