@@ -110,6 +110,7 @@ namespace DaxStudio.Interfaces
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
         bool VpaxReadStatisticsFromData { get; set; }
+        bool VpaxReadStatisticsFromDirectQuery { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
         bool ShowDebugCommas { get; set; }

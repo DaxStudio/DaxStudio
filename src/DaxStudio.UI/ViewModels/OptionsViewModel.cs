@@ -505,8 +505,23 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(VpaxReadStatisticsFromData), value, _isInitializing, this);
             }
-
         }
+
+        private bool _vpaxReadStatisticsFromDirectQuery = false;
+        [DataMember, DefaultValue(false)]
+        public bool VpaxReadStatisticsFromDirectQuery
+        {
+            get => _vpaxReadStatisticsFromDirectQuery;
+            set
+            {
+                if (_vpaxReadStatisticsFromDirectQuery == value) return;
+                _vpaxReadStatisticsFromDirectQuery = value;
+                NotifyOfPropertyChange(() => VpaxReadStatisticsFromDirectQuery);
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(VpaxReadStatisticsFromDirectQuery), value, _isInitializing, this);
+            }
+        }
+
 
         private int _vpaxSampleReferentialIntegrityViolations = 3;
         [DataMember, DefaultValue(3)]
