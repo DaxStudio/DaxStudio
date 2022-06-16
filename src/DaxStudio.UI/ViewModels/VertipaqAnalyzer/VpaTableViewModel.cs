@@ -90,7 +90,10 @@ namespace DaxStudio.UI.ViewModels
 
         public string TableName => _table.TableName;
         public long TableSize => _table.TableSize;
-        public string ColumnsEncoding => _table.ColumnsEncoding;
+        public string ColumnsEncoding => 
+            (_table.HasDualPartitions == true) ? "Dual" : 
+            (_table.HasDirectQueryPartitions == true) ? "DQ" : 
+            _table.ColumnsEncoding;
         public string ColumnsTypeName => "-";
         public double PercentageDatabase => _table.PercentageDatabase;
 
