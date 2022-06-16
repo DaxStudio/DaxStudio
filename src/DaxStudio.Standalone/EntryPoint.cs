@@ -97,7 +97,8 @@ namespace DaxStudio.Standalone
             _options.LoggingLevelSwitch = levelSwitch;
             Log.Information("User Options initialized");
 
-            UpdateLoggingLevelFromOptions(_options, ref levelSwitch);
+            // if the cmdline or hotkey have not been set then read the log level from the options
+            if (!App.Args().LoggingEnabled) UpdateLoggingLevelFromOptions(_options, ref levelSwitch);
 
             // check if we are running portable that we have write access to the settings
             if (_options.IsRunningPortable)
@@ -140,7 +141,8 @@ namespace DaxStudio.Standalone
                 bootstrapper.DisplayShell();
                 App.Run();
             }
-            
+
+            levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
             Log.Information("============ DaxStudio Shutdown =============");
             Log.CloseAndFlush();
             
@@ -310,7 +312,7 @@ namespace DaxStudio.Standalone
 
                 Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
                 Log.CloseAndFlush();
-                if (Application.Current.Dispatcher.CheckAccess())
+                if ((Application.Current?.Dispatcher?.CheckAccess()??false) == true)
                 {
                     CrashReporter.ReportCrash(ex, msg);
                 }

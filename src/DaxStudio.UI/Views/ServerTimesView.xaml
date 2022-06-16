@@ -161,14 +161,16 @@
                         <TextBlock>Clear</TextBlock>
                     </StackPanel>
                 </Button>
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}">
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action Copy]">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource copy_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Copy</TextBlock>
                     </StackPanel>
                 </Button>
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}">
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action Export]">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource save_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
