@@ -3229,7 +3229,14 @@ namespace DaxStudio.UI.ViewModels
                     message.PowerBIFileName = String.Empty;
                     return;
                 }
-                var port = int.Parse(serverParts[1]);
+                int.TryParse(serverParts[1], out var port);
+                if (port == 0)
+                {
+                    // if the portion of the server name after the colon is not an integer
+                    // then we are probably connected to a https:// or powerbi:// endpoint
+                    message.PowerBIFileName = String.Empty;
+                    return;
+                }
                 var instances = PowerBIHelper.GetLocalInstances(false);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
                 message.PowerBIFileName = selectedInstance.Name;
