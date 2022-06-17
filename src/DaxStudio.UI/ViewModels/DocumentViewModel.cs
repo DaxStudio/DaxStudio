@@ -4274,6 +4274,7 @@ namespace DaxStudio.UI.ViewModels
                     || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
 
                 bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+                bool readStatisticsFromDirectQuery = Options.VpaxReadStatisticsFromDirectQuery && (!isLegacySsas);
 
                 VpaModel viewModel = null;
 
@@ -4288,7 +4289,8 @@ namespace DaxStudio.UI.ViewModels
                             Connection.ServerName, Connection.SelectedDatabaseName, 
                             "DaxStudio", version.ToString(), 
                             readStatisticsFromData: readStatisticsFromData, 
-                            sampleRows: Options.VpaxSampleReferentialIntegrityViolations );
+                            sampleRows: Options.VpaxSampleReferentialIntegrityViolations,
+                            analyzeDirectQuery: readStatisticsFromDirectQuery);
                     }
                     catch (Exception ex)
                     {
@@ -4302,7 +4304,8 @@ namespace DaxStudio.UI.ViewModels
                                 Connection.ServerName, Connection.SelectedDatabaseName,
                                 "DaxStudio", version.ToString(),
                                 readStatisticsFromData: false, // Disable statistics during retry
-                                sampleRows: Options.VpaxSampleReferentialIntegrityViolations);
+                                sampleRows: Options.VpaxSampleReferentialIntegrityViolations,
+                                analyzeDirectQuery: false);
                         }
                         else
                         {
@@ -4482,9 +4485,11 @@ namespace DaxStudio.UI.ViewModels
                         || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
 
                     bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+                    bool readStatisticsFromDirectQuery = Options.VpaxReadStatisticsFromDirectQuery && (!isLegacySsas);
+
                     try
                     {
-                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName);
+                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery);
                     }
                     catch (Exception ex)
                     {
@@ -4495,7 +4500,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName); // Disable statistics during retry
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false); // Disable statistics during retry
                         }
                         else
                         {
