@@ -1801,10 +1801,10 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            IsQueryRunning = true;
-
             NotifyOfPropertyChange(() => CanRunQuery);
             if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
+
+            IsQueryRunning = true;
 
             // if the query provider is not set use the current document
             message.QueryProvider = message.QueryProvider ?? this;
