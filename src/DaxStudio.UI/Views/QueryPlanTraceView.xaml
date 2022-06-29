@@ -26,6 +26,12 @@
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                 <Setter Property="Padding" Value="4 4 8 4"/>
                 <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="AlignLeft" TargetType="{x:Type TextBlock}">
+                <Setter Property="Padding" Value="4 4 8 4"/>
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </ResourceDictionary>
         
@@ -173,7 +179,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
+                    <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
                                     IsReadOnly="True" Binding="{Binding IndentedOperation}">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
@@ -182,6 +188,8 @@
                                     <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
                             </Style.Triggers>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="Padding" Value="4 4 8 4"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
@@ -264,7 +272,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                 <DataGridTextColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
-                                    IsReadOnly="True" Binding="{Binding IndentedOperation}"/>
+                                    IsReadOnly="True" Binding="{Binding IndentedOperation}" ElementStyle="{StaticResource AlignLeft}"/>
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
