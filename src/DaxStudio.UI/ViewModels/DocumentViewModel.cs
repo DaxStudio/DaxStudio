@@ -2679,8 +2679,8 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var package = Package.Open(FileName, FileMode.Create);
-                Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
-                using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+                Uri uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+                using (TextWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
                 {
                     tw.Write(GetEditor().Text);
                     tw.Close();
@@ -2691,7 +2691,10 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var tw in ToolWindows)
                 {
                     var saver = tw as ISaveState;
-                    if (saver != null)
+                    if (saver == null) continue;
+
+                    var window = tw as ToolWindowBase;
+                    if (window?.IsVisible ?? false || tw is ITraceWatcher)
                     {
                         saver.SavePackage(package);
                     }
@@ -2725,8 +2728,10 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var tw in ToolWindows)
                 {
                     var saver = tw as ISaveState;
+                    if (saver == null) continue; // go to next item in collection if this one does not implement ISaveState
+
                     var window = tw as ToolWindowBase;
-                    if (saver != null && (window?.IsVisible??false))
+                    if (window?.IsVisible??false || tw is ITraceWatcher)
                     {
                         saver.Save(FileName);
                     }
