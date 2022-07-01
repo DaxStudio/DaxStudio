@@ -306,21 +306,11 @@ namespace DaxStudio.UI.ViewModels
 
                 if (_sourceDocument != null)
                 {
-                    var cnn = _sourceDocument.Connection;
-                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent(
-                        cnn.ConnectionStringWithInitialCatalog,
-                        cnn.IsPowerPivot,
-                        cnn.IsPowerPivot ? _sourceDocument.FileName : "",
-                        "",
-                        cnn.IsPowerPivot ? "" : cnn.FileName,
-                        cnn.ServerType
-                        , false)
-                    { DatabaseName = cnn.Database.Name });
+                    await CopyConnectionAsync(_sourceDocument);
 
-                    _sourceDocument = null;
-
-                    await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 }
+
+                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
             catch (Exception ex)
             {
@@ -328,6 +318,22 @@ namespace DaxStudio.UI.ViewModels
                 OutputError($"Error opening a new query tab: {ex.Message}");
             }
 
+        }
+
+        public async Task CopyConnectionAsync(DocumentViewModel sourceDocument)
+        {
+            var cnn = sourceDocument.Connection;
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent(
+                cnn.ConnectionStringWithInitialCatalog,
+                cnn.IsPowerPivot,
+                cnn.IsPowerPivot ? _sourceDocument.FileName : "",
+                "",
+                cnn.IsPowerPivot ? "" : cnn.FileName,
+                cnn.ServerType
+                , false)
+            { DatabaseName = cnn.Database.Name });
+
+            _sourceDocument = null;
         }
 
         private void OnKeyUp(object sender, KeyEventArgs e)

@@ -664,13 +664,6 @@
                             Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                             Height="30"
                             cal:Message.Attach="[Event Click] = [Action NewQueryWithCurrentConnection]">
-                            <!--<i:Interaction.Triggers>
-                                <i:EventTrigger EventName="Click">
-                                    <cal:Action.Target>
-                                        <cal:ActionMessage MethodName="NewQueryWithCurrentConnection"/>
-                                    </cal:Action.Target>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>-->
 
                         </Fluent:Button>
 
@@ -791,30 +784,14 @@
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}" 
                                    HorizontalContentAlignment="Left"
                                    Height="30"
-                                   >
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="Click">
-                                    <cal:Action.Target>
-                                        <cal:ActionMessage MethodName="Save"/>
-                                    </cal:Action.Target>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-
+                                   cal:Message.Attach="[Event Click] = [Action Save]">
                         </Fluent:Button>
-                            
+
                         <Fluent:Button Name="btnSaveAs" 
                                    Header="Save As" 
                                    Height="30"
-                                   Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="Click">
-                                    <cal:Action.Target>
-                                        <cal:ActionMessage MethodName="SaveAs"/>
-                                    </cal:Action.Target>
-
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-
+                                   Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
+                                   cal:Message.Attach="[Event Click] = [Action SaveAs]">
                         </Fluent:Button>
 
                         <Fluent:BackstageTabItem Header="Options" Height="30">

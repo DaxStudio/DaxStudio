@@ -266,7 +266,8 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
+                //await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
+                await ActiveDocument.CopyConnectionAsync(sourceDocument);
             }
 
         }

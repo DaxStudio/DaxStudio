@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <RootNamespace>AvalonDock.Themes</RootNamespace>
-	<TargetFrameworks>netcoreapp3.0;net5.0-windows;net471</TargetFrameworks>
+	<TargetFrameworks>net471</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>sn.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -18,7 +18,7 @@
     <PackageId>Dirkster.AvalonDock.Themes.VS2013</PackageId>
     <Authors>https://github.com/Dirkster99/AvalonDock</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <ApplicationIcon>DaxStudio.ico</ApplicationIcon>
+    <ApplicationIcon></ApplicationIcon>
     <OutputType>Library</OutputType>
     <StartupObject />
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
