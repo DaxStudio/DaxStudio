@@ -46,7 +46,7 @@ namespace DaxStudio.UI
 
         public void DisplayShell()
         {
-            Application.Dispatcher.Invoke(() => base.DisplayRootViewFor<IShell>(null));
+            Application.Dispatcher.Invoke(() => base.DisplayRootViewForAsync<IShell>(null));
         }
 
         protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
