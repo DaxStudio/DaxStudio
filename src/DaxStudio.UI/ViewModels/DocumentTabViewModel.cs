@@ -130,7 +130,7 @@ namespace DaxStudio.UI.ViewModels
                 lock (_activeDocumentLock)
                 {
                     _activeDocument = value;
-                    //this.ActivateItemAsync(_activeDocument);//.FireAndForget();
+
                     NotifyOfPropertyChange(() => ActiveDocument);
 
                     if (ActiveDocument == null) return;
@@ -194,7 +194,6 @@ namespace DaxStudio.UI.ViewModels
                     newDoc.AutoSaveId = file.AutoSaveId;
                     newDoc.State = DocumentState.RecoveryPending;
 
-                    Items.Add(newDoc);
                     await ActivateItemAsync(newDoc);
                     ActiveDocument = newDoc;
                     newDoc.IsDirty = true;
@@ -223,7 +222,6 @@ namespace DaxStudio.UI.ViewModels
                 newDoc.FileName = fileName;
                 newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
 
-                Items.Add(newDoc);
                 await ActivateItemAsync(newDoc);
                 ActiveDocument = newDoc;
                 ActiveItem = newDoc;
@@ -253,7 +251,6 @@ namespace DaxStudio.UI.ViewModels
 
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
 
-            //           Items.Add(newDoc);
             await ActivateItemAsync(newDoc);
             ActiveDocument = newDoc;
 
