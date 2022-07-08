@@ -3175,22 +3175,11 @@ namespace DaxStudio.UI.ViewModels
 
                         if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
-                        if (Dispatcher.CurrentDispatcher.CheckAccess())
-                        {
-                            Dispatcher.CurrentDispatcher.Invoke(() =>
-                            {
-                                SetupConnection(message);//, cnn);
-                            });
-                        }
-                        else
-                        {
-                            SetupConnection(message); //, cnn);
-                        }
-
-
+                        SetupConnection(message); 
+      
                     },cancellationToken);
 
-                // todo - should we be checking for exceptions in this continuation
+
                 var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
                 await _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace), cancellationToken);//,IsPowerPivotConnection));
                 await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this),cancellationToken);
