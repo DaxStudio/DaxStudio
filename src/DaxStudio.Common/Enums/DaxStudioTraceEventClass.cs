@@ -1,4 +1,4 @@
-﻿namespace DaxStudio.QueryTrace
+﻿namespace DaxStudio.Common.Enums
 {
     // Copied from Microsoft.AnalysisServices 11.0
     // could possibly be trimmed down as we only use a small subset of these
@@ -67,6 +67,7 @@
         CalculationEvaluation = 110,
         CalculationEvaluationDetailedInformation = 111,
         DAXQueryPlan = 112,
-        AggregateTableRewriteQuery = 131 // Aggregate Table Rewrite Query
+        AggregateTableRewriteQuery = 131, // Aggregate Table Rewrite Query
+        JobGraph = 134
     }
 }

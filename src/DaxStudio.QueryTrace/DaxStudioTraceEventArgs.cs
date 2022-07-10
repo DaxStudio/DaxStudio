@@ -1,5 +1,7 @@
-﻿using Microsoft.AnalysisServices;
+﻿using DaxStudio.Common.Enums;
+using Microsoft.AnalysisServices;
 using System;
+using System.Globalization;
 
 namespace DaxStudio.QueryTrace
 {
@@ -55,15 +57,60 @@ namespace DaxStudio.QueryTrace
                     StartTime = e.CurrentTime;
                     NTUserName = e.NTUserName;
                     break;
+
                 case TraceEventClass.CommandBegin:
+
+                    string s3 = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
+                    DateTime.TryParse(s3, CultureInfo.CurrentUICulture, DateTimeStyles.AssumeUniversal, out var startTime3);
+                    StartTime = startTime3;
+                    NTUserName = e.NTUserName;
+                    SPID = e.Spid;
+                    break;
+                case TraceEventClass.ProgressReportBegin:
                     string s = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
-                    DateTime.TryParse(s, out var startTime);
+                    DateTime.TryParse(s, CultureInfo.CurrentUICulture, DateTimeStyles.AssumeUniversal, out var startTime);
                     StartTime = startTime;
                     NTUserName = e.NTUserName;
+                    SPID = e.Spid;
+                    ObjectName = e.ObjectName;
+                    ObjectPath = e.ObjectPath;
+                    ObjectReference = e.ObjectReference;
+                    break;
+                case TraceEventClass.ProgressReportCurrent:
+                    string s2 = e[TraceColumn.StartTime] ?? e[TraceColumn.CurrentTime] ?? string.Empty;
+                    DateTime.TryParse(s2, CultureInfo.CurrentUICulture, DateTimeStyles.AssumeUniversal, out var startTime2);
+                    StartTime = startTime2;
+                    NTUserName = e.NTUserName;
+                    ObjectName = e.ObjectName;
+                    ObjectPath = e.ObjectPath;
+                    ObjectReference = e.ObjectReference;
+                    SPID = e.Spid;
+
+                    //IntegerData = e.IntegerData;
+                    try
+                    {
+                        ProgressTotal = e.ProgressTotal;
+                    }
+                    catch
+                    {
+                        // suppress all errors
+                    }
+                    break;
+                case TraceEventClass.ProgressReportEnd:
+                    StartTime = e.StartTime;
+                    //CpuTime = e.CpuTime;
+                    Duration = e.Duration;
+                    NTUserName = e.NTUserName;
+                    //ProgressTotal = e.ProgressTotal;
+                    ObjectName = e.ObjectName;
+                    ObjectPath = e.ObjectPath;
+                    ObjectReference = e.ObjectReference;
+                    SPID = e.Spid;
                     break;
                 case TraceEventClass.DiscoverBegin:
                 case TraceEventClass.VertiPaqSEQueryBegin:
                 case TraceEventClass.DAXQueryPlan:
+                case TraceEventClass.JobGraph:
                     // no additional properties captured, the plan is stored in the text field
                     break;
                 case TraceEventClass.Error:
@@ -190,5 +237,12 @@ namespace DaxStudio.QueryTrace
         public string RequestID { get; set; }
         public string RequestProperties { get; set; }
         public string RequestParameters { get; set; }
+
+        public string SPID { get; set; }
+        public string ObjectName { get; set; }
+        public string ObjectPath { get; set; }
+        public string ObjectReference { get; set; }
+        public long ProgressTotal { get; set; }
+        public string ActivityId { get; set; }
     }
 }

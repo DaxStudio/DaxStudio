@@ -18,6 +18,9 @@ using System.Threading.Tasks;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
 using System.Threading;
+using DaxStudio.Common.Enums;
+using System.Xml.XPath;
+using System.IO;
 
 namespace DaxStudio.UI.Model
 {
@@ -818,6 +821,40 @@ namespace DaxStudio.UI.Model
             return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
+        }
+        private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
+        public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
+        {
+            get
+            {
+                if (_supportedTraceEventClasses == null)
+                {
+                    _supportedTraceEventClasses = PopulateSupportedTraceEventClasses();
+
+                }
+
+                return _supportedTraceEventClasses;
+
+            }
+        }
+
+        private HashSet<DaxStudioTraceEventClass> PopulateSupportedTraceEventClasses()
+        {
+            var result = new HashSet<DaxStudioTraceEventClass>();
+            var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null);
+            while (dr.Read())
+            {
+                var xml = dr.GetString(0);
+                XPathDocument xPath = new XPathDocument(new StringReader(xml));
+                var nav = xPath.CreateNavigator();
+                var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
+                while (iter.MoveNext())
+                {
+                    result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                }
+            }
+
+            return result;
         }
 
     }

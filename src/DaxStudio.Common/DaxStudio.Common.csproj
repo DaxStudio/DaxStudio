@@ -73,6 +73,7 @@
     <Compile Include="CmdLineArgs.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="CrashReporter.cs" />
+    <Compile Include="Enums\DaxStudioTraceEventClass.cs" />
     <Compile Include="Exceptions\SaveSettingValueException.cs" />
     <Compile Include="MailUtility.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">

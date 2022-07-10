@@ -24,6 +24,7 @@ using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -678,7 +679,7 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Server Timings";
         public override string ContentId => "server-timings-trace";
-
+        public override string TraceSuffix => "timings";
         public override string ImageResource => "server_timingsDrawingImage";
         public override ImageSource IconSource
         {
@@ -818,6 +819,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
         private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)

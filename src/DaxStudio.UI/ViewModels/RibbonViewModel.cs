@@ -459,10 +459,7 @@ namespace DaxStudio.UI.ViewModels
                 doc = ActiveDocument;
                 SelectedTarget = ActiveDocument.SelectedTarget;
 
-                if (ActiveDocument.Tracer == null)
-                    _traceStatus = QueryTraceStatus.Stopped;
-                else
-                    _traceStatus = ActiveDocument.Tracer.Status;
+                _traceStatus = GetTraceStatus();
 
                 RefreshRibbonButtonEnabledStatus();
 
@@ -500,6 +497,36 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ServerTimingsChecked);
             NotifyOfPropertyChange(() => ServerTimingDetails);
             return Task.CompletedTask;
+        }
+
+        private QueryTraceStatus GetTraceStatus()
+        {
+            var watchers = ActiveDocument.TraceWatchers;
+            var status = QueryTraceStatus.Stopped; // assume no traces are running
+            foreach (var tw in watchers)
+            {
+                switch (tw.TraceStatus)
+                {
+                    // if any of the trace watchers are in a changing or error state
+                    // return the state of the first one we find
+                    case QueryTraceStatus.Starting:
+                    case QueryTraceStatus.Stopping:
+                    case QueryTraceStatus.Error:
+                        return tw.TraceStatus;
+                    // if one or more traces are started and none are in a changing or 
+                    // error state we will return "Started"
+                    case QueryTraceStatus.Started:
+                        status = tw.TraceStatus;
+                        break;
+                    case QueryTraceStatus.Stopped:
+                    case QueryTraceStatus.Unknown:
+                        // do nothing in these cases
+                        break;
+
+                }
+
+            }
+            return status;
         }
 
         private void RefreshRibbonButtonEnabledStatus()

@@ -16,6 +16,7 @@ using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Serilog;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -196,6 +197,7 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Query Plan";
         public override string ImageResource => "query_planDrawingImage";
+        public override string TraceSuffix => "plans";
         public override string ContentId => "query-plan";
         public override ImageSource IconSource
         {
@@ -211,6 +213,12 @@ namespace DaxStudio.UI.ViewModels
         public override string ToolTipText => "Runs a server trace to capture the Logical and Physical DAX Query Plans";
 
         public override bool FilterForCurrentSession { get { return true; } }
+
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
 
         #region ISaveState Methods
 

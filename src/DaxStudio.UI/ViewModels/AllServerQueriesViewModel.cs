@@ -20,6 +20,7 @@ using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
 using DaxStudio.UI.Utils;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -47,7 +48,6 @@ namespace DaxStudio.UI.ViewModels
                 "Xmla" // Intentionally lowercase to reduce width
             };
         }
-
 
         public ObservableCollection<string> QueryTypes { get; set; }
 
@@ -202,6 +202,7 @@ namespace DaxStudio.UI.ViewModels
         
         public override bool CanHide { get { return true; } }
         public override string ContentId => "all-queries-trace";
+        public override string TraceSuffix => "all";
         public override ImageSource IconSource
         {
             get
@@ -229,6 +230,12 @@ namespace DaxStudio.UI.ViewModels
         public override string ToolTipText => "Runs a server trace to record all queries from all users for the current connection";
 
         public override bool FilterForCurrentSession { get { return false; } }
+
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
 
         public override void ClearAll()
         {

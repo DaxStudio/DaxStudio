@@ -10,6 +10,7 @@ using DaxStudio.QueryTrace.Interfaces;
 using Serilog;
 using DaxStudio.SignalR;
 using ADOTabular.Enums;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio
 {
@@ -28,7 +29,7 @@ namespace DaxStudio
             //    ConstructQueryTraceEngine(connectionType, sessionId, eventsToCapture, stubGlobalOptions);
             //}
 
-            public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName) //, IGlobalOptions globalOptions)
+            public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName, string suffix) //, IGlobalOptions globalOptions)
             {
                 try
                 {
@@ -45,9 +46,9 @@ namespace DaxStudio
                             // Anonymouse delegate stops .Net from trying to load MIcrosoft.Excel.Amo.dll when we are running inside Excel 2010
                             VoidDelegate f = delegate
                             {
-                                _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture, filterForCurrentSession);
+                                _xlEngine = new QueryTraceEngineExcel(powerPivotConnStr, connectionType, sessionId, "", eventsToCapture, filterForCurrentSession, suffix);
                                 _xlEngine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
-                                _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
+                                _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(); });
                                 _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
 
                             };
@@ -58,10 +59,10 @@ namespace DaxStudio
                         {
                             connectionType = AdomdType.AnalysisServices;
                             Log.Debug("{class} {method} {event}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructing QueryTraceEngine");
-                            _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName);
+                            _engine = new QueryTraceEngine(powerPivotConnStr, connectionType, sessionId, "", "", eventsToCapture, new StubGlobalOptions(), filterForCurrentSession, powerBIFileName, suffix);
                             _engine.TraceError += ((o, e) => { Clients.Caller.OnTraceError(e); });
                             _engine.TraceWarning += ((o, e) => { Clients.Caller.OnTraceWarning(e); });
-                            _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(e); });
+                            _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(); });
                             _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
                             Log.Debug("{class} {method} {event} {status}", "QueryTraceHub", "ConstructQueryTraceEngine", "Constructed QueryTraceEngine", (_engine != null));
                         }
@@ -76,18 +77,18 @@ namespace DaxStudio
             }
 
 
-            private void OnTraceCompleted(IList<DaxStudioTraceEventArgs> e)
+        private void OnTraceCompleted()
+        {
+            try
             {
-                try
-                {
-                    Clients.Caller.OnTraceComplete(e.ToArray<DaxStudioTraceEventArgs>());
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("{class} {method} {exception}", "QueryTraceHub", "OnTraceCompleted", ex.Message);
-                    System.Diagnostics.Debug.WriteLine(ex.Message);
-                }
+                Clients.Caller.OnTraceComplete();
             }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {exception}", "QueryTraceHub", "OnTraceCompleted", ex.Message);
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+        }
 
             public void StartAsync(int startTimeoutSecs)
             {

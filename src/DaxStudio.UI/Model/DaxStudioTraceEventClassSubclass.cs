@@ -1,4 +1,5 @@
-﻿using DaxStudio.QueryTrace;
+﻿using DaxStudio.Common.Enums;
+using DaxStudio.QueryTrace;
 using System;
 using System.Collections.Generic;
 using System.Linq;
