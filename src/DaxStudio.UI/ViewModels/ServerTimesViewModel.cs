@@ -93,13 +93,11 @@ namespace DaxStudio.UI.ViewModels
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for the following functions:
         // - CallbackDataID
-        // - LogAbsValueCallback
-        // - RoundValueCallback
         // - EncodeCallback
-        // - MinMaxColumnPositionCallback
-        //
-        // We probably need to cover also the function "Cond", which is a callback without having the callback name
-        // But we need to collect use cases to find a way to avoid making mistakes with any expression using "Cond"
+        // - 'LogAbsValueCallback'
+        // - 'RoundValueCallback'
+        // - 'MinMaxColumnPositionCallback'
+        // - 'Cond'
         private string _queryRichText = "";
         public string QueryRichText {
             set {
@@ -107,10 +105,11 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var sb = new StringBuilder(value);
                     sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
-                    sb.Replace("LogAbsValueCallback", "|~S~|LogAbsValueCallback|~E~|");
-                    sb.Replace("RoundValueCallback", "|~S~|RoundValueCallback|~E~|");
+                    sb.Replace("'LogAbsValueCallback'", "|~S~|LogAbsValueCallback|~E~|");
+                    sb.Replace("'RoundValueCallback'", "|~S~|RoundValueCallback|~E~|");
                     sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
-                    sb.Replace("MinMaxColumnPositionCallback", "|~S~|MinMaxColumnPositionCallback|~E~|");
+                    sb.Replace("'MinMaxColumnPositionCallback'", "|~S~|MinMaxColumnPositionCallback|~E~|");
+                    sb.Replace("'Cond'", "|~S~|Cond|~E~|");
                     _queryRichText = sb.ToString();
                 }
                 else
