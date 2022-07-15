@@ -50,7 +50,7 @@ namespace DaxStudio.UI.Model
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
         private static readonly IEnumerable<string> _keywords;
-
+        private readonly SemaphoreSlim _commandSemaphore;
         static ConnectionManager()
         {
             _keywords = new List<string>() 
@@ -65,6 +65,7 @@ namespace DaxStudio.UI.Model
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+            _commandSemaphore = new SemaphoreSlim(1,1);
             ConfigureRetryPolicy();
         }
 
@@ -188,9 +189,11 @@ namespace DaxStudio.UI.Model
                     {
                         conn = _connection;
                     }
-
-                    var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
-                    return remapInfo;
+                    using (new SemaphoreSlimLock(_commandSemaphore))
+                    {
+                        var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
+                        return remapInfo;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -212,11 +215,24 @@ namespace DaxStudio.UI.Model
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
-            return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
+            return _retry.Execute(() =>
+            {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.ExecuteDaxQueryDataTable(query);
+                }
+            });
         }
+
         public AdomdDataReader ExecuteReader(string query, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
-            return _retry.Execute(()=> _connection.ExecuteReader(query,paramList));
+            return _retry.Execute(() =>
+            {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.ExecuteReader(query, paramList);
+                }
+            });
         }
         public string FileName
         {
@@ -259,7 +275,7 @@ namespace DaxStudio.UI.Model
                         var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
                         _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
                         conn.Close(true); // close and end the session
-                    return dbChanges;
+                        return dbChanges;
                     });
                     return hasChanged;
                 }
@@ -426,26 +442,30 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            
-            _retry.Execute(() =>
+            using (new SemaphoreSlimLock(_commandSemaphore))
             {
-                var tempConn = _connection.Clone(true);
-                tempConn.Open();
-                tempConn.Ping();
-                tempConn.Close(false);
-            });
+                _retry.Execute(() =>
+                {
+                    var tempConn = _connection.Clone(true);
+                    tempConn.Open();
+                    tempConn.Ping();
+                    tempConn.Close(false);
+                });
+            }
         }
 
         public void PingTrace()
         {
-
-            _retry.Execute(() =>
+            using (new SemaphoreSlimLock(_commandSemaphore))
             {
-                var tempConn = _connection.Clone(true);
-                tempConn.Open();
-                tempConn.PingTrace();
-                tempConn.Close(false);
-            });
+                _retry.Execute(() =>
+                {
+                    var tempConn = _connection.Clone(true);
+                    tempConn.Open();
+                    tempConn.PingTrace();
+                    tempConn.Close(false);
+                });
+            }
         }
 
         public void ClearCache()
@@ -459,7 +479,10 @@ namespace DaxStudio.UI.Model
             }
             else
             {
-                this.Database.ClearCache();
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    this.Database.ClearCache();
+                }
             }
         }
         public ADOTabularModel SelectedModel { get; set; }

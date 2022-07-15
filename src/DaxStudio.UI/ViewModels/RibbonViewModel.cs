@@ -373,7 +373,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async void Open(FrameworkElement view)
         {
-            Fluent.Backstage backstage = GetBackStageParent(view as FrameworkElement) as Fluent.Backstage;
+            Fluent.Backstage backstage = GetBackStageParent(view) as Fluent.Backstage;
             await _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent());
             backstage.IsOpen = false;
         }

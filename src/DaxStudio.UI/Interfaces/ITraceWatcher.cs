@@ -21,11 +21,14 @@ namespace DaxStudio.UI.Interfaces
         string ToolTipText { get; }
         bool IsPaused { get; set; }
         string ImageResource { get; }
+        int SortOrder { get; }
         void ProcessAllEvents();
 
         void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent);
         QueryTraceStatus TraceStatus { get; }
         string TraceSuffix { get; }
+        bool IsPreview { get; }
+
         Task StopTraceAsync();
         void StopTrace();
     }

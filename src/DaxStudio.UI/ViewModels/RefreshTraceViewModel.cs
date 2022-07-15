@@ -194,8 +194,20 @@ namespace DaxStudio.UI.ViewModels
         public override string TraceSuffix => "refresh";
 
         public override string ToolTipText => "Runs a server trace to record data refresh details";
-
+        public override int SortOrder => 40;
         public override bool FilterForCurrentSession => false;
+        public override bool IsPreview
+        {
+            get
+            {
+                // only show this in debug builds
+#if DEBUG
+                return false;
+#else
+                return true;
+#endif
+            }
+        }
         protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
         {
             return traceEvent.EventClass == DaxStudioTraceEventClass.CommandEnd &&
@@ -276,7 +288,7 @@ namespace DaxStudio.UI.ViewModels
             TextDoubleClick(SelectedQuery);
         }
 
-        #region ISaveState methods
+#region ISaveState methods
         void ISaveState.Save(string filename)
         {
             string json = GetJson();
@@ -320,7 +332,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadPackage(Package package)
         {
-            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.RefreshTrace, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
             _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
@@ -366,11 +378,11 @@ namespace DaxStudio.UI.ViewModels
             if (refreshEvent == null) return; // it the user clicked on an empty query exit here
             _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
         }
-        #endregion
+#endregion
 
     }
 
-    #region Data Objects
+#region Data Objects
 
     public enum RefreshStatus
     {
@@ -550,5 +562,5 @@ namespace DaxStudio.UI.ViewModels
     public class RefreshColumn : RefreshItem
     { }
 
-    #endregion
+#endregion
 }

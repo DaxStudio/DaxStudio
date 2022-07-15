@@ -126,7 +126,7 @@
         </Grid.RowDefinitions>
         
         <!-- command bar -->
-        <Border Grid.ColumnSpan="5"
+        <ctrl:ClipBorder Grid.ColumnSpan="5"
                 CornerRadius="4"
                 Background="{DynamicResource Theme.Brush.MenuBar.Back}"
                 Margin="0 0 0 8">
@@ -232,7 +232,7 @@
                     </StackPanel>
                 </ToggleButton>
             </DockPanel>
-        </Border>
+        </ctrl:ClipBorder>
         
         
         <TextBlock x:Name="TraceStatusText"

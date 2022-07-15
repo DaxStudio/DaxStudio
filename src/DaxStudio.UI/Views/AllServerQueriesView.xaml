@@ -142,7 +142,7 @@
                         <TextBlock>Record</TextBlock>
                     </StackPanel>
                 </ToggleButton>
-                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}">
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}" IsEnabled="{Binding CanPause}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource pause_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>

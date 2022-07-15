@@ -117,7 +117,7 @@ namespace DaxStudio.QueryTrace
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionManager.ConnectionString);
             _globalOptions = globalOptions;
             _connectionManager = connectionManager;
-            _suffix = _suffix;
+            _suffix = suffix;
             Status = QueryTraceStatus.Stopped;
 
             // ping the connection to make sure it is connected

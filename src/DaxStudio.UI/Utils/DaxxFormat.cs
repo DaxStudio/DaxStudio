@@ -13,5 +13,6 @@ namespace DaxStudio.UI.Utils
         public const string QueryPlan = "QueryPlan.json";
         public const string QueryBuilder = "QueryBuilder.json";
         public const string AllQueries = "AllQueries.json";
+        public const string RefreshTrace = "RefreshTrace.json";
     }
 }

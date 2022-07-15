@@ -203,6 +203,7 @@ namespace DaxStudio.UI.ViewModels
         public override bool CanHide { get { return true; } }
         public override string ContentId => "all-queries-trace";
         public override string TraceSuffix => "all";
+        public override int SortOrder => 10;
         public override ImageSource IconSource
         {
             get

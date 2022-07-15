@@ -10,7 +10,6 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -33,8 +32,6 @@ using DAXEditorControl;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
-using DaxStudio.QueryTrace;
-using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
@@ -48,19 +45,14 @@ using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Rendering;
-using Microsoft.AnalysisServices;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Serilog;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using AvalonDock;
-using AvalonDock.Themes;
-using Action = System.Action;
 using Constants = DaxStudio.Common.Constants;
 using Timer = System.Timers.Timer;
-using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -96,6 +88,8 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
+        , IHandle<TraceChangedEvent>
+        , IHandle<TraceChangingEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
@@ -604,13 +598,16 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_traceWatchers == null && TraceWatcherFactories != null)
                 {
-                    _traceWatchers = new BindableCollection<ITraceWatcher>();
+                    var temp = new BindableCollection<ITraceWatcher>();
                     foreach (var fac in TraceWatcherFactories)
                     {
                         var tw = fac.CreateExport().Value;
+                        if (tw.IsPreview) continue; // skip showing if this is a preview tracer
+
                         tw.Document = this;
-                        _traceWatchers.Add(tw);
+                        temp.Add(tw);
                     }
+                    _traceWatchers = new BindableCollection<ITraceWatcher>(temp.OrderBy(t => t.SortOrder));
                 }
                 return _traceWatchers;
             }
@@ -1176,13 +1173,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsTraceChanging
         {
-            get => _traceChanging;
-            set
-            {
-                _traceChanging = value;
-                NotifyOfPropertyChange(() => IsTraceChanging);
-                NotifyOfPropertyChange(() => CanRunQuery);
-            }
+            get => _updatingTraces > 0;
+            
         }
 
         public DmvPaneViewModel DmvPane { get; private set; }
@@ -2671,7 +2663,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FileName = FileName ?? _displayName,
                 DefaultExt = ".dax",
-                Filter = "DAX documents|*.dax"
+                Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
             };
 
             // Show save file dialog box
@@ -4591,6 +4583,23 @@ namespace DaxStudio.UI.ViewModels
             var editor = GetEditor();
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
+            return Task.CompletedTask;
+        }
+
+        private int _updatingTraces = 0;
+        public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _updatingTraces);
+            NotifyOfPropertyChange(() => IsTraceChanging);
+            NotifyOfPropertyChange(() => CanRunQuery);
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
+        {
+            Interlocked.Decrement(ref _updatingTraces);
+            NotifyOfPropertyChange(() => IsTraceChanging);
+            NotifyOfPropertyChange(() => CanRunQuery);
             return Task.CompletedTask;
         }
 

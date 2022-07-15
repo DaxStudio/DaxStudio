@@ -101,7 +101,7 @@ namespace DaxStudio.UI.ViewModels
             //        Events.Add(e);
             //    }
             //}
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "ProcessAllEvents", "starting ProcessResults");
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
             if (!IsPaused) ProcessResults();
             IsBusy = false;
         }
@@ -153,7 +153,7 @@ namespace DaxStudio.UI.ViewModels
         public bool IsSelected { get; set; }
         public abstract string ContentId { get; }
         public abstract ImageSource IconSource { get; }
-
+        public abstract int SortOrder { get; }
         private bool _isEnabled ;
         public bool IsEnabled { get { return _isEnabled; }
             set { _isEnabled = value;
@@ -187,6 +187,10 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => IsChecked);
                     NotifyOfPropertyChange(() => TraceStatusText);
                     //if (!_isChecked) Reset();
+
+                    // do not try to start the trace a second time if it is started or starting
+                    if (value && _tracer != null && (_tracer.Status == QueryTraceStatus.Started || _tracer.Status == QueryTraceStatus.Starting)) return;
+
                     if (value)
                     {
                         _eventAggregator.SubscribeOnPublishedThread(this);
@@ -211,7 +215,7 @@ namespace DaxStudio.UI.ViewModels
                     }
 
                     _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, value));
-                    Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
+                    Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", GetSubclassName(), nameof(IsChecked), value);
                 }
             }
         }
@@ -308,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
             {
                 IsBusy = true;
@@ -326,7 +330,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(CancelQueryEvent message, CancellationToken cancellationToken)
         {
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryCancelEvent>", "Query Cancelled");
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryCancelEvent>", "Query Cancelled");
             if (!IsPaused && !IsChecked)
             {
                 IsBusy = false;
@@ -372,7 +376,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, true));
                     Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync),
-                        "Starting Tracer");
+                        $"Starting Tracer - {this.TraceSuffix}");
                     await _tracer.StartAsync(_globalOptions.TraceStartupTimeout);
 
                 }
@@ -397,7 +401,6 @@ namespace DaxStudio.UI.ViewModels
             get { return _isPaused; }
             set
             {
-                _isChecked = !value;
                 _isPaused = value;
                 NotifyOfPropertyChange(() => IsRecording);
                 NotifyOfPropertyChange(() => IsTraceRunning);
@@ -470,7 +473,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "QueryCompleted", isCancelled);
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(QueryCompleted), isCancelled);
             _queryHistoryEvent = queryHistoryEvent;
             if (isCancelled) return;
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
@@ -506,6 +509,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CapturingStarted { get; private set; }
 
+        public virtual bool IsPreview => false;
+
         // allows a subclass to perform an action before updating the monitored events
         protected virtual bool UpdatedMonitoredEvents() { return true; }
 
@@ -535,12 +540,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (Connection.IsPowerPivot)
                     {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", Connection.ConnectionString, Connection.Type.ToString(), Document.Host.Proxy.Port);
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", GetSubclassName(), nameof(CreateTracer), "about to create RemoteQueryTrace", Connection.ConnectionString, Connection.Type.ToString(), Document.Host.Proxy.Port);
                         _tracer = QueryTraceEngineFactory.CreateRemote(Connection, validEventsForConnection, Document.Host.Proxy.Port, _globalOptions, FilterForCurrentSession, TraceSuffix);
                     }
                     else
                     {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", Connection.ConnectionString, Connection.Type.ToString());
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", GetSubclassName(), nameof(CreateTracer), "about to create LocalQueryTrace", Connection.ConnectionString, Connection.Type.ToString());
                         _tracer = QueryTraceEngineFactory.CreateLocal(Connection, validEventsForConnection, _globalOptions, FilterForCurrentSession, TraceSuffix);
                     }
                     //_tracer.TraceEvent += TracerOnTraceEvent;
@@ -555,12 +560,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 foreach (var innerEx in ex.InnerExceptions)
                 {
-                    Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", innerEx.Message, innerEx.StackTrace);
+                    Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), innerEx.Message, innerEx.StackTrace);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", ex.Message, ex.StackTrace);
+                Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), ex.Message, ex.StackTrace);
             }
         }
 
@@ -614,16 +619,24 @@ namespace DaxStudio.UI.ViewModels
 
         public void StopTrace()
         {
+            _eventAggregator.Unsubscribe(this);
             if (_tracer == null) return;
-
-            _tracer.TraceCompleted -= TracerOnTraceCompleted;
-            _tracer.TraceError -= TracerOnTraceError;
-            _tracer.TraceStarted -= TracerOnTraceStarted;
-            _tracer.TraceWarning -= TracerOnTraceWarning;
-            _tracer.TraceEvent -= TracerOnTraceEvent;
-            _tracer?.Stop();
-            _tracer?.Dispose();
-            _tracer = null;
+            try
+            {
+                Log.Verbose(Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTrace), $"Stopping Trace - {TraceSuffix}");
+                _tracer.TraceCompleted -= TracerOnTraceCompleted;
+                _tracer.TraceError -= TracerOnTraceError;
+                _tracer.TraceStarted -= TracerOnTraceStarted;
+                _tracer.TraceWarning -= TracerOnTraceWarning;
+                _tracer.TraceEvent -= TracerOnTraceEvent;
+                _tracer?.Stop();
+                _tracer?.Dispose();
+                _tracer = null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTrace), ex.Message);
+            }
         }
 
         public async Task StopTraceAsync()

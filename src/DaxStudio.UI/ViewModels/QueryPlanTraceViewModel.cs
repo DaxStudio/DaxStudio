@@ -199,6 +199,7 @@ namespace DaxStudio.UI.ViewModels
         public override string ImageResource => "query_planDrawingImage";
         public override string TraceSuffix => "plans";
         public override string ContentId => "query-plan";
+        public override int SortOrder => 20;
         public override ImageSource IconSource
         {
             get
