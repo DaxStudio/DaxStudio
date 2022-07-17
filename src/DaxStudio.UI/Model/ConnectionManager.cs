@@ -53,19 +53,19 @@ namespace DaxStudio.UI.Model
         private readonly SemaphoreSlim _commandSemaphore;
         static ConnectionManager()
         {
-            _keywords = new List<string>() 
-            {   "COLUMN", 
-                "DEFINE", 
-                "EVALUATE", 
+            _keywords = new List<string>()
+            {   "COLUMN",
+                "DEFINE",
+                "EVALUATE",
                 "MEASURE",
-                "RETURN", 
+                "RETURN",
                 "TABLE",
                 "VAR" };
         }
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            _commandSemaphore = new SemaphoreSlim(1,1);
+            _commandSemaphore = new SemaphoreSlim(1, 1);
             ConfigureRetryPolicy();
         }
 
@@ -125,7 +125,14 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
-        public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
+        public DaxMetadata DaxMetadataInfo { 
+            get {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection?.DaxMetadataInfo;
+                }
+            } 
+        }
         public DaxColumnsRemap DaxColumnsRemapInfo
         {
             get
@@ -148,7 +155,11 @@ namespace DaxStudio.UI.Model
                         conn = _connection;
                     }
 
-                    var remapInfo = _retry.Execute(() => conn?.DaxColumnsRemapInfo);
+                    var remapInfo = _retry.Execute(() => {
+                        using (new SemaphoreSlimLock(_commandSemaphore)) {
+                            return conn?.DaxColumnsRemapInfo;
+                        }
+                    });
                     return remapInfo;
                 }
                 catch (Exception ex)
@@ -269,13 +280,16 @@ namespace DaxStudio.UI.Model
                 {
                     bool hasChanged = await Task.Run(() =>
                     {
-                        var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
-                        conn.ChangeDatabase(this.SelectedDatabaseName);
-                        if (conn.State != ConnectionState.Open) conn.Open();
-                        var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
-                        _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
-                        conn.Close(true); // close and end the session
-                        return dbChanges;
+                        using (new SemaphoreSlimLock(_commandSemaphore))
+                        {
+                            var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
+                            conn.ChangeDatabase(this.SelectedDatabaseName);
+                            if (conn.State != ConnectionState.Open) conn.Open();
+                            var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
+                            _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
+                            conn.Close(true); // close and end the session
+                            return dbChanges;
+                        }
                     });
                     return hasChanged;
                 }
@@ -356,7 +370,12 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularDatabaseCollection GetDatabases()
         {
-            return _retry.Execute(() => { return _connection.Databases; });
+            return _retry.Execute(() => {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.Databases;
+                }
+            });
         }
 
         public ADOTabularModelCollection GetModels()
@@ -442,30 +461,30 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            using (new SemaphoreSlimLock(_commandSemaphore))
+            _retry.Execute(() =>
             {
-                _retry.Execute(() =>
+                using (new SemaphoreSlimLock(_commandSemaphore))
                 {
                     var tempConn = _connection.Clone(true);
                     tempConn.Open();
                     tempConn.Ping();
                     tempConn.Close(false);
-                });
-            }
+                }
+            });
         }
 
         public void PingTrace()
         {
-            using (new SemaphoreSlimLock(_commandSemaphore))
+            _retry.Execute(() =>
             {
-                _retry.Execute(() =>
+                using (new SemaphoreSlimLock(_commandSemaphore))
                 {
                     var tempConn = _connection.Clone(true);
                     tempConn.Open();
                     tempConn.PingTrace();
                     tempConn.Close(false);
-                });
-            }
+                }
+            });            
         }
 
         public void ClearCache()
@@ -474,7 +493,10 @@ namespace DaxStudio.UI.Model
             {
                 var tempConn = _connection.CloneWithoutRLS();
                 //tempConn.Open();
-                tempConn.Database.ClearCache();
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    tempConn.Database.ClearCache();
+                }
                 tempConn.Close();
             }
             else

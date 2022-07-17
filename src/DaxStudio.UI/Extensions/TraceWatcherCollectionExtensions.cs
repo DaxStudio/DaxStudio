@@ -14,13 +14,5 @@ namespace DaxStudio.UI.Extensions
             }
         }
 
-        public static void EnableAll(this BindableCollection<ITraceWatcher> traceWatchers)
-        {
-            var activeTrace = traceWatchers.FirstOrDefault(t => t.IsChecked);
-            foreach (var tw in traceWatchers)
-            {
-                tw.IsEnabled = activeTrace == null || activeTrace.FilterForCurrentSession == tw.FilterForCurrentSession ;
-            }
-        }
     }
 }

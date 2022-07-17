@@ -25,6 +25,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>
@@ -71,16 +72,87 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+
+        <!-- command bar -->
+        <controls:ClipBorder                 
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                Margin="0 0 0 8">
+            <DockPanel LastChildFill="False">
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsRecording}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource record_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Record</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}" IsEnabled="{Binding CanPause}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource pause_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Pause</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsStopped}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource cancelDrawingImage}" Width="16"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Stop</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ClearAll]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Clear</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyAll]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Copy</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action Export]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource save_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Export</TextBlock>
+                    </StackPanel>
+                </Button>
+
+
+                <!--<Rectangle DockPanel.Dock="Right"/>-->
+
+
+
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ShowFilters}"
+                              ToolTip="Show Filter Controls">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource right_layout_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Filters</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+            </DockPanel>
+        </controls:ClipBorder>
+
         <TextBlock Name="TraceStatusText" 
+                   Grid.Row="1"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
         <controls:DataGridNoContextMenu x:Name="RefreshEvents" 
-                    Grid.Row="1"
+                    Grid.Row="2"
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"

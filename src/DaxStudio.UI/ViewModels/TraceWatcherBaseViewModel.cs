@@ -286,9 +286,9 @@ namespace DaxStudio.UI.ViewModels
             IsAdminConnection = connection.IsAdminConnection;
 #endif
             //IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
-            if (active != null)
-                IsEnabled = (connection.IsAdminConnection && connection.IsConnected && FilterForCurrentSession == active.FilterForCurrentSession);
-            else
+            //if (active != null)
+            //    IsEnabled = (connection.IsAdminConnection && connection.IsConnected && FilterForCurrentSession == active.FilterForCurrentSession);
+            //else
                 IsEnabled = (connection.IsAdminConnection && connection.IsConnected);
         }
 
