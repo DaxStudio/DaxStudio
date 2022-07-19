@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Media;
 using System.Globalization;
+using System.Diagnostics;
 using System.IO;
 using System.Security;
 using System.Windows;
@@ -35,8 +36,14 @@ namespace DaxStudio.UI.Converters {
                     //up to |~S~| is normal
                     paragraph.Inlines.Add(new Run(s.Substring(0, s.IndexOf("|~S~|"))));
                     //between |~S~| and |~E~| is highlighted
-                    var highlightRun = new Run(s.Substring(s.IndexOf("|~S~|") + 5,
-                                              s.IndexOf("|~E~|") - (s.IndexOf("|~S~|") + 5)))
+                    int length = s.IndexOf("|~E~|") - (s.IndexOf("|~S~|") + 5);
+                    if (length < 0)
+                    {
+                        Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
+                        Debug.WriteLine(s);
+                        break;
+                    }
+                    var highlightRun = new Run(s.Substring(s.IndexOf("|~S~|") + 5, length))
                     { FontWeight = FontWeights.Bold};
                     highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
                     highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");

@@ -104,6 +104,8 @@ namespace DaxStudio.UI.ViewModels
                 if (Options.HighlightXmSqlCallbacks)
                 {
                     var sb = new StringBuilder(value);
+                    // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
+                    sb.Replace("|~S~|CallbackDataID|~E~|", "CallbackDataID");
                     sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
                     sb.Replace("'LogAbsValueCallback'", "|~S~|LogAbsValueCallback|~E~|");
                     sb.Replace("'RoundValueCallback'", "|~S~|RoundValueCallback|~E~|");
