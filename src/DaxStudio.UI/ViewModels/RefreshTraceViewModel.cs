@@ -22,6 +22,7 @@ using DaxStudio.UI.Utils;
 using Formatting = Newtonsoft.Json.Formatting;
 using Serilog;
 using DaxStudio.Common.Enums;
+using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -104,33 +105,57 @@ namespace DaxStudio.UI.ViewModels
         private void AddEventToCommand(RefreshEvent newEvent)
         {
             RefreshCommand cmd;
+            var reqId = newEvent.RequestID;
+
             switch (newEvent.EventClass)
             {
                 case DaxStudioTraceEventClass.CommandBegin:
                     if (!newEvent.Text.Contains("<Refresh")) return;
-                    var actId = newEvent.ActivityID;
-                    if (string.IsNullOrEmpty(actId))
+                    
+                    if (string.IsNullOrEmpty(reqId))
                     {
-                        cmd = Commands.Values.FirstOrDefault(c => c.Spid == newEvent.SPID && c.ActivityId != null);
-                        actId = cmd?.ActivityId;
+                        cmd = Commands.Values.FirstOrDefault(c => c.Spid == newEvent.SPID && c.RequestId != null);
+                        reqId = cmd?.RequestId;
                     }
 
-                    Commands.Add(actId, new RefreshCommand() { Message = newEvent.Text, StartDateTime = newEvent.StartTime, ActivityId = newEvent.ActivityID ?? string.Empty, Spid = newEvent.SPID });
+                    Commands.Add(reqId, new RefreshCommand() { Message = newEvent.Text, 
+                        StartDateTime = newEvent.StartTime, 
+                        ActivityId = newEvent.ActivityID ?? string.Empty,
+                        RequestId = newEvent.RequestID ?? string.Empty,
+                        Spid = newEvent.SPID });
 
                     break;
                 case DaxStudioTraceEventClass.CommandEnd:
                     if (!newEvent.Text.Contains("<Refresh")) return;
 
-                    cmd = Commands[newEvent.ActivityID];
+                    cmd = Commands[newEvent.RequestID];
                     cmd.EndDateTime = newEvent.EndTime;
                     cmd.Duration = newEvent.Duration;
 
                     break;
                 case DaxStudioTraceEventClass.ProgressReportBegin:
-                    if (string.IsNullOrEmpty(newEvent.ActivityID))
+                    if (string.IsNullOrEmpty(newEvent.RequestID))
+                    {
+
                         cmd = Commands.Values.FirstOrDefault(c => c.Spid == newEvent.SPID);
+                    }
                     else
-                        cmd = Commands[newEvent.ActivityID];
+                    {
+                        if (Commands.ContainsKey(reqId))
+                        {
+                            cmd = Commands[newEvent.RequestID];
+                        }
+                        else
+                        {
+                            cmd = new RefreshCommand()
+                            {
+                                ActivityId = newEvent.ActivityID ?? string.Empty,
+                                RequestId = newEvent.RequestID ?? string.Empty,
+                                Spid = newEvent.SPID
+                            }; 
+                            Commands.Add(reqId, cmd);
+                        }
+                    }
 
                     cmd?.CreateItem(newEvent);
                     break;
@@ -412,6 +437,7 @@ namespace DaxStudio.UI.ViewModels
             Relationships = new Dictionary<string, RefreshRelationship>();
         }
         public string ActivityId { get; set; }
+        public string RequestId { get; set; }
         public string Spid { get; set; }
 
         public Dictionary<string, RefreshTable> Tables { get; set; }
@@ -434,8 +460,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateTable(RefreshEvent newEvent, Dictionary<string, string> reference)
         {
+            string tableName = string.Empty;
+            reference.TryGetValue("Table", out tableName);
+            if (tableName.IsNullOrEmpty()) return; // we must be at the database level so exit here
+
             RefreshTable table;
-            Tables.TryGetValue(reference["Table"], out table);
+            Tables.TryGetValue(tableName, out table);
             if (table == null)
             {
                 table = new RefreshTable { Name = reference["Table"] };
@@ -519,6 +549,8 @@ namespace DaxStudio.UI.ViewModels
 
         public static Dictionary<string, string> ParseObjectReference(string xml)
         {
+            if (xml == null) return new Dictionary<string, string>();
+
             XmlTextReader reader = new XmlTextReader(new StringReader(xml));
             var result = new Dictionary<string, string>();
             while (reader.Read())

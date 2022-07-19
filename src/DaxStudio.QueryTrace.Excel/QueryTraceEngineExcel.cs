@@ -15,6 +15,7 @@ using ADOTabular.Enums;
 using System.Linq;
 using System.IO;
 using DaxStudio.Common.Enums;
+using Microsoft.AnalysisServices;
 
 namespace DaxStudio.QueryTrace
 {
@@ -107,7 +108,8 @@ namespace DaxStudio.QueryTrace
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
         private string _friendlyServerName = string.Empty;
-        private string _suffix = string.Empty;
+        private readonly string _suffix = string.Empty;
+
         
         public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession, string suffix)
         {
@@ -116,6 +118,7 @@ namespace DaxStudio.QueryTrace
             Status = QueryTraceStatus.Stopped;
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
+
             _suffix = suffix;
             FilterForCurrentSession = filterForCurrentSession;
             ConfigureTrace(connectionString, connectionType, applicationName);
@@ -326,7 +329,7 @@ namespace DaxStudio.QueryTrace
                 if (e.EventClass == xlAmo.TraceEventClass.DiscoverBegin ) return;
 
                 Log.Debug("{class} {method} TraceEvent: {eventClass}", "QueryTraceEngineExcel", "OnTraceEventInternal", e.EventClass.ToString());
-                //OnTraceEvent(e);
+                OnTraceEvent(CreateTraceEventArg(e, _friendlyServerName));
                 _capturedEvents.Add( CreateTraceEventArg(e, _friendlyServerName));
                 if (e.EventClass == xlAmo.TraceEventClass.QueryEnd || e.EventClass == xlAmo.TraceEventClass.Error)
                 {

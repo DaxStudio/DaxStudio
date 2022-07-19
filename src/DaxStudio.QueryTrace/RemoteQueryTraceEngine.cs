@@ -39,6 +39,7 @@ namespace DaxStudio.QueryTrace
             queryTraceHubProxy.On("OnTraceStarted", OnTraceStarted);
             queryTraceHubProxy.On("OnTraceComplete", OnTraceComplete);
             queryTraceHubProxy.On<string>("OnTraceError", (msg) => { OnTraceError(msg); });
+            queryTraceHubProxy.On<DaxStudioTraceEventArgs>("OnTraceEvent", (msg) => { OnTraceEvent(msg); });
             queryTraceHubProxy.On<string>("OnTraceWarning", (msg) => { OnTraceWarning(msg); });
             hubConnection.Start().Wait();
             // configure trace
@@ -76,6 +77,14 @@ namespace DaxStudio.QueryTrace
         public void OnTraceError(string errorMessage) { 
             if (TraceError != null) {
                 TraceError(this, errorMessage);
+            }
+        }
+
+        public void OnTraceEvent(DaxStudioTraceEventArgs arg )
+        {
+            if (TraceEvent != null)
+            {
+                TraceEvent(this, arg);
             }
         }
 

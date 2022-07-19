@@ -29,7 +29,8 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(TraceColumn.EventSubclass);
             }
 
-            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch)
+            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch
+                && eventClass != TraceEventClass.JobGraph)
             {
                 trc.Columns.Add(TraceColumn.StartTime);
             }
@@ -39,6 +40,16 @@ namespace DaxStudio.QueryTrace
                 || eventClass == TraceEventClass.DAXQueryPlan)
             {
                 trc.Columns.Add(TraceColumn.ApplicationName);
+            }
+
+            if (eventClass == TraceEventClass.ProgressReportBegin
+                || eventClass == TraceEventClass.ProgressReportCurrent
+                || eventClass == TraceEventClass.ProgressReportEnd
+                || eventClass == TraceEventClass.ProgressReportError)
+            {
+                trc.Columns.Add(TraceColumn.ObjectPath);
+                trc.Columns.Add(TraceColumn.ObjectName);
+                trc.Columns.Add(TraceColumn.ObjectReference);
             }
             
             if (eventClass == TraceEventClass.QueryBegin)

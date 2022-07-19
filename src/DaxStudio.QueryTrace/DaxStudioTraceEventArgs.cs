@@ -24,7 +24,8 @@ namespace DaxStudio.QueryTrace
             RequestID = e[TraceColumn.RequestID];
             DatabaseName = e.DatabaseName;
             DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName)? powerBiFileName : DatabaseName;
-            
+            ActivityId = e[TraceColumn.ActivityID];
+            RequestId = e[TraceColumn.RequestID];
             switch (e.EventClass)
             {
                 case TraceEventClass.QueryBegin:
@@ -244,5 +245,6 @@ namespace DaxStudio.QueryTrace
         public string ObjectReference { get; set; }
         public long ProgressTotal { get; set; }
         public string ActivityId { get; set; }
+        public string RequestId { get; private set; }
     }
 }

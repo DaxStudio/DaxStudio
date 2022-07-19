@@ -1674,7 +1674,7 @@
     <Resource Include="Images\icon-copy%4032px.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AsyncAwaitBestPractices.MVVM">
+    <PackageReference Include="AsyncAwaitBestPractices">
       <Version>6.0.5</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">

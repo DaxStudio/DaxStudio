@@ -457,6 +457,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="DaxStudio.ExcelAddin.ruleset" />
+    <None Include="DaxStudio.ExcelAddin_1_TemporaryKey.pfx" />
     <None Include="DaxStudio.ExcelAddin_TemporaryKey.pfx" />
     <None Include="DaxStudio_TemporaryKey.pfx" />
     <None Include="images\DaxStudioSetupBanner.pdn" />
@@ -552,10 +553,13 @@
     <CodeAnalysisRuleSet>DaxStudio.ExcelAddin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>FD452A79B4FA48AD217EE83AE4BF60A5461A5885</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>59B18B891B1683F64CB8C594E9D32F8A525F7B5E</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>DaxStudio.ExcelAddin_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Include additional build rules for an Office application add-in. -->

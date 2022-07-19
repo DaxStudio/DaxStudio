@@ -46,6 +46,10 @@
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
             <conv:StringPercentToDoubleConverter x:Key="StringPercentToDoubleConverter"/>
 
+            <SolidColorBrush x:Key="RecordingBrush" Color="{DynamicResource Theme.Default.Back}" />
+
+            <FrameworkElement x:Key="BrushCarrier" x:Name="BrushCarrier" Tag="{StaticResource RecordingBrush}"/>
+
             <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
                 <!--<ColorAnimation Duration="0:0:0.5"
                                                         To="Red"
@@ -57,23 +61,24 @@
                 <ColorAnimationUsingKeyFrames BeginTime="0"
                                               Duration="0:0:0.9"
                                               FillBehavior="HoldEnd"
-                                              Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                                              RepeatBehavior="Forever"
+                                              Storyboard.TargetName="BrushCarrier1"
+                                              Storyboard.TargetProperty="Tag.Color"
                                               >
+                    <EasingColorKeyFrame KeyTime="0:0:0.0" Value="#EDACAF"/>
                     <EasingColorKeyFrame KeyTime="0:0:0.4" Value="#ED1C24">
-
                         <EasingColorKeyFrame.EasingFunction>
                             <QuarticEase  EasingMode="EaseIn"/>
                         </EasingColorKeyFrame.EasingFunction>
-
                     </EasingColorKeyFrame>
 
                     <EasingColorKeyFrame KeyTime="0:0:0.5" Value="#ED1C24">
-
                         <EasingColorKeyFrame.EasingFunction>
                             <QuarticEase EasingMode="EaseOut"/>
                         </EasingColorKeyFrame.EasingFunction>
-
                     </EasingColorKeyFrame>
+
+                    <EasingColorKeyFrame KeyTime="0:0:0.9" Value="#EDACAF"/>
                 </ColorAnimationUsingKeyFrames>
                 <!--<DoubleAnimation Duration="0:0:0.5"
                                                          To="24"
@@ -86,14 +91,20 @@
 
             <Style TargetType="{x:Type Ellipse}" x:Key="Recording">
                 <!--<Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Fore}"/>-->
-                <Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+                <!--<Setter Property="Fill" Value="{StaticResource RecordingBrush}"/>-->
                 <Setter Property="Stroke" Value="#ED1C24"/>
                 <Setter Property="StrokeThickness" Value="1"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
                 <Setter Property="Width" Value="10"/>
                 <Setter Property="Height" Value="10"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
-                <Style.Triggers>
+                <!--<Style.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard x:Name="BeginPulse" Storyboard="{StaticResource Pulse}"/>
+                    </EventTrigger>
+                </Style.Triggers>-->
+                
+                <!--<Style.Triggers>
                         <DataTrigger Binding="{Binding Path=IsVisible}" Value="True">
                             <DataTrigger.EnterActions>
                                 <BeginStoryboard x:Name="BeginPulse" Storyboard="{StaticResource Pulse}">
@@ -103,7 +114,7 @@
                                 <StopStoryboard BeginStoryboardName="BeginPulse"/>
                             </DataTrigger.ExitActions>
                         </DataTrigger>
-                    </Style.Triggers>
+                    </Style.Triggers>-->
                 
             </Style>
             
@@ -319,6 +330,11 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource Pulse }"/>
+        </EventTrigger>
+    </UserControl.Triggers>
     <i:Interaction.Behaviors>
         <beh:FindReplaceBehavior />
     </i:Interaction.Behaviors>
@@ -327,6 +343,10 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <FrameworkElement
+        x:Name="BrushCarrier1"
+        Tag="{StaticResource RecordingBrush}"
+        />
         <!-- Theme="{Binding AvalonDockTheme}" -->
         <avalondock:DockingManager x:Name="Document" 
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
@@ -363,7 +383,9 @@
                                    />-->
                                 <Ellipse Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
-                                   Style="{StaticResource Recording}"    >
+                                   Style="{StaticResource Recording}" 
+                                   Fill="{StaticResource RecordingBrush}"
+                                   >
                                     
                                 </Ellipse>
                                 <Image Source="{DynamicResource pause_tabDrawingImage}" Margin="0,0,5,0"
