@@ -3912,7 +3912,6 @@ namespace DaxStudio.UI.ViewModels
 
         public string Folder { get { return IsDiskFileName ? Path.GetDirectoryName(FileName) : ""; } }
         private bool _shouldSave = true;
-        private bool _traceChanging;
 
         public bool ShouldSave
         {
