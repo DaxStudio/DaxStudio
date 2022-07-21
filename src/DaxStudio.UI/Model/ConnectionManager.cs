@@ -513,17 +513,19 @@ namespace DaxStudio.UI.Model
             {
                 var tempConn = _connection.CloneWithoutRLS();
                 //tempConn.Open();
+                var tmpDb = tempConn.Database;
                 using (new SemaphoreSlimLock(_commandSemaphore))
                 {
-                    tempConn.Database.ClearCache();
+                    tmpDb.ClearCache();
                 }
                 tempConn.Close();
             }
             else
             {
+                var db = this.Database;
                 using (new SemaphoreSlimLock(_commandSemaphore))
                 {
-                    this.Database.ClearCache();
+                    db.ClearCache();
                 }
             }
         }

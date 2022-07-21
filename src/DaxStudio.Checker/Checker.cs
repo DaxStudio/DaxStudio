@@ -510,11 +510,17 @@ namespace DaxStudio.CheckerApp
 
         public enum MachineType
         {
-            Native = 0, x86 = 0x014c, Itanium = 0x0200, x64 = 0x8664
+            Native = 0, 
+            x86 = 0x014c, 
+            Itanium = 0x0200, 
+            x64 = 0x8664,
+            Unknown = 0xFFFF
         }
 
         public static MachineType GetMachineType(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName)) return MachineType.Unknown;
+
             const int PE_POINTER_OFFSET = 60;
             const int MACHINE_OFFSET = 4;
             byte[] data = new byte[4096];

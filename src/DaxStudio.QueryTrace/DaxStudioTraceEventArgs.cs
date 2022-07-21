@@ -205,7 +205,8 @@ namespace DaxStudio.QueryTrace
             get => _eventClassName;
             set { _eventClassName = value;
             Enum.TryParse<DaxStudioTraceEventClass>(_eventClassName, out _eventClass);
-            } }
+            } 
+        }
         public string EventSubclassName {
             get => _eventSubclassName;
             set
@@ -216,7 +217,14 @@ namespace DaxStudio.QueryTrace
         }
 
         public string TextData { get; set; }
-        public long Duration { get; set; }
+        private long _duration = 0;
+        public long Duration { get => _duration;
+            set { _duration = value;
+                NetParallelDuration = value; // default this to the same as duration
+            } 
+        }
+        // Records any additional, non-overlapped duration
+        public long NetParallelDuration { get; set; }
         public long CpuTime { get; set; }
         public double? CpuFactor
         {

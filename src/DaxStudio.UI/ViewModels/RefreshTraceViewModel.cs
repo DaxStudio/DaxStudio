@@ -23,6 +23,7 @@ using Formatting = Newtonsoft.Json.Formatting;
 using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls.PropertyGrid;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -184,6 +185,11 @@ namespace DaxStudio.UI.ViewModels
             if (Events == null) return;
 
             // todo summarize events
+            while (!Events.IsEmpty)
+            {
+                Events.TryDequeue(out var traceEvent);
+                // todo - produce summary
+            }
 
             Events.Clear();
 

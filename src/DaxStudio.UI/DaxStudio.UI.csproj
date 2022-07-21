@@ -319,6 +319,7 @@
     <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
+    <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />

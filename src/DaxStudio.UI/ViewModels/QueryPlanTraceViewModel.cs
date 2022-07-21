@@ -17,6 +17,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Serilog;
 using DaxStudio.Common.Enums;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -105,12 +106,13 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            if (PhysicalQueryPlanRows?.Count > 0 || LogicalQueryPlanRows?.Count > 0) return; 
+            if (PhysicalQueryPlanRows?.Count > 0 || LogicalQueryPlanRows?.Count > 0) return;
             // results have not been cleared so this is probably and end event from some other
             // action like a tooltip populating
 
-            foreach (var traceEvent in Events)
+            while (!Events.IsEmpty)
             {
+                Events.TryDequeue(out var traceEvent);
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
                     && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqLogicalPlan)
                 {

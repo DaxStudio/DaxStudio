@@ -20,6 +20,7 @@ using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common;
 using AsyncAwaitBestPractices;
+using System.Collections.Concurrent;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -34,7 +35,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelQueryEvent>
         //, IHandle<QueryTraceCompletedEvent>
     {
-        private List<DaxStudioTraceEventArgs> _events;
+        private ConcurrentQueue<DaxStudioTraceEventArgs> _events;
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
         private IGlobalOptions _globalOptions;
@@ -68,9 +69,9 @@ namespace DaxStudio.UI.ViewModels
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher
-        public List<DaxStudioTraceEventArgs> Events
+        public ConcurrentQueue<DaxStudioTraceEventArgs> Events
         {
-            get { return _events ?? (_events = new List<DaxStudioTraceEventArgs>()); }
+            get { return _events ?? (_events = new ConcurrentQueue<DaxStudioTraceEventArgs>()); }
         }
 
         protected abstract List<DaxStudioTraceEventClass> GetMonitoredEvents();
@@ -581,7 +582,7 @@ namespace DaxStudio.UI.ViewModels
             if (!CapturingStarted) return;
 
             ProcessSingleEvent(e);
-            Events.Add(e);
+            Events.Enqueue(e);
 
             if (IsFinalEvent(e)) ProcessAllEvents();
         }

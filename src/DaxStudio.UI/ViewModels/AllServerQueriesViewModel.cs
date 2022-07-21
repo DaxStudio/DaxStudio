@@ -76,7 +76,9 @@ namespace DaxStudio.UI.ViewModels
             //if (IsPaused) return; // exit here if we are paused
 
             if (Events != null) {
-                foreach (var traceEvent in Events) {
+                while (!Events.IsEmpty)
+                {
+                    Events.TryDequeue(out var traceEvent);
                     var newEvent = new QueryEvent()
                     {
                         QueryType = traceEvent.EventSubclassName.Substring(0, 3).ToUpper(),
@@ -180,7 +182,7 @@ namespace DaxStudio.UI.ViewModels
                             break;
                     }
                 }
-                
+
                 Events.Clear();
 
                 // Clear out any cached rewrite events older than 10 minutes
