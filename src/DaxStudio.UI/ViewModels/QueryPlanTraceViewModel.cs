@@ -16,6 +16,8 @@ using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Serilog;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -104,12 +106,13 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            if (PhysicalQueryPlanRows?.Count > 0 || LogicalQueryPlanRows?.Count > 0) return; 
+            if (PhysicalQueryPlanRows?.Count > 0 || LogicalQueryPlanRows?.Count > 0) return;
             // results have not been cleared so this is probably and end event from some other
             // action like a tooltip populating
 
-            foreach (var traceEvent in Events)
+            while (!Events.IsEmpty)
             {
+                Events.TryDequeue(out var traceEvent);
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
                     && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqLogicalPlan)
                 {
@@ -196,7 +199,9 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Query Plan";
         public override string ImageResource => "query_planDrawingImage";
+        public override string TraceSuffix => "plans";
         public override string ContentId => "query-plan";
+        public override int SortOrder => 20;
         public override ImageSource IconSource
         {
             get
@@ -211,6 +216,12 @@ namespace DaxStudio.UI.ViewModels
         public override string ToolTipText => "Runs a server trace to capture the Logical and Physical DAX Query Plans";
 
         public override bool FilterForCurrentSession { get { return true; } }
+
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
 
         #region ISaveState Methods
 

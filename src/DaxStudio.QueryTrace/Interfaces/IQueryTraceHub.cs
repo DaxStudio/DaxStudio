@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DaxStudio.Common.Enums;
+using System.Collections.Generic;
 
 namespace DaxStudio.QueryTrace.Interfaces
 {
@@ -10,8 +11,9 @@ namespace DaxStudio.QueryTrace.Interfaces
 
         void OnTraceError(string message);
         void OnTraceWarning(string message);
-        void OnTraceComplete(IList<DaxStudioTraceEventArgs> capturedEvents);
+        void OnTraceComplete();
         void OnTraceComplete(DaxStudioTraceEventArgs[] capturedEvents);
+        void OnTraceEvent(DaxStudioTraceEventArgs traceEvent);
         void OnTraceStarting();
         void OnTraceStarted();
         void OnTraceStopped();

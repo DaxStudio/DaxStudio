@@ -16,6 +16,11 @@ using DaxStudio.UI.Extensions;
 using System.Threading;
 using System.Threading.Tasks;
 using Timer = System.Timers.Timer;
+using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.Common.Enums;
+using DaxStudio.Common;
+using AsyncAwaitBestPractices;
+using System.Collections.Concurrent;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -30,10 +35,11 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<CancelQueryEvent>
         //, IHandle<QueryTraceCompletedEvent>
     {
-        private List<DaxStudioTraceEventArgs> _events;
+        private ConcurrentQueue<DaxStudioTraceEventArgs> _events;
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
         private IGlobalOptions _globalOptions;
+        private IQueryTrace _tracer;
 
         protected IGlobalOptions GlobalOptions { get => _globalOptions; }
 
@@ -58,16 +64,14 @@ namespace DaxStudio.UI.ViewModels
         }
         
 
-
-
         public DelegateCommand HideCommand { get; set; }
-        public List<DaxStudioTraceEventClass> MonitoredEvents { get => GetMonitoredEvents(); }
+        //public List<DaxStudioTraceEventClass> MonitoredEvents { get => GetMonitoredEvents(); }
         public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher
-        public List<DaxStudioTraceEventArgs> Events
+        public ConcurrentQueue<DaxStudioTraceEventArgs> Events
         {
-            get { return _events ?? (_events = new List<DaxStudioTraceEventArgs>()); }
+            get { return _events ?? (_events = new ConcurrentQueue<DaxStudioTraceEventArgs>()); }
         }
 
         protected abstract List<DaxStudioTraceEventClass> GetMonitoredEvents();
@@ -76,7 +80,12 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected abstract void ProcessResults();
 
-        public void ProcessAllEvents(IList<DaxStudioTraceEventArgs> capturedEvents)
+        protected virtual void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
+        {
+            // by default do nothing with individual events
+        }
+
+        public void ProcessAllEvents()
         {
             if (_timeout != null)
             {
@@ -86,14 +95,14 @@ namespace DaxStudio.UI.ViewModels
                 _timeout = null;
             }
 
-            foreach (var e in capturedEvents)
-            {
-                if (MonitoredEvents.Contains(e.EventClass))
-                {
-                    Events.Add(e);
-                }
-            }
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "ProcessAllEvents", "starting ProcessResults");
+            //foreach (var e in capturedEvents)
+            //{
+            //    if (MonitoredEvents.Contains(e.EventClass))
+            //    {
+            //        Events.Add(e);
+            //    }
+            //}
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
             if (!IsPaused) ProcessResults();
             IsBusy = false;
         }
@@ -111,6 +120,8 @@ namespace DaxStudio.UI.ViewModels
        
         // IToolWindow interface
         public abstract string Title { get; }
+
+        public abstract string TraceSuffix { get; }
 
         public virtual string TraceStatusText {
             get {
@@ -143,7 +154,7 @@ namespace DaxStudio.UI.ViewModels
         public bool IsSelected { get; set; }
         public abstract string ContentId { get; }
         public abstract ImageSource IconSource { get; }
-
+        public abstract int SortOrder { get; }
         private bool _isEnabled ;
         public bool IsEnabled { get { return _isEnabled; }
             set { _isEnabled = value;
@@ -177,17 +188,35 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => IsChecked);
                     NotifyOfPropertyChange(() => TraceStatusText);
                     //if (!_isChecked) Reset();
+
+                    // do not try to start the trace a second time if it is started or starting
+                    if (value && _tracer != null && (_tracer.Status == QueryTraceStatus.Started || _tracer.Status == QueryTraceStatus.Starting)) return;
+
                     if (value)
                     {
                         _eventAggregator.SubscribeOnPublishedThread(this);
+                        StartTraceAsync().SafeFireAndForget(onException: ex =>
+                        {
+                            Log.Error(ex, Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(IsChecked), "error setting IsChecked");
+                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error starting trace: {ex.Message}"));
+                        });
                     }
                     else
                     {
+
+                        // TODO - need a synchronous way to stop traces when shutting down or closing documents
+                        IsBusy = false;
                         _eventAggregator.Unsubscribe(this);
+                        StopTrace();
+                        //StopTraceAsync().SafeFireAndForget(onException: ex =>
+                        //{
+                        //    Log.Error(ex, Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(IsChecked), "error setting IsChecked");
+                        //    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error stopping trace: {ex.Message}"));
+                        //}); ;
                     }
-                    
+
                     _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, value));
-                    Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", "TraceWatcherBaseViewModel", "IsChecked", value);
+                    Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", GetSubclassName(), nameof(IsChecked), value);
                 }
             }
         }
@@ -214,12 +243,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (IsPaused)
                 {
-                    _isChecked = false;
                     _isPaused = false;
+                    IsChecked = false;
                 }
                 else
                 {
-                    _isChecked = !value;
+                    IsChecked = !value;
                 }
                 NotifyOfPropertyChange(nameof(IsChecked));
                 NotifyOfPropertyChange(nameof(IsPaused));
@@ -229,11 +258,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellation)
+        private string GetSubclassName()
         {
-            CheckEnabled(message.Connection, message.ActiveTrace);
-            return Task.CompletedTask;
+            return this.GetType().Name;
         }
+
+
 
         public void CheckEnabled(IConnection connection, ITraceWatcher active)
         {
@@ -257,9 +287,9 @@ namespace DaxStudio.UI.ViewModels
             IsAdminConnection = connection.IsAdminConnection;
 #endif
             //IsEnabled = (!_connection.IsPowerPivot && _connection.IsAdminConnection && _connection.IsConnected);
-            if (active != null)
-                IsEnabled = (connection.IsAdminConnection && connection.IsConnected && FilterForCurrentSession == active.FilterForCurrentSession);
-            else
+            //if (active != null)
+            //    IsEnabled = (connection.IsAdminConnection && connection.IsConnected && FilterForCurrentSession == active.FilterForCurrentSession);
+            //else
                 IsEnabled = (connection.IsAdminConnection && connection.IsConnected);
         }
 
@@ -283,7 +313,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryStartedEvent>", "Query Started");
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
             {
                 IsBusy = true;
@@ -292,9 +322,16 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
+        #region EventAggregator Handlers
+        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellation)
+        {
+            CheckEnabled(message.Connection, message.ActiveTrace);
+            return Task.CompletedTask;
+        }
+
         public Task HandleAsync(CancelQueryEvent message, CancellationToken cancellationToken)
         {
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "Handle<QueryCancelEvent>", "Query Cancelled");
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryCancelEvent>", "Query Cancelled");
             if (!IsPaused && !IsChecked)
             {
                 IsBusy = false;
@@ -302,6 +339,8 @@ namespace DaxStudio.UI.ViewModels
             }
             return Task.CompletedTask;
         }
+
+        #endregion
 
         Timer _timeout;
 
@@ -321,6 +360,35 @@ namespace DaxStudio.UI.ViewModels
             IsPaused = false;
         }
 
+        private async Task StartTraceAsync()
+        {
+            await Task.Run(async () =>
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
+                try
+                {
+                    CreateTracer();
+                    if (_tracer == null)
+                    {
+                        // the creation of the trace was cancelled
+                        await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
+                        IsChecked = false;
+                        return;
+                    }
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, true));
+                    Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync),
+                        $"Starting Tracer - {this.TraceSuffix}");
+                    await _tracer.StartAsync(_globalOptions.TraceStartupTimeout);
+
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync), "Error Stopping Trace");
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
+                }
+            }).ConfigureAwait(false);
+        }
+
         public bool CanStop { get { return IsChecked; } }
         public void Stop()
         {
@@ -334,7 +402,6 @@ namespace DaxStudio.UI.ViewModels
             get { return _isPaused; }
             set
             {
-                _isChecked = !value;
                 _isPaused = value;
                 NotifyOfPropertyChange(() => IsRecording);
                 NotifyOfPropertyChange(() => IsTraceRunning);
@@ -407,7 +474,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
         {
-            Log.Verbose("{class} {method} {message}", "TraceWatcherBaseViewModel", "QueryCompleted", isCancelled);
+            Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(QueryCompleted), isCancelled);
             _queryHistoryEvent = queryHistoryEvent;
             if (isCancelled) return;
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
@@ -435,6 +502,172 @@ namespace DaxStudio.UI.ViewModels
                     "Trace Stopped: QueryEnd event not received - Server Timing End Event timeout exceeded. You could try increasing this timeout in the Options"));
             }
         }
+
+        #region Tracer Section
+        public QueryTraceStatus TraceStatus => _tracer?.Status ?? QueryTraceStatus.Stopped;
+        public IDaxDocument Document { get; set; }
+        public IConnectionManager Connection => Document.Connection;
+
+        public bool CapturingStarted { get; private set; }
+
+        public virtual bool IsPreview => false;
+
+        // allows a subclass to perform an action before updating the monitored events
+        protected virtual bool UpdatedMonitoredEvents() { return true; }
+
+        public void CreateTracer()
+        {
+            try
+            {
+                if (!Connection.IsConnected)
+                {
+                    var msg = "Cannot start trace, the current window is not connected";
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    Log.Error(Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CreateTracer), msg);
+                    return;
+                }
+
+                OnCreateTracer();
+
+                var supportedEvents = Connection.SupportedTraceEventClasses;
+
+                // exit here if the updating of the event list has been cancelled
+                if (!UpdatedMonitoredEvents()) return;
+
+                var monitoredEvents = GetMonitoredEvents();
+                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
+
+                if (_tracer == null) // && _connection.Type != AdomdType.Excel)
+                {
+                    if (Connection.IsPowerPivot)
+                    {
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", GetSubclassName(), nameof(CreateTracer), "about to create RemoteQueryTrace", Connection.ConnectionString, Connection.Type.ToString(), Document.Host.Proxy.Port);
+                        _tracer = QueryTraceEngineFactory.CreateRemote(Connection, validEventsForConnection, Document.Host.Proxy.Port, _globalOptions, FilterForCurrentSession, TraceSuffix);
+                    }
+                    else
+                    {
+                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", GetSubclassName(), nameof(CreateTracer), "about to create LocalQueryTrace", Connection.ConnectionString, Connection.Type.ToString());
+                        _tracer = QueryTraceEngineFactory.CreateLocal(Connection, validEventsForConnection, _globalOptions, FilterForCurrentSession, TraceSuffix);
+                    }
+                    //_tracer.TraceEvent += TracerOnTraceEvent;
+                    _tracer.TraceStarted += TracerOnTraceStarted;
+                    _tracer.TraceCompleted += TracerOnTraceCompleted;
+                    _tracer.TraceError += TracerOnTraceError;
+                    _tracer.TraceWarning += TracerOnTraceWarning;
+                    _tracer.TraceEvent += TracerOnTraceEvent;
+                }
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var innerEx in ex.InnerExceptions)
+                {
+                    Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), innerEx.Message, innerEx.StackTrace);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), ex.Message, ex.StackTrace);
+            }
+        }
+
+        protected virtual void OnCreateTracer()
+        {
+            // allows for trace watchers to perform actions before a tracer gets created
+        }
+
+        private void TracerOnTraceEvent(object sender, DaxStudioTraceEventArgs e)
+        {
+            if (!GetMonitoredEvents().Contains(e.EventClass)) return;
+            if (ShouldStartCapturing(e)) CapturingStarted = true;
+            if (!CapturingStarted) return;
+
+            ProcessSingleEvent(e);
+            Events.Enqueue(e);
+
+            if (IsFinalEvent(e)) ProcessAllEvents();
+        }
+
+        protected abstract bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent);
+
+        protected virtual bool ShouldStartCapturing(DaxStudioTraceEventArgs traceEvent)
+        {
+            return true;
+        }
+
+        private void TracerOnTraceCompleted(object sender, EventArgs e)
+        {
+            if (IsChecked && !IsPaused) ProcessAllEvents();
+            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent());
+        }
+
+        private void TracerOnTraceStarted(object sender, EventArgs e)
+        {
+            Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", GetSubclassName(), nameof(TracerOnTraceStarted), e);
+
+            Execute.OnUIThread(() => {
+                Document.OutputMessage("Query Trace Started");
+                this.IsEnabled = true;
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Started));
+            });
+        }
+
+        private void TracerOnTraceError(object sender, string e)
+        {
+            Document.OutputError(e);
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
+            StopTrace();
+        }
+
+        public void StopTrace()
+        {
+            _eventAggregator.Unsubscribe(this);
+            if (_tracer == null) return;
+            try
+            {
+                Log.Verbose(Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTrace), $"Stopping Trace - {TraceSuffix}");
+                _tracer.TraceCompleted -= TracerOnTraceCompleted;
+                _tracer.TraceError -= TracerOnTraceError;
+                _tracer.TraceStarted -= TracerOnTraceStarted;
+                _tracer.TraceWarning -= TracerOnTraceWarning;
+                _tracer.TraceEvent -= TracerOnTraceEvent;
+                _tracer?.Stop();
+                _tracer?.Dispose();
+                _tracer = null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTrace), ex.Message);
+            }
+        }
+
+        public async Task StopTraceAsync()
+        {
+            await Task.Run(async () =>
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Stopping));
+                try
+                {
+                    StopTrace();
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, false));
+                    Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync),
+                        "Stopping Tracer");
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync), "Error Stopping Trace");
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
+                }
+            }).ConfigureAwait(false);
+        }
+
+        private void TracerOnTraceWarning(object sender, string e)
+        {
+            Document.OutputWarning(e);
+        }
+
+        #endregion
+
 
     }
 }

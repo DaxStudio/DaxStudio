@@ -14,6 +14,8 @@ using System.Diagnostics.Contracts;
 using ADOTabular.Enums;
 using System.Linq;
 using System.IO;
+using DaxStudio.Common.Enums;
+using Microsoft.AnalysisServices;
 
 namespace DaxStudio.QueryTrace
 {
@@ -83,8 +85,9 @@ namespace DaxStudio.QueryTrace
         public delegate void DaxStudioTraceEventHandler(object sender, DaxStudioTraceEventArgs e);
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 
-        public event DaxStudioTraceEventHandler TraceEvent;
-        public event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        //public event DaxStudioTraceEventHandler TraceEvent;
+        public event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
+        public event EventHandler TraceCompleted;
         public event EventHandler TraceStarted;
         public event EventHandler<string> TraceError;
         public event EventHandler<string> TraceWarning;
@@ -104,16 +107,19 @@ namespace DaxStudio.QueryTrace
         
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
-        private string _friendlyServerName = "";
+        private string _friendlyServerName = string.Empty;
+        private readonly string _suffix = string.Empty;
 
         
-        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession)
+        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession, string suffix)
         {
             Contract.Requires(connectionString != null, "connectionString must not be null");
 
             Status = QueryTraceStatus.Stopped;
             _originalConnectionString = connectionString;
             _sessionId = sessionId;
+
+            _suffix = suffix;
             FilterForCurrentSession = filterForCurrentSession;
             ConfigureTrace(connectionString, connectionType, applicationName);
             Events = events;
@@ -271,7 +277,7 @@ namespace DaxStudio.QueryTrace
                 Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "GetTrace", "about to create new trace");
                 _server = new xlAmo.Server();
                 _server.Connect(_connectionString);
-                _trace = _server.Traces.Add( $"DaxStudio_Trace_SPID_{_sessionId}");
+                _trace = _server.Traces.Add( $"DaxStudio_Trace_SPID_{_sessionId}_{_suffix}");
                 if (FilterForCurrentSession) _trace.Filter = GetSessionIdFilter(_sessionId);
                 // set default stop time in case trace gets disconnected
                 //_trace.StopTime = DateTime.UtcNow.AddHours(24);
@@ -323,12 +329,12 @@ namespace DaxStudio.QueryTrace
                 if (e.EventClass == xlAmo.TraceEventClass.DiscoverBegin ) return;
 
                 Log.Debug("{class} {method} TraceEvent: {eventClass}", "QueryTraceEngineExcel", "OnTraceEventInternal", e.EventClass.ToString());
-                //OnTraceEvent(e);
+                OnTraceEvent(CreateTraceEventArg(e, _friendlyServerName));
                 _capturedEvents.Add( CreateTraceEventArg(e, _friendlyServerName));
                 if (e.EventClass == xlAmo.TraceEventClass.QueryEnd || e.EventClass == xlAmo.TraceEventClass.Error)
                 {
                     // Raise an event with the captured events
-                    TraceCompleted?.Invoke(this, _capturedEvents);
+                    TraceCompleted?.Invoke(this,null);
                     // reset the captured events collection
                     _capturedEvents = new List<DaxStudioTraceEventArgs>();
                 }

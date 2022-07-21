@@ -10,7 +10,6 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -33,8 +32,6 @@ using DAXEditorControl;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
-using DaxStudio.QueryTrace;
-using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
@@ -48,16 +45,12 @@ using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
-using ICSharpCode.AvalonEdit.Rendering;
-using Microsoft.AnalysisServices;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Serilog;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using AvalonDock;
-using AvalonDock.Themes;
-using Action = System.Action;
 using Constants = DaxStudio.Common.Constants;
 using Timer = System.Timers.Timer;
 
@@ -90,12 +83,13 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<RunStyleChangedEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
-        , IHandle<SelectedModelChangedEvent>
         , IHandle<EditorHotkeyEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
+        , IHandle<TraceChangedEvent>
+        , IHandle<TraceChangingEvent>
         , IHandle<DockManagerLoadLayout>
         , IHandle<DockManagerSaveLayout>
         , IHandle<UpdateGlobalOptions>
@@ -571,9 +565,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private IQueryTrace _tracer;
 
-        public IQueryTrace Tracer => _tracer;
 
         public bool HighlightXmSqlCallbacks => Options.HighlightXmSqlCallbacks;
 
@@ -592,162 +584,6 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
-        #region Methods
-        public void CreateTracer()
-        {
-            try
-            {
-                if (!Connection.IsConnected)
-                {
-                    var msg = "Cannot start trace, the current window is not connected";
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
-                    Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CreateTracer), msg);
-                    return;
-                }
-
-                if (_tracer == null) // && _connection.Type != AdomdType.Excel)
-                {
-                    if (Connection.IsPowerPivot)
-                    {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create RemoteQueryTrace", Connection.ConnectionString, Connection.Type.ToString(), Host.Proxy.Port);
-                        _tracer = QueryTraceEngineFactory.CreateRemote(Connection, GetTraceEvents(TraceWatchers), Host.Proxy.Port, Options, ShouldFilterForCurrentSession(TraceWatchers));
-                    }
-                    else
-                    {
-                        Log.Verbose("{class} {method} {event} ConnStr: {connectionString} Type: {type} port: {port}", "DocumentViewModel", "Tracer", "about to create LocalQueryTrace", Connection.ConnectionString, Connection.Type.ToString());
-                        _tracer = QueryTraceEngineFactory.CreateLocal(Connection, GetTraceEvents(TraceWatchers), Options, ShouldFilterForCurrentSession(TraceWatchers));
-                    }
-                    //_tracer.TraceEvent += TracerOnTraceEvent;
-                    _tracer.TraceStarted += TracerOnTraceStarted;
-                    _tracer.TraceCompleted += TracerOnTraceCompleted;
-                    _tracer.TraceError += TracerOnTraceError;
-                    _tracer.TraceWarning += TracerOnTraceWarning;
-                }
-            }
-            catch (AggregateException ex)
-            {
-                foreach (var innerEx in ex.InnerExceptions)
-                {
-                    Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", innerEx.Message, innerEx.StackTrace);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("{class} {method} {message} {stackTrace}", "DocumentViewModel", "CreateTrace", ex.Message, ex.StackTrace);
-            }
-        }
-
-        #endregion
-
-        private bool ShouldFilterForCurrentSession(BindableCollection<ITraceWatcher> traceWatchers)
-        {
-            var w = traceWatchers.FirstOrDefault(tw => tw.IsChecked && tw.FilterForCurrentSession);
-            if (w != null) return true;
-            return false;
-        }
-
-        private void UpdateTraceEvents()
-        {
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
-            OutputMessage("Reconfiguring Trace");
-            var events = GetTraceEvents(TraceWatchers);
-            var newEventCnt = 0;
-            if (_tracer == null)
-            {
-                Log.Warning("{class} {method} {message}", nameof(DocumentViewModel), nameof(UpdateTraceEvents), "_trace field was null, calling CreateTracer()");
-                CreateTracer();
-            }
-            else
-            {
-                _tracer.Events.Clear();
-                _tracer.Events.Add(DaxStudioTraceEventClass.DiscoverBegin);
-                _tracer.Events.Add(DaxStudioTraceEventClass.CommandBegin);
-                _tracer.Events.Add(DaxStudioTraceEventClass.QueryEnd);
-                foreach (var e in events)
-                {
-                    if (!_tracer.Events.Contains(e))
-                    {
-                        _tracer.Events.Add(e);
-                        newEventCnt++;
-                    }
-                }
-                _tracer.Update();
-                Log.Debug("Trace Updated with {count} new events", newEventCnt);
-            }
-        }
-
-        private void TracerOnTraceError(object sender, string e)
-        {
-            OutputError(e);
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
-            ShutDownTraces();
-        }
-
-        private void TracerOnTraceWarning(object sender, string e)
-        {
-            OutputWarning(e);
-        }
-
-        private List<DaxStudioTraceEventClass> GetTraceEvents(BindableCollection<ITraceWatcher> traceWatchers)
-        {
-            var events = new List<DaxStudioTraceEventClass>();
-            foreach (var tw in traceWatchers.Where(t => t.IsChecked))
-            {
-                foreach (var e in tw.MonitoredEvents)
-                {
-                    // Don't add DirectQueryEvent if the server does not support direct query session filters 
-                    // and the options has not been enabled in the options screen
-                    if (e == DaxStudioTraceEventClass.DirectQueryEnd && !Options.TraceDirectQuery && !Connection.ServerVersion.SupportsDirectQueryFilters()) continue;
-
-                    // if the server version does not support Aggregate Table Events do not add them
-                    if (e == DaxStudioTraceEventClass.AggregateTableRewriteQuery && !Connection.ServerVersion.SupportsAggregateTables()) continue;
-
-                    // Add the even to the collection if we don't already have it
-                    if (!events.Contains(e))
-                    {
-                        events.Add(e);
-                    }
-                }
-            }
-            return events;
-        }
-
-        private void TracerOnTraceCompleted(object sender, IList<DaxStudioTraceEventArgs> capturedEvents)
-        {
-            var checkedTraceWatchers = from tw in TraceWatchers
-                                       where tw.IsChecked
-                                       select tw;
-
-            foreach (var tw in checkedTraceWatchers)
-            {
-                tw.ProcessAllEvents(capturedEvents);
-            }
-            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent());
-        }
-
-        private void TracerOnTraceStarted(object sender, EventArgs e)
-        {
-            Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", "DocumentViewModel", "TracerOnTraceStarted", e);
-
-            Execute.OnUIThread(() => {
-                OutputMessage("Query Trace Started");
-                TraceWatchers.EnableAll();
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Started));
-            });
-        }
-
-        //private void TracerOnTraceEvent(object sender, TraceEventArgs traceEventArgs)
-        //{
-        //    var checkedTraceWatchers = from tw in TraceWatchers 
-        //                               where tw.IsChecked == true
-        //                               select tw;
-
-        //    foreach (var tw in checkedTraceWatchers)
-        //    {
-        //        tw.ProcessEvent(traceEventArgs);
-        //    }
-        //}
-
         // Use MEF to give us a collection of TraceWatcher factory objects
         // used to create unique instances of each TraceWatcher type per document
         [ImportMany(typeof(ITraceWatcher))]
@@ -762,12 +598,16 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_traceWatchers == null && TraceWatcherFactories != null)
                 {
-                    _traceWatchers = new BindableCollection<ITraceWatcher>();
+                    var temp = new BindableCollection<ITraceWatcher>();
                     foreach (var fac in TraceWatcherFactories)
                     {
                         var tw = fac.CreateExport().Value;
-                        _traceWatchers.Add(tw);
+                        if (tw.IsPreview) continue; // skip showing if this is a preview tracer
+
+                        tw.Document = this;
+                        temp.Add(tw);
                     }
+                    _traceWatchers = new BindableCollection<ITraceWatcher>(temp.OrderBy(t => t.SortOrder));
                 }
                 return _traceWatchers;
             }
@@ -1333,13 +1173,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsTraceChanging
         {
-            get => _traceChanging;
-            set
-            {
-                _traceChanging = value;
-                NotifyOfPropertyChange(() => IsTraceChanging);
-                NotifyOfPropertyChange(() => CanRunQuery);
-            }
+            get => _traceWatchers.Any(tw => tw.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Starting);
+            
         }
 
         public DmvPaneViewModel DmvPane { get; private set; }
@@ -2501,131 +2336,25 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(TraceWatcherToggleEvent message, CancellationToken cancellationToken)
         {
-            Log.Verbose("{Class} {Event} TraceWatcher:{TraceWatcher} IsActive:{IsActive}", "DocumentViewModel", "Handle(TraceWatcherToggleEvent", message.TraceWatcher.ToString(), message.IsActive);
-            TraceWatchers.DisableAll();
-
             if (message.IsActive)
-            {
-                EnableTrace(message.TraceWatcher);
-            }
-            else
-            {
-                DisableTrace(message.TraceWatcher);
-            }
+                DisplayTraceWindow(message.TraceWatcher);
+            NotifyOfPropertyChange(nameof(IsTraceChanging));
             return Task.CompletedTask;
         }
 
-        private void DisableTrace(ITraceWatcher watcher)
+        private void DisplayTraceWindow(ITraceWatcher watcher)
         {
-            IsTraceChanging = true;
-            var otherTracesRunning = false;
+            if (!ToolWindows.Contains(watcher))
+                ToolWindows.Add(watcher);
 
-            foreach (var tw in TraceWatchers)
+            // synch the ribbon buttons and the server timings pane
+            if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
             {
-                if (tw.IsChecked) otherTracesRunning = true;
-            }
-            if (otherTracesRunning)
-            {
-                UpdateTraceEvents();
-                return;
-            }
+                stvModel.ServerTimingDetails = ServerTimingDetails;
 
-            // If we got here no traces are running so shut everything down
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Stopping));
-            OutputMessage("Stopping Trace");
-            // spin down trace as no tracewatchers are active
-            ResetTracer();
-            OutputMessage("Trace Stopped");
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
-            TraceWatchers.EnableAll();
-            IsTraceChanging = false;
-        }
-
-        private void EnableTrace(ITraceWatcher watcher)
-        {
-            try
-            {
-                IsTraceChanging = true;
-                if (!ToolWindows.Contains(watcher))
-                    ToolWindows.Add(watcher);
-
-                // synch the ribbon buttons and the server timings pane
-                if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
-                {
-                    stvModel.ServerTimingDetails = ServerTimingDetails;
-                    stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
-                    stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
-                }
-
-                if (Tracer == null) CreateTracer();
-                else UpdateTraceEvents();
-
-                // spin up trace if one is not already running
-                if (Tracer.Status != QueryTraceStatus.Started
-                    && Tracer.Status != QueryTraceStatus.Starting)
-                {
-                    _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
-                    OutputMessage("Waiting for Trace to start");
-
-                    var t = Tracer;
-                    t.StartAsync(Options.TraceStartupTimeout).ContinueWith(p =>
-                    {
-                        if (p.Exception != null)
-                        {
-                            p.Exception.Handle(x =>
-                            {
-                                Log.Error("{class} {method} {message} {stacktrace}", "DocumentViewModel", "Handle<TraceWatcherToggleEvent>", x.Message, x.StackTrace);
-                                OutputError("Error Starting Trace: " + x.Message);
-                                return false;
-                            });
-                        }
-                    }, TaskScheduler.Default);
-                }
-                // Disable other tracewatchers with different filter for current session values
-                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                foreach (var tw in TraceWatchers)
-                {
-                    tw.CheckEnabled(Connection, activeTrace);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "EnableTrace", "Error while enabling trace");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error enabling Trace: " + ex.Message));
-            }
-            finally
-            {
-                IsTraceChanging = false;
             }
         }
 
-        private void ResetTracer()
-        {
-            if (Dispatcher.CurrentDispatcher.CheckAccess())
-            {
-                ResetTracerInternal();
-            }
-            else
-            {
-                Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)delegate { ResetTracerInternal(); });
-            }
-
-        }
-
-        private void ResetTracerInternal()
-        {
-            if (Dispatcher.CurrentDispatcher.CheckAccess())
-                if (Tracer != null)
-                {
-                    _tracer.TraceCompleted -= TracerOnTraceCompleted;
-                    _tracer.TraceError -= TracerOnTraceError;
-                    _tracer.TraceStarted -= TracerOnTraceStarted;
-                    _tracer.TraceWarning -= TracerOnTraceWarning;
-                    Tracer?.Stop();
-                    Tracer?.Dispose();
-                    _tracer = null;
-                }
-        }
 
         internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId}.dax");
 
@@ -2935,7 +2664,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FileName = FileName ?? _displayName,
                 DefaultExt = ".dax",
-                Filter = "DAX documents|*.dax"
+                Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
             };
 
             // Show save file dialog box
@@ -3377,7 +3106,11 @@ namespace DaxStudio.UI.ViewModels
 
         private void ShutDownTraces()
         {
-            ResetTracer();
+            // TODO: stop all trace watchers
+            foreach (var tw in TraceWatchers)
+            {
+                if (tw.IsChecked) tw.StopTrace();
+            }
         }
 
         protected virtual bool DoCloseCheck()
@@ -4647,37 +4380,11 @@ namespace DaxStudio.UI.ViewModels
             _editor?.SetSyntaxHighlightColorTheme(Options.AutoTheme);
         }
 
-        public Task HandleAsync(SelectedModelChangedEvent message,CancellationToken cancellationToken)
-        {
-            UpdateRunningTraces();
-            return Task.CompletedTask;
-        }
 
         public Task HandleAsync(ReconnectEvent message, CancellationToken cancellationToken)
         {
-            UpdateRunningTraces();
             Spid = Connection?.SPID??-1;
             return Task.CompletedTask;
-        }
-
-        private void UpdateRunningTraces()
-        {
-            // if there is not a running trace exit here
-            if (_tracer == null) return;
-            if (_tracer.Status != QueryTraceStatus.Started) return;
-
-            // reconnect any running traces to pick up the initial catalog property
-            try
-            {
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
-                IsTraceChanging = true;
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Reconfiguring trace due to connection changes"));
-                _tracer.Update(Connection.SelectedDatabaseName, Connection.SessionId);
-            }
-            finally
-            {
-                IsTraceChanging = false;
-            }
         }
 
 
@@ -4725,7 +4432,7 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; set; }
         public IAutoSaver AutoSaver { get; }
 
-        IModelIntellisenseProvider IDaxDocument.Connection => Connection;
+        IConnectionManager IDaxDocument.Connection => Connection;
 
         public bool IsBenchmarkRunning {get;set;}
 
@@ -4877,6 +4584,20 @@ namespace DaxStudio.UI.ViewModels
             var editor = GetEditor();
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(() => IsTraceChanging);
+            NotifyOfPropertyChange(() => CanRunQuery);
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(() => IsTraceChanging);
+            NotifyOfPropertyChange(() => CanRunQuery);
             return Task.CompletedTask;
         }
 

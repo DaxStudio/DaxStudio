@@ -72,7 +72,6 @@
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="DaxStudioTraceEventArgs.cs" />
-    <Compile Include="DaxStudioTraceEventClass.cs" />
     <Compile Include="DaxStudioTraceEventSubclass.cs" />
     <Compile Include="Interfaces\IQueryTrace.cs" />
     <Compile Include="Interfaces\IQueryTraceHub.cs" />

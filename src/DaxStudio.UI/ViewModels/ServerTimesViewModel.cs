@@ -24,6 +24,8 @@ using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -343,13 +345,25 @@ namespace DaxStudio.UI.ViewModels
         : TraceWatcherBaseViewModel, ISaveState, IServerTimes
         , IHandle<UpdateGlobalOptions>
     {
+        private bool parallelStorageEngineEventsDetected = false;
+        public bool ParallelStorageEngineEventsDetected
+        { get => parallelStorageEngineEventsDetected; 
+            set { 
+                parallelStorageEngineEventsDetected = value;
+                NotifyOfPropertyChange();
+            }
+        } 
+
+
+        private DaxStudioTraceEventArgs maxStorageEngineEvent = null;
+
         public IGlobalOptions Options { get; set; }
         public Dictionary<string, string> RemapColumnNames { get; set; }
         public Dictionary<string, string> RemapTableNames { get; set; }
 
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails
-            , IGlobalOptions options) : base(eventAggregator, globalOptions)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, ServerTimingDetailsViewModel serverTimingDetails
+            , IGlobalOptions options) : base(eventAggregator, options)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             RemapColumnNames = new Dictionary<string, string>();
@@ -408,8 +422,8 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            if (StorageEngineEvents?.Count > 0 ) return;
-            // results have not been cleared so this is probably and end event from some other
+            if (_storageEngineEvents?.Count > 0 ) return;
+            // results have not been cleared so this is probably an end event from some other
             // action like a tooltip populating
 
             ClearAll();
@@ -419,10 +433,22 @@ namespace DaxStudio.UI.ViewModels
             long batchStorageEngineCpu = 0;
             long batchStorageEngineQueryCount = 0;
 
+            maxStorageEngineEvent = null;
+            bool eventsProcessed = false;
+
             if (Events != null)
             {
-                foreach (var traceEvent in Events)
+                // exit early if this is an internal query
+                if (IsDaxStudioInternalQuery()) {
+                    Events.Clear();
+                    return;
+                };
+
+                eventsProcessed = !Events.IsEmpty;
+                while (!Events.IsEmpty)
                 {
+                    
+                    Events.TryDequeue(out var traceEvent);
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryBegin)
                     {
                         // At the start of a batch, we just activate the flag BatchScan
@@ -460,22 +486,27 @@ namespace DaxStudio.UI.ViewModels
                         }
                         else if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.VertiPaqScan)
                         {
+                            UpdateForParallelOperations(traceEvent);
+
                             if (batchScan > 0) {
                                 traceEvent.InternalBatchEvent = true;
-                                batchStorageEngineDuration += traceEvent.Duration;
+                                batchStorageEngineDuration += traceEvent.NetParallelDuration;
                                 batchStorageEngineCpu += traceEvent.CpuTime;
                                 batchStorageEngineQueryCount++;
                             }
-                            StorageEngineDuration += traceEvent.Duration;
+                            
+                            StorageEngineDuration += traceEvent.NetParallelDuration;
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
+                            
                         }
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                     }
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
                     {
-                        StorageEngineDuration += traceEvent.Duration;
+                        UpdateForParallelOperations(traceEvent);
+                        StorageEngineDuration += traceEvent.NetParallelDuration;
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
@@ -508,13 +539,46 @@ namespace DaxStudio.UI.ViewModels
 
                     _eventAggregator.PublishOnUIThreadAsync(QueryHistoryEvent);
                 }
-                if (Events.Count > 0) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
+                if (eventsProcessed) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
 
                 Events.Clear();
 
                 NotifyOfPropertyChange(nameof(StorageEngineEvents));
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanCopyResults));
+            }
+        }
+
+        private bool IsDaxStudioInternalQuery()
+        {
+            var endEvent = Events.FirstOrDefault(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd);
+            return endEvent != null && endEvent.TextData.Contains(Constants.InternalQueryHeader);
+        }
+
+        // This function assumes that the events arrive in starttime order, then we check if
+        // the start/end times of the current event overlap with the end time of the previous
+        // event with the latest end time.
+        private void UpdateForParallelOperations(DaxStudioTraceEventArgs traceEvent)
+        {
+            if (maxStorageEngineEvent == null)
+            {
+                maxStorageEngineEvent = traceEvent;
+                return;
+            }
+
+            if (maxStorageEngineEvent.EndTime > traceEvent.StartTime)
+            {
+                ParallelStorageEngineEventsDetected = true;
+                if (maxStorageEngineEvent.EndTime > traceEvent.EndTime)
+                {
+                    // fully overlapped
+                    traceEvent.NetParallelDuration = 0;
+                }
+                else
+                {
+                    traceEvent.NetParallelDuration = (long)(traceEvent.EndTime - maxStorageEngineEvent.EndTime).TotalMilliseconds;
+                    maxStorageEngineEvent = traceEvent;
+                }
             }
         }
 
@@ -679,8 +743,9 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Server Timings";
         public override string ContentId => "server-timings-trace";
-
+        public override string TraceSuffix => "timings";
         public override string ImageResource => "server_timingsDrawingImage";
+        public override int SortOrder => 30;
         public override ImageSource IconSource
         {
             get
@@ -819,6 +884,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
         private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)

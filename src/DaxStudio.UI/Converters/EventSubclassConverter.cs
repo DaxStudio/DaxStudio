@@ -4,6 +4,7 @@ using System.Windows.Data;
 using Microsoft.AnalysisServices;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Model;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.Converters {
     class EventClassSubclassConverter : IValueConverter {

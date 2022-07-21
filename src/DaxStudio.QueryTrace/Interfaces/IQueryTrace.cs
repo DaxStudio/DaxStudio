@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DaxStudio.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,8 +22,9 @@ namespace DaxStudio.QueryTrace.Interfaces
         void Update();
         void Update(string databaseName, string sessionId);
 
-        //event TraceEventHandler TraceEvent;
-        event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
+        //        event EventHandler<IList<DaxStudioTraceEventArgs>> TraceCompleted;
+        event EventHandler TraceCompleted;
         event EventHandler TraceStarted;
         event EventHandler<string> TraceError;
         event EventHandler<string> TraceWarning;

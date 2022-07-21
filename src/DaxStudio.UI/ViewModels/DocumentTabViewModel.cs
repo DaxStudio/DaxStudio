@@ -321,7 +321,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FileName = "Document",
                 DefaultExt = ".dax",
-                Filter = "DAX documents|*.dax;*.msdax|DAX Studio documents|*.dax|SSMS DAX documents|*.msdax"
+                Filter = "DAX documents|*.dax;*.msdax|DAX Studio documents|*.dax;*.daxx|SSMS DAX documents|*.msdax"
             };
 
             // Show open file dialog box

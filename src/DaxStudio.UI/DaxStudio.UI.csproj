@@ -319,6 +319,7 @@
     <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
+    <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
@@ -449,6 +450,8 @@
     <Compile Include="Model\QueryBuilder\QueryBuilderFilterList.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
+    <Compile Include="Model\RefreshEvent.cs" />
+    <Compile Include="Model\SemaphoreSlimLock.cs" />
     <Compile Include="Model\SettingsProviderFactory.cs" />
     <Compile Include="Model\TreeViewFunctions.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
@@ -636,6 +639,7 @@
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
+    <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderFilter.cs" />
@@ -766,6 +770,9 @@
     </Compile>
     <Compile Include="Views\QueryResultsPaneView.xaml.cs">
       <DependentUpon>QueryResultsPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RefreshTraceView.xaml.cs">
+      <DependentUpon>RefreshTraceView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RibbonView.xaml.cs">
       <DependentUpon>RibbonView.xaml</DependentUpon>
@@ -967,6 +974,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\QueryBuilderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RefreshTraceView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1664,6 +1675,9 @@
     <Resource Include="Images\icon-copy%4032px.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AsyncAwaitBestPractices">
+      <Version>6.0.5</Version>
+    </PackageReference>
     <PackageReference Include="AvalonEdit">
       <Version>6.1.3.50</Version>
     </PackageReference>
