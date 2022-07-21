@@ -84,6 +84,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public long? Duration { get; set; }
+        public long? NetParallelDuration { get; set; }
         public long? CpuTime { get; set; }
         public double? CpuFactor { get; set; }
         public int RowNumber { get; set; }
@@ -176,6 +177,7 @@ namespace DaxStudio.UI.ViewModels
             if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {
                 Duration = ev.Duration;
+                NetParallelDuration = ev.NetParallelDuration;
                 if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
                 {
                     CpuTime = ev.CpuTime;
@@ -354,7 +356,7 @@ namespace DaxStudio.UI.ViewModels
         { get => parallelStorageEngineEventsDetected; 
             set { 
                 parallelStorageEngineEventsDetected = value;
-                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(ParallelStorageEngineEventsDetected));
             }
         } 
 
