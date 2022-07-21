@@ -18,11 +18,11 @@ namespace DaxStudio.QueryTrace
             trc.Columns.Add(TraceColumn.RequestID);
             trc.Columns.Add(TraceColumn.DatabaseName);
 
-            if (eventClass == TraceEventClass.QueryEnd)
-            {
-                trc.Columns.Add(TraceColumn.EndTime);
-                trc.Columns.Add(TraceColumn.NTUserName);
-            }
+            //if (eventClass == TraceEventClass.QueryEnd)
+            //{
+            //    trc.Columns.Add(TraceColumn.EndTime);
+            //    trc.Columns.Add(TraceColumn.NTUserName);
+            //}
 
             if (eventClass != TraceEventClass.DirectQueryEnd && eventClass != TraceEventClass.Error) {
                 // DirectQuery doesn't have subclasses
@@ -39,6 +39,7 @@ namespace DaxStudio.QueryTrace
                 || eventClass == TraceEventClass.CommandEnd
                 || eventClass == TraceEventClass.DAXQueryPlan)
             {
+                trc.Columns.Add(TraceColumn.NTUserName);
                 trc.Columns.Add(TraceColumn.ApplicationName);
             }
 
@@ -56,6 +57,7 @@ namespace DaxStudio.QueryTrace
             {
                 trc.Columns.Add(TraceColumn.RequestParameters);
                 trc.Columns.Add(TraceColumn.RequestProperties);
+                trc.Columns.Add(TraceColumn.ApplicationName);
             }
 
             switch (eventClass)
@@ -74,6 +76,7 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.VertiPaqSEQueryEnd:
                     trc.Columns.Add(TraceColumn.Duration);
                     trc.Columns.Add(TraceColumn.CpuTime);
+                    trc.Columns.Add(TraceColumn.EndTime);
                     break;
                 case TraceEventClass.Error:
                     trc.Columns.Add(TraceColumn.Error);

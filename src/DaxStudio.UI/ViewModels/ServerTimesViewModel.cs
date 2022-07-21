@@ -91,6 +91,8 @@ namespace DaxStudio.UI.ViewModels
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
         public bool InternalBatchEvent { get; set; }
+        public DateTime StartTime { get; private set; }
+        public DateTime EndTime { get; private set; }
 
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for the following functions:
@@ -141,6 +143,8 @@ namespace DaxStudio.UI.ViewModels
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
             InternalBatchEvent = ev.InternalBatchEvent;
+            StartTime = ev.StartTime;
+            EndTime = ev.EndTime;
             switch (Class)
             {
                 //case DaxStudioTraceEventClass.DirectQueryEnd:
@@ -814,7 +818,7 @@ namespace DaxStudio.UI.ViewModels
                 TotalCpuDuration = this.TotalCpuDuration,
                 QueryEndDateTime = this.QueryEndDateTime
             };
-            var json = JsonConvert.SerializeObject(m, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(m, Formatting.Indented, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
             return json;
         }
 

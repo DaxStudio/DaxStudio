@@ -49,6 +49,7 @@ namespace DaxStudio.QueryTrace
                     break;
                 case TraceEventClass.VertiPaqSEQueryEnd:
                     StartTime = e.StartTime;
+                    EndTime = e.EndTime;    
                     CpuTime = e.CpuTime;
                     Duration = e.Duration;
                     NTUserName = e.NTUserName;
@@ -99,6 +100,7 @@ namespace DaxStudio.QueryTrace
                     break;
                 case TraceEventClass.ProgressReportEnd:
                     StartTime = e.StartTime;
+                    EndTime = e.EndTime;
                     //CpuTime = e.CpuTime;
                     Duration = e.Duration;
                     NTUserName = e.NTUserName;
@@ -122,6 +124,7 @@ namespace DaxStudio.QueryTrace
                     // no additional properties captured, the plan is stored in the text field
                     Duration = e.Duration;
                     StartTime = e.CurrentTime;
+                    EndTime = e.EndTime;
                     NTUserName = e.NTUserName;
                     break;
                 default:
