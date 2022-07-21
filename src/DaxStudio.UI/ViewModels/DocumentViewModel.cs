@@ -1173,7 +1173,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsTraceChanging
         {
-            get => _updatingTraces > 0;
+            get => _traceWatchers.Any(tw => tw.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Starting);
             
         }
 
@@ -2338,6 +2338,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (message.IsActive)
                 DisplayTraceWindow(message.TraceWatcher);
+            NotifyOfPropertyChange(nameof(IsTraceChanging));
             return Task.CompletedTask;
         }
 
@@ -4586,10 +4587,8 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        private int _updatingTraces = 0;
         public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
         {
-            Interlocked.Increment(ref _updatingTraces);
             NotifyOfPropertyChange(() => IsTraceChanging);
             NotifyOfPropertyChange(() => CanRunQuery);
             return Task.CompletedTask;
@@ -4597,7 +4596,6 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
-            Interlocked.Decrement(ref _updatingTraces);
             NotifyOfPropertyChange(() => IsTraceChanging);
             NotifyOfPropertyChange(() => CanRunQuery);
             return Task.CompletedTask;

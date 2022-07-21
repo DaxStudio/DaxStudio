@@ -422,7 +422,7 @@ namespace DaxStudio.UI.ViewModels
         protected override void ProcessResults()
         {
             if (_storageEngineEvents?.Count > 0 ) return;
-            // results have not been cleared so this is probably and end event from some other
+            // results have not been cleared so this is probably an end event from some other
             // action like a tooltip populating
 
             ClearAll();
@@ -437,6 +437,12 @@ namespace DaxStudio.UI.ViewModels
 
             if (Events != null)
             {
+                // exit early if this is an internal query
+                if (IsDaxStudioInternalQuery()) {
+                    Events.Clear();
+                    return;
+                };
+
                 eventsProcessed = !Events.IsEmpty;
                 while (!Events.IsEmpty)
                 {
@@ -540,6 +546,12 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanCopyResults));
             }
+        }
+
+        private bool IsDaxStudioInternalQuery()
+        {
+            var endEvent = Events.FirstOrDefault(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd);
+            return endEvent != null && endEvent.TextData.Contains(Constants.InternalQueryHeader);
         }
 
         // This function assumes that the events arrive in starttime order, then we check if

@@ -39,9 +39,9 @@ namespace DaxStudio.Tests
             var e1 = CreateDSVertipaqSEEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25)); // 20
             var e2 = CreateDSVertipaqSEEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
             var e3 = CreateDSQueryEndEvent(5, new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
-            vm.Events.Add(e1);
-            vm.Events.Add(e2);
-            vm.Events.Add(e3);
+            vm.Events.Enqueue(e1);
+            vm.Events.Enqueue(e2);
+            vm.Events.Enqueue(e3);
             
             vm.ProcessAllEvents();
 
@@ -60,16 +60,16 @@ namespace DaxStudio.Tests
 
             var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions);
 
-            var e1 = CreateDSVertipaqSEEvent(1,new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25)); // 20
-            var e2 = CreateDSVertipaqSEEvent(2,new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // overlapped
-            var e3 = CreateDSVertipaqSEEvent(3,new DateTime(2022, 7, 10, 1, 1, 1, 15), new DateTime(2022, 7, 10, 1, 1, 1, 30)); // +5
+            var e1 = CreateDSVertipaqSEEvent(1,new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25));  // 20
+            var e2 = CreateDSVertipaqSEEvent(2,new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // fully overlapped
+            var e3 = CreateDSVertipaqSEEvent(3,new DateTime(2022, 7, 10, 1, 1, 1, 15), new DateTime(2022, 7, 10, 1, 1, 1, 30)); // +5 partial overlap
             var e4 = CreateDSVertipaqSEEvent(4,new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
             var e5 = CreateDSQueryEndEvent(5,new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
-            vm.Events.Add(e1);
-            vm.Events.Add(e2);
-            vm.Events.Add(e3);
-            vm.Events.Add(e4);
-            vm.Events.Add(e5);
+            vm.Events.Enqueue(e1);
+            vm.Events.Enqueue(e2);
+            vm.Events.Enqueue(e3);
+            vm.Events.Enqueue(e4);
+            vm.Events.Enqueue(e5);
 
             vm.ProcessAllEvents();
 

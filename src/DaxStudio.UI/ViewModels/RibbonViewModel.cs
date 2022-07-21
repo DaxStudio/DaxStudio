@@ -753,8 +753,7 @@ namespace DaxStudio.UI.ViewModels
             if (ActiveDocument != null)
                 _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
             _traceStatus = message.TraceStatus;
-            NotifyOfPropertyChange(() => CanRunQuery);
-            NotifyOfPropertyChange(() => CanConnect);
+            RefreshRibbonButtonEnabledStatus();
             return Task.CompletedTask;
         }
 
@@ -762,8 +761,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if(_traceMessage != null) _traceMessage.Dispose();
             _traceStatus = message.TraceStatus;
-            NotifyOfPropertyChange(() => CanRunQuery);
-            NotifyOfPropertyChange(() => CanConnect);
+            RefreshRibbonButtonEnabledStatus();
             return Task.CompletedTask;
         }
 
@@ -841,6 +839,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 NotifyOfPropertyChange(() => ServerTimingsChecked);
             }
+            RefreshRibbonButtonEnabledStatus();
             return Task.CompletedTask;
         }
 
