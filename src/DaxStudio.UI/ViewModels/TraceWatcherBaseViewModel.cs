@@ -615,7 +615,8 @@ namespace DaxStudio.UI.ViewModels
         {
             Document.OutputError(e);
             _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
-            StopTrace();
+            // stop the trace if there was an error
+            IsRecording = false;
         }
 
         public void StopTrace()
