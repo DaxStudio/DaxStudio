@@ -302,7 +302,10 @@
                             <Ellipse Width="10" Height="10" Fill="{DynamicResource Theme.Brush.Accent2}" Margin="0,4,5,0"/>
                             <TextBlock Text="FE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         </StackPanel>
-                         <Image Source="{DynamicResource warningDrawingImage}" Width="16" ToolTip="FE Duration may be inaccurate due to overlapping SE operations" Visibility="{Binding ParallelStorageEngineEventsDetected, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                         <Image Source="{DynamicResource warningDrawingImage}" 
+                                Width="16" 
+                                Margin="2,4,0,0"
+                                ToolTip="FE Duration may be inaccurate due to overlapping SE operations" Visibility="{Binding ParallelStorageEngineEventsDetected, Converter={StaticResource BoolToCollapsedConverter}}"/>
                     </StackPanel>
                     <TextBlock Grid.Row="4" Grid.Column="0" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding FormulaEngineDuration, StringFormat='#,0 ms'}"

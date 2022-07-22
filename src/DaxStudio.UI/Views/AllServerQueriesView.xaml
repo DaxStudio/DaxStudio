@@ -54,12 +54,25 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
+            <Style x:Key="AggregateRewriteTooltipStyle" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
                 <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
                 <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
-                <!--<Setter Property="ContentTemplate"> 
+                <Setter Property="OverridesDefaultStyle" Value="false"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Tooltip.Back}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Tooltip.Border}"/>
+                <Setter Property="HasDropShadow" Value="True"/>
+                <Setter Property="DataContext" Value="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"/>
+                <Setter Property="Template">
                     <Setter.Value>
-                        <DataTemplate>
+                        <ControlTemplate>
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    Padding="5"
+                                    >
+                                <Border.Effect>
+                                    <DropShadowEffect/>
+                                </Border.Effect>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -68,17 +81,23 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Text="Aggregation Hits: " />
-                                <TextBlock Text="Aggregation Misses: " Grid.Row="1"/>
-                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1"/>
-                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="1"/>
+                                <TextBlock Text="Aggregation Rewrite: " />
+                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"/>
+                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"/>
+                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"/>
+                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"/>
+                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"/>
                             </Grid>
-                        </DataTemplate>
+                            </Border>
+                        </ControlTemplate>
                     </Setter.Value>
-                </Setter>-->
+                </Setter>
             </Style>
 
+            <ToolTip x:Key="AggregateRewriteTooltip" Style="{StaticResource AggregateRewriteTooltipStyle}"/>
+            
             <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding QueryType}" Value="ERR">
@@ -88,8 +107,8 @@
                 
             </Style>
             
-            <Style x:Key="QueryTextStyle">
-
+            <Style x:Key="QueryTextStyle" TargetType="{x:Type DataGridCell}">
+                <Setter Property="Margin" Value="5,2"/>
             </Style>
 
             <DataTemplate x:Key="QueryTextCell">
@@ -107,8 +126,8 @@
                     </Border>
                 <!--</ScrollViewer>-->
             </DataTemplate>
-
-            <Style x:Key="ImageCell"  TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <!-- BasedOn="{StaticResource {x:Type DataGridCell}}" -->
+            <Style x:Key="ImageCell"  TargetType="DataGridCell">
                 <Setter Property="Padding" Value="2,0,2,0"/>
             </Style>
 
@@ -257,6 +276,7 @@
                 </Style>-->
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
+                    <Setter Property="Margin" Value="5,2"/>
                 </Style>
             </DataGrid.Resources>
             <!--<DataGrid.ColumnHeaderStyle>
@@ -301,9 +321,16 @@
                         <DataTemplate>
                             <Grid>
                                 <Image Source="{Binding AggregationStatus, Converter={StaticResource AggregateRewriteIcons}}" />
-                                <Rectangle Fill="Transparent">
-                                    <Rectangle.ToolTip>
-                                        <ToolTip Style="{StaticResource AggregateRewriteTooltip}" DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <Rectangle Fill="Transparent" >
+                                        <Rectangle.ToolTip>
+                                            <ToolTip 
+                                                DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                                                Style="{StaticResource AggregateRewriteTooltipStyle}"/>
+                                        </Rectangle.ToolTip>
+                                    <!--<Rectangle.ToolTip>-->
+                                            <!-- Style="{StaticResource AggregateRewriteTooltip}" 
+                                         DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"-->
+                                        <!--<ToolTip >
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
@@ -324,7 +351,7 @@
 
                                         </ToolTip>
 
-                                    </Rectangle.ToolTip>
+                                    </Rectangle.ToolTip>-->
                                 </Rectangle>
 
                             </Grid>
@@ -367,6 +394,7 @@
                                         VerticalAlignment="Top" 
                                         HorizontalAlignment="Left"   
                                         TextTrimming="CharacterEllipsis"
+                                           Margin="5,2"
                                         ToolTip="{Binding Username}">
                                 </TextBlock>
                             </Border>
@@ -386,6 +414,7 @@
                         VerticalAlignment="Top" 
                         HorizontalAlignment="Left"   
                         TextTrimming="CharacterEllipsis"
+                                               Margin="5,2"
                         ToolTip="{Binding DatabaseName}">
                                     </TextBlock>
                                 </Border>
