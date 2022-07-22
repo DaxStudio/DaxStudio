@@ -80,6 +80,35 @@ namespace DaxStudio.Tests
             Assert.AreEqual(35, vm.FormulaEngineDuration,"There should be 5ms at the start, 10ms in the middle and 20ms at the end");
         }
 
+        [TestMethod]
+        public void TestOverlappingDQ_SEQueries()
+        {
+
+            var details = new ServerTimingDetailsViewModel();
+
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions);
+
+            var e1 = CreateDSDQEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25));  // 20
+            var e2 = CreateDSDQEvent(2, new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // fully overlapped
+            var e3 = CreateDSDQEvent(3, new DateTime(2022, 7, 10, 1, 1, 1, 15), new DateTime(2022, 7, 10, 1, 1, 1, 30)); // +5 partial overlap
+            var e4 = CreateDSDQEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
+            var e5 = CreateDSQueryEndEvent(5, new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
+            vm.Events.Enqueue(e1);
+            vm.Events.Enqueue(e2);
+            vm.Events.Enqueue(e3);
+            vm.Events.Enqueue(e4);
+            vm.Events.Enqueue(e5);
+
+            vm.ProcessAllEvents();
+
+            // assert overlaps are detected
+            Assert.AreEqual(4, vm.StorageEngineEvents.Count);
+            Assert.AreEqual(75, vm.TotalDuration);
+            Assert.AreEqual(40, vm.StorageEngineDuration, "If this returns 60 it is double counting overlapped events");
+            Assert.AreEqual(35, vm.FormulaEngineDuration, "There should be 5ms at the start, 10ms in the middle and 20ms at the end");
+            Assert.AreEqual(true, vm.ParallelStorageEngineEventsDetected);
+        }
+
         private DaxStudioTraceEventArgs CreateDSVertipaqSEEvent(int sequence,DateTime startTime, DateTime endTime)
         {
             return new DaxStudioTraceEventArgs(TraceEventClass.VertiPaqSEQueryEnd.ToString()
@@ -92,6 +121,19 @@ namespace DaxStudio.Tests
             { EndTime = endTime};
 
         }
+        private DaxStudioTraceEventArgs CreateDSDQEvent(int sequence, DateTime startTime, DateTime endTime)
+        {
+            return new DaxStudioTraceEventArgs(TraceEventClass.DirectQueryEnd.ToString()
+                , TraceEventSubclass.NotAvailable.ToString()
+                , (long)(endTime - startTime).TotalMilliseconds
+                , 10
+                , $"Test Event {sequence}"
+                , ""
+                , startTime)
+            { EndTime = endTime };
+
+        }
+
         private DaxStudioTraceEventArgs CreateDSQueryEndEvent(int sequence, DateTime startTime, DateTime endTime)
         {
             return new DaxStudioTraceEventArgs(TraceEventClass.QueryEnd.ToString()

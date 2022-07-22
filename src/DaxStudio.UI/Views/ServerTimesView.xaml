@@ -317,11 +317,20 @@
                         <Ellipse Width="10" Height="10" Fill="{DynamicResource Theme.Brush.Accent}" Margin="0,4,5,0"/>
                         <TextBlock Text="SE" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </StackPanel>
+                        <StackPanel Orientation="Vertical"  Grid.Row="4" Grid.Column="1" >
                     <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
                        Text="{Binding StorageEngineDuration, StringFormat='#,0 ms'}"
                        Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        ToolTip="{Binding SETooltip}" />
-                    <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
+                    <TextBlock Grid.Row="4" Grid.Column="1" Padding="0" HorizontalAlignment="Center"
+                       Text="{Binding StorageEngineNetParallelDuration, StringFormat='(#,0 ms)'}"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                       ToolTip="{Binding SENetParallelTooltip}"
+                       Visibility="{Binding ParallelStorageEngineEventsDetected, Converter={StaticResource BoolToCollapsedConverter}}"        
+                               />
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
                     
                     <!-- Horizontal Bar FE vs SE -->

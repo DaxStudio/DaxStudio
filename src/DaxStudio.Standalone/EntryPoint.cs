@@ -312,7 +312,7 @@ namespace DaxStudio.Standalone
 
                 Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
                 Log.CloseAndFlush();
-                if ((Application.Current?.Dispatcher?.CheckAccess()??false) == true)
+                if ((Application.Current?.Dispatcher?.CheckAccess()??true) == true)
                 {
                     CrashReporter.ReportCrash(ex, msg);
                 }

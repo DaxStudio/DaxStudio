@@ -358,10 +358,11 @@ namespace DaxStudio.UI.ViewModels
                 parallelStorageEngineEventsDetected = value;
                 NotifyOfPropertyChange(nameof(ParallelStorageEngineEventsDetected));
             }
-        } 
+        }
 
 
-        private DaxStudioTraceEventArgs maxStorageEngineEvent = null;
+        private DaxStudioTraceEventArgs maxStorageEngineVertipaqEvent = null;
+        private DaxStudioTraceEventArgs maxStorageEngineDirectQueryEvent = null;
 
         public IGlobalOptions Options { get; set; }
         public Dictionary<string, string> RemapColumnNames { get; set; }
@@ -383,6 +384,7 @@ namespace DaxStudio.UI.ViewModels
         public string TotalTooltip => "The total server side duration of the query";
         public string FETooltip => "Formula Engine (FE) Duration";
         public string SETooltip => "Storage Engine (SE) Duration";
+        public string SENetParallelTooltip => "Storage Engine (SE) Net Duration - accounting for parallel operations";
         public string SECpuTooltip => "Storage Engine CPU Duration";
         public string SEQueriesTooltip => "The number of queries sent to the Storage Engine while processing this query";
         public string SECacheTooltip => "The number of queries sent to the Storage Engine that were answered from the SE Cache";
@@ -439,7 +441,8 @@ namespace DaxStudio.UI.ViewModels
             long batchStorageEngineCpu = 0;
             long batchStorageEngineQueryCount = 0;
 
-            maxStorageEngineEvent = null;
+            maxStorageEngineVertipaqEvent = null;
+            maxStorageEngineDirectQueryEvent = null;
             bool eventsProcessed = false;
 
             if (Events != null)
@@ -492,7 +495,7 @@ namespace DaxStudio.UI.ViewModels
                         }
                         else if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.VertiPaqScan)
                         {
-                            UpdateForParallelOperations(traceEvent);
+                            UpdateForParallelOperations(ref maxStorageEngineVertipaqEvent, traceEvent);
 
                             if (batchScan > 0) {
                                 traceEvent.InternalBatchEvent = true;
@@ -501,7 +504,8 @@ namespace DaxStudio.UI.ViewModels
                                 batchStorageEngineQueryCount++;
                             }
                             
-                            StorageEngineDuration += traceEvent.NetParallelDuration;
+                            StorageEngineDuration += traceEvent.Duration;
+                            StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
                             
@@ -511,8 +515,9 @@ namespace DaxStudio.UI.ViewModels
 
                     if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
                     {
-                        UpdateForParallelOperations(traceEvent);
-                        StorageEngineDuration += traceEvent.NetParallelDuration;
+                        UpdateForParallelOperations(ref maxStorageEngineDirectQueryEvent, traceEvent);
+                        StorageEngineDuration += traceEvent.Duration;
+                        StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                         StorageEngineCpu += traceEvent.CpuTime;
                         StorageEngineQueryCount++;
                         _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
@@ -536,7 +541,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
-                FormulaEngineDuration = TotalDuration - StorageEngineDuration;
+                FormulaEngineDuration = TotalDuration - StorageEngineNetParallelDuration;
                 if (QueryHistoryEvent != null)
                 {
                     QueryHistoryEvent.FEDurationMs = FormulaEngineDuration;
@@ -564,27 +569,31 @@ namespace DaxStudio.UI.ViewModels
         // This function assumes that the events arrive in starttime order, then we check if
         // the start/end times of the current event overlap with the end time of the previous
         // event with the latest end time.
-        private void UpdateForParallelOperations(DaxStudioTraceEventArgs traceEvent)
+        private void UpdateForParallelOperations(ref DaxStudioTraceEventArgs maxEvent,  DaxStudioTraceEventArgs traceEvent)
         {
-            if (maxStorageEngineEvent == null)
+            if (maxEvent == null)
             {
-                maxStorageEngineEvent = traceEvent;
+                maxEvent = traceEvent;
                 return;
             }
 
-            if (maxStorageEngineEvent.EndTime > traceEvent.StartTime)
+            if (maxEvent.EndTime > traceEvent.StartTime)
             {
                 ParallelStorageEngineEventsDetected = true;
-                if (maxStorageEngineEvent.EndTime > traceEvent.EndTime)
+                if (maxEvent.EndTime > traceEvent.EndTime)
                 {
                     // fully overlapped
                     traceEvent.NetParallelDuration = 0;
                 }
                 else
                 {
-                    traceEvent.NetParallelDuration = (long)(traceEvent.EndTime - maxStorageEngineEvent.EndTime).TotalMilliseconds;
-                    maxStorageEngineEvent = traceEvent;
+                    traceEvent.NetParallelDuration = (long)(traceEvent.EndTime - maxEvent.EndTime).TotalMilliseconds;
+                    maxEvent = traceEvent;
                 }
+            }
+            else
+            {
+                maxEvent = traceEvent;
             }
         }
 
@@ -615,7 +624,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return TotalDuration == 0 ? 0 : (double)StorageEngineDuration / (double)TotalDuration;
+                return TotalDuration == 0 ? 0 : (double)StorageEngineNetParallelDuration / (double)TotalDuration;
             }
         }
         public double FormulaEngineDurationPercentage
@@ -671,6 +680,18 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
+
+        private long _storageEngineNetParallelDuration;
+        public long StorageEngineNetParallelDuration
+        {
+            get { return _storageEngineNetParallelDuration; }
+            private set
+            {
+                _storageEngineNetParallelDuration = value;
+                NotifyOfPropertyChange(() => StorageEngineNetParallelDuration);
+            }
+        }
+
         private long _storageEngineCpu;
         public long StorageEngineCpu
         {
@@ -922,11 +943,13 @@ namespace DaxStudio.UI.ViewModels
         {
             FormulaEngineDuration = 0;
             StorageEngineDuration = 0;
+            StorageEngineNetParallelDuration = 0;
             TotalCpuDuration = 0;
             StorageEngineCpu = 0;
             StorageEngineQueryCount = 0;
             VertipaqCacheMatches = 0;
             TotalDuration = 0;
+            ParallelStorageEngineEventsDetected = false;
             _storageEngineEvents.Clear();
             NotifyOfPropertyChange(() => StorageEngineEvents);
             NotifyOfPropertyChange(() => CanExport);
