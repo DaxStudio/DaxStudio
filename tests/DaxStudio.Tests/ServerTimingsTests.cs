@@ -76,7 +76,8 @@ namespace DaxStudio.Tests
             // assert overlaps are detected
             Assert.AreEqual(4, vm.StorageEngineEvents.Count);
             Assert.AreEqual(75, vm.TotalDuration);
-            Assert.AreEqual(40, vm.StorageEngineDuration,"If this returns 60 it is double counting overlapped events");
+            Assert.AreEqual(60, vm.StorageEngineDuration); 
+            Assert.AreEqual(40, vm.StorageEngineNetParallelDuration, "If this returns 60 it is double counting overlapped events"); 
             Assert.AreEqual(35, vm.FormulaEngineDuration,"There should be 5ms at the start, 10ms in the middle and 20ms at the end");
         }
 
@@ -104,7 +105,8 @@ namespace DaxStudio.Tests
             // assert overlaps are detected
             Assert.AreEqual(4, vm.StorageEngineEvents.Count);
             Assert.AreEqual(75, vm.TotalDuration);
-            Assert.AreEqual(40, vm.StorageEngineDuration, "If this returns 60 it is double counting overlapped events");
+            Assert.AreEqual(60, vm.StorageEngineDuration);
+            Assert.AreEqual(40, vm.StorageEngineNetParallelDuration, "If this returns 60 it is double counting overlapped events");
             Assert.AreEqual(35, vm.FormulaEngineDuration, "There should be 5ms at the start, 10ms in the middle and 20ms at the end");
             Assert.AreEqual(true, vm.ParallelStorageEngineEventsDetected);
         }
