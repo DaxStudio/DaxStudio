@@ -95,6 +95,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
+        , IHandle<QueryBuilderChangeEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -554,7 +555,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isDirty;
         public bool IsDirty
         {
-            get => _isDirty;
+            get => _isDirty || _queryBuilderIsDirty;
 
             set
             {
@@ -2439,6 +2440,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _eventAggregator.PublishOnUIThreadAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
+                _queryBuilderIsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
             }
@@ -2474,6 +2476,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _eventAggregator.PublishOnUIThreadAsync(new FileSavedEvent(FileName));
                 IsDirty = false;
+                _queryBuilderIsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
             }
@@ -4419,6 +4422,8 @@ namespace DaxStudio.UI.ViewModels
         public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.DaxStudioGenericTheme();// AvalonDock.Themes.GenericTheme();
 
         private bool _showMeasureExpressionEditor;
+        private bool _queryBuilderIsDirty;
+
         public bool ShowMeasureExpressionEditor
         {
             get => _showMeasureExpressionEditor;
@@ -4633,6 +4638,13 @@ namespace DaxStudio.UI.ViewModels
         public void GotFocus()
         {
             _eventAggregator.PublishOnUIThreadAsync(new SetRunStyleEvent(RunStyleIcons.RunOnly));
+        }
+
+        public Task HandleAsync(QueryBuilderChangeEvent message, CancellationToken cancellationToken)
+        {
+            _queryBuilderIsDirty = QueryBuilder.Columns.Count > 0 || QueryBuilder.Filters.Count > 0;
+            NotifyOfPropertyChange(nameof(IsDirty));
+            return Task.CompletedTask;
         }
     }
 }

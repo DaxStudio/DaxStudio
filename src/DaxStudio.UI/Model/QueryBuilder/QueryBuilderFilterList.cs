@@ -31,6 +31,7 @@ namespace DaxStudio.UI.Model
         {
             Items.Remove(item);
             NotifyOfPropertyChange(nameof(Items));
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         [JsonProperty]
@@ -58,6 +59,7 @@ namespace DaxStudio.UI.Model
                 var filter = new QueryBuilderFilter(item, GetModelCapabilities(), EventAggregator);
                 Items.Add(filter);
                 NotifyOfPropertyChange(nameof(Items));
+                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
             }
             catch (Exception ex)
             {
@@ -70,6 +72,7 @@ namespace DaxStudio.UI.Model
         internal void Add(QueryBuilderFilter filter)
         {
             Items.Add(filter);
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         public bool Contains(IADOTabularColumn item)
@@ -89,16 +92,19 @@ namespace DaxStudio.UI.Model
             // if we are 'inserting' at the end just do an add
             if (index >= Items.Count) Items.Add(filter);
             Items.Insert(index, filter);
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
         public void Move(int oldIndex, int newIndex)
         {
             Items.Move(oldIndex, newIndex);
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
         #endregion
 
         public void Clear()
         {
             Items.Clear();
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
     }
 }

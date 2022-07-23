@@ -101,6 +101,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (AutoGenerate && Columns.Count > 0) SendTextToEditor();
             if (AutoGenerate && Columns.Count == 0) ClearEditor();
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         private void OnFiltersPropertyChanged(object sender, PropertyChangedEventArgs e)

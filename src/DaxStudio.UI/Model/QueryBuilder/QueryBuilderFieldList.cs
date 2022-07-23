@@ -26,6 +26,7 @@ namespace DaxStudio.UI.Model
         {
             Items.Remove(item);
             NotifyOfPropertyChange(nameof(Items));
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
         public ObservableCollection<QueryBuilderColumn> Items { get; } = new ObservableCollection<QueryBuilderColumn>();
         public IEventAggregator EventAggregator { get; }
@@ -59,6 +60,7 @@ namespace DaxStudio.UI.Model
             }
             Items.Add(builderItem);
             NotifyOfPropertyChange(nameof(Items));
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         public void Add(QueryBuilderColumn item)
@@ -66,6 +68,7 @@ namespace DaxStudio.UI.Model
 
             Items.Add(item);
             NotifyOfPropertyChange(nameof(Items));
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         public bool Contains(IADOTabularColumn item)
@@ -80,6 +83,7 @@ namespace DaxStudio.UI.Model
         {
             Items.Move(oldIndex, newIndex);
             NotifyOfPropertyChange(nameof(Items));
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
         public void Insert(int index, IADOTabularColumn item)
         {
@@ -88,6 +92,7 @@ namespace DaxStudio.UI.Model
             if (index >= Items.Count) Items.Add(builderItem);
             else Items.Insert(index, builderItem);
             NotifyOfPropertyChange(nameof(Items));
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         public int IndexOf(IADOTabularColumn obj)
@@ -115,6 +120,7 @@ namespace DaxStudio.UI.Model
                 //    column.SortDirection = SortDirection.ASC;
                 //    break;
             }
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
         public void ToggleIsSorted(QueryBuilderColumn column)
@@ -131,6 +137,7 @@ namespace DaxStudio.UI.Model
                     column.SortDirection = SortDirection.ASC;
                     break;
             }
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
 
 
@@ -155,6 +162,7 @@ namespace DaxStudio.UI.Model
         public void Clear()
         {
             Items.Clear();
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderChangeEvent());
         }
     }
 }
