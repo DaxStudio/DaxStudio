@@ -2909,25 +2909,26 @@ namespace DaxStudio.UI.ViewModels
         public async Task HandleAsync(ConnectEvent message, CancellationToken cancellationToken)
         {
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ConnectEvent>","Starting");
-            var msg = NewStatusBarMessage("Connecting...");
+            
 
             try
             {
+                using (var msg = NewStatusBarMessage("Connecting..."))
+                {
+                    await Task.Run(() =>
+                        {
 
-                await Task.Run(() =>
-                    {
+                            if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
-                        if (message.RefreshDatabases) RefreshConnectionFilename(message);
+                            SetupConnection(message);
 
-                        SetupConnection(message); 
-      
-                    },cancellationToken);
+                        }, cancellationToken);
 
 
-                var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
-                await _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace), cancellationToken);//,IsPowerPivotConnection));
-                await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this),cancellationToken);
-                msg.Dispose(); //reset the status message
+                    var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
+                    await _eventAggregator.PublishOnUIThreadAsync(new DocumentConnectionUpdateEvent(Connection, Databases, activeTrace), cancellationToken);//,IsPowerPivotConnection));
+                    await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this), cancellationToken);
+                }
                 //LoadState();
 
                 if (Options.ShowHelpWatermark && !Options.GettingStartedShown)
