@@ -30,8 +30,10 @@
 
             <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-
+            <conv:LongToFormattedMsConverter x:Key="LongToFormattedMsConverter"/>
+            
             <col:ArrayList x:Key="QueryTypes">
                 <x:Static Member="sys:String.Empty" />
                 <sys:String>DAX</sys:String>
@@ -375,13 +377,38 @@
                                         SelectedItemBinding="{Binding QueryType}"
                                         />
 
-                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" 
-                                    Binding="{Binding Duration, StringFormat='#,0'}" 
-                                    ElementStyle="{StaticResource AlignRight}"
+                    <!--                                     Binding="{Binding Duration, StringFormat='#,0'}" 
+                                    ElementStyle="{StaticResource AlignRight}"-->
+                    <DataGridTemplateColumn Header="Duration" IsReadOnly="True" Width="60" 
+
                                     
-                                    />
-                
-                <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
+                                    >
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock Text="{Binding Path=Duration, Mode=OneWay, Converter={StaticResource LongToFormattedMsConverter}}" TextAlignment="Right" />
+                                    <!--<TextBlock Text="{Binding Path=Duration, Mode=OneWay}" TextAlignment="Right"
+                                               Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
+
+
+                                    <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    IsIndeterminate="True"
+                                    Width="16"
+                                    Height="16"
+                                        HorizontalAlignment="Right"
+                                    Foreground="{DynamicResource Theme.Brush.Accent}"
+                                    Background="{DynamicResource Theme.Brush.Alternate.Back}"
+                                    Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>-->
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
                                         filter:DataGridColumnExtensions.CustomBindingPath="Username"
                                         filter:DataGridColumnExtensions.IsContainsTextSearch="True">
                     <!--filter:DataGridColumnExtensions.BindingPath="Username">-->

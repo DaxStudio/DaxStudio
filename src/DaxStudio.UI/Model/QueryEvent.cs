@@ -1,16 +1,35 @@
-﻿using DaxStudio.UI.Enums;
+﻿using Caliburn.Micro;
+using DaxStudio.UI.Enums;
 using System;
 
 
 
 namespace DaxStudio.UI.Model
 {
-    public class QueryEvent
+    public class QueryEvent: PropertyChangedBase
     {
-        public long Duration { get; set; }
+        private long _duration;
+        public long Duration { 
+            get => _duration; 
+            set
+            {
+                _duration = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(IsQueryRunning));
+            }
+        }
+
+        public bool IsQueryRunning => _duration < 0;
         public string Query { get; set; }
         public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        private DateTime _endTime;
+        public DateTime EndTime { get => _endTime; 
+            set
+            {
+                _endTime = value;
+                NotifyOfPropertyChange();
+            } 
+        }
         public string Username { get; set; }
         public string DatabaseName { get; internal set; }
         public string QueryType { get; set; }

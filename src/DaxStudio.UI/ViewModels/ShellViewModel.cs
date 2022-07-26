@@ -18,6 +18,7 @@ using DaxStudio.UI.Interfaces;
 using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -213,7 +214,7 @@ namespace DaxStudio.UI.ViewModels
                 _window.SetPlacement(Options.WindowPosition);
                 _notifyIcon = new NotifyIcon(_window, _eventAggregator);
                 if (_host.DebugLogging) ShowLoggingEnabledNotification();
-
+                _window.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnPaste));
                 //Application.Current.LoadRibbonTheme();
                 _inputBindings = new InputBindings(_window);
             }
@@ -223,7 +224,14 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        private IEnumerable<InputBindingCommand> GetInputBindingCommands()
+        static void OnPaste(object target, ExecutedRoutedEventArgs args)
+        {
+            System.Diagnostics.Debug.WriteLine("Paste Detected");
+            IDataObject obj = Clipboard.GetDataObject();
+            var visual = obj.GetData("Power BI Visuals");
+        }
+
+            private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // load custom key bindings from Options
             yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);

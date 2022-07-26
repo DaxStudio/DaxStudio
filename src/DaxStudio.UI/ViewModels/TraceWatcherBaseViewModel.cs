@@ -580,9 +580,10 @@ namespace DaxStudio.UI.ViewModels
             if (!GetMonitoredEvents().Contains(e.EventClass)) return;
             if (ShouldStartCapturing(e)) CapturingStarted = true;
             if (!CapturingStarted) return;
+            if (IsPaused) return;
 
-            ProcessSingleEvent(e);
             Events.Enqueue(e);
+            ProcessSingleEvent(e);
 
             if (IsFinalEvent(e)) ProcessAllEvents();
         }

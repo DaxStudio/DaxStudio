@@ -286,6 +286,7 @@ namespace DaxStudio.UI.ViewModels
                     _editor.PreviewDragEnter += OnDragEnterPreview;
                     _editor.KeyUp += OnKeyUp;
                     _editor.OnPasting += OnPasting;
+                    DataObject.AddPastingHandler(_editor, OnPasting2);
 
                 }
                 switch (State)
@@ -339,7 +340,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private async void OnPasting(object sender, DataObjectPastingEventArgs e)
+        private async void OnPasting2(object sender, DataObjectPastingEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Pasting2");
+        }
+
+            private async void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
             try
             {

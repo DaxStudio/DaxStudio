@@ -303,6 +303,7 @@
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
     <Compile Include="Converters\FindResourceFromStringConverter.cs" />
     <Compile Include="Converters\FontToSupportedGlyphConverter.cs" />
+    <Compile Include="Converters\LongToFormattedMsConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
@@ -365,8 +366,8 @@
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\GreaterThanConverter.cs" />
     <Compile Include="Converters\HotKeyConverter.cs" />
-    <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
+    <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\MatchingResultColourConverter.cs" />
     <Compile Include="Converters\MaxMultiConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
@@ -420,7 +421,7 @@
     <Compile Include="Extensions\HttpClientExtensions.cs" />
     <Compile Include="Extensions\MiscExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
-    <Compile Include="Extensions\QueryBeginEventExtensions.cs" />
+    <Compile Include="Extensions\QueryEventExtensions.cs" />
     <Compile Include="Extensions\ServerVersionExtensions.cs" />
     <Compile Include="Extensions\SqlBulkCopyExtensions.cs" />
     <Compile Include="Extensions\ViewAwareExtensions.cs" />

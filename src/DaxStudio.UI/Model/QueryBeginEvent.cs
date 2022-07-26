@@ -14,6 +14,7 @@ namespace DaxStudio.UI.Model
         public string Parameters { get; set; }
         public string RequestParameters { get; set; }
         public string RequestProperties { get; set; }
+        public QueryEvent QueryEvent { get; set; }
 
     }
 }

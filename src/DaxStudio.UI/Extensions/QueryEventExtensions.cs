@@ -4,9 +4,9 @@ using System.Xml;
 
 namespace DaxStudio.UI.Extensions
 {
-    public static class QueryBeginEventExtensions
+    public static class QueryEventExtensions
     {
-        public static string ParseEffectiveUsername(this QueryBeginEvent beginEvent)
+        public static string ParseEffectiveUsername(this QueryEvent beginEvent)
         {
             XmlDocument xd = new XmlDocument();
             xd.LoadXml(beginEvent.RequestProperties);
