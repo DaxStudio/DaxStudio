@@ -1,8 +1,10 @@
 ﻿using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
+using ICSharpCode.NRefactory.Ast;
 using Newtonsoft.Json;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Windows.Navigation;
 
 namespace DaxStudio.UI.Model
 {
@@ -43,7 +45,7 @@ namespace DaxStudio.UI.Model
                 FileAndExtension = Path.GetFileName(_fullPath);
                 Folder = Path.GetDirectoryName(_fullPath);
                 Extension = Path.GetExtension(_fullPath).TrimStart('.').ToUpper();
-                ExtensionLabel = Extension == "DAX"?"":Extension;
+                ExtensionLabel = Extension == "DAX"|| Extension == "DAXX" ? "":Extension;
             }
         }
 
@@ -70,7 +72,15 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                return Extension == "DAX" ? "daxDrawingImage" : "fileDrawingImage";
+                switch (Extension) { 
+                    case "DAX": 
+                        return "daxDrawingImage";
+                    case "DAXX":
+                        return "daxxDrawingImage";
+                    default:
+                        return "fileDrawingImage";
+                    
+                    };
             }
         }
     }

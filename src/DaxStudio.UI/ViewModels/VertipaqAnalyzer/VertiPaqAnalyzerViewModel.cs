@@ -12,6 +12,11 @@ using System.Linq;
 using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Threading;
+using DaxStudio.UI.Interfaces;
+using System.IO.Packaging;
+using DaxStudio.UI.Utils;
+using System;
+using System.IO;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -23,6 +28,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
         , IViewAware
+        , ISaveState
     {
 
         private readonly IEventAggregator _eventAggregator;
@@ -235,6 +241,85 @@ namespace DaxStudio.UI.ViewModels
             if (PartitionSortColumn == e.Column.SortMemberPath) { PartitionSortDirection = PartitionSortDirection * -1; }
             else { PartitionSortDirection = -1; }
             PartitionSortColumn = e.Column.SortMemberPath;
+        }
+
+        public void Save(string filename)
+        {
+            return; // we do nothing here since we don't save satellite vpax files
+        }
+
+        public void Load(string filename)
+        {
+            return; // we do nothing here since we don't save satellite vpax files
+        }
+
+        public string GetJson()
+        {
+            return String.Empty;
+        }
+
+        public void LoadJson(string json)
+        {
+            return; // we do nothing here since we don't save satellite vpax files
+        }
+
+        public void SavePackage(Package package)
+        {
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
+            try { 
+                var serverName = this.ViewModel.Model.ServerName.ToString();
+                var databaseName = ViewModel.Model.ModelName.ToString();
+                //
+                // Get TOM model from the SSAS engine
+                //
+                Microsoft.AnalysisServices.Tabular.Database database = _globalOptions.VpaxIncludeTom ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName) : null;
+
+                // 
+                // Create VertiPaq Analyzer views
+                //
+                Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
+
+                //model.ModelName = new Dax.Metadata.DaxName(modelName);
+
+                //
+                // Save VPAX file to daxx file
+                // 
+
+                using (Stream strm = package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream())
+                {
+                    Dax.Vpax.Tools.VpaxTools.ExportVpax(strm, ViewModel.Model, viewVpa, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(LoadPackage), "Error saving vpax data to daxx file");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving vpax data to daxx file\n{ex.Message}"));
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            var part = package.GetPart(uri);
+            try
+            {
+                using (Stream strm = part.GetStream())
+                {
+                    var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(strm);
+                    var view = new Dax.ViewModel.VpaModel(content.DaxModel);
+                    // update view model
+                    ViewModel = view;
+                }
+
+                Activate();
+            }
+            catch( Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(LoadPackage), "Error loading vpax data from daxx file");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading vpax data from daxx file\n{ex.Message}"));
+            }
         }
 
         public string PartitionSortColumn { get; set; }

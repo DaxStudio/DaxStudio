@@ -14,5 +14,6 @@ namespace DaxStudio.UI.Utils
         public const string QueryBuilder = "QueryBuilder.json";
         public const string AllQueries = "AllQueries.json";
         public const string RefreshTrace = "RefreshTrace.json";
+        public const string VpaxFile = "Model.vpax";
     }
 }

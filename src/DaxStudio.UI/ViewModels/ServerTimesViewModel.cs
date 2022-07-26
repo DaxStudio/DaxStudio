@@ -833,13 +833,15 @@ namespace DaxStudio.UI.ViewModels
             {
                 FormulaEngineDuration = this.FormulaEngineDuration,
                 StorageEngineDuration = this.StorageEngineDuration,
+                StorageEngineNetParallelDuration = this.StorageEngineNetParallelDuration,
                 StorageEngineCpu = this.StorageEngineCpu,
                 TotalDuration = this.TotalDuration,
                 VertipaqCacheMatches = this.VertipaqCacheMatches,
                 StorageEngineQueryCount = this.StorageEngineQueryCount,
                 StoreageEngineEvents = this._storageEngineEvents,
                 TotalCpuDuration = this.TotalCpuDuration,
-                QueryEndDateTime = this.QueryEndDateTime
+                QueryEndDateTime = this.QueryEndDateTime,
+                ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected
             };
             var json = JsonConvert.SerializeObject(m, Formatting.Indented, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
             return json;
@@ -868,12 +870,14 @@ namespace DaxStudio.UI.ViewModels
 
             FormulaEngineDuration = m.FormulaEngineDuration;
             StorageEngineDuration = m.StorageEngineDuration;
+            StorageEngineNetParallelDuration = m.StorageEngineNetParallelDuration;
             StorageEngineCpu = m.StorageEngineCpu;
             TotalDuration = m.TotalDuration;
             VertipaqCacheMatches = m.VertipaqCacheMatches;
             StorageEngineQueryCount = m.StorageEngineQueryCount;
             TotalCpuDuration = m.TotalCpuDuration;
             QueryEndDateTime = m.QueryEndDateTime;
+            ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);

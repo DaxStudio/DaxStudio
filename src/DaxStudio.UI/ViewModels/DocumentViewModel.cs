@@ -2761,6 +2761,15 @@ namespace DaxStudio.UI.ViewModels
                 loader.LoadPackage(package);
             }
 
+            // check for embedded vpax file
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
+            if (package.PartExists(uri))
+            {
+                var vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
+                ToolWindows.Add(vpaView);
+                vpaView.LoadPackage(package);
+            }
+
             _isLoadingFile = false;
 
         }

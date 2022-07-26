@@ -12,6 +12,7 @@ namespace DaxStudio.UI.Model
     {
         public int FileFormatVersion { get { return 1; } }
         public long StorageEngineDuration {get;set;}
+        public long StorageEngineNetParallelDuration { get; set; }
         public double  StorageEngineDurationPercentage {get;set;}
         public long FormulaEngineDuration {get;set;}
         public double FormulaEngineDurationPercentage { get; set; }
@@ -22,5 +23,6 @@ namespace DaxStudio.UI.Model
         public int VertipaqCacheMatches { get; set; }
         public long TotalCpuDuration { get; set; }
         public DateTime QueryEndDateTime { get; set; }
+        public bool ParallelStorageEngineEventsDetected { get; set; }
     }
 }
