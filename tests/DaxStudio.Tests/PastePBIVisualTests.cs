@@ -12,7 +12,7 @@ namespace DaxStudio.Tests
     [TestClass]
     public class PastePBIVisualTests
     {
-        string clipboardContent = "";
+
 //        string clipboardContent = """
 //{
 //    "version": 2,
@@ -116,11 +116,11 @@ namespace DaxStudio.Tests
 //}
 //""";
 
-        [TestMethod]
-        public void TestBasicPaste()
-        {
-            var jobj = JObject.Parse(clipboardContent);
+        //[TestMethod]
+        //public void TestBasicPaste()
+        //{
+            //var jobj = JObject.Parse(clipboardContent);
             // todo - figure out how to parse clipboard content
-        }
+        //}
     }
 }
