@@ -28,7 +28,7 @@ namespace DaxStudio.UI.Interfaces
         QueryTraceStatus TraceStatus { get; }
         string TraceSuffix { get; }
         bool IsPreview { get; }
-
+        string KeyTip { get; }
         Task StopTraceAsync();
         void StopTrace();
     }

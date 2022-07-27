@@ -566,6 +566,7 @@
                                      LargeIcon="{Binding Title, Converter={StaticResource TraceIconsLarger}}" -->
                 <Fluent:ToggleButton Header="{Binding Title}" 
                                      IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                                     ap:FluentRibbonAttachedProperties.KeyTip="{Binding KeyTip}"
                                      SizeDefinition="Large,Large,Middle" 
                                      ClickMode="Press" Width="Auto" 
                                      ap:ImageBindingHelper.ToggleIconResourceKey="{Binding ImageResource}"
@@ -851,7 +852,9 @@
                               Format,Format,
                               Find,Find,
                               Edit,Edit
-                              " Template="{DynamicResource DaxStudioRibbonTabItemControlTemplate}"
+                              " 
+                              Template="{DynamicResource DaxStudioRibbonTabItemControlTemplate}"
+                              KeyTip="H"
                               >
 
 
@@ -861,6 +864,7 @@
                                    Icon="{DynamicResource runDrawingImage}">
                 <Fluent:SplitButton Name="RunQuery"
                                Header="Run"
+                                    KeyTip="R"
                                cal:Message.Attach="[Event Click] = [Action RunQuery()]"
                                ap:ImageBindingHelper.IconResourceKey="{Binding SelectedRunStyle.ImageResource}"
                                MinWidth="50"
@@ -885,6 +889,7 @@
                 </Fluent:SplitButton>
                 <Fluent:Button Name="CancelQuery"
                                Header="Cancel"
+                               KeyTip="CA"
                                cal:Message.Attach="[Event Click] = [Action CancelQuery()]"
                                Icon="{DynamicResource cancelDrawingImage}"
                                LargeIcon="{DynamicResource cancelDrawingImage}"
@@ -902,6 +907,7 @@
                     <Fluent:ToggleButton 
                     Header="Query Builder"
                     Name="DisplayQueryBuilder" 
+                        KeyTip="Q"
                     IsEnabled="{Binding CanDisplayQueryBuilder}"
                     IsChecked="{Binding DisplayQueryBuilder}"
                     Icon="{DynamicResource query_builderDrawingImage}"
@@ -919,6 +925,7 @@
 
                     <Fluent:Button Name="ClearCache"
                                Header="Clear Cache"
+                                   KeyTip="CC"
                                cal:Message.Attach="[Event Click] = [Action ClearCache()]"
                                     Size="Large"
                                Icon="{DynamicResource clear_cacheDrawingImage}"
@@ -937,6 +944,7 @@
 
                     <Fluent:ToggleButton Name="ClearCacheAuto"
                                Header="Clear on Run"
+                                         KeyTip="CR"
                                Size="Large"
                                Icon="{DynamicResource clear_cache_on_runDrawingImage}"
                                LargeIcon="{DynamicResource clear_cache_on_runDrawingImage}"
@@ -961,6 +969,7 @@
                 Style="{StaticResource DaxStudioGalleryDropDownButtonStyle}"-->
                 <Fluent:DropDownButton x:Name="OutputTargets"
                                        Header="Results"
+                                       KeyTip="R"
                                        ap:ImageBindingHelper.IconResourceKey="{Binding SelectedTarget.ImageResource}"
                                        SizeDefinition="Large,Large,Small"
                                        IsEnabled="True"
@@ -1100,6 +1109,7 @@
 
             <Fluent:RibbonGroupBox Header="Format" Name="Format" Margin="4,0" Icon="{DynamicResource uppercaseDrawingImage}">
                 <Fluent:SplitButton Name="FormatQuery"
+                                    KeyTip="F"
                                Header="Format Query"
                                cal:Message.Attach="[Event Click] = [Action FormatQueryStandard()]"
                                IsEnabled="{Binding CanFormatQueryStandard}"
@@ -1143,6 +1153,7 @@
 
                 <Fluent:Button Name="ToUpper"
                                Header="To Upper"
+                               KeyTip="U"
                                cal:Message.Attach="[Event Click] = [Action ToUpper()]"
                                Icon="{DynamicResource uppercaseDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
@@ -1156,6 +1167,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="ToLower"
                                Header="To Lower"
+                               KeyTip="L"
                                cal:Message.Attach="[Event Click] = [Action ToLower()]"
                                Icon="{DynamicResource lowercaseDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
@@ -1170,6 +1182,7 @@
 
                 <Fluent:Button Name="SwapDelimiters"
                                Header="Swap Delimiters"
+                               KeyTip="S"
                                cal:Message.Attach="[Event Click] = [Action SwapDelimiters()]"
                                Icon="{DynamicResource swap_delimitersDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
@@ -1185,6 +1198,7 @@
                 
                 <Fluent:Button Name="DebugCommas"
                                Header="Debug Commas"
+                               KeyTip="D"
                                cal:Message.Attach="[Event Click] = [Action MoveCommasToDebugMode()]"
                                Icon="{DynamicResource debug_commas_smallDrawingImage}"
                                SizeDefinition="Middle,Small,Small"
@@ -1200,6 +1214,7 @@
                 
                 <Fluent:Button Name="CommentSelection"
                                Header="Comment"
+                               KeyTip="M"
                                cal:Message.Attach="[Event Click] = [Action CommentSelection()]"
                                Icon="{DynamicResource commentDrawingImage}"
                                SizeDefinition="Middle,Middle,Small"
@@ -1213,6 +1228,7 @@
                 
                     <Fluent:Button Name="UncommentSelection"
                                Header="Uncomment"
+                                   KeyTip="N"
                                cal:Message.Attach="[Event Click] = [Action UncommentSelection()]"
                                Icon="{DynamicResource uncommentDrawingImage}"
                                SizeDefinition="Middle,Middle,Small"
@@ -1225,6 +1241,7 @@
                     </Fluent:Button>
                 <Fluent:Button Name="MergeParameters"
                                Header="Merge XML"
+                               KeyTip="MX"
                                cal:Message.Attach="[Event Click] = [Action MergeParameters()]"
                                Icon="{DynamicResource merge_xmlDrawingImage}"
                                SizeDefinition="Middle,Middle,Small"
@@ -1267,6 +1284,7 @@
                                    >
                 <Fluent:Button Name="ImportPowerBIPerfData" 
                                Header="Load Perf Data" 
+                               KeyTip="P"
                                cal:Message.Attach="[Event Click] = [Action LoadPowerBIPerformanceData()]"
                                Icon="{DynamicResource load_perf_dataDrawingImage}"
                                LargeIcon="{DynamicResource load_perf_dataDrawingImage}"
@@ -1292,6 +1310,7 @@
             <Fluent:RibbonGroupBox Header="Connection" Name="Connection" Margin="2,0" Icon="{DynamicResource connectDrawingImage}" >
                 <Fluent:Button x:Name="Connect" 
                                Header="Connect"
+                               KeyTip="CO"
                                Icon="{DynamicResource connectDrawingImage}"
                                LargeIcon="{DynamicResource connectDrawingImage}" 
                                Margin="0,0"
@@ -1309,6 +1328,7 @@
                
                 <Fluent:Button Name="RefreshMetadata"
                                Header="Refresh Metadata"
+                               KeyTip="R"
                                cal:Message.Attach="[Event Click] = [Action RefreshMetadata()]"
                                Icon="{DynamicResource refreshDrawingImage}"
                                LargeIcon="{DynamicResource refreshDrawingImage}"
@@ -1329,10 +1349,11 @@
 
             <!-- Advanced Ribbon Tab-->
        
-        <Fluent:RibbonTabItem Header="Advanced" >
+        <Fluent:RibbonTabItem Header="Advanced" KeyTip="A">
             <Fluent:RibbonGroupBox Header="Metrics" >
                 <Fluent:Button Name="ImportAnalysisData"
                                    Header="Import Metrics"
+                               KeyTip="I"
                                    cal:Message.Attach="[Event Click] = [Action ImportAnalysisData()]"
                                    Icon="{DynamicResource open_metricsDrawingImage}"
                                    LargeIcon="{DynamicResource open_metricsDrawingImage}"
@@ -1347,6 +1368,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="ExportAnalysisData"
                                    Header="Export Metrics"
+                               KeyTip="E"
                                    cal:Message.Attach="[Event Click] = [Action ExportAnalysisData()]"
                                    Icon="{DynamicResource export_metricsDrawingImage}"
                                    LargeIcon="{DynamicResource export_metricsDrawingImage}"
@@ -1361,6 +1383,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="ViewAnalysisData"
                                    Header="View Metrics"
+                               KeyTip="V"
                                    cal:Message.Attach="[Event Click] = [Action ViewAnalysisData()]"
                                    Icon="{DynamicResource vertipaq_analyzerDrawingImage}"
                                    LargeIcon="{DynamicResource vertipaq_analyzerDrawingImage}"
@@ -1377,6 +1400,7 @@
             <Fluent:RibbonGroupBox Header="Export" >
                 <Fluent:Button Name="ExportAllData"
                                    Header="Export Data"
+                               KeyTip="X"
                                    cal:Message.Attach="[Event Click] = [Action ExportAllData()]"
                                    Icon="{DynamicResource export_dataDrawingImage}"
                                    LargeIcon="{DynamicResource export_dataDrawingImage}"
@@ -1394,6 +1418,7 @@
 
             <Fluent:RibbonGroupBox Header="Security">
                 <Fluent:Button Header="View As" x:Name="ViewAs" Size="Large" MinWidth="48"
+                               KeyTip="VA"
                                cal:Message.Attach="[Event Click] = [Action ShowViewAsDialog()]"
                                Icon="{DynamicResource view_asDrawingImage}"
                                LargeIcon="{DynamicResource view_asDrawingImage}"
@@ -1406,6 +1431,7 @@
                 <Fluent:Button
                     Name="RunBenchmark"
                     Header="Run Benchmark"
+                    KeyTip="B"
                     cal:Message.Attach="[Event Click] = [Action RunBenchmark()]"
                     Icon="{DynamicResource run_benchmarkDrawingImage}"
                     LargeIcon="{DynamicResource run_benchmarkDrawingImage}"
@@ -1424,6 +1450,7 @@
             <Fluent:RibbonGroupBox Header="External Tools">
                 <Fluent:Button Name="LaunchSqlProfiler"
                                    Header="SQL Profiler"
+                               KeyTip="S"
                                    cal:Message.Attach="[Event Click] = [Action LaunchSqlProfiler()]"
                                    LargeIcon="{DynamicResource sql_profilerDrawingImage}"
                                    Margin="4,0"
@@ -1438,6 +1465,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="LaunchExcel"
                                    Header="Analyze in Excel"
+                               KeyTip="XL"
                                    cal:Message.Attach="[Event Click] = [Action LaunchExcel()]"
                                    LargeIcon="{DynamicResource analyze_in_excelDrawingImage}"
                                    Margin="4,0"
@@ -1531,10 +1559,11 @@
           
             
         <!-- Help Tab -->
-        <Fluent:RibbonTabItem Header="Help">
+        <Fluent:RibbonTabItem Header="Help" KeyTip="P">
             <Fluent:RibbonGroupBox Header="Resources" Margin="0,0,4,0">
                 <Fluent:Button Name="helpDaxStudioWiki"
                                Header="Documentation"
+                               KeyTip="D"
                                cal:Message.Attach="[Event Click] = [Action LinkToDaxStudioWiki()]"
                                Icon="{DynamicResource documentationDrawingImage}"
                                LargeIcon="{DynamicResource documentationDrawingImage}"
@@ -1548,6 +1577,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="hlpDaxForum"
                                Header="DAX Forum"
+                               KeyTip="X"
                                cal:Message.Attach="[Event Click] = [Action LinkToDaxForum()]"
                                Icon="{DynamicResource linkDrawingImage}"
                                SizeDefinition="Middle,Small"
@@ -1560,6 +1590,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="hlpPbiForum"
                                Header="Power BI Desktop Forum"
+                               KeyTip="P"
                                cal:Message.Attach="[Event Click] = [Action LinkToPbiDesktopForum()]"
                                Icon="{DynamicResource linkDrawingImage}"
                                SizeDefinition="Middle,Small"
@@ -1572,6 +1603,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="hlpSSASForum"
                                Header="Analysis Services Forum"
+                               KeyTip="A"
                                cal:Message.Attach="[Event Click] = [Action LinkToSsasForum()]"
                                Icon="{DynamicResource linkDrawingImage}"
                                SizeDefinition="Middle,Small"
@@ -1589,6 +1621,7 @@
 
                 <Fluent:Button Name="hlpGithubBugReport"
                                Header="Report a Bug"
+                               KeyTip="B"
                                cal:Message.Attach="[Event Click] = [Action LinkToGithubBugReport()]"
                                SizeDefinition="Large,Middle,Small"
                                Margin="4,0"
@@ -1604,6 +1637,7 @@
                 </Fluent:Button>
                 <Fluent:Button Name="hlpGithubFeatureRequest"
                                Header="Request a Feature"
+                               KeyTip="R"
                                cal:Message.Attach="[Event Click] = [Action LinkToGithubFeatureRequest()]"
 
                                SizeDefinition="Large,Middle,Small"
@@ -1620,6 +1654,7 @@
 
                 <Fluent:Button Name="hlpGithubDiscussion"
                                Header="Ask a Question"
+                               KeyTip="Q"
                                cal:Message.Attach="[Event Click] = [Action LinkToGithubDiscussions()]"
                                SizeDefinition="Large,Middle,Small"
                                Margin="4,0"
@@ -1636,6 +1671,7 @@
             <Fluent:RibbonGroupBox Header="" Margin="0,0,4,0">
                 <Fluent:Button Name="hlpAbout"
                                Header="About DaxStudio"
+                               KeyTip="I"
                                cal:Message.Attach="[Event Click] = [Action ShowHelpAbout()]"
                                Icon="{DynamicResource aboutDrawingImage}"
                                LargeIcon="{DynamicResource aboutDrawingImage}"

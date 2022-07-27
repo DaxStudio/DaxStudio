@@ -17,6 +17,7 @@ using System.IO.Packaging;
 using DaxStudio.UI.Utils;
 using System;
 using System.IO;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -272,7 +273,7 @@ namespace DaxStudio.UI.ViewModels
                 //
                 // Get TOM model from the SSAS engine
                 //
-                Microsoft.AnalysisServices.Tabular.Database database = _globalOptions.VpaxIncludeTom ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName) : null;
+                //Microsoft.AnalysisServices.Tabular.Database database = _globalOptions.VpaxIncludeTom ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName) : null;
 
                 // 
                 // Create VertiPaq Analyzer views
@@ -287,7 +288,7 @@ namespace DaxStudio.UI.ViewModels
 
                 using (Stream strm = package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream())
                 {
-                    Dax.Vpax.Tools.VpaxTools.ExportVpax(strm, ViewModel.Model, viewVpa, null);
+                    Dax.Vpax.Tools.VpaxTools.ExportVpax(strm, ViewModel.Model, viewVpa, Database);
                 }
             }
             catch (Exception ex)
@@ -311,6 +312,7 @@ namespace DaxStudio.UI.ViewModels
                     var view = new Dax.ViewModel.VpaModel(content.DaxModel);
                     // update view model
                     ViewModel = view;
+                    Database = content.TomDatabase;
                 }
 
                 Activate();
@@ -341,6 +343,8 @@ namespace DaxStudio.UI.ViewModels
         public string BusyMessage => "Loading Model Metrics";
 
         public TooltipStruct Tooltips => new TooltipStruct();
+
+        public Database Database { get; internal set; }
 
         public class TooltipStruct
         {
@@ -377,5 +381,13 @@ namespace DaxStudio.UI.ViewModels
             public string OneToManyRatio => "This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
         }
 
+        internal async Task ExportAnalysisDataAsync(string fileName)
+        {
+            await Task.Run(() =>
+            {
+                Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
+                ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
+            });
+        }
     }
 }

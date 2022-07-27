@@ -236,6 +236,7 @@
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
+    <Compile Include="AttachedProperties\FluentRibbonKeyTip.cs" />
     <Compile Include="AttachedProperties\GridSplitterController.cs" />
     <Compile Include="AttachedProperties\ForegroundBindingHelper.cs" />
     <Compile Include="AttachedProperties\ImageBindingHelper.cs" />

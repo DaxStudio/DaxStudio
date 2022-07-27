@@ -223,7 +223,7 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Refresh Trace";
         public override string TraceSuffix => "refresh";
-
+        public override string KeyTip => "RT";
         public override string ToolTipText => "Runs a server trace to record data refresh details";
         public override int SortOrder => 40;
         public override bool FilterForCurrentSession => false;

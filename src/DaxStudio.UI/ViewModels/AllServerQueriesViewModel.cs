@@ -266,7 +266,7 @@ namespace DaxStudio.UI.ViewModels
         public override string Title => "All Queries";
         public override string ImageResource => "all_queriesDrawingImage";
         public override string ToolTipText => "Runs a server trace to record all queries from all users for the current connection";
-
+        public override string KeyTip => "AQ";
         public override bool FilterForCurrentSession { get { return false; } }
 
         protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)

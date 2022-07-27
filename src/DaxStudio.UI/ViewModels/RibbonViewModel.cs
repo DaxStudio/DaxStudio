@@ -876,6 +876,7 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(FileOpenedEvent message, CancellationToken cancellationToken)
         {
             AddToRecentFiles(message.FileName);
+            RefreshRibbonButtonEnabledStatus();
             return Task.CompletedTask;
         }
 
@@ -1016,7 +1017,8 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ImportAnalysisData();
         }
 
-        public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning;
+        public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning 
+                                            || (ActiveDocument?.ToolWindows.Any(tw => tw is VertiPaqAnalyzerViewModel) ?? false);
 
         public async void ExportAnalysisData()
         {

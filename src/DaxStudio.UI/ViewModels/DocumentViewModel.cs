@@ -286,8 +286,6 @@ namespace DaxStudio.UI.ViewModels
                     _editor.PreviewDragEnter += OnDragEnterPreview;
                     _editor.KeyUp += OnKeyUp;
                     _editor.OnPasting += OnPasting;
-                    DataObject.AddPastingHandler(_editor, OnPasting2);
-
                 }
                 switch (State)
                 {
@@ -340,10 +338,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private async void OnPasting2(object sender, DataObjectPastingEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Pasting2");
-        }
 
             private async void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
@@ -3998,35 +3992,36 @@ namespace DaxStudio.UI.ViewModels
             {
                 IsVertipaqAnalyzerRunning = true;
                 sw.Start();
-                var msg2 = new StatusBarMessage(this, "Analyzing Model Metrics");
-
-                // check if PerfData Window is already open and use that
-                //vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
-
-                // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
-                if (vpaView != null)
+                using (new StatusBarMessage(this, "Analyzing Model Metrics"))
                 {
-                    ToolWindows.Remove(vpaView);
-                    vpaView = null;
-                }
 
-                vpaView = new VertiPaqAnalyzerViewModel( _eventAggregator, this, Options);
-                ToolWindows.Add(vpaView);
-                
-                vpaView.IsBusy = true;
-                vpaView.Activate();
+                    // check if PerfData Window is already open and use that
+                    //vpaView = this.ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
 
-                // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
-                bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
-                    || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
-                    || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
+                    // var vpaView = new VertiPaqAnalyzerViewModel(viewModel, _eventAggregator, this, Options);
+                    if (vpaView != null)
+                    {
+                        ToolWindows.Remove(vpaView);
+                        vpaView = null;
+                    }
 
-                bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
-                bool readStatisticsFromDirectQuery = Options.VpaxReadStatisticsFromDirectQuery && (!isLegacySsas);
+                    vpaView = new VertiPaqAnalyzerViewModel(_eventAggregator, this, Options);
+                    ToolWindows.Add(vpaView);
 
-                VpaModel viewModel = null;
+                    vpaView.IsBusy = true;
+                    vpaView.Activate();
 
-                
+                    // SSAS legacy doesn't have UNION and cannot execute readStatisticsFromData
+                    bool isLegacySsas = Connection.ServerVersion.StartsWith("10.", StringComparison.InvariantCultureIgnoreCase)  // SSAS 2012 RC
+                        || Connection.ServerVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)               // SSAS 2012 SP1
+                        || Connection.ServerVersion.StartsWith("12.", StringComparison.InvariantCultureIgnoreCase);              // SSAS 2014
+
+                    bool readStatisticsFromData = Options.VpaxReadStatisticsFromData && (!isLegacySsas);
+                    bool readStatisticsFromDirectQuery = Options.VpaxReadStatisticsFromDirectQuery && (!isLegacySsas);
+
+                    VpaModel viewModel = null;
+
+
                     // run Vertipaq Analyzer Async
 
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -4034,9 +4029,9 @@ namespace DaxStudio.UI.ViewModels
                     try
                     {
                         model = TomExtractor.GetDaxModel(
-                            Connection.ServerName, Connection.SelectedDatabaseName, 
-                            "DaxStudio", version.ToString(), 
-                            readStatisticsFromData: readStatisticsFromData, 
+                            Connection.ServerName, Connection.SelectedDatabaseName,
+                            "DaxStudio", version.ToString(),
+                            readStatisticsFromData: readStatisticsFromData,
                             sampleRows: Options.VpaxSampleReferentialIntegrityViolations,
                             analyzeDirectQuery: readStatisticsFromDirectQuery);
                     }
@@ -4065,40 +4060,15 @@ namespace DaxStudio.UI.ViewModels
                     var modelName = GetSelectedModelName();
                     viewModel.Model.ModelName = new Dax.Metadata.DaxName(modelName);
 
+                    // update view model
+                    vpaView.ViewModel = viewModel;
 
-
-                            
-                            // update view model
-                            vpaView.ViewModel = viewModel;
-                            
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisDataAsync), $"Error loading VPA view: {ex.Message}");
-                        //    OutputError($"Error viewing metrics : {ex.Message}");
-                        //    ActivateOutput();
-                        //}
-
-                    //} else
-                    //{
-                    //    var ex = prevTask.Exception;
-                    //    Log.Error(ex, "{class} {method} Error Getting Metrics", "DocumentViewModel", "ViewAnalysisData");
-                    //    var exMsg = ex.GetAllMessages();
-                    //    OutputError($"Error viewing metrics: {exMsg}");
-                    //    ActivateOutput();
-                    //}
-
-                    vpaView.IsBusy = false;
-                    IsVertipaqAnalyzerRunning = false;
-                    msg2.Dispose();
-                    //if (prevTask.IsFaulted) throw prevTask.Exception;
-
-                    sw.Stop();
-                    Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
-                    
-
-                //}, TaskScheduler.Default);
-                //task.Start(TaskScheduler.Default);
+                    if (Options.VpaxIncludeTom)
+                    {
+                        Microsoft.AnalysisServices.Tabular.Database database = TomExtractor.GetDatabase(Connection.ServerName, Connection.SelectedDatabaseName);
+                        vpaView.Database = database;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -4107,15 +4077,24 @@ namespace DaxStudio.UI.ViewModels
                 OutputError("Error viewing metrics: " + exMsg);
                 ActivateOutput();
             }
+            finally
+            {
+                vpaView.IsBusy = false;
+                IsVertipaqAnalyzerRunning = false;
+                sw.Stop();
+                Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
+            }
 
         }
 
 
         public async Task ExportAnalysisDataAsync()
         {
-            if (!IsConnected)
+            VertiPaqAnalyzerViewModel vm = ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
+
+            if (!IsConnected && vm == null)
             {
-                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option", "Export DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBoxEx.Show("The active query window is not connected to a data source and no metrics window is open. You need to be connected to a data source in order to use the export option", "Export Metrics", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             // Configure save file dialog box
@@ -4133,15 +4112,21 @@ namespace DaxStudio.UI.ViewModels
             if (result == true)
             {
                 // Save document 
-                
-                    try {
-                        IsVertipaqAnalyzerRunning = true;
+                try {
+                    IsVertipaqAnalyzerRunning = true;
+                    if (vm != null)
+                    {
+                        await vm.ExportAnalysisDataAsync(dlg.FileName);
+                    }
+                    else
+                    {
                         await ExportAnalysisDataAsync(dlg.FileName);
                     }
-                    finally
-                    {
-                        IsVertipaqAnalyzerRunning = false;
-                    }
+                }
+                finally
+                {
+                    IsVertipaqAnalyzerRunning = false;
+                }
 
 
             }

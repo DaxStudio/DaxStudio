@@ -668,6 +668,7 @@ namespace DaxStudio.UI.ViewModels
             Document.OutputWarning(e);
         }
 
+        public abstract string KeyTip { get; }
         #endregion
 
 

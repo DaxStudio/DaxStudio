@@ -772,6 +772,7 @@ namespace DaxStudio.UI.ViewModels
         public override string ContentId => "server-timings-trace";
         public override string TraceSuffix => "timings";
         public override string ImageResource => "server_timingsDrawingImage";
+        public override string KeyTip => "ST";
         public override int SortOrder => 30;
         public override ImageSource IconSource
         {

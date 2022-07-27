@@ -50,6 +50,11 @@ namespace DaxStudio.UI.Utils
             Dax.Vpax.Tools.VpaxTools.ExportVpax(path, model, viewVpa, database);
         }
 
+        public static void ExportExistingModelToVPAX(string filename, Dax.Metadata.Model model, Dax.ViewVpaExport.Model viewVpa, Microsoft.AnalysisServices.Tabular.Database database)
+        {
+            VpaxTools.ExportVpax(filename, model, viewVpa, database);
+        }
+
         public static VpaModel ImportVPAX(string filename)
         {
             var content = VpaxTools.ImportVpax(filename);
