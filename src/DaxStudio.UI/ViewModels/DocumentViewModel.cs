@@ -2787,8 +2787,11 @@ namespace DaxStudio.UI.ViewModels
                 IsDiskFileName = true;
                 if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                 {
-                    var package = LoadPackageFile();
-                    LoadState(package);
+
+                    using (var package = LoadPackageFile())
+                    {
+                        LoadState(package);
+                    }
                 }
                 else
                 {

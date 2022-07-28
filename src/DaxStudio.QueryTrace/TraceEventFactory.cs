@@ -36,10 +36,14 @@ namespace DaxStudio.QueryTrace
             }
 
             if (eventClass == TraceEventClass.QueryEnd 
-                || eventClass == TraceEventClass.CommandEnd
-                || eventClass == TraceEventClass.DAXQueryPlan)
+                || eventClass == TraceEventClass.CommandEnd)
             {
                 trc.Columns.Add(TraceColumn.NTUserName);
+                trc.Columns.Add(TraceColumn.ApplicationName);
+            }
+
+            if (eventClass == TraceEventClass.DAXQueryPlan)
+            {
                 trc.Columns.Add(TraceColumn.ApplicationName);
             }
 
