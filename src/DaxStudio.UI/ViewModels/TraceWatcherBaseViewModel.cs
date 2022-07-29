@@ -383,7 +383,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync), "Error Stopping Trace");
+                    Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync), "Error Starting Trace");
                     await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
                 }
             }).ConfigureAwait(false);
