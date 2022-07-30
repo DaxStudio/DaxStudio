@@ -112,6 +112,8 @@ namespace DaxStudio.QueryTrace
         private readonly bool _filterForCurrentSession;
         private readonly string _powerBiFileName;
         private readonly string _suffix = string.Empty;
+        private bool _isInternalQuery = false;
+
         public QueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
         {
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionManager.ConnectionString);
@@ -452,6 +454,21 @@ namespace DaxStudio.QueryTrace
                         return;
                     }
 
+                    if ((e.EventClass == TraceEventClass.QueryBegin || e.EventClass == TraceEventClass.CommandBegin) && IsInternalQuery(e.TextData))
+                    {
+                        _isInternalQuery = true;
+                    }
+                    if ((e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.CommandEnd) && IsInternalQuery(e.TextData))
+                    {
+                        _isInternalQuery = false;
+                        return;
+                    }
+                    if (_isInternalQuery)
+                    {
+                        Debug.WriteLine("Skipping Internal Query");
+                        return;
+                    }
+
 
                     System.Diagnostics.Debug.Print("TraceEvent: {0}", e.EventClass.ToString());
                     Log.Verbose("TraceEvent: {EventClass} - {EventSubClass} - {ActivityId}", e.EventClass.ToString(), e.EventSubclass.ToString(), e[TraceColumn.ActivityID]);
@@ -465,30 +482,18 @@ namespace DaxStudio.QueryTrace
 
 
                     OnTraceEvent(new DaxStudioTraceEventArgs(e, _powerBiFileName));
-                    //_capturedEvents.Add(new DaxStudioTraceEventArgs(e, _powerBiFileName));
-                    //if (e.EventClass == TraceEventClass.QueryEnd || e.EventClass == TraceEventClass.Error || e.EventClass == TraceEventClass.CommandEnd)
-                    //{
-                    //    // if this is not an internal DAX Studio query 
-                    //    // like the one we issue after a ClearCache to re-establish the session
-                    //    // then call TraceCompleted, otherwise we clear out the captured events
-                    //    // and keep waiting
-                    //    if (!e.TextData.Contains(Constants.InternalQueryHeader))
-                    //    {
-                    //        // Raise an event with the captured events
-                    //        TraceCompleted?.Invoke(this);
-                    //    }
-                    //    // reset the captured events collection
-                    //    _capturedEvents = new List<DaxStudioTraceEventArgs>();
 
-                    //    // Reset activity ID
-                    //    _activityId = null;
-                    //}
                 }
             }
             catch (Exception ex)
             {
                 Execute.OnUIThread(() => RaiseError(ex));
             }
+        }
+
+        private bool IsInternalQuery(string textData)
+        {
+            return textData.Contains(Constants.InternalQueryHeader);
         }
 
         private void StopTimer()

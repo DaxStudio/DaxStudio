@@ -34,7 +34,7 @@ namespace DaxStudio.UI.Utils {
         public async Task<ICloseResult<IScreen>> ExecuteAsync(IEnumerable<IScreen> toClose, CancellationToken cancellationToken)
         {
             //enumerator = toClose.GetEnumerator();
-            var closeable = new List<IScreen>();
+            var closeable = toClose; // new List<IScreen>();
             var closeCanOccur = true;
 
             var docs = toClose.Cast<ISaveable>();// .ConvertAll(o => (DocumentViewModel)o);
@@ -59,7 +59,7 @@ namespace DaxStudio.UI.Utils {
                 {
                     // loop through and cancel closing for any dirty documents
                     closeCanOccur = false; // cancel closing
-                    closeable.Clear();
+                    //closeable.Clear();
                     return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }
                 else
@@ -80,41 +80,24 @@ namespace DaxStudio.UI.Utils {
 
         }
 
-        async Task<bool> Evaluate(List<IScreen> toclose)
+        async Task<bool> Evaluate(IEnumerable<IScreen> toclose)
         {
             var finalResult = true;
 
-            //if (!enumerator.MoveNext() || !result) // if last object or something was cancelled
-            //    callback(finalResult, new List<IScreen>());
-            //else
-            //{
-            
             foreach (var c in toclose.OfType<IGuardClose>())
             {
                 finalResult = finalResult && await c.CanCloseAsync();
             }
 
-                //if (toclose.Any())   
-                //{
-                //   var tasks =  toclose //conductor.GetChildren()
-                //        .OfType<IHaveShutdownTask>()
-                //        .Select(x => x.GetShutdownTask())
-                //        .Where(x => x != null);
-
-                //    // TODO - show dialog box here 
-
-                //    var sequential = new SequentialResult(tasks.GetEnumerator());
-                //    sequential.Completed += (s, e) =>
-                //        {
-                //            finalresult = finalresult && !e.WasCancelled;
-                //        //if(!e.WasCancelled)
-                //        //Evaluate(!e.WasCancelled);
-                //    };
-                //    sequential.Execute(new CoroutineExecutionContext());
-                //}
+            foreach (var doc in toclose.OfType<IHaveTraceWatchers>())
+            {
+                foreach (var tw in doc.TraceWatchers)
+                {
+                    if (tw.IsChecked) { tw.StopTrace(); }
+                }
+            }
 
             return finalResult;
-            //}
         }
     }
 }

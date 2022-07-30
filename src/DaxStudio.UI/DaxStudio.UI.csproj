@@ -324,6 +324,7 @@
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
+    <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderColumnDataTypeConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />

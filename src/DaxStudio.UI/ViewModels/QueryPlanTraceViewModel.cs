@@ -98,6 +98,7 @@ namespace DaxStudio.UI.ViewModels
         {
             return new List<DaxStudioTraceEventClass> 
                 { DaxStudioTraceEventClass.DAXQueryPlan
+                , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd };
         }
     

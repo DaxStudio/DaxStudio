@@ -63,6 +63,7 @@ namespace DaxStudio.UI.ViewModels
     [Export(typeof(DocumentViewModel))]
     public class DocumentViewModel : Screen
         , IDaxDocument
+        , IHaveTraceWatchers
         , IHandle<ApplicationActivatedEvent>
         , IHandle<CancelConnectEvent>
         , IHandle<CancelQueryEvent>
@@ -246,6 +247,10 @@ namespace DaxStudio.UI.ViewModels
 
         public override async Task TryCloseAsync(bool? dialogResult = null)
         {
+            foreach(var tw in TraceWatchers)
+            {
+                if(tw.IsChecked) tw.StopTrace();
+            }
             await base.TryCloseAsync(dialogResult);
         }
 
@@ -940,6 +945,11 @@ namespace DaxStudio.UI.ViewModels
         {
             // Close the document's connection 
             Connection.Close(true);
+            // turn off any running traces
+            foreach(var tw in TraceWatchers)
+            {
+                tw.IsChecked = false;
+            }
 
             var docTab = Parent as DocumentTabViewModel;
             docTab.CloseItemAsync(this);
