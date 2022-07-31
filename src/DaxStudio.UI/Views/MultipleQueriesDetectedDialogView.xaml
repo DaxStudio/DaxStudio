@@ -42,7 +42,7 @@
         </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Vertical">
 
-                <TextBlock Padding="10" TextWrapping="Wrap" >The text you are about to paste appears to have come from Power BI Performance Analyzer and contains a <Run FontFamily="Courier New" Foreground="Green">// Direct Query </Run> comment indicating that this text contains both the top level DAX query plus an underlying query to the 
+                <TextBlock Padding="10" TextWrapping="Wrap" >The text you are about to paste appears to have come from Power BI Performance Analyzer and contains a <Run FontFamily="Courier New" Foreground="Green" Text="{Binding Comment}"/> comment indicating that this text contains both the top level DAX query plus an underlying query to the 
                     <Run Foreground="Blue" TextDecorations="Underline">remote storage engine (Direct Query)
                         <Run.ToolTip>
                             <ToolTip MaxWidth="300" HasDropShadow="True" Padding="16" >
@@ -57,7 +57,7 @@
                                 </Grid>
                             </ToolTip>
                         </Run.ToolTip></Run>.</TextBlock>
-                <TextBlock Padding="10" TextWrapping="Wrap">There are <Run Text="{Binding CharactersBeforeComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters before the <Run FontFamily="Courier New" Foreground="Green">// Direct Query</Run> comment and <Run Text="{Binding CharactersAfterComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters after it.</TextBlock>
+                <TextBlock Padding="10" TextWrapping="Wrap">There are <Run Text="{Binding CharactersBeforeComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters before the <Run FontFamily="Courier New" Foreground="Green" Text="{Binding Comment}"></Run> comment and <Run Text="{Binding CharactersAfterComment}" FontWeight="Bold" Foreground="{StaticResource DaxStudioBrush}"></Run> characters after it.</TextBlock>
                 <TextBlock Padding="10" TextWrapping="Wrap" FontWeight="Light" FontSize="18" HorizontalAlignment="Center">Which queries do you want to paste?</TextBlock>
             </StackPanel>
             

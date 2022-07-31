@@ -18,6 +18,7 @@ namespace DaxStudio.UI.ViewModels
         public int CharactersBeforeComment { get; set; }
         public int CharactersAfterComment { get; set; }
 
+        public string Comment { get; set; } = "// SQL Query";
         public async void KeepDirectQueryCode()
         {
             Result = MultipleQueriesDetectedDialogResult.KeepDirectQuery;

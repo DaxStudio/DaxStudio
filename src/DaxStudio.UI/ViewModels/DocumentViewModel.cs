@@ -358,13 +358,13 @@ namespace DaxStudio.UI.ViewModels
 
                 var sm = new LongLineStateMachine(Constants.MaxLineLength);
                 var newContent = sm.ProcessString(content);
-                if (sm.SqlQueryCommentFound)
+                if (sm.QueryCommentFound)
                 {
-                    switch (await ShowStripDirectQueryDialog(sm.SqlQueryCommentPosition, newContent.Length))
+                    switch (await ShowStripDirectQueryDialog(sm.CommentPosition,sm.Comment, newContent.Length))
                     {
                         case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
                             // remove the direct query code from the text we are pasting in
-                            newContent = newContent.Substring(0, sm.SqlQueryCommentPosition);
+                            newContent = newContent.Substring(0, sm.CommentPosition);
                             break;
                         case MultipleQueriesDetectedDialogResult.KeepDirectQuery:
                             break;
@@ -385,8 +385,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private async Task<MultipleQueriesDetectedDialogResult> ShowStripDirectQueryDialog(int commentPosition, int stringLength)
+        private async Task<MultipleQueriesDetectedDialogResult> ShowStripDirectQueryDialog(int commentPosition, string comment, int stringLength)
         {
+            
             // check in options if we should prompt or return a default option
             if (Options.EditorMultipleQueriesDetectedOnPaste == MultipleQueriesDetectedOnPaste.AlwaysKeepOnlyDax)
                 return MultipleQueriesDetectedDialogResult.RemoveDirectQuery;
@@ -396,11 +397,12 @@ namespace DaxStudio.UI.ViewModels
             // if we get here we should prompt the user
             const int commentLength = 12;
             var charactersAfterComment = stringLength - commentPosition - commentLength;
-            
+
             var stripDirectQueryDialog = new MultipleQueriesDetectedDialogViewModel(Options)
             {
                 CharactersBeforeComment = commentPosition,
-                CharactersAfterComment = charactersAfterComment
+                CharactersAfterComment = charactersAfterComment,
+                Comment = comment
             };
 
             await _windowManager.ShowDialogBoxAsync(stripDirectQueryDialog, settings: new Dictionary<string, object>

@@ -145,6 +145,7 @@
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True"
                           
+                                              VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                 -->
                     <DataGrid ItemsSource="{Binding GroupedColumns, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
@@ -155,7 +156,7 @@
                           VerticalGridLinesBrush="Transparent"
                           CanUserSortColumns="True" 
                           
-                          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True"
                           CanUserReorderColumns="False"
