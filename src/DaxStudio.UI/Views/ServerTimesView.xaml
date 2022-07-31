@@ -456,17 +456,13 @@
 
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" >
                     <Setter Property="HorizontalAlignment" Value="Right" />
-                    <Setter Property="Padding" Value="6 2 6 0"/>
-                </Style>
-                
-                <Style x:Key="AlignBottomRight" TargetType="{x:Type TextBlock}">
-                    <Setter Property="HorizontalAlignment" Value="Right" />
+                    <Setter Property="Padding" Value="6 0 6 0"/>
                     <Setter Property="VerticalAlignment" Value="Center" />
-                    <Setter Property="Padding" Value="6 2 6 0"/>
                 </Style>
-                    
+                                    
                 <Style TargetType="{x:Type TextBlock}">
-                    <Setter Property="Padding" Value="6 2 6 0"/>
+                    <Setter Property="Padding" Value="6 0 6 0"/>
+                    <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
                 
                 </DataGrid.Resources>
@@ -476,7 +472,8 @@
                 <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="Padding" Value="6 2 6 0"/>
+                                <Setter Property="Padding" Value="6 0 6 0"/>
+                                <Setter Property="VerticalAlignment" Value="Center" />
                                 <Style.Triggers>
                                 <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
                                     <Setter Property="FontStyle" Value="Italic"/>
@@ -487,7 +484,7 @@
                 </DataGridTextColumn>
                     <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="72" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignBottomRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
+                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
                 <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
