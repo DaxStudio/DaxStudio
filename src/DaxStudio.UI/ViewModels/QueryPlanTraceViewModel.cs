@@ -63,7 +63,7 @@ namespace DaxStudio.UI.ViewModels
         private const string searchRecords = RecordsPrefix + @"([0-9]*)";
         static Regex recordsRegex = new Regex(searchRecords,RegexOptions.Compiled);
 
-        private const string CachePrefix = @"Cache:";
+        private const string CachePrefix = @"Cache:|DirectQueryResult";
         static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
 
         public override void PrepareQueryPlanRow(string line, int rowNumber) { 
