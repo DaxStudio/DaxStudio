@@ -1296,7 +1296,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showDebugCommas;
-        [DataMember, DefaultValue(false)]
+        [DataMember, DefaultValue(true)]
         public bool ShowDebugCommas
         {
             get => _showDebugCommas;
