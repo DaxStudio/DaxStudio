@@ -97,7 +97,7 @@ namespace DaxStudio.UI.Theme
             RegistryKey registry =
                 Registry.CurrentUser.OpenSubKey(
                     @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            return (int)registry.GetValue( "AppsUseLightTheme",1) == 1;
+            return (int)(registry?.GetValue( "AppsUseLightTheme",1)??1) == 1;
         }
 
 
