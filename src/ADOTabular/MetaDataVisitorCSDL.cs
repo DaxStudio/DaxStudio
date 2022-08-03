@@ -668,6 +668,7 @@ namespace ADOTabular
                 var eMinValue = rdr.NameTable.Add("MinValue");
                 var eMaxValue = rdr.NameTable.Add("MaxValue");
                 var eOrderBy = rdr.NameTable.Add("OrderBy");
+                var eGroupBy = rdr.NameTable.Add("GroupBy");
 
                 // this routine effectively processes and <EntityType> element and it's children
                 string caption = "";
@@ -684,6 +685,7 @@ namespace ADOTabular
                 string keyRef = string.Empty;
                 string defaultAggregateFunction = string.Empty;
                 string orderBy = string.Empty;
+                List<string> groupBy = new List<string>();
                 long stringValueMaxLength = 0;
                 long distinctValueCount = 0;
                 bool nullable = true;
@@ -760,6 +762,7 @@ namespace ADOTabular
                     || rdr.LocalName == eMeasure
                     || rdr.LocalName == eSummary
                     || rdr.LocalName == eOrderBy
+                    || rdr.LocalName == eGroupBy
                     || rdr.LocalName == eStatistics
                     || rdr.LocalName == eMinValue
                     || rdr.LocalName == eMaxValue))
@@ -827,11 +830,17 @@ namespace ADOTabular
                         variations = ProcessVariations(rdr);
                     }
 
-                if (rdr.NodeType == XmlNodeType.Element
-                    && rdr.LocalName == "OrderBy")
-                {
-                    orderBy = ProcessOrderBy(rdr);
-                }
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "OrderBy")
+                    {
+                        orderBy = ProcessOrderBy(rdr);
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "GroupBy")
+                    {
+                        groupBy = ProcessGroupBy(rdr);
+                    }
 
                     if (rdr.NodeType == XmlNodeType.EndElement
                         && rdr.LocalName == eProperty
@@ -858,6 +867,7 @@ namespace ADOTabular
                                     OrderByRef = orderBy
                                 };
                                 col.Variations.AddRange(variations);
+                                col.GroupByRefs.AddRange(groupBy);
                                 tables.Model.AddRole(col);
                                 tab.Columns.Add(col);
                                 _conn.Columns.Add(col.DaxName, col);
@@ -892,6 +902,7 @@ namespace ADOTabular
                         variations = new List<ADOTabularVariation>();
                         dataTypeEnum = DataType.Unknown;
                         orderBy = string.Empty;
+                        groupBy.Clear();
                     }
                     if (!rdr.Read()) break;// quit the read loop if there is no more data
                 }
@@ -939,7 +950,26 @@ namespace ADOTabular
 
             return orderBy;
         }
-        
+
+        private static List<string> ProcessGroupBy(XmlReader rdr)
+        {
+            var groupBy = new List<string>();
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "GroupBy"))
+            {
+                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "PropertyRef")
+                {
+                    rdr.MoveToAttribute("Name");
+                    rdr.ReadAttributeValue();
+                    groupBy.Add(rdr.Value);
+                }
+
+                rdr.Read();
+            }
+
+            return groupBy;
+        }
+
         private static List<ADOTabularVariation> ProcessVariations(XmlReader rdr)
         {
             string _name;

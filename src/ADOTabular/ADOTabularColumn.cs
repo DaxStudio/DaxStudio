@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AnalysisServices.Tabular;
+using Microsoft.Identity.Client;
 
 namespace ADOTabular
 {
@@ -77,13 +78,30 @@ namespace ADOTabular
         public string DataTypeName { get { return DataType==0?string.Empty:DataType.ToString().Replace("System.", ""); } }
         
         internal string OrderByRef { get; set; }
-
+        
         public ADOTabularColumn OrderBy
         {
             get
             {
                 if (string.IsNullOrEmpty(OrderByRef)) return null;
                 return Table.Columns.GetByPropertyRef(OrderByRef);
+            }
+        }
+        internal List<string> GroupByRefs { get; set; } = new List<string>();
+        private List<ADOTabularColumn> _groupByColumns; 
+        public List<ADOTabularColumn> GroupBy
+        {
+            get
+            {
+                if (_groupByColumns == null)
+                {
+                    _groupByColumns = new List<ADOTabularColumn>();
+                    foreach( var colRef in GroupByRefs)
+                    {
+                        _groupByColumns.Add(Table.Columns.GetByPropertyRef(colRef));
+                    }
+                }
+                return _groupByColumns;
             }
         }
 
@@ -188,41 +206,80 @@ namespace ADOTabular
         {
             if (connection == null) return;
 
-            string qry = Type.GetTypeCode(SystemType) switch
+            string qry = GetBasicStatsQuery();
+            try
             {
-                TypeCode.Boolean => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                TypeCode.Empty => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                TypeCode.String => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                _ => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )",
-            };
-
-            using var dt = connection.ExecuteDaxQueryDataTable(qry);
-            MinValue = dt.Rows[0][0].ToString();
-            MaxValue = dt.Rows[0][1].ToString();
-            DistinctValues = 
-                (dt.Rows[0][2] == DBNull.Value) 
-                ? 0 
-                : (long)dt.Rows[0][2];
+                using var dt = connection.ExecuteDaxQueryDataTable(qry);
+                MinValue = dt.Rows[0][0].ToString();
+                MaxValue = dt.Rows[0][1].ToString();
+                DistinctValues =
+                    (dt.Rows[0][2] == DBNull.Value)
+                    ? 0
+                    : (long)dt.Rows[0][2];
+            }
+            catch
+            {
+                MinValue = "<error>";
+                MaxValue = "<error>";
+                DistinctValues = -1;
+            }
         }
 
+        private string GetBasicStatsQuery()
+        {
+            if (GroupBy.Count == 0)
+                return Type.GetTypeCode(SystemType) switch
+                {
+                    TypeCode.Boolean => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                    TypeCode.Empty => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                    TypeCode.String => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", FIRSTNONBLANK({DaxName},1),\"Max\", LASTNONBLANK({DaxName},1), \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                    _ => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MIN({DaxName}),\"Max\", MAX({DaxName}), \"DistinctCount\", DISTINCTCOUNT({DaxName}) )",
+                };
+
+            var grpCols = string.Join(",", GroupBy.Select(c => c.DaxName));
+            return Type.GetTypeCode(SystemType) switch
+                {
+                    TypeCode.Boolean => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                    TypeCode.Empty => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
+                    _ => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MINX(ALL({DaxName}, {grpCols} ),{DaxName}),\"Max\", MAXX(ALL({DaxName},{grpCols}), {DaxName}), \"DistinctCount\", COUNTROWS(DISTINCT(ALL({DaxName},{grpCols}))) )",                    
+                };
+        }
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            
+
             if (connection == null) return new List<string>() { "<Not Connected>" };
 
-            string qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";
-            if (connection.AllFunctions.Contains("TOPNSKIP"))
-                qryTemplate = $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), 1) ORDER BY {{1}}";
+            string qryTemplate = GetSampleDataQueryTemplate(connection.AllFunctions.Contains("TOPNSKIP"), GroupBy.Count > 0);
+            var groupByCols = string.Join(",", GroupBy.Select(gb => gb.DaxName));
+            var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName, groupByCols);
 
-            var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName);
             using var dt = connection.ExecuteDaxQueryDataTable(qry);
             List<string> _tmp = new List<string>(sampleSize * 2);
             foreach (DataRow dr in dt.Rows)
             {
                 _tmp.Add(string.Format(CultureInfo.InvariantCulture, string.Format(CultureInfo.InvariantCulture, "{{0:{0}}}", FormatString), dr[0]));
             }
+
             return _tmp.Distinct().Take(sampleSize).ToList();
+        }
+
+        private static string GetSampleDataQueryTemplate(bool canUseTopnSkip, bool hasGroupBy)
+        {
+            
+            if (canUseTopnSkip && !hasGroupBy)
+                return $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), 1) ORDER BY {{1}}";
+
+            if (!canUseTopnSkip && !hasGroupBy)
+                return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";
+
+            if (canUseTopnSkip && hasGroupBy)
+                return $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}, {{2}})) order by {{1}}";                    
+    
+            if ( !canUseTopnSkip && hasGroupBy)
+                return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}},{{2}}), 1) ORDER BY {{1}}";
+
+            return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";
         }
 
         // used for relationship links

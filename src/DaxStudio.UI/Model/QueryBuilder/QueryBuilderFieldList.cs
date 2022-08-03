@@ -45,20 +45,47 @@ namespace DaxStudio.UI.Model
             if (item is ADOTabularColumn col)
             {
                 builderItem.SelectedTable = col.Table;
-                if (col.OrderBy != null)
-                {
-                    // TODO - look at automatically pulling OrderBy columns into the query
-                    var sortCol = ((IADOTabularColumn)col.OrderBy) as QueryBuilderColumn;
-                    if (sortCol == null) sortCol = new QueryBuilderColumn(col.OrderBy, true, EventAggregator);
-                    sortCol.IsSortBy = true;
-                    if (!Items.Any(sort => sort.DaxName == sortCol.DaxName)) { 
-                        Items.Add(sortCol);
-                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
-                    }
-                }
+                AddSortByColumn(col);
+                AddGroupByColumns(col);
             }
             Items.Add(builderItem);
             NotifyOfPropertyChange(nameof(Items));
+        }
+
+        //  automatically pull OrderBy columns into the query
+        private void AddSortByColumn(ADOTabularColumn col)
+        {
+            if (col.OrderBy != null)
+            {
+                
+                var sortCol = ((IADOTabularColumn)col.OrderBy) as QueryBuilderColumn;
+                if (sortCol == null) sortCol = new QueryBuilderColumn(col.OrderBy, true, EventAggregator);
+                sortCol.IsSortBy = true;
+                if (!Items.Any(sort => sort.DaxName == sortCol.DaxName))
+                {
+                    Items.Add(sortCol);
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
+                }
+            }
+        }
+
+        // automatically pull GroupBy columns into the query
+        private void AddGroupByColumns(ADOTabularColumn col)
+        {
+            if (col.GroupBy.Count > 0)
+            {
+                foreach (var grpCol in col.GroupBy)
+                {
+                    var groupCol = ((IADOTabularColumn)grpCol) as QueryBuilderColumn;
+                    if (groupCol == null) groupCol = new QueryBuilderColumn(grpCol, true, EventAggregator);
+                    groupCol.IsGroupBy = true;
+                    if (!Items.Any(item => item.DaxName == groupCol.DaxName))
+                    {
+                        Items.Add(groupCol);
+                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"{grpCol.DaxName} was added to the Query Builder because it is a GroupBy column for {col.DaxName}"));
+                    }
+                }
+            }
         }
 
         public void Add(QueryBuilderColumn item)

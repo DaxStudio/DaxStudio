@@ -435,7 +435,15 @@ namespace DaxStudio.UI.Model
                     using (var newConn = _connection.Clone())
                     {
                         column.SampleData?.Clear();
-                        column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
+                        try
+                        {
+                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleData), "Error getting sample data");
+                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error getting sample data for tooltip\n{ex.Message}"));
+                        }
                     }
                 });
             }

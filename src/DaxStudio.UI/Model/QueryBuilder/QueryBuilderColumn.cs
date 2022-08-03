@@ -152,5 +152,6 @@ namespace DaxStudio.UI.Model
         }
 
         public bool IsSortBy { get; internal set; }
+        public bool IsGroupBy { get; internal set; }
     }
 }

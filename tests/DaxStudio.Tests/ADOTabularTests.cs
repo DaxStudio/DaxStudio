@@ -347,6 +347,28 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestPowerBIGroupByVisitor()
+        {
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
+            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\FieldParams_Csdl.xml");
+            var tabs = new ADOTabularTableCollection(connection, m);
+
+            v.GenerateTablesFromXmlReader(tabs, xr);
+            var paramTable = tabs["Slicer by number of days"];
+            Assert.IsNotNull(paramTable);
+            Assert.AreEqual(paramTable.Columns["Slicer by number of days Order"], paramTable.Columns["Slicer by number of days"].OrderBy);
+            Assert.AreEqual(true, paramTable.Columns["Slicer by number of days"].GroupBy.Count > 0, "The groupBy columns collection is not empty");
+            Assert.AreEqual(paramTable.Columns["Slicer by number of days Fields"], paramTable.Columns["Slicer by number of days"].GroupBy[0]);
+            //Assert.AreEqual(paramTable.Columns["QuarterNo"], paramTable.Columns["Quarter"].OrderBy);
+            //Assert.IsNull(paramTable.Columns["QuarterNo"].OrderBy);
+            //Assert.IsNull(paramTable.Columns["Year"].OrderBy);
+
+        }
+
+
+        [TestMethod]
         public void TestPowerBIDatabaseCulture()
         {
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
