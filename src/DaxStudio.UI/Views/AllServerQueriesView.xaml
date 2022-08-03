@@ -119,7 +119,7 @@
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="Query"
                             Text="{Binding Path=Query,Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
-                            VerticalAlignment="Top" 
+                            VerticalAlignment="Center" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
                             ToolTip="{Binding Query}">
@@ -385,8 +385,12 @@
                                     >
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Grid>
-                                    <TextBlock Text="{Binding Path=Duration, Mode=OneWay, Converter={StaticResource LongToFormattedMsConverter}}" TextAlignment="Right" />
+                                <Border Margin="0" Padding="0">
+                                    <TextBlock x:Name="Duration" 
+                                               Text="{Binding Path=Duration, Mode=OneWay, Converter={StaticResource LongToFormattedMsConverter}}" 
+                                        Margin="5,2"
+                                        VerticalAlignment="Center" 
+                                        HorizontalAlignment="Right"    />
                                     <!--<TextBlock Text="{Binding Path=Duration, Mode=OneWay}" TextAlignment="Right"
                                                Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
 
@@ -402,7 +406,7 @@
                                     Foreground="{DynamicResource Theme.Brush.Accent}"
                                     Background="{DynamicResource Theme.Brush.Alternate.Back}"
                                     Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>-->
-                                </Grid>
+                                </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         
@@ -418,7 +422,7 @@
                                 cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                                 <TextBlock x:Name="Username"   
                                         Text="{Binding Path=Username,Mode=OneWay}"  
-                                        VerticalAlignment="Top" 
+                                        VerticalAlignment="Center"
                                         HorizontalAlignment="Left"   
                                         TextTrimming="CharacterEllipsis"
                                            Margin="5,2"
@@ -438,7 +442,7 @@
                                 cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                                     <TextBlock x:Name="Query"
                         Text="{Binding Path=DatabaseName,Mode=OneWay}"  
-                        VerticalAlignment="Top" 
+                        VerticalAlignment="Center" 
                         HorizontalAlignment="Left"   
                         TextTrimming="CharacterEllipsis"
                                                Margin="5,2"
