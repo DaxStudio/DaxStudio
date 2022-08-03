@@ -246,6 +246,7 @@
     <Compile Include="AttachedProperties\DefaultButton.cs" />
     <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
     <Compile Include="AttachedProperties\LayoutAnchorablePaneAutoHideMinWidthHelper.cs" />
+    <Compile Include="AttachedProperties\DataGridHorizontalScroll.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />

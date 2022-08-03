@@ -790,6 +790,7 @@ namespace DaxStudio.UI.ViewModels
         public override void OnReset()
         {
             IsBusy = false;
+            ToggleScrollLeft();
             ClearAll();
             Events.Clear();
             ProcessResults();
@@ -801,6 +802,14 @@ namespace DaxStudio.UI.ViewModels
             string json = GetJson();
             File.WriteAllText(filename + ".serverTimings", json);
 
+        }
+
+        public bool ScrollLeft { get; set; }
+
+        public void ToggleScrollLeft()
+        {
+            ScrollLeft = !ScrollLeft;
+            NotifyOfPropertyChange(nameof(ScrollLeft));
         }
 
         public void SavePackage(Package package)

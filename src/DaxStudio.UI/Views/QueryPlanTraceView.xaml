@@ -8,6 +8,7 @@
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
@@ -33,6 +34,113 @@
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
+
+
+            <Style x:Key="DefaultDataGridRowStyle" TargetType="DataGridRow">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="SnapsToDevicePixels" Value="true" />
+                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
+                <Setter Property="ValidationErrorTemplate">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <TextBlock
+                        Margin="2,0,0,0"
+                        VerticalAlignment="Center"
+                        Foreground="Red"
+                        Text="!" />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridRow">
+                            <Grid>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <primitives:VisualStateGroupListener.Listener>
+                                            <primitives:VisualStateGroupListener x:Name="CommonStatesListener" />
+                                        </primitives:VisualStateGroupListener.Listener>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="Normal_AlternatingRow" />
+                                        <VisualState x:Name="MouseOver" />
+                                        <VisualState x:Name="Normal_Selected" />
+                                        <VisualState x:Name="MouseOver_Selected" />
+                                        <VisualState x:Name="MouseOver_Unfocused_Selected" />
+                                        <VisualState x:Name="Unfocused_Selected" />
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <Rectangle
+                            x:Name="BackgroundRectangle"
+                            Fill="{TemplateBinding Background}" />
+                                <Border
+                            x:Name="DGR_Border"
+                            Background="Transparent"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                                    <SelectiveScrollingGrid>
+                                        <SelectiveScrollingGrid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </SelectiveScrollingGrid.ColumnDefinitions>
+                                        <SelectiveScrollingGrid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </SelectiveScrollingGrid.RowDefinitions>
+                                        <DataGridCellsPresenter
+                                    x:Name="CellsPresenter"
+                                    Grid.Column="1"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                        <Border
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Background="{DynamicResource DataGridDetailsPresenterBackgroundBrush}">
+                                            <DataGridDetailsPresenter
+                                        x:Name="DetailsPresenter"
+                                        SelectiveScrollingGrid.SelectiveScrollingOrientation="{TemplateBinding primitives:DataGridRowHelper.AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}}"
+                                        Visibility="{TemplateBinding DetailsVisibility}" />
+                                        </Border>
+                                        <DataGridRowHeader
+                                    x:Name="RowHeader"
+                                    Grid.RowSpan="2"
+                                    SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                    Visibility="{TemplateBinding primitives:DataGridRowHelper.HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}}" />
+                                    </SelectiveScrollingGrid>
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="MouseOver">
+                                    <Setter TargetName="BackgroundRectangle" Property="Fill" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+                                </Trigger>
+                                <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="Normal_Selected">
+                                    <Setter TargetName="BackgroundRectangle" Property="Fill" Value="{DynamicResource DataGridRowSelectedBackground}" />
+                                    <Setter TargetName="BackgroundRectangle" Property="Opacity" Value="{DynamicResource DataGridRowSelectedBackgroundOpacity}" />
+                                </Trigger>
+                                <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="MouseOver_Selected">
+                                    <Setter TargetName="BackgroundRectangle" Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredBackground}" />
+                                    <Setter TargetName="BackgroundRectangle" Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundOpacity}" />
+                                </Trigger>
+                                <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="MouseOver_Unfocused_Selected">
+                                    <Setter TargetName="BackgroundRectangle" Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackground}" />
+                                    <Setter TargetName="BackgroundRectangle" Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundOpacity}" />
+                                </Trigger>
+                                <Trigger SourceName="CommonStatesListener" Property="CurrentStateName" Value="Unfocused_Selected">
+                                    <Setter TargetName="BackgroundRectangle" Property="Fill" Value="{DynamicResource DataGridRowSelectedUnfocusedBackground}" />
+                                    <Setter TargetName="BackgroundRectangle" Property="Opacity" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundOpacity}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsNewItem" Value="True">
+                        <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -145,6 +253,7 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
+                RowStyle="{StaticResource DefaultDataGridRowStyle}"
                   >
 
                 <!--<DataGrid.Resources>
@@ -195,11 +304,11 @@
                 </DataGridTextColumn>
                 
             </DataGrid.Columns>
-                <DataGrid.RowStyle>
+                <!--<DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}"  BasedOn="{StaticResource DefaultDataGridRowStyle}">
                         <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                     </Style>
-                </DataGrid.RowStyle>
+                </DataGrid.RowStyle>-->
                 
                 <DataGrid.ContextMenu>
                     <ContextMenu>
@@ -274,11 +383,11 @@
                 <DataGridTextColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
                                     IsReadOnly="True" Binding="{Binding IndentedOperation}" ElementStyle="{StaticResource AlignLeft}"/>
             </DataGrid.Columns>
-            <DataGrid.RowStyle>
+            <!--<DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
-            </DataGrid.RowStyle>
+            </DataGrid.RowStyle>-->
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="Copy">

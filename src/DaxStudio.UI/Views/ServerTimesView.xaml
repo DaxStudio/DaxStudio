@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"    
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"    
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
@@ -403,6 +403,8 @@
             >
             <DataGrid Name="ListEvents" 
                   SelectedItem="{Binding SelectedEvent}" 
+                  ap:DataGridHorizontalScroll.ScrollToColumn="1"
+                  ap:DataGridHorizontalScroll.ScrollLeft="{Binding ScrollLeft}"
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
                   AlternationCount="2"
@@ -487,11 +489,13 @@
                     <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
-                <DataGridTextColumn Header="Query" behaviours:GridViewColumnResize.Width="Auto"
-                                    IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}" >
+                    <!--behaviours:GridViewColumnResize.Width="Auto" -->
+                <DataGridTextColumn Header="Query" Width="*"
+                                    IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"  >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Padding" Value="6 2 6 0"/>
+                                <Setter Property="ToolTip" Value="{Binding Query}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
                                         <Setter Property="FontWeight" Value="Bold"/>
