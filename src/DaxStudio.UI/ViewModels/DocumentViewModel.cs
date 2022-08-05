@@ -184,7 +184,7 @@ namespace DaxStudio.UI.ViewModels
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
             MetadataPane = new MetadataPaneViewModel(Connection, _eventAggregator, this, Options);
             FunctionPane = new FunctionPaneViewModel(Connection, _eventAggregator, this, Options);
-            DmvPane = new DmvPaneViewModel(Connection, _eventAggregator, this);
+            DmvPane = new DmvPaneViewModel(Connection, _eventAggregator, this, Options);
             QueryBuilder = new QueryBuilderViewModel(_eventAggregator, this, Options);
             QueryBuilder.VisibilityChanged += QueryBuilder_VisibilityChanged;
 

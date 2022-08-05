@@ -1518,6 +1518,24 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
+        private bool _autoHideMetadataVerticalScrollbars = true;
+        [Category("Metadata Pane")]
+        [Subcategory("Scrollbars")]
+        [DisplayName("Auto hide vertical scrollbars")]
+        [Description("Turning this option off will stop the vertical scroll bars from collapsing when they do not have focus")]
+        [DataMember, DefaultValue(true)]
+        public bool AutoHideMetadataVerticalScrollbars
+        {
+            get => _autoHideMetadataVerticalScrollbars;
+            set
+            {
+                _autoHideMetadataVerticalScrollbars = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(AutoHideMetadataVerticalScrollbars), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => AutoHideMetadataVerticalScrollbars);
+            }
+        }
+
         private int _previewDataRowLimit = 500;
         [Category("Metadata Pane")]
         [Subcategory("Preview Data")]

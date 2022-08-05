@@ -12,6 +12,7 @@ namespace DaxStudio.Interfaces
 {
     public interface IGlobalOptions: IGlobalOptionsBase
     {
+        bool AutoHideMetadataVerticalScrollbars { get; set; }
         bool AutoRefreshMetadataCloud { get; set; }
         bool AutoRefreshMetadataLocalMachine { get; set; }
         bool AutoRefreshMetadataLocalNetwork { get; set; }

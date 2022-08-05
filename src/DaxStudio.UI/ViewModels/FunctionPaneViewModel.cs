@@ -23,6 +23,7 @@ namespace DaxStudio.UI.ViewModels
     public class FunctionPaneViewModel:ToolPaneBaseViewModel
         , IMetadataPane
         , IHandle<ConnectionChangedEvent>
+        , IHandle<UpdateGlobalOptions>
     {
         private IFunctionProvider _functionProvider;
         [ImportingConstructor]
@@ -120,6 +121,14 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!(selectedItem is ADOTabularFunctionsExtensions.TreeViewFunction func)) return;
             Process.Start(new ProcessStartInfo($"https://dax.guide/{func.Name}/?aff=dax-studio"));
+        }
+
+        public bool AutoHideMetadataVerticalScrollbars => Options.AutoHideMetadataVerticalScrollbars;
+
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(nameof(AutoHideMetadataVerticalScrollbars));
+            return Task.CompletedTask;
         }
     }
 }

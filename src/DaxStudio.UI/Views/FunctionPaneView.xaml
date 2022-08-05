@@ -235,7 +235,7 @@
                 BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}">
             <TreeView
                 Grid.Row="1" x:Name="FunctionGroups" Height="Auto"  ItemsSource="{Binding FunctionGroups}"
-                  
+                  primitives:ScrollViewerHelper.AutoHideScrollBars="{Binding AutoHideMetadataVerticalScrollbars}"
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"

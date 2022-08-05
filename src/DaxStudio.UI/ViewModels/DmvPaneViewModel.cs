@@ -23,15 +23,18 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class DmvPaneViewModel : ToolPaneBaseViewModel 
         , IHandle<ConnectionChangedEvent>
+        , IHandle<UpdateGlobalOptions>
     {
         private IDmvProvider _dmvProvider;
         private object _lock = new object();
         [ImportingConstructor]
-        public DmvPaneViewModel(IDmvProvider dmvProvider, IEventAggregator eventAggregator, DocumentViewModel document)
+        public DmvPaneViewModel(IDmvProvider dmvProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions options)
             : base(eventAggregator)
+            
         {
             _dmvProvider = dmvProvider;
             Document = document;
+            Options = options;
             DmvQueries = new ObservableCollection<IDmv>();
             // this makes sure the collection can be updated on a background thread
             BindingOperations.EnableCollectionSynchronization(DmvQueries, _lock);
@@ -91,6 +94,7 @@ namespace DaxStudio.UI.ViewModels
         public override string Title => "DMV";
 
         public DocumentViewModel Document { get; private set; }
+        public IGlobalOptions Options { get; }
 
         private string _searchCriteria;
         public string SearchCriteria
@@ -109,9 +113,16 @@ namespace DaxStudio.UI.ViewModels
             SearchCriteria = string.Empty;
         }
 
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(nameof(AutoHideMetadataVerticalScrollbars));
+            return Task.CompletedTask;
+        }
+
         public bool HasSearchCriteria => !string.IsNullOrEmpty(SearchCriteria);
 
         public ICollectionView DmvQueriesView { get; }
+        public bool AutoHideMetadataVerticalScrollbars => Options.AutoHideMetadataVerticalScrollbars;
     }
 
 }

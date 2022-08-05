@@ -10,6 +10,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
@@ -59,6 +60,7 @@
                   dd:DragDrop.IsDragSource="True"
                   dd:DragDrop.IsDropTarget="False" 
                   dd:DragDrop.DragHandler="{Binding}"
+                  primitives:ScrollViewerHelper.AutoHideScrollBars="{Binding AutoHideMetadataVerticalScrollbars}"
                   cal:Message.Attach="[Event MouseDoubleClick] = [Action MouseDoubleClick($this.SelectedItem,$eventArgs)]" Background="Transparent">
                 <ListView.ItemTemplate>
                     <DataTemplate >

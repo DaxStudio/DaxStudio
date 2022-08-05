@@ -536,6 +536,7 @@
                                   VirtualizingPanel.IsVirtualizing="True"
                                   VirtualizingPanel.VirtualizationMode="Recycling"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  primitives:ScrollViewerHelper.AutoHideScrollBars="{Binding AutoHideMetadataVerticalScrollbars}"
                                   HorizontalContentAlignment="Stretch"
                                   Margin="0,2,0,-2">
 
