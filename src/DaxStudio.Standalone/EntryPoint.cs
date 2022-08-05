@@ -30,6 +30,7 @@ namespace DaxStudio.Standalone
         private static ILogger _log;
         private static  IEventAggregator _eventAggregator;
         private static IGlobalOptions _options;
+
         // need to create application first
         private static readonly Application App = new Application();
         static EntryPoint()
@@ -83,6 +84,9 @@ namespace DaxStudio.Standalone
             // read command line arguments
             App.ReadCommandLineArgs();
 
+            var settingProvider = IoC.Get<ISettingProvider>();
+            if (App.Args().Reset) settingProvider.Reset();
+
             AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
                 
@@ -102,7 +106,7 @@ namespace DaxStudio.Standalone
 
             // check if we are running portable that we have write access to the settings
             if (_options.IsRunningPortable)
-                if (CanWriteToSettings())
+                if (CanWriteToSettings(settingProvider))
                 {
                     Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(Main), "Test for read/write access to Settings.json: PASS");
                 }
@@ -223,9 +227,9 @@ namespace DaxStudio.Standalone
 
         }
 
-        private static bool CanWriteToSettings()
+        private static bool CanWriteToSettings(ISettingProvider settingProvider)
         {
-            var settingProvider = IoC.Get<ISettingProvider>() ;
+            
             var fileLocation = settingProvider.SettingsFile;
 
             try
@@ -410,6 +414,10 @@ namespace DaxStudio.Standalone
             p.Setup<string>('d', "database")
                 .Callback(database => app.Args().Database = database)
                 .WithDescription("Database to connect to");
+
+            p.Setup<bool>('r', "reset")
+                .Callback(reset => app.Args().Reset = reset)
+                .WithDescription("Reset user preferences to the default settings");
 
             p.SetupHelp("?", "help")
                 .Callback(text => {
