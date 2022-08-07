@@ -49,9 +49,42 @@ namespace DaxStudio.UI.ViewModels
                 return operation;
             }).ToList());
         }
+        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan)
+    where T : QueryPlanRow, new()
+        {
+            return PrepareQueryPlan<T>(physicalQueryPlan, 0);
+        }
 
-        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan) 
-            where T : QueryPlanRow, new() {
+        static public BindableCollection<T> PreparePhysicalQueryPlan<T>(string physicalQueryPlan, int startingRowNumber)
+    where T : PhysicalQueryPlanRow, new()
+        {
+            BindableCollection<T> rawQueryPlan = PrepareQueryPlan<T>(physicalQueryPlan, startingRowNumber);
+
+            // Evaluate cardinality of CrossApply nodes
+            var crossAplyNodes =
+                from row in rawQueryPlan
+                where row.Operation.StartsWith(@"CrossApply")
+                select row;
+
+            foreach (var row in crossAplyNodes)
+            {
+                // Compute the product of the CrossApply child nodes cardinality
+                int? lastChildRow = rawQueryPlan.FirstOrDefault(s => s.RowNumber > row.RowNumber && s.Level == row.Level)?.RowNumber;
+                var childNodes =
+                    from childRow in rawQueryPlan
+                    where childRow.Level == row.Level + 1 
+                        && childRow.RowNumber > row.RowNumber 
+                        && ((!lastChildRow.HasValue) || childRow.RowNumber <= lastChildRow.Value)
+                    select childRow;
+                long cardinality = childNodes.Aggregate((long)1, (result, next) => result * next.Records.GetValueOrDefault(1));
+                row.Records = cardinality;
+            }
+            return rawQueryPlan;
+        }
+
+        // Is this necessary???
+        static public BindableCollection<T> PreparePhysicalQueryPlan<T>(string physicalQueryPlan) 
+            where T : PhysicalQueryPlanRow, new() {
             return PrepareQueryPlan<T>(physicalQueryPlan, 0);
         }
     }
@@ -61,7 +94,11 @@ namespace DaxStudio.UI.ViewModels
 
         private const string RecordsPrefix = @"#Records=";
         private const string searchRecords = RecordsPrefix + @"([0-9]*)";
-        static Regex recordsRegex = new Regex(searchRecords,RegexOptions.Compiled);
+        static Regex recordsRegex = new Regex(searchRecords, RegexOptions.Compiled);
+
+        private const string RecsPrefix = @"#Recs=";
+        private const string searchRecs = RecsPrefix + @"([0-9]*)";
+        static Regex recsRegex = new Regex(searchRecs, RegexOptions.Compiled);
 
         private const string CachePrefix = @"Cache:|DirectQueryResult";
         static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
@@ -71,6 +108,14 @@ namespace DaxStudio.UI.ViewModels
             var matchRecords = recordsRegex.Match(line);
             if (matchRecords.Success) {
                 Records = int.Parse(matchRecords.Value.Substring(RecordsPrefix.Length));
+            }
+            else
+            {
+                var matchRecs = recsRegex.Match(line);
+                if (matchRecs.Success)
+                {
+                    Records = int.Parse(matchRecs.Value.Substring(RecsPrefix.Length));
+                }
             }
             var cacheRecords = cacheRegex.Match(line);
             if (cacheRecords.Success)
@@ -145,7 +190,7 @@ namespace DaxStudio.UI.ViewModels
 
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
         {
-            _physicalQueryPlanRows.AddRange( QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
+            _physicalQueryPlanRows.AddRange( QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 
