@@ -60,10 +60,10 @@ namespace DaxStudio.UI.ViewModels
         {
             BindableCollection<T> rawQueryPlan = PrepareQueryPlan<T>(physicalQueryPlan, startingRowNumber);
 
-            // Evaluate cardinality of CrossApply nodes
+            // Evaluate cardinality of CrossApply nodes for CrossJoin logical operators
             var crossAplyNodes =
                 from row in rawQueryPlan
-                where row.Operation.StartsWith(@"CrossApply")
+                where row.Operation.StartsWith(@"CrossApply") && row.Operation.Contains(@"LogOp=CrossJoin")
                 select row;
 
             foreach (var row in crossAplyNodes)
