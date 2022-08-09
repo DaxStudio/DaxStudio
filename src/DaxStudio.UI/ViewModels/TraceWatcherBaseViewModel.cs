@@ -298,7 +298,6 @@ namespace DaxStudio.UI.ViewModels
         {
             get { return _isBusy; }
             set { _isBusy = value;
-            BusyMessage = "Query Running...";
             NotifyOfPropertyChange(() => IsBusy);
             }
         }
@@ -316,6 +315,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
             {
+                BusyMessage = "Query Running...";
                 IsBusy = true;
                 Reset();
             }
@@ -367,6 +367,8 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
                 try
                 {
+                    BusyMessage = "Waiting for Trace to start";
+                    IsBusy = true;
                     CreateTracer();
                     if (_tracer == null)
                     {
@@ -385,6 +387,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync), "Error Starting Trace");
                     await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
+                }
+                finally
+                {
+                    IsBusy = false;
                 }
             }).ConfigureAwait(false);
         }

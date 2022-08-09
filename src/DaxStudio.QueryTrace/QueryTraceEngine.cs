@@ -498,10 +498,11 @@ namespace DaxStudio.QueryTrace
 
         private void StopTimer()
         {
+            _startingTimer.Elapsed -= OnTimerElapsed;
             if (!_startingTimer.Enabled)
                 return;
             _startingTimer.Stop();
-            _startingTimer.Elapsed -= OnTimerElapsed;
+            
         }
 
         private void ClearEventSubscribers()

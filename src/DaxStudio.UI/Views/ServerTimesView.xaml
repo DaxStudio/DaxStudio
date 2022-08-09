@@ -35,6 +35,8 @@
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
+            <conv:WaterfallMarginConverter x:Key="WaterfallMarginConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
 
             
@@ -106,6 +108,59 @@
                 </StackPanel>
             </DataTemplate>
 
+            <DataTemplate x:Key="WaterfallCell">
+                <Grid HorizontalAlignment="Left">
+                    <Border Background="{DynamicResource Theme.Brush.Accent}" >
+                        <Border.Margin >
+                            <MultiBinding Converter="{StaticResource WaterfallMarginConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
+                                <Binding Path="StartOffsetMs"/>
+                                <Binding Path="TotalQueryDuration"/>
+                                <Binding>
+                                    <Binding.Source>
+                                        <sys:Double>4</sys:Double>
+                                    </Binding.Source>
+                                </Binding>
+                            </MultiBinding>
+                        </Border.Margin>
+                        <Border.Width >
+                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
+                                <Binding Path="Duration"/>
+                                <Binding Path="TotalQueryDuration"/>
+                                <Binding>
+                                    <Binding.Source>
+                                        <sys:Double>3</sys:Double>
+                                    </Binding.Source>
+                                </Binding>
+                            </MultiBinding>
+                        </Border.Width>
+                        <Border.ToolTip>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock>Start Time:</TextBlock>
+                                <TextBlock Grid.Row="1">Start Offset:</TextBlock>
+                                <StackPanel Orientation="Horizontal" Grid.Row="2">
+                                    <TextBlock>Duration:</TextBlock>
+                                    <Border Background="{DynamicResource Theme.Brush.Accent}" Width="10" Margin="3"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding StartTime,StringFormat='HH:mm:ss.fff' }"/>
+                                <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding StartOffsetMs,StringFormat='#,0\m\s'}"/>
+                                <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Duration,StringFormat='#,0\m\s'}"/>
+                            </Grid>
+                        </Border.ToolTip>
+                    </Border>
+                </Grid>
+            </DataTemplate>
+            
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -477,10 +532,11 @@
                                 <Setter Property="Padding" Value="6 0 6 0"/>
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Style.Triggers>
-                                <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
-                                    <Setter Property="FontStyle" Value="Italic"/>
-                                </DataTrigger>
-                            </Style.Triggers>
+                                    <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
+                                        <Setter Property="FontStyle" Value="Italic"/>
+                                        <Setter Property="Margin" Value="15 0 0 0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
@@ -490,7 +546,10 @@
                     <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                 <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
                     <!--behaviours:GridViewColumnResize.Width="Auto" -->
-                <DataGridTextColumn Header="Query" Width="*"
+                    <DataGridTemplateColumn Width="100" Header="Waterfall" CellTemplate="{StaticResource WaterfallCell}" />
+
+
+                    <DataGridTextColumn Header="Query" Width="*"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"  >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
