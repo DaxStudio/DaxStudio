@@ -248,7 +248,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlEmptyArguments = @" \(\s*\) ";
         const string searchXmSqlRowNumberGuidBracket = @"\[RowNumber [0-9A-F ]*\]";
         const string searchXmSqlRowNumberGuidQuoted = @"\$RowNumber [0-9A-F ]*\'";
-        const string seachXmSqlPremiumTags = @"<pii>|</pii>";
+        const string seachXmSqlPremiumTags = @"<pii>|</pii>|<ccon>|</ccon>";
 
         const string searchXmSqlPatternSize = @"Estimated size .* : (?<rows>\d+), (?<bytes>\d+)";
 
