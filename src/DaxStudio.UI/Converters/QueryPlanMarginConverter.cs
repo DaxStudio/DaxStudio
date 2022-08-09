@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Converters
             var offset = 0;
             var parameters = ((string)parameter).Trim().Split(' ');
             if (!(int.TryParse(parameters[0].ToString(), out spacing))) return Binding.DoNothing;
-            int.TryParse(parameters[1].ToString(), out offset);
+            if(parameters.Length ==2) int.TryParse(parameters[1].ToString(), out offset);
             return new Thickness(offset + (spacing * level), 0, 0, 0);
         }
 
