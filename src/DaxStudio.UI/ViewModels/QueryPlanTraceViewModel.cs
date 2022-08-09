@@ -18,14 +18,16 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
+using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class QueryPlanRow {
+    public class QueryPlanRow : IQueryPlanRow {
         public string Operation { get;  set; }
         public string IndentedOperation { get;  set; }
         public int Level { get;  set; }
         public int RowNumber { get;  set; }
+        public int NextSiblingRowNumber { get; set; }
         public bool HighlightRow { get; set; }
 
         private const int SPACE_PER_LEVEL = 4;
@@ -191,12 +193,63 @@ namespace DaxStudio.UI.ViewModels
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
         {
             _physicalQueryPlanRows.AddRange( QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
+            UpdateNextSibling(_physicalQueryPlanRows);
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 
         protected void PrepareLogicalQueryPlan(string logicalQueryPlan) {
             _logicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<LogicalQueryPlanRow>(logicalQueryPlan);
+            UpdateNextSibling(_logicalQueryPlanRows);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+        }
+
+        private void UpdateNextSibling(IEnumerable<IQueryPlanRow> logicalQueryPlanRows)
+        {
+            var siblingStack = new Stack<IQueryPlanRow>();
+            IQueryPlanRow prevRow = null;
+            var prevLevel = -1;
+            foreach (var row in logicalQueryPlanRows)
+            {
+
+                if (row.Level <= prevLevel && siblingStack.Any())
+                {
+                    if (row.Level == prevLevel)
+                    {
+                        var prev = siblingStack.Pop();
+                        prev.NextSiblingRowNumber = prev.RowNumber;
+                    }
+                    else
+                    {
+                        while (true)
+                        {
+                            var prev = siblingStack.Pop();
+                            if (prev.RowNumber == row.RowNumber - 1) {
+                                prev.NextSiblingRowNumber = prev.RowNumber;
+                            }
+                            else {
+                                prev.NextSiblingRowNumber = row.RowNumber;
+                            }
+                            if (prev.Level <= row.Level) break;
+                            if (!siblingStack.Any()) break;
+                        }
+                    }
+                    
+                }
+                //if (row.Level == prevLevel)
+                //{ 
+                //    if (siblingStack.Any() &&  siblingStack.Peek().Level == prevLevel) { siblingStack.Pop(); }
+                //    row.NextSiblingRowNumber = row.RowNumber;
+                //}
+
+                siblingStack.Push(row);
+                prevRow = row;
+                prevLevel = row.Level;
+            }
+            while (siblingStack.Any())
+            {
+                var row = siblingStack.Pop();
+                row.NextSiblingRowNumber = prevRow.RowNumber;
+            }
         }
 
         public string PhysicalQueryPlanText { get; private set; }

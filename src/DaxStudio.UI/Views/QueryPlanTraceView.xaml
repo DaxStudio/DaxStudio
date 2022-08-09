@@ -9,6 +9,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
@@ -23,7 +24,8 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-
+            <conv:QueryPlanSelectionConverter x:Key="QueryPlanSelectionConverter" />
+            <conv:QueryPlanMarginConverter x:Key="QueryPlanMarginConverter"/>
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                 <Setter Property="Padding" Value="4 4 8 4"/>
                 <Setter Property="HorizontalAlignment" Value="Right" />
@@ -35,6 +37,8 @@
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
 
+            <sys:String x:Key="IndentSize">14</sys:String>
+            <sys:String x:Key="BorderIndentSize">14 5</sys:String>
 
             <Style x:Key="DefaultDataGridRowStyle" TargetType="DataGridRow">
                 <Setter Property="OverridesDefaultStyle" Value="True" />
@@ -140,6 +144,7 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
 
         </ResourceDictionary>
         
@@ -287,21 +292,54 @@
             </DataGrid.CellStyle>-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
-                                    IsReadOnly="True" Binding="{Binding IndentedOperation}">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="{x:Type TextBlock}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HighlightRow}" Value="True">
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                            <Setter Property="Padding" Value="4 4 8 4"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                    <!--<DataGridTextColumn Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
+                    <DataGridTextColumn Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
+                    <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                    <DataGridTemplateColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
+                                    IsReadOnly="True" >
+                        <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Border Width="2"
+                                               BorderThickness="1 0 0 0"
+                                            Margin="{Binding Path=SelectedItem.Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource BorderIndentSize}, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                            HorizontalAlignment="Left">
+                                    <Border.Visibility>
+                                        <MultiBinding Converter="{StaticResource QueryPlanSelectionConverter}">
+                                            <Binding Path="SelectedItem" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                            <Binding Path="RowNumber"/>
+                                        </MultiBinding>
+                                    </Border.Visibility>
+                                    <Border.BorderBrush>
+                                        <VisualBrush>
+                                            <VisualBrush.Visual>
+                                                <Rectangle StrokeDashArray="4 2" Stroke="Gray" StrokeThickness="1"
+                  Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
+                  Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
+                                            </VisualBrush.Visual>
+                                        </VisualBrush>
+                                    </Border.BorderBrush>
+                                </Border>
+                                <TextBlock 
+                                        Margin="{Binding Path=Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource IndentSize}}"
+                                         Text="{Binding Operation}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HighlightRow}" Value="True">
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                                <Setter Property="Padding" Value="4 4 8 4"/>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+
+                        </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 
             </DataGrid.Columns>
                 <!--<DataGrid.RowStyle>
@@ -352,6 +390,7 @@
                   IsReadOnly="True"
                   GridLinesVisibility="None" 
                   AlternationCount="2"
+                
                   AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                   Background="{DynamicResource Theme.Brush.Content.Back}" >
 
@@ -380,9 +419,41 @@
             </DataGrid.CellStyle>-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                <DataGridTextColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
-                                    IsReadOnly="True" Binding="{Binding IndentedOperation}" ElementStyle="{StaticResource AlignLeft}"/>
-            </DataGrid.Columns>
+                    <!--<DataGridTextColumn Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
+                    <DataGridTextColumn Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
+                    <DataGridTemplateColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
+                                    IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Border Width="2"
+                                               BorderThickness="1 0 0 0"
+                                            Margin="{Binding Path=SelectedItem.Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource BorderIndentSize}, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                            HorizontalAlignment="Left">
+                                        <Border.Visibility>
+                                            <MultiBinding Converter="{StaticResource QueryPlanSelectionConverter}">
+                                                <Binding Path="SelectedItem" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                                <Binding Path="RowNumber"/>
+                                            </MultiBinding>
+                                        </Border.Visibility>
+                                        <Border.BorderBrush>
+                                            <VisualBrush>
+                                                <VisualBrush.Visual>
+                                                    <Rectangle StrokeDashArray="4 2" Stroke="Gray" StrokeThickness="1"
+                  Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
+                  Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
+                                                </VisualBrush.Visual>
+                                            </VisualBrush>
+                                        </Border.BorderBrush>
+                                    </Border>
+                                    <TextBlock 
+                                        Margin="{Binding Path=Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource IndentSize}}"
+                                        Style="{StaticResource AlignLeft}" Text="{Binding Operation}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
             <!--<DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
