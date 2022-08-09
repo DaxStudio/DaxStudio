@@ -390,7 +390,7 @@
                   IsReadOnly="True"
                   GridLinesVisibility="None" 
                   AlternationCount="2"
-                
+                  RowStyle="{StaticResource DefaultDataGridRowStyle}"
                   AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                   Background="{DynamicResource Theme.Brush.Content.Back}" >
 
