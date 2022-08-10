@@ -292,11 +292,11 @@
             </DataGrid.CellStyle>-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <!--<DataGridTextColumn Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
-                    <DataGridTextColumn Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
+                    <DataGridTextColumn Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
+                    <DataGridTextColumn Header="Lvl" Width="60" Binding="{Binding Level}"/>
                     <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                     <DataGridTemplateColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
-                                    IsReadOnly="True" >
+                                    IsReadOnly="True" ClipboardContentBinding="{Binding IndentedOperation}" >
                         <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
@@ -419,10 +419,10 @@
             </DataGrid.CellStyle>-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <!--<DataGridTextColumn Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
-                    <DataGridTextColumn Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
+                    <DataGridTextColumn Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
+                    <DataGridTextColumn Header="Lvl" Width="60" Binding="{Binding Level}"/>
                     <DataGridTemplateColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
-                                    IsReadOnly="True">
+                                    IsReadOnly="True"  ClipboardContentBinding="{Binding IndentedOperation}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
