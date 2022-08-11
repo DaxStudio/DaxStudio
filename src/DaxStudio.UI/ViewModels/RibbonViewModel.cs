@@ -80,6 +80,7 @@ namespace DaxStudio.UI.ViewModels
 
 
         private const string urlGithubDiscussions = @"https://github.com/DaxStudio/DaxStudio/discussions";
+        private const string urlSponsors = @"https://daxstudio.org/sponsors/";
         private ISettingProvider SettingProvider;
         [ImportingConstructor]
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
@@ -714,6 +715,10 @@ namespace DaxStudio.UI.ViewModels
         public void LinkToGithubDiscussions()
         {
             OpenUrl(urlGithubDiscussions, "LinkToGithubDiscussions");
+        }
+        public void LinkToSponsors()
+        {
+            OpenUrl(urlSponsors, "LinkToSponsors");
         }
 
         internal void OpenUrl(string url, string name)

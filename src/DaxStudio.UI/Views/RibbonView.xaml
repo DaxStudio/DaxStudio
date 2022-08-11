@@ -1669,6 +1669,20 @@
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="" Margin="0,0,4,0">
+                <Fluent:Button Name="hlpDonate"
+                               Header="Donate"
+                               KeyTip="N"
+                               cal:Message.Attach="[Event Click] = [Action LinkToSponsors()]"
+                               Icon="{DynamicResource aboutDrawingImage}"
+                               LargeIcon="{DynamicResource aboutDrawingImage}"
+                               SizeDefinition="Large,Middle"
+                               Margin="4,0">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Donate"
+                                          Text="Contribute to DAX Studio development with a donation or a sponsorship"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
                 <Fluent:Button Name="hlpAbout"
                                Header="About DaxStudio"
                                KeyTip="I"
