@@ -65,7 +65,7 @@ namespace DaxStudio.Tests
 			vm.TestPrepareLogicalQueryPlan(rawPlan);
 
 			Assert.AreEqual(21, vm.LogicalQueryPlanRows.Count);
-			Assert.AreEqual(21, vm.LogicalQueryPlanRows[0].NextSiblingRowNumber, "Row 1");
+			Assert.AreEqual(22, vm.LogicalQueryPlanRows[0].NextSiblingRowNumber, "Row 1");
 			Assert.AreEqual(20, vm.LogicalQueryPlanRows[1].NextSiblingRowNumber, "Row 2");
 			Assert.AreEqual(14, vm.LogicalQueryPlanRows[2].NextSiblingRowNumber, "Row 3");
 			Assert.AreEqual(13, vm.LogicalQueryPlanRows[3].NextSiblingRowNumber, "Row 4");
@@ -85,9 +85,54 @@ namespace DaxStudio.Tests
 			Assert.AreEqual(18, vm.LogicalQueryPlanRows[17].NextSiblingRowNumber,"Row 18");
 			Assert.AreEqual(19, vm.LogicalQueryPlanRows[18].NextSiblingRowNumber,"Row 19");
 			Assert.AreEqual(20, vm.LogicalQueryPlanRows[19].NextSiblingRowNumber,"Row 20");
-			Assert.AreEqual(21, vm.LogicalQueryPlanRows[20].NextSiblingRowNumber,"Row 21");
+			Assert.AreEqual(22, vm.LogicalQueryPlanRows[20].NextSiblingRowNumber,"Row 21");
 
 		}
 
-    }
+        [TestMethod]
+		public void test2()
+        {
+			var rawPlan = @"GroupSemijoin: IterPhyOp LogOp=GroupSemiJoin IterCols(0, 1)('Product'[Brand], ''[Discount if greater than 3])
+	Spool_Iterator<SpoolIterator>: IterPhyOp LogOp=Sum_Vertipaq IterCols(0)('Product'[Brand]) #Records=11 #KeyCols=75 #ValueCols=1
+		ProjectionSpool<ProjectFusion<Copy>>: SpoolPhyOp #Records=11
+			Cache: IterPhyOp #FieldCols=1 #ValueCols=1
+				If: LookupPhyOp LogOp=If LookupCols(40, 42)('Sales'[Quantity], 'Sales'[Net Price]) Double
+					GreaterThanOrEqualTo: LookupPhyOp LogOp=GreaterThanOrEqualTo LookupCols(40)('Sales'[Quantity]) Boolean
+						ColValue<'Sales'[Quantity]>: LookupPhyOp LogOp=ColValue<'Sales'[Quantity]>'Sales'[Quantity] LookupCols(40)('Sales'[Quantity]) Integer
+						Constant: LookupPhyOp LogOp=Constant Integer 3
+					Multiply: LookupPhyOp LogOp=Multiply LookupCols(40, 42)('Sales'[Quantity], 'Sales'[Net Price]) Double
+						ColValue<'Sales'[Quantity]>: LookupPhyOp LogOp=ColValue<'Sales'[Quantity]>'Sales'[Quantity] LookupCols(40)('Sales'[Quantity]) Integer
+						ColValue<'Sales'[Net Price]>: LookupPhyOp LogOp=ColValue<'Sales'[Net Price]>'Sales'[Net Price] LookupCols(42)('Sales'[Net Price]) Double
+					Multiply: LookupPhyOp LogOp=Multiply LookupCols(40, 42)('Sales'[Quantity], 'Sales'[Net Price]) Double
+						Multiply: LookupPhyOp LogOp=Multiply LookupCols(40, 42)('Sales'[Quantity], 'Sales'[Net Price]) Double
+							 ColValue<'Sales'[Quantity]>: LookupPhyOp LogOp=ColValue<'Sales'[Quantity]>'Sales'[Quantity] LookupCols(40)('Sales'[Quantity]) Integer
+							 ColValue<'Sales'[Net Price]>: LookupPhyOp LogOp=ColValue<'Sales'[Net Price]>'Sales'[Net Price] LookupCols(42)('Sales'[Net Price]) Double
+						Constant: LookupPhyOp LogOp=Constant Double 0.8
+";
+			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions);
+			vm.TestPrepareLogicalQueryPlan(rawPlan);
+
+			Assert.AreEqual(16, vm.LogicalQueryPlanRows.Count);
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[0].NextSiblingRowNumber, "Row 1");
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[1].NextSiblingRowNumber, "Row 2");
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[2].NextSiblingRowNumber, "Row 3");
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[3].NextSiblingRowNumber, "Row 4");
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[4].NextSiblingRowNumber, "Row 5");
+			Assert.AreEqual(9, vm.LogicalQueryPlanRows[5].NextSiblingRowNumber, "Row 6");
+			Assert.AreEqual(7, vm.LogicalQueryPlanRows[6].NextSiblingRowNumber, "Row 7");
+			Assert.AreEqual(8, vm.LogicalQueryPlanRows[7].NextSiblingRowNumber, "Row 8");
+			Assert.AreEqual(12, vm.LogicalQueryPlanRows[8].NextSiblingRowNumber, "Row 9");
+			Assert.AreEqual(10, vm.LogicalQueryPlanRows[9].NextSiblingRowNumber, "Row 10");
+			Assert.AreEqual(11, vm.LogicalQueryPlanRows[10].NextSiblingRowNumber, "Row 11");
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[11].NextSiblingRowNumber, "Row 12");
+			Assert.AreEqual(16, vm.LogicalQueryPlanRows[12].NextSiblingRowNumber, "Row 13");
+			Assert.AreEqual(14, vm.LogicalQueryPlanRows[13].NextSiblingRowNumber, "Row 14");
+			Assert.AreEqual(15, vm.LogicalQueryPlanRows[14].NextSiblingRowNumber, "Row 15");
+			Assert.AreEqual(17, vm.LogicalQueryPlanRows[15].NextSiblingRowNumber, "Row 16");
+
+
+
+		}
+
+	}
 }

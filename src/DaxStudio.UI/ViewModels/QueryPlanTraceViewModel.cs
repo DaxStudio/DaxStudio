@@ -18,7 +18,6 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
-using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -203,6 +202,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
         }
 
+        // this method updates each row with it's next sibling so that we know how to highlight
+        // all the child rows under the currently selected operation
         private void UpdateNextSibling(IEnumerable<IQueryPlanRow> logicalQueryPlanRows)
         {
             var siblingStack = new Stack<IQueryPlanRow>();
@@ -235,20 +236,17 @@ namespace DaxStudio.UI.ViewModels
                     }
                     
                 }
-                //if (row.Level == prevLevel)
-                //{ 
-                //    if (siblingStack.Any() &&  siblingStack.Peek().Level == prevLevel) { siblingStack.Pop(); }
-                //    row.NextSiblingRowNumber = row.RowNumber;
-                //}
 
                 siblingStack.Push(row);
                 prevRow = row;
                 prevLevel = row.Level;
             }
+
+            // anything remaining on the stack will cover all operations 
             while (siblingStack.Any())
             {
                 var row = siblingStack.Pop();
-                row.NextSiblingRowNumber = prevRow.RowNumber;
+                row.NextSiblingRowNumber = prevRow.RowNumber + 1;
             }
         }
 
