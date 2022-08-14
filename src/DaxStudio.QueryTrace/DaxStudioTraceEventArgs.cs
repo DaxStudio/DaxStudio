@@ -44,7 +44,7 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.DirectQueryEnd:
                     Duration = e.Duration;
                     EndTime = e.EndTime;
-                    CpuTime = e.Duration; // CPU duration is the same as Duration in DirectQuery mode
+                    CpuTime = e.CpuTime;
                     StartTime = e.StartTime;
                     break;
                 case TraceEventClass.VertiPaqSEQueryEnd:

@@ -16,16 +16,16 @@
         x:Class="DaxStudio.UI.Views.ConnectionDialogView"
         Caption="Connect"
         Icon="{DynamicResource connectDrawingImage}"
-
         Padding="10 24 10 200"
         DataContext="{Binding}" 
         Loaded="UserControl_Loaded" 
-        Width="550">
+        Width="800">
     <!--         Style="{StaticResource DaxStudioDialogStyle}" -->
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
 
             <!-- Converters -->
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:WorkbookNameConverter x:Key="WorkbookNameConverter" />
             <conv:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter" />
@@ -249,7 +249,6 @@
                                 </ComboBox.Style>-->
                         <i:Interaction.Behaviors>
                             <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
-
                         </i:Interaction.Behaviors>
                     </ComboBox>
 
@@ -273,13 +272,19 @@
                                   Grid.Column="1" 
                                   Grid.Row="2"
                                   Foreground="#3571AD"/>
+            <StackPanel Orientation="Vertical"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="2">
                     <TextBlock Margin="40 0"
-                               Foreground="#AAAAAA"
+                               Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
                                Visibility="{Binding HasPowerPivotModel, Converter={StaticResource BoolToNotHiddenConverter}}"
-                               TextWrapping="Wrap"
-                               Grid.Row="3"
-                               Grid.ColumnSpan="2">Launch DAX Studio from an Excel file containing a PowerPivot model to enable this option.</TextBlock>
-                </Grid>
+                               TextWrapping="Wrap">Launch DAX Studio from an Excel file containing a PowerPivot model to enable this option.</TextBlock>
+                <!--<TextBlock Margin="40 0"
+                           Visibility="{Binding HasPowerPivotModel , Converter={StaticResource BoolToNotCollapsedConverter}}"
+                           Foreground="{DynamicResource Theme.Brush.Accent2}"
+                               >Warning: Power Pivot model not detected</TextBlock>-->
+            </StackPanel>
+        </Grid>
 
 
 

@@ -198,6 +198,11 @@ namespace DaxStudio.UI.Utils
             Options = options;
             Options.IsRunningPortable = this.IsRunningPortable;
         }
-        
+
+        public void Reset()
+        {
+            File.Delete(SettingsFile);
+        }
+            
     }
 }

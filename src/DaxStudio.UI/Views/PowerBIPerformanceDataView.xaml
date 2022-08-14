@@ -57,7 +57,7 @@
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="QueryText"
                             Text="{Binding Path=QueryText, Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
-                            VerticalAlignment="Top" 
+                            VerticalAlignment="Center" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
                             ToolTip="{Binding QueryText}">
@@ -171,7 +171,8 @@
                 </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
-                </Style>
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
             </DataGrid.Resources>
 
             <DataGrid.ContextMenu>

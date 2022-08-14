@@ -535,6 +535,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool AutoHideMetadataVerticalScrollbars => _options.AutoHideMetadataVerticalScrollbars;
+
         private bool _sortFoldersFirstInMetadata = true;
         private IFilterableTreeViewItem _selectedTreeViewItem;
 
@@ -856,6 +858,7 @@ namespace DaxStudio.UI.ViewModels
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
             PinSearchOpen = _options.KeepMetadataSearchOpen;
             NotifyOfPropertyChange(() => ExpandSearch);
+            NotifyOfPropertyChange(nameof(AutoHideMetadataVerticalScrollbars));
             return Task.CompletedTask;
         }
 

@@ -369,6 +369,11 @@ namespace DaxStudio.UI.Utils
             const string subKey = "BlockAllInternetAccess";
             options.BlockAllInternetAccess = (bool)Convert.ChangeType(regDaxStudio.GetValue(subKey, false), typeof(bool), CultureInfo.InvariantCulture);
         }
+
+        public void Reset()
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(RegistryRootKey);
+        }
     }
 
     public static class PropertyDescriptorExtensions

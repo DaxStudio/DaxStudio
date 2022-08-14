@@ -241,7 +241,7 @@ namespace ADOTabular
                 {
                     TypeCode.Boolean => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"False\",\"Max\", \"True\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
                     TypeCode.Empty => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", \"\",\"Max\", \"\", \"DistinctCount\", COUNTROWS(DISTINCT({DaxName})) )",
-                    _ => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MINX(ALL({DaxName}, {grpCols} ),{DaxName}),\"Max\", MAXX(ALL({DaxName},{grpCols}), {DaxName}), \"DistinctCount\", COUNTROWS(DISTINCT(ALL({DaxName},{grpCols}))) )",                    
+                    _ => $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"Min\", MINX(ALL({DaxName}, {grpCols} ),{DaxName}),\"Max\", MAXX(ALL({DaxName},{grpCols}), {DaxName}), \"DistinctCount\", COUNTROWS(ALLNOBLANKROW({DaxName})) )",                    
                 };
         }
 

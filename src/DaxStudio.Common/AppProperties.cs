@@ -13,6 +13,7 @@ namespace DaxStudio.Common
         internal const string FileName = "FileName";
         internal const string CrashTest = "CrashTest";
         internal const string Database = "Database";
+        internal const string Reset = "Reset";
         internal const string Server = "Server";
         internal const string ShowHelp = "ShowHelp";
 

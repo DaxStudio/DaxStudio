@@ -104,7 +104,7 @@ namespace DaxStudio.ExcelAddin
             {
                 // try getting daxstudio.exe from the parent directory
                 path = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "daxstudio.exe"));
-                if (!File.Exists(path)) throw new FileNotFoundException("Excel Addin is unable to launch the DAX Studio User Interface");
+                if (!File.Exists(path)) throw new FileNotFoundException($"Excel Addin is unable to launch the DAX Studio User Interface\nBaseDirectory: {AppDomain.CurrentDomain.BaseDirectory}");
             }
 
 
