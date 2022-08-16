@@ -159,5 +159,22 @@ namespace DaxStudio.Common
                 _app.Properties.Add(AppProperties.Reset, value);
             }
         }
+
+        public bool NoPreview
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.NoPreview))
+                    return (bool)_app.Properties[AppProperties.NoPreview];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.NoPreview))
+                    _app.Properties[AppProperties.NoPreview] = value;
+                _app.Properties.Add(AppProperties.NoPreview, value);
+
+            }
+        }
     }
 }
