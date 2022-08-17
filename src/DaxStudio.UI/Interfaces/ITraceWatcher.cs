@@ -3,10 +3,13 @@ using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using System.Threading.Tasks;
 using DaxStudio.QueryTrace.Interfaces;
+using Caliburn.Micro;
+using DaxStudio.UI.Events;
+using System.Threading;
 
 namespace DaxStudio.UI.Interfaces
 {
-    public interface ITraceWatcher : IToolWindow
+    public interface ITraceWatcher : IToolWindow, IHandle<UpdateGlobalOptions>
     {
         IDaxDocument Document { get; set; }
         //List<DaxStudioTraceEventClass> MonitoredEvents { get; }

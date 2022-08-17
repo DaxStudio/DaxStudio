@@ -18,6 +18,8 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -131,7 +133,8 @@ namespace DaxStudio.UI.ViewModels
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, ISaveState
+    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, 
+        ISaveState
     {
         [ImportingConstructor]
         public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
@@ -420,6 +423,17 @@ namespace DaxStudio.UI.ViewModels
         {
             File.WriteAllText(filePath, GetJson());
         }
+
+        //protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
+        //{
+        //    base.OnUpdateGlobalOptions(message);
+        //    NotifyOfPropertyChange(nameof(ShowQueryPlanNextLine));
+        //    NotifyOfPropertyChange(nameof(ShowQueryPlanLineLevel));
+        //}
+        
+
+        //public bool ShowQueryPlanNextLine => GlobalOptions.ShowQueryPlanNextLine;
+        //public bool ShowQueryPlanLineLevel => GlobalOptions.ShowQueryPlanLineLevel;
 
     }
 }

@@ -234,6 +234,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="AttachedProperties\BrushBindingHelper.cs" />
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
+    <Compile Include="AttachedProperties\DataGridColumnVisibilityProperty.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
     <Compile Include="AttachedProperties\FluentRibbonKeyTip.cs" />

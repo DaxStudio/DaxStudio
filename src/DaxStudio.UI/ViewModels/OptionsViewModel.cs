@@ -65,8 +65,8 @@ namespace DaxStudio.UI.ViewModels
         private bool _highlightXmSqlCallbacks;
         private bool _simplifyXmSqlSyntax;
         private bool _replaceXmSqlColumnNames;
-        private bool _showQueryPlanNextLine;
-        private bool _showQueryPlanLineLevel;
+        //private bool _showQueryPlanNextLine;
+        //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
@@ -346,41 +346,41 @@ namespace DaxStudio.UI.ViewModels
 #endregion
 
         #region Query Plan properties
-        [DisplayName("Show next line")]
-        [Category("Server Timings")]
-        [Subcategory("Query Plan")]
-        [Description("Show the next line number in the same level a query plan row.")]
-        [DataMember, DefaultValue(false)]
-        public bool ShowQueryPlanNextLine
-        {
-            get => _showQueryPlanNextLine;
-            set
-            {
-                if (_showQueryPlanNextLine == value) return;
-                _showQueryPlanNextLine = value;
-                NotifyOfPropertyChange(() => ShowQueryPlanNextLine);
-                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValue<bool>(nameof(ShowQueryPlanNextLine), value, _isInitializing, this);
-            }
-        }
+        //[DisplayName("Show next line")]
+        //[Category("Server Timings")]
+        //[Subcategory("Query Plan")]
+        //[Description("Show the next line number in the same level a query plan row.")]
+        //[DataMember, DefaultValue(false)]
+        //public bool ShowQueryPlanNextLine
+        //{
+        //    get => _showQueryPlanNextLine;
+        //    set
+        //    {
+        //        if (_showQueryPlanNextLine == value) return;
+        //        _showQueryPlanNextLine = value;
+        //        NotifyOfPropertyChange(() => ShowQueryPlanNextLine);
+        //        _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+        //        SettingProvider.SetValue<bool>(nameof(ShowQueryPlanNextLine), value, _isInitializing, this);
+        //    }
+        //}
 
-        [DisplayName("Show level")]
-        [Category("Server Timings")]
-        [Subcategory("Query Plan")]
-        [Description("Show the call stack level of a query plan row.")]
-        [DataMember, DefaultValue(false)]
-        public bool ShowQueryPlanLineLevel
-        {
-            get => _showQueryPlanLineLevel;
-            set
-            {
-                if (_showQueryPlanLineLevel == value) return;
-                _showQueryPlanLineLevel = value;
-                NotifyOfPropertyChange(() => ShowQueryPlanLineLevel);
-                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
-                SettingProvider.SetValue<bool>(nameof(ShowQueryPlanLineLevel), value, _isInitializing, this);
-            }
-        }
+        //[DisplayName("Show level")]
+        //[Category("Server Timings")]
+        //[Subcategory("Query Plan")]
+        //[Description("Show the call stack level of a query plan row.")]
+        //[DataMember, DefaultValue(false)]
+        //public bool ShowQueryPlanLineLevel
+        //{
+        //    get => _showQueryPlanLineLevel;
+        //    set
+        //    {
+        //        if (_showQueryPlanLineLevel == value) return;
+        //        _showQueryPlanLineLevel = value;
+        //        NotifyOfPropertyChange(() => ShowQueryPlanLineLevel);
+        //        _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+        //        SettingProvider.SetValue<bool>(nameof(ShowQueryPlanLineLevel), value, _isInitializing, this);
+        //    }
+        //}
 #endregion
 
         #region Http Proxy properties

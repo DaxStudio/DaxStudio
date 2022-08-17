@@ -674,6 +674,14 @@ namespace DaxStudio.UI.ViewModels
             Document.OutputWarning(e);
         }
 
+        protected virtual void OnUpdateGlobalOptions(UpdateGlobalOptions message) { }
+
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
+        {
+            OnUpdateGlobalOptions(message);
+            return Task.CompletedTask;
+        }
+
         public abstract string KeyTip { get; }
         #endregion
 
