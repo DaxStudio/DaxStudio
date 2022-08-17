@@ -346,10 +346,12 @@ namespace DaxStudio.UI.ViewModels
 #endregion
 
         #region Query Plan properties
+        /* Not visible in v3.0.0
         [DisplayName("Show next line")]
         [Category("Server Timings")]
         [Subcategory("Query Plan")]
         [Description("Show the next line number in the same level a query plan row.")]
+        */
         [DataMember, DefaultValue(false)]
         public bool ShowQueryPlanNextLine
         {
@@ -364,10 +366,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        /* Not visible in v3.0.0
         [DisplayName("Show level")]
         [Category("Server Timings")]
         [Subcategory("Query Plan")]
         [Description("Show the call stack level of a query plan row.")]
+        */
         [DataMember, DefaultValue(false)]
         public bool ShowQueryPlanLineLevel
         {
