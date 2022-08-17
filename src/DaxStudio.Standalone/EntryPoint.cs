@@ -419,6 +419,10 @@ namespace DaxStudio.Standalone
                 .Callback(reset => app.Args().Reset = reset)
                 .WithDescription("Reset user preferences to the default settings");
 
+            p.Setup<bool>("nopreview")
+                .Callback(nopreview => app.Args().NoPreview = nopreview)
+                .WithDescription("Hides version information");
+
             p.SetupHelp("?", "help")
                 .Callback(text => {
                     Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(ReadCommandLineArgs), "Printing CommandLine Help");

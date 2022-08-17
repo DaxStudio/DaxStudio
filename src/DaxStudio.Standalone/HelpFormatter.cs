@@ -14,7 +14,7 @@ namespace DaxStudio.Standalone
         {
 
             var sb = new StringBuilder();
-            var maxArgLen = options.Max(o => o.ShortName.Length + (o.HasShortName?2:0) + o.LongName.Length + (o.HasLongName?3:0) + (o.SetupType == typeof(bool) ?0: o.SetupType.Name.Length + 2)) + 2;
+            var maxArgLen = options.Max(o => (o.HasShortName ? 2 + o.ShortName.Length : 0) + (o.HasLongName ? 3 + o.LongName.Length : 0) + (o.SetupType == typeof(bool) ?0: o.SetupType.Name.Length + 2)) + 2;
             foreach (var option in options)
             {
                 if (string.IsNullOrWhiteSpace(option.Description)) continue;

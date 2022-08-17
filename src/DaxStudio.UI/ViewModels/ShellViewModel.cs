@@ -354,10 +354,11 @@ namespace DaxStudio.UI.ViewModels
 
         public string AppTitle { get {
 #if PREVIEW
-                return $"DAX Studio - {Version.ToString(3)} (PREVIEW){UserString}{AdminString}";
+                string preview = Application.Current.Args().NoPreview ? "" : $" (PREVIEW)";
 #else
-                return $"DAX Studio - {Version.ToString(3)}{UserString}{AdminString}";
+                string preview = "";
 #endif    
+                return $"DAX Studio - {Version.ToString(3)}{preview}{UserString}{AdminString}";
             }
         }
         #endregion
