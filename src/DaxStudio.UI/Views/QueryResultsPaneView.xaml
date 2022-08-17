@@ -273,7 +273,7 @@
                            Height="30" VerticalContentAlignment="Center"  
                            FontSize="18" 
                            FontWeight="Bold" 
-                           Foreground="{DynamicResource Theme.Brush.Muted.Fore}" 
+                           Foreground="{DynamicResource Theme.Brush.BusyPanel.Text}" 
                            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">Running Query...</Label>
                 </StackPanel>
             </Grid>
