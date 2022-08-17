@@ -649,6 +649,7 @@
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
+    <Compile Include="ViewModels\DebugAndLogTraceViewModel.cs" />
     <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
@@ -780,6 +781,9 @@
     </Compile>
     <Compile Include="Views\QueryResultsPaneView.xaml.cs">
       <DependentUpon>QueryResultsPaneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DebugAndLogTraceView.xaml.cs">
+      <DependentUpon>DebugAndLogTraceView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RefreshTraceView.xaml.cs">
       <DependentUpon>RefreshTraceView.xaml</DependentUpon>
@@ -986,6 +990,10 @@
     <Page Include="Views\QueryBuilderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DebugAndLogTraceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\RefreshTraceView.xaml">
       <SubType>Designer</SubType>

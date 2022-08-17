@@ -85,6 +85,7 @@
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
     <Compile Include="EntryPointTests.cs" />
+    <Compile Include="EvaluateAndLogTests.cs" />
     <Compile Include="HelpAboutTests.cs" />
     <Compile Include="Helpers\StringHelpers.cs" />
     <Compile Include="LongLineStateMachineTests.cs" />

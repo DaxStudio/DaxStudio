@@ -68,6 +68,7 @@
         CalculationEvaluationDetailedInformation = 111,
         DAXQueryPlan = 112,
         AggregateTableRewriteQuery = 131, // Aggregate Table Rewrite Query
-        JobGraph = 134
+        JobGraph = 134,
+        DAXEvaluationLog = 135
     }
 }

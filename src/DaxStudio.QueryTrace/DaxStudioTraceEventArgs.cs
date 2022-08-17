@@ -114,6 +114,7 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.VertiPaqSEQueryBegin:
                 case TraceEventClass.DAXQueryPlan:
                 case TraceEventClass.JobGraph:
+                case TraceEventClass.DAXEvaluationLog:
                     // no additional properties captured, the plan is stored in the text field
                     break;
                 case TraceEventClass.Error:
