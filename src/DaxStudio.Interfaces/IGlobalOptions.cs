@@ -149,5 +149,8 @@ namespace DaxStudio.Interfaces
         LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
         [JsonIgnore] bool GettingStartedShown { get; set; }
+
+        //bool ShowQueryPlanNextLine { get; set; }
+        //bool ShowQueryPlanLineLevel { get; set; }
     }
 }
