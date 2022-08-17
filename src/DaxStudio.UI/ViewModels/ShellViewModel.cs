@@ -150,7 +150,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IVersionCheck VersionChecker { get; set; }
         
-        public bool IsUpdateAvailable => !VersionChecker.VersionIsLatest;
+        public bool IsUpdateAvailable => !VersionChecker.VersionIsLatest && !Application.Current.Args().NoPreview;
         public string UpdateMessage => $"Click to open the download page for version {VersionChecker.ServerVersion.ToString(3)}";
 
         public void UpdateFlagClick()
