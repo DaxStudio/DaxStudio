@@ -353,7 +353,6 @@ namespace DaxStudio.UI.ViewModels
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     public class ServerTimesViewModel
         : TraceWatcherBaseViewModel, ISaveState, IServerTimes
-        , IHandle<UpdateGlobalOptions>
     {
         private bool parallelStorageEngineEventsDetected = false;
         public bool ParallelStorageEngineEventsDetected
@@ -421,15 +420,15 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
-        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
+        protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
         {
+            base.OnUpdateGlobalOptions(message);
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
-            return Task.CompletedTask;
-            // TODO - update server timing pane?
         }
 
+        
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()

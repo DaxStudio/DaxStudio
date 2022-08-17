@@ -10,6 +10,7 @@
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:primitives="clr-namespace:ModernWpf.Controls.Primitives;assembly=ModernWpf"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
@@ -23,6 +24,7 @@
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <conv:QueryPlanSelectionConverter x:Key="QueryPlanSelectionConverter" />
             <conv:QueryPlanMarginConverter x:Key="QueryPlanMarginConverter"/>
@@ -162,21 +164,7 @@
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
 
-            <!--<ui:CommandBar>
-                <ui:AppBarButton Label="Record">
 
-                    <Image Source="{DynamicResource record_toolbarDrawingImage}"/>
-
-                </ui:AppBarButton>
-                <ui:AppBarButton Label="Pause"/>
-            </ui:CommandBar>-->
-            <!--<DockPanel>
-                <Button>Record</Button>
-                <Button>Pause</Button>
-                <Button>Stop</Button>
-                <Button>Clear</Button>
-                <Button>Export</Button>
-            </DockPanel>-->
 
             <!-- command bar -->
             <controls:ClipBorder
@@ -261,41 +249,10 @@
                 RowStyle="{StaticResource DefaultDataGridRowStyle}"
                   >
 
-                <!--<DataGrid.Resources>
-                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
-                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                </Style>
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
-                    <Setter Property="HorizontalAlignment" Value="Right" />
-                </Style>
-            </DataGrid.Resources>-->
-
-
-            <!--<DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Padding" Value="5,0,5,0"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                <Border Padding="{TemplateBinding Padding}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Background="{TemplateBinding Background}" 
-                                        SnapsToDevicePixels="True">
-                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.CellStyle>-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <!--<DataGridTextColumn Visibility="{Binding ShowQueryPlanNextLine, Converter={StaticResource BoolToVisibilityConverter}}"  Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>-->
-                    <!--<DataGridTextColumn Visibility="{Binding ShowQueryPlanLineLevel, Converter={StaticResource BoolToVisibilityConverter}}"  Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
-                    <DataGridTextColumn Visibility="Hidden"  Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
-                    <DataGridTextColumn Visibility="Hidden"  Header="Lvl" Width="60" Binding="{Binding Level}"/>
+                    <!--<DataGridTextColumn ap:DataGridColumnVisibilityProperty.Visibility="{Binding Path=ShowQueryPlanNextLine, RelativeSource={RelativeSource AncestorType=controls:ZoomableUserControl}}"  Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
+                    <DataGridTextColumn ap:DataGridColumnVisibilityProperty.Visibility="{Binding Path=ShowQueryPlanLineLevel, RelativeSource={RelativeSource AncestorType=controls:ZoomableUserControl}}"  Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
                     <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
                     <DataGridTemplateColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
                                     IsReadOnly="True" ClipboardContentBinding="{Binding IndentedOperation}" >
@@ -400,29 +357,11 @@
 
                 
             </DataGrid.Resources>
-            <!--<DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Padding" Value="5,0,5,0"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                <Border Padding="{TemplateBinding Padding}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Background="{TemplateBinding Background}" 
-                                        SnapsToDevicePixels="True">
-                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.CellStyle>-->
+
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTextColumn Visibility="{Binding ShowQueryPlanNextLine, Converter={StaticResource BoolToVisibilityConverter}}" Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
-                    <DataGridTextColumn Visibility="{Binding ShowQueryPlanLineLevel, Converter={StaticResource BoolToVisibilityConverter}}" Header="Lvl" Width="60" Binding="{Binding Level}"/>
+                    <!--<DataGridTextColumn Visibility="{Binding ShowQueryPlanNextLine, Converter={StaticResource BoolToVisibilityConverter}}" Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
+                    <DataGridTextColumn Visibility="{Binding ShowQueryPlanLineLevel, Converter={StaticResource BoolToVisibilityConverter}}" Header="Lvl" Width="60" Binding="{Binding Level}"/>-->
                     <DataGridTemplateColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
                                     IsReadOnly="True"  ClipboardContentBinding="{Binding IndentedOperation}">
                         <DataGridTemplateColumn.CellTemplate>

@@ -154,7 +154,7 @@ namespace DaxStudio.Standalone
 
         private static void UpdateLoggingLevelFromOptions(IGlobalOptions options, ref LoggingLevelSwitch levelSwitch)
         {
-            if (options.LoggingLevel == levelSwitch.MinimumLevel) return;
+            if (options.LoggingLevel >= levelSwitch.MinimumLevel) return;
             Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(UpdateLoggingLevelFromOptions), $"Setting Logging level to {options.LoggingLevel}");
             levelSwitch.MinimumLevel = options.LoggingLevel;
         }

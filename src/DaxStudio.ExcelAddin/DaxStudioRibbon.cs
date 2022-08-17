@@ -163,9 +163,4 @@ namespace DaxStudio.ExcelAddin
 
     }
 
-    internal static class NativeMethods
-    {
-        [DllImport("user32.dll")]
-        internal static extern bool SetForegroundWindow(IntPtr hWnd);
-    }
 }

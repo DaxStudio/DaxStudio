@@ -40,7 +40,14 @@ namespace ADOTabular.AdomdClientWrappers
             catch
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                return RetrieveAdomdAssemblyFolderInternal("msmdlocal_xl.dll");
+                try
+                {
+                    return RetrieveAdomdAssemblyFolderInternal("msolap_xl.dll");
+                }
+                catch
+                {
+                    return RetrieveAdomdAssemblyFolderInternal("msmdlocal_xl.dll");
+                }
             }
         }
 
