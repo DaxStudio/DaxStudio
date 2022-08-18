@@ -225,6 +225,7 @@
         <controls:ClipBorder Grid.Row="1"
                              CornerRadius="4"
                              BorderThickness="1"
+                             Style="{StaticResource BusyBlur}"
                              BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
             <DataGrid 
                   SelectedItem="{Binding SelectedPhysicalRow}" 
@@ -330,7 +331,8 @@
         <controls:ClipBorder Grid.Row="3"
                              CornerRadius="4"
                              BorderThickness="1"
-                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                             Style="{StaticResource BusyBlur}">
             <DataGrid 
                   SelectedItem="{Binding SelectedLogicalRow}" 
                   HorizontalAlignment="Stretch" 

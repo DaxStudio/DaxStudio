@@ -9,7 +9,10 @@ using System.Threading;
 
 namespace DaxStudio.UI.Interfaces
 {
-    public interface ITraceWatcher : IToolWindow, IHandle<UpdateGlobalOptions>
+    public interface ITraceWatcher : IToolWindow, 
+        IHandle<UpdateGlobalOptions>,
+        IHandle<TraceChangedEvent>,
+        IHandle<TraceChangingEvent>
     {
         IDaxDocument Document { get; set; }
         //List<DaxStudioTraceEventClass> MonitoredEvents { get; }

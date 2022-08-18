@@ -364,7 +364,7 @@ namespace DaxStudio.UI.ViewModels
         {
             await Task.Run(async () =>
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Starting));
+                await _eventAggregator.PublishOnBackgroundThreadAsync(new TraceChangingEvent(this,QueryTraceStatus.Starting));
                 try
                 {
                     BusyMessage = "Waiting for Trace to start";
@@ -373,7 +373,7 @@ namespace DaxStudio.UI.ViewModels
                     if (_tracer == null)
                     {
                         // the creation of the trace was cancelled
-                        await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
+                        await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
                         IsChecked = false;
                         return;
                     }
@@ -386,12 +386,10 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync), "Error Starting Trace");
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
-                }
-                finally
-                {
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
                     IsBusy = false;
                 }
+
             }).ConfigureAwait(false);
         }
 
@@ -614,14 +612,14 @@ namespace DaxStudio.UI.ViewModels
             Execute.OnUIThread(() => {
                 Document.OutputMessage("Query Trace Started");
                 this.IsEnabled = true;
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Started));
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Started));
             });
         }
 
         private void TracerOnTraceError(object sender, string e)
         {
             Document.OutputError(e);
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
             // stop the trace if there was an error
             IsRecording = false;
         }
@@ -652,19 +650,19 @@ namespace DaxStudio.UI.ViewModels
         {
             await Task.Run(async () =>
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(QueryTraceStatus.Stopping));
+                await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(this, QueryTraceStatus.Stopping));
                 try
                 {
                     StopTrace();
                     await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, false));
                     Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync),
                         "Stopping Tracer");
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Stopped));
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync), "Error Stopping Trace");
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(QueryTraceStatus.Error));
+                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
                 }
             }).ConfigureAwait(false);
         }
@@ -680,6 +678,33 @@ namespace DaxStudio.UI.ViewModels
         {
             OnUpdateGlobalOptions(message);
             return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
+        {
+            if(message == null) return Task.CompletedTask;
+            if (message.Sender != this) return Task.CompletedTask;
+            IsBusy = false;
+            OnTraceChanged(message);
+            return Task.CompletedTask;
+        }
+
+        protected virtual void OnTraceChanged(TraceChangedEvent message)
+        {
+            
+        }
+
+        public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
+        {
+            if (message == null) return Task.CompletedTask;
+            if (message.Sender != this) return Task.CompletedTask;
+            OnTraceChanging(message);
+            return Task.CompletedTask;
+        }
+
+        protected virtual void OnTraceChanging(TraceChangingEvent message)
+        {
+            
         }
 
         public abstract string KeyTip { get; }

@@ -39,7 +39,7 @@
             <conv:WaterfallMarginConverter x:Key="WaterfallMarginConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
 
-            
+
             
             <!-- Data Templates -->
         
@@ -299,7 +299,8 @@
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="2"  Grid.RowSpan="3">
-            <ctrl:ClipBorder>
+            <ctrl:ClipBorder 
+                Style="{StaticResource BusyBlur}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -455,7 +456,9 @@
             Grid.Row="2"
             Grid.Column="2" 
             Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
+            Style="{StaticResource BusyBlur}"
             >
+            
             <DataGrid Name="ListEvents" 
                   SelectedItem="{Binding SelectedEvent}" 
                   ap:DataGridHorizontalScroll.ScrollToColumn="1"
@@ -588,6 +591,7 @@
             Grid.Row="{Binding TextGridRow}"
             Grid.RowSpan="{Binding TextGridRowSpan}"
             Grid.Column="{Binding TextGridColumn}"
+            Style="{StaticResource BusyBlur}"
             >
             <ScrollViewer Background="{DynamicResource Theme.Brush.Content.Back}">
                 <ContentControl Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >

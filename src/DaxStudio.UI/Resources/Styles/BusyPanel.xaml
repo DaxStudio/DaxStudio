@@ -1,4 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="BusyPanel" TargetType="Border">
         <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.BusyPanel.Border}"/>
@@ -7,6 +8,7 @@
         <Setter Property="Background" Value="{DynamicResource Theme.Brush.BusyPanel.Back}"/>
         <Setter Property="Visibility" Value="Collapsed"/>
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+
         <!--<Setter Property="Opacity" Value="0"/>-->
         <Style.Triggers>
             <Trigger Property="Visibility" Value="Visible">
@@ -33,5 +35,17 @@
 
                 Style="{StaticResource FadeInAnimation}">
         -->
+    </Style>
+
+    <Style x:Key="BusyBlur" TargetType="ctrl:ClipBorder">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                <Setter Property="BitmapEffect">
+                    <Setter.Value>
+                        <BlurBitmapEffect Radius="5"/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 </ResourceDictionary>

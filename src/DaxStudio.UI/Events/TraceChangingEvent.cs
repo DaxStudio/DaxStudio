@@ -12,10 +12,12 @@ namespace DaxStudio.UI.Events
     
     public class TraceChangingEvent
     {
-        public TraceChangingEvent(QueryTraceStatus traceStatus)
+        public TraceChangingEvent(object sender, QueryTraceStatus traceStatus)
         {
             TraceStatus = traceStatus;
+            Sender = sender;
         }
-        public QueryTraceStatus TraceStatus { get; set; }
+        public QueryTraceStatus TraceStatus { get; }
+        public object Sender { get; }
     }
 }

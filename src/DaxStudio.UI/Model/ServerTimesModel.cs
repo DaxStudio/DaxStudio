@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Model
 {
     public class ServerTimesModel
     {
-        public int FileFormatVersion { get { return 1; } }
+        public int FileFormatVersion { get { return 2; } }
         public long StorageEngineDuration {get;set;}
         public long StorageEngineNetParallelDuration { get; set; }
         public double  StorageEngineDurationPercentage {get;set;}

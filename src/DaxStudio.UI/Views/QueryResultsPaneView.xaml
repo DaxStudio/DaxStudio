@@ -9,6 +9,7 @@
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
@@ -64,6 +65,7 @@
         </Grid.RowDefinitions>
         
         <!-- Results Grid -->
+        <ctrl:ClipBorder Style="{StaticResource BusyBlur}">
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowResultsTable}">
     
@@ -215,7 +217,7 @@
             
 
         </Grid>
-
+        </ctrl:ClipBorder>
 
         <!-- Results Message -->
         <Grid HorizontalAlignment="Center" VerticalAlignment="Top" 
