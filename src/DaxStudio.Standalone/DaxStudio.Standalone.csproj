@@ -220,7 +220,6 @@
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="ConsoleHandler.cs" />
-    <Compile Include="ConsoleManager.cs" />
     <Compile Include="DaxStudioHost.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="GlobalSuppressions.cs" />
