@@ -15,7 +15,7 @@
 
     <SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type reskeys:ResourceKeys},
                  ResourceId=DataGridHeaderBackground}"
-                 Color="{DynamicResource Theme.Default.Back}"
+                 Color="{DynamicResource Theme.MenuBar.Back}"
                  options:Freeze="true" />
 
     <SolidColorBrush x:Key="ComboBox.Static.Background"

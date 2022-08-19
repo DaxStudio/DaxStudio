@@ -260,7 +260,7 @@
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="QueryDuration"
                                     />
-                <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="68" 
+                <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="74" 
                                     Binding="{Binding RenderDuration, StringFormat='#,0'}" 
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="RenderDuration"

@@ -145,9 +145,9 @@ namespace DaxStudio.UI.ViewModels
         public string DefaultQueryFilter => "cat";
 
         // IToolWindow interface
-        public override string Title => "Evaluate & Log Trace";
+        public override string Title => "Evaluate & Log";
         public override string TraceSuffix => "debug-log";
-        public override string KeyTip => "DT";
+        public override string KeyTip => "EL";
         public override string ToolTipText => "Runs a server trace to capture the output from the EvaluateAndLog() DAX Function";
         public override int SortOrder => 50;
         public override bool FilterForCurrentSession => true;

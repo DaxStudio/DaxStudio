@@ -742,16 +742,26 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() => {
-                _retry.Execute(() =>
+            try
+            {
+                await Task.Factory.StartNew(() =>
                 {
-                    GetTables();
-                    IsConnecting = false;
-                    _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
+                    _retry.Execute(() =>
+                    {
+                        GetTables();
+                        IsConnecting = false;
+                        _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
+                    });
                 });
-            });
+            }
+            catch (Exception ex)
+            {
+                var errMsg = $"Error refreshing table list: {ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), "IHandle<RefreshTablesEvent>", errMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));                
+            }
         }
 
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)

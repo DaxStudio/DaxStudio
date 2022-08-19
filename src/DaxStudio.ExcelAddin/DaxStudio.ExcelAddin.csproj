@@ -406,6 +406,8 @@
     <Compile Include="DaxStudioLauncher.cs" />
     <Compile Include="DaxStudioStandalone.cs" />
     <Compile Include="ExcelHelper.cs" />
+    <Content Include="DaxStudio.ico" />
+    <None Include="Resources\logo-32.png" />
     <None Include="app.Debug.config">
       <DependentUpon>app.config</DependentUpon>
       <SubType>Designer</SubType>

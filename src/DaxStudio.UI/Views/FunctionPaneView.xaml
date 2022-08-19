@@ -246,7 +246,7 @@
                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                         <!-- FunctionGroup Template -->
                         <StackPanel Orientation="Horizontal">
-                            <Image Source="{StaticResource folderDrawingImage}" Margin="2,1,5,1"/>
+                            <Image Source="{DynamicResource folderDrawingImage}" Margin="2,1,5,1"/>
                             <TextBlock  Text="{Binding Caption}" />
                         </StackPanel>
                         <!-- Function Template -->
