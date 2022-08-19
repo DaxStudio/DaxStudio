@@ -173,15 +173,6 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "vertipaq-analyzer";
-        public override ImageSource IconSource {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-view-metrics.png") as ImageSource;
-
-            }
-        }
 
         public Task HandleAsync(DocumentConnectionUpdateEvent message,CancellationToken cancellationToken)
         {

@@ -81,16 +81,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane => "DockLeft";
         public override string ContentId => "dmv";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/DmvTable.png") as ImageSource;
 
-            }
-        }
         public override string Title => "DMV";
 
         public DocumentViewModel Document { get; private set; }

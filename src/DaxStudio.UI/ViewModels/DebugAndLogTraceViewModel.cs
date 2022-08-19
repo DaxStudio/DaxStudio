@@ -129,16 +129,6 @@ namespace DaxStudio.UI.ViewModels
 
         public override bool CanHide => true;
         public override string ContentId => "debug-log-trace";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-refresh@17px.png") as ImageSource;
-
-            }
-        }
         public IObservableCollection<DebugEvent> DebugEvents => _debugEvents;
 
 

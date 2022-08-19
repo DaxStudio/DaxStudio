@@ -153,7 +153,6 @@ namespace DaxStudio.UI.ViewModels
         public int AutoHideMinHeight { get; set; }
         public bool IsSelected { get; set; }
         public abstract string ContentId { get; }
-        public abstract ImageSource IconSource { get; }
         public abstract int SortOrder { get; }
         private bool _isEnabled ;
         public bool IsEnabled { get { return _isEnabled; }

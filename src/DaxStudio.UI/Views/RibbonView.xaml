@@ -21,7 +21,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/GalleryItem.xaml" />
@@ -32,21 +31,9 @@
 
             <fa:ImageAwesome Icon="Cogs" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
 
-            <conv:ResourceLookupConverter x:Key="TraceIcons">
-                <ResourceDictionary>
-                    <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png"/>
-                    <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png"/>
-                    <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png"/>
-                </ResourceDictionary>
-            </conv:ResourceLookupConverter>
 
-            <conv:ResourceLookupConverter x:Key="TraceIconsLarger">
-            <ResourceDictionary>
-                <BitmapImage x:Key="Query Plan" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-plan@96ppi.png"/>
-                <BitmapImage x:Key="Server Timings" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-timings@96ppi.png"/>
-                <BitmapImage x:Key="All Queries" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@96ppi.png"/>
-            </ResourceDictionary>
-        </conv:ResourceLookupConverter>
+
+
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
         
@@ -1504,24 +1491,21 @@
                     <Fluent:Button Name="SaveLayout"
                                Header="Save Layout"
                                cal:Message.Attach="[Event Click] = [Action SaveLayout()]"
-                                   Icon="{DynamicResource LayoutSaveIcon}"
-                                   LargeIcon="{DynamicResource LayoutSaveIcon}"
+
                                    Margin="4,0"
                                    SizeDefinition="Middle,Small,Small"></Fluent:Button>
 
                 <Fluent:Button Name="LoadLayout"
                                Header="Load Layout"
                                cal:Message.Attach="[Event Click] = [Action LoadLayout()]"
-                                   Icon="{StaticResource LayoutLoadIcon}"
-                                   LargeIcon="{StaticResource LayoutLoadIcon}"
+
                                    Margin="4,0"
                                    SizeDefinition="Middle,Small,Small"></Fluent:Button>
 
                 <Fluent:Button Name="ResetLayout"
                                Header="Reset Layout"
                                cal:Message.Attach="[Event Click] = [Action ResetLayout()]"
-                                   Icon="{StaticResource LayoutResetIcon}"
-                                   LargeIcon="{StaticResource LayoutResetIcon}"
+
                                    Margin="4,0"
                                    SizeDefinition="Middle,Small,Small"></Fluent:Button>
                 <Fluent:ComboBox Header="Theme" 

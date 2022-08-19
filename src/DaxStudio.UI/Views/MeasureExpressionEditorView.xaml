@@ -17,9 +17,7 @@
         <ResourceDictionary>
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:TableImageConverter x:Key="TableImageConverter"/>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+
         </ResourceDictionary>
     </UserControl.Resources>
 

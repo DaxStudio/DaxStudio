@@ -51,16 +51,6 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane => "DockLeft";
         public override string ContentId => "functions";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png") as ImageSource;
-
-            }
-        }
 
         public override string Title => "Functions";
 

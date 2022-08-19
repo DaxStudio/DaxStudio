@@ -16,8 +16,7 @@
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
         <ResourceDictionary>
-            <BitmapImage x:Key="FunctionGroup" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Folder.ico"/>
-            <BitmapImage x:Key="Function" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png" />
+
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:MaxMultiConverter x:Key="MaxMultiConverter" />
 
@@ -259,7 +258,7 @@
                                             <!-- Function Tooltip -->
                                             <StackPanel x:Name="FunctionTooltip" MaxWidth="750" >
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Image Source="{StaticResource Function}" Margin="2,1,5,1" />
+                                                    <Image Source="{DynamicResource functionDrawingImage}" Margin="2,1,5,1" />
                                                     <TextBlock Text="{Binding Caption}" FontWeight="Bold"/>
                                                 </StackPanel>
                                                 <TextBlock FontFamily="Courier New" Text="{Binding DaxName}" x:Name="DaxName"/>

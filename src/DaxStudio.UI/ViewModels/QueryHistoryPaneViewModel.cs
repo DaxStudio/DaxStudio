@@ -53,17 +53,6 @@ namespace DaxStudio.UI.ViewModels
         public override string Title => "History";
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "query-history";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-database.png") as ImageSource;
-
-            }
-        }
-
 
         public bool IsFilteredByServer
         {

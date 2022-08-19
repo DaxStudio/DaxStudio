@@ -19,8 +19,7 @@
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
-            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
         </ResourceDictionary.MergedDictionaries>
 
         <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"></conv:BoolToCollapsedConverter>
@@ -32,16 +31,7 @@
                 <Setter Property="Margin" Value="4,2"/>
                 <Setter Property="Padding" Value="8,2"/>
             </Style>
-            <!--<DataTemplate  DataType="{x:Type coll:System.Collection.Generic.KeyValuePair}">
-                
-                    
-                    <Grid>
-                        <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
-                                                    Margin="0,3,10,3" Width="32" Height="32" />
-                        <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
-                    </Grid>
-                    
-            </DataTemplate>-->
+            
    
         </ResourceDictionary>
     </ctrl:DaxStudioDialog.Resources>

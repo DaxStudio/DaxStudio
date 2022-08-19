@@ -543,7 +543,7 @@
     <ManifestTimestampUrl>http://timestamp.digicert.com</ManifestTimestampUrl>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>images\daxstudio-logo_32x32.ico</ApplicationIcon>
+    <ApplicationIcon>DaxStudio.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

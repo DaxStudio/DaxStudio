@@ -65,16 +65,6 @@ namespace DaxStudio.UI.ViewModels
         public override string Title => "Results";
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "results";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-table.png") as ImageSource;
-
-            }
-        }
 
         public DataTable ResultsDataTable
         {

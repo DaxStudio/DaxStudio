@@ -13,6 +13,6 @@ namespace DaxStudio.UI.Interfaces
         //bool IsActive { get; set; }
         //bool IsVisible { get; set; }
         string ContentId { get; }
-        ImageSource IconSource { get; }
+        //ImageSource IconSource { get; }
     }
 }

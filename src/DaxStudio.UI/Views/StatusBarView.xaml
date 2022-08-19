@@ -12,16 +12,9 @@
              d:DesignHeight="24" d:DesignWidth="700">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
-            </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <BitmapImage x:Key="StatusCopy" UriSource="..\images\icon-copy-light.png"></BitmapImage>
-            <BitmapImage x:Key="StatusSpid"  UriSource="..\images\status-spid.png"></BitmapImage>
-            <BitmapImage x:Key="StatusPos"  UriSource="..\images\status-pos.png"></BitmapImage>
-            <BitmapImage x:Key="StatusServer"  UriSource="..\images\status-server.png"></BitmapImage>
-            <BitmapImage x:Key="StatusDatabase"  UriSource="..\images\status-database.png"></BitmapImage>
+
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White"></SolidColorBrush>
             <!--<Storyboard x:Key="Rotation">
                 <DoubleAnimation Storyboard.TargetName="rotateTransform"

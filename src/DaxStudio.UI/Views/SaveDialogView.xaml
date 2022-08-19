@@ -18,7 +18,6 @@
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
                 <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
@@ -94,8 +93,7 @@
                         <StackPanel Orientation="Horizontal" Margin="32 0 0 0 ">
                     
                             <Grid>
-                                <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
-                                                            Margin="0,3,10,3" Width="32" Height="32" />-->
+
                             <Image  Margin="0,3,10,3" ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Width="32"/>
                             <Label Content="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></Label>
                             </Grid>

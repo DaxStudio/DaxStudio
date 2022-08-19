@@ -790,16 +790,6 @@ namespace DaxStudio.UI.ViewModels
         public override string ImageResource => "server_timingsDrawingImage";
         public override string KeyTip => "ST";
         public override int SortOrder => 30;
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png") as ImageSource;
-
-            }
-        }
 
         public override string ToolTipText => "Runs a server trace to record detailed timing information for performance profiling";
 

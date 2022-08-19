@@ -280,16 +280,16 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane => "DockLeft";
         public override string ContentId => "metadata";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/hierarchy.png") as ImageSource;
+        //public override ImageSource IconSource
+        //{
+        //    get
+        //    {
+        //        var imgSourceConverter = new ImageSourceConverter();
+        //        return imgSourceConverter.ConvertFromInvariantString(
+        //            @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/hierarchy.png") as ImageSource;
 
-            }
-        }
+        //    }
+        //}
         public override string Title => "Metadata";
 
         private ADOTabularModelCollection _modelList;

@@ -139,17 +139,7 @@ namespace DaxStudio.UI.ViewModels
         public override string DefaultDockingPane => "DockMidLeft";
         public override bool CanHide => true;
         public override string ContentId => "query-builder";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                // TODO - can I convert FontAwesome to an ImageSource ??
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-undo.png") as ImageSource;
 
-            }
-        }
         public bool CanOrderBy => Columns.Any();
         [DataMember]
         public QueryBuilderFieldList Columns { get; } 

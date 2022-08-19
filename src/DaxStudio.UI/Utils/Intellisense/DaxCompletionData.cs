@@ -15,7 +15,6 @@ namespace DaxStudio.UI.Utils
         private readonly string _text;
         private readonly object _content;
         private readonly string _description;
-        private readonly ImageSource _image;
         private readonly string _imageResource;
 #pragma warning disable IDE0052 // Remove unread private members
         private double _priority = 120.0;
@@ -37,7 +36,6 @@ _insightProvider = insightProvider;
             _text = text;
             _content = text;
             _description = text;
-            _image = null;
             _imageResource = string.Empty;
             _priority = priority;
             _insightProvider = insightProvider;
@@ -48,7 +46,6 @@ _insightProvider = insightProvider;
             _text = string.Format("[{0}]", column.Name); //We need to use Name as Caption may be translated;
             _content = column.Caption;
             _description = string.IsNullOrEmpty(column.Description) ? null : column.Description;
-            _image = GetMetadataImage(column.MetadataImage);
             _imageResource = GetImageResource(column.MetadataImage);
             _priority = 50.0;
             _insightProvider = insightProvider;
@@ -60,7 +57,6 @@ _insightProvider = insightProvider;
             _text = dmv.Caption;
             _content = dmv.Caption;
             _description = "";  //TODO - maybe add restrictions list??
-            _image = GetMetadataImage(dmv.MetadataImage);
             _imageResource = "table_dmvDrawingImage";
             _priority = 50.0;
             _insightProvider = insightProvider;
@@ -70,7 +66,6 @@ _insightProvider = insightProvider;
             _text = function.DaxName;
             _content = function.Caption;
             _description = string.IsNullOrEmpty(function.Description) ? function.Caption : function.Description;
-            _image = GetMetadataImage(function.MetadataImage);
             _imageResource = "functionDrawingImage";
             _insightProvider = insightProvider;
         }
@@ -80,7 +75,6 @@ _insightProvider = insightProvider;
             _text = table.DaxName;
             _content = table.Caption;
             _description = string.IsNullOrEmpty(table.Description) ? null : table.Description;
-            _image = GetMetadataImage(table.MetadataImage);
             _imageResource = GetImageResource(table.MetadataImage);
             _priority = 100.0;
             _insightProvider = insightProvider;
@@ -155,7 +149,7 @@ _insightProvider = insightProvider;
 
         public System.Windows.Media.ImageSource Image
         {
-            get { return _image; }
+            get { return null; }
         }
 
         public string ImageResource

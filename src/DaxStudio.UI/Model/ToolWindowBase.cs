@@ -65,7 +65,6 @@ namespace DaxStudio.UI.Model
         }
 
         public abstract string ContentId { get; }
-        public abstract ImageSource IconSource { get; }
 
         public void Activate()
         {

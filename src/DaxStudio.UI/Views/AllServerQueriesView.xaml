@@ -20,7 +20,6 @@
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
@@ -75,7 +74,7 @@
                                 <Border.Effect>
                                     <DropShadowEffect/>
                                 </Border.Effect>
-                            <Grid>
+                            <Grid >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
@@ -85,12 +84,18 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Text="Aggregation Rewrite: " />
-                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"/>
-                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"/>
-                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"/>
-                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"/>
-                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"/>
+                                <TextBlock Text="Aggregation Rewrite: "
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                             </Grid>
                             </Border>
                         </ControlTemplate>
@@ -322,7 +327,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Image Source="{Binding AggregationStatus, Converter={StaticResource AggregateRewriteIcons}}" />
+                                <Image ap:ImageBindingHelper.SourceResourceKey="{Binding AggregationStatusImage}" Width="10" />
                                 <Rectangle Fill="Transparent" >
                                         <Rectangle.ToolTip>
                                             <ToolTip 

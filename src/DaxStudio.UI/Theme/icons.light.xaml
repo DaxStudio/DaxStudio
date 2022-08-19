@@ -1953,4 +1953,19 @@
         <GeometryDrawing Brush="#FF228ED6" Geometry="{StaticResource donateGeometry3}" />
     </DrawingGroup>
     <DrawingImage x:Key="donateDrawingImage" Drawing="{StaticResource donateDrawingGroup}" />
+    <Geometry x:Key="agg_missGeometry">F0 M512,512z M0,0z M512,256C512,397.4 397.4,512 256,512 114.6,512 0,397.4 0,256 0,114.6 114.6,0 256,0 397.4,0 512,114.6 512,256z M256,42.9C132,43 40,141.9 44,262.9 48.1,386.8 143,469.9 256,468.9 379,467.8 463.8,383.1 467,256 470,136.9 380,42.8 256,42.9z</Geometry>
+    <DrawingGroup x:Key="agg_missDrawingGroup" ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+        <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource agg_missGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="agg_missDrawingImage" Drawing="{StaticResource agg_missDrawingGroup}" />
+    <Geometry x:Key="agg_partialGeometry">F1 M512,512z M0,0z M512,256C512,397.4 397.4,512 256,512 114.6,512 0,397.4 0,256 0,114.6 114.6,0 256,0 397.4,0 512,114.6 512,256z M256,64L256,448C362,448 448,362 448,256 448,149.1 362,64 256,64z</Geometry>
+    <DrawingGroup x:Key="agg_partialDrawingGroup" ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+        <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource agg_partialGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="agg_partialDrawingImage" Drawing="{StaticResource agg_partialDrawingGroup}" />
+    <Geometry x:Key="agg_matchGeometry">F1 M512,512z M0,0z M512,256C512,397.4 397.4,512 256,512 114.6,512 0,397.4 0,256 0,114.6 114.6,0 256,0 397.4,0 512,114.6 512,256z</Geometry>
+    <DrawingGroup x:Key="agg_matchDrawingGroup" ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+        <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource agg_matchGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="agg_matchDrawingImage" Drawing="{StaticResource agg_matchDrawingGroup}" />
 </ResourceDictionary>

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:model="clr-namespace:DaxStudio.UI.Model"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -16,9 +17,8 @@
              MinHeight="450">
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
-        <ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
-            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
             <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
         </ResourceDictionary.MergedDictionaries>
 
@@ -32,8 +32,9 @@
                     <StackPanel Orientation="Horizontal">
                     <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}" VerticalAlignment="Center" MinWidth="24"/>
                     <Grid>
-                            <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
-                                                        Margin="0,3,10,3" Width="32" Height="32" />
+                        <Image  Margin="0,3,10,3" ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Width="32"/>
+                        <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                                        Margin="0,3,10,3" Width="32" Height="32" />-->
                             <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
                         </Grid>
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center">

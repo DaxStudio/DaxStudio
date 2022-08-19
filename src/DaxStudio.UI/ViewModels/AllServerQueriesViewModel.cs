@@ -132,6 +132,8 @@ namespace DaxStudio.UI.ViewModels
                                 // copy end event properties to the begin event
                                 beginEvent.QueryEvent.Duration = newEvent.Duration;
                                 beginEvent.QueryEvent.EndTime = newEvent.EndTime;
+                                beginEvent.QueryEvent.AggregationMatchCount = newEvent.AggregationMatchCount;
+                                beginEvent.QueryEvent.AggregationMissCount = newEvent.AggregationMissCount;
                             }
                             else
                             {
@@ -241,16 +243,6 @@ namespace DaxStudio.UI.ViewModels
         public override string ContentId => "all-queries-trace";
         public override string TraceSuffix => "all";
         public override int SortOrder => 10;
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png") as ImageSource;
-
-            }
-        }
         public IObservableCollection<QueryEvent> QueryEvents 
         {
             get {

@@ -303,17 +303,6 @@ namespace DaxStudio.UI.ViewModels
         public override string ContentId => "query-plan";
         public override string KeyTip => "QP";
         public override int SortOrder => 20;
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png") as ImageSource;
-
-            }
-        }
-
         public override string ToolTipText => "Runs a server trace to capture the Logical and Physical DAX Query Plans";
 
         public override bool FilterForCurrentSession { get { return true; } }

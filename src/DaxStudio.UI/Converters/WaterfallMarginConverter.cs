@@ -19,15 +19,15 @@ namespace DaxStudio.UI.Converters
             
             try
             {
-                double.TryParse(values[0].ToString(), out var cellWidth);
-                long.TryParse(values[1].ToString(), out var offset);
-                long.TryParse(values[2].ToString(), out var totalWidth);
+                double.TryParse(values[0]?.ToString(), out var cellWidth);
+                long.TryParse(values[1]?.ToString(), out var offset);
+                long.TryParse(values[2]?.ToString(), out var totalWidth);
             
                 // restrict offset and totalWidth to positive values
                 if (offset < 0) offset = 0;
                 if (totalWidth < 0) totalWidth = 0;
                 var verticalMargin = 0.0;
-                if (values.Length == 4) double.TryParse(values[3].ToString(), out verticalMargin);
+                if (values.Length == 4) double.TryParse(values[3]?.ToString(), out verticalMargin);
 
                 return new Thickness((cellWidth / totalWidth) * offset, verticalMargin, 0, verticalMargin);
             }

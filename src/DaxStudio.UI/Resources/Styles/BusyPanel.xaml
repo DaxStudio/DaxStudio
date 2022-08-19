@@ -37,7 +37,7 @@
         -->
     </Style>
 
-    <Style x:Key="BusyBlur" TargetType="ctrl:ClipBorder">
+    <Style x:Key="BusyBlur" TargetType="ctrl:ClipBorder" BasedOn="{StaticResource {x:Type ctrl:ClipBorder}}">
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsBusy}" Value="True">
                 <Setter Property="BitmapEffect">

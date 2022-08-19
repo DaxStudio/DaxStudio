@@ -451,10 +451,9 @@
 
 
             <!-- PropertyList Styles End -->
-            
-            
+
+
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ToggleSwitchSmall.xaml" />
                 <!--<ui:XamlControlsResources/>-->

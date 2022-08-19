@@ -59,17 +59,6 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "output";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                // TODO - add output pane icon
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-file.png") as ImageSource;
-
-            }
-        }
 
 
         public void MessageDoubleClick(OutputMessage message)

@@ -43,16 +43,6 @@ namespace DaxStudio.UI.ViewModels
         public override bool CanHide => true;
         //public new bool CanHide => true;
         public override string ContentId => "pbi-performance-data";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-pbi-tachometer@2x.png") as ImageSource;
-
-            }
-        }
 
         public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; } 
        
