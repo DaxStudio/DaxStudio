@@ -420,7 +420,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async void ShowViewAsDialog()
         {
-            var viewAsDialog = new ViewAsDialogViewModel(Connection);
+            var viewAsDialog = new ViewAsDialogViewModel(Connection,_eventAggregator);
         
 
             await _windowManager.ShowDialogBoxAsync(viewAsDialog, settings: new Dictionary<string, object>

@@ -1,8 +1,10 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.UI.Enums;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using Serilog;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 
@@ -30,15 +32,25 @@ namespace DaxStudio.UI.ViewModels
     {
         private DialogResult _dialogResult = DialogResult.Cancel;
         private IMetadataProvider _connectionManager;
+        private IEventAggregator _eventAggregator;
         private int _selectedRoles = 0;
 
         [ImportingConstructor]
-        public ViewAsDialogViewModel(IMetadataProvider connectionManager) {
-            _connectionManager = connectionManager;
-            // populate the role collection
-            RoleList = new ObservableCollection<ViewAsRole>();
-            var roles = _connectionManager.GetRoles();
-            foreach (var r in roles) { RoleList.Add(new ViewAsRole(r)); }
+        public ViewAsDialogViewModel(IMetadataProvider connectionManager, IEventAggregator eventAggregator) {
+            try
+            {
+                _connectionManager = connectionManager;
+                _eventAggregator = eventAggregator;
+                // populate the role collection
+                RoleList = new ObservableCollection<ViewAsRole>();
+                var roles = _connectionManager.GetRoles();
+                foreach (var r in roles) { RoleList.Add(new ViewAsRole(r)); }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ViewAsDialogViewModel),"ctor",ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,$"Error attempting to populate the Role list for the View As dialogue\n{ex.Message}"));
+            }
         }
 
         public ObservableCollection<ViewAsRole> RoleList { get; set; }

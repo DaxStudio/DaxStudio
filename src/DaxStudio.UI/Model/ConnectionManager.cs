@@ -234,8 +234,9 @@ namespace DaxStudio.UI.Model
             return _retry.Execute(() =>
             {
                 using (new SemaphoreSlimLock(_commandSemaphore))
+                using (var conn = _connection.Clone(true))
                 {
-                    return _connection.ExecuteDaxQueryDataTable(query);
+                    return conn.ExecuteDaxQueryDataTable(query);    
                 }
             });
         }
