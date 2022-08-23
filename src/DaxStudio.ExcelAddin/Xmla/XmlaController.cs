@@ -8,6 +8,7 @@ using System;
 using Serilog;
 using System.Globalization;
 using System.Xml;
+using System.Data.OleDb;
 
 namespace DaxStudio.ExcelAddin.Xmla
 {
@@ -15,14 +16,16 @@ namespace DaxStudio.ExcelAddin.Xmla
     public class XmlaController : ApiController
     {
         const int EXCEL_2013 = 15; // version number for Excel 2013
+        const string MSOLAP_PROVIDER = "MSOLAP";
+        const string DATASOURCE = "$EMBEDDED$";
 
         [HttpPost]
         [Route("")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Returning a HTTP error response with the error details")]
         public async Task<HttpResponseMessage> PostRawBufferManual()
         {
-            string connStr = "";
-            string loc = "";
+            string connStr = string.Empty;
+            string loc = string.Empty;
             try
             {
                 string request = await Request.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -42,12 +45,17 @@ namespace DaxStudio.ExcelAddin.Xmla
                     Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Resetting Location based on WorkstationID to: " + loc);
                     loc = wsid;
                 }
-
+                
                 //connStr = $"Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{loc}\"";
-                connStr = $"Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={loc}";
+                var connStrBase = $"Persist Security Info=True;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;";
                 //connStr = $"Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location=\"{loc}\"";
                 //connStr = $"Provider=MSOLAP.8;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Update Isolation Level=2;Location=\"TestPPvt.xlsx\"";
                 //connStr = $"Provider=MSOLAP;Data Source=$Embedded$;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Integrated Security=SSPI;Persist Security Info=True;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;";
+                var builder = new OleDbConnectionStringBuilder(connStrBase);
+                builder.Provider = MSOLAP_PROVIDER;
+                builder.DataSource = DATASOURCE;
+                builder.Add("Location", loc);
+                connStr = builder.ToString();
 
                 // 2010 conn str
                 //connStr = string.Format("Provider=MSOLAP.5;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;ConnectTo=11.0;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location={0}", loc);
