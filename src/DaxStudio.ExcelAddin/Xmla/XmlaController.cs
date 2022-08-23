@@ -44,7 +44,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 }
 
                 //connStr = $"Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{loc}\"";
-                connStr = $"Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{loc}\"";
+                connStr = $"Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location={loc}";
                 //connStr = $"Provider=MSOLAP;Persist Security Info=True;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Optimize Response=3;Cell Error Mode=TextValue;Location=\"{loc}\"";
                 //connStr = $"Provider=MSOLAP.8;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Update Isolation Level=2;Location=\"TestPPvt.xlsx\"";
                 //connStr = $"Provider=MSOLAP;Data Source=$Embedded$;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Integrated Security=SSPI;Persist Security Info=True;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;";

@@ -44,7 +44,14 @@ namespace ADOTabular
 
         public ADOTabularTableCollection Tables
         {
-            get { return _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this); }
+            get {
+                using (var tempConn = _adoTabConn.Clone(true))
+                {
+                    _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this);
+                    return _tableColl;
+                }
+                
+            }
         }
 
         public Dictionary<string,ADOTabularColumn> Roles { get; private set; }

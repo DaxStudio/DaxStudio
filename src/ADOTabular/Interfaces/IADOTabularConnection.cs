@@ -37,6 +37,7 @@ namespace ADOTabular.Interfaces
         DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions, bool throwOnErrors);
 
         AdomdDataReader ExecuteReader(string command, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList);
+        ADOTabularConnection Clone(bool sameSession);
         #endregion
     }
 }
