@@ -64,7 +64,7 @@
                         </StackPanel>
                     </Border>
                     <TextBlock >Where the &lt;table expression&gt; can be as simple as the name of a table or it could be a DAX function that returns a table such as FILTER or SUMMARIZECOLUMNS.</TextBlock>
-                    <TextBlock HorizontalAlignment="left" Margin="0 10 0 0" >See some examples at <Hyperlink NavigateUri="https://daxstudio.org/tutorials/writing-dax-queries" attachedProperties:HyperlinkExtensions.IsExternal="true">https://daxstudio.org/tutorials/writing-dax-queries</Hyperlink></TextBlock>
+                    <TextBlock HorizontalAlignment="left" Margin="0 10 0 0" >See some examples at <Hyperlink NavigateUri="https://daxstudio.org/docs/tutorials/writing-dax-queries" attachedProperties:HyperlinkExtensions.IsExternal="true">https://daxstudio.org/docs/tutorials/writing-dax-queries</Hyperlink></TextBlock>
 
                     <Grid Margin="0 40 0 0">
                         <Grid.ColumnDefinitions>
