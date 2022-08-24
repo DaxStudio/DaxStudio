@@ -194,6 +194,7 @@
   </ControlTemplate>
 
 
+    
     <Style
        TargetType="{x:Type Fluent:RibbonTabItem}"
          BasedOn="{StaticResource RibbonTabItemStyle}">
@@ -201,6 +202,11 @@
         Value="{DynamicResource DaxStudioRibbonTabItemControlTemplate}" />
     </Style>
 
+    <Style TargetType="{x:Type Fluent:RibbonTabControl}"
+           BasedOn="{StaticResource {x:Type Fluent:RibbonTabControl}}">
+        <Setter Property="Margin" Value="0 0 0 3"/>
+    </Style>
+    
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <ControlTemplate x:Key="RibbonWindowControlTemplate"

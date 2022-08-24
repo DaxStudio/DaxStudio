@@ -368,6 +368,14 @@ namespace DaxStudio.Standalone
                         _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "RPC_E_WRONG_THREAD");
                         return;
                     default:
+                        if (e.Exception.Message == "A drag operation is already in progress")
+                        {
+                            _eventAggregator?.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"{e.Exception.Message}\nPlease retry the operation"));
+                            _log.Warning(e.Exception, "{class} {method} COM Error while doing DragDrop: {message}", "EntryPoint", "App_DispatcherUnhandledException", e.Exception.Message);
+                            return;
+                        }
+
+                        // for all other unhandled Exceptions we log them and exit here as we don't know if the app is in a valid state
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
                         LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
                         e.Handled = true;

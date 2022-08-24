@@ -205,6 +205,7 @@
       <Word>ENDOFYEAR</Word>
       <Word>EOMONTH</Word>
       <Word>ERROR</Word>
+	  <Word>EVALUATEANDLOG</Word>
       <Word>EVEN</Word>
       <Word>EXACT</Word>
       <Word>EXCEPT</Word>

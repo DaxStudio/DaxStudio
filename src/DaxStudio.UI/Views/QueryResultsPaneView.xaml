@@ -208,7 +208,7 @@
                 </TabControl.ContentTemplate>
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding TableName}" FontWeight="Black" Margin="12 0" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        <TextBlock Text="{Binding TableName}" FontWeight="DemiBold" Margin="12 0" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
             </TabControl>
