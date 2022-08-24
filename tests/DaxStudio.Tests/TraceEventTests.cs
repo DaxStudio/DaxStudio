@@ -28,7 +28,7 @@ namespace DaxStudio.Tests
           <DbpropMsmdCurrentActivityID>8ac8460e-281b-4d4e-ba2a-23e3ace266da</DbpropMsmdCurrentActivityID>
           <DbpropMsmdRequestID>1c71dde3-34e5-42f9-b1eb-ed951d6a3041</DbpropMsmdRequestID>
         </PropertyList>";
-            QueryBeginEvent beginEvent = new QueryBeginEvent();
+            QueryEvent beginEvent = new QueryEvent();
             beginEvent.RequestProperties = props;
             var effUser = beginEvent.ParseEffectiveUsername();
             Assert.AreEqual("mydomain\\testuser", effUser);
@@ -50,7 +50,7 @@ namespace DaxStudio.Tests
           <DbpropMsmdCurrentActivityID>8ac8460e-281b-4d4e-ba2a-23e3ace266da</DbpropMsmdCurrentActivityID>
           <DbpropMsmdRequestID>1c71dde3-34e5-42f9-b1eb-ed951d6a3041</DbpropMsmdRequestID>
         </PropertyList>";
-            QueryBeginEvent beginEvent = new QueryBeginEvent();
+            QueryEvent beginEvent = new QueryEvent();
             beginEvent.RequestProperties = props;
             var effUser = beginEvent.ParseEffectiveUsername();
             Assert.AreEqual("", effUser);

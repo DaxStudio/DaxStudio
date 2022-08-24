@@ -43,5 +43,6 @@
         //public const int TraceStartTimeoutSeconds = 30;
 
         public const int MaxLineLength = 500;
+        public const string BuildDateFormat = "yyyy-MM-dd";
     }
 }

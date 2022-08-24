@@ -6,7 +6,7 @@ using AvalonDock;
 using AvalonDock.Layout;
 using Caliburn.Micro;
 
-namespace DaxStudio.UI
+namespace DaxStudio.UI.Conventions
 {
 
 

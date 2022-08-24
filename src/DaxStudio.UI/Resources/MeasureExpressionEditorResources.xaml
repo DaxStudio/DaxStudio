@@ -45,6 +45,7 @@
 
     <!-- Styles -->
     <Style x:Key="FadeInOut" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.BusyPanel.Back}"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding ShowMeasureExpressionEditor}" Value="True" >
                 <DataTrigger.EnterActions>

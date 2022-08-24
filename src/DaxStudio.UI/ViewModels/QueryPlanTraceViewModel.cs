@@ -16,14 +16,20 @@ using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Serilog;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Extensions;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class QueryPlanRow {
+    public class QueryPlanRow : IQueryPlanRow {
         public string Operation { get;  set; }
         public string IndentedOperation { get;  set; }
         public int Level { get;  set; }
         public int RowNumber { get;  set; }
+        public int NextSiblingRowNumber { get; set; }
+        public bool HighlightRow { get; set; }
 
         private const int SPACE_PER_LEVEL = 4;
         public virtual void PrepareQueryPlanRow(string line, int rowNumber) {
@@ -46,9 +52,42 @@ namespace DaxStudio.UI.ViewModels
                 return operation;
             }).ToList());
         }
+        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan)
+    where T : QueryPlanRow, new()
+        {
+            return PrepareQueryPlan<T>(physicalQueryPlan, 0);
+        }
 
-        static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan) 
-            where T : QueryPlanRow, new() {
+        static public BindableCollection<T> PreparePhysicalQueryPlan<T>(string physicalQueryPlan, int startingRowNumber)
+    where T : PhysicalQueryPlanRow, new()
+        {
+            BindableCollection<T> rawQueryPlan = PrepareQueryPlan<T>(physicalQueryPlan, startingRowNumber);
+
+            // Evaluate cardinality of CrossApply nodes for CrossJoin logical operators
+            var crossAplyNodes =
+                from row in rawQueryPlan
+                where row.Operation.StartsWith(@"CrossApply") && row.Operation.Contains(@"LogOp=CrossJoin")
+                select row;
+
+            foreach (var row in crossAplyNodes)
+            {
+                // Compute the product of the CrossApply child nodes cardinality
+                int? lastChildRow = rawQueryPlan.FirstOrDefault(s => s.RowNumber > row.RowNumber && s.Level == row.Level)?.RowNumber;
+                var childNodes =
+                    from childRow in rawQueryPlan
+                    where childRow.Level == row.Level + 1 
+                        && childRow.RowNumber > row.RowNumber 
+                        && ((!lastChildRow.HasValue) || childRow.RowNumber <= lastChildRow.Value)
+                    select childRow;
+                long cardinality = childNodes.Aggregate((long)1, (result, next) => result * next.Records.GetValueOrDefault(1));
+                row.Records = cardinality;
+            }
+            return rawQueryPlan;
+        }
+
+        // Is this necessary???
+        static public BindableCollection<T> PreparePhysicalQueryPlan<T>(string physicalQueryPlan) 
+            where T : PhysicalQueryPlanRow, new() {
             return PrepareQueryPlan<T>(physicalQueryPlan, 0);
         }
     }
@@ -58,13 +97,33 @@ namespace DaxStudio.UI.ViewModels
 
         private const string RecordsPrefix = @"#Records=";
         private const string searchRecords = RecordsPrefix + @"([0-9]*)";
-        static Regex recordsRegex = new Regex(searchRecords,RegexOptions.Compiled);
+        static Regex recordsRegex = new Regex(searchRecords, RegexOptions.Compiled);
+
+        private const string RecsPrefix = @"#Recs=";
+        private const string searchRecs = RecsPrefix + @"([0-9]*)";
+        static Regex recsRegex = new Regex(searchRecs, RegexOptions.Compiled);
+
+        private const string CachePrefix = @"Cache:|DirectQueryResult";
+        static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
 
         public override void PrepareQueryPlanRow(string line, int rowNumber) { 
             base.PrepareQueryPlanRow(line, rowNumber);
             var matchRecords = recordsRegex.Match(line);
             if (matchRecords.Success) {
                 Records = int.Parse(matchRecords.Value.Substring(RecordsPrefix.Length));
+            }
+            else
+            {
+                var matchRecs = recsRegex.Match(line);
+                if (matchRecs.Success)
+                {
+                    Records = int.Parse(matchRecs.Value.Substring(RecsPrefix.Length));
+                }
+            }
+            var cacheRecords = cacheRegex.Match(line);
+            if (cacheRecords.Success)
+            {
+                HighlightRow = true;
             }
         }
     }
@@ -74,7 +133,8 @@ namespace DaxStudio.UI.ViewModels
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, ISaveState
+    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, 
+        ISaveState
     {
         [ImportingConstructor]
         public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
@@ -87,6 +147,7 @@ namespace DaxStudio.UI.ViewModels
         {
             return new List<DaxStudioTraceEventClass> 
                 { DaxStudioTraceEventClass.DAXQueryPlan
+                , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd };
         }
     
@@ -95,9 +156,13 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
+            if (PhysicalQueryPlanRows?.Count > 0 || LogicalQueryPlanRows?.Count > 0) return;
+            // results have not been cleared so this is probably and end event from some other
+            // action like a tooltip populating
 
-            foreach (var traceEvent in Events)
+            while (!Events.IsEmpty)
             {
+                Events.TryDequeue(out var traceEvent);
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
                     && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqLogicalPlan)
                 {
@@ -129,13 +194,63 @@ namespace DaxStudio.UI.ViewModels
 
         protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
         {
-            _physicalQueryPlanRows.AddRange( QueryPlanRow.PrepareQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
+            _physicalQueryPlanRows.AddRange( QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
+            UpdateNextSibling(_physicalQueryPlanRows);
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 
         protected void PrepareLogicalQueryPlan(string logicalQueryPlan) {
             _logicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<LogicalQueryPlanRow>(logicalQueryPlan);
+            UpdateNextSibling(_logicalQueryPlanRows);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+        }
+
+        // this method updates each row with it's next sibling so that we know how to highlight
+        // all the child rows under the currently selected operation
+        private void UpdateNextSibling(IEnumerable<IQueryPlanRow> logicalQueryPlanRows)
+        {
+            var siblingStack = new Stack<IQueryPlanRow>();
+            IQueryPlanRow prevRow = null;
+            var prevLevel = -1;
+            foreach (var row in logicalQueryPlanRows)
+            {
+
+                if (row.Level <= prevLevel && siblingStack.Any())
+                {
+                    if (row.Level == prevLevel)
+                    {
+                        var prev = siblingStack.Pop();
+                        prev.NextSiblingRowNumber = prev.RowNumber;
+                    }
+                    else
+                    {
+                        while (true)
+                        {
+                            var prev = siblingStack.Pop();
+                            if (prev.RowNumber == row.RowNumber - 1) {
+                                prev.NextSiblingRowNumber = prev.RowNumber;
+                            }
+                            else {
+                                prev.NextSiblingRowNumber = row.RowNumber;
+                            }
+                            if (prev.Level <= row.Level) break;
+                            if (!siblingStack.Any()) break;
+                        }
+                    }
+                    
+                }
+
+                siblingStack.Push(row);
+                prevRow = row;
+                prevLevel = row.Level;
+            }
+
+            // anything remaining on the stack will cover all operations 
+            while (siblingStack.Any())
+            {
+                var row = siblingStack.Pop();
+                row.NextSiblingRowNumber = prevRow.RowNumber + 1;
+            }
         }
 
         public string PhysicalQueryPlanText { get; private set; }
@@ -169,9 +284,6 @@ namespace DaxStudio.UI.ViewModels
 
         public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {
             get {
-                //var pqp = from r in _physicalQueryPlanRows
-                //          select r;
-                //return new BindableCollection<PhysicalQueryPlanRow>(pqp);
                 return _physicalQueryPlanRows;
             }
             private set { _physicalQueryPlanRows = value; }
@@ -179,9 +291,6 @@ namespace DaxStudio.UI.ViewModels
 
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows {
             get {
-                //var lqp = from r in _logicalQueryPlanRows
-                //          select r;
-                //return new BindableCollection<LogicalQueryPlanRow>(lqp);
                 return _logicalQueryPlanRows;
             }
             private set { _logicalQueryPlanRows = value; }
@@ -189,22 +298,20 @@ namespace DaxStudio.UI.ViewModels
         
         // IToolWindow interface
         public override string Title => "Query Plan";
-
+        public override string ImageResource => "query_planDrawingImage";
+        public override string TraceSuffix => "plans";
         public override string ContentId => "query-plan";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-plan@17px.png") as ImageSource;
-
-            }
-        }
-
+        public override string KeyTip => "QP";
+        public override int SortOrder => 20;
         public override string ToolTipText => "Runs a server trace to capture the Logical and Physical DAX Query Plans";
 
         public override bool FilterForCurrentSession { get { return true; } }
+
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
 
         #region ISaveState Methods
 
@@ -230,7 +337,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".queryPlans";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             LoadJson(data);
         }
@@ -264,7 +371,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryPlan, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
@@ -305,6 +412,17 @@ namespace DaxStudio.UI.ViewModels
         {
             File.WriteAllText(filePath, GetJson());
         }
+
+        //protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
+        //{
+        //    base.OnUpdateGlobalOptions(message);
+        //    NotifyOfPropertyChange(nameof(ShowQueryPlanNextLine));
+        //    NotifyOfPropertyChange(nameof(ShowQueryPlanLineLevel));
+        //}
+        
+
+        //public bool ShowQueryPlanNextLine => GlobalOptions.ShowQueryPlanNextLine;
+        //public bool ShowQueryPlanLineLevel => GlobalOptions.ShowQueryPlanLineLevel;
 
     }
 }

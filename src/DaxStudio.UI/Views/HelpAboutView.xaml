@@ -1,132 +1,232 @@
-﻿<UserControl
+﻿<ctrl:DaxStudioDialog
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:custom="clr-namespace:DaxStudio.UI.AttachedProperties"
-    xmlns:local="clr-namespace:DaxStudio.UI.Views" x:Class="DaxStudio.UI.Views.HelpAboutView"
+    xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+    xmlns:local="clr-namespace:DaxStudio.UI.Views" 
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    x:Class="DaxStudio.UI.Views.HelpAboutView"
+    xmlns:res="clr-namespace:DaxStudio.UI.Resources" 
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     mc:Ignorable="d" 
-    d:DesignHeight="300" d:DesignWidth="400"
-    Height="225"
-    MaxHeight="450"
+    d:DesignHeight="455" 
+    d:DesignWidth="550"
+    MinHeight="600"
+    MaxHeight="600"
+    MaxWidth="550"
+    Padding="0 0 0 100"
+
     MinWidth="500"
     DataContext="{Binding}"
-    x:Name="dlgHelpAbout"
-    >
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="DaxStudioBrush" Color="#FF0072C6" />
-        <BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
-        <Style x:Key="VersionText" TargetType="TextBlock" >
-            <Setter Property="Margin" Value="5"/>
-        </Style>
-    </UserControl.Resources>
-    <Border Padding="10">
-    <Border Background="White" CornerRadius="0" Padding="5" BorderBrush="{StaticResource DaxStudioBrush}" BorderThickness="1">
+    x:Name="dlgHelpAbout">
+    <ctrl:DaxStudioDialog.Resources>
+        <ResourceDictionary>
+            <!--<BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>-->
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
+            <Style x:Key="VersionText" TargetType="Label" >
+                <Setter Property="Margin" Value="5"/>
+            </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ui:XamlControlsResources/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ctrl:DaxStudioDialog.Resources>
     
+
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="6*"/>
-            <RowDefinition Height="40" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+                
+            <RowDefinition Height="*"/>
+                
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>    
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0">
-            <Image Source="{StaticResource DaxStudioLogo}" Width="150" VerticalAlignment="Top" Margin="20,0,10,0"/>
-            <StackPanel Orientation="Vertical">
-                <TextBlock Padding="5" FontSize="48"><Run Text="DAX Studio"/></TextBlock>
-                <TextBlock Padding="5,0,5,5"><Hyperlink NavigateUri="https://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true"><Run Text="https://daxstudio.org"/></Hyperlink></TextBlock>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Style="{StaticResource VersionText}" Text="Version: "  HorizontalAlignment="Left"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
-                    
-                    <TextBlock Style="{StaticResource VersionText}" x:Name="FullVersionNumber" />
-                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="10" Foreground="Gray" Visibility="{Binding IsCheckRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                    <!--<local:ucSpinner x:Name="CheckingUpdateStatus" Visibility="Visible" Width="20"/>-->
-                    <TextBlock Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToNotVisibleConverter}}"><Hyperlink NavigateUri="{Binding DownloadUrl}" custom:HyperlinkExtensions.IsExternal="true"><Run Text="{Binding UpdateStatus, Mode=OneWay}" /></Hyperlink></TextBlock>
-                                <TextBlock x:Name="UpdateStatus" Style="{StaticResource VersionText}" Visibility="{Binding VersionIsLatest, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            </StackPanel>
-                            <TextBlock Text="{Binding LastChecked}" Grid.Row="1" Grid.Column="1" Foreground="Gray"/>
-                        </Grid>
-                        <StackPanel Orientation="Horizontal" >
-                    <CheckBox x:Name="showDetails" Width="110" IsChecked="False" Content="Show Details" Margin="5,5,0,0" Padding="5,0,0,0" >
-                        <CheckBox.Triggers>
-                            <EventTrigger  RoutedEvent="ToggleButton.Checked"  >
-                                <BeginStoryboard >
-                                    <Storyboard  AutoReverse="False">
-                                        <DoubleAnimation  Storyboard.TargetName="dlgHelpAbout"
-											Storyboard.TargetProperty = "(FrameworkElement.Height)"
-											To="450" Duration="0:0:1"/>
-                                        <Storyboard AutoReverse="False">
-                                            <DoubleAnimation Storyboard.TargetName="ReferencedAssemblies"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="1" Duration="0:0:1" />
-                                                    <Storyboard AutoReverse="False">
-                                                        <DoubleAnimation Storyboard.TargetName="BuildNumberPanel"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="1" Duration="0:0:1" />
-                                                    </Storyboard>
-                                                </Storyboard>
-                                    </Storyboard>
-                                </BeginStoryboard>
+        <Image Source="{DynamicResource daxstudio_logoDrawingImage}" Width="150" Height="150"  Grid.Column="0" Grid.Row="0" Grid.RowSpan="9" VerticalAlignment="Top" Margin="0 0 16 0"/>
 
-                            </EventTrigger>
+        <TextBlock FontSize="28" Grid.Column="1" Grid.ColumnSpan="2" Foreground="{DynamicResource Theme.Brush.Default.Fore}">DAX Studio</TextBlock>
 
-                            <EventTrigger  RoutedEvent="ToggleButton.Unchecked"  >
-                                <BeginStoryboard >
-                                    <Storyboard  AutoReverse="False">
-                                        <DoubleAnimation  Storyboard.TargetName="dlgHelpAbout"
-											Storyboard.TargetProperty = "(FrameworkElement.Height)"
-											To="225" Duration="0:0:1"/>
-                                        <Storyboard AutoReverse="False">
-                                            <DoubleAnimation Storyboard.TargetName="ReferencedAssemblies"
-												Storyboard.TargetProperty="(UIElement.Opacity)"
-												To="0" Duration="0:0:1" />
-                                        </Storyboard>
-                                    </Storyboard>
-                                </BeginStoryboard>
+        <Image Source="{DynamicResource diamondDrawingImage}" Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" Margin="8 0"/>
 
-                            </EventTrigger>
-
-                        </CheckBox.Triggers>
-                    </CheckBox>
-                            <TextBlock Margin="20 5 0 0"><Hyperlink NavigateUri="{Binding LogFolder}" custom:HyperlinkExtensions.IsExternal="True"><Run> Open Log Folder</Run></Hyperlink></TextBlock>
-                </StackPanel>
-            </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2" >
+            <TextBlock FontSize="12" Foreground="{DynamicResource Theme.Brush.Accent}" Margin="0 0 5 0">DAX Studio is</TextBlock>
+            <TextBlock FontSize="12" Foreground="{DynamicResource Theme.Brush.Accent}" x:Name="UpdateStatus"></TextBlock>
         </StackPanel>
-                <StackPanel Orientation="Vertical" Grid.Row="1"  Opacity="0" x:Name="BuildNumberPanel">
-                    <StackPanel Orientation="Horizontal" Margin="5,10,0,0">
-                        <TextBlock Margin="0,0,5,0">Build: </TextBlock>
-                        <TextBlock x:Name="BuildNumber"/>
-                    </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2">
+            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" Margin="0 0 5 0">Version </TextBlock>
+            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" Margin="0 0 5 0" x:Name="FullVersionNumber"></TextBlock>
+            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}"> (</TextBlock>
+            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}" x:Name="BuildDate"></TextBlock>
+            <TextBlock  Foreground="{DynamicResource Theme.Brush.Default.Fore}">)</TextBlock>
+        </StackPanel>
+        <TextBlock Text="{Binding LastChecked}" Grid.Row="4" Grid.Column="2" FontStyle="Italic" Foreground="{DynamicResource Theme.Brush.Muted.Fore}"/>
+
+        <!--  5 is a spacer row -->
+
+        <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Foreground="{DynamicResource Theme.Brush.Muted.Fore}">
+            <Run Text="2022 (C) DAX Studio - "/> 
+            <Hyperlink NavigateUri="https://daxstudio.org" custom:HyperlinkExtensions.IsExternal="true">
+                        <Run Text="https://daxstudio.org"/>
+                    </Hyperlink>
+        </TextBlock>
+        <TextBlock Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Foreground="{DynamicResource Theme.Brush.Muted.Fore}">Released under Microsoft Permissive License (Ms-PL)</TextBlock>
+
+        <!--<StackPanel Orientation="Vertical" Grid.Row="1"  Opacity="0" x:Name="BuildNumberPanel">
+                <StackPanel Orientation="Horizontal" Margin="5,10,0,0">
+                    <Label Margin="0,0,5,0">Build: </Label>
+                    <Label x:Name="BuildNumber"/>
                 </StackPanel>
+            </StackPanel>-->
+        <TabControl Style="{StaticResource TabControlPivotStyle}"
+                  Grid.Row="8"
+                  Grid.RowSpan="2"
+                  Grid.ColumnSpan="3"
+                    Margin="0 16">
+            <TabItem Header="Components" Height="32" FontSize="12">
+                <ctrl:ClipBorder CornerRadius="8" BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="1">
                 <DataGrid x:Name="ReferencedAssemblies" 
-			Grid.Row="2"
-			ClipboardCopyMode="IncludeHeader"
-			SelectionMode="Single"       
-			AlternatingRowBackground="LightGray"  
-			VerticalGridLinesBrush="LightGray" 
-			HorizontalGridLinesBrush="LightGray"
-			VerticalScrollBarVisibility="Visible"
-			Opacity="0"       />
-                
-                <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Right" Margin="0,0,5,5">
-            <Button x:Name="Ok" Width="75" Height="23" Content="OK" IsDefault="True" IsCancel="True"/>
+		          
+		          ClipboardCopyMode="IncludeHeader"
+		          SelectionMode="Single"       
+		          BorderBrush="DarkGray"
+                  BorderThickness="0"
+                  Margin="0 0 0 0"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="All"
+		          VerticalGridLinesBrush="LightGray" 
+		          HorizontalGridLinesBrush="DarkGray"
+		          VerticalScrollBarVisibility="Visible"
+                          AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Assembly" Binding="{Binding Path=Key}"/>
+                        <DataGridTextColumn Header="Version" Binding="{Binding Path=Value}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                </ctrl:ClipBorder>
+            </TabItem>
+            <TabItem Header="Credits" Height="32">
+                <ctrl:ClipBorder CornerRadius="8" BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="1">
+                    <FlowDocumentScrollViewer  Foreground="{DynamicResource Theme.Brush.Default.Fore}" >
+                        <FlowDocument 
+                                  FontFamily="Segoe UI" FontSize="13">
+                            <Paragraph>Thanks to all our generous
+                                <Hyperlink NavigateUri="https://github.com/sponsors/DaxStudio" custom:HyperlinkExtensions.IsExternal="true">Sponsors</Hyperlink>
+                            </Paragraph>
+                            <Paragraph>DAX Studio also makes use of a number of open source components</Paragraph>
+                            <List>
+                                <ListItem>
+                                    <Paragraph>AvalonEdit</Paragraph>
+                                </ListItem>
+                                <ListItem>
+                                    <Paragraph>CsvHelper</Paragraph>
+                                </ListItem>
+                                <ListItem>
+                                    <Paragraph>Dirkster99/AvalonDock</Paragraph>
+                                </ListItem>
+                                <ListItem>
+                                    <Paragraph>Fluent.Ribbon</Paragraph>
+                                </ListItem>
+                                <ListItem>
+                                    <Paragraph>LargeXlsx</Paragraph>
+                                </ListItem>
+                                <ListItem>
+                                    <Paragraph>VertpaqAnalyzer by SQLBI</Paragraph>
+                                </ListItem>
+                                
+                            </List>
+                        </FlowDocument>
+                    </FlowDocumentScrollViewer>
+                </ctrl:ClipBorder>
+            </TabItem>
+            <TabItem Header="License" Height="32">
+                <ctrl:ClipBorder CornerRadius="8" BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="1">
+                    <FlowDocumentScrollViewer  Foreground="{DynamicResource Theme.Brush.Default.Fore}">
+                        <FlowDocument FontFamily="Segoe UI" FontSize="13">
+                            <Paragraph >
+                                <Bold>DAX Studio - License</Bold>
+                            </Paragraph>
+                            <Paragraph>Microsoft Reciprocal License (Ms-RL)</Paragraph>
+                            <Paragraph>
+                                This license governs use of the accompanying software. If you use the software, you accept this license. If you do not accept the license, do not use the software.
+                            </Paragraph>
+                            <Paragraph>
+                                <Bold>1. Definitions</Bold>
+                            </Paragraph>
+                            <Paragraph>
+                                The terms "reproduce," "reproduction," "derivative works," and "distribution" have the same meaning here as under U.S. copyright law.
+                            </Paragraph>
+                            <Paragraph>
+                                A "contribution" is the original software, or any additions or changes to the software.
+                            </Paragraph>
+                            <Paragraph>
+                                A "contributor" is any person that distributes its contribution under this license.
+                            </Paragraph>
+                            <Paragraph>
+                                "Licensed patents" are a contributor's patent claims that read directly on its contribution.
+                            </Paragraph>
+                            <Paragraph>
+                                <Bold>2. Grant of Rights</Bold>
+                            </Paragraph>
+                            <Paragraph>
+                                (A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
+                            </Paragraph>
+                            <Paragraph>
+                                (B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
+                            </Paragraph>
+                            <Paragraph>
+                                <Bold>3. Conditions and Limitations</Bold>
+                            </Paragraph>
+                            <Paragraph>
+                                (A) Reciprocal Grants- For any file you distribute that contains code from the software (in source code or binary format), you must provide recipients the source code to that file along with a copy of this license, which license will govern that file. You may license other files that are entirely your own work and do not contain code from the software under any terms you choose.
+                            </Paragraph>
+                            <Paragraph>
+                                (B) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
+                            </Paragraph>
+                            <Paragraph>
+                                (C) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, your patent license from such contributor to the software ends automatically.
+                            </Paragraph>
+                            <Paragraph>
+                                (D) If you distribute any portion of the software, you must retain all copyright, patent, trademark, and attribution notices that are present in the software.
+                            </Paragraph>
+                            <Paragraph>
+                                (E) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
+                            </Paragraph>
+                            <Paragraph>
+                                (F) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
+                            </Paragraph>
+                        </FlowDocument>
+                    </FlowDocumentScrollViewer>
+                </ctrl:ClipBorder>
+            </TabItem>
+        </TabControl>
+        <TextBlock Margin="0" Grid.Column="0" Grid.Row="10" HorizontalAlignment="Left" VerticalAlignment="Center"> <Hyperlink NavigateUri="{Binding LogFolder}" custom:HyperlinkExtensions.IsExternal="True"><Run>Log Folder</Run></Hyperlink></TextBlock>
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="10" Grid.Column="2" HorizontalAlignment="Right" Margin="0">
+            <Button x:Name="Ok" Width="75" Content="OK" IsDefault="True" Margin="0,5,0,0" IsCancel="True"/>
         </StackPanel>
 
     </Grid>
-    </Border>
-    </Border>
-</UserControl>
+    
+</ctrl:DaxStudioDialog>

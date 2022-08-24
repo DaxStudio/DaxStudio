@@ -44,7 +44,7 @@ namespace DaxStudio.UI.ViewModels
             ParameterHelper.WriteParameterXml(_document, _queryInfo);
         }
 
-        public void Ok()
+        public async void Ok()
         {
             // TODO - copy parameters
             //foreach ( var p in Parameters)
@@ -52,13 +52,13 @@ namespace DaxStudio.UI.ViewModels
             //    _queryInfo.Parameters[p.Name].Value = p.Value;
             //}
             DialogResult = DialogResult.OK;
-            TryClose();
+            await TryCloseAsync();
         }
 
-        public void Cancel()
+        public async void Cancel()
         {
             DialogResult = DialogResult.Cancel;
-            TryClose();
+            await TryCloseAsync();
         }
 
         #endregion

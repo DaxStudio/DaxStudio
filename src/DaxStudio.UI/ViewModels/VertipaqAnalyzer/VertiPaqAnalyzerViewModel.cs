@@ -10,6 +10,14 @@ using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using System.Threading.Tasks;
+using System.Threading;
+using DaxStudio.UI.Interfaces;
+using System.IO.Packaging;
+using DaxStudio.UI.Utils;
+using System;
+using System.IO;
+using Microsoft.AnalysisServices.Tabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -21,6 +29,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
         , IViewAware
+        , ISaveState
     {
 
         private readonly IEventAggregator _eventAggregator;
@@ -35,7 +44,7 @@ namespace DaxStudio.UI.ViewModels
             IsBusy = true;
             _globalOptions = options;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
             CurrentDocument = currentDocument;
 
             // configure default sort columns
@@ -47,11 +56,11 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{class} {method} {message}", "VertiPaqAnalyzerViewModel", "ctor", "end");
         }
 
-        public override void TryClose(bool? dialogResult = null)
+        public override Task TryCloseAsync(bool? dialogResult = null)
         {
             // unsubscribe from event aggregator
             _eventAggregator.Unsubscribe(this);
-            base.TryClose(dialogResult);
+            return base.TryCloseAsync(dialogResult);
         }
 
         private VpaModel _viewModel;
@@ -85,7 +94,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_groupedColumns == null && ViewModel != null)
                 {
-                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table )).SelectMany(t => t.Columns);
+                    // Skip the special column "RowNumber-GUID" that is not relevant for the analysis
+                    const string ROWNUMBER_COLUMNNAME = "RowNumber-";
+
+                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table )).SelectMany(t => t.Columns.Where(c => !c.ColumnName.StartsWith(ROWNUMBER_COLUMNNAME)));
                     _groupedColumns = CollectionViewSource.GetDefaultView(cols);
                     _groupedColumns.GroupDescriptions.Add(new TableGroupDescription("Table"));
                     // sort by TableSize then by TotalSize
@@ -157,25 +169,17 @@ namespace DaxStudio.UI.ViewModels
         public IEnumerable<VpaTable> TreeviewRelationships { get { return ViewModel.TablesWithFromRelationships; } }
 
         // TODO: we might add the database name here
-        public override string Title => "VertiPaq Analyzer Metrics";
+        public override string Title => "VertiPaq Analyzer";
 
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "vertipaq-analyzer";
-        public override ImageSource IconSource {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-view-metrics.png") as ImageSource;
 
-            }
-        }
-
-        public void Handle(DocumentConnectionUpdateEvent message)
+        public Task HandleAsync(DocumentConnectionUpdateEvent message,CancellationToken cancellationToken)
         {
 
             // TODO connect VPA data
             Log.Information("VertiPaq Analyzer Handle DocumentConnectionUpdateEvent call");
+            return Task.CompletedTask;
         }
 
         public void MouseDoubleClick(object sender)//, MouseButtonEventArgs e)
@@ -183,10 +187,11 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Debug.WriteLine("clicked!");
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             // NotifyOfPropertyChange(() => ShowTraceColumns);
             Log.Information("VertiPaq Analyzer Handle UpdateGlobalOptions call");
+            return Task.CompletedTask;
         }
 
         public void OnTableSorting(System.Windows.Controls.DataGridSortingEventArgs e)
@@ -230,6 +235,86 @@ namespace DaxStudio.UI.ViewModels
             PartitionSortColumn = e.Column.SortMemberPath;
         }
 
+        public void Save(string filename)
+        {
+            return; // we do nothing here since we don't save satellite vpax files
+        }
+
+        public void Load(string filename)
+        {
+            return; // we do nothing here since we don't save satellite vpax files
+        }
+
+        public string GetJson()
+        {
+            return String.Empty;
+        }
+
+        public void LoadJson(string json)
+        {
+            return; // we do nothing here since we don't save satellite vpax files
+        }
+
+        public void SavePackage(Package package)
+        {
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
+            try { 
+                var serverName = this.ViewModel.Model.ServerName.ToString();
+                var databaseName = ViewModel.Model.ModelName.ToString();
+                //
+                // Get TOM model from the SSAS engine
+                //
+                //Microsoft.AnalysisServices.Tabular.Database database = _globalOptions.VpaxIncludeTom ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName) : null;
+
+                // 
+                // Create VertiPaq Analyzer views
+                //
+                Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
+
+                //model.ModelName = new Dax.Metadata.DaxName(modelName);
+
+                //
+                // Save VPAX file to daxx file
+                // 
+
+                using (Stream strm = package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream())
+                {
+                    Dax.Vpax.Tools.VpaxTools.ExportVpax(strm, ViewModel.Model, viewVpa, Database);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(LoadPackage), "Error saving vpax data to daxx file");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving vpax data to daxx file\n{ex.Message}"));
+            }
+        }
+
+        public void LoadPackage(Package package)
+        {
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
+            if (!package.PartExists(uri)) return;
+
+            var part = package.GetPart(uri);
+            try
+            {
+                using (Stream strm = part.GetStream())
+                {
+                    var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(strm);
+                    var view = new Dax.ViewModel.VpaModel(content.DaxModel);
+                    // update view model
+                    ViewModel = view;
+                    Database = content.TomDatabase;
+                }
+
+                Activate();
+            }
+            catch( Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(LoadPackage), "Error loading vpax data from daxx file");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading vpax data from daxx file\n{ex.Message}"));
+            }
+        }
+
         public string PartitionSortColumn { get; set; }
         public int PartitionSortDirection { get; set; } = -1;
 
@@ -250,6 +335,8 @@ namespace DaxStudio.UI.ViewModels
 
         public TooltipStruct Tooltips => new TooltipStruct();
 
+        public Database Database { get; internal set; }
+
         public class TooltipStruct
         {
             public string Cardinality => "The total number of distinct values in a column";
@@ -266,6 +353,11 @@ namespace DaxStudio.UI.ViewModels
             public string PercentOfTable => "The space taken up as a percentage of the parent table";
             public string PercentOfDatabase => "The space taken up as a percentage of the total size of the database";
             public string Segments => "The number of segments";
+            public string TotalSegments => "The total number of segments";
+            public string Pageable => "The number of pageable segments";
+            public string Resident => "The number of resident segments";
+            public string Temperature => "Scaled numeric feequency of segment access";
+            public string LastAccessed => "Last access time of a pageable segment";
             public string Partitions => "The number of partitions";
             public string Columns => "The number of columns in the table";
             public string TableRows => "The total number of rows in the table";
@@ -280,5 +372,13 @@ namespace DaxStudio.UI.ViewModels
             public string OneToManyRatio => "This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
         }
 
+        internal async Task ExportAnalysisDataAsync(string fileName)
+        {
+            await Task.Run(() =>
+            {
+                Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
+                ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
+            });
+        }
     }
 }

@@ -12,10 +12,13 @@ using DaxStudio.Common;
 using System.Timers;
 using System.Linq;
 using System.Collections.Generic;
-using System.Windows.Input;
+using System.Security.Principal;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using System.Windows.Media;
-using DaxStudio.UI.Extensions;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -62,7 +65,7 @@ namespace DaxStudio.UI.ViewModels
             AutoSaver = autoSaver;
             ThemeManager = themeManager;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
 
             Tabs = (DocumentTabViewModel)conductor;
             Tabs.ConductWith(this);
@@ -70,39 +73,6 @@ namespace DaxStudio.UI.ViewModels
             Tabs.CloseStrategy = IoC.Get<ApplicationCloseAllStrategy>();
             _host = host;
             _username = UserHelper.GetUser();
-            var recoveringFiles = false;
-
-            // get master auto save indexes and only get crashed index files...
-            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
-            var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
-
-            // check for auto-saved files and offer to recover them
-            if (filesToRecover.Any())
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
-                recoveringFiles = true;
-                RecoverAutoSavedFiles(autoSaveInfo);
-            }
-            else
-            {
-                // if there are no auto-save files to recover, start the auto save timer
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
-                eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
-            }
-
-            // if a filename was passed in on the command line open it
-            if (!string.IsNullOrEmpty(_host.CommandLineFileName))
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
-                Tabs.NewQueryDocument(_host.CommandLineFileName);
-            }
-
-            // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
-            if (Tabs.Items.Count == 0 && !recoveringFiles)
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
-                NewDocument();
-            }
 
 
             VersionChecker = versionCheck;
@@ -113,7 +83,7 @@ namespace DaxStudio.UI.ViewModels
             Application.Current.Activated += OnApplicationActivated;
             
 
-            AutoSaveTimer = new Timer(Constants.AutoSaveIntervalMs);
+            AutoSaveTimer = new System.Timers.Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += AutoSaveTimerElapsed;
 
             Log.Debug("============ Shell Started - v{version} =============", Version.ToString());
@@ -128,13 +98,13 @@ namespace DaxStudio.UI.ViewModels
 
         private IThemeManager ThemeManager { get; }
 
-        private Timer AutoSaveTimer { get; }
+        private System.Timers.Timer AutoSaveTimer { get; }
 
-        private void RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
+        private async Task RecoverAutoSavedFiles(Dictionary<int,AutoSaveIndex> autoSaveInfo)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Values.Count} auto save index files");
             // show recovery dialog
-            _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
+            await _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
             
         }
 
@@ -166,8 +136,7 @@ namespace DaxStudio.UI.ViewModels
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
-            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
-            System.Diagnostics.Debug.WriteLine("OnApplicationActivated");
+            _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
         }
 
         
@@ -181,7 +150,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IVersionCheck VersionChecker { get; set; }
         
-        public bool IsUpdateAvailable => !VersionChecker.VersionIsLatest;
+        public bool IsUpdateAvailable => !VersionChecker.VersionIsLatest && !Application.Current.Args().NoPreview;
         public string UpdateMessage => $"Click to open the download page for version {VersionChecker.ServerVersion.ToString(3)}";
 
         public void UpdateFlagClick()
@@ -189,35 +158,47 @@ namespace DaxStudio.UI.ViewModels
             // Open URL in Browser
             System.Diagnostics.Process.Start( VersionChecker.DownloadUrl.ToString());
         }
-        
-        public override void TryClose(bool? dialogResult = null)
+
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public override async Task TryCloseAsync(bool? dialogResult = null)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            //Properties.Settings.Default.Save();
-            base.TryClose(dialogResult);
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Attempting application shutdown");
+            //await base.TryCloseAsync(dialogResult);
             if (dialogResult != false )
             {
                 Ribbon.OnClose();
                 _notifyIcon?.Dispose();
                 AutoSaveTimer.Enabled = false;
-                if (!Application.Current.Properties.Contains("HasCrashed") )
+                ThemeManager.Dispose();
+                if (Application.Current == null) {
+                    Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Current Application is null - clearing AutoSave files");
                     AutoSaver.RemoveAll();
+                    return;
+                }
+                if (!Application.Current.Properties.Contains("HasCrashed"))
+                {
+                    Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Clearing AutoSave files");
+                    AutoSaver.RemoveAll();
+                    return;
+                }
             }
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Application shutdown cancelled");
+            return;
         }
-        //public override void TryClose()
-        //{
-        //    base.TryClose();
-        //}
-
-        protected override void OnDeactivate(bool close)
+        
+        protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
-            base.OnDeactivate(close);
-            TryClose();
+            await base.OnDeactivateAsync(close, cancellationToken);
+            await TryCloseAsync();
+            return;
         }
-
-        protected override void OnActivate()
+        
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            base.OnActivate();
-            _eventAggregator.PublishOnUIThread(new ApplicationActivatedEvent());
+            await base.OnActivateAsync(cancellationToken);
+            await _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
         }
 
         
@@ -233,17 +214,24 @@ namespace DaxStudio.UI.ViewModels
                 _window.SetPlacement(Options.WindowPosition);
                 _notifyIcon = new NotifyIcon(_window, _eventAggregator);
                 if (_host.DebugLogging) ShowLoggingEnabledNotification();
-
+                _window.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnPaste));
                 //Application.Current.LoadRibbonTheme();
                 _inputBindings = new InputBindings(_window);
             }
 
             _inputBindings.RegisterCommands(GetInputBindingCommands());
-            _eventAggregator.PublishOnBackgroundThread(new LoadQueryHistoryAsyncEvent());
+            _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
             
         }
 
-        private IEnumerable<InputBindingCommand> GetInputBindingCommands()
+        static void OnPaste(object target, ExecutedRoutedEventArgs args)
+        {
+            System.Diagnostics.Debug.WriteLine("Paste Detected");
+            IDataObject obj = Clipboard.GetDataObject();
+            var visual = obj.GetData("Power BI Visuals");
+        }
+
+            private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // load custom key bindings from Options
             yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
@@ -310,23 +298,25 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public override void CanClose(Action<bool> callback)
+
+        public override Task<bool> CanCloseAsync(CancellationToken cancellationToken)
         {
-            Tabs.CanClose(callback);
+            return Tabs.CanCloseAsync(cancellationToken);
         }
 
         #region Event Handlers
-        public void Handle(NewVersionEvent message)
+        public Task HandleAsync(NewVersionEvent message, CancellationToken cancellationToken)
         {           
             var newVersionText =
                 $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
             Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
             _notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
+            return Task.CompletedTask;
         }
 
-        public void Handle(AutoSaveEvent message)
+        public async Task HandleAsync(AutoSaveEvent message, CancellationToken cancellationToken)
         {
-            AutoSaver.Save(Tabs).AsResult();
+            await AutoSaver.Save(Tabs);
         }
         #endregion
 
@@ -364,13 +354,43 @@ namespace DaxStudio.UI.ViewModels
 
         public string AppTitle { get {
 #if PREVIEW
-                return string.Format("DaxStudio - {0} (PREVIEW){1}", Version.ToString(4),UserString);
+                string preview = Application.Current.Args().NoPreview ? "" : $" (PREVIEW)";
 #else
-                return $"DaxStudio - {Version.ToString(3)}{UserString}";
+                string preview = "";
 #endif    
+                return $"DAX Studio - {Version.ToString(3)}{preview}{UserString}{AdminString}";
             }
         }
         #endregion
+
+        public string AdminString => IsUserAdministrator() ? " [Admin]" : "";
+
+        public bool IsUserAdministrator()
+        {
+            //bool value to hold our return value
+            bool isAdmin;
+            WindowsIdentity user = null;
+            try
+            {
+                //get the currently logged in user
+                user = WindowsIdentity.GetCurrent();
+                var principal = new WindowsPrincipal(user);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                isAdmin = false;
+            }
+            catch (Exception)
+            {
+                isAdmin = false;
+            }
+            finally
+            {
+                user?.Dispose();
+            }
+            return isAdmin;
+        }
 
         #region Global Keyboard Hooks
         public void RunQuery()
@@ -385,37 +405,37 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewDocument()
         {
-            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(Ribbon.SelectedTarget));
+            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
         }
 
         public void NewDocumentWithCurrentConnection()
         {
-            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(Ribbon.SelectedTarget,Ribbon.ActiveDocument));
+            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget,Ribbon.ActiveDocument));
         }
 
         public void OpenDocument()
         {
-            _eventAggregator.PublishOnUIThread(new OpenFileEvent() );
+            _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent() );
         }
 
         public void SelectionToUpper()
         {
-            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
 
         public void SelectionToLower()
         {
-            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
 
         public void UncommentSelection()
         {
-            _eventAggregator.PublishOnUIThread(new CommentEvent(false));
+            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(false));
         }
 
         public void CommentSelection()
         {
-            _eventAggregator.PublishOnUIThread(new CommentEvent(true));
+            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(true));
         }
 
         public void Undo()
@@ -459,72 +479,77 @@ namespace DaxStudio.UI.ViewModels
 
         public void ToggleComment()
         {
-            _eventAggregator.PublishOnUIThread(new ToggleCommentEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new ToggleCommentEvent());
         }
 
         public void SelectWord()
         {
-            _eventAggregator.PublishOnUIThread(new EditorHotkeyEvent( EditorHotkey.SelectWord));
+            _eventAggregator.PublishOnUIThreadAsync(new EditorHotkeyEvent( EditorHotkey.SelectWord));
         }
 
         public void MoveLineUp()
         {
             try
             {
-                _eventAggregator.PublishOnUIThread(new EditorHotkeyEvent(EditorHotkey.MoveLineUp));
+                _eventAggregator.PublishOnUIThreadAsync(new EditorHotkeyEvent(EditorHotkey.MoveLineUp));
             }
             catch(Exception ex)
             {
                 var msg = $"Error moving editor line up: {ex.Message}";
                 Log.Error(ex, nameof(ShellViewModel), nameof(MoveLineUp), msg);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
         public void MoveLineDown()
         {
             try
             {
-                _eventAggregator.PublishOnUIThread(new EditorHotkeyEvent(EditorHotkey.MoveLineDown));
+                _eventAggregator.PublishOnUIThreadAsync(new EditorHotkeyEvent(EditorHotkey.MoveLineDown));
             }
             catch (Exception ex)
             {
                 var msg = $"Error moving editor line down: {ex.Message}";
                 Log.Error(ex, nameof(ShellViewModel), nameof(MoveLineDown), msg);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
         #endregion
 
         #region Event Aggregator methods
-        public void Handle(StartAutoSaveTimerEvent message)
+        public Task HandleAsync(StartAutoSaveTimerEvent message, CancellationToken cancellationToken)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StartAutoSaveTimer>", "AutoSave Timer Starting");
             AutoSaveTimer.Enabled = true;
+            return Task.CompletedTask;
         }
 
-        public void Handle(StopAutoSaveTimerEvent message)
+        public Task HandleAsync(StopAutoSaveTimerEvent message, CancellationToken cancellationToken)
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "Handle<StopAutoSaveTimer>", "AutoSave Timer Stopping");
             AutoSaveTimer.Enabled = false;
+            return Task.CompletedTask;
         }
 
-        public void Handle(ChangeThemeEvent message)
+        public Task HandleAsync(ChangeThemeEvent message, CancellationToken cancellationToken)
         {
             ThemeManager.SetTheme(message.Theme);
             //if (message.Theme == "Dark") SetDarkTheme();
             //else SetLightTheme();
+            return Task.CompletedTask;
         }
 
 
-        public void Handle(UpdateHotkeys message)
+        public Task HandleAsync(UpdateHotkeys message, CancellationToken cancellationToken)
         {
             ResetInputBindings();
+            return Task.CompletedTask;
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             // force a refresh of the User string in case this was just turned on in the options
             DisplayName = AppTitle;
+            return Task.CompletedTask;
         }
 
 

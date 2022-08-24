@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 
 namespace DaxStudio.UI.Events
 {
@@ -62,6 +63,7 @@ namespace DaxStudio.UI.Events
         Information
         ,Warning
         ,Error
+        ,Success
     }
      
 }

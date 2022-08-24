@@ -12,9 +12,15 @@ namespace DaxStudio.Interfaces
 {
     public interface IGlobalOptions: IGlobalOptionsBase
     {
+        bool AutoHideMetadataVerticalScrollbars { get; set; }
         bool AutoRefreshMetadataCloud { get; set; }
         bool AutoRefreshMetadataLocalMachine { get; set; }
         bool AutoRefreshMetadataLocalNetwork { get; set; }
+
+        bool BenchmarkColdCacheSwitchedOn { get; set; }
+        bool BenchmarkWarmCacheSwitchedOn { get; set; }
+        int BenchmarkColdCacheRuns { get;set; }
+        int BenchmarkWarmCacheRuns { get;set; }
         bool CanPublishDaxFunctions { get; set; }
         int CodeCompletionWindowWidthIncrease { get; set; }
         Version CurrentDownloadVersion { get; set; }
@@ -62,6 +68,7 @@ namespace DaxStudio.Interfaces
         bool SkipSpaceAfterFunctionName { get; set; }
         bool SortFoldersFirstInMetadata { get; set; }
         string Theme { get; set; }
+        string AutoTheme { get; set; }
         int TraceStartupTimeout { get; set; }
         string WindowPosition { get; set; }
 
@@ -74,7 +81,7 @@ namespace DaxStudio.Interfaces
         LongOperationSounds LongOperationSound { get; set; }
         int LongQuerySeconds { get; set; }
 
-
+        int PowerPivotModelDetectionTimeout { get; set; }
 
 
         #region Hotkeys
@@ -105,6 +112,7 @@ namespace DaxStudio.Interfaces
         bool ShowExportAllData { get; set; }
         bool VpaxIncludeTom { get; set; }
         bool VpaxReadStatisticsFromData { get; set; }
+        bool VpaxReadStatisticsFromDirectQuery { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
 
         bool ShowDebugCommas { get; set; }
@@ -137,7 +145,12 @@ namespace DaxStudio.Interfaces
         void PlayLongOperationSound(int currentOperationSeconds);
 
         LogEventLevel LoggingLevel { get; set; }
+        LogEventLevel TemporaryLoggingLevel { get; set; }
         LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
+        [JsonIgnore] bool GettingStartedShown { get; set; }
+
+        //bool ShowQueryPlanNextLine { get; set; }
+        //bool ShowQueryPlanLineLevel { get; set; }
     }
 }

@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for BenchmarkView.xaml
     /// </summary>
-    public partial class BenchmarkView : UserControl
+    public partial class BenchmarkView : DaxStudio.UI.Controls.DaxStudioDialog
     {
         public BenchmarkView()
         {

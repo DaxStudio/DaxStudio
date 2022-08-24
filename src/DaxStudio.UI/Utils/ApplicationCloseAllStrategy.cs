@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace DaxStudio.UI.Utils {
@@ -16,9 +18,9 @@ namespace DaxStudio.UI.Utils {
     [Export(typeof(ICloseStrategy<IScreen>))]
     public class ApplicationCloseAllStrategy : ICloseStrategy<IScreen> {
         //IEnumerator<IScreen> enumerator;
-        private IEnumerable<IScreen> toclose; 
-        bool finalResult;
-        Action<bool, IEnumerable<IScreen>> callback;
+        //private IEnumerable<IScreen> toclose; 
+        //bool finalResult;
+        //Action<bool, IEnumerable<IScreen>> callback;
         private IWindowManager _windowManager;
         private IEventAggregator _eventAggregator;
 
@@ -29,11 +31,11 @@ namespace DaxStudio.UI.Utils {
             _eventAggregator = eventAggregator;
         }
 
-        public void Execute(IEnumerable<IScreen> toClose, Action<bool, IEnumerable<IScreen>> callback)
+        public async Task<ICloseResult<IScreen>> ExecuteAsync(IEnumerable<IScreen> toClose, CancellationToken cancellationToken)
         {
             //enumerator = toClose.GetEnumerator();
-            this.toclose = toClose;
-            this.callback = callback;
+            var closeable = toClose; // new List<IScreen>();
+            var closeCanOccur = true;
 
             var docs = toClose.Cast<ISaveable>();// .ConvertAll(o => (DocumentViewModel)o);
             var dirtyDocs = new ObservableCollection<ISaveable>(docs.Where<ISaveable>(x => x.IsDirty));
@@ -43,7 +45,7 @@ namespace DaxStudio.UI.Utils {
                 var closeDialog = new SaveDialogViewModel();
                 closeDialog.Documents = dirtyDocs;
 
-                _windowManager.ShowDialogBox(closeDialog, settings: new Dictionary<string, object>
+                await _windowManager.ShowDialogBoxAsync(closeDialog, settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
                     { "ShowInTaskbar", false},
@@ -56,56 +58,46 @@ namespace DaxStudio.UI.Utils {
                 if (closeDialog.Result == Enums.SaveDialogResult.Cancel)
                 {
                     // loop through and cancel closing for any dirty documents
-                    finalResult = false; // cancel closing
-                    Evaluate(finalResult);
-                    
+                    closeCanOccur = false; // cancel closing
+                    closeable = new List<IScreen>();
+                    return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }
                 else
                 {
-                    _eventAggregator.PublishOnUIThread(new StopAutoSaveTimerEvent());
-                    Evaluate(finalResult); 
+                    await _eventAggregator.PublishOnUIThreadAsync(new StopAutoSaveTimerEvent());
+                    closeCanOccur = await Evaluate(closeable);
+                    return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }
             }
             else
             {
                 //    callback(true, new List<IScreen>());
-                _eventAggregator.PublishOnUIThread(new StopAutoSaveTimerEvent());
-                Evaluate(finalResult);
-
+                await _eventAggregator.PublishOnUIThreadAsync(new StopAutoSaveTimerEvent());
+                closeCanOccur = await Evaluate(closeable);
+                return new CloseResult<IScreen>(closeCanOccur, closeable);
             }
 
 
         }
 
-        void Evaluate(bool result)
+        async Task<bool> Evaluate(IEnumerable<IScreen> toclose)
         {
-            finalResult = finalResult && result;
+            var finalResult = true;
 
-            //if (!enumerator.MoveNext() || !result) // if last object or something was cancelled
-            //    callback(finalResult, new List<IScreen>());
-            //else
-            //{
-                
-                if (toclose.Any())   
+            foreach (var c in toclose.OfType<IGuardClose>())
+            {
+                finalResult = finalResult && await c.CanCloseAsync();
+            }
+
+            foreach (var doc in toclose.OfType<IHaveTraceWatchers>())
+            {
+                foreach (var tw in doc.TraceWatchers)
                 {
-                   var tasks =  toclose //conductor.GetChildren()
-                        .OfType<IHaveShutdownTask>()
-                        .Select(x => x.GetShutdownTask())
-                        .Where(x => x != null);
-
-                    // TODO - show dialog box here 
-
-                    var sequential = new SequentialResult(tasks.GetEnumerator());
-                    sequential.Completed += (s, e) =>
-                        {
-                            callback(!e.WasCancelled, new List<IScreen>());
-                        //if(!e.WasCancelled)
-                        //Evaluate(!e.WasCancelled);
-                    };
-                    sequential.Execute(new CoroutineExecutionContext());
+                    if (tw.IsChecked) { tw.StopTrace(); }
                 }
-                else callback(true, new List<IScreen>());
-            //}
+            }
+
+            return finalResult;
         }
     }
 }

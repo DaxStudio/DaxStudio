@@ -30,7 +30,7 @@ namespace DaxStudio.UI.Model
 
                 lst.Add(new TreeViewTable(t, t.TreeViewColumns,options, eventAggregator, metadataPane));
             }
-            return lst;   
+            return lst;
         }
 
         public static IEnumerable<FilterableTreeViewItem> TreeViewColumns(this ADOTabularTable table, IADOTabularObject table2, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
@@ -235,6 +235,7 @@ namespace DaxStudio.UI.Model
                 if (value == _isExpanded) return;
                 _isExpanded = value;
                 NotifyOfPropertyChange(()=> IsExpanded);
+                if (ObjectType == ADOTabularObjectType.Folder) NotifyOfPropertyChange("TreeviewImage");
             }
         }
 
@@ -298,6 +299,37 @@ namespace DaxStudio.UI.Model
         public TreeViewTable(ADOTabularTable table, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane ):base(table, getChildren,options,eventAggregator, metadataPane)
         {
             _table = table;
+        }
+
+        public string ForegroundBrush => _table?.IsVisible ?? true ? "Theme.Brush.Default.Fore" : "Theme.Brush.Hidden.Fore";
+
+        public string TreeviewImage
+        {
+            get
+            {
+                switch (_table.MetadataImage)
+                {
+                    case MetadataImages.Column:
+                        return "column";
+                        
+                    //case MetadataImages.Database:
+                    case MetadataImages.Folder:
+                    case MetadataImages.HiddenColumn:
+                    case MetadataImages.HiddenMeasure:
+                    
+                    case MetadataImages.Hierarchy:
+                    case MetadataImages.Kpi:
+                    case MetadataImages.Measure:
+                        return "measure";
+                    case MetadataImages.HiddenTable:
+                    case MetadataImages.Table:
+
+                        return _table.IsDateTable? "date_tableDrawingImage": "tableDrawingImage";
+                    case MetadataImages.UnnaturalHierarchy:
+                        return "";
+                }
+                return "";
+            }
         }
 
         public MetadataImages MetadataImage { get { return _table.MetadataImage; } }
@@ -375,7 +407,7 @@ namespace DaxStudio.UI.Model
         }
     }
 
-    public class TreeViewColumn: FilterableTreeViewItem, IADOTabularObject, ITreeviewColumn
+    public class TreeViewColumn : FilterableTreeViewItem, IADOTabularObject, ITreeviewColumn
     {
         /*
         Folder
@@ -408,7 +440,7 @@ namespace DaxStudio.UI.Model
         private long _distinctValues;
 
         #region Constructors
-        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane):base(column.Table, getChildren, options,eventAggregator,metadataPane)
+        public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane) : base(column.Table, getChildren, options, eventAggregator, metadataPane)
         {
             _eventAggregator = eventAggregator;
             _sampleData = new List<string>();
@@ -431,40 +463,43 @@ namespace DaxStudio.UI.Model
         //    //Column = column;
         //    //_column = column;
         //    Options = options;
-            
+
         //    MetadataImage = MetadataImages.Folder;
-            
+
         //}
 
-        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane):base(kpiComponent.Column.Table, null,null,eventAggregator, metadataPane)
+        public TreeViewColumn(ADOTabularKpiComponent kpiComponent, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane) : base(kpiComponent.Column.Table, null, null, eventAggregator, metadataPane)
         {
             Options = options;
             Column = kpiComponent;
+            _column = kpiComponent;
             DataTypeName = kpiComponent.DataTypeName;
             Description = kpiComponent.Column.Description;
             MetadataImage = MetadataImages.Measure;
         }
         public TreeViewColumn(ADOTabularKpi kpi, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
-            : base(kpi.Table, null, options,eventAggregator, metadataPane)
+            : base(kpi.Table, null, options, eventAggregator, metadataPane)
         {
             Options = options;
             Column = kpi;
+            _column = kpi;
             DataTypeName = kpi.DataTypeName;
             Description = kpi.Description;
             MetadataImage = MetadataImages.Kpi;
         }
-        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options,IEventAggregator eventAggregator, IMetadataPane metadataPane):base(level.Column.Table, null, options,eventAggregator,metadataPane)
+        public TreeViewColumn(ADOTabularLevel level, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane) : base(level.Column.Table, null, options, eventAggregator, metadataPane)
         {
             Options = options;
             Column = level;
+            _column = level;
             Description = level.Column.Description;
             DataTypeName = level.Column.DataTypeName;
 
-            MetadataImage = MetadataImages.Column;            
+            MetadataImage = MetadataImages.Column;
         }
 
-        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options,IEventAggregator eventAggregator, IMetadataPane metadataPane)
-            : base(hier.Table, null,options,eventAggregator,metadataPane)
+        public TreeViewColumn(ADOTabularHierarchy hier, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane)
+            : base(hier.Table, null, options, eventAggregator, metadataPane)
         {
             Options = options;
             Column = hier;
@@ -480,6 +515,7 @@ namespace DaxStudio.UI.Model
             if (folder == null)
             {
                 Column = table.Columns.GetByPropertyRef(reference.InternalReference);
+                _column = Column as IADOTabularColumn;
                 MetadataImage = Column.GetMetadataImage();
             }
             else
@@ -498,7 +534,7 @@ namespace DaxStudio.UI.Model
 
         public bool ShowMinMax { get {
                 if (!Options.ShowTooltipBasicStats) return false;
-                if ( _column != null &&_column.GetType() != typeof(ADOTabularColumn)) return false;
+                if (_column != null && _column.GetType() != typeof(ADOTabularColumn)) return false;
                 if (MinValue == string.Empty && MaxValue == string.Empty) return false;
                 return true;
             }
@@ -509,7 +545,7 @@ namespace DaxStudio.UI.Model
             get
             {
                 if (!Options.ShowTooltipSampleData) return false;
-                return HasSampleData && _column != null && _column.GetType() == typeof(ADOTabularColumn) ;
+                return HasSampleData && _column != null && _column.GetType() == typeof(ADOTabularColumn);
             }
         }
 
@@ -520,16 +556,101 @@ namespace DaxStudio.UI.Model
 
         public MetadataImages MetadataImage { get; set; }
 
+        public string ForegroundBrush => _column?.IsVisible ?? true ? "Theme.Brush.Default.Fore" : "Theme.Brush.Hidden.Fore";
+
+        public string TreeviewImage { get {
+                if (_column == null) return this.IsExpanded ? "folder_openDrawingImage" : "folderDrawingImage";
+                switch (_column.MetadataImage)
+                {
+                    case MetadataImages.Measure:
+                    case MetadataImages.HiddenMeasure:
+                    case MetadataImages.HiddenColumn:
+                    case MetadataImages.Column:
+                        return GetDataTypeImage(_column);
+
+                    //case MetadataImages.Database:
+                    case MetadataImages.Folder:
+                        return "";
+                    case MetadataImages.UnnaturalHierarchy:
+                    case MetadataImages.Hierarchy:
+                        return "hierarchyDrawingImage";
+                    case MetadataImages.Kpi:
+                        return "kpiDrawingImage";
+
+                    case MetadataImages.HiddenTable:
+                    case MetadataImages.Table:
+                        return "";
+                }
+                return "";
+            }
+        }
+
+        public string ObjectTypeName
+        {
+            get
+            {
+                switch (_column?.ObjectType)
+                {
+                    case ADOTabularObjectType.Level:
+                    case ADOTabularObjectType.Column:
+                        return "Column";
+                    case ADOTabularObjectType.Folder:
+                        return "Folder";
+                    case ADOTabularObjectType.Hierarchy:
+                    case ADOTabularObjectType.UnnaturalHierarchy:
+                        return "Hierarchy";
+                    case ADOTabularObjectType.Measure:
+                    case ADOTabularObjectType.KPIGoal:
+                    case ADOTabularObjectType.KPIStatus:
+                        return "Measure";
+                    case ADOTabularObjectType.KPI:
+                        return "KPI";
+                    case ADOTabularObjectType.DMV:
+                    case ADOTabularObjectType.Function:
+                    case ADOTabularObjectType.Table:
+                    case ADOTabularObjectType.Unknown:
+                        return string.Empty;
+                    default:
+                        if (_folder != null) return "Folder";
+                        return string.Empty;
+                }
+            }
+        }
+
+        public string ObjectTypeImage
+        {
+            get
+            {
+                return ObjectTypeName.ToLower() + "_accentDrawingImage";
+            }
+        }
+
+        private string GetDataTypeImage(IADOTabularColumn column)
+        {
+            switch (column.DataType)
+            {
+                case Microsoft.AnalysisServices.Tabular.DataType.Boolean: return $"boolean{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.DateTime: return $"datetime{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.Double:
+                case Microsoft.AnalysisServices.Tabular.DataType.Decimal: return $"double{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.Int64: return $"number{DrawingSuffix(column)}";
+                case Microsoft.AnalysisServices.Tabular.DataType.String: return $"string{DrawingSuffix(column)}";
+                default: return "";
+            }
+        }
+
+        private string DrawingSuffix(IADOTabularObject column) => column.IsVisible ? "DrawingImage" : "HiddenDrawingImage";
+
         private string _caption = string.Empty;
-        public string Caption => Column?.Caption??_caption;
-        public override string Name => Column?.Name??_caption;
-        public override ADOTabularObjectType ObjectType => Column.ObjectType;
+        public string Caption => Column?.Caption ?? _caption;
+        public override string Name => Column?.Name ?? _caption;
+        public override ADOTabularObjectType ObjectType => Column?.ObjectType ?? ADOTabularObjectType.Unknown;
         public string Description { get; private set; }
         public string DataTypeName { get; private set; }
-        public string DaxName => Column?.DaxName??string.Empty;
+        public string DaxName => Column?.DaxName ?? string.Empty;
 
-        public bool ShowDescription => !string.IsNullOrEmpty(Description); 
-        public bool ShowDataType =>!string.IsNullOrEmpty(DataTypeName); 
+        public bool ShowDescription => !string.IsNullOrEmpty(Description);
+        public bool ShowDataType => !string.IsNullOrEmpty(DataTypeName);
 
         public bool ShowFormatString => !string.IsNullOrEmpty(FormatString);
         public string FormatString { get; private set; }
@@ -553,14 +674,27 @@ namespace DaxStudio.UI.Model
 
         public override bool IsVisible => _column?.IsVisible ?? _folder?.IsVisible ?? true;
 
-        public bool IsColumn =>  this.MetadataImage == MetadataImages.Column
+        public bool IsColumn => this.MetadataImage == MetadataImages.Column
                               || this.MetadataImage == MetadataImages.HiddenColumn;
 
 
-        public bool IsMeasure => MetadataImage == MetadataImages.Measure
-                              || MetadataImage == MetadataImages.HiddenMeasure
-                              || MetadataImage == MetadataImages.Kpi;
-
+        public bool IsMeasure
+        {
+            get
+            {
+                if (Column == null) return false;
+                switch (Column.ObjectType)
+                {
+                    case ADOTabularObjectType.Measure:
+                    case ADOTabularObjectType.KPI:
+                    case ADOTabularObjectType.KPIGoal:
+                    case ADOTabularObjectType.KPIStatus:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }  
 
         public bool IsTable => MetadataImage == MetadataImages.Table
                             || MetadataImage == MetadataImages.HiddenTable;
@@ -582,6 +716,9 @@ namespace DaxStudio.UI.Model
                     case ADOTabularObjectType.Table:
                     case ADOTabularObjectType.Hierarchy:
                     case ADOTabularObjectType.UnnaturalHierarchy:
+                    case ADOTabularObjectType.KPI:
+                    case ADOTabularObjectType.KPIGoal:
+                    case ADOTabularObjectType.KPIStatus:
                         return true;
                     default:
                         return false;

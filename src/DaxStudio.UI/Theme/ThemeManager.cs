@@ -1,5 +1,5 @@
 ﻿using DaxStudio.Interfaces;
-using MLib.Interfaces;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -8,78 +8,125 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Serilog;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.Theme
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IThemeManager))]
-    public class ThemeManager : IThemeManager
+    public class ThemeManager : IThemeManager, IDisposable
     {
+        private Color _lightAccent = Color.FromRgb(34, 142, 214);
+        private Color _darkAccent = Color.FromRgb(41, 169, 255);
+        private bool disposedValue;
+
         [ImportingConstructor]
-        public ThemeManager(IAppearanceManager appearanceMgr, IGlobalOptions options)
+        public ThemeManager(IGlobalOptions options)
         {
-            AppearanceManager = appearanceMgr;
-            Themes = appearanceMgr.CreateThemeInfos();
-            AccentColor = Color.FromRgb(0, 114, 198);
             Options = options;
             CurrentTheme = Options.Theme;
             _app = Application.Current;
-            LoadThemeResources();
+            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
         }
 
-        private void LoadThemeResources()
-        {
-            Themes.RemoveAllThemeInfos();
-            Themes.AddThemeInfo("Light", new List<Uri>() { });
-            Themes.AddThemeInfo("Dark", new List<Uri>() { });
-
-            AppearanceManager.AddThemeResources("Light", new List<Uri>
-                {
-                //   new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                  //new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  new Uri("/AvalonDock.Themes.VS2013;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-
-                  //,new Uri("/MLib;component/Themes/LightTheme.xaml", UriKind.RelativeOrAbsolute)
-
-                  ,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Light.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
-                }, Themes);
-
-
-            AppearanceManager.AddThemeResources("Dark", new List<Uri>
-                {
-                //   new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/Themes/generic.xaml", UriKind.RelativeOrAbsolute)
-                  //new Uri("/Xceed.Wpf.AvalonDock.Themes.VS2013;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  new Uri("/AvalonDock.Themes.VS2013;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  
-                  //,new Uri("/MLib;component/Themes/DarkTheme.xaml", UriKind.RelativeOrAbsolute)
-                  
-                  ,new Uri("/DaxStudio.UI;component/Theme/AvalonDock_Dark_LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-                  
-                  ,new Uri("/DaxStudio.UI;component/Theme/Dark.DaxStudio.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.Colors.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.Brushes.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.xaml", UriKind.RelativeOrAbsolute)
-                  ,new Uri("/DaxStudio.UI;component/Theme/Monotone.DaxEditor.xaml", UriKind.RelativeOrAbsolute)
-
-                }, Themes);
-        }
-
-        public IAppearanceManager AppearanceManager { get; }
 
         public void SetTheme(string themeName)
         {
-            CurrentTheme = themeName;
-            AppearanceManager.SetTheme(Themes, themeName, AccentColor);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ThemeManager), nameof(SetTheme), $"Setting Theme to: {themeName}");
 
-            ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
+            CurrentTheme = themeName;
+            var windowsTheme = ThemeIsLight() ? "Light" : "Dark";
+            Options.AutoTheme = windowsTheme;
+            var actualTheme = themeName=="Auto"?windowsTheme: themeName;
+            //ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
+
+            var theme = ModernWpf.ApplicationTheme.Light;
+            Enum.TryParse(actualTheme, false, out theme);
+
+            // exit here if the new theme is the same as the current theme 
+            if (ModernWpf.ThemeManager.Current.ApplicationTheme == theme) return;
+
+            ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
+            SetAccent(AccentColor);
+
+            //ControlzEx.Theming.ThemeManager.Current.ChangeThemeBaseColor(Application.Current, themeName);
+            
         }
 
-        public IThemeInfos Themes { get; }
-        public Color AccentColor { get; }
+        private void SetAccent(Color accentColor)
+        {
+
+            ModernWpf.ThemeManager.Current.AccentColor = accentColor;
+
+            Application.Current.Resources[AvalonDock.Themes.DaxStudio.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
+            Application.Current.Resources[AvalonDock.Themes.DaxStudio.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
+
+            Application.Current.Resources[NumericUpDownLib.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
+            Application.Current.Resources[NumericUpDownLib.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
+
+            //Application.Current.Resources[AvalonDock.Themes.VS2013.Themes.ResourceKeys.DocumentWellTabSelectedInactiveBackground] = accentColor;
+            //Application.Current.Resources[AvalonDock.Themes.Themes.ResourceKeys.DocumentWellTabSelectedInactiveBackground] = accentColor;
+        }
+
+        public Color AccentColor { 
+            get {
+                if (CurrentTheme.Equals("Dark", StringComparison.OrdinalIgnoreCase)) return _darkAccent;
+                return _lightAccent;
+            } 
+        
+        }
         public IGlobalOptions Options { get; }
         public string CurrentTheme { get; private set; }
 
         private readonly Application _app;
+
+        private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            switch (e.Category)
+            {
+                case UserPreferenceCategory.General:
+                    // update the theme to match the windows theme
+                    if (Options.Theme == "Auto") SetTheme("Auto");
+                    break;
+            }
+        }
+
+        private static bool ThemeIsLight()
+        {
+            RegistryKey registry =
+                Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return (int)(registry?.GetValue( "AppsUseLightTheme",1)??1) == 1;
+        }
+
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // dispose managed state (managed objects)
+                    SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~ThemeManager()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

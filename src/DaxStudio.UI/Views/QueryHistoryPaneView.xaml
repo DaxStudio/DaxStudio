@@ -32,10 +32,14 @@
 
         <clr:String x:Key="NaColour">#909090</clr:String>
 
-        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader">
+        <!--<Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>-->
+
+        <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
-
+        
         <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
             <Setter Property="Width" Value="3"/>
             <Setter Property="Foreground" Value="Transparent" />
@@ -49,26 +53,7 @@
             </Setter>
         </Style>
 
-
-        <Style x:Key="DataGridColumnHeaderStyle1" TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-                        <Grid>
-                            <aero:DataGridHeaderBorder BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}">
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                            </aero:DataGridHeaderBorder>
-                            <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource ColumnHeaderGripperStyle}"/>
-                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource ColumnHeaderGripperStyle}"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}">
+        <Style x:Key="DataGridColumnHeaderWithButtonStyle" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}"  >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -85,8 +70,10 @@
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
                                 </aero:DataGridHeaderBorder>
-                                <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2">
-                                <Image Width="17" Height="17" Margin="0" >
+                                <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2"
+                                              Padding="1">
+                                <!-- Source="{DynamicResource filter_toolbarDrawingImage}"-->
+                                <Image Width="18" Height="18" Margin="0"  >
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Style.Triggers>
@@ -94,13 +81,13 @@
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="True">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilteredIcon}" />
+                                                        Value="{DynamicResource filtered_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                                 <DataTrigger 
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="False">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilterIcon}" />
+                                                        Value="{DynamicResource filter_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -116,7 +103,7 @@
             </Setter>
         </Style>
 
-        <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}">
+        <Style x:Key="DataGridColumnHeaderWithDatabaseFilter" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -127,14 +114,17 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
-                                <aero:DataGridHeaderBorder Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,0,0">
 
-                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <aero:DataGridHeaderBorder Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,0,0">
 
-                                </aero:DataGridHeaderBorder>
-                                <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" Margin="2" ToolTip="Filter by current database name" >
-                                <Image Width="17" Height="17">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                            </aero:DataGridHeaderBorder>
+                            <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" 
+                                          IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" 
+                                          Padding="1"
+                                          Margin="2" ToolTip="Filter by current database name" >
+                                <Image Width="18" Height="18" Margin="0"  >
                                     <Image.Style>
                                         <Style TargetType="Image">
                                             <Style.Triggers>
@@ -142,19 +132,20 @@
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="True">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilteredIcon}" />
+                                                        Value="{DynamicResource filtered_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                                 <DataTrigger 
                                                     Binding="{Binding ElementName=FilterToggle,Path=IsChecked}"
                                                     Value="False">
                                                     <Setter Property="Source"
-                                                        Value="{StaticResource FilterIcon}" />
+                                                        Value="{DynamicResource filter_toolbarDrawingImage}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Image.Style>
-                                </Image></ToggleButton>
-                            
+                                </Image>
+                            </ToggleButton>
+
                             <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource ColumnHeaderGripperStyle}"/>
                             <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource ColumnHeaderGripperStyle}"/>
                         </Grid>
@@ -163,6 +154,7 @@
             </Setter>
         </Style>
 
+        <Style TargetType="{x:Type controls:DataGridNoContextMenu}" BasedOn="{StaticResource DefaultDataGridStyle}"/>
 
         <DataTemplate x:Key="QueryTextCell">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -175,7 +167,8 @@
                         VerticalAlignment="Top" 
                         HorizontalAlignment="Left"   
                         TextTrimming="CharacterEllipsis"
-                        ToolTip="{Binding QueryText}">
+                        ToolTip="{Binding QueryText}"
+                               Padding="6 0 6 0">
                     </TextBlock>
                     
                 </Border>
@@ -191,35 +184,52 @@
                 <VisualState x:Name="MouseOver"/>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        
+        <controls:ClipBorder 
+            BorderThickness="1"
+            CornerRadius="4"
+            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+            Background="{DynamicResource Theme.Brush.Content.Back}"
+            >
         <controls:DataGridNoContextMenu x:Name="QueryHistory" 
                 CanUserSortColumns="True"
                 ClipboardCopyMode="ExcludeHeader"
+                AlternationCount="2"
+                AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                GridLinesVisibility="Horizontal"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                 SelectionMode="Single"   
                 SelectionUnit="FullRow"
                 SelectedItem="{Binding SelectedHistoryItem}"
                 cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick()]"
                 CanUserAddRows="False"
                 CanUserDeleteRows="False"
-                VerticalGridLinesBrush="WhiteSmoke" 
-                HorizontalGridLinesBrush="WhiteSmoke"
+                IsReadOnly="True"
                 AutoGenerateColumns="False" 
                 RowDetailsVisibilityMode="Collapsed"
-                IsReadOnly="True"
+                RowHeaderWidth="10"
                 >
-            
+            <!--<DataGrid.Style>
+                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
+                    <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
+                </Style>
+            </DataGrid.Style>-->
             <DataGrid.Resources>
                 <Style TargetType="DataGridCellsPresenter">
                     <Setter Property="Height" Value="{Binding QueryTextHeight}"/>
-                </Style>                
+                </Style>
+                <Style TargetType="DataGridRowHeader" BasedOn="{StaticResource DefaultDataGridRowHeaderStyle}">
+                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+                    </Style>
             </DataGrid.Resources>
     
-            <DataGrid.AlternatingRowBackground>
+            
+            
+            <!--<DataGrid.AlternatingRowBackground>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Offset="1" Color="#f2f2f2"/>
                     <GradientStop Color="#f7f7f7"/>
                 </LinearGradientBrush>
-            </DataGrid.AlternatingRowBackground>
+            </DataGrid.AlternatingRowBackground>-->
 
             <DataGrid.ContextMenu>
                 <ContextMenu>
@@ -237,7 +247,10 @@
                                         <MenuItem Header="Hello"/>
                                     </ContextMenu>
                                 </Border.ContextMenu>
-                                <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  VerticalAlignment="Top" HorizontalAlignment="Left"
+                                <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  
+                                           VerticalAlignment="Top" 
+                                           HorizontalAlignment="Left"
+                                           Padding="6 0 6 0"
                                            TextTrimming="CharacterEllipsis" IsEnabled="False" />
                             </Border>
                         </DataTemplate>
@@ -255,6 +268,7 @@
                                     HorizontalAlignment="Stretch" 
                                     TextTrimming="CharacterEllipsis"
                                     TextAlignment="Right"
+                                    Padding="6 0 6 0"
                                 />
                             </Border>
                         </DataTemplate>
@@ -264,13 +278,15 @@
                 <DataGridTemplateColumn SortMemberPath="ClientDurationMs" Header="Client ms" IsReadOnly="True" HeaderStyle="{StaticResource ColumnHeaderRightAlign}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Elapsed time from Client (includes data transfer and rendering)"/>
+                            <TextBlock Text="{Binding}" ToolTip="Elapsed time from Client (includes data transfer and rendering)"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
-                                <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Path=ClientDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms\}}"  VerticalAlignment="Top" HorizontalAlignment="right" TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -280,15 +296,17 @@
                                         Visibility="{markup:NinjaBinding Binding={Binding ShowTraceColumns, Converter={StaticResource  BoolToVisibilityConverter}}}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Elapsed time on the Server (excludes data transfer and rendering)"/>
+                            <TextBlock Text="{Binding}" ToolTip="Elapsed time on the Server (excludes data transfer and rendering)"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -298,16 +316,18 @@
                                         Visibility="{markup:NinjaBinding Binding={Binding ShowTraceColumns, Converter={StaticResource  BoolToVisibilityConverter}}}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Formula Engine duration"/>
+                            <TextBlock Text="{Binding}" ToolTip="Formula Engine duration"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
-                                       VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           VerticalAlignment="Top" HorizontalAlignment="right"
+                                           Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -318,7 +338,8 @@
                                         >
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" ToolTip="Storage Engine duration"/>
+                            <TextBlock Text="{Binding}" ToolTip="Storage Engine duration"
+                                       Padding="6 0 6 0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
@@ -326,7 +347,8 @@
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                                 <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
                                        Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -343,7 +365,7 @@
                                     <ColumnDefinition Width="*"/>
                             
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Server" Grid.Column="0"/>
+                                    <TextBlock Text="Server" Grid.Column="0" Padding="6 0 6 0"/>
                             </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
@@ -354,7 +376,8 @@
                                 <TextBlock Text="{Binding Path=ServerName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -382,11 +405,13 @@
                                 <TextBlock Text="{Binding Path=DatabaseName,Mode=OneWay}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
-                                           TextTrimming="CharacterEllipsis"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="6 0 6 0"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                
                 <DataGridTemplateColumn >
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -396,11 +421,12 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                
                 <DataGridTemplateColumn Header="Query" Width="*" 
                                         ClipboardContentBinding="{Binding QueryText}"
                                         CellTemplate="{StaticResource QueryTextCell}" />
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
-
+        </controls:ClipBorder>
     </Grid>
 </controls:ZoomableUserControl>

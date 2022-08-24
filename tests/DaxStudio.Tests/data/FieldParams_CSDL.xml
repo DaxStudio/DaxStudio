@@ -1,0 +1,285 @@
+<return xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxmla="http://schemas.microsoft.com/analysisservices/2003/xmla">
+    <xsd:schema targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified">
+      <xsd:element name="root">
+        <xsd:complexType>
+          <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="row" type="row" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:simpleType name="uuid">
+        <xsd:restriction base="xsd:string">
+          <xsd:pattern value="[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}" />
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:complexType name="xmlDocument">
+        <xsd:sequence>
+          <xsd:any />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="row">
+        <xsd:sequence>
+          <xsd:element sql:field="METADATA" name="METADATA" type="xmlDocument" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+    <row>
+      <xars:METADATA xmlns="http://schemas.microsoft.com/analysisservices/2003/engine" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100="http://schemas.microsoft.com/analysisservices/2008/engine/100" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl410="http://schemas.microsoft.com/analysisservices/2012/engine/410" xmlns:ddl410_410="http://schemas.microsoft.com/analysisservices/2012/engine/410/410" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:ddl600="http://schemas.microsoft.com/analysisservices/2013/engine/600" xmlns:ddl600_600="http://schemas.microsoft.com/analysisservices/2013/engine/600/600" xmlns:ddl700="http://schemas.microsoft.com/analysisservices/2018/engine/700" xmlns:ddl700_700="http://schemas.microsoft.com/analysisservices/2018/engine/700/700" xmlns:ddl800="http://schemas.microsoft.com/analysisservices/2018/engine/800" xmlns:ddl800_800="http://schemas.microsoft.com/analysisservices/2018/engine/800/800" xmlns:ddl900="http://schemas.microsoft.com/analysisservices/2019/engine/900" xmlns:ddl900_900="http://schemas.microsoft.com/analysisservices/2019/engine/900/900" xmlns:ddl910="http://schemas.microsoft.com/analysisservices/2020/engine/910" xmlns:ddl910_910="http://schemas.microsoft.com/analysisservices/2020/engine/910/910" xmlns:ddl920="http://schemas.microsoft.com/analysisservices/2020/engine/920" xmlns:ddl920_920="http://schemas.microsoft.com/analysisservices/2020/engine/920/920" xmlns:ddl921="http://schemas.microsoft.com/analysisservices/2021/engine/921" xmlns:ddl921_921="http://schemas.microsoft.com/analysisservices/2021/engine/921/921" xmlns:xars="urn:schemas-microsoft-com:xml-analysis:rowset">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:edm_annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:bi="http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions" bi:Version="2.0" Namespace="Sandbox">
+          <EntityContainer Name="Sandbox">
+            <EntitySet Name="DateTableTemplate_e3ce314b_3bf6_490f_8ba2_1d947c78c614" EntityType="Sandbox.DateTableTemplate_e3ce314b_3bf6_490f_8ba2_1d947c78c614">
+              <bi:EntitySet Caption="DateTableTemplate_e3ce314b-3bf6-490f-8ba2-1d947c78c614" ReferenceName="DateTableTemplate_e3ce314b-3bf6-490f-8ba2-1d947c78c614" Private="true" LineageTag="de3d01b2-995c-4165-833b-3bdbb2b22ef6" />
+            </EntitySet>
+            <EntitySet Name="Slicer_by_number_of_days" EntityType="Sandbox.Slicer_by_number_of_days">
+              <bi:EntitySet Caption="Slicer by number of days" ReferenceName="Slicer by number of days" LineageTag="bb056cb2-232f-41c9-a057-d10473e786e0" />
+            </EntitySet>
+            <EntitySet Name="Table" EntityType="Sandbox.Table">
+              <bi:EntitySet LineageTag="22f7805c-5cef-4a81-9e39-9b13c3c15876" />
+            </EntitySet>
+            <bi:EntityContainer Caption="84d819d1-e1b3-4c8a-b9f6-c34ac2d2aba2" Culture="en-AU">
+              <bi:CompareOptions IgnoreCase="true" />
+              <bi:ModelCapabilities>
+                <bi:DiscourageCompositeModels>0</bi:DiscourageCompositeModels>
+                <bi:EncourageIsEmptyDAXFunctionUsage>true</bi:EncourageIsEmptyDAXFunctionUsage>
+                <bi:QueryBatching>1</bi:QueryBatching>
+                <bi:Variables>1</bi:Variables>
+                <bi:InOperator>1</bi:InOperator>
+                <bi:TableConstructor>1</bi:TableConstructor>
+                <bi:ExecutionMetrics>1</bi:ExecutionMetrics>
+                <bi:VirtualColumns>1</bi:VirtualColumns>
+                <bi:DAXFunctions>
+                  <bi:SummarizeColumns>1</bi:SummarizeColumns>
+                  <bi:SubstituteWithIndex>1</bi:SubstituteWithIndex>
+                  <bi:LeftOuterJoin>1</bi:LeftOuterJoin>
+                  <bi:StringMinMax>1</bi:StringMinMax>
+                  <bi:BinaryMinMax>1</bi:BinaryMinMax>
+                  <bi:TreatAs>1</bi:TreatAs>
+                  <bi:Error>1</bi:Error>
+                  <bi:SampleAxisWithLocalMinMax>1</bi:SampleAxisWithLocalMinMax>
+                  <bi:SampleCartesianPointsByCover>1</bi:SampleCartesianPointsByCover>
+                  <bi:OptimizedNotInOperator>1</bi:OptimizedNotInOperator>
+                  <bi:NonVisual>1</bi:NonVisual>
+                  <bi:IsAfter>1</bi:IsAfter>
+                  <bi:FormatByLocale>1</bi:FormatByLocale>
+                  <bi:DaxExtensionFunctions>
+                    <bi:DaxExtensionFunction Name="SpatialClustering">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="KMeansClustering">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.DetectAnomaly">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.UnPivot">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.CorrelationSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ExtractTrend">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.SampleAndDetectAnomaly">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.AggregateSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.SampleTimeSeriesData">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.KPIInsights">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.SampleStratified">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.SampleRandomly">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.KPIInsightsSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="TopNPerLevel">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.RegionWithMostPointsSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ChangeSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.TrendSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.LargestDifferenceSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.KeyDriversSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.LargestDivergenceSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.SummarizePercentageAndCount">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ExplainVarianceToTarget">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.AnomalySummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.LargestCategorySummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.Train">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.KeyDrivers">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.Metrics">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ExtractProfiles">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ExtractProfileFilters">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ExtractBins">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.TopRightHandCornerSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.HighPointLowPointSummary">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.ExplainAnomaly">1</bi:DaxExtensionFunction>
+                    <bi:DaxExtensionFunction Name="AI.KPISummary">1</bi:DaxExtensionFunction>
+                  </bi:DaxExtensionFunctions>
+                  <bi:TopNPerLevel>1</bi:TopNPerLevel>
+                </bi:DAXFunctions>
+              </bi:ModelCapabilities>
+            </bi:EntityContainer>
+          </EntityContainer>
+          <EntityType Name="DateTableTemplate_e3ce314b_3bf6_490f_8ba2_1d947c78c614">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>0</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Date" Type="DateTime">
+              <bi:Property Hidden="true" Contents="PaddedDateTableDates" DefaultAggregateFunction="None" LineageTag="c869798a-545d-4bda-96f8-9c23c7ddea8a">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2015-01-01T00:00:00</bi:MinValue>
+                  <bi:MaxValue>2015-01-01T00:00:00</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Year" Type="Int64">
+              <bi:Property Hidden="true" Contents="Years" DefaultAggregateFunction="None" LineageTag="e23f22b7-83fc-4995-bbb6-fdeeccef8c8a">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>2015</bi:MinValue>
+                  <bi:MaxValue>2015</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="MonthNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="MonthOfYear" DefaultAggregateFunction="None" LineageTag="a42d2ddc-e624-4c62-af99-8d747f8ff7f6">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Month" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Months" DefaultAggregateFunction="None" LineageTag="d8bafb5a-55a2-43ae-b9a8-e9ae46902fc2">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="MonthNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="7">
+                  <bi:MinValue>January</bi:MinValue>
+                  <bi:MaxValue>January</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="QuarterNo" Type="Int64">
+              <bi:Property Hidden="true" Contents="QuarterOfYear" DefaultAggregateFunction="None" LineageTag="e538e1eb-48d9-4edd-a662-08fdac40bdb0">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Quarter" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Hidden="true" Contents="Quarters" DefaultAggregateFunction="None" LineageTag="4f1165fb-074c-4c14-aab3-ccc90d7283d5">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="QuarterNo" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="5">
+                  <bi:MinValue>Qtr 1</bi:MinValue>
+                  <bi:MaxValue>Qtr 1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Day" Type="Int64">
+              <bi:Property Hidden="true" Contents="DayOfMonth" DefaultAggregateFunction="None" LineageTag="5e2e272b-7ecc-4b63-ab1a-2df0e6f3edb9">
+                <bi:Statistics DistinctValueCount="1">
+                  <bi:MinValue>1</bi:MinValue>
+                  <bi:MaxValue>1</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Hierarchy Name="Date_Hierarchy" Caption="Date Hierarchy" ReferenceName="Date Hierarchy" LineageTag="bd78dff0-7a9b-4b81-bd9d-7e0385caa941">
+                <bi:Level Name="Year" LineageTag="c596f6b8-8e9a-4ea9-a9ce-820e9d12cfed">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Year" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Quarter" LineageTag="ffc3c6f9-e28d-496d-8921-7f483a159d53">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Quarter" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Month" LineageTag="043e356d-055c-468a-9c3f-a5196b74beed">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Month" />
+                  </bi:Source>
+                </bi:Level>
+                <bi:Level Name="Day" LineageTag="712d86ff-a198-4dd1-8128-b135fccde5ba">
+                  <bi:Source>
+                    <bi:PropertyRef Name="Day" />
+                  </bi:Source>
+                </bi:Level>
+              </bi:Hierarchy>
+              <bi:Statistics RowCount="1" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Slicer_by_number_of_days">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>5</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Slicer_by_number_of_days2" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Slicer by number of days" ReferenceName="Slicer by number of days" DefaultAggregateFunction="None" LineageTag="235a0aed-a90c-4747-81ee-9ccd6c9f61a4">
+                <bi:GroupBy>
+                  <bi:PropertyRef Name="Slicer_by_number_of_days_Fields" />
+                </bi:GroupBy>
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="Slicer_by_number_of_days_Order" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="6" StringValueMaxLength="10">
+                  <bi:MinValue>Test 0 row</bi:MinValue>
+                  <bi:MaxValue>Test 5 row</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <Property Name="Slicer_by_number_of_days_Fields" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property Caption="Slicer by number of days Fields" Hidden="true" ReferenceName="Slicer by number of days Fields" DefaultAggregateFunction="None" LineageTag="826677c5-b034-4fec-9cdb-90b591f89da2">
+                <bi:OrderBy>
+                  <bi:PropertyRef Name="Slicer_by_number_of_days_Order" />
+                </bi:OrderBy>
+                <bi:Statistics DistinctValueCount="1" StringValueMaxLength="18">
+                  <bi:MinValue>'Table'[Just Test]</bi:MinValue>
+                  <bi:MaxValue>'Table'[Just Test]</bi:MaxValue>
+                </bi:Statistics>
+                <bi:ExtendedProperty Name="ParameterMetadata" Type="Json">
+                  <bi:Value>{"version":3,"kind":2}</bi:Value>
+                </bi:ExtendedProperty>
+              </bi:Property>
+            </Property>
+            <Property Name="Slicer_by_number_of_days_Order" Type="Int64">
+              <bi:Property Caption="Slicer by number of days Order" Hidden="true" ReferenceName="Slicer by number of days Order" FormatString="0" DefaultAggregateFunction="Sum" LineageTag="f6140eca-ca3a-4f6f-8eb8-d78534f35f2b">
+                <bi:Statistics DistinctValueCount="6">
+                  <bi:MinValue>0</bi:MinValue>
+                  <bi:MaxValue>5</bi:MaxValue>
+                </bi:Statistics>
+              </bi:Property>
+            </Property>
+            <bi:EntityType>
+              <bi:Statistics RowCount="6" />
+            </bi:EntityType>
+          </EntityType>
+          <EntityType Name="Table">
+            <Key>
+              <PropertyRef Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" />
+            </Key>
+            <Property Name="RowNumber_2662979B_1795_4F74_8F37_6A1BA8059B61" Type="Int64" Nullable="false">
+              <bi:Property Caption="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Hidden="true" ReferenceName="RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61" Contents="RowNumber" Stability="RowNumber">
+                <bi:Statistics DistinctValueCount="0" />
+              </bi:Property>
+            </Property>
+            <Property Name="Column1" Type="String" MaxLength="Max" Unicode="true" FixedLength="false">
+              <bi:Property DefaultAggregateFunction="None" LineageTag="f1abe410-34fd-4265-ab68-755380be15c6">
+                <bi:Statistics DistinctValueCount="0" />
+              </bi:Property>
+            </Property>
+            <Property Name="Just_Test" Type="Int64">
+              <bi:Measure Caption="Just Test" ReferenceName="Just Test" FormatString="0" LineageTag="c2de7769-6ab4-4268-b9c7-b07237a40f2d">
+                <bi:ContainsDetailRows>false</bi:ContainsDetailRows>
+              </bi:Measure>
+            </Property>
+            <bi:EntityType>
+              <bi:Statistics RowCount="0" />
+            </bi:EntityType>
+          </EntityType>
+        </Schema>
+      </xars:METADATA>
+    </row>
+  </root>
+</return>

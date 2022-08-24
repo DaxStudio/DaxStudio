@@ -1,0 +1,46 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"> 
+    <ResourceDictionary.MergedDictionaries>
+      <ResourceDictionary Source="./icons.light.xaml"/>
+  </ResourceDictionary.MergedDictionaries>
+    
+    <SolidColorBrush x:Key="MetadataHiddenBrush" SolidColorBrush.Color="#B3B3B3" />
+    <SolidColorBrush x:Key="AccentBrush" SolidColorBrush.Color="#228ED6" />
+
+    <DrawingGroup x:Key="stringHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry1}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry2}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry3}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="stringHiddenDrawingImage" Drawing="{StaticResource stringHiddenDrawingGroup}" />
+  <DrawingGroup x:Key="doubleHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource doubleGeometry1}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource doubleGeometry2}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource doubleGeometry3}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="doubleHiddenDrawingImage" Drawing="{StaticResource doubleHiddenDrawingGroup}" />
+  <DrawingGroup x:Key="datetimeHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry1}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry2}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry3}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry4}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry5}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry6}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry7}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="datetimeHiddenDrawingImage" Drawing="{StaticResource datetimeHiddenDrawingGroup}" />
+  <DrawingGroup x:Key="numberHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry1}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry2}" />
+    <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry3}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="numberHiddenDrawingImage" Drawing="{StaticResource numberHiddenDrawingGroup}" />
+    <DrawingGroup x:Key="db_small_accentDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource db_smallGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="db_small_accentDrawingImage" Drawing="{StaticResource db_small_accentDrawingGroup}" />
+    <DrawingGroup x:Key="model_small_accentDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource model_smallGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="model_small_accentDrawingImage" Drawing="{StaticResource model_small_accentDrawingGroup}" />
+</ResourceDictionary>

@@ -21,19 +21,20 @@ namespace DaxStudio.UI.Utils
     public static class ModelAnalyzer
     {
       
-        public static void ExportVPAX(string serverName, string databaseName, string path, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData, string modelName)
+        public static void ExportVPAX(string serverName, string databaseName, string path, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData, string modelName, bool readStatisticsFromDirectQuery)
         {
             //
             // Get Dax.Model object from the SSAS engine
             //
             Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(serverName, databaseName, applicationName, applicationVersion, 
                                                                                        readStatisticsFromData: readStatisticsFromData, 
-                                                                                       sampleRows: 0);
+                                                                                       sampleRows: 0,
+                                                                                       analyzeDirectQuery: readStatisticsFromDirectQuery);
 
             //
             // Get TOM model from the SSAS engine
             //
-            Microsoft.AnalysisServices.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
+            Microsoft.AnalysisServices.Tabular.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
 
             // 
             // Create VertiPaq Analyzer views
@@ -47,6 +48,11 @@ namespace DaxStudio.UI.Utils
             // 
             // TODO: export of database should be optional
             Dax.Vpax.Tools.VpaxTools.ExportVpax(path, model, viewVpa, database);
+        }
+
+        public static void ExportExistingModelToVPAX(string filename, Dax.Metadata.Model model, Dax.ViewVpaExport.Model viewVpa, Microsoft.AnalysisServices.Tabular.Database database)
+        {
+            VpaxTools.ExportVpax(filename, model, viewVpa, database);
         }
 
         public static VpaModel ImportVPAX(string filename)

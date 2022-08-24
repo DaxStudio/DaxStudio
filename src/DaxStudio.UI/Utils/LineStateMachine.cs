@@ -9,6 +9,8 @@ namespace DaxStudio.UI.Utils
         private const char NewLine = '\n';
         private const string SqlQueryComment = "// SQL Query";
         private const string SqlDirectQueryComment = "// Direct Query";
+        private const string DaxQueryComment = "// DAX Query";
+
         public State CurrentState { get; set; }
         private StringBuilder _sbMain;
         private StringBuilder _sbCurrentLine;
@@ -29,15 +31,15 @@ namespace DaxStudio.UI.Utils
             private set
             {
                 _linePosition = value;
-                if (value == 0)
-                {
-                    if (CurrentLineIsSqlQueryComment())
-                    {
-                        SqlQueryCommentFound = true;
-                    }
+                //if (value == 0)
+                //{
+                //    if (CurrentLineIsSqlQueryComment())
+                //    {
+                //        SqlQueryCommentFound = true;
+                //    }
 
-                    _sbCurrentLine.Clear();
-                }
+                //    _sbCurrentLine.Clear();
+                //}
             }
         }
 
@@ -46,9 +48,11 @@ namespace DaxStudio.UI.Utils
             return _sbCurrentLine.ToString() == SqlQueryComment || _sbCurrentLine.ToString() == SqlDirectQueryComment;
         }
 
-        public bool SqlQueryCommentFound { get; private set; }
+        public bool QueryCommentFound  => SqlQueryCommentPosition > 0 || DaxQueryCommentPosition > 0;
         public int SqlQueryCommentPosition { get; private set; }
-
+        public int DaxQueryCommentPosition { get; private set; }
+        public int CommentPosition => SqlQueryCommentPosition > 0 ? SqlQueryCommentPosition : DaxQueryCommentPosition;
+        public string Comment => SqlQueryCommentPosition > 0 ? SqlQueryComment : DaxQueryComment;
         public void InsertNewLine()
         {
             _sbMain?.Append(NewLine);
@@ -70,13 +74,22 @@ namespace DaxStudio.UI.Utils
 
                 if (input[pos] == NewLine)
                 {
-                    if (CurrentLineIsSqlQueryComment() && SqlQueryCommentPosition == 0) SqlQueryCommentPosition = pos - LinePosition;
+                    var isSqlComment = CurrentLineIsSqlQueryComment();
+                    var isDaxComment = CurrentLineIsDaxQueryComment();
+                    if ( isSqlComment && SqlQueryCommentPosition == 0) SqlQueryCommentPosition = pos - LinePosition;
+                    if (isDaxComment && DaxQueryCommentPosition == 0) DaxQueryCommentPosition = pos - LinePosition;
+                    _sbCurrentLine.Clear();
                     LinePosition = 0;
                 }
                 else LinePosition++;
                 CurrentState.OnEvent((T)this, input, pos);
             }
             return _sbMain.ToString();
+        }
+
+        private bool CurrentLineIsDaxQueryComment()
+        {
+            return _sbCurrentLine.ToString() == DaxQueryComment;
         }
 
         public class State

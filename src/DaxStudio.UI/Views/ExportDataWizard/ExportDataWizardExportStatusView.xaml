@@ -6,14 +6,21 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:local="clr-namespace:DaxStudio.UI.Views" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
+             MinHeight="400"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <!-- Converters -->
-        <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
-        <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Converters -->
+            <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -21,7 +28,8 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Status" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center"/>
+        <Label Content="Status" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center"/>
+        <ctrl:ClipBorder Grid.Row="1" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
         <ListView Margin="5" Grid.Row="1" x:Name="Tables" SelectedItem="{Binding SelectedTable}" >
             <i:Interaction.Behaviors>
                 <beh:ListViewScrollIntoViewBehavior/>
@@ -60,6 +68,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        </ctrl:ClipBorder>
         <StackPanel Orientation="Vertical" Grid.Row="3">
             <Line Fill="Gray"  />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

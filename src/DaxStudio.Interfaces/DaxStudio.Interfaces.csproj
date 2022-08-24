@@ -146,18 +146,22 @@
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
       <Name>ADOTabular</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
+      <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
+      <Name>DaxStudio.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>5.0.3</Version>
+      <Version>6.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.3</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>2.10.0</Version>
+      <Version>2.11.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

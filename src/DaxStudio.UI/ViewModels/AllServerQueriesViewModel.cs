@@ -20,6 +20,7 @@ using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
 using DaxStudio.UI.Utils;
+using DaxStudio.Common.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -48,7 +49,6 @@ namespace DaxStudio.UI.ViewModels
             };
         }
 
-
         public ObservableCollection<string> QueryTypes { get; set; }
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
@@ -69,14 +69,19 @@ namespace DaxStudio.UI.ViewModels
             return monitoredEvents;
         }
 
-        // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
-        // This is where you can do any processing of the events before displaying them to the UI
-        protected override void ProcessResults() {
+        protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
+        {
+            base.ProcessSingleEvent(singleEvent);
 
             //if (IsPaused) return; // exit here if we are paused
 
-            if (Events != null) {
-                foreach (var traceEvent in Events) {
+            //if (Events != null)
+            //{
+            //    while (!Events.IsEmpty)
+            //    {
+                    Events.TryDequeue(out var traceEvent);
+
+            
                     var newEvent = new QueryEvent()
                     {
                         QueryType = traceEvent.EventSubclassName.Substring(0, 3).ToUpper(),
@@ -90,11 +95,12 @@ namespace DaxStudio.UI.ViewModels
                         RequestProperties = traceEvent.RequestProperties
                     };
 
-                    switch (traceEvent.EventClass) {
+                    switch (traceEvent.EventClass)
+                    {
                         case DaxStudioTraceEventClass.QueryEnd:
 
                             // if this is the blank query after a "clear cache and run" then skip it
-                            if (newEvent.Query == Constants.RefreshSessionQuery) continue;
+                            if (newEvent.Query == Constants.RefreshSessionQuery) return;
 
                             // look for any cached rewrite events
                             if (traceEvent.RequestID != null && _rewriteEventCache.ContainsKey(traceEvent.RequestID))
@@ -106,32 +112,38 @@ namespace DaxStudio.UI.ViewModels
                             }
 
                             // check if we have a queryBegin event cached
-                            _queryBeginCache.TryGetValue(traceEvent.RequestID??"", out var beginEvent);
+                            _queryBeginCache.TryGetValue(traceEvent.RequestID ?? "", out var beginEvent);
                             if (beginEvent != null)
                             {
 
-                                // Add the parameters XML after the query text
-                                if (beginEvent.RequestParameters != null)
-                                    newEvent.Query += Environment.NewLine + 
-                                                      Environment.NewLine + 
-                                                      beginEvent.RequestParameters + 
-                                                      Environment.NewLine;
+                                //// Add the parameters XML after the query text
+                                //if (beginEvent.RequestParameters != null)
+                                //    newEvent.Query += Environment.NewLine +
+                                //                      Environment.NewLine +
+                                //                      beginEvent.RequestParameters +
+                                //                      Environment.NewLine;
 
-                                // overwrite the username with the effective user if it's present
-                                var effectiveUser = beginEvent.ParseEffectiveUsername();
-                                if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
+                                //// overwrite the username with the effective user if it's present
+                                //var effectiveUser = beginEvent.ParseEffectiveUsername();
+                                //if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
 
                                 _queryBeginCache.Remove(traceEvent.RequestID);
+
+                                // copy end event properties to the begin event
+                                beginEvent.QueryEvent.Duration = newEvent.Duration;
+                                beginEvent.QueryEvent.EndTime = newEvent.EndTime;
+                                beginEvent.QueryEvent.AggregationMatchCount = newEvent.AggregationMatchCount;
+                                beginEvent.QueryEvent.AggregationMissCount = newEvent.AggregationMissCount;
                             }
+                            else
+                            {
 
-
-                            
-
-                            QueryEvents.Insert(0, newEvent);
+                                QueryEvents.Insert(0, newEvent);
+                            }
                             break;
                         case DaxStudioTraceEventClass.Error:
                             newEvent.QueryType = "ERR";
-                            QueryEvents.Insert(0,newEvent);
+                            QueryEvents.Insert(0, newEvent);
                             break;
                         case DaxStudioTraceEventClass.CommandEnd:
                             newEvent.QueryType = "Xmla";
@@ -140,7 +152,8 @@ namespace DaxStudio.UI.ViewModels
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             // cache rewrite events
                             var rewriteSummary = new AggregateRewriteSummary(traceEvent.RequestID, traceEvent.TextData);
-                            if (_rewriteEventCache.ContainsKey(traceEvent.RequestID)) {
+                            if (_rewriteEventCache.ContainsKey(traceEvent.RequestID))
+                            {
                                 var summary = _rewriteEventCache[key: traceEvent.RequestID];
                                 summary.MatchCount += rewriteSummary.MatchCount;
                                 summary.MissCount += rewriteSummary.MissCount;
@@ -154,16 +167,20 @@ namespace DaxStudio.UI.ViewModels
                             break;
 
                         case DaxStudioTraceEventClass.QueryBegin:
-                            
+
                             // if the requestID is null we are running against PowerPivot which does
                             // not seem to expose the RequestID property
-                            if (traceEvent.RequestID == null) break;
+                            if (traceEvent.RequestID == null) return;
+
+                            // if this is a session refresh query then skip it
+                            if (newEvent.Query == Constants.RefreshSessionQuery) return;
 
                             // cache rewrite events
                             if (_queryBeginCache.ContainsKey(traceEvent.RequestID))
                             {
                                 // TODO - this should not happen
                                 // we should not get 2 begin events for the same request
+                                System.Diagnostics.Debug.Assert(true, "we should not have multiple QueryBegin events for the same request");
                             }
                             else
                             {
@@ -172,16 +189,30 @@ namespace DaxStudio.UI.ViewModels
                                     RequestID = traceEvent.RequestID,
                                     Query = traceEvent.TextData,
                                     RequestProperties = traceEvent.RequestProperties,
-                                    RequestParameters = traceEvent.RequestParameters
+                                    RequestParameters = traceEvent.RequestParameters,
+                                    QueryEvent = newEvent
                                 };
                                 _queryBeginCache.Add(traceEvent.RequestID, newBeginEvent);
+
+                                // Add the parameters XML after the query text
+                                if (newEvent.RequestParameters != null)
+                                    newEvent.Query += Environment.NewLine +
+                                                      Environment.NewLine +
+                                                      newEvent.RequestParameters +
+                                                      Environment.NewLine;
+                                newEvent.Duration = -1;
+                                // overwrite the username with the effective user if it's present
+                                var effectiveUser = newEvent.ParseEffectiveUsername();
+                                if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
+
+                                QueryEvents.Insert(0, newEvent);
                             }
 
                             break;
                     }
-                }
-                
-                Events.Clear();
+                //}
+
+                //Events.Clear();
 
                 // Clear out any cached rewrite events older than 10 minutes
                 var toRemoveFromCache = _rewriteEventCache.Where((kvp) => kvp.Value.UtcCurrentTime > DateTime.UtcNow.AddMinutes(10)).Select(c => c.Key).ToList();
@@ -194,7 +225,15 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearAll);
                 NotifyOfPropertyChange(() => CanCopyAll);
                 NotifyOfPropertyChange(() => CanExport);
-            }
+            //}
+
+        }
+
+        // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
+        // This is where you can do any processing of the events before displaying them to the UI
+        protected override void ProcessResults() {
+
+            return;
         }
         
  
@@ -202,16 +241,8 @@ namespace DaxStudio.UI.ViewModels
         
         public override bool CanHide { get { return true; } }
         public override string ContentId => "all-queries-trace";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-all-queries@17px.png") as ImageSource;
-
-            }
-        }
+        public override string TraceSuffix => "all";
+        public override int SortOrder => 10;
         public IObservableCollection<QueryEvent> QueryEvents 
         {
             get {
@@ -225,10 +256,16 @@ namespace DaxStudio.UI.ViewModels
 
         // IToolWindow interface
         public override string Title => "All Queries";
-
+        public override string ImageResource => "all_queriesDrawingImage";
         public override string ToolTipText => "Runs a server trace to record all queries from all users for the current connection";
-
+        public override string KeyTip => "AQ";
         public override bool FilterForCurrentSession { get { return false; } }
+
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
 
         public override void ClearAll()
         {
@@ -272,7 +309,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             sb.AppendLine();
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(sb.ToString()));
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
         }
 
         public override void CopyResults()
@@ -296,7 +333,7 @@ namespace DaxStudio.UI.ViewModels
         public void QueryDoubleClick(QueryEvent query)
         {
             if (query == null) return; // it the user clicked on an empty query exit here
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
         }
 
         #region ISaveState methods
@@ -316,7 +353,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".allQueries";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             LoadJson(data);
         }
@@ -346,7 +383,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {

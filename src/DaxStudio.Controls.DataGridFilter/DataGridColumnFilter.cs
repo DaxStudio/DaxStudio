@@ -212,6 +212,14 @@ namespace DaxStudio.Controls.DataGridFilter
         public static readonly DependencyProperty IsFirstFilterControlProperty =
             DependencyProperty.Register("IsFirstFilterControl", typeof(bool), typeof(DataGridColumnFilter));
 
+        public bool IsLastFilterControl
+        {
+            get { return (bool)GetValue(IsLastFilterControlProperty); }
+            set { SetValue(IsLastFilterControlProperty, value); }
+        }
+        public static readonly DependencyProperty IsLastFilterControlProperty =
+            DependencyProperty.Register("IsLastFilterControl", typeof(bool), typeof(DataGridColumnFilter));
+
         public bool IsControlInitialized
         {
             get { return (bool)GetValue(IsControlInitializedProperty); }
@@ -273,7 +281,7 @@ namespace DaxStudio.Controls.DataGridFilter
         private void initControlType()
         {
             IsFirstFilterControl    = false;
-
+            IsLastFilterControl     = false;
             IsTextFilterControl     = false;
             IsNumericFilterControl  = false;
             IsBooleanFilterControl  = false;
@@ -688,6 +696,7 @@ namespace DaxStudio.Controls.DataGridFilter
                 query.DoQuery();
 
                 IsFirstFilterControl = query.IsCurentControlFirstControl;
+                
             }
         }
 

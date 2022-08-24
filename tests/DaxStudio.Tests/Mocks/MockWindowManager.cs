@@ -14,12 +14,27 @@ namespace DaxStudio.Tests.Mocks
             throw new NotImplementedException();
         }
 
+        public Task<bool?> ShowDialogAsync(object rootModel, object context = null, IDictionary<string, object> settings = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ShowPopup(object rootModel, object context = null, IDictionary<string, object> settings = null)
         {
             throw new NotImplementedException();
         }
 
+        public Task ShowPopupAsync(object rootModel, object context = null, IDictionary<string, object> settings = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ShowWindow(object rootModel, object context = null, IDictionary<string, object> settings = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ShowWindowAsync(object rootModel, object context = null, IDictionary<string, object> settings = null)
         {
             throw new NotImplementedException();
         }

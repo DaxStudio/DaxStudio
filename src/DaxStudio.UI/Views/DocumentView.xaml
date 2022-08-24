@@ -5,7 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
-    xmlns:avalonDockControls="clr-namespace:AvalonDock.Controls;assembly=AvalonDock"
+    xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
+    xmlns:ae="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
     xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
@@ -19,26 +20,22 @@
     xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
     x:Class="DaxStudio.UI.Views.DocumentView" 
     mc:Ignorable="d" 
     d:DesignWidth="500" 
     d:DesignHeight="400"
     d:DataContext="{x:Static desdata:DesignTimeDataFactory.DocumentViewModel}"
-    
     >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MeasureExpressionEditorResources.xaml" />
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Views/DaxStudioTemplates.xaml" />-->
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Colors.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.Brushes.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Dark.DaxStudio.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Monotone.DaxEditor.xaml" />-->
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/CompletionList.xaml" />
+                
             </ResourceDictionary.MergedDictionaries>
+            
             <conv:MultiplyWithMinConverter x:Key="multiplyWithMinConverter"/>
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
@@ -46,8 +43,98 @@
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
+            <conv:StringPercentToDoubleConverter x:Key="StringPercentToDoubleConverter"/>
 
+            <SolidColorBrush x:Key="RecordingBrush" Color="{DynamicResource Theme.Default.Back}" />
+
+            <FrameworkElement x:Key="BrushCarrier" x:Name="BrushCarrier" Tag="{StaticResource RecordingBrush}"/>
+
+            <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
+                <!--<ColorAnimation Duration="0:0:0.5"
+                                                        To="Red"
+                                                        AutoReverse="True"
+                                                        RepeatBehavior="Forever"
+                                                        Storyboard.TargetProperty="(Ellipse.Fill).(SolidColorBrush.Color)"
+                                                        />-->
+
+                <ColorAnimationUsingKeyFrames BeginTime="0"
+                                              Duration="0:0:0.9"
+                                              FillBehavior="HoldEnd"
+                                              RepeatBehavior="Forever"
+                                              Storyboard.TargetName="BrushCarrier1"
+                                              Storyboard.TargetProperty="Tag.Color"
+                                              >
+                    <EasingColorKeyFrame KeyTime="0:0:0.0" Value="#EDACAF"/>
+                    <EasingColorKeyFrame KeyTime="0:0:0.4" Value="#ED1C24">
+                        <EasingColorKeyFrame.EasingFunction>
+                            <QuarticEase  EasingMode="EaseIn"/>
+                        </EasingColorKeyFrame.EasingFunction>
+                    </EasingColorKeyFrame>
+
+                    <EasingColorKeyFrame KeyTime="0:0:0.5" Value="#ED1C24">
+                        <EasingColorKeyFrame.EasingFunction>
+                            <QuarticEase EasingMode="EaseOut"/>
+                        </EasingColorKeyFrame.EasingFunction>
+                    </EasingColorKeyFrame>
+
+                    <EasingColorKeyFrame KeyTime="0:0:0.9" Value="#EDACAF"/>
+                </ColorAnimationUsingKeyFrames>
+                <!--<DoubleAnimation Duration="0:0:0.5"
+                                                         To="24"
+                                                         AutoReverse="True"
+                                                         RepeatBehavior="Forever"
+                                                         Storyboard.TargetProperty="Width"/>-->
+
+
+            </Storyboard>
+
+            <Style TargetType="{x:Type Ellipse}" x:Key="Recording">
+                <!--<Setter Property="Fill" Value="{DynamicResource Theme.Brush.Default.Fore}"/>-->
+                <!--<Setter Property="Fill" Value="{StaticResource RecordingBrush}"/>-->
+                <Setter Property="Stroke" Value="#ED1C24"/>
+                <Setter Property="StrokeThickness" Value="1"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="Width" Value="10"/>
+                <Setter Property="Height" Value="10"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <!--<Style.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard x:Name="BeginPulse" Storyboard="{StaticResource Pulse}"/>
+                    </EventTrigger>
+                </Style.Triggers>-->
+                
+                <!--<Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsVisible}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="BeginPulse" Storyboard="{StaticResource Pulse}">
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="BeginPulse"/>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>-->
+                
+            </Style>
+            
+            <Style TargetType="{x:Type avalonedit:CompletionWindow}">
+                <Setter Property="WindowStyle" Value="None"></Setter>
+                <Setter Property="ResizeMode" Value="NoResize"></Setter>
+                <Setter Property="BorderThickness" Value="3"></Setter>
+            </Style>
+
+            <Style TargetType="{x:Type avalonedit:InsightWindow}">
+                <Setter Property="Background" Value="Coral"/>
+            </Style>
+
+            <!--<Style TargetType="dax:DAXEditor">
+                <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}" />
+            </Style>-->
+            
             <Style x:Key="CustomLayoutDocumentPaneControlStyle" TargetType="{x:Type avalondock:LayoutDocumentPaneControl}">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
                 <!--<Setter Property="Background" Value="{StaticResource BaseBrush}" />
                 <Setter Property="BorderBrush" Value="{StaticResource BaseBrush}"/>-->
                 <Setter Property="Template">
@@ -182,7 +269,7 @@
                                     </Image>-->
                                     </avalondock:DropDownButton>
                                 </Grid>
-                                <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="Transparent" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
+                                <Border x:Name="ContentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{DynamicResource Theme.Brush.Default.Back}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" HorizontalAlignment="Stretch" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Cycle" VerticalAlignment="Stretch">
                                     <ContentPresenter x:Name="PART_SelectedContentHost" ContentTemplate="{TemplateBinding SelectedContentTemplate}" Content="{TemplateBinding SelectedContent}" ContentStringFormat="{TemplateBinding SelectedContentStringFormat}" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                                 </Border>
                             </Grid>
@@ -242,6 +329,11 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource Pulse }"/>
+        </EventTrigger>
+    </UserControl.Triggers>
     <i:Interaction.Behaviors>
         <beh:FindReplaceBehavior />
     </i:Interaction.Behaviors>
@@ -250,6 +342,10 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <FrameworkElement
+        x:Name="BrushCarrier1"
+        Tag="{StaticResource RecordingBrush}"
+        />
         <!-- Theme="{Binding AvalonDockTheme}" -->
         <avalondock:DockingManager x:Name="Document" 
                                    DocumentPaneControlStyle="{DynamicResource CustomLayoutDocumentPaneControlStyle}" 
@@ -279,23 +375,30 @@
                     <selectors:DataGridWindowTemplateSelector.TraceTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0" Margin="0,0,5,0"
+                                <!--<TextBlock Text="4" FontFamily="Webdings" Width="10" Padding="0,0,0,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}" 
                                    VerticalAlignment="Center"
-                                   />
-
-
-                                <TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
+                                   />-->
+                                <Ellipse Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsTraceRunning, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
+                                   Style="{StaticResource Recording}" 
+                                   Fill="{StaticResource RecordingBrush}"
+                                   >
+                                    
+                                </Ellipse>
+                                <Image Source="{DynamicResource pause_tabDrawingImage}" Margin="0,0,5,0"
+                                   Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"/>
+                                <!--<TextBlock Text=";" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsPaused, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    VerticalAlignment="Center"
-                            />
-                                <TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
+                                    />-->
+                                <!--<TextBlock Text="&lt;" FontFamily="Webdings" Width="10" Padding="0,0,2,0" Margin="0,0,5,0"
                                    Visibility="{Binding Content.IsChecked, Converter={StaticResource BoolToNotCollapsedConverter}, FallbackValue=Collapsed}"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    VerticalAlignment="Center"
-                            />
+                                    />-->
                                 <TextBlock Text="{Binding Content.Title}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </DataTemplate>
@@ -329,7 +432,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="{Binding Content.Title}"/>
+                        <TextBlock Text="{Binding Content.Title}" TextTrimming="CharacterEllipsis"/>
                     </Grid>
                 </DataTemplate>
             </avalondock:DockingManager.AnchorableTitleTemplate>
@@ -343,7 +446,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="{Binding Content.Title}"/>
+                                <TextBlock Text="{Binding Content.Title}" TextTrimming="CharacterEllipsis"/>
                             </Grid>
                         </DataTemplate>
                     </selectors:DataGridWindowTemplateSelector.DefaultTemplate>
@@ -574,17 +677,21 @@
                             <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToHiddenConverter}}"/>
                             <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
                             <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
+                            <!--<Setter Property="Layout .AutoHideMinWidth" Value="250"/>-->
                             <!--<Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>-->
-                            <Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />
+                            <!--<Setter Property="CanClose" Value="{Binding Model.CanCloseWindow}" />-->
                             <Setter Property="CanHide" Value="{Binding Model.CanHide}"/>
+                            
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
-                            <Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />
+                            <!--<Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />-->
 
                             <Setter Property="DockAsDocumentCommand" Value="{x:Null}" />
                         </Style>
                     </local:PanesStyleSelector.ToolStyle>
                 </local:PanesStyleSelector>
             </avalondock:DockingManager.LayoutItemContainerStyleSelector>
+
+            
             
             <!--
             <avalondock:DockingManager.AnchorablePaneTemplate>
@@ -620,10 +727,10 @@
             <avalondock:LayoutRoot FocusManager.IsFocusScope="False">
                 <!-- Left side Tool Panes -->
                 <avalondock:LayoutPanel Orientation="Horizontal">
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="200">
-                        <avalondock:LayoutAnchorablePane Name="DockLeft"/>
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="150" DockWidth="235" FloatingWidth="200" >
+                        <avalondock:LayoutAnchorablePane Name="DockLeft" ap:LayoutAnchorablePaneAutoHideMinWidthHelper.AutoHideMinWidth="250"/>
                     </avalondock:LayoutAnchorablePaneGroup>
-                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="185" DockWidth="210">
+                    <avalondock:LayoutAnchorablePaneGroup DockMinWidth="260" DockWidth="260" FloatingWidth="240">
                         <avalondock:LayoutAnchorablePane Name="DockMidLeft"/>
                     </avalondock:LayoutAnchorablePaneGroup>
                     <!-- Main Document Pane -->
@@ -647,35 +754,45 @@
                                     </Grid.RowDefinitions>
 
                                     <Border 
+                                        Margin="0 4 0 8"
                                         Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToCollapsedConverter}}"
                                         Grid.ColumnSpan="2"
-                                        Background="{DynamicResource WarningBarBackgroundBrush}">
+                                        BorderBrush="{DynamicResource Theme.Brush.InfoBar.Border}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Background="{DynamicResource Theme.Brush.InfoBar.Back}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <fa:FontAwesome Icon="{Binding InformationBarIcon}" Spin="{Binding InformationBarIconSpin}"  Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
-                                            <Label x:Name="ViewAsDescription" Content="{Binding ViewAsDescription}" Grid.Column="1"/>
-                                            <Button x:Name="StopViewAs" Content="Stop Viewing" Grid.Column="2" Margin="3" Padding="5 0"
+                                            <Image Source="{DynamicResource viewing_as_smallDrawingImage}"  Margin="5 0" VerticalAlignment="Center" Grid.Column="0"/>
+                                            <Label x:Name="ViewAsDescription" Content="{Binding ViewAsDescription}" Grid.Column="1" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"/>
+                                            <Button x:Name="StopViewAs"  Grid.Column="2" Margin="3" Padding="2 0" Background="Transparent"
                                                     cal:Message.Attach="[Event Click]=[Action StopViewAs()]"
-                                                    />
+                                                    >
+                                                <Image Source="{DynamicResource close_infobarDrawingImage}"/>
+                                            </Button>
                                             <!--<fa:FontAwesome Icon="Close" Grid.Column="2" VerticalAlignment="Center" Margin="5 0"/>-->
                                         </Grid>
 
                                     </Border>
 
-
+                                    <!-- EditorBorder.CornerRadius="8"-->
                                     <dax:DAXEditor x:Name="daxEditor" 
-                                                   Margin="2,2,2,2" 
+                                                   Margin="0" 
                                                    Padding="8,8,8,8"
+                                                   BorderThickness="1"
+                                                   BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                                                    TabIndex="0"
                                                    Grid.Column="0" 
                                                    Grid.Row="1" 
                                                    Grid.RowSpan="2" 
                                                    Grid.ColumnSpan="2" MinWidth="80"
                                                    MinHeight="60"
+                                                   LineNumbersForeground="{DynamicResource Theme.Brush.LineNumbers}"
+                                                   
                                                    FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -689,7 +806,7 @@
                                                    attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
-                                                   cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]; [Event ContextMenuOpening] = [EditorContextMenuOpening()]; [Event MouseHover] = [OnEditorHover($source, $eventArgs)]"
+                                                   cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]; [Event ContextMenuOpening] = [EditorContextMenuOpening()]; [Event MouseHover] = [OnEditorHover($source, $eventArgs)]; [Event GotFocus] = [Action GotFocus]"
                                                   
                                     >
                                         <!--dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"-->
@@ -698,11 +815,15 @@
                                         <i:Interaction.Triggers>
                                             
                                             <i:EventTrigger EventName="DragEnter">
-                                                <cal:ActionMessage MethodName="OnDragEnter"/>
+                                                <cal:Action.Target>
+                                                    <cal:ActionMessage MethodName="OnDragEnter"/>
+                                                </cal:Action.Target>
                                             </i:EventTrigger>
                                             
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-                                                <cal:ActionMessage MethodName="PreviewMouseLeftButtonUp"></cal:ActionMessage>
+                                                <cal:Action.Target>
+                                                    <cal:ActionMessage MethodName="PreviewMouseLeftButtonUp"></cal:ActionMessage>
+                                                </cal:Action.Target>
                                             </i:EventTrigger>
 
                                         </i:Interaction.Triggers>
@@ -712,21 +833,21 @@
                                                 <MenuItem x:Name="Cut"  Header="Cut"
                                                       cal:Message.Attach="Cut()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource CutIcon}"/>
+                                                        <Image Source="{DynamicResource cutDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
                                                 <MenuItem x:Name="Copy" Header="Copy" 
                                                       cal:Message.Attach="Copy()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource CopyIcon}"/>
+                                                        <Image Source="{DynamicResource copyDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
                                                 <MenuItem x:Name="Paste" Header="Paste"
                                                       cal:Message.Attach="Paste()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource PasteIcon}"/>
+                                                        <Image Source="{DynamicResource clipboardDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>
@@ -734,7 +855,7 @@
                                                 <MenuItem x:Name="CommentSelection" Header="Comment" 
                                                       cal:Message.Attach="CommentSelection()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource CommentIcon}"/>
+                                                        <Image Source="{DynamicResource commentDrawingImage}"/>
                                                     </MenuItem.Icon>
                                                     
                                                 </MenuItem>
@@ -742,7 +863,7 @@
                                                 <MenuItem x:Name="UncommentSelection" Header="Uncomment" 
                                                       cal:Message.Attach="UnCommentSelection()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{StaticResource UncommentIcon}"/>
+                                                        <Image Source="{DynamicResource uncommentDrawingImage}"/>
                                                     </MenuItem.Icon>
                                                     
                                                 </MenuItem>
@@ -751,32 +872,57 @@
                                                           Header="{Binding LookupDaxGuideHeader}"
                                                           cal:Message.Attach="LookupDaxGuide()" 
                                                           IsEnabled="{Binding CanLookupDaxGuide}">
+                                                    <MenuItem.Icon>
+                                                        <Image Source="{DynamicResource dax_guide_smallDrawingImage}" />
+                                                    </MenuItem.Icon>
                                                 </MenuItem>
                                             </ContextMenu>
                                         </ContextMenuService.ContextMenu>
-
+                                        <dax:DAXEditor.Resources>
+                                            <Style TargetType="{x:Type Line}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </Style>
+                                        </dax:DAXEditor.Resources>
                                     </dax:DAXEditor>
 
                                     <!-- Help Watermark -->
+                                    <!--<TextBlock
+                                        Grid.Row="1"
+                                        Grid.RowSpan="2"
+                                        Grid.ColumnSpan="2"
+                                        VerticalAlignment="Top"
+                                        HorizontalAlignment="Left"
+                                        FontWeight="Bold"
+                                        FontSize="{Binding ElementName=daxEditor, Path=FontSize}"
+                                        FontFamily="Courier New"
+                                        Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
+                                        Margin="40 10 0 0"
+                                        >Enter your DAX query here...</TextBlock>-->
                                     <ContentControl x:Name="HelpWatermark"
                                                     cal:View.Model="{Binding HelpWatermark}" 
                                                     cal:View.ApplyConventions="true"
                                                     Grid.Row="1"
                                                     Grid.RowSpan="2"
                                                     Grid.ColumnSpan="2"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    ></ContentControl>
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Top"
+                                                    Margin="10 10"
+                                                    >
+                                        <ContentControl.LayoutTransform>
+                                            <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 
+                                                            ScaleY="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}">
+                                                
+                                            </ScaleTransform>
+                                        </ContentControl.LayoutTransform>
+                                    </ContentControl>
 
                                     <!-- Floats over the main editor control -->
+                                    <!-- Background="Gray" Opacity=".7"-->
                                     <Border x:Name="borExpressionBackground" 
-                                            Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}"
-                                            
+                                            Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}"                                            
                                             Grid.RowSpan="3"  
                                             Grid.ColumnSpan="2" 
-                                            Background="Gray" Opacity=".7"
                                             Style="{StaticResource FadeInOut}"/>
-
 
                                     <!-- Measure Editor View Visibility="{Binding ShowMeasureExpressionEditor, Converter={StaticResource BoolToCollapsedConverter}}" -->
                                     <Border x:Name="brdExpressionEditor" 
@@ -809,8 +955,8 @@
                                     <ContentControl x:Name="FindReplaceDialog" 
                                                 HorizontalAlignment="Right" 
                                                 VerticalAlignment="Top"
-                                                Width="300"
-                                                Margin="0,2,21,0" 
+                                                Width="450"
+                                                Margin="0,12,21,0" 
                                                 Grid.Column="1" Grid.Row="1"
                                                 cal:View.Model="{Binding FindReplaceDialog}" cal:View.ApplyConventions="true"/>
                                 </Grid>

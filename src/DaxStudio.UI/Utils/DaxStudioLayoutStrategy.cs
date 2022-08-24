@@ -1,6 +1,6 @@
-﻿using System.Linq;
-using AvalonDock.Layout;
+using System.Linq;
 using DaxStudio.UI.Interfaces;
+using AvalonDock.Layout;
 
 namespace DaxStudio.UI.Utils
 {

@@ -14,10 +14,12 @@ namespace DaxStudio.UI.Model
     // This is the default target which writes the results out to
     // the built-in grid
     [Export(typeof(IResultsTarget))]
-    public class ResultsTargetGrid: IResultsTarget 
+    public class ResultsTargetGrid: PropertyChangedBase, IResultsTarget 
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IGlobalOptions _options;
+
+
 
         [ImportingConstructor]
         public ResultsTargetGrid(IEventAggregator eventAggregator, IGlobalOptions options)
@@ -27,13 +29,14 @@ namespace DaxStudio.UI.Model
         }
 
         #region Standard Properties
-        public string Name => "Grid";
+        public string Name => "Results Table";
         public string Group => "Standard";
         public int DisplayOrder => 10;
         public bool IsDefault => true;
         public bool IsAvailable => true;
-        public string Message => string.Empty;
+        public string Message => "Query results will be displayed in a data grid";
         public OutputTarget Icon => OutputTarget.Grid;
+        public string ImageResource => "results_tableDrawingImage";
         public string Tooltip => "Displays the Query results in a data grid";
         public bool IsEnabled => true;
 

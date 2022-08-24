@@ -58,13 +58,10 @@ namespace DaxStudio.UI.Model
         }
 
         public string MinValue => TabularObject?.MinValue;
-
         public string MaxValue => TabularObject?.MaxValue;
-
         public long DistinctValues => TabularObject?.DistinctValues??0;
-
         public Type SystemType => TabularObject?.SystemType;
-        
+        public string ImageResource => TabularObject?.ImageResource?? "new_measure_smallDrawingImage";
         public DataType DataType => TabularObject?.DataType??DataType.Unknown;
         public string TableName => TabularObject.TableName;
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
@@ -85,7 +82,7 @@ namespace DaxStudio.UI.Model
                 _overridenMeasureExpression = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(IsModelItem));
-                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -116,8 +113,7 @@ namespace DaxStudio.UI.Model
 
         public void DuplicateMeasure()
         {
-            _eventAggregator.PublishOnUIThread(new DuplicateMeasureEvent(this));
-            
+            _eventAggregator.PublishOnUIThreadAsync(new DuplicateMeasureEvent(this));
         }
 
         private SortDirection _sortDirection = SortDirection.ASC;
@@ -128,12 +124,34 @@ namespace DaxStudio.UI.Model
                 _sortDirection = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(SortDescription));
-                _eventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                NotifyOfPropertyChange(nameof(SortDirectionImageResource));
+                _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+            }
+        }
+
+        public string SortDirectionImageResource
+        {
+            get
+            {
+                switch (_sortDirection)
+                {
+                    case SortDirection.ASC: return "sort_ascDrawingImage";
+                    case SortDirection.DESC: return "sort_descDrawingImage";
+                    default: return "";
+                }
             }
         }
 
         public string SortDescription => SortDirection== SortDirection.None? $"Do not order by {DaxName}\n(Click to change)" : $"Order by {DaxName} {SortDirection}\n(Click to change)";
 
+        public bool IsSortDirectionEnabled { get => SortDirection != SortDirection.None; 
+            set { 
+                if(SortDirection == SortDirection.None) SortDirection = SortDirection.ASC;
+                else SortDirection = SortDirection.None;
+            } 
+        }
+
         public bool IsSortBy { get; internal set; }
+        public bool IsGroupBy { get; internal set; }
     }
 }

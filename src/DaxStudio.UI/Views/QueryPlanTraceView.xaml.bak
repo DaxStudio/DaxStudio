@@ -1,0 +1,317 @@
+﻿<controls:ZoomableUserControl   x:Class="DaxStudio.UI.Views.QueryPlanTraceView"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+
+            <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                <Setter Property="Padding" Value="4 4 8 4"/>
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="AlignLeft" TargetType="{x:Type TextBlock}">
+                <Setter Property="Padding" Value="4 4 8 4"/>
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+        
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Name="TraceStatusText" 
+                   Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
+                   Background="{DynamicResource WarningBarBackgroundBrush}" 
+                   Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
+
+
+            <!--<ui:CommandBar>
+                <ui:AppBarButton Label="Record">
+
+                    <Image Source="{DynamicResource record_toolbarDrawingImage}"/>
+
+                </ui:AppBarButton>
+                <ui:AppBarButton Label="Pause"/>
+            </ui:CommandBar>-->
+            <!--<DockPanel>
+                <Button>Record</Button>
+                <Button>Pause</Button>
+                <Button>Stop</Button>
+                <Button>Clear</Button>
+                <Button>Export</Button>
+            </DockPanel>-->
+
+            <!-- command bar -->
+            <Border 
+                CornerRadius="4"
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                Margin="0 0 0 8">
+                <DockPanel LastChildFill="False">
+                    <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsRecording}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource record_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Record</TextBlock>
+                        </StackPanel>
+                    </ToggleButton>
+                    <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource pause_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Pause</TextBlock>
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsStopped}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource cancelDrawingImage}" Width="16"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Stop</TextBlock>
+                        </StackPanel>
+                    </ToggleButton>
+                    <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ClearAll]">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Clear</TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                    <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                            cal:Message.Attach="[Event Click] = [Action Export]">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource save_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Export</TextBlock>
+                        </StackPanel>
+                    </Button>
+
+
+                    <!--<Rectangle DockPanel.Dock="Right"/>-->
+
+
+                </DockPanel>
+            </Border>
+
+
+
+
+        <controls:ClipBorder Grid.Row="1"
+                             CornerRadius="4"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+            <DataGrid 
+                  SelectedItem="{Binding SelectedPhysicalRow}" 
+                  HorizontalAlignment="Stretch" 
+                  AlternationCount="2"
+                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                  Background="{DynamicResource Theme.Brush.Content.Back}"
+                  AutoGenerateColumns="False"
+                  behaviours:GridViewColumnResize.Enabled="True" 
+                  VerticalAlignment="Stretch" 
+                  Width="Auto"
+                  ItemsSource="{Binding PhysicalQueryPlanRows}" 
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow"
+                  HeadersVisibility="Column"
+                  FrozenColumnCount="2"
+                  ClipboardCopyMode="IncludeHeader"
+                  GridLinesVisibility="None" 
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  >
+
+                <!--<DataGrid.Resources>
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                    <Setter Property="HorizontalAlignment" Value="Right" />
+                </Style>
+            </DataGrid.Resources>-->
+
+
+            <!--<DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Padding" Value="5,0,5,0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Border Padding="{TemplateBinding Padding}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        Background="{TemplateBinding Background}" 
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>-->
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
+                    <DataGridTextColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
+                                    IsReadOnly="True" Binding="{Binding IndentedOperation}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HighlightRow}" Value="True">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="Padding" Value="4 4 8 4"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                
+            </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}"  BasedOn="{StaticResource DefaultDataGridRowStyle}">
+                        <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
+                    </Style>
+                </DataGrid.RowStyle>
+                
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Command="Copy">
+                            <MenuItem.Icon>
+                                <Image Source="{DynamicResource copyDrawingImage}"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Command="SelectAll"></MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+            </DataGrid>
+        </controls:ClipBorder>
+        <GridSplitter Grid.Row="2" Height="5"  ResizeDirection="Rows" 
+            Grid.Column="0"
+            Width="Auto" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+                      Background="Transparent"
+            Margin="0"/>
+        <controls:ClipBorder Grid.Row="3"
+                             CornerRadius="4"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+            <DataGrid 
+                  SelectedItem="{Binding SelectedLogicalRow}" 
+                  HorizontalAlignment="Stretch" 
+                  AutoGenerateColumns="False"
+                  behaviours:GridViewColumnResize.Enabled="True" 
+                  VerticalAlignment="Stretch"  
+                  Width="Auto"
+                  ItemsSource="{Binding LogicalQueryPlanRows}" 
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow"
+                  HeadersVisibility="Column"
+                  FrozenColumnCount="1"
+                  ClipboardCopyMode="IncludeHeader"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="None" 
+                  AlternationCount="2"
+                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                  Background="{DynamicResource Theme.Brush.Content.Back}" >
+
+            <DataGrid.Resources>
+
+                
+            </DataGrid.Resources>
+            <!--<DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Padding" Value="5,0,5,0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Border Padding="{TemplateBinding Padding}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        Background="{TemplateBinding Background}" 
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>-->
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
+                <DataGridTextColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
+                                    IsReadOnly="True" Binding="{Binding IndentedOperation}" ElementStyle="{StaticResource AlignLeft}"/>
+            </DataGrid.Columns>
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
+                    <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="Copy">
+                        <MenuItem.Icon>
+                            <Image Source="{DynamicResource copyDrawingImage}"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Command="SelectAll"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+        </controls:ClipBorder>
+        
+        <!-- Busy overlay -->
+        <Border 
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+                Grid.RowSpan="4" Style="{StaticResource BusyPanel}">
+            <Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                    <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    Width="24"
+                                    Height="24"
+                                    Margin="0 0 10 0"
+                                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Label x:Name="BusyMessage"  Style="{StaticResource SpinnerLabel}"/>
+                    
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</controls:ZoomableUserControl>

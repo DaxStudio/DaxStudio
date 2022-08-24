@@ -15,16 +15,16 @@
        xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1">
+             >
     <UserControl.Resources>
         
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>
@@ -56,7 +56,7 @@
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="QueryText"
                             Text="{Binding Path=QueryText, Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
-                            VerticalAlignment="Top" 
+                            VerticalAlignment="Center" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
                             ToolTip="{Binding QueryText}">
@@ -70,59 +70,115 @@
                 <Setter Property="Padding" Value="2,0,2,0"/>
             </Style>
 
+            <Style TargetType="{x:Type controls:DataGridCustomCopy}" BasedOn="{StaticResource DefaultDataGridStyle}"/>
+
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <Grid Width="Auto">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Grid >
+        
 
+        
+        <!--<controls:DataGridNoContextMenu x:Name="PerformanceData"-->
 
-        <!--<controls:DataGridNoContextMenu x:Name="PerformanceData"--> 
-        <controls:DataGridCustomCopy x:Name="PerformanceData" 
-                    Grid.Row="1"
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+<!-- Toolbar -->
+            <controls:ClipBorder
+                CornerRadius="4"
+                BorderThickness="1"
+                Margin="0 0 0 12"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+                <Grid>
+                    <Button x:Name="Export" >Export</Button>
+                    <ToggleButton x:Name="ShowFilters" HorizontalAlignment="Right">Filter</ToggleButton>
+                </Grid>
+            </controls:ClipBorder>
+
+            <controls:ClipBorder
+                CornerRadius="4"
+                BorderThickness="1"
+                Grid.Row="1"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+                <controls:DataGridCustomCopy x:Name="PerformanceData" 
+                    
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
-                    filter:DataGridExtensions.IsClearButtonVisible="False"
+                    filter:DataGridExtensions.IsClearButtonVisible="True"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
+                                             
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
-                       
+                    AlternationCount="2"
+                    AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                    Background="{DynamicResource Theme.Brush.Content.Back}"
                     SelectedItem="{Binding SelectedPerfData}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
                     VerticalAlignment="Stretch" 
-                    Background="White" 
                     Width="Auto"
                     SelectionMode="Extended"
                     SelectionUnit="FullRow"
                     HeadersVisibility="Column"
                     ClipboardCopyMode="IncludeHeader"
                     ScrollViewer.CanContentScroll="True"
+                    VerticalScrollBarVisibility="Auto"
                     FrozenColumnCount="1"
-                    GridLinesVisibility="None" 
+                    GridLinesVisibility="Horizontal" 
                     BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    IsReadOnly="True"
                     >
 
             <DataGrid.Resources>
-                    <Style TargetType="{x:Type DataGridColumnHeader}">
+
+                        <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
+                            <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
+                        </Style>
+                
+                <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                                        <controls:ClipBorder
+                                            CornerRadius="4"
+                                            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                                            >
+                                            <Grid>
+                                                <DataGridColumnHeader x:Name="PART_FillerColumnHeader" IsHitTestVisible="False"/>
+                                                <ItemsPresenter />
+                                            </Grid>
+                                        </controls:ClipBorder>
+                                    </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="MinHeight" Value="20"/>
                 </Style>
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
-                </Style>
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
             </DataGrid.Resources>
 
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="Copy" >
                         <MenuItem.Icon>
-                            <Image Source="{StaticResource CopyIcon}"/>
+                            <Image Source="{DynamicResource copyDrawingImage}"/>
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>
@@ -148,7 +204,7 @@
                 </Style>
             </DataGrid.CellStyle>
             <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}">
+                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
                 </Style>
             </DataGrid.RowStyle>
@@ -203,7 +259,7 @@
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="QueryDuration"
                                     />
-                <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="68" 
+                <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="74" 
                                     Binding="{Binding RenderDuration, StringFormat='#,0'}" 
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="RenderDuration"
@@ -222,6 +278,9 @@
 
             </DataGrid.Columns>
         </controls:DataGridCustomCopy>
+            </controls:ClipBorder>
+        </Grid>
+        
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 
@@ -233,9 +292,17 @@
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock x:Name="BusyMessage"/>
-                    </Label>
+                    <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    Width="24"
+                                    Height="24"
+                                    Margin="0 0 10 0"
+                                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <Label x:Name="BusyMessage"  Style="{StaticResource SpinnerLabel}"/>
+                    
                 </StackPanel>
             </Grid>
         </Border>

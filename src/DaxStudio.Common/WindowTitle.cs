@@ -48,13 +48,14 @@ namespace DaxStudio.Common
                 StringBuilder message = new StringBuilder(1000);
                 if (NativeMethods.IsWindowVisible(handle))
                 {
-                    //SendMessage(handle, WM_GETTEXT, message.Capacity, message);
+                    //NativeMethods.SendMessage(handle, WM_GETTEXT, message.Capacity, message);
                     //if (message.Length > 0) return message.ToString();
-                    return GetCaptionOfWindow(handle);
+                    var title = GetCaptionOfWindow(handle);
+                    if (title.Length > 0) return title;
                 }
 
             }
-            return "";
+            return "-";
         }
 
         /* ====================================== */

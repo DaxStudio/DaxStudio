@@ -17,6 +17,8 @@ using System.ComponentModel;
 using System.Net;
 using System.Reflection;
 using Microsoft.AnalysisServices.AdomdClient;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -37,6 +39,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<UpdateGlobalOptions>
         , IHandle<UpdateHotkeys>
+        , IHandle<SetRunStyleEvent>
 
         //        , IViewAware
     {
@@ -49,17 +52,41 @@ namespace DaxStudio.UI.ViewModels
 
         private const string urlDaxStudioWiki = "https://daxstudio.org";
         private const string urlPowerPivotForum = "https://social.msdn.microsoft.com/Forums/sqlserver/en-US/home?forum=sqlkjpowerpivotforexcel";
-        private const string urlSsasForum = "https://docs.microsoft.com/en-us/answers/topics/sql-server-analysis-services";
+        private const string urlSsasForum = "https://docs.microsoft.com/en-us/answers/topics/sql-server-analysis-services.html";
+        private const string urlPbiDesktopForum = "https://community.powerbi.com/t5/Desktop/bd-p/power-bi-designer";
+        private const string urlDaxForum = "https://community.powerbi.com/t5/DAX-Commands-and-Tips/bd-p/DAXCommands";
         private const string urlGithubBugReportPrefix = @"https://github.com/DaxStudio/DaxStudio/issues/new?labels=from+app&template=bug_report.md&body=";
         private const string urlGithubBugReportSuffix = @"%23%23%20Summary%20of%20Issue%0A%0A%0A%23%23%20Steps%20to%20Reproduce%0A1.%0A2.";
         private const string urlGithubFeatureRequest = @"https://github.com/DaxStudio/DaxStudio/issues/new?assignees=&labels=from+app&template=feature_request.md&title=";
+
+        internal void ToggleTheme()
+        {
+            switch( this.Theme)
+            {
+                case "Light": 
+                    Theme = "Dark";
+                    break;
+                case "Dark":
+                    Theme = "Auto";
+                    break;
+                default: 
+                    Theme = "Light";
+                    break;
+            }
+        }
+
+        public string ThemeImageResource => Theme == "Auto"? "file_auto_themeDrawingImage":"file_themeDrawingImage";
+
+
+
         private const string urlGithubDiscussions = @"https://github.com/DaxStudio/DaxStudio/discussions";
+        private const string urlSponsors = @"https://daxstudio.org/sponsors/";
         private ISettingProvider SettingProvider;
         [ImportingConstructor]
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
         {
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
             _host = host;
             _windowManager = windowManager;
             SettingProvider = settingProvider;
@@ -72,6 +99,7 @@ namespace DaxStudio.UI.ViewModels
             _sqlProfilerCommand = SqlProfilerHelper.GetSqlProfilerLaunchCommand();
             RecentFiles = SettingProvider.GetFileMRUList();
             InitRunStyles();
+            ClearCacheAuto = Options.SetClearCacheAsDefaultRunStyle;
         }
 
 
@@ -79,16 +107,16 @@ namespace DaxStudio.UI.ViewModels
         private void InitRunStyles()
         {
             // populate run styles
-            RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly, false, false, false, "Executes the query and sends the results to the selected output"));
-            RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly,  "Executes the text in the Editor and sends the results to the selected output"));
+            RunStyles.Add(new RunStyle("Run Query Builder", RunStyleIcons.RunBuilder,"Executes the Query Builder and sends the results to the selected output"));
+            //RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
 #if DEBUG
-//            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
+            //            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
             //RunStyles.Add(new RunStyle("Run Table Function", RunStyleIcons.RunFunction, true, true,false, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
             //RunStyles.Add(new RunStyle("Run Measure", RunStyleIcons.RunScalar, true, true, true, "Attempts to executes the selected measure or scalar function by wrapping the selection with 'EVALUATE ROW(...)' and sends the results to the selected output"));
 #endif
             // set default run style
             var defaultRunStyle = RunStyleIcons.RunOnly;
-            if (Options.SetClearCacheAsDefaultRunStyle) defaultRunStyle = RunStyleIcons.ClearThenRun;
 
             SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == defaultRunStyle);
         }
@@ -99,7 +127,7 @@ namespace DaxStudio.UI.ViewModels
             get => _selectedRunStyle;
             set { _selectedRunStyle = value;
                 NotifyOfPropertyChange(() => SelectedRunStyle);
-                _eventAggregator.PublishOnUIThread(new RunStyleChangedEvent(SelectedRunStyle));
+                _eventAggregator.PublishOnUIThreadAsync(new RunStyleChangedEvent(SelectedRunStyle));
                 //RunQuery(); // TODO if we change run styles should we immediately run the query with the new style??
             } }
         public IGlobalOptions Options { get; private set; }
@@ -110,9 +138,9 @@ namespace DaxStudio.UI.ViewModels
             //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
             true;
 
-        public void NewQuery()
+        public async Task NewQuery()
         {
-            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget));
+            await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
         }
 
         //public string NewQueryTitle => $"New ({Options.HotkeyNewDocument})";
@@ -120,7 +148,7 @@ namespace DaxStudio.UI.ViewModels
         public void NewQueryWithCurrentConnection()
         {
             if (ActiveDocument == null) return;
-            _eventAggregator.PublishOnUIThread(new NewDocumentEvent(SelectedTarget, ActiveDocument));
+            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument));
         }
 
         public bool CanNewQueryWithCurrentConnection => ActiveDocument != null && ActiveDocument.IsConnected;
@@ -129,7 +157,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CommentSelection()
         {
-            _eventAggregator.PublishOnUIThread(new CommentEvent(true));
+            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(true));
         }
 
         public string CommentSelectionTitle => $"Comment ({Options.HotkeyCommentSelection})";
@@ -197,14 +225,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void UncommentSelection()
         {
-            _eventAggregator.PublishOnUIThread(new CommentEvent(false));
+            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(false));
         }
         public string UncommentSelectionTitle => $"Uncomment ({Options.HotkeyUnCommentSelection})";
         public bool CanToUpper => ActiveDocument != null;
 
         public void ToUpper()
         {
-            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
         public string ToUpperTitle => $"To Upper ({Options.HotkeyToUpper})";
 
@@ -212,7 +240,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ToLower()
         {
-            _eventAggregator.PublishOnUIThread(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
         public string ToLowerTitle => $"To Lower ({Options.HotkeyToLower})";
         public void RunQuery()
@@ -223,8 +251,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanClearCache);
             NotifyOfPropertyChange(() => CanRefreshMetadata);
             NotifyOfPropertyChange(() => CanConnect);
-            
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(SelectedTarget, SelectedRunStyle) );
+
+            var runStyle = SelectedRunStyle;
+            runStyle.ClearCache = ClearCacheAuto;
+            _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget, runStyle) );
 
         }
         public string RunQueryTitle => $"Run Query ({Options.HotkeyRunQuery})";
@@ -273,7 +303,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CancelQuery()
         {
-            _eventAggregator.PublishOnUIThread(new CancelQueryEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new CancelQueryEvent());
         }
 
         public bool CanCancelQuery => !CanRunQuery && (ActiveDocument != null && ActiveDocument.IsConnected);
@@ -291,6 +321,16 @@ namespace DaxStudio.UI.ViewModels
                 if (_traceStatus == QueryTraceStatus.Stopping) return "Waiting for Trace to stop";
                 return "Cannot clear the cache while a query is currently running";
             }
+        }
+
+        public bool CanClearCacheAuto => IsActiveDocumentConnected;
+
+        public bool _clearCacheAuto = false;
+        public bool ClearCacheAuto { get => _clearCacheAuto;
+            set { 
+                _clearCacheAuto = value;
+                NotifyOfPropertyChange();
+            } 
         }
 
         public void ClearCache()
@@ -312,10 +352,10 @@ namespace DaxStudio.UI.ViewModels
         }
         
 
-        public void Connect()
+        public async void Connect()
         {
-            if (ActiveDocument == null) NewQuery();
-            else ActiveDocument.ChangeConnection();
+            if (ActiveDocument == null) await NewQuery();
+            else await ActiveDocument.ChangeConnectionAsync();
         }
 
         //private bool _canConnect;
@@ -327,15 +367,16 @@ namespace DaxStudio.UI.ViewModels
 
         public ShellViewModel Shell { get; set; }
 
-        public void Exit()
+        public async void Exit()
         {
-            Shell.TryClose();
+            await Shell.TryCloseAsync();
         }
 
-        public void Open()
+        public async void Open(FrameworkElement view)
         {
-            _eventAggregator.PublishOnUIThread(new OpenFileEvent());
-
+            Fluent.Backstage backstage = GetBackStageParent(view) as Fluent.Backstage;
+            await _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent());
+            backstage.IsOpen = false;
         }
 
         private void RefreshConnectionDetails(IConnection connection)
@@ -348,6 +389,7 @@ namespace DaxStudio.UI.ViewModels
                 _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
+                NotifyOfPropertyChange(() => CanClearCacheAuto);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
                 TraceWatchers?.DisableAll();
@@ -360,7 +402,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                //_eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, ex.Message));
+                //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
                 doc.OutputError(ex.Message);
             }
             finally
@@ -368,9 +410,9 @@ namespace DaxStudio.UI.ViewModels
                 _isConnecting = false;
                 NotifyOfPropertyChange(() => CanRunQuery);
                 NotifyOfPropertyChange(() => CanClearCache);
+                NotifyOfPropertyChange(() => CanClearCacheAuto);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
-                NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
             }
         }
         
@@ -398,7 +440,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(()=>SelectedTarget);
                 if (!_isDocumentActivating)
                 {
-                    _eventAggregator.BeginPublishOnUIThread(new QueryResultsPaneMessageEvent(_selectedTarget));
+                    _eventAggregator.PublishOnUIThreadAsync(new QueryResultsPaneMessageEvent(_selectedTarget));
                 }
                 if (_selectedTarget is IActivateResults) { ActiveDocument?.ActivateResults(); }
                 
@@ -407,7 +449,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IObservableCollection<ITraceWatcher> TraceWatchers => ActiveDocument?.TraceWatchers;
 
-        public void Handle(ActivateDocumentEvent message)
+        public Task HandleAsync(ActivateDocumentEvent message, CancellationToken cancellationToken)
         {
             DocumentViewModel doc = null;
             Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
@@ -418,10 +460,7 @@ namespace DaxStudio.UI.ViewModels
                 doc = ActiveDocument;
                 SelectedTarget = ActiveDocument.SelectedTarget;
 
-                if (ActiveDocument.Tracer == null)
-                    _traceStatus = QueryTraceStatus.Stopped;
-                else
-                    _traceStatus = ActiveDocument.Tracer.Status;
+                _traceStatus = GetTraceStatus();
 
                 RefreshRibbonButtonEnabledStatus();
 
@@ -431,7 +470,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TraceWatchers);
                     NotifyOfPropertyChange(() => ServerTimingsChecked);
                     NotifyOfPropertyChange(() => ServerTimingDetails);
-                    return;
+                    return Task.CompletedTask;
                 }
             }
             catch (Exception ex)
@@ -458,7 +497,37 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => TraceWatchers);
             NotifyOfPropertyChange(() => ServerTimingsChecked);
             NotifyOfPropertyChange(() => ServerTimingDetails);
-            
+            return Task.CompletedTask;
+        }
+
+        private QueryTraceStatus GetTraceStatus()
+        {
+            var watchers = ActiveDocument.TraceWatchers;
+            var status = QueryTraceStatus.Stopped; // assume no traces are running
+            foreach (var tw in watchers)
+            {
+                switch (tw.TraceStatus)
+                {
+                    // if any of the trace watchers are in a changing or error state
+                    // return the state of the first one we find
+                    case QueryTraceStatus.Starting:
+                    case QueryTraceStatus.Stopping:
+                    case QueryTraceStatus.Error:
+                        return tw.TraceStatus;
+                    // if one or more traces are started and none are in a changing or 
+                    // error state we will return "Started"
+                    case QueryTraceStatus.Started:
+                        status = tw.TraceStatus;
+                        break;
+                    case QueryTraceStatus.Stopped:
+                    case QueryTraceStatus.Unknown:
+                        // do nothing in these cases
+                        break;
+
+                }
+
+            }
+            return status;
         }
 
         private void RefreshRibbonButtonEnabledStatus()
@@ -466,6 +535,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanRunQuery));
             NotifyOfPropertyChange(nameof(CanCancelQuery));
             NotifyOfPropertyChange(nameof(CanClearCache));
+            NotifyOfPropertyChange(nameof( CanClearCacheAuto));
             NotifyOfPropertyChange(nameof(CanRefreshMetadata));
             NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
             NotifyOfPropertyChange(nameof(CanCommentSelection));
@@ -499,7 +569,6 @@ namespace DaxStudio.UI.ViewModels
             {
                 tw.CheckEnabled(ActiveDocument.Connection, activeTrace);
             }
-            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
         }
 
         private DocumentViewModel _activeDocument;
@@ -522,7 +591,6 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanDisplayQueryBuilder);
                 NotifyOfPropertyChange(() => DisplayQueryBuilder);
                 NotifyOfPropertyChange(() => FormatQueryDisabledReason);
-                NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
                 if (_activeDocument != null) _activeDocument.PropertyChanged += ActiveDocumentPropertyChanged;
             }
         }
@@ -536,6 +604,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanRunBenchmark);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
+                    NotifyOfPropertyChange(nameof(CanClearCacheAuto));
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
@@ -551,6 +620,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanRunQuery);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
+                    NotifyOfPropertyChange(nameof(CanClearCacheAuto));
                     NotifyOfPropertyChange(() => CanRefreshMetadata);
                     NotifyOfPropertyChange(() => CanConnect);
                     NotifyOfPropertyChange(() => CanShowViewAsDialog);
@@ -565,7 +635,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Handle(QueryFinishedEvent message)
+        public Task HandleAsync(QueryFinishedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => CanRunQuery);
             NotifyOfPropertyChange(() => CanCancelQuery);
@@ -573,6 +643,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => CanRefreshMetadata);
             NotifyOfPropertyChange(() => CanConnect);
             NotifyOfPropertyChange(() => CanShowViewAsDialog);
+            return Task.CompletedTask;
         }
 
         public void LinkToDaxStudioWiki()
@@ -584,12 +655,22 @@ namespace DaxStudio.UI.ViewModels
 
         public void LinkToPowerPivotForum()
         {
-            OpenUrl(urlPowerPivotForum, "LinkToPowerPivotForum");
+            OpenUrl(urlPowerPivotForum, nameof(LinkToPowerPivotForum));
         }
 
         public void LinkToSsasForum()
         {
-            OpenUrl(urlSsasForum, "LinkToSsasForum");
+            OpenUrl(urlSsasForum, nameof(LinkToSsasForum));
+        }
+
+        public void LinkToPbiDesktopForum()
+        {
+            OpenUrl(urlPbiDesktopForum, nameof(LinkToPbiDesktopForum));
+        }
+
+        public void LinkToDaxForum()
+        {
+            OpenUrl(urlDaxForum, nameof(LinkToDaxForum));
         }
 
         public void LinkToGithubBugReport()
@@ -619,7 +700,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // any errors should be swallowed
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(GetVersionInfoUrlEncoded), "Error encoding bug report body");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error,
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,
                     $"Error encoding bug report body: {ex.Message}"));
             }
 
@@ -635,6 +716,10 @@ namespace DaxStudio.UI.ViewModels
         {
             OpenUrl(urlGithubDiscussions, "LinkToGithubDiscussions");
         }
+        public void LinkToSponsors()
+        {
+            OpenUrl(urlSponsors, "LinkToSponsors");
+        }
 
         internal void OpenUrl(string url, string name)
         {
@@ -645,15 +730,16 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error Launching {method}", "RibbonViewModel", "LinkToDaxStudioWiki");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, string.Format("The following error occurred while trying to open the {1}: {0}", ex.Message, name)));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("The following error occurred while trying to open the {1}: {0}", ex.Message, name)));
             }
         }
 
-        public void Handle(ConnectionPendingEvent message)
+        public Task HandleAsync(ConnectionPendingEvent message, CancellationToken cancellationToken)
         {
             _isConnecting = true;
+            return Task.CompletedTask;
         }
-        public async void Handle(ApplicationActivatedEvent message)
+        public async Task HandleAsync(ApplicationActivatedEvent message, CancellationToken cancellationToken)
         {
             Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
             if (ActiveDocument != null)
@@ -663,31 +749,31 @@ namespace DaxStudio.UI.ViewModels
             }
             
             Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
+            
         }
 
         
-        public void Handle(TraceChangingEvent message)
+        public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
         {
             if (ActiveDocument != null)
                 _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
             _traceStatus = message.TraceStatus;
-            NotifyOfPropertyChange(() => CanRunQuery);
-            NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
+            RefreshRibbonButtonEnabledStatus();
+            return Task.CompletedTask;
         }
 
-        public void Handle(TraceChangedEvent message)
+        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
             if(_traceMessage != null) _traceMessage.Dispose();
             _traceStatus = message.TraceStatus;
-            NotifyOfPropertyChange(() => CanRunQuery);
-            NotifyOfPropertyChange(() => CanConnect);
-            NotifyOfPropertyChange(() => TraceLayoutGroupVisible);
+            RefreshRibbonButtonEnabledStatus();
+            return Task.CompletedTask;
         }
 
-        public void Handle(DocumentConnectionUpdateEvent message)
+        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellationToken)
         {
             RefreshConnectionDetails(message.Connection);
+            return Task.CompletedTask;
         }
         
         public bool CanCut { get; set; }
@@ -699,9 +785,9 @@ namespace DaxStudio.UI.ViewModels
         [Import]
         HelpAboutViewModel aboutDialog { get; set; }
 
-        public void ShowHelpAbout()
+        public async void ShowHelpAbout()
         {
-            _windowManager.ShowDialogBox(aboutDialog , 
+            await _windowManager.ShowDialogBoxAsync(aboutDialog , 
                 settings: new Dictionary<string, object>
                 {
                     { "WindowStyle", WindowStyle.None},
@@ -752,12 +838,14 @@ namespace DaxStudio.UI.ViewModels
 
         public ServerTimingDetailsViewModel ServerTimingDetails => ActiveDocument?.ServerTimingDetails;
 
-        public void Handle(TraceWatcherToggleEvent message)
+        public Task HandleAsync(TraceWatcherToggleEvent message, CancellationToken cancellationToken)
         {
             if (message.TraceWatcher is ServerTimesViewModel)
             {
                 NotifyOfPropertyChange(() => ServerTimingsChecked);
             }
+            RefreshRibbonButtonEnabledStatus();
+            return Task.CompletedTask;
         }
 
         public ObservableCollection<IDaxFile> RecentFiles { get; set; }
@@ -790,15 +878,35 @@ namespace DaxStudio.UI.ViewModels
             //while (RecentFiles.Count() > MAX_RECENT_FILES) { RecentFiles.RemoveAt(RecentFiles.Count() - 1); }
         }
 
-        public void Handle(FileOpenedEvent message)
+        public Task HandleAsync(FileOpenedEvent message, CancellationToken cancellationToken)
         {
             AddToRecentFiles(message.FileName);
+            RefreshRibbonButtonEnabledStatus();
+            return Task.CompletedTask;
         }
 
-        public void Handle(FileSavedEvent message)
+        public Task HandleAsync(FileSavedEvent message, CancellationToken cancellationToken)
         {
             AddToRecentFiles(message.FileName);
+            return Task.CompletedTask;
         }
+
+        public void OpenRecentFile(DaxFile file, FrameworkElement backstage)
+        {
+            
+            Fluent.Backstage item = GetBackStageParent(backstage as FrameworkElement) as Fluent.Backstage;
+            OpenRecentFile(file, item);
+
+        }
+
+        public FrameworkElement GetBackStageParent(FrameworkElement element)
+        {
+            if (element == null) return null;
+            if (element.Parent == null) return null;
+            if (null != (element.Parent as Fluent.Backstage)) return element.Parent as FrameworkElement;
+            return GetBackStageParent(element.Parent as FrameworkElement);
+        }
+
 
         public void OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
         {
@@ -813,7 +921,7 @@ namespace DaxStudio.UI.ViewModels
             // otherwise clost the backstage menu and open the file
             backstage.IsOpen = false;
             MoveFileToTopOfRecentList(file);
-            _eventAggregator.PublishOnUIThread(new OpenDaxFileEvent(file.FullPath));
+            _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file.FullPath));
         }
 
         private bool RecentFileNoLongerExists(DaxFile file)
@@ -826,7 +934,7 @@ namespace DaxStudio.UI.ViewModels
                 RecentFiles.Remove(file);
             }
             Log.Warning("{class} {method} {message}", "RibbonViewModel", "RecentFileNoLongerExists", $"The following entry in the recent file list no longer exists '{file.FullPath}'");
-            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following entry in the recent file list no longer exists '{file.FullPath}'"));
+            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following entry in the recent file list no longer exists '{file.FullPath}'"));
             return true;
         }
 
@@ -914,7 +1022,8 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ImportAnalysisData();
         }
 
-        public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning;
+        public bool CanExportAnalysisData => IsActiveDocumentConnected && !IsActiveDocumentVertipaqAnalyzerRunning 
+                                            || (ActiveDocument?.ToolWindows.Any(tw => tw is VertiPaqAnalyzerViewModel) ?? false);
 
         public async void ExportAnalysisData()
         {
@@ -930,7 +1039,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool CanExportAllData => IsActiveDocumentConnected;
 
-        public void ExportAllData()
+        public async void ExportAllData()
         {
             if (ActiveDocument == null) return;
             try
@@ -939,32 +1048,34 @@ namespace DaxStudio.UI.ViewModels
                 using (var dialog = new ExportDataWizardViewModel(_eventAggregator, ActiveDocument, Options))
                 {
 
-                    _windowManager.ShowDialogBox(dialog, settings: new Dictionary<string, object>
-                {
-                    { "WindowStyle", WindowStyle.None},
-                    { "ShowInTaskbar", false},
-                    { "ResizeMode", ResizeMode.NoResize},
-                    { "Background", System.Windows.Media.Brushes.Transparent},
-                    { "AllowsTransparency",true}
-
-                });
+                    await _windowManager.ShowDialogBoxAsync(dialog, settings: new Dictionary<string, object>
+                    {
+                        { "WindowStyle", WindowStyle.None},
+                        { "ShowInTaskbar", false},
+                        { "ResizeMode", ResizeMode.NoResize},
+                        { "Background", System.Windows.Media.Brushes.Transparent},
+                        { "AllowsTransparency",true}
+                        
+                    });
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(RibbonViewModel), nameof(ExportAllData), ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
             }
         }
 
-        public void Handle(UpdateGlobalOptions message)
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             UpdateGlobalOptions();
+            return Task.CompletedTask;
         }
 
         private void UpdateGlobalOptions()
         {
             ResultAutoFormat = Options.ResultAutoFormat;
+            ClearCacheAuto = Options.SetClearCacheAsDefaultRunStyle;
             NotifyOfPropertyChange(nameof(FormatQueryAlternateTitle));
             NotifyOfPropertyChange(nameof(FormatQueryStandardTitle));
             NotifyOfPropertyChange(nameof(FormatQueryDisabledReason));
@@ -984,7 +1095,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchSqlProfiler", "Error launching SQL Profiler");
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
             }
         }
 
@@ -1005,7 +1116,7 @@ namespace DaxStudio.UI.ViewModels
             } catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchExcel", ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
 
             }
         }
@@ -1030,17 +1141,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void SaveLayout()
         {
-            _eventAggregator.BeginPublishOnUIThread(new DockManagerSaveLayout());
+            _eventAggregator.PublishOnUIThreadAsync(new DockManagerSaveLayout());
         }
 
         public void LoadLayout()
         {
-            _eventAggregator.BeginPublishOnUIThread(new DockManagerLoadLayout(false));
+            _eventAggregator.PublishOnUIThreadAsync(new DockManagerLoadLayout(false));
         }
 
         public void ResetLayout()
         {
-            _eventAggregator.BeginPublishOnUIThread(new DockManagerLoadLayout(true));
+            _eventAggregator.PublishOnUIThreadAsync(new DockManagerLoadLayout(true));
         }
 
         private string _theme = "Light"; // default to light theme
@@ -1051,35 +1162,34 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _theme = value;
                     Options.Theme = _theme;
-                    //SetRibbonTheme(_theme);
-                    _eventAggregator.PublishOnUIThread(new ChangeThemeEvent(_theme));
+                    _eventAggregator.PublishOnUIThreadAsync(new ChangeThemeEvent(_theme));
                     NotifyOfPropertyChange(() => Theme);
+                    NotifyOfPropertyChange(() => ThemeImageResource);
                 }
             }
         }
 
         public bool IsActiveDocumentVertipaqAnalyzerRunning { get; private set; }
 
-        private void SetRibbonTheme(string theme)
-        {
-            Application.Current.ChangeRibbonTheme(theme);
-        }
-        public void Handle(AllDocumentsClosedEvent message)
+        public Task HandleAsync(AllDocumentsClosedEvent message,CancellationToken cancellationToken)
         {
             this.ActiveDocument = null;
             RefreshRibbonButtonEnabledStatus();
+            return Task.CompletedTask;
         }
 
-        public void Handle(RefreshOutputTargetsEvent message)
+        public Task HandleAsync(RefreshOutputTargetsEvent message, CancellationToken cancellationToken)
         {
             // This message tell fluent ribbon that the ResultsTargets collection has changed
             // and should be re-evaluated
             NotifyOfPropertyChange(() => ResultsTargets);
+            return Task.CompletedTask;
         }
 
-        public void Handle(CancelConnectEvent message)
+        public Task HandleAsync(CancelConnectEvent message, CancellationToken cancellationToken)
         {
             _isConnecting = false;
+            return Task.CompletedTask;
         }
 
         public bool CanLoadPowerBIPerformanceData => ActiveDocument != null;
@@ -1138,25 +1248,19 @@ namespace DaxStudio.UI.ViewModels
             get => ActiveDocument?.ShowQueryBuilder??false;
             set {
                 ActiveDocument.ShowQueryBuilder = value;
-                NotifyOfPropertyChange(nameof(DisplayQueryBuilder));
+                NotifyOfPropertyChange();
             }
         }
 
 
         public void RunBenchmark()
         {
-            _eventAggregator.PublishOnUIThread(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
+            _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
         }
 
-        public bool TraceLayoutGroupVisible { get
-            {
-                if (ActiveDocument == null) return false;
-                if (TraceWatchers == null) return false;
-                return TraceWatchers.Any(tw => tw.IsChecked && tw is ServerTimesViewModel);
-            } 
-        }
 
-        public void Handle(UpdateHotkeys message)
+
+        public Task HandleAsync(UpdateHotkeys message, CancellationToken cancellationToken)
         {
             // TODO - should we create an attribute for these properties so that we don't
             //        have to maintain a hard coded list?
@@ -1166,6 +1270,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ToUpperTitle));
             NotifyOfPropertyChange(nameof(FormatQueryTitle));
             NotifyOfPropertyChange(nameof(RunQueryTitle));
+            return Task.CompletedTask;
         }
 
         public void CrashTest()
@@ -1197,5 +1302,10 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.ShowViewAsDialog();
         }
 
+        public Task HandleAsync(SetRunStyleEvent message, CancellationToken cancellationToken)
+        {
+            SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == message.Icon);
+            return Task.CompletedTask;
+        }
     }
 }

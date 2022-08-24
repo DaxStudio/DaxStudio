@@ -18,6 +18,7 @@ using ADOTabular;
 using System.Windows.Input;
 using System.Linq.Expressions;
 using DaxStudio.Controls.PropertyGrid;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -45,7 +46,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 _eventAggregator = eventAggregator;
-                _eventAggregator.Subscribe(this);
+                _eventAggregator.SubscribeOnPublishedThread(this);
                 _connectionString = connectionString;
                 _activeDocument = document;
                 SettingProvider = settingProvider;
@@ -55,7 +56,7 @@ namespace DaxStudio.UI.ViewModels
                 ServerModeSelected = true;
                 Options = options;
 
-                RefreshPowerBIInstances();
+                RefreshPowerBIInstancesAsync().FireAndForget();
 
                 ParseConnectionString(); // load up dialog with values from ConnStr
 
@@ -88,13 +89,13 @@ namespace DaxStudio.UI.ViewModels
 
         public IGlobalOptions Options { get; }
 
-        private void RefreshPowerBIInstances()
+        private async Task RefreshPowerBIInstancesAsync()
         {
 
             _powerBIInstances = new List<PowerBIInstance>() { _pbiLoadingInstance };
             SelectedPowerBIInstance = _pbiLoadingInstance;
 
-            Task.Run(() =>{
+            await Task.Run(() =>{
 
                 // display the "loading..." message
                 _powerBIInstances.Clear();
@@ -128,7 +129,7 @@ namespace DaxStudio.UI.ViewModels
             }).ContinueWith(t => {
                 // we should only come here if we got an exception
                 Log.Error(t.Exception, "Error getting PowerBI/SSDT instances: {message}", t.Exception.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {t.Exception.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {t.Exception.Message}"));
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -136,7 +137,7 @@ namespace DaxStudio.UI.ViewModels
      
         public async Task<bool> HasPowerPivotModelAsync() {
 
-            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel).ConfigureAwait(false);
+            bool res = await Task.FromResult<bool>(Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout)).ConfigureAwait(false);
             return res;
             
         }
@@ -434,7 +435,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex,"{class} {method} {message}",nameof(ConnectionDialogViewModel),nameof(BuildPowerBIDesignerConnection),ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"The following error occured while trying to connect to Power BI Desktop/SSDT : {ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occured while trying to connect to Power BI Desktop/SSDT : {ex.Message}"));
             }
 
             return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5}{6}{7}"
@@ -506,7 +507,8 @@ namespace DaxStudio.UI.ViewModels
                 return true;
             }
         }
-        public void Connect()
+        
+        public async void Connect()
         {
             string connectionString = string.Empty;
             try
@@ -523,7 +525,12 @@ namespace DaxStudio.UI.ViewModels
                 if (ServerModeSelected)
                 {
                     SettingProvider.SaveServerMRUList(DataSource, RecentServers);
-                    serverType = ServerType.AnalysisServices;
+                    serverType =
+                        HasUriProtocolScheme(DataSource, "asazure") ? ServerType.AzureAnalysisServices :
+                        HasUriProtocolScheme(DataSource, "pbidedicated") ? ServerType.PowerBIService :
+                        HasUriProtocolScheme(DataSource, "powerbi") ? ServerType.PowerBIService :
+                        HasUriProtocolScheme(DataSource, "pbiazure") ? ServerType.PowerBIService :
+                        ServerType.AnalysisServices;
                 }
                 if (PowerPivotModeSelected) { serverType = ServerType.PowerPivot; }
                 if (PowerBIModeSelected)
@@ -546,27 +553,41 @@ namespace DaxStudio.UI.ViewModels
                 connectionString = ConnectionString;
                 var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, WorkbookName, GetApplicationName(ConnectionType),powerBIFileName, serverType, false);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
-                _eventAggregator.PublishOnUIThread(connEvent);
+                await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", connectionString);
                 _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
-                _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new CancelConnectEvent());
             }
             finally
             {
                 _eventAggregator.Unsubscribe(this);
                 SelectedServerSetFocus = false;
-                this.TryClose();
+                //await TryCloseAsync();
             //    TryClose(true);
+            }
+
+            // We could move this function as an utility one - currently, there could be overlap with other similar functions (see ADOTabularConnection.GetConnectionType)
+            bool HasUriProtocolScheme(string url, string scheme)
+            {
+                if (string.IsNullOrEmpty(url))
+                {
+                    return false;
+                }
+                if (url.StartsWith(scheme, StringComparison.InvariantCultureIgnoreCase) && url.Length > scheme.Length + "://".Length)
+                {
+                    return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.InvariantCultureIgnoreCase) == 0;
+                }
+                return false;
             }
         }
 
         public void Cancel()
         {
             _eventAggregator.Unsubscribe(this);
-            _eventAggregator.PublishOnUIThread(new CancelConnectEvent());
+            _eventAggregator.PublishOnUIThreadAsync(new CancelConnectEvent());
         }
 
         protected override void OnViewLoaded(object view)
@@ -630,9 +651,9 @@ namespace DaxStudio.UI.ViewModels
             return "";
         }
 
-        public void Handle(ApplicationActivatedEvent message)
+        public Task HandleAsync(ApplicationActivatedEvent message, CancellationToken cancellationToken)
         {
-            RefreshPowerBIInstances();
+            return RefreshPowerBIInstancesAsync();
         }
 
         private LocaleIdentifier _locale;
@@ -720,7 +741,7 @@ namespace DaxStudio.UI.ViewModels
                     if (text.Contains(";")) {
                         var msg = "Detected paste of a string with semi-colons, attempting to parse out the \"Data Source\" and \"Initial Catalog\" properties";
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted), msg);
-                        _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, msg));
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, msg));
 
                         var props = SplitConnectionString(text);
 
@@ -733,7 +754,7 @@ namespace DaxStudio.UI.ViewModels
                         // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
                         if (props.ContainsKey("Initial Catalog"))
                         {
-                            _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
+                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }
@@ -744,7 +765,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var msg = $"Error processing paste into DataSource: {ex.Message}";
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted),msg);
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, msg));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
                 }
             }
             else
@@ -816,7 +837,7 @@ namespace DaxStudio.UI.ViewModels
                 ConnectionWarning = $"Error connecting to server: {ex.Message}";
                 var msg = $"Error refreshing database list for Initial Catalog: {ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), msg);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, msg));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
             } 
             finally
             {

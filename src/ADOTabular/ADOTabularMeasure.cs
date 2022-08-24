@@ -36,8 +36,8 @@ namespace ADOTabular
             {
                 // for measures we exclude the table name
                 return ObjectType == ADOTabularObjectType.Column  
-                    ? $"{Table.DaxName}[{Name}]"
-                    : $"[{Name}]";
+                    ? $"{Table.DaxName}[{Name.Replace("]", "]]")}]"
+                    : $"[{Name.Replace("]", "]]")}]";
             }
         }
 

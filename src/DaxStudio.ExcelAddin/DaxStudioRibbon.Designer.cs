@@ -34,6 +34,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DaxStudioRibbon));
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.btnDax = this.Factory.CreateRibbonButton();
@@ -58,7 +59,7 @@
             // btnDax
             // 
             this.btnDax.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnDax.Image = global::DaxStudio.Properties.Resources.daxstudio_logo_32x32;
+            this.btnDax.Image = ((System.Drawing.Image)(resources.GetObject("btnDax.Image")));
             this.btnDax.Label = "DAX Studio";
             this.btnDax.Name = "btnDax";
             this.btnDax.ScreenTip = "Launch DAX Studio";

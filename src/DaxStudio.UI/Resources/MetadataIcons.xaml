@@ -5,7 +5,7 @@
     
     <conv:ResourceLookupConverter x:Key="MetadataIcons">
         <ResourceDictionary>
-            <BitmapImage x:Key="Table" UriSource="pack://application:,,,/DaxStudio.UI;component/Images/Metadata/Table.png"/>
+            <Image x:Key="Table" Source="{DynamicResource tableDrawingImage}"/>
             <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
             <BitmapImage x:Key="Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
             <BitmapImage x:Key="HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />
@@ -19,5 +19,36 @@
             <BitmapImage x:Key="Folder" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
         </ResourceDictionary>
     </conv:ResourceLookupConverter>
+
+    <conv:ResourceThemeLookupConverter x:Key="MetadataIcons2">
+        <ResourceDictionary>
+            <Image x:Key="Table" Source="{DynamicResource tableDrawingImage}"/>
+            <BitmapImage x:Key="Light.HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
+            <BitmapImage x:Key="Light.Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
+            <BitmapImage x:Key="Light.HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />
+            <BitmapImage x:Key="Light.Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Measure.png" />
+            <BitmapImage x:Key="Light.HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenMeasure.png" />
+            <BitmapImage x:Key="Light.Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/model.png" />
+            <BitmapImage x:Key="Light.Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Table.png" />
+            <BitmapImage x:Key="Light.Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy.png"/>
+            <BitmapImage x:Key="Light.Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>
+            <BitmapImage x:Key="Light.UnnaturalHierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy-unnatural.png"/>
+            <BitmapImage x:Key="Light.Folder" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
+
+            <BitmapImage x:Key="Dark.Table" UriSource="{DynamicResource Metadata.Table}"/>
+            <BitmapImage x:Key="Dark.HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
+            <BitmapImage x:Key="Dark.Column" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Column.png" />
+            <BitmapImage x:Key="Dark.HiddenColumn" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenColumn.png" />
+            <BitmapImage x:Key="Dark.Measure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Measure.png" />
+            <BitmapImage x:Key="Dark.HiddenMeasure" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenMeasure.png" />
+            <BitmapImage x:Key="Dark.Model" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/model.png" />
+            <BitmapImage x:Key="Dark.Perspective" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Table.png" />
+            <BitmapImage x:Key="Dark.Hierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy.png"/>
+            <BitmapImage x:Key="Dark.Kpi" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Kpi.png"/>
+            <BitmapImage x:Key="Dark.UnnaturalHierarchy" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Hierarchy-unnatural.png"/>
+            <BitmapImage x:Key="Dark.Folder" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
+
+        </ResourceDictionary>
+    </conv:ResourceThemeLookupConverter>
 
 </ResourceDictionary>

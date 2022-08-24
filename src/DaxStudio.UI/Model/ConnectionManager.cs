@@ -17,7 +17,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
-
+using System.Threading;
+using DaxStudio.Common.Enums;
+using System.Xml.XPath;
+using System.IO;
 
 namespace DaxStudio.UI.Model
 {
@@ -38,7 +41,7 @@ namespace DaxStudio.UI.Model
         , IMetadataProvider
         , IConnection
         , IModelIntellisenseProvider
-        , IHandleWithTask<RefreshTablesEvent>
+        , IHandle<RefreshTablesEvent>
         , IHandle<SelectedModelChangedEvent>
     {
         public bool IsConnecting { get; private set; }
@@ -47,21 +50,22 @@ namespace DaxStudio.UI.Model
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
         private static readonly IEnumerable<string> _keywords;
-
+        private readonly SemaphoreSlim _commandSemaphore;
         static ConnectionManager()
         {
-            _keywords = new List<string>() 
-            {   "COLUMN", 
-                "DEFINE", 
-                "EVALUATE", 
+            _keywords = new List<string>()
+            {   "COLUMN",
+                "DEFINE",
+                "EVALUATE",
                 "MEASURE",
-                "RETURN", 
+                "RETURN",
                 "TABLE",
                 "VAR" };
         }
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+            _commandSemaphore = new SemaphoreSlim(1, 1);
             ConfigureRetryPolicy();
         }
 
@@ -119,9 +123,21 @@ namespace DaxStudio.UI.Model
         public string ConnectionStringWithInitialCatalog =>
             _connection?.ConnectionStringWithInitialCatalog ?? string.Empty;
 
-        public ADOTabularDatabase Database => _retry.Execute(() => _connection?.Database);
+        public ADOTabularDatabase Database => _retry.Execute(() => {
+            using (new SemaphoreSlimLock(_commandSemaphore))
+            {
+                return _connection?.Database;
+            }
+        });
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
-        public DaxMetadata DaxMetadataInfo => _connection?.DaxMetadataInfo;
+        public DaxMetadata DaxMetadataInfo {
+            get {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection?.DaxMetadataInfo;
+                }
+            }
+        }
         public DaxColumnsRemap DaxColumnsRemapInfo
         {
             get
@@ -133,7 +149,7 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    
+
                     if (_connection.HasRlsParameters())
                     {
                         newConn = _connection.CloneWithoutRLS();
@@ -144,14 +160,18 @@ namespace DaxStudio.UI.Model
                         conn = _connection;
                     }
 
-                    var remapInfo = _retry.Execute(() => conn?.DaxColumnsRemapInfo);
+                    var remapInfo = _retry.Execute(() => {
+                        using (new SemaphoreSlimLock(_commandSemaphore)) {
+                            return conn?.DaxColumnsRemapInfo;
+                        }
+                    });
                     return remapInfo;
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxColumnsRemap();
                 }
@@ -185,15 +205,17 @@ namespace DaxStudio.UI.Model
                     {
                         conn = _connection;
                     }
-
-                    var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
-                    return remapInfo;
+                    using (new SemaphoreSlimLock(_commandSemaphore))
+                    {
+                        var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
+                        return remapInfo;
+                    }
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxTablesRemap();
                 }
@@ -209,11 +231,24 @@ namespace DaxStudio.UI.Model
         #region Query Exection
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
-            return _retry.Execute(()=> _connection.ExecuteDaxQueryDataTable(query));
+            return _retry.Execute(() =>
+            {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.ExecuteDaxQueryDataTable(query);    
+                }
+            });
         }
+
         public AdomdDataReader ExecuteReader(string query, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
-            return _retry.Execute(()=> _connection.ExecuteReader(query,paramList));
+            return _retry.Execute(() =>
+            {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.ExecuteReader(query, paramList);
+                }
+            });
         }
         public string FileName
         {
@@ -242,26 +277,47 @@ namespace DaxStudio.UI.Model
 
         public async Task<bool> HasSchemaChangedAsync()
         {
+            if (!this.IsConnected) return false;
+
             return await _retry.Execute(async () =>
             {
-                
-                bool hasChanged = await Task.Run(() =>
+                try
                 {
-                    var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
-                    conn.ChangeDatabase(this.SelectedDatabaseName);
-                    if (conn.State != ConnectionState.Open) conn.Open();
-                    var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
-                    _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
-                    conn.Close(true); // close and end the session
-                    return dbChanges;
-                });
-                
-                return hasChanged;
+                    bool hasChanged = await Task.Run(() =>
+                    {
+                        using (new SemaphoreSlimLock(_commandSemaphore))
+                        {
+                            var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
+                            conn.ChangeDatabase(this.SelectedDatabaseName);
+                            if (conn.State != ConnectionState.Open) conn.Open();
+                            var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
+                            _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
+                            conn.Close(true); // close and end the session
+                            return dbChanges;
+                        }
+                    });
+                    return hasChanged;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(HasSchemaChangedAsync), "Error checking if schema has been changed");
+                    Close();
+                    return false;
+                }
+
+
             });
 
         }
 
-        public ADOTabularDatabaseCollection Databases => _connection.Databases;
+        public ADOTabularDatabaseCollection Databases {
+            get {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.Databases;
+                }
+            }
+        }
         public bool IsAdminConnection => _connection?.IsAdminConnection ?? false;
 
         public bool IsConnected { get
@@ -270,9 +326,9 @@ namespace DaxStudio.UI.Model
                 return _connection.State == ConnectionState.Open;
             }
         }
-        public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT??false;
-        public bool IsPowerPivot { 
-            get => _connection?.IsPowerPivot ?? false; 
+        public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT ?? false;
+        public bool IsPowerPivot {
+            get => _connection?.IsPowerPivot ?? false;
             set => _connection.IsPowerPivot = value;
         }
 
@@ -282,18 +338,23 @@ namespace DaxStudio.UI.Model
         }
         public void Refresh()
         {
-            if (_connection?.State == ConnectionState.Open) _connection.Refresh();
+            if (_connection?.State == ConnectionState.Open) {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    _connection.Refresh();
+                }
+            }
         }
         public string ServerEdition => _connection.ServerEdition;
         public string ServerLocation => _connection.ServerLocation;
-        public string ServerMode => _connection.ServerMode;
-        public string ServerName => _connection?.ServerName??string.Empty;
-        public string ServerNameForHistory =>  !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
+        public string ServerMode { get { using (new SemaphoreSlimLock(_commandSemaphore)) { return _connection.ServerMode; } } }
+        public string ServerName => _connection?.ServerName ?? string.Empty;
+        public string ServerNameForHistory => !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
 
-        public int SPID => _connection.SPID;
+        public int SPID { get { using (new SemaphoreSlimLock(_commandSemaphore)) { return _connection.SPID; } } }
         public string ShortFileName => _connection.ShortFileName;
 
         public  bool ShouldAutoRefreshMetadata( IGlobalOptions options)
@@ -315,21 +376,36 @@ namespace DaxStudio.UI.Model
         private ADOTabularDatabase _selectedDatabase;
         private DateTime _lastSchemaUpdate;
 
-        public ADOTabularFunctionGroupCollection FunctionGroups => _functionGroups ?? (_functionGroups = new ADOTabularFunctionGroupCollection(_connection));
+        public ADOTabularFunctionGroupCollection FunctionGroups
+        {
+            get
+            {
+                if (_functionGroups == null && _connection != null) _functionGroups = new ADOTabularFunctionGroupCollection(_connection);
+                return _functionGroups;
+            }
+        }
 
         public ADOTabularDatabaseCollection GetDatabases()
         {
-            return _retry.Execute(() => { return _connection.Databases; });
+            return _retry.Execute(() => {
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    return _connection.Databases;
+                }
+            });
         }
 
         public ADOTabularModelCollection GetModels()
         {
-            return _retry.Execute(() => { return _connection.Database.Models; });
+            return _retry.Execute(() => { using (new SemaphoreSlimLock(_commandSemaphore)) { return _connection.Database.Models; } });
     }
 
         public ADOTabularTableCollection GetTables()
         {
-            return _connection.Database.Models[SelectedModelName].Tables;
+            using (new SemaphoreSlimLock(_commandSemaphore))
+            {
+                return _connection.Database.Models[SelectedModelName].Tables;
+            }
         }
 
         public AdomdType Type => AdomdType.AnalysisServices; // _connection.Type;
@@ -359,7 +435,15 @@ namespace DaxStudio.UI.Model
                     using (var newConn = _connection.Clone())
                     {
                         column.SampleData?.Clear();
-                        column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
+                        try
+                        {
+                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleData), "Error getting sample data");
+                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error getting sample data for tooltip\n{ex.Message}"));
+                        }
                     }
                 });
             }
@@ -405,26 +489,30 @@ namespace DaxStudio.UI.Model
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {
-            
             _retry.Execute(() =>
             {
-                var tempConn = _connection.Clone(true);
-                tempConn.Open();
-                tempConn.Ping();
-                tempConn.Close(false);
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    var tempConn = _connection.Clone(true);
+                    tempConn.Open();
+                    tempConn.Ping();
+                    tempConn.Close(false);
+                }
             });
         }
 
         public void PingTrace()
         {
-
             _retry.Execute(() =>
             {
-                var tempConn = _connection.Clone(true);
-                tempConn.Open();
-                tempConn.PingTrace();
-                tempConn.Close(false);
-            });
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    var tempConn = _connection.Clone(true);
+                    tempConn.Open();
+                    tempConn.PingTrace();
+                    tempConn.Close(false);
+                }
+            });            
         }
 
         public void ClearCache()
@@ -433,12 +521,20 @@ namespace DaxStudio.UI.Model
             {
                 var tempConn = _connection.CloneWithoutRLS();
                 //tempConn.Open();
-                tempConn.Database.ClearCache();
+                var tmpDb = tempConn.Database;
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    tmpDb.ClearCache();
+                }
                 tempConn.Close();
             }
             else
             {
-                this.Database.ClearCache();
+                var db = this.Database;
+                using (new SemaphoreSlimLock(_commandSemaphore))
+                {
+                    db.ClearCache();
+                }
             }
         }
         public ADOTabularModel SelectedModel { get; set; }
@@ -460,7 +556,7 @@ namespace DaxStudio.UI.Model
                     }
                     else
                     {
-                        _eventAggregator.PublishOnUIThread( 
+                        _eventAggregator.PublishOnUIThreadAsync( 
                             new OutputMessage(MessageType.Error, 
                                 $"DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {_connection.ServerVersion}")
                             );
@@ -468,7 +564,7 @@ namespace DaxStudio.UI.Model
                 }
             }
             // This allows us to move the loading of the table/column metadata onto a background thread
-            _eventAggregator.PublishOnBackgroundThread(new RefreshTablesEvent());
+            _eventAggregator.PublishOnBackgroundThreadAsync(new RefreshTablesEvent()).Wait();
         }
 
         public void SetSelectedDatabase(ADOTabularDatabase database)
@@ -501,7 +597,7 @@ namespace DaxStudio.UI.Model
                 if (_connection?.Database != null)
                     ModelList = _connection.Database.Models;
 
-                _eventAggregator.PublishOnUIThread(new DatabaseChangedEvent());
+                _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
             }
 
         }
@@ -579,7 +675,7 @@ namespace DaxStudio.UI.Model
                 {
                     //string daxMeasureName = "[" + modelMeasure.Name + "]";
                     //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
-                    Regex daxMeasureRegex = new Regex(@"[^\w']?\[" + modelMeasure.Name + "]");
+                    Regex daxMeasureRegex = new Regex(@"[^\w']?\[" + modelMeasure.Name.Replace("]","]]") + "]");
 
                     string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
 
@@ -593,7 +689,7 @@ namespace DaxStudio.UI.Model
                             {
                                 // todo - prompt user to see whether to continue
                                 var msg = "The measure name: '" + modelMeasure.Name + "' is also used as a column name in one or more of the tables in this model";
-                                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, msg));
+                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
                                 throw new InvalidOperationException(msg);
                             }
                         }
@@ -614,7 +710,7 @@ namespace DaxStudio.UI.Model
                 if (database != null)_connection.ChangeDatabase(database.Name);
                 SelectedDatabase = _connection.Database;
                 ModelList = _connection.Database?.Models;
-                _eventAggregator.PublishOnBackgroundThread(new DatabaseChangedEvent());
+                _eventAggregator.PublishOnBackgroundThreadAsync(new DatabaseChangedEvent());
             }, context);
         }
 
@@ -629,10 +725,11 @@ namespace DaxStudio.UI.Model
             _connection.Open();
             SelectedDatabase = _connection.Database;
             
-            _eventAggregator.PublishOnUIThread(new ConnectionOpenedEvent());
-            _eventAggregator.PublishOnUIThread(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
-            _eventAggregator.PublishOnBackgroundThread(new DmvsLoadedEvent(DynamicManagementViews));
-            _eventAggregator.PublishOnBackgroundThread(new FunctionsLoadedEvent(FunctionGroups));
+            _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent()).Wait();
+            _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name)).Wait();
+            _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews)).Wait();
+            _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups)).Wait();
+            Thread.Sleep(500);
         }
 
         private string GetFileName(ConnectEvent message)
@@ -645,16 +742,26 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public Task Handle(RefreshTablesEvent message)
+        public async Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() => {
-                _retry.Execute(() =>
+            try
+            {
+                await Task.Factory.StartNew(() =>
                 {
-                    GetTables();
-                    IsConnecting = false;
-                    _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
+                    _retry.Execute(() =>
+                    {
+                        GetTables();
+                        IsConnecting = false;
+                        _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
+                    });
                 });
-            });
+            }
+            catch (Exception ex)
+            {
+                var errMsg = $"Error refreshing table list: {ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), "IHandle<RefreshTablesEvent>", errMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));                
+            }
         }
 
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)
@@ -688,12 +795,13 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public void Handle(SelectedModelChangedEvent message)
+        public Task HandleAsync(SelectedModelChangedEvent message, CancellationToken cancellationToken)
         {
             var model = _connection?.Database?.Models[message.SelectedModel];
             SelectedModelName = message.SelectedModel;
-            if (model == null) return;
+            if (model == null) return Task.CompletedTask;
             SetSelectedModel(model);
+            return Task.CompletedTask;
         }
 
 
@@ -785,7 +893,7 @@ namespace DaxStudio.UI.Model
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
             connEvent.ActiveTraces = activeTraces;
-            _eventAggregator.PublishOnUIThread(connEvent);
+            _eventAggregator.PublishOnUIThreadAsync(connEvent);
 
         }
 
@@ -798,6 +906,41 @@ namespace DaxStudio.UI.Model
             return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
+        }
+        private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
+        public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
+        {
+            get
+            {
+                if (_supportedTraceEventClasses == null)
+                {
+                    _supportedTraceEventClasses = PopulateSupportedTraceEventClasses();
+
+                }
+
+                return _supportedTraceEventClasses;
+
+            }
+        }
+
+        private HashSet<DaxStudioTraceEventClass> PopulateSupportedTraceEventClasses()
+        {
+            var result = new HashSet<DaxStudioTraceEventClass>();
+            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
+            {
+                while (dr.Read())
+                {
+                    var xml = dr.GetString(0);
+                    XPathDocument xPath = new XPathDocument(new StringReader(xml));
+                    var nav = xPath.CreateNavigator();
+                    var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
+                    while (iter.MoveNext())
+                    {
+                        result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                    }
+                }
+            }
+            return result;
         }
 
     }

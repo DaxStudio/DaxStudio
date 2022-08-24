@@ -10,24 +10,29 @@
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             BorderBrush="DimGray" BorderThickness="1">
+             >
     <UserControl.Resources>
         
         
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/IconResourceDictionary.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-
+            <conv:LongToFormattedMsConverter x:Key="LongToFormattedMsConverter"/>
+            
             <col:ArrayList x:Key="QueryTypes">
                 <x:Static Member="sys:String.Empty" />
                 <sys:String>DAX</sys:String>
@@ -38,7 +43,9 @@
                 <sys:String>Xmla</sys:String>
             </col:ArrayList>
 
-            <Style TargetType="{x:Type ToolTip}">
+            <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
+                <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -48,11 +55,26 @@
                 </Setter>
             </Style>
 
-            <Style x:Key="AggregateRewriteTooltip" TargetType="{x:Type ToolTip}">
-                <!--<Setter Property="ContentTemplate">
+            <Style x:Key="AggregateRewriteTooltipStyle" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
+                <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
+                <Setter Property="OverridesDefaultStyle" Value="false"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Tooltip.Back}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Tooltip.Border}"/>
+                <Setter Property="HasDropShadow" Value="True"/>
+                <Setter Property="DataContext" Value="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"/>
+                <Setter Property="Template">
                     <Setter.Value>
-                        <DataTemplate>
-                            <Grid>
+                        <ControlTemplate>
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    Padding="5"
+                                    >
+                                <Border.Effect>
+                                    <DropShadowEffect/>
+                                </Border.Effect>
+                            <Grid >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
@@ -60,18 +82,30 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Text="Aggregation Hits: " />
-                                <TextBlock Text="Aggregation Misses: " Grid.Row="1"/>
-                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1"/>
-                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="1"/>
+                                <TextBlock Text="Aggregation Rewrite: "
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                             </Grid>
-                        </DataTemplate>
+                            </Border>
+                        </ControlTemplate>
                     </Setter.Value>
-                </Setter>-->
+                </Setter>
             </Style>
 
-            <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}">
+            <ToolTip x:Key="AggregateRewriteTooltip" Style="{StaticResource AggregateRewriteTooltipStyle}"/>
+            
+            <Style x:Key="QueryTypeStyle" TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding QueryType}" Value="ERR">
                         <Setter Property="Foreground" Value="OrangeRed"/>
@@ -79,8 +113,9 @@
                 </Style.Triggers>
                 
             </Style>
-            <Style x:Key="QueryTextStyle">
-
+            
+            <Style x:Key="QueryTextStyle" TargetType="{x:Type DataGridCell}">
+                <Setter Property="Margin" Value="5,2"/>
             </Style>
 
             <DataTemplate x:Key="QueryTextCell">
@@ -89,7 +124,7 @@
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="Query"
                             Text="{Binding Path=Query,Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
-                            VerticalAlignment="Top" 
+                            VerticalAlignment="Center" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
                             ToolTip="{Binding Query}">
@@ -98,11 +133,16 @@
                     </Border>
                 <!--</ScrollViewer>-->
             </DataTemplate>
-
-            <Style x:Key="ImageCell"  TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <!-- BasedOn="{StaticResource {x:Type DataGridCell}}" -->
+            <Style x:Key="ImageCell"  TargetType="DataGridCell">
                 <Setter Property="Padding" Value="2,0,2,0"/>
             </Style>
 
+            <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+                <Setter Property="Background" Value="Red"/>
+                <Setter Property="Foreground" Value="Green"/>
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>-->
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -112,30 +152,109 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
+        <!-- command bar -->
+        <controls:ClipBorder                 
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                Margin="0 0 0 8">
+            <DockPanel LastChildFill="False">
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsRecording}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource record_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Record</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsPaused}" IsEnabled="{Binding CanPause}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource pause_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Pause</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsStopped}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource cancelDrawingImage}" Width="16"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Stop</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ClearAll]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Clear</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyAll]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Copy</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action Export]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource save_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Export</TextBlock>
+                    </StackPanel>
+                </Button>
+
+
+                <!--<Rectangle DockPanel.Dock="Right"/>-->
+
+
+
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ShowFilters}"
+                              ToolTip="Show Filter Controls">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource right_layout_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Filters</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+            </DockPanel>
+        </controls:ClipBorder>
+
+
         <TextBlock Name="TraceStatusText" 
+                   Grid.Row="1"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
-
+        <!--                     -->
+        <controls:ClipBorder
+            Grid.Row="2"
+            >
         <controls:DataGridNoContextMenu x:Name="QueryEvents" 
-                    Grid.Row="1"
+                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                        
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
-                    filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
+                    filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}" 
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		            TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		            ResourceId=DataGridHeaderFilterControlStyle}}"
+		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                                ResourceId=DataGridHeaderFilterControlStyle}}"
                     VirtualizingPanel.IsVirtualizing="True"
                     SelectedItem="{Binding SelectedQuery}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
+                    Background="{DynamicResource Theme.Brush.Content.Back}"  
+                                        RowBackground="{DynamicResource Theme.Brush.Content.Back}"
+                    AlternationCount="2"
+                    AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                     AutoGenerateColumns="False"
                     behaviours:GridViewColumnResize.Enabled="True" 
                     VerticalAlignment="Stretch" 
-                    Background="White" 
+                    CanUserAddRows="False"
                     Width="Auto"
                     SelectionMode="Extended"
                     SelectionUnit="FullRow"
@@ -144,15 +263,27 @@
                     ScrollViewer.CanContentScroll="True"
                     FrozenColumnCount="1"
                     GridLinesVisibility="None" 
-                    BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
+                    BorderThickness="1,0,0,0" 
+                    BorderBrush="{x:Null}"
+                    IsReadOnly="True"
+                                        Padding="2"
+                                        Style="{StaticResource DefaultDataGridStyle}"
                     >
-
-            <DataGrid.Resources>
-                    <Style TargetType="{x:Type DataGridColumnHeader}">
-                    <Setter Property="VerticalContentAlignment" Value="Center" />
+            <!--<DataGrid.Style>
+                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type controls:DataGridNoContextMenu}">
+                    <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
                 </Style>
+            </DataGrid.Style>-->
+            
+            <DataGrid.Resources>
+                <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+                    <Setter Property="Background" Value="Red"/>
+                    <Setter Property="Foreground" Value="Green"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>-->
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
+                    <Setter Property="Margin" Value="5,2"/>
                 </Style>
             </DataGrid.Resources>
             <!--<DataGrid.ColumnHeaderStyle>
@@ -162,17 +293,18 @@
                 </Style>
             </DataGrid.ColumnHeaderStyle>-->
             
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
+            <!--<DataGrid.CellStyle>
+                <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Padding" Value="5,0,5,0"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                <Border Padding="{TemplateBinding Padding}" 
+                                    --><!--Background="{TemplateBinding Background}"--><!--
+                                    <Border Padding="{TemplateBinding Padding}" 
                                         BorderBrush="{TemplateBinding BorderBrush}" 
                                         BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Background="{TemplateBinding Background}" 
+
                                         SnapsToDevicePixels="True">
                                     <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                                 </Border>
@@ -180,7 +312,7 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </DataGrid.CellStyle>
+            </DataGrid.CellStyle>-->
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource QueryTypeStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
@@ -195,10 +327,17 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Image Source="{Binding AggregationStatus, Converter={StaticResource AggregateRewriteIcons}}" />
-                                <Rectangle Fill="Transparent">
-                                    <Rectangle.ToolTip>
-                                        <ToolTip Style="{StaticResource AggregateRewriteTooltip}" DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                <Image ap:ImageBindingHelper.SourceResourceKey="{Binding AggregationStatusImage}" Width="10" />
+                                <Rectangle Fill="Transparent" >
+                                        <Rectangle.ToolTip>
+                                            <ToolTip 
+                                                DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                                                Style="{StaticResource AggregateRewriteTooltipStyle}"/>
+                                        </Rectangle.ToolTip>
+                                    <!--<Rectangle.ToolTip>-->
+                                            <!-- Style="{StaticResource AggregateRewriteTooltip}" 
+                                         DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"-->
+                                        <!--<ToolTip >
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
@@ -219,7 +358,7 @@
 
                                         </ToolTip>
 
-                                    </Rectangle.ToolTip>
+                                    </Rectangle.ToolTip>-->
                                 </Rectangle>
 
                             </Grid>
@@ -228,6 +367,7 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn 
                     Header="StartTime" 
+                    
                     IsReadOnly="True" 
                     Width="65" 
                     Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  
@@ -242,52 +382,82 @@
                                         SelectedItemBinding="{Binding QueryType}"
                                         />
 
-                <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="60" 
-                                    Binding="{Binding Duration, StringFormat='#,0'}" 
-                                    ElementStyle="{StaticResource AlignRight}"
+                    <!--                                     Binding="{Binding Duration, StringFormat='#,0'}" 
+                                    ElementStyle="{StaticResource AlignRight}"-->
+                    <DataGridTemplateColumn Header="Duration" IsReadOnly="True" Width="60" 
+
                                     
-                                    />
-                    <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="Username"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
+                                    >
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                
-                                <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Username"   
-                                            Text="{Binding Path=Username,Mode=OneWay}"  
-                                            VerticalAlignment="Top" 
-                                            HorizontalAlignment="Left"   
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTip="{Binding Username}">
-                                        </TextBlock>
+                                <Border Margin="0" Padding="0">
+                                    <TextBlock x:Name="Duration" 
+                                               Text="{Binding Path=Duration, Mode=OneWay, Converter={StaticResource LongToFormattedMsConverter}}" 
+                                        Margin="5,2"
+                                        VerticalAlignment="Center" 
+                                        HorizontalAlignment="Right"    />
+                                    <!--<TextBlock Text="{Binding Path=Duration, Mode=OneWay}" TextAlignment="Right"
+                                               Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
+
+
+                                    <ProgressBar 
+                                    x:Name="spinner"
+                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                    Grid.Column="0"
+                                    IsIndeterminate="True"
+                                    Width="16"
+                                    Height="16"
+                                        HorizontalAlignment="Right"
+                                    Foreground="{DynamicResource Theme.Brush.Accent}"
+                                    Background="{DynamicResource Theme.Brush.Alternate.Back}"
+                                    Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>-->
                                 </Border>
-                                
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
+                        
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
-                                            filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
-                                            filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <DataGridTemplateColumn.CellTemplate>
+
+                    <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
+                                        filter:DataGridColumnExtensions.CustomBindingPath="Username"
+                                        filter:DataGridColumnExtensions.IsContainsTextSearch="True">
+                    <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
+                    <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
-                                <Border Margin="0" Padding="0" 
-                                  cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
-                                        <TextBlock x:Name="Query"
-                            Text="{Binding Path=DatabaseName,Mode=OneWay}"  
-                            VerticalAlignment="Top" 
-                            HorizontalAlignment="Left"   
-                            TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding DatabaseName}">
-                                        </TextBlock>
-                                    </Border>
-                            </ScrollViewer>
+                            <Border Margin="0" Padding="0" 
+                                cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
+                                <TextBlock x:Name="Username"   
+                                        Text="{Binding Path=Username,Mode=OneWay}"  
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Left"   
+                                        TextTrimming="CharacterEllipsis"
+                                           Margin="5,2"
+                                        ToolTip="{Binding Username}">
+                                </TextBlock>
+                            </Border>
                         </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
+                                        filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
+                                        filter:DataGridColumnExtensions.IsContainsTextSearch="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0" MaxHeight="70">
+                            <Border Margin="0" Padding="0" 
+                                cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
+                                    <TextBlock x:Name="Query"
+                        Text="{Binding Path=DatabaseName,Mode=OneWay}"  
+                        VerticalAlignment="Center" 
+                        HorizontalAlignment="Left"   
+                        TextTrimming="CharacterEllipsis"
+                                               Margin="5,2"
+                        ToolTip="{Binding DatabaseName}">
+                                    </TextBlock>
+                                </Border>
+                        </ScrollViewer>
+                    </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
                 <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
                                             filter:DataGridColumnExtensions.CustomBindingPath="Query"
@@ -310,6 +480,8 @@
 -->
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
+        </controls:ClipBorder>
+        
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 
@@ -321,9 +493,16 @@
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock x:Name="BusyMessage"/>
-                    </Label>
+                    <ProgressBar 
+                                x:Name="spinner"
+                                Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                Grid.Column="0"
+                                Width="24"
+                                Height="24"
+                                Margin="0 0 10 0"
+                                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Label x:Name="BusyMessage" Style="{StaticResource SpinnerLabel}"/>
+                    
                 </StackPanel>
             </Grid>
         </Border>

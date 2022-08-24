@@ -111,10 +111,10 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void Next()
+        public async void Next()
         {
             NextPage = ExportDataWizardPage.ChooseTables;
-            TryClose();
+            await TryCloseAsync();
         }
 
         public bool CanNext => CsvFolder.Length > 0;

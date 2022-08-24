@@ -7,10 +7,10 @@ namespace DaxStudio.UI.Utils {
     public class ApplicationCloseCheck : IResult {
         
         //readonly Action<IDialogManager, Action<bool>> closeCheck;
-        readonly Action<Action<bool>> closeCheck;
+        readonly Func<bool> closeCheck;
         readonly IChild screen;
 
-        public ApplicationCloseCheck(IChild screen,  Action<Action<bool>> closeCheck) {
+        public ApplicationCloseCheck(IChild screen, Func<bool> closeCheck) {
             this.screen = screen;
             this.closeCheck = closeCheck;
         }
@@ -21,9 +21,9 @@ namespace DaxStudio.UI.Utils {
         public void Execute(CoroutineExecutionContext context) {
             var documentWorkspace = screen.Parent as IDocumentWorkspace;
             if (documentWorkspace != null)
-                documentWorkspace.Activate(screen);
+                documentWorkspace.ActivateAsync(screen);
 
-            closeCheck(result => Completed(this, new ResultCompletionEventArgs { WasCancelled = !result }));
+            Completed(this, new ResultCompletionEventArgs { WasCancelled = !closeCheck() });
         }
 
         public event EventHandler<ResultCompletionEventArgs> Completed = delegate { };

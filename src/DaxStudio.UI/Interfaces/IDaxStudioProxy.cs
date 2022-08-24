@@ -12,7 +12,7 @@ namespace DaxStudio.UI.Interfaces
         bool IsExcel { get; } 
         bool SupportsQueryTable { get; }
         bool SupportsStaticTable { get; }
-        bool HasPowerPivotModel { get; }
+        bool HasPowerPivotModel(int TimeoutSecs);
         //bool HasPowerPivotData();
         void EnsurePowerPivotDataIsLoaded();
         //string BuildPowerPivotConnection();

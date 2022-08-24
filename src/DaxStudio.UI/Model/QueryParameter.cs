@@ -28,15 +28,22 @@ namespace DaxStudio.UI.Model
                 switch (TypeName)
                 {
                     case "xsd:string" :
-                        return $"\"{Value.ToString()}\"";
+                        return $"\"{Value?.ToString()}\"";
                     case "xsd:dateTime":
-                        var dt = (DateTime)Value;
-                        return $"DATE({dt.Year},{dt.Month},{dt.Day})";
+                        try
+                        {
+                            var dt = (DateTime)Value;
+                            return $"DATE({dt.Year},{dt.Month},{dt.Day})";
+                        }
+                        catch
+                        {
+                            return $"/* ERROR: Unable to convert the value '{Value?.ToString()}' to a datetime */ DATE(0,0,0)";
+                        }
                     case "xsd:boolean":
                         return (bool)Value ? "TRUE()" : "FALSE()";
                     default:
-                        if (string.IsNullOrEmpty(Value.ToString())) return "BLANK()";
-                        return Value.ToString();
+                        if (string.IsNullOrEmpty(Value?.ToString())) return "BLANK()";
+                        return Value?.ToString();
                 }
 
             }

@@ -9,24 +9,20 @@ namespace DaxStudio.UI.Model
     {
         private string rawQuery;
         private Dictionary<string,QueryParameter> _parameters;
-        public QueryInfo(string queryText, bool injectEvaluate, bool injectRowFunction, IEventAggregator eventAggregator)
+        public QueryInfo(string queryText, IEventAggregator eventAggregator)
         {
             NeedsParameterValues = true;
-            InjectEvaluate = injectEvaluate;
-            InjectRowFunction = injectRowFunction;
             rawQuery = queryText;
             _parameters = new Dictionary<string, QueryParameter>(StringComparer.OrdinalIgnoreCase );
             DaxHelper.PreProcessQuery(this, rawQuery, eventAggregator);
         }
         public string ProcessedQuery { get {
-                var baseQuery = InjectEvaluate ? "EVALUATE " : "";
-                baseQuery += InjectRowFunction ? "ROW(\"Value\", " : "";
+                var baseQuery = string.Empty;
                 if (HasParameters) {
                     baseQuery += QueryText; 
                 } else {
                     baseQuery += rawQuery;
                 }
-                baseQuery += InjectRowFunction ? " )" : "";
 
                 return baseQuery;
             }
@@ -36,8 +32,6 @@ namespace DaxStudio.UI.Model
         public bool HasParameters { get { return Parameters.Count > 0; } }
         //public string ProcessedQuery { get; set; }
         public bool NeedsParameterValues { get; set; }
-        public bool InjectEvaluate { get; }
-        public bool InjectRowFunction { get; }
 
         public string QueryWithMergedParameters
         {

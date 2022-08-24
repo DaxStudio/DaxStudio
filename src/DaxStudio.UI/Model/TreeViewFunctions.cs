@@ -22,7 +22,8 @@ namespace DaxStudio.UI.Model
         {
             var lst = new List<FilterableTreeViewItem>();
             var grps = funcProvider.FunctionGroups;
-            if (grps == null) return null;
+
+            if (grps == null) return lst;
             foreach (var fg in grps)
             {
                 

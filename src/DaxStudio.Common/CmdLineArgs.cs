@@ -143,5 +143,38 @@ namespace DaxStudio.Common
                 _app.Properties.Add(AppProperties.ShowHelp, value);
             }
         }
+
+        public bool Reset
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.Reset))
+                    return (bool)_app.Properties[AppProperties.Reset];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.Reset))
+                    _app.Properties[AppProperties.Reset] = value;
+                _app.Properties.Add(AppProperties.Reset, value);
+            }
+        }
+
+        public bool NoPreview
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.NoPreview))
+                    return (bool)_app.Properties[AppProperties.NoPreview];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.NoPreview))
+                    _app.Properties[AppProperties.NoPreview] = value;
+                _app.Properties.Add(AppProperties.NoPreview, value);
+
+            }
+        }
     }
 }

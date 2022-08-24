@@ -93,7 +93,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     Log.Error("{class} {method} {error}", "VersionCheck", "worker_DoWork", ex.Message);
-                    _eventAggregator.PublishOnUIThread(new ErrorEventArgs(ex));
+                    _eventAggregator.PublishOnUIThreadAsync(new ErrorEventArgs(ex));
                 }
 
                 CheckVersion();
@@ -101,7 +101,7 @@ namespace DaxStudio.UI.Model
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"Error while checking for updates: {ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error while checking for updates: {ex.Message}"));
             }
             finally
             {
@@ -117,7 +117,7 @@ namespace DaxStudio.UI.Model
             {
                 if (!VersionIsLatest && ServerVersion != DismissedVersion && !ServerVersion.IsNotSet())
                 {
-                    _eventAggregator.PublishOnUIThread(new NewVersionEvent(ServerVersion, DownloadUrl));
+                    _eventAggregator.PublishOnUIThreadAsync(new NewVersionEvent(ServerVersion, DownloadUrl));
                 }
             }
             catch (Exception ex)
@@ -215,7 +215,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), $"Error parsing CurrentVersion.json: {ex.Message}");
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
                 }
                 finally
                 {

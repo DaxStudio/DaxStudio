@@ -123,6 +123,7 @@
     <Compile Include="IIntellisenseProvider.cs" />
     <Compile Include="IntellisenseProviderStub.cs" />
     <Compile Include="Renderers\TextMarkerService.cs" />
+    <Compile Include="Resources\ResourceKeys.cs" />
     <Compile Include="TextBoxController.cs" />
     <Compile Include="WordHighlighTransformer.cs" />
     <Page Include="Themes\Generic.xaml">
@@ -181,12 +182,15 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.2.30</Version>
+      <Version>6.1.3.50</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>5.0.3</Version>
+      <Version>6.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="ModernWpfUI">
+      <Version>0.9.6</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.4</Version>

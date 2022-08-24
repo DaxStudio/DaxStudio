@@ -17,7 +17,7 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<AutoSaveIndexEntry> Files {get; set;}
 
-        public void Open() {
+        public async void Open() {
 
             // TODO - implement open logic
 
@@ -29,7 +29,7 @@ namespace DaxStudio.UI.ViewModels
             //        doc.IsDirty = false;
             //}
             _dialogResult = OpenDialogResult.Open;
-            TryClose(true);
+            await TryCloseAsync(true);
         }
         
         public void Cancel() {

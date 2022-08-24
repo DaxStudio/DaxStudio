@@ -16,7 +16,7 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<ISaveable> Documents {get; set;}
 
-        public void Save() {
+        public async void Save() {
             foreach (var doc in Documents)
             {
                 if (doc.ShouldSave)
@@ -25,15 +25,16 @@ namespace DaxStudio.UI.ViewModels
                     doc.IsDirty = false;
             }
             _dialogResult = SaveDialogResult.Save;
-            TryClose(true);
+            await TryCloseAsync(true);
         }
-        public void DontSave() {
+        public async void DontSave()
+        {
             foreach (var doc in Documents)
             {
                 doc.IsDirty = false;
             }
             _dialogResult = SaveDialogResult.DontSave;
-            TryClose(true);
+            await TryCloseAsync (true);
         }
         public void Cancel() {
             _dialogResult = SaveDialogResult.Cancel;

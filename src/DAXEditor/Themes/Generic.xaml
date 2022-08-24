@@ -7,8 +7,32 @@
     xmlns:rendering="clr-namespace:ICSharpCode.AvalonEdit.Rendering;assembly=ICSharpCode.AvalonEdit"
     xmlns:AEComplete="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
     xmlns:unit="clr-namespace:UnitComboLib;assembly=UnitComboLib"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:reskeys="clr-namespace:DAXEditor.Resources"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     >
+    <ResourceDictionary.MergedDictionaries>
+        <ui:XamlControlsResources />
+    </ResourceDictionary.MergedDictionaries>
+
+    <Thickness x:Key="ComboBoxEditableTextPadding">10,0,30,0</Thickness>
+    <sys:Double x:Key="ComboBoxMinHeight">24</sys:Double>
+    <Thickness x:Key="ComboBoxPadding">12,1,0,3</Thickness>
+
     <Style TargetType="{x:Type local:DAXEditor}" BasedOn="{StaticResource {x:Type ae:TextEditor }}">
+
+        <Setter Property="Background" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorBackground}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorForeground}}" />
+        <Setter Property="LineNumbersForeground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorLineNumbersForeground}}" />
+        <Setter Property="EditorCurrentLineBackground" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBackgroundBrushKey}}" />
+
+
+
+        <!--<Setter Property="EditorCurrentLineBorder" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBorderBrushKey}}" />
+        <Setter Property="EditorCurrentLineBorderThickness" Value="{DynamicResource {x:Static reskeys:ResourceKeys.EditorCurrentLineBorderThicknessKey}}" />-->
+        
+        
+        
         <!--<Style TargetType="{x:Type ae:TextEditor}">-->
         <!--
         <Setter Property="Template">
@@ -31,7 +55,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:DAXEditor}">
-                    <!--
+                    
                         <ControlTemplate.Resources>
                             <Style TargetType="{x:Type editing:TextArea}">
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -48,8 +72,8 @@
                                         <ControlTemplate TargetType="{x:Type editing:TextArea}">
                                             <DockPanel Focusable="False">
                                                 <ItemsControl DockPanel.Dock="Left"
-						              Focusable="False"
-						              ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=LeftMargins}">
+						                                Focusable="False"
+						                                ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=LeftMargins}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" />
@@ -57,8 +81,8 @@
                                                     </ItemsControl.ItemsPanel>
                                                 </ItemsControl>
                                                 <ContentPresenter Panel.ZIndex="-1"
-                                        Focusable="False"
-                                        Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TextView}"/>
+                                                    Focusable="False"
+                                                    Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TextView}"/>
                                             </DockPanel>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -67,18 +91,18 @@
 
                             <Style TargetType="{x:Type editing:LineNumberMargin}">
                                 <Setter Property="Control.Cursor" Value="/ICSharpCode.AvalonEdit;component/themes/RightArrow.cur"/>
-                                <Setter Property="Margin" Value="9,0,15,0" />
+                                <Setter Property="Margin" Value="4,0,6,0" />
                             </Style>
 
                             <Style TargetType="{x:Type rendering:TextView}">
                                 <Setter Property="NonPrintableCharacterBrush" Value="{DynamicResource NonPrintableCharacterBrush}" />
                                 <Setter Property="LinkTextForegroundBrush"    Value="{DynamicResource LinkTextForegroundBrush}" />
-                        -->
+                        
                     <!-- Style hyperlink displayed within text in text editor -->
-                    <!--        <Setter Property="LinkTextBackgroundBrush"    Value="{DynamicResource LinkTextBackgroundBrush}" />
+                    <!--        <Setter Property="LinkTextBackgroundBrush"    Value="{DynamicResource LinkTextBackgroundBrush}" />-->
                             </Style>
 
-                            <Style TargetType="{x:Type ListBoxItem}" x:Key="CompletionListBoxItem">
+                     <!--       <Style TargetType="{x:Type ListBoxItem}" x:Key="CompletionListBoxItem">
                                 <Setter Property="Background"      Value="#FF000000" /> -->
                     <!-- Background of each item -->
                     <!--
@@ -142,12 +166,15 @@
                                 <Setter Property="WindowStyle" Value="None" />
                                 <Setter Property="AllowsTransparency" Value="True" />
                             </Style>
-
+-->
                         </ControlTemplate.Resources>
-                        -->
+                        
                     <Border Background="{TemplateBinding Background}"
-							      BorderBrush="{TemplateBinding BorderBrush}"
-							      BorderThickness="{TemplateBinding BorderThickness}">
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="8"
+                            x:Name="EditorBorder">
 
                         <ScrollViewer Focusable="False"
 						            Name="PART_ScrollViewer"
@@ -163,13 +190,13 @@
 					              BorderThickness="{TemplateBinding BorderThickness}">
                             <ScrollViewer.Template>
                                 <ControlTemplate TargetType="{x:Type ScrollViewer}">
-                                    <Border BorderBrush="{TemplateBinding BorderBrush}"
-					              BorderThickness="{TemplateBinding BorderThickness}"
-                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                        VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                                    <Border 
+					                        
+                                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalAlignment}">    
                                         <Grid Background="{TemplateBinding Background}"
-                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                        VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
@@ -177,32 +204,33 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="*"/>
                                                 <RowDefinition Height="Auto"/>
+
                                             </Grid.RowDefinitions>
 
                                             <!-- Display TextEditor content in upper left corner -->
-                                            <ScrollContentPresenter Grid.Column="0" Grid.Row="0"
-                                            KeyboardNavigation.DirectionalNavigation="Local"
-                                            CanContentScroll="True"
-                                            CanHorizontallyScroll="True"
-                                            CanVerticallyScroll="True"
+                                            <ScrollContentPresenter Grid.Column="0" 
+                                                                    Grid.Row="0"
+                                                        KeyboardNavigation.DirectionalNavigation="Local"
+                                                        CanContentScroll="True"
+                                                        CanHorizontallyScroll="True"
+                                                        CanVerticallyScroll="True"
 						                                Content="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DAXEditor}}, Path=TextArea}"
                                             />
 
                                             <!-- Display Vertical Scrollbar to the right -->
                                             <ScrollBar Name="PART_VerticalScrollBar"
-                               Grid.Column="1"
-                               Value="{TemplateBinding VerticalOffset}"
-                               Maximum="{TemplateBinding ScrollableHeight}"
-                               ViewportSize="{TemplateBinding ViewportHeight}"
-                               Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                                                       Grid.Column="1"
+                                                       Grid.Row="0"
+                                                       Margin="0 0 0 4"
+                                                       HorizontalAlignment="Right"
+                                                       Value="{TemplateBinding VerticalOffset}"
+                                                       Maximum="{TemplateBinding ScrollableHeight}"
+                                                       ViewportSize="{TemplateBinding ViewportHeight}"
+                                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
 
                                             <!-- Display mini-toolbar and Horizontal scrollbar at the bottom of the view -->
                                             <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->
-                                            <Grid Grid.Column="0" Grid.Row="1" Background="{DynamicResource DialogBackgroundBrush}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
+                                            
                                                 <!--
                                                     <ComboBox DataContext="{Binding FontScale}"
                                            FontSize="12"
@@ -219,35 +247,43 @@
                                                     </ComboBox>
 -->
                                                 <unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
-                                               FontSize="12"
-                                               ItemsSource="{Binding SelectedItem.DefaultValues}"
-                                               ToolTip="{Binding ValueTip}"
-                                               HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                               Grid.Column="0"
-                                               Margin="3,0"
-                                               Padding="0"
-                                               BorderThickness="1"
-                                               BorderBrush="Transparent"
-                                               IsEditable="True"
-                                               >
+                                                                   Grid.Row="1"                                                               
+                                                                   Grid.Column="1"
+                                                                   Margin="-50 -4 0 0 "
+                                                          FontSize="12"
+                                                       ItemsSource="{Binding SelectedItem.DefaultValues, Mode=OneTime}"
+                                                       ToolTip="{Binding ValueTip}"
+                                                       HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                                       
+                                                       Padding="0"
+                                                       BorderThickness="1"
+                                                       BorderBrush="Transparent"
+                                                       IsEditable="True"
+                                                       >
                                                     <unit:UnitCombobox.Text>
                                                         <Binding Path="StringValue" Mode="TwoWay" ValidatesOnDataErrors="True"/>
                                                     </unit:UnitCombobox.Text>
+                                                    <unit:UnitCombobox.Style>
+                                                        <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="{x:Type unit:UnitCombobox}"/>
+                                                    </unit:UnitCombobox.Style>
                                                 </unit:UnitCombobox>
 
                                                 <ScrollBar Name="PART_HorizontalScrollBar"
-                                   Orientation="Horizontal"
-                                   Grid.Column="1"
-                                   Value="{TemplateBinding HorizontalOffset}"
-                                   Maximum="{TemplateBinding ScrollableWidth}"
-                                   ViewportSize="{TemplateBinding ViewportWidth}"
-                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
-                                            </Grid>
+                                                       Orientation="Horizontal"
+                                                       Grid.Column="0"
+                                                       Grid.Row="1"
+                                                       Margin="0 0 50 0"
+                                                       VerticalAlignment="Bottom"
+                                                       Value="{TemplateBinding HorizontalOffset}"
+                                                       Maximum="{TemplateBinding ScrollableWidth}"
+                                                       ViewportSize="{TemplateBinding ViewportWidth}"
+                                                       Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                                            
                                             <!-- Using DialogBackgroundBrush since Editor can use a WPF Theme independent background color -->
-                                            <DockPanel Grid.Column="1" Grid.Row="1" LastChildFill="false" Background="{DynamicResource DialogBackgroundBrush}">
+                                            <!--<DockPanel Grid.Column="1" Grid.Row="1" LastChildFill="false" Background="{DynamicResource DialogBackgroundBrush}">
                                                 <Rectangle Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Width="1" Fill="White" DockPanel.Dock="Left" />
                                                 <Rectangle Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Height="1" Fill="White" DockPanel.Dock="Top" />
-                                            </DockPanel>
+                                            </DockPanel>-->
                                         </Grid>
                                     </Border>
                                 </ControlTemplate>

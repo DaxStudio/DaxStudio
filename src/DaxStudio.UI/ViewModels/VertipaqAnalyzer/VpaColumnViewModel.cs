@@ -36,6 +36,10 @@ namespace DaxStudio.UI.ViewModels
         public double PercentageTable => _col.PercentageTable;
         public long SegmentsNumber => _col.SegmentsNumber;
         public long PartitionsNumber => _col.PartitionsNumber;
+        public int? SegmentsPageable => _col.SegmentsPageable;
+        public int? SegmentsResident => _col.SegmentsResident;
+        public double? SegmentsAverageTemperature => _col.SegmentsAverageTemperature * 1000;
+        public DateTime? SegmentsLastAccessed => _col.SegmentsLastAccessed;
         public long ReferentialIntegrityViolationCount => Table.ReferentialIntegrityViolationCount;
         public long UserHierarchiesSize => Table.UserHierarchiesSize;
         public long RelationshipsSize => Table.RelationshipSize;

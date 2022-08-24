@@ -16,12 +16,13 @@ namespace DaxStudio.UI.Model
 
         protected ToolWindowBase()
         {
-            CanCloseWindow = true;
+            CanCloseWindow = false;
             CanHide = false;
             AutoHideMinHeight = 100;
             DockAsDocumentCommand = new DisabledCommand();
             NotifyOfPropertyChange(()=>DockAsDocumentCommand);
             ViewAttached += ToolWindowBase_ViewAttached;
+            HideCommand = new DelegateCommand(HideToolWindow, CanHideToolWindow);
         }
 
         private void ToolWindowBase_ViewAttached(object sender, ViewAttachedEventArgs e)
@@ -49,7 +50,11 @@ namespace DaxStudio.UI.Model
         //public new bool CanClose { get { return _canClose; } set { if (value != _canClose) { _canClose = value;  NotifyOfPropertyChange(() => CanClose); } } }
         //public bool CanClose { get; set; }
         public bool IsEnabled { get; set; }
-        public bool CanHide { get; set; }
+
+        public DelegateCommand HideCommand { get; set; }
+        public bool CanHideToolWindow(object obj) { return CanHide; }
+        public void HideToolWindow(object obj) { this.IsVisible = false; this.TryCloseAsync(); }
+        public virtual bool CanHide { get;  }
         public int AutoHideMinHeight { get; set; }
         public new  bool IsActive { get; set; }
         private bool _isSelected;
@@ -60,7 +65,6 @@ namespace DaxStudio.UI.Model
         }
 
         public abstract string ContentId { get; }
-        public abstract ImageSource IconSource { get; }
 
         public void Activate()
         {

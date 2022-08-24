@@ -9,7 +9,7 @@ namespace DaxStudio.UI.Events
         public RunQueryEvent(IResultsTarget target)
         {
             ResultsTarget = target;
-            RunStyle = new RunStyle("Run", RunStyleIcons.RunOnly, false,false,false, "");
+            RunStyle = new RunStyle("Run", RunStyleIcons.RunOnly,  "");
             IsBenchmark = false;
         }
         public RunQueryEvent(IResultsTarget target, RunStyle runStyle)

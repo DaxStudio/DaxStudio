@@ -46,7 +46,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(nameof(FilterType));
                 NotifyOfPropertyChange(nameof(ShowFilterValue));
                 NotifyOfPropertyChange(nameof(ShowFilterValue2));
-                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -113,7 +113,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValueIsValid));
                 NotifyOfPropertyChange(nameof(FilterValueValidationMessage));
-                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             } 
         }
 
@@ -137,7 +137,7 @@ namespace DaxStudio.UI.Model
                 if (FilterType == FilterType.In) FilterType = FilterType.Is;
                 if (FilterType == FilterType.NotIn) FilterType = FilterType.IsNot;
                 NotifyOfPropertyChange(nameof(FilterTypes));
-                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             } 
         }
 
@@ -204,7 +204,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValue2IsValid));
                 NotifyOfPropertyChange(nameof(FilterValue2ValidationMessage));
-                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -224,7 +224,7 @@ namespace DaxStudio.UI.Model
                 if (_filterValue2IsParameter && !value && !FilterValue2.StartsWith("@")) { FilterValue2 = "@" + FilterValue2; }
                 _filterValue2IsParameter = value;
                 NotifyOfPropertyChange();
-                EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             }
         }
 

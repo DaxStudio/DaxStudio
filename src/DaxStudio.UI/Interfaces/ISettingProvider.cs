@@ -27,6 +27,8 @@ namespace DaxStudio.UI.Interfaces
 
         bool IsRunningPortable { get; }
         string SettingsFile { get; }
+
+        void Reset();
     }
 }
 

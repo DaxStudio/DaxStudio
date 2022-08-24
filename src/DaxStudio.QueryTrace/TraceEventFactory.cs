@@ -18,33 +18,52 @@ namespace DaxStudio.QueryTrace
             trc.Columns.Add(TraceColumn.RequestID);
             trc.Columns.Add(TraceColumn.DatabaseName);
 
-            if (eventClass == TraceEventClass.QueryEnd)
-            {
-                trc.Columns.Add(TraceColumn.EndTime);
-                trc.Columns.Add(TraceColumn.NTUserName);
-            }
+            //if (eventClass == TraceEventClass.QueryEnd)
+            //{
+            //    trc.Columns.Add(TraceColumn.EndTime);
+            //    trc.Columns.Add(TraceColumn.NTUserName);
+            //}
 
-            if (eventClass != TraceEventClass.DirectQueryEnd && eventClass != TraceEventClass.Error) {
+            if (eventClass != TraceEventClass.DirectQueryEnd 
+                && eventClass != TraceEventClass.Error
+                && eventClass != TraceEventClass.DAXEvaluationLog) {
                 // DirectQuery doesn't have subclasses
                 trc.Columns.Add(TraceColumn.EventSubclass);
             }
 
-            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch)
+            if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch
+                && eventClass != TraceEventClass.JobGraph)
             {
                 trc.Columns.Add(TraceColumn.StartTime);
             }
 
             if (eventClass == TraceEventClass.QueryEnd 
-                || eventClass == TraceEventClass.CommandEnd
-                || eventClass == TraceEventClass.DAXQueryPlan)
+                || eventClass == TraceEventClass.CommandEnd)
+            {
+                trc.Columns.Add(TraceColumn.NTUserName);
+                trc.Columns.Add(TraceColumn.ApplicationName);
+            }
+
+            if (eventClass == TraceEventClass.DAXQueryPlan)
             {
                 trc.Columns.Add(TraceColumn.ApplicationName);
+            }
+
+            if (eventClass == TraceEventClass.ProgressReportBegin
+                || eventClass == TraceEventClass.ProgressReportCurrent
+                || eventClass == TraceEventClass.ProgressReportEnd
+                || eventClass == TraceEventClass.ProgressReportError)
+            {
+                trc.Columns.Add(TraceColumn.ObjectPath);
+                trc.Columns.Add(TraceColumn.ObjectName);
+                trc.Columns.Add(TraceColumn.ObjectReference);
             }
             
             if (eventClass == TraceEventClass.QueryBegin)
             {
                 trc.Columns.Add(TraceColumn.RequestParameters);
                 trc.Columns.Add(TraceColumn.RequestProperties);
+                trc.Columns.Add(TraceColumn.ApplicationName);
             }
 
             switch (eventClass)
@@ -63,6 +82,7 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.VertiPaqSEQueryEnd:
                     trc.Columns.Add(TraceColumn.Duration);
                     trc.Columns.Add(TraceColumn.CpuTime);
+                    trc.Columns.Add(TraceColumn.EndTime);
                     break;
                 case TraceEventClass.Error:
                     trc.Columns.Add(TraceColumn.Error);

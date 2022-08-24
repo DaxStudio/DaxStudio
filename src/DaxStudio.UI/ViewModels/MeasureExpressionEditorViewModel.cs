@@ -95,7 +95,7 @@ namespace DaxStudio.UI.ViewModels
 
             // TODO - if theme is dark increase brightness of syntax highlights
             //_editor.ChangeColorBrightness(1.25);
-            _editor.SetSyntaxHighlightColorTheme(Options.Theme);
+            _editor.SetSyntaxHighlightColorTheme(Options.AutoTheme);
 
             IntellisenseProvider.Editor = _editor;
             UpdateSettings();
@@ -120,7 +120,7 @@ namespace DaxStudio.UI.ViewModels
             Column.MeasureExpression = MeasureExpression.Text;
             Column.Caption = MeasureName;
             Document.QueryBuilder.IsEnabled = true;
-            EventAggregator.PublishOnUIThread(new QueryBuilderUpdateEvent());
+            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
         }
 
         public void CancelMeasureExpression()
@@ -252,5 +252,14 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(WordWrap));
         }
 
+        public void DragEnter(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
+
+        public void DragLeave(IDropInfo dropInfo)
+        {
+            // do nothing
+        }
     }
 }

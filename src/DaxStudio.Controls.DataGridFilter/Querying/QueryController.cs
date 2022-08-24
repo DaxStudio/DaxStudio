@@ -78,6 +78,15 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
             }
         }
 
+        public bool IsCurentControlLastControl
+        {
+            get
+            {
+                return filtersForColumns.Count > 0
+                    ? filtersForColumns.ElementAt(filtersForColumns.Count-1).Value.ValuePropertyBindingPath == ColumnFilterData.ValuePropertyBindingPath : false;
+            }
+        }
+
         public void ClearFilter()
         {
             int count = filtersForColumns.Count;

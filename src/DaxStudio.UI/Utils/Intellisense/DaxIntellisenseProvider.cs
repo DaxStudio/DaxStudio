@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Navigation;
 using ADOTabular;
 using Caliburn.Micro;
@@ -213,7 +217,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                         }
                         else
                         {
-                            Log.Debug("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
+                            Log.Verbose("{class} {method} {message}", "DaxIntellisenseProvider", "ProcessTextEntered", "Closing CompletionWindow as it has no matching items");
                             CloseCompletionWindow();
                             //completionWindow = null;
                         }
@@ -255,12 +259,43 @@ namespace DaxStudio.UI.Utils.Intellisense
             completionWindow.Width = completionWindow.Width * (_options.CodeCompletionWindowWidthIncrease / 100);
             completionWindow.CloseAutomatically = false;
             completionWindow.WindowStyle = WindowStyle.None;
-            completionWindow.CompletionList.BorderThickness = new Thickness(1);
-
+            completionWindow.Background = new SolidColorBrush(Color.FromArgb(0,0,0,0));
+            completionWindow.AllowsTransparency = true;
+            //completionWindow.CompletionList.BorderThickness = new Thickness(1);
+            DaxIntellisenseProvider.AssignResouceDictionary(completionWindow);
             AttachCompletionWindowEvents(completionWindow);
             completionWindow.DetachCompletionEvents = DetachCompletionWindowEvents;
 
             return completionWindow;
+        }
+
+        private static string _codeCompletionResourcesUri = "pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/CompletionList.xaml";
+        private static ResourceDictionary _cachedResourceDictionary;
+        private static ResourceDictionary CodeCompletionCustomResources
+        {
+            get
+            {
+                if (_cachedResourceDictionary == null)
+                    _cachedResourceDictionary = new ResourceDictionary() { Source = new Uri(_codeCompletionResourcesUri) };
+                return _cachedResourceDictionary;
+            }
+        }
+
+        private static string _insightWindowResourcesUri = "pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/InsightWindow.xaml";
+        private static ResourceDictionary _insightWindowCachedResourceDictionary;
+        private static ResourceDictionary InsightWindowCustomResources
+        {
+            get
+            {
+                if (_insightWindowCachedResourceDictionary == null)
+                    _insightWindowCachedResourceDictionary = new ResourceDictionary() { Source = new Uri(_insightWindowResourcesUri) };
+                return _insightWindowCachedResourceDictionary;
+            }
+        }
+
+        private static void AssignResouceDictionary(DaxStudioCompletionWindow completionWindow)
+        {
+            completionWindow.Resources.MergedDictionaries.Add(CodeCompletionCustomResources);
         }
 
         private void AttachCompletionWindowEvents(CompletionWindow completionWindow)
@@ -352,6 +387,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 //_editor.InsightWindow?.Close();
                 _editor.InsightWindow = null;
                 _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                _editor.InsightWindow.Resources.MergedDictionaries.Add(InsightWindowCustomResources);
                 if (offset > -1)
                 {
                     _editor.InsightWindow.StartOffset = offset;
@@ -543,7 +579,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             if (!MetadataIsCached) return;
 
             var tmpData = new List<ICompletionData>();
-            Log.Debug("{class} {method} Type: {metadataType}  Table: {table} Column: {column}", "DaxIntellisenseProvider", "PopulateCompletionData", metadataType.ToString(), state == null ? "-" : state.TableName, state == null ? "-": state.ColumnName);
+            Log.Verbose("{class} {method} Type: {metadataType}  Table: {table} Column: {column}", "DaxIntellisenseProvider", "PopulateCompletionData", metadataType.ToString(), state == null ? "-" : state.TableName, state == null ? "-": state.ColumnName);
             if (metadataType.HasFlag(IntellisenseMetadataTypes.Tables)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Columns)
                 || metadataType.HasFlag(IntellisenseMetadataTypes.Measures))
@@ -673,36 +709,41 @@ namespace DaxStudio.UI.Utils.Intellisense
             }
         }
 
-        public void Handle(MetadataLoadedEvent message)
+        public Task HandleAsync(MetadataLoadedEvent message, CancellationToken cancellationToken)
         {
             if (message.Document == Document)
             {
                 Model = message.Model;
             }
+            return Task.CompletedTask;
         }
 
-        public void Handle(SelectedModelChangedEvent message)
+        public Task HandleAsync(SelectedModelChangedEvent message, CancellationToken cancellationToken)
         {
             Model = null;
+            return Task.CompletedTask;
         }
 
-        public void Handle(DmvsLoadedEvent message)
+        public Task HandleAsync(DmvsLoadedEvent message, CancellationToken cancellationToken)
         {
             DMVs = message.DmvCollection;
+            return Task.CompletedTask;
         }
 
-        public void Handle(FunctionsLoadedEvent message)
+        public Task HandleAsync(FunctionsLoadedEvent message, CancellationToken cancellationToken)
         {
             FunctionGroups = message.FunctionGroups;
+            return Task.CompletedTask;
         }
 
-        public void Handle(ConnectionPendingEvent message)
+        public Task HandleAsync(ConnectionPendingEvent message, CancellationToken cancellationToken)
         {
             if (message.Document == Document)
             {
                 FunctionGroups = null;
                 DMVs = null;
             }
+            return Task.CompletedTask;
         }
 
         public bool MetadataIsCached => Model != null && FunctionGroups != null && DMVs != null;

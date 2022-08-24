@@ -3,6 +3,7 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Utils;
 using LargeXlsx;
 using Serilog;
 using System;
@@ -26,7 +27,7 @@ namespace DaxStudio.UI.Model
         {
             _host = host;
             _eventAggregator = eventAggregator;
-            _eventAggregator.Subscribe(this);
+            _eventAggregator.SubscribeOnPublishedThread(this);
         }
 
         #region Standard Properties
@@ -37,6 +38,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 410;
         public string Message => "Results will be sent to an XLSX File";
         public OutputTarget Icon => OutputTarget.File;
+        public string ImageResource => "results_excelDrawingImage";
         public string Tooltip => "Query results will be written to an Excel file.";
         public bool IsEnabled => true;
 
@@ -265,33 +267,7 @@ namespace DaxStudio.UI.Model
 
         private static XlsxStyle GetStyle(ADOTabularColumn col)
         {
-
-            // check for special case formatting
-            switch (col.SystemType.Name.ToLower())
-            {
-                case "long":
-                case "double":
-                case "decimal":
-                    if (!string.IsNullOrEmpty(col.FormatString))
-                        return XlsxStyle.Default.With(new XlsxNumberFormat(col.FormatString));
-                    break;
-                case "datetime":
-                    if (col.FormatString == "G")
-                        return XlsxStyle.Default.With(XlsxNumberFormat.ShortDateTime);
-                    if (!string.IsNullOrEmpty(col.FormatString))
-                        return XlsxStyle.Default.With(new XlsxNumberFormat(col.FormatString));
-
-                    // default to short datetime
-                    return XlsxStyle.Default.With(XlsxNumberFormat.ShortDateTime);
-
-                case "string":
-                    var stringAlignment = new XlsxAlignment(vertical : Vertical.Top, wrapText : true);
-                    var stringStyle = XlsxStyle.Default.With(stringAlignment).With(XlsxNumberFormat.Text);
-                    return stringStyle;
-
-            }
-            // if nothing else matches return the default style
-            return XlsxStyle.Default;
+            return XlsxHelper.GetStyle(col.SystemType.Name, col.FormatString);
         }
 
     }

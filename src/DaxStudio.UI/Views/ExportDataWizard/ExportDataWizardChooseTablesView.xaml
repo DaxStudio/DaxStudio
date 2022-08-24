@@ -3,10 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              mc:Ignorable="d" 
+             MinHeight="400"
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <Style TargetType="ListBoxItem" BasedOn="{StaticResource DefaultListBoxItemStyle}">
+                <Setter Property="Padding" Value="8 0 8 0"/>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,15 +29,17 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Choose which Tables to export:" Grid.Row="0" Margin="5" />
+        <Label Content="Choose which Tables to export:" Grid.Row="0" Margin="5" />
         <CheckBox Content="Select All" IsChecked="True" Grid.Row="1" Margin="5" cal:Message.Attach="[Event Click] = [Action SelectAllChecked]" x:Name="SelectAll"/>
-        <ListBox Margin="5" Grid.Row="2" x:Name="Tables">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected}" Tag="{Binding DaxName}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <ctrl:ClipBorder CornerRadius="8" Grid.Row="2" BorderThickness="1" BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+            <ListBox Margin="5" Grid.Row="2"  x:Name="Tables" BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected}" Tag="{Binding DaxName}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ctrl:ClipBorder>
         <StackPanel Orientation="Horizontal" Grid.Row="3">
             <CheckBox x:Name="IncludeHiddenTables" Content="Include Hidden Tables" Margin="5"/>
             <CheckBox x:Name="IncludeInternalTables" Content="Include Internal Tables" Margin="5"/>

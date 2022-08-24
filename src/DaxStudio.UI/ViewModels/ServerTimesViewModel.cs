@@ -22,6 +22,10 @@ using System;
 using System.Globalization;
 using DaxStudio.Common;
 using DaxStudio.UI.Utils;
+using System.Threading;
+using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -34,11 +38,53 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public DaxStudioTraceEventClassSubclass ClassSubclass {
             get {
-                return new DaxStudioTraceEventClassSubclass { Class = this.Class, Subclass = this.Subclass };
+                return new DaxStudioTraceEventClassSubclass { Class = this.Class, Subclass = this.Subclass, QueryLanguage = this.GetQueryLanguage() };
             }
         }
         public string Query { get; set; }
+        private DaxStudioTraceEventClassSubclass.Language GetQueryLanguage()
+        {
+            if (this.Class == DaxStudioTraceEventClass.DirectQueryBegin || this.Class == DaxStudioTraceEventClass.DirectQueryEnd)
+            {
+                if (Query.StartsWith("DEFINE",StringComparison.InvariantCultureIgnoreCase)
+                    || Query.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return DaxStudioTraceEventClassSubclass.Language.DAX;
+                }
+                else
+                {
+                    return DaxStudioTraceEventClassSubclass.Language.SQL;
+                }
+            }
+            else if (this.Class == DaxStudioTraceEventClass.QueryBegin || this.Class == DaxStudioTraceEventClass.QueryEnd)
+            {
+                switch (this.Subclass)
+                {
+                    case DaxStudioTraceEventSubclass.DmxQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.DMX;
+                    case DaxStudioTraceEventSubclass.MdxQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.MDX;
+                    case DaxStudioTraceEventSubclass.SqlQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.SQL;
+                    case DaxStudioTraceEventSubclass.DAXQuery:
+                        return DaxStudioTraceEventClassSubclass.Language.DAX;
+                    case DaxStudioTraceEventSubclass.VertiPaq:
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheNotFound:
+                    case DaxStudioTraceEventSubclass.VertiPaqCacheProbe:
+                    case DaxStudioTraceEventSubclass.VertiPaqScan:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanLocal:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanQueryPlan:
+                    case DaxStudioTraceEventSubclass.VertiPaqScanRemote:
+                        return DaxStudioTraceEventClassSubclass.Language.xmSQL;
+                }
+            }
+            return DaxStudioTraceEventClassSubclass.Language.Unknown;
+        }
+
         public long? Duration { get; set; }
+        public long? NetParallelDuration { get; set; }
         public long? CpuTime { get; set; }
         public double? CpuFactor { get; set; }
         public int RowNumber { get; set; }
@@ -46,28 +92,31 @@ namespace DaxStudio.UI.ViewModels
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
         public bool InternalBatchEvent { get; set; }
+        public DateTime StartTime { get; private set; }
+        public DateTime EndTime { get; private set; }
 
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for the following functions:
         // - CallbackDataID
-        // - LogAbsValueCallback
-        // - RoundValueCallback
         // - EncodeCallback
-        // - MinMaxColumnPositionCallback
-        //
-        // We probably need to cover also the function "Cond", which is a callback without having the callback name
-        // But we need to collect use cases to find a way to avoid making mistakes with any expression using "Cond"
+        // - 'LogAbsValueCallback'
+        // - 'RoundValueCallback'
+        // - 'MinMaxColumnPositionCallback'
+        // - 'Cond'
         private string _queryRichText = "";
         public string QueryRichText {
             set {
                 if (Options.HighlightXmSqlCallbacks)
                 {
                     var sb = new StringBuilder(value);
+                    // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
+                    sb.Replace("|~S~|CallbackDataID|~E~|", "CallbackDataID");
                     sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
-                    sb.Replace("LogAbsValueCallback", "|~S~|LogAbsValueCallback|~E~|");
-                    sb.Replace("RoundValueCallback", "|~S~|RoundValueCallback|~E~|");
+                    sb.Replace("'LogAbsValueCallback'", "|~S~|LogAbsValueCallback|~E~|");
+                    sb.Replace("'RoundValueCallback'", "|~S~|RoundValueCallback|~E~|");
                     sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
-                    sb.Replace("MinMaxColumnPositionCallback", "|~S~|MinMaxColumnPositionCallback|~E~|");
+                    sb.Replace("'MinMaxColumnPositionCallback'", "|~S~|MinMaxColumnPositionCallback|~E~|");
+                    sb.Replace("'Cond'", "|~S~|Cond|~E~|");
                     _queryRichText = sb.ToString();
                 }
                 else
@@ -80,12 +129,16 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private IGlobalOptions _options;
+        [JsonIgnore]
         protected IGlobalOptions Options { get {
                 if (_options == null) _options = IoC.Get<IGlobalOptions>();
                 return _options;
             }
             private set { _options = value; }
         }
+
+        public long? StartOffsetMs { get; set; }
+        public long? TotalQueryDuration { get;  set; }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
@@ -95,6 +148,8 @@ namespace DaxStudio.UI.ViewModels
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
             InternalBatchEvent = ev.InternalBatchEvent;
+            StartTime = ev.StartTime;
+            EndTime = ev.EndTime;
             switch (Class)
             {
                 //case DaxStudioTraceEventClass.DirectQueryEnd:
@@ -115,7 +170,7 @@ namespace DaxStudio.UI.ViewModels
                     // replace table names
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
-                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags() : queryRemapped;
+                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags().RemoveDoubleBracketsInCallbacks() : queryRemapped;
                     QueryRichText = Query;
                     // Set flag in case any highlight is present
                     HighlightQuery = QueryRichText.Contains("|~E~|");
@@ -126,6 +181,7 @@ namespace DaxStudio.UI.ViewModels
             if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
             {
                 Duration = ev.Duration;
+                NetParallelDuration = ev.NetParallelDuration;
                 if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
                 {
                     CpuTime = ev.CpuTime;
@@ -192,7 +248,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlEmptyArguments = @" \(\s*\) ";
         const string searchXmSqlRowNumberGuidBracket = @"\[RowNumber [0-9A-F ]*\]";
         const string searchXmSqlRowNumberGuidQuoted = @"\$RowNumber [0-9A-F ]*\'";
-        const string seachXmSqlPremiumTags = @"<pii>|</pii>";
+        const string seachXmSqlPremiumTags = @"<pii>|</pii>|<ccon>|</ccon>";
 
         const string searchXmSqlPatternSize = @"Estimated size .* : (?<rows>\d+), (?<bytes>\d+)";
 
@@ -249,6 +305,10 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlPremiumTagsRemoval.Replace(xmSqlQuery, "");
         }
+        public static string RemoveDoubleBracketsInCallbacks(this string xmSqlQuery)
+        {
+            return xmSqlQuery.Replace("]]", "]");
+        }
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
             // Reviewed on 2017-10-13
             // The first removal should be useless and I commented it.
@@ -291,17 +351,29 @@ namespace DaxStudio.UI.ViewModels
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class ServerTimesViewModel
+    public class ServerTimesViewModel
         : TraceWatcherBaseViewModel, ISaveState, IServerTimes
-        , IHandle<UpdateGlobalOptions>
     {
+        private bool parallelStorageEngineEventsDetected = false;
+        public bool ParallelStorageEngineEventsDetected
+        { get => parallelStorageEngineEventsDetected; 
+            set { 
+                parallelStorageEngineEventsDetected = value;
+                NotifyOfPropertyChange(nameof(ParallelStorageEngineEventsDetected));
+            }
+        }
+
+
+        private DaxStudioTraceEventArgs maxStorageEngineVertipaqEvent = null;
+        private DaxStudioTraceEventArgs maxStorageEngineDirectQueryEvent = null;
+
         public IGlobalOptions Options { get; set; }
         public Dictionary<string, string> RemapColumnNames { get; set; }
         public Dictionary<string, string> RemapTableNames { get; set; }
 
         [ImportingConstructor]
-        public ServerTimesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, ServerTimingDetailsViewModel serverTimingDetails
-            , IGlobalOptions options) : base(eventAggregator, globalOptions)
+        public ServerTimesViewModel(IEventAggregator eventAggregator, ServerTimingDetailsViewModel serverTimingDetails
+            , IGlobalOptions options) : base(eventAggregator, options)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             RemapColumnNames = new Dictionary<string, string>();
@@ -315,6 +387,7 @@ namespace DaxStudio.UI.ViewModels
         public string TotalTooltip => "The total server side duration of the query";
         public string FETooltip => "Formula Engine (FE) Duration";
         public string SETooltip => "Storage Engine (SE) Duration";
+        public string SENetParallelTooltip => "Storage Engine (SE) Net Duration - accounting for parallel operations";
         public string SECpuTooltip => "Storage Engine CPU Duration";
         public string SEQueriesTooltip => "The number of queries sent to the Storage Engine while processing this query";
         public string SECacheTooltip => "The number of queries sent to the Storage Engine that were answered from the SE Cache";
@@ -339,38 +412,31 @@ namespace DaxStudio.UI.ViewModels
                 , DaxStudioTraceEventClass.QueryEnd};
         }
 
-        public bool HighlightXmSqlCallbacks
-        {
-            get => Options.HighlightXmSqlCallbacks;
-        }
+        public bool HighlightXmSqlCallbacks => Options.HighlightXmSqlCallbacks;
 
-        public bool SimplifyXmSqlSyntax
-        {
-            get => Options.SimplifyXmSqlSyntax;
-        }
+        public bool SimplifyXmSqlSyntax => Options.SimplifyXmSqlSyntax;
 
-        public bool ReplaceXmSqlColumnNames
-        {
-            get => Options.ReplaceXmSqlColumnNames;
-        }
+        public bool ReplaceXmSqlColumnNames => Options.ReplaceXmSqlColumnNames;
 
-        public bool ReplaceXmSqlTableNames
-        {
-            get => Options.ReplaceXmSqlTableNames;
-        }
+        public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
-        public void Handle(UpdateGlobalOptions message)
+        protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
         {
+            base.OnUpdateGlobalOptions(message);
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
-            // TODO - update server timing pane?
         }
 
+        
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
+            if (_storageEngineEvents?.Count > 0 ) return;
+            // results have not been cleared so this is probably an end event from some other
+            // action like a tooltip populating
+
             ClearAll();
 
             int batchScan = 0;
@@ -378,106 +444,176 @@ namespace DaxStudio.UI.ViewModels
             long batchStorageEngineCpu = 0;
             long batchStorageEngineQueryCount = 0;
 
+            maxStorageEngineVertipaqEvent = null;
+            maxStorageEngineDirectQueryEvent = null;
+            bool eventsProcessed = false;
+
             if (Events != null)
             {
-                foreach (var traceEvent in Events)
+                // exit early if this is an internal query
+                if (IsDaxStudioInternalQuery()) {
+                    Events.Clear();
+                    return;
+                };
+
+                eventsProcessed = !Events.IsEmpty;
+                while (!Events.IsEmpty)
                 {
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryBegin)
+                    
+                    Events.TryDequeue(out var traceEvent);
+                    switch (traceEvent.EventClass)
                     {
-                        // At the start of a batch, we just activate the flag BatchScan
-                        if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
-                        {
-                            batchScan++;
-                            // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
-                            System.Diagnostics.Debug.Assert(batchScan == 1, "Nested VertiScan batches detected or missed SE QueryEnd events!");
+                        case DaxStudioTraceEventClass.VertiPaqSEQueryBegin:
+                            
+                            // At the start of a batch, we just activate the flag BatchScan
+                            if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
+                            {
+                                batchScan++;
+                                // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
+                                System.Diagnostics.Debug.Assert(batchScan == 1, "Nested VertiScan batches detected or missed SE QueryEnd events!");
 
-                            // Reset counters for internal batch cost
-                            batchStorageEngineDuration = 0;
-                            batchStorageEngineCpu = 0;
-                            batchStorageEngineQueryCount = 0;
-                        }
-                    }
-
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryEnd)
-                    {
-                        // At the end of a batch, we compute the cost for the batch and assign the cost to the complete query
-                        if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
-                        {
-                            batchScan--;
-                            // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
-                            System.Diagnostics.Debug.Assert(batchScan == 0, "Nested VertiScan batches detected or missed SE QueryBegin events!");
-
-                            // Subtract from the batch event the total computed for the scan events within the batch
-                            traceEvent.Duration -= batchStorageEngineDuration;
-                            traceEvent.CpuTime -= batchStorageEngineCpu;
-
-                            StorageEngineDuration += traceEvent.Duration;
-                            StorageEngineCpu += traceEvent.CpuTime;
-                            // Currently, we do not compute a storage engine query for the batch event - we might uncomment this if we decide to show the Batch event by default
-                            StorageEngineQueryCount++;
-
-                        }
-                        else if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.VertiPaqScan)
-                        {
-                            if (batchScan > 0) {
-                                traceEvent.InternalBatchEvent = true;
-                                batchStorageEngineDuration += traceEvent.Duration;
-                                batchStorageEngineCpu += traceEvent.CpuTime;
-                                batchStorageEngineQueryCount++;
+                                // Reset counters for internal batch cost
+                                batchStorageEngineDuration = 0;
+                                batchStorageEngineCpu = 0;
+                                batchStorageEngineQueryCount = 0;
                             }
+                            
+                            break;
+                        case DaxStudioTraceEventClass.VertiPaqSEQueryEnd:
+                            
+                            // At the end of a batch, we compute the cost for the batch and assign the cost to the complete query
+                            if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
+                            {
+                                batchScan--;
+                                // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
+                                System.Diagnostics.Debug.Assert(batchScan == 0, "Nested VertiScan batches detected or missed SE QueryBegin events!");
+
+                                // Subtract from the batch event the total computed for the scan events within the batch
+                                traceEvent.Duration -= batchStorageEngineDuration;
+                                traceEvent.CpuTime -= batchStorageEngineCpu;
+
+                                StorageEngineDuration += traceEvent.Duration;
+                                StorageEngineCpu += traceEvent.CpuTime;
+                                // Currently, we do not compute a storage engine query for the batch event - we might uncomment this if we decide to show the Batch event by default
+                                StorageEngineQueryCount++;
+
+                            }
+                            else if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.VertiPaqScan)
+                            {
+                                UpdateForParallelOperations(ref maxStorageEngineVertipaqEvent, traceEvent);
+
+                                if (batchScan > 0)
+                                {
+                                    traceEvent.InternalBatchEvent = true;
+                                    batchStorageEngineDuration += traceEvent.NetParallelDuration;
+                                    batchStorageEngineCpu += traceEvent.CpuTime;
+                                    batchStorageEngineQueryCount++;
+                                }
+
+                                StorageEngineDuration += traceEvent.Duration;
+                                StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
+                                StorageEngineCpu += traceEvent.CpuTime;
+                                StorageEngineQueryCount++;
+
+                            }
+                            _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            
+                            break;
+                        case DaxStudioTraceEventClass.DirectQueryEnd:
+                            UpdateForParallelOperations(ref maxStorageEngineDirectQueryEvent, traceEvent);
                             StorageEngineDuration += traceEvent.Duration;
+                            StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
-                        }
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
-                    }
-
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.DirectQueryEnd)
-                    {
-                        StorageEngineDuration += traceEvent.Duration;
-                        StorageEngineCpu += traceEvent.CpuTime;
-                        StorageEngineQueryCount++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
-                    }
-
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.AggregateTableRewriteQuery)
-                    {
-                        _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
-                    }
-
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
-                    {
-                        TotalDuration = traceEvent.Duration;
-                        TotalCpuDuration = traceEvent.CpuTime;
-                        QueryEndDateTime = traceEvent.EndTime;
-                    }
-                    if (traceEvent.EventClass == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
-                    {
-                        VertipaqCacheMatches++;
-                        _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            break;
+                            
+                        case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
+                            _storageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            break;
+                        case DaxStudioTraceEventClass.QueryEnd:
+                            
+                            TotalDuration = traceEvent.Duration;
+                            TotalCpuDuration = traceEvent.CpuTime;
+                            QueryEndDateTime = traceEvent.EndTime;
+                            QueryStartDateTime = traceEvent.StartTime;
+                            break;
+                            
+                        case DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch:
+                            
+                            VertipaqCacheMatches++;
+                            _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            break;
                     }
                 }
 
-                FormulaEngineDuration = TotalDuration - StorageEngineDuration;
+                FormulaEngineDuration = TotalDuration - StorageEngineNetParallelDuration;
                 if (QueryHistoryEvent != null)
                 {
                     QueryHistoryEvent.FEDurationMs = FormulaEngineDuration;
                     QueryHistoryEvent.SEDurationMs = StorageEngineDuration;
                     QueryHistoryEvent.ServerDurationMs = TotalDuration;
 
-                    _eventAggregator.PublishOnUIThread(QueryHistoryEvent);
+                    _eventAggregator.PublishOnUIThreadAsync(QueryHistoryEvent);
                 }
-                if (Events.Count > 0) _eventAggregator.PublishOnUIThread(new ServerTimingsEvent(this));
+                if (eventsProcessed) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
 
                 Events.Clear();
-
+                UpdateWaterfallDurations(StorageEngineEvents, QueryStartDateTime, QueryEndDateTime, TotalDuration);
                 NotifyOfPropertyChange(nameof(StorageEngineEvents));
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanCopyResults));
             }
         }
 
+        private static void UpdateWaterfallDurations(IObservableCollection<TraceStorageEngineEvent> storageEngineEvents, DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
+        {
+            foreach(var traceEvent in storageEngineEvents)
+            {
+                traceEvent.StartOffsetMs = Convert.ToInt64((traceEvent.StartTime - queryStartDateTime).TotalMilliseconds );
+                traceEvent.TotalQueryDuration = totalDuration;
+            }
+        }
+
+        private bool IsDaxStudioInternalQuery()
+        {
+            var endEvent = Events.FirstOrDefault(e => e.EventClass == DaxStudioTraceEventClass.QueryEnd);
+            return endEvent != null && endEvent.TextData.Contains(Constants.InternalQueryHeader);
+        }
+
+        // This function assumes that the events arrive in starttime order, then we check if
+        // the start/end times of the current event overlap with the end time of the previous
+        // event with the latest end time.
+        private void UpdateForParallelOperations(ref DaxStudioTraceEventArgs maxEvent,  DaxStudioTraceEventArgs traceEvent)
+        {
+            if (maxEvent == null)
+            {
+                maxEvent = traceEvent;
+                return;
+            }
+
+            if (maxEvent.EndTime > traceEvent.StartTime)
+            {
+                ParallelStorageEngineEventsDetected = true;
+                if (maxEvent.EndTime > traceEvent.EndTime)
+                {
+                    // fully overlapped
+                    traceEvent.NetParallelDuration = 0;
+                }
+                else
+                {
+                    traceEvent.NetParallelDuration = (long)(traceEvent.EndTime - maxEvent.EndTime).TotalMilliseconds;
+                    maxEvent = traceEvent;
+                }
+            }
+            else
+            {
+                maxEvent = traceEvent;
+            }
+        }
+
         public DateTime QueryEndDateTime { get; set; }
+        public DateTime QueryStartDateTime { get; set; }
 
         private long _totalCpuDuration;
         public long TotalCpuDuration
@@ -504,7 +640,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                return TotalDuration == 0 ? 0 : (double)StorageEngineDuration / (double)TotalDuration;
+                return TotalDuration == 0 ? 0 : (double)StorageEngineNetParallelDuration / (double)TotalDuration;
             }
         }
         public double FormulaEngineDurationPercentage
@@ -560,6 +696,18 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
+
+        private long _storageEngineNetParallelDuration;
+        public long StorageEngineNetParallelDuration
+        {
+            get { return _storageEngineNetParallelDuration; }
+            private set
+            {
+                _storageEngineNetParallelDuration = value;
+                NotifyOfPropertyChange(() => StorageEngineNetParallelDuration);
+            }
+        }
+
         private long _storageEngineCpu;
         public long StorageEngineCpu
         {
@@ -638,22 +786,18 @@ namespace DaxStudio.UI.ViewModels
         // IToolWindow interface
         public override string Title => "Server Timings";
         public override string ContentId => "server-timings-trace";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-timings@17px.png") as ImageSource;
-
-            }
-        }
+        public override string TraceSuffix => "timings";
+        public override string ImageResource => "server_timingsDrawingImage";
+        public override string KeyTip => "ST";
+        public override int SortOrder => 30;
 
         public override string ToolTipText => "Runs a server trace to record detailed timing information for performance profiling";
 
         public override void OnReset()
         {
             IsBusy = false;
+            ToggleScrollLeft();
+            ClearAll();
             Events.Clear();
             ProcessResults();
         }
@@ -664,6 +808,14 @@ namespace DaxStudio.UI.ViewModels
             string json = GetJson();
             File.WriteAllText(filename + ".serverTimings", json);
 
+        }
+
+        public bool ScrollLeft { get; set; }
+
+        public void ToggleScrollLeft()
+        {
+            ScrollLeft = !ScrollLeft;
+            NotifyOfPropertyChange(nameof(ScrollLeft));
         }
 
         public void SavePackage(Package package)
@@ -681,7 +833,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
             if (!package.PartExists(uri)) return;
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
@@ -697,15 +849,17 @@ namespace DaxStudio.UI.ViewModels
             {
                 FormulaEngineDuration = this.FormulaEngineDuration,
                 StorageEngineDuration = this.StorageEngineDuration,
+                StorageEngineNetParallelDuration = this.StorageEngineNetParallelDuration,
                 StorageEngineCpu = this.StorageEngineCpu,
                 TotalDuration = this.TotalDuration,
                 VertipaqCacheMatches = this.VertipaqCacheMatches,
                 StorageEngineQueryCount = this.StorageEngineQueryCount,
                 StoreageEngineEvents = this._storageEngineEvents,
                 TotalCpuDuration = this.TotalCpuDuration,
-                QueryEndDateTime = this.QueryEndDateTime
+                QueryEndDateTime = this.QueryEndDateTime,
+                ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected
             };
-            var json = JsonConvert.SerializeObject(m, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(m, Formatting.Indented, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
             return json;
         }
 
@@ -714,7 +868,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".serverTimings";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThread(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
             LoadJson(data);
@@ -732,12 +886,14 @@ namespace DaxStudio.UI.ViewModels
 
             FormulaEngineDuration = m.FormulaEngineDuration;
             StorageEngineDuration = m.StorageEngineDuration;
+            StorageEngineNetParallelDuration = m.StorageEngineNetParallelDuration;
             StorageEngineCpu = m.StorageEngineCpu;
             TotalDuration = m.TotalDuration;
             VertipaqCacheMatches = m.VertipaqCacheMatches;
             StorageEngineQueryCount = m.StorageEngineQueryCount;
             TotalCpuDuration = m.TotalCpuDuration;
             QueryEndDateTime = m.QueryEndDateTime;
+            ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
@@ -748,7 +904,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Properties to handle layout changes
 
-        public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ? 4 : 1; } }
+        public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ? 4 : 2; } }
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
@@ -775,6 +931,11 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
+                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+        }
         private void ServerTimingDetails_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -796,15 +957,19 @@ namespace DaxStudio.UI.ViewModels
 
         #region Title Bar Button Methods
 
+        
+
         public override void ClearAll()
         {
             FormulaEngineDuration = 0;
             StorageEngineDuration = 0;
+            StorageEngineNetParallelDuration = 0;
             TotalCpuDuration = 0;
             StorageEngineCpu = 0;
             StorageEngineQueryCount = 0;
             VertipaqCacheMatches = 0;
             TotalDuration = 0;
+            ParallelStorageEngineEventsDetected = false;
             _storageEngineEvents.Clear();
             NotifyOfPropertyChange(() => StorageEngineEvents);
             NotifyOfPropertyChange(() => CanExport);

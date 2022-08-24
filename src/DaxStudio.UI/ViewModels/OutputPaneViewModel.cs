@@ -28,10 +28,15 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage(MessageType.Information, message));
         }
 
-        public void AddInformation(string message, double durationMs)
+        public void AddSuccess(string message, double durationMs)
         {
-            _messages.Add(new OutputMessage(MessageType.Information, message,durationMs));
+            _messages.Add(new OutputMessage(MessageType.Success, message, durationMs));
         }
+
+        //public void AddInformation(string message, double durationMs)
+        //{
+        //    _messages.Add(new OutputMessage(MessageType.Information, message,durationMs));
+        //}
 
         public void AddWarning(string message)
         {
@@ -50,28 +55,17 @@ namespace DaxStudio.UI.ViewModels
             _messages.Add(new OutputMessage(MessageType.Error, message,row,column ));
         }
 
-        public override string Title => "Output";
+        public override string Title => "Log";
 
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "output";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                // TODO - add output pane icon
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-file.png") as ImageSource;
-
-            }
-        }
 
 
         public void MessageDoubleClick(OutputMessage message)
         {
             if (message.Row >= 0 && message.Column >= 0)
             {
-                _eventAggregator.PublishOnUIThread(new NavigateToLocationEvent(message.Row, message.Column));
+                _eventAggregator.PublishOnUIThreadAsync(new NavigateToLocationEvent(message.Row, message.Column));
             }
         }
 

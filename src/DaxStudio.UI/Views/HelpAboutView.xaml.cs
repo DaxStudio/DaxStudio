@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for HelpAboutView.xaml
     /// </summary>
-    public partial class HelpAboutView : UserControl
+    public partial class HelpAboutView : Controls.DaxStudioDialog
     {
         public HelpAboutView()
         {

@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DaxStudio.org")]
 [assembly: AssemblyProduct("DAX Studio")]
-[assembly: AssemblyCopyright("Copyright © DAX Studio 2016")] 
+[assembly: AssemblyCopyright("Copyright © 2022 DAX Studio")] 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en-US", UltimateResourceFallbackLocation.MainAssembly)]

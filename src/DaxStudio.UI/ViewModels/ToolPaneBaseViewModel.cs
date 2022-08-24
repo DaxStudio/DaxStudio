@@ -39,7 +39,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 e.Handled = true;
                 var txt = item.DaxName;
-                EventAggregator.PublishOnUIThread(new SendTextToEditor(txt));
+                EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(txt));
             }
         }
 

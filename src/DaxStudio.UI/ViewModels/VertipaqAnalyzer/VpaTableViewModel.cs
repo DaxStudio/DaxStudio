@@ -90,7 +90,10 @@ namespace DaxStudio.UI.ViewModels
 
         public string TableName => _table.TableName;
         public long TableSize => _table.TableSize;
-        public string ColumnsEncoding => _table.ColumnsEncoding;
+        public string ColumnsEncoding => 
+            (_table.HasDualPartitions == true) ? "Dual" : 
+            (_table.HasDirectQueryPartitions == true) ? "DQ" : 
+            _table.ColumnsEncoding;
         public string ColumnsTypeName => "-";
         public double PercentageDatabase => _table.PercentageDatabase;
 
@@ -104,8 +107,13 @@ namespace DaxStudio.UI.ViewModels
         public long UserHierarchiesSize => _table.UserHierarchiesSize;
         public long ColumnsNumber => _table.ColumnsNumber;
         public long RowsCount => _table.RowsCount;
-        public long SegmentsNumber => _table.SegmentsNumber;
+        public int SegmentsNumber => _table.SegmentsNumber;
         public long PartitionsNumber => _table.PartitionsNumber;
+        public long SegmentsTotalNumber => _table.SegmentsTotalNumber;
+        public int? SegmentsPageable => _table.SegmentsPageable;
+        public int? SegmentsResident => _table.SegmentsResident;
+        public double? SegmentsAverageTemperature => _table.SegmentsAverageTemperature * 1000;
+        public DateTime? SegmentsLastAccessed => _table.SegmentsLastAccessed;
         public long ReferentialIntegrityViolationCount => _table.ReferentialIntegrityViolationCount;
 
 

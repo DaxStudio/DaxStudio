@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for SaveDialogView.xaml
     /// </summary>
-    public partial class AutoSaveRecoveryDialogView : UserControl
+    public partial class AutoSaveRecoveryDialogView : Controls.DaxStudioDialog
     {
         public AutoSaveRecoveryDialogView()
         {

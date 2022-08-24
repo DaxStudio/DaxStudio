@@ -36,6 +36,7 @@ namespace DaxStudio.UI.ViewModels
         public FindReplaceDialogViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+            IsVisible = false;
             //this.editor = editor;
             //_searchDirections = new List<string>();
             //_searchDirections.Add("Next");
@@ -186,7 +187,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, "FindReplaceDialogViewModel", "FindText", ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error trying to find text: ${ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to find text: ${ex.Message}"));
             }
         }
 
@@ -228,7 +229,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex,Constants.LogMessageTemplate,"FindReplaceDialogViewModel","ReplaceText",ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
             }
         }
 
@@ -251,7 +252,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceAllText), ex.Message);
-                _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Replacing All Text: {ex.Message}" ));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Replacing All Text: {ex.Message}" ));
             }
 
         }

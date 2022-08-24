@@ -89,11 +89,11 @@ namespace DaxStudio.UI.ViewModels
 
         #region Methods
 
-        public void ManualConnectionString()
+        public async void ManualConnectionString()
         {
             BuildConnectionString();
             NextPage = ExportDataWizardPage.ManualConnectionString;
-            TryClose();
+            await TryCloseAsync();
         }
 
         private void BuildConnectionString()
@@ -124,11 +124,11 @@ namespace DaxStudio.UI.ViewModels
             && Schema.Length > 0
             && (AuthenticationType == SqlAuthenticationType.Windows || (Username.Length > 0 && SecurePassword.Length > 0));
 
-        public void Next()
+        public async void Next()
         {
             BuildConnectionString();
             NextPage = ExportDataWizardPage.ChooseTables;
-            TryClose();
+            await TryCloseAsync();
         }
         #endregion
     }

@@ -62,7 +62,7 @@ namespace DaxStudio.UI.Utils
             foreach (var proc in msmdsrvProcesses)
             { 
                 int _port = 0;
-                string parentTitle = $"localhost:{_port}";
+                string parentTitle = string.Empty; // $"localhost:{_port}";
                 EmbeddedSSASIcon _icon = EmbeddedSSASIcon.PowerBI;
                 var parent = proc.GetParent();
                 

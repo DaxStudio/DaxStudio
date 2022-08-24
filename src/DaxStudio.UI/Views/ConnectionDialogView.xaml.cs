@@ -4,13 +4,14 @@ using System.Windows.Controls;
 using ADOTabular;
 using DaxStudio.Interfaces;
 using System.Windows.Input;
+using ModernWpf.Controls;
 
 namespace DaxStudio.UI.Views
 {
     /// <summary>
     /// Interaction logic for Window1.xaml
     /// </summary>
-    public partial class ConnectionDialogView : UserControl
+    public partial class ConnectionDialogView : DaxStudio.UI.Controls.DaxStudioDialog
     {
 
 

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using ADOTabular;
@@ -21,6 +23,7 @@ namespace DaxStudio.UI.ViewModels
     public class FunctionPaneViewModel:ToolPaneBaseViewModel
         , IMetadataPane
         , IHandle<ConnectionChangedEvent>
+        , IHandle<UpdateGlobalOptions>
     {
         private IFunctionProvider _functionProvider;
         [ImportingConstructor]
@@ -48,16 +51,6 @@ namespace DaxStudio.UI.ViewModels
 
         public override string DefaultDockingPane => "DockLeft";
         public override string ContentId => "functions";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/Metadata/Function.png") as ImageSource;
-
-            }
-        }
 
         public override string Title => "Functions";
 
@@ -86,7 +79,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FunctionPaneViewModel), nameof(ApplyFilter), ex.Message);
-                EventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
             }
         }
 
@@ -96,10 +89,11 @@ namespace DaxStudio.UI.ViewModels
             SearchCriteria = string.Empty;
         }
 
-        public void Handle(ConnectionChangedEvent message)
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => FunctionGroups);
-            //EventAggregator.PublishOnUIThread(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+            //EventAggregator.PublishOnUIThreadAsync(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+            return Task.CompletedTask;
         }
 
         public void MetadataKeyUp(IFilterableTreeViewItem selectedItem, KeyEventArgs args)
@@ -117,6 +111,14 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!(selectedItem is ADOTabularFunctionsExtensions.TreeViewFunction func)) return;
             Process.Start(new ProcessStartInfo($"https://dax.guide/{func.Name}/?aff=dax-studio"));
+        }
+
+        public bool AutoHideMetadataVerticalScrollbars => Options.AutoHideMetadataVerticalScrollbars;
+
+        public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(nameof(AutoHideMetadataVerticalScrollbars));
+            return Task.CompletedTask;
         }
     }
 }

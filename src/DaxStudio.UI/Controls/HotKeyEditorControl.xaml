@@ -52,7 +52,8 @@
              Validation.Error="HotkeyTextBox_Error" 
              Loaded="HotkeyTextBox_Loaded"
              Text="{Binding Hotkey, ElementName=UserControl, Mode=OneWay, TargetNullValue=&lt; not set &gt;}"
-             Background="{Binding Path=Background, RelativeSource={RelativeSource AncestorType=UserControl}}">
+             Background="{Binding Path=Background, RelativeSource={RelativeSource AncestorType=UserControl}}"
+             Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=UserControl}}">
         <TextBox.ContextMenu>
             <ContextMenu Visibility="Collapsed" />
         </TextBox.ContextMenu>

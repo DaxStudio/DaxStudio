@@ -21,9 +21,7 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
-using MLib;
-using MLib.Interfaces;
-
+using DaxStudio.UI.Conventions;
 
 namespace DaxStudio.UI
 {
@@ -48,7 +46,7 @@ namespace DaxStudio.UI
 
         public void DisplayShell()
         {
-            Application.Dispatcher.Invoke(() => base.DisplayRootViewFor<IShell>(null));
+            Application.Dispatcher.Invoke(() => base.DisplayRootViewForAsync<IShell>(null));
         }
 
         protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -60,7 +58,7 @@ namespace DaxStudio.UI
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {
                     var eventAggregator = _container.GetExportedValue<IEventAggregator>();
-                    if (eventAggregator != null) eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
+                    if (eventAggregator != null) eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
                     Log.Warning(e.Exception, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
                     e.Handled = true;
                     return;
@@ -118,12 +116,9 @@ namespace DaxStudio.UI
                 _container = new CompositionContainer(catalog);
 	            var batch = new CompositionBatch();
 
-
-
-                
-	            batch.AddExportedValue<IWindowManager>(new WindowManager());
-	            batch.AddExportedValue<IEventAggregator>(new EventAggregator());
-	            batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
+                batch.AddExportedValue<IWindowManager>(new WindowManager());
+                batch.AddExportedValue<IEventAggregator>(new EventAggregator());
+                batch.AddExportedValue<Func<DocumentViewModel>>(() => _container.GetExportedValue<DocumentViewModel>());
 	            batch.AddExportedValue<Func<IWindowManager, IEventAggregator, DocumentViewModel>>(
 	                (w, e) => _container.GetExportedValue<DocumentViewModel>());
 	            batch.AddExportedValue(_container);
@@ -133,26 +128,27 @@ namespace DaxStudio.UI
 
                 batch.AddExportedValue<ISettingProvider>(settingProvider);
 
-                // add support for MLib themes
-                batch.AddExportedValue<IAppearanceManager>(AppearanceManager.GetInstance());
-
                 _container.Compose(batch);
 
 	            // Add AvalonDock binding conventions
 	            AvalonDockConventions.Install();
 
+                ModernWpfConventions.Install();
+
                 //var settingFactory = _container.GetExport<Func<ISettingProvider>>();
 
-                
+                //ConfigureKeyBindingConvention();
 
-                ConfigureKeyBindingConvention();
-
-	            // TODO - not working
-	            //VisibilityBindingConvention.Install();
+                // TODO - not working
+                //VisibilityBindingConvention.Install();
 
                 // Enable Caliburn.Micro debug logging
-	            //LogManager.GetLog = type => new DebugLogger(type);
+                //LogManager.GetLog = type => new DebugLogger(type);
 
+                AddModernWpfUiToApplicationResources();
+                
+                AddDaxStudioDefaultStyles();
+                
                 // Add Application object to MEF catalog
                 _container.ComposeExportedValue<Application>("System.Windows.Application", Application.Current);
             }
@@ -161,6 +157,38 @@ namespace DaxStudio.UI
 	            Debug.WriteLine(e);
 	        }
 		}
+
+        private void AddModernWpfUiToApplicationResources()
+        {
+            var themeResources = new ModernWpf.ThemeResources();
+
+            var lightTheme = new ResourceDictionary();
+            lightTheme.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml");
+            ModernWpf.ThemeDictionary.SetKey(lightTheme, "Light");
+            themeResources.ThemeDictionaries.Add("Light", lightTheme);
+
+            var darkTheme = new ResourceDictionary();
+            darkTheme.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.Theme.xaml");
+            ModernWpf.ThemeDictionary.SetKey(darkTheme, "Dark");
+            themeResources.ThemeDictionaries.Add("Dark", darkTheme);
+
+            Application.Current.Resources.MergedDictionaries.Add(themeResources);
+
+            var controlResources = new ModernWpf.Controls.XamlControlsResources();
+            Application.Current.Resources.MergedDictionaries.Add(controlResources);
+            
+            var compactSizing = new ResourceDictionary();
+            compactSizing.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml");
+            Application.Current.Resources.MergedDictionaries.Add(compactSizing);
+
+        }
+
+        private void AddDaxStudioDefaultStyles()
+        {
+            var dialogStyle = new ResourceDictionary();
+            dialogStyle.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Resources/Styles/DaxStudioDialog.xaml");
+            Application.Current.Resources.MergedDictionaries.Add(dialogStyle);
+        }
 
         public IThemeManager GetThemeManager()
         {
@@ -266,32 +294,32 @@ namespace DaxStudio.UI
         //    }
         //}
 
-        private void ConfigureKeyBindingConvention()
-        {
-            var trigger = Parser.CreateTrigger;
+        //private void ConfigureKeyBindingConvention()
+        //{
+        //    var trigger = Parser.CreateTrigger;
 
-            Parser.CreateTrigger = (target, triggerText) =>
-            {
-                if (triggerText == null)
-                {
-                    var defaults = ConventionManager.GetElementConvention(target.GetType());
-                    return defaults.CreateTrigger();
-                }
+        //    Parser.CreateTrigger = (target, triggerText) =>
+        //    {
+        //        if (triggerText == null)
+        //        {
+        //            var defaults = ConventionManager.GetElementConvention(target.GetType());
+        //            return defaults.CreateTrigger();
+        //        }
 
-                var triggerDetail = triggerText
-                    .Replace("[", string.Empty)
-                    .Replace("]", string.Empty);
+        //        var triggerDetail = triggerText
+        //            .Replace("[", string.Empty)
+        //            .Replace("]", string.Empty);
 
-                var splits = triggerDetail.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
-                if (splits[0] == "Key")
-                {
-                    var key = (Key)Enum.Parse(typeof(Key), splits[1], true);
-                    return new KeyTrigger { Key = key };
-                }
+        //        var splits = triggerDetail.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+        //        if (splits[0] == "Key")
+        //        {
+        //            var key = (Key)Enum.Parse(typeof(Key), splits[1], true);
+        //            return new KeyTrigger { Key = key };
+        //        }
 
-                return trigger(target, triggerText);
-            };
-        }
+        //        return trigger(target, triggerText);
+        //    };
+        //}
 
 
         static IEnumerable<System.Windows.DependencyObject> FluentRibbonChildResolver(Fluent.Ribbon ribbon)
@@ -306,8 +334,8 @@ namespace DaxStudio.UI
                 }
             }
             */
-            
-            var backstage = ribbon.Menu as Fluent.Backstage;
+            var backstageGrid = ribbon.Menu as Grid;
+            var backstage = backstageGrid.Children[0] as Fluent.Backstage;
             var backstageTabs = backstage.Content as Fluent.BackstageTabControl;
             BindingScope.GetNamedElements(backstageTabs);
 

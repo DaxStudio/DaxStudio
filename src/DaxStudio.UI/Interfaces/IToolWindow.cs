@@ -7,12 +7,12 @@ namespace DaxStudio.UI.Interfaces
         string Title { get;  }
         string DefaultDockingPane { get; }
         bool CanCloseWindow { get; set; }
-        bool CanHide { get; set; }
+        bool CanHide { get;  }
         int AutoHideMinHeight { get; set; }
         bool IsSelected { get; set; }
         //bool IsActive { get; set; }
-        
+        //bool IsVisible { get; set; }
         string ContentId { get; }
-        ImageSource IconSource { get; }
+        //ImageSource IconSource { get; }
     }
 }

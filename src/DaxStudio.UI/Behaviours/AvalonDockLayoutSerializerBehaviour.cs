@@ -1,14 +1,7 @@
-﻿using Caliburn.Micro;
+﻿using AvalonDock;
 using DaxStudio.UI.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interactivity;
-using AvalonDock;
 
 namespace DaxStudio.UI.Behaviours
 {

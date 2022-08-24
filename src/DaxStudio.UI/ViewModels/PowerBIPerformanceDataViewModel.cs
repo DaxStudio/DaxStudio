@@ -37,21 +37,12 @@ namespace DaxStudio.UI.ViewModels
             PerformanceData = new BindableCollection<PowerBIPerformanceData>();
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
+            
         }
 
-
-        public new bool CanHide => true;
+        public override bool CanHide => true;
+        //public new bool CanHide => true;
         public override string ContentId => "pbi-performance-data";
-        public override ImageSource IconSource
-        {
-            get
-            {
-                var imgSourceConverter = new ImageSourceConverter();
-                return imgSourceConverter.ConvertFromInvariantString(
-                    @"pack://application:,,,/DaxStudio.UI;component/images/icon-pbi-tachometer@2x.png") as ImageSource;
-
-            }
-        }
 
         public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; } 
        
@@ -82,7 +73,7 @@ namespace DaxStudio.UI.ViewModels
                         var perfLine = new PowerBIPerformanceData() {
                             Id = o2["id"].Value<string>(),
                             Name = o2["name"].Value<string>(),
-                            Component = o2["component"].Value<string>(),
+                            Component = o2["component"]?.Value<string>()??"<unknown>",
                             ParentId = o2["parentId"]?.Value<string>()
                         };
                         switch (o2["name"].Value<string>()) {
@@ -123,7 +114,7 @@ namespace DaxStudio.UI.ViewModels
                                 line2.RenderEndTime = perfLine.RenderEndTime;
                                 break;
                         }
-                        if (!perfDataDict.Keys.Contains(perfLine.Id))   perfDataDict.Add(perfLine.Id, perfLine);
+                        if (!perfDataDict.ContainsKey(perfLine.Id))   perfDataDict.Add(perfLine.Id, perfLine);
                     }
                     foreach (var line in perfDataDict.Values)
                     {
@@ -135,12 +126,12 @@ namespace DaxStudio.UI.ViewModels
                         }
                     }
 
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} {message}", "PowerBIPerformanceDataViewModel", "FileName.set", ex.Message);
-                    _eventAggregator.PublishOnUIThread(new OutputMessage(MessageType.Error, $"Error Loading Power BI Performance Data: {ex.Message}"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Loading Power BI Performance Data: {ex.Message}"));
                 }
                 finally
                 {
@@ -175,7 +166,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             sb.AppendLine();
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(sb.ToString()));
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
         }
 
         public void ClearFilters()
@@ -213,7 +204,7 @@ namespace DaxStudio.UI.ViewModels
             queryHeader += $"// Row Count       : {perfData.RowCount}\n";
             queryHeader += $"// =================\n";
             queryHeader += perfData.QueryText;
-            _eventAggregator.PublishOnUIThread(new SendTextToEditor(queryHeader + "\n"));
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(queryHeader + "\n"));
         }
 
         private bool _showFilters;

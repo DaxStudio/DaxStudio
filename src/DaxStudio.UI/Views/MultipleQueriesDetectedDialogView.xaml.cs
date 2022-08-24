@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for SaveDialogView.xaml
     /// </summary>
-    public partial class MultipleQueriesDetectedDialogView : UserControl
+    public partial class MultipleQueriesDetectedDialogView : Controls.DaxStudioDialog
     {
         public MultipleQueriesDetectedDialogView()
         {

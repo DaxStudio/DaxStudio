@@ -1,0 +1,163 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:circularProgressBar="clr-namespace:DaxStudio.UI.Converters.CircularProgressBar"
+                    xmlns:converters="clr-namespace:DaxStudio.UI.Converters">
+  <circularProgressBar:StartPointConverter x:Key="StartPointConverter" />
+  <circularProgressBar:ArcSizeConverter x:Key="ArcSizeConverter" />
+  <circularProgressBar:ArcEndPointConverter x:Key="ArcEndPointConverter" />
+  <circularProgressBar:RotateTransformCentreConverter x:Key="RotateTransformCentreConverter" />
+  <converters:NotZeroConverter x:Key="NotZeroConverter" />
+
+    <Style x:Key="SpinnerLabel" TargetType="Label">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+    </Style>
+
+    <Style x:Key="MaterialDesignCircularProgressBar" TargetType="{x:Type ProgressBar}">
+    <!--<Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
+    <Setter Property="Background" Value="Transparent" />-->
+    <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="IsIndeterminate" Value="True"/>  
+    <Setter Property="Width" Value="20" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ProgressBar}">
+          <ControlTemplate.Resources>
+            <Storyboard x:Key="IsIndeterminateStoryboard" TargetName="RotateTransform" TargetProperty="Angle" RepeatBehavior="Forever">
+              <DoubleAnimation From="0" To="359" Duration="0:0:2" />
+            </Storyboard>
+            <Storyboard x:Key="IsFullyIndeterminateStoryboard">
+              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FullyIndeterminateGridScaleTransform"
+                                             Storyboard.TargetProperty="ScaleX"
+                                             RepeatBehavior="Forever">
+                <SplineDoubleKeyFrame KeyTime="0:0:0" Value="0.0" />
+                <!--<SplineDoubleKeyFrame KeyTime="0:0:2" KeySpline="0.6,0.0 0.9,0.00" Value="0.4" />-->
+                <SplineDoubleKeyFrame KeyTime="0:0:1" Value="0.8" />
+                <SplineDoubleKeyFrame KeyTime="0:0:4" Value="0.0" />
+
+              </DoubleAnimationUsingKeyFrames>
+              <DoubleAnimation Storyboard.TargetName="RotateTransform"
+                               Storyboard.TargetProperty="Angle"
+                               RepeatBehavior="Forever"
+                               From="00" To="359" Duration="0:0:1.25" >
+                <!--<DoubleAnimation.EasingFunction>
+                  <CircleEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>-->
+              </DoubleAnimation>
+            </Storyboard>
+            <Storyboard x:Key="IsFullyIndeterminateStoryboard2">
+              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FullyIndeterminateGridScaleTransform"
+                                             Storyboard.TargetProperty="ScaleX"
+                                             RepeatBehavior="Forever">
+                <SplineDoubleKeyFrame KeyTime="0:0:0" Value="0.0" />
+                <!--<SplineDoubleKeyFrame KeyTime="0:0:2" KeySpline="0.6,0.0 0.9,0.00" Value="0.4" />-->
+                <SplineDoubleKeyFrame KeyTime="0:0:1" Value="0.8" />
+                <SplineDoubleKeyFrame KeyTime="0:0:4" Value="0.0" />
+
+              </DoubleAnimationUsingKeyFrames>
+              <DoubleAnimation Storyboard.TargetName="RotateTransform"
+                               Storyboard.TargetProperty="Angle"
+                               RepeatBehavior="Forever"
+                               From="00" To="359" Duration="0:0:1.25" >
+                <!--<DoubleAnimation.EasingFunction>
+                  <CircleEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>-->
+              </DoubleAnimation>
+            </Storyboard>
+
+          </ControlTemplate.Resources>
+          <Grid x:Name="TemplateRoot" ClipToBounds="False">
+            <Grid x:Name="FullyIndeterminateGrid">
+              <Grid.RenderTransform>
+                <ScaleTransform x:Name="FullyIndeterminateGridScaleTransform" ScaleX="0" />
+              </Grid.RenderTransform>
+            </Grid>
+            <Grid x:Name="PathGrid" Margin="2" />
+            <Canvas>
+              <Ellipse Stroke="{TemplateBinding Background}" StrokeThickness="3"  Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" />
+              <Path x:Name="Path" Stroke="{TemplateBinding Foreground}" StrokeThickness="3"
+                    Canvas.Top="2" Canvas.Left="2"
+                    StrokeStartLineCap="Round"
+                    StrokeEndLineCap="Round"
+                    RenderTransformOrigin="0, 0">
+                <Path.Data>
+                  <PathGeometry>
+                    <PathFigure StartPoint="{Binding ElementName=PathGrid, Path=ActualWidth, Converter={StaticResource StartPointConverter}, Mode=OneWay}">
+                      <ArcSegment Size="{Binding ElementName=PathGrid, Path=ActualWidth, Converter={StaticResource ArcSizeConverter}, Mode=OneWay}"
+                                  SweepDirection="Clockwise" 
+                                  >
+                        <ArcSegment.Point>
+                          <MultiBinding
+                              Converter="{StaticResource ArcEndPointConverter}"
+                              ConverterParameter="{x:Static circularProgressBar:ArcEndPointConverter.ParameterMidPoint}">
+                            <Binding ElementName="PathGrid" Path="ActualWidth" />
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Value" />
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Minimum" />
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Maximum" />
+                            <Binding ElementName="FullyIndeterminateGridScaleTransform" Path="ScaleX" />
+                          </MultiBinding>
+                        </ArcSegment.Point>
+                      </ArcSegment>
+                      <ArcSegment Size="{Binding ElementName=PathGrid, Path=ActualWidth, Converter={StaticResource ArcSizeConverter}, Mode=OneWay}"
+                                  SweepDirection="Clockwise">
+                        <ArcSegment.Point>
+                          <MultiBinding Converter="{StaticResource ArcEndPointConverter}">
+                            <Binding ElementName="PathGrid" Path="ActualWidth" />
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Value" />
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Minimum" />
+                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Maximum" />
+                            <Binding ElementName="FullyIndeterminateGridScaleTransform" Path="ScaleX" />
+                          </MultiBinding>
+                        </ArcSegment.Point>
+                      </ArcSegment>
+                    </PathFigure>
+                  </PathGeometry>
+                </Path.Data>
+                <Path.RenderTransform>
+                  <TransformGroup>
+                    <RotateTransform x:Name="RotateTransform"
+                                     CenterX="{Binding ElementName=PathGrid, Path=ActualWidth, Converter={StaticResource RotateTransformCentreConverter}, Mode=OneWay}"
+                                     CenterY="{Binding ElementName=PathGrid, Path=ActualWidth, Converter={StaticResource RotateTransformCentreConverter}, Mode=OneWay}" />
+                  </TransformGroup>
+                </Path.RenderTransform>
+              </Path>
+            </Canvas>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding IsIndeterminate, RelativeSource={RelativeSource Self}}" Value="True" />
+                <Condition Binding="{Binding IsVisible, RelativeSource={RelativeSource Self}}" Value="True" />
+                <Condition Binding="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource NotZeroConverter}}" Value="True" />
+              </MultiDataTrigger.Conditions>
+              <MultiDataTrigger.EnterActions>
+                <BeginStoryboard Storyboard="{StaticResource IsIndeterminateStoryboard}"
+                                 Name="IsIndeterminateStoryboard"/>
+              </MultiDataTrigger.EnterActions>
+              <MultiDataTrigger.ExitActions>
+                <RemoveStoryboard BeginStoryboardName="IsIndeterminateStoryboard" />
+              </MultiDataTrigger.ExitActions>
+            </MultiDataTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsIndeterminate" Value="True" />
+                <Condition Property="IsVisible" Value="True" />
+                <Condition Property="Value" Value="0" />
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions>
+                <BeginStoryboard Storyboard="{StaticResource IsFullyIndeterminateStoryboard}"
+                                 Name="IsFullyIndeterminateStoryboard"/>
+              </MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions>
+                <RemoveStoryboard BeginStoryboardName="IsFullyIndeterminateStoryboard" />
+              </MultiTrigger.ExitActions>
+            </MultiTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

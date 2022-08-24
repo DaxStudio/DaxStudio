@@ -65,7 +65,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} {message}", nameof(NotifyIcon), nameof(icon_TrayBalloonTipClicked), "Unable to open log folder");
-                    EventAggregator.PublishOnUIThread(new OutputMessage( MessageType.Error, $"Unable to open log folder: '{DownloadUrl}'\n{ex.Message}"));
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage( MessageType.Error, $"Unable to open log folder: '{DownloadUrl}'\n{ex.Message}"));
                 }
             }
         

@@ -1,18 +1,18 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=Xceed.Wpf.AvalonDock"
-    xmlns:avalonDock="clr-namespace:Xceed.Wpf.AvalonDock;assembly=Xceed.Wpf.AvalonDock"
-    xmlns:avalonDockLayout="clr-namespace:Xceed.Wpf.AvalonDock.Layout;assembly=Xceed.Wpf.AvalonDock"
-    xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
-    xmlns:avalonDockConverters="clr-namespace:Xceed.Wpf.AvalonDock.Converters;assembly=Xceed.Wpf.AvalonDock"
-    xmlns:avalonDockProperties="clr-namespace:Xceed.Wpf.AvalonDock.Properties;assembly=Xceed.Wpf.AvalonDock"
+    xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock"
+    xmlns:avalonDock="https://github.com/Dirkster99/AvalonDock"
+    xmlns:avalonDockLayout="https://github.com/Dirkster99/AvalonDock"
+    xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
+    xmlns:avalonDockConverters="https://github.com/Dirkster99/AvalonDock"
+    xmlns:avalonDockProperties="clr-namespace:AvalonDock.Properties;assembly=AvalonDock"
     >
 
     <!-- Colors  -->
     
-    <Color x:Key="AvalonDock.Border.Background.Color">#FF000000</Color>
-    <Color x:Key="AvalonDock.Control.Background.Color">#FF000000</Color>
+    <Color x:Key="AvalonDock.Border.Background.Color">#000000</Color>
+    <Color x:Key="AvalonDock.Control.Background.Color">#000000</Color>
     <Color x:Key="AvalonDock.Transparent.Color">#00FFFFFF</Color>
     <Color x:Key="AvalonDock.Text.Color">#00CCCCCC</Color>
 
@@ -27,6 +27,7 @@
     
 
     <!-- Styles -->
+    <!--
     <avalonDockConverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"  />
     <avalonDockConverters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
     <avalonDockConverters:AnchorSideToOrientationConverter x:Key="AnchorSideToOrientationConverter"  />
@@ -831,4 +832,5 @@
             </Setter.Value>
         </Setter>
     </Style>
+    -->
 </ResourceDictionary>

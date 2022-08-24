@@ -8,27 +8,27 @@
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:attached="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
+            
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
+            <conv:TableImageConverter x:Key="TableImageConverter"/>
 
-            
-
-
-
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MetadataIcons.xaml" />
-            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
+    <controls:ClipBorder CornerRadius="8"
+                         Background="{DynamicResource Theme.Brush.Dialog.Back}"                                >
+        <Border Margin="8" >
         <!-- Expression Editor control -->
         <Grid x:Name="gridExpressionEditor"        
-            Background="AliceBlue"                                
-            Margin="2" >
+            
+            Margin="2"
+            >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -44,12 +44,13 @@
                       ItemsSource="{Binding Tables, Mode=OneWay}"
                       SelectedItem="{Binding SelectedTable}"
                       IsEnabled="{Binding IsModelItem, Converter={StaticResource BoolNotConverter}}"
+                      Margin="2"
                       MinWidth="150">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            
-                            <Image Source="{Binding MetadataImage,Converter={StaticResource MetadataIcons}}" Margin="2,1,5,1"/>
+
+                            <Image ap:ImageBindingHelper.SourceResourceKey="{Binding . , Converter={StaticResource TableImageConverter}}" Margin="2,1,5,1"/>
                             <TextBlock Text="{Binding Path=Caption}" Margin="4,0" ></TextBlock>
                         </StackPanel>
                     </DataTemplate>
@@ -77,15 +78,17 @@
                             dd:DragDrop.DragHandler="{Binding}"
                                                    
                             WordWrap="{Binding WordWrap}"
-                            attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
+                            ap:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                             ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                             IndentationSize="{Binding IndentationSize}"
                             />
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="2" HorizontalAlignment="Right">
                 <Button x:Name="SaveMeasureExpression" MinWidth="60" Margin="2" Content="OK" 
-                                                    cal:Message.Attach="[Event Click] = [SaveMeasureExpression]"/>
+                        cal:Message.Attach="[Event Click] = [SaveMeasureExpression]" 
+                        Style="{DynamicResource AccentButtonStyle}"/>
                 <Button x:Name="CancelMeasureExpression" MinWidth="60" Margin="2" Content="Cancel"/>
             </StackPanel>
         </Grid>
-
+        </Border>
+    </controls:ClipBorder>
 </UserControl>

@@ -24,6 +24,7 @@ namespace DaxStudio.UI.Model
         public int DisplayOrder => 200;
         public string Message => "Results will be sent to a Text File";
         public OutputTarget Icon => OutputTarget.File;
+        public string ImageResource => "results_fileDrawingImage";
         public string Tooltip => "Exports Query results to csv or tab delimited files";
         public bool IsEnabled => true;
 

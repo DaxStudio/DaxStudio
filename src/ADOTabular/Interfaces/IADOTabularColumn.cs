@@ -14,7 +14,7 @@ namespace ADOTabular.Interfaces
         Type SystemType { get; }
         DataType DataType { get; }
         MetadataImages MetadataImage { get; }
-
+        string ImageResource { get; }
         string MeasureExpression { get; }
 
         string TableName { get; }

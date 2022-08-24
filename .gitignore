@@ -26,6 +26,7 @@ build/
 
 .vs/
 .vscode/
+*.binlog
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -201,3 +202,6 @@ github.env
 /src/.vs/DaxStudio/v15/Server/sqlite3
 docs/.jekyll-metadata
 *.GeneratedMSBuildEditorConfig.editorconfig
+**/[Rr]esources/[Bb]uild[Dd]ate.txt
+*.binlog
+

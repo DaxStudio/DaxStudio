@@ -232,15 +232,22 @@
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="AttachedProperties\BrushBindingHelper.cs" />
     <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
+    <Compile Include="AttachedProperties\DataGridColumnVisibilityProperty.cs" />
     <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
     <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
+    <Compile Include="AttachedProperties\FluentRibbonKeyTip.cs" />
     <Compile Include="AttachedProperties\GridSplitterController.cs" />
+    <Compile Include="AttachedProperties\ForegroundBindingHelper.cs" />
+    <Compile Include="AttachedProperties\ImageBindingHelper.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButton.cs" />
     <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
+    <Compile Include="AttachedProperties\LayoutAnchorablePaneAutoHideMinWidthHelper.cs" />
+    <Compile Include="AttachedProperties\DataGridHorizontalScroll.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
@@ -258,15 +265,19 @@
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\ClipBorder.cs" />
     <Compile Include="Controls\DataGridCustomCopy.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
+    <Compile Include="Controls\DaxStudioDialog.cs" />
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
       <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
+    <Compile Include="Controls\Utils.cs" />
     <Compile Include="Controls\ZoomableUserControl.cs" />
     <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
+    <Compile Include="Conventions\ModernWpfConventions.cs" />
     <Compile Include="Conventions\VisibilityBindingConvention.cs" />
     <Compile Include="Converters\ActiveDocumentConverter.cs" />
     <Compile Include="Converters\AllNumericConverter.cs" />
@@ -282,22 +293,47 @@
     <Compile Include="Converters\CanDuplicateMeasureConverter.cs" />
     <Compile Include="Converters\CappedRowHeightConverter.cs" />
     <Compile Include="Converters\CappedHeightConverter.cs" />
+    <Compile Include="Converters\CircularProgressBar\ArcEndPointConverter.cs" />
+    <Compile Include="Converters\CircularProgressBar\ArcSizeConverter.cs" />
+    <Compile Include="Converters\CircularProgressBar\LocalEx.cs" />
+    <Compile Include="Converters\CircularProgressBar\RotateTransformCentreConverter.cs" />
+    <Compile Include="Converters\CircularProgressBar\StartPointConverter.cs" />
     <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
     <Compile Include="Converters\DataBindingDebugConverter.cs" />
     <Compile Include="Converters\DatetimeToLocalTimeConverter.cs" />
+    <Compile Include="Converters\DynamicResourceLookupConverter.cs" />
     <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
+    <Compile Include="Converters\FindResourceFromStringConverter.cs" />
+    <Compile Include="Converters\FontToSupportedGlyphConverter.cs" />
+    <Compile Include="Converters\LongToFormattedMsConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
+    <Compile Include="Converters\NotZeroConverter.cs" />
+    <Compile Include="Converters\OutputTargetImageResourceConverter.cs" />
+    <Compile Include="Converters\QueryPlanMarginConverter.cs" />
+    <Compile Include="Converters\QueryPlanSelectionConverter.cs" />
+    <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
+    <Compile Include="Converters\StringPercentToDoubleConverter.cs" />
+    <Compile Include="Converters\TableImageConverter.cs" />
+    <Compile Include="Converters\WaterfallLengthConverter.cs" />
+    <Compile Include="Converters\WaterfallMarginConverter.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\EditorHotkeyEvent.cs" />
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
+    <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
+    <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
+    <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
+    <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
+    <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
+    <Compile Include="Interfaces\IQueryPlanRow.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
+    <Compile Include="JsonConverters\QueryBuilderColumnDataTypeConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
     <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
     <Compile Include="Converters\ServerNameConverter.cs" />
@@ -339,8 +375,8 @@
     <Compile Include="Converters\FontConverter.cs" />
     <Compile Include="Converters\GreaterThanConverter.cs" />
     <Compile Include="Converters\HotKeyConverter.cs" />
-    <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\IntToFormattedMsConverter.cs" />
+    <Compile Include="Converters\IntToDoubleConverter.cs" />
     <Compile Include="Converters\MatchingResultColourConverter.cs" />
     <Compile Include="Converters\MaxMultiConverter.cs" />
     <Compile Include="Converters\MaxTextLinesConverter.cs" />
@@ -358,7 +394,7 @@
     <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StringToVisibilityConverter.cs" />
-    <Compile Include="Converters\StringToXamlConverter.cs" />
+    <Compile Include="Converters\xmSqlToDocumentConverter.cs" />
     <Compile Include="Converters\StringWhitespaceRemovalConverter.cs" />
     <Compile Include="Enums\DialogResult.cs" />
     <Compile Include="Enums\ExportDataType.cs" />
@@ -394,7 +430,7 @@
     <Compile Include="Extensions\HttpClientExtensions.cs" />
     <Compile Include="Extensions\MiscExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
-    <Compile Include="Extensions\QueryBeginEventExtensions.cs" />
+    <Compile Include="Extensions\QueryEventExtensions.cs" />
     <Compile Include="Extensions\ServerVersionExtensions.cs" />
     <Compile Include="Extensions\SqlBulkCopyExtensions.cs" />
     <Compile Include="Extensions\ViewAwareExtensions.cs" />
@@ -407,6 +443,7 @@
     <Compile Include="JsonConverters\DaxFileConverter.cs" />
     <Compile Include="JsonConverters\ServerTimingConverter.cs" />
     <Compile Include="JsonConverters\VersionConverter.cs" />
+    <Compile Include="MarkupExtensions\ResourceBinding.cs" />
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
@@ -423,6 +460,8 @@
     <Compile Include="Model\QueryBuilder\QueryBuilderFilterList.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
+    <Compile Include="Model\RefreshEvent.cs" />
+    <Compile Include="Model\SemaphoreSlimLock.cs" />
     <Compile Include="Model\SettingsProviderFactory.cs" />
     <Compile Include="Model\TreeViewFunctions.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
@@ -505,7 +544,6 @@
     <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
     <Compile Include="TemplateSelectors\OptionsPropertyTemplateSelector.cs" />
     <Compile Include="TemplateSelectors\ResultsGridCellTemplateSelector.cs" />
-    <Compile Include="Theme\DaxStudioLightTheme.cs" />
     <Compile Include="Theme\ThemeManager.cs" />
     <Compile Include="Triggers\EnterKeyTrigger.cs" />
     <Compile Include="Triggers\InputBindingTrigger.cs">
@@ -549,7 +587,6 @@
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\StringEncryptionExtensions.cs" />
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
-    <Compile Include="Utils\ApplicationCloseStrategy.cs" />
     <Compile Include="TemplateSelectors\ToolWindowTemplateSelector.cs" />
     <Compile Include="Converters\BoolToHiddenConverter.cs" />
     <Compile Include="Extensions\DatabaseCollectionExtensions.cs" />
@@ -574,8 +611,10 @@
     <Compile Include="Utils\PaneStyleSelector.cs" />
     <Compile Include="Utils\PowerBIHelper.cs" />
     <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
+    <Compile Include="Utils\TraceWatcherFactory.cs" />
     <Compile Include="Utils\UserHelper.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
+    <Compile Include="Utils\XlsxHelper.cs" />
     <Compile Include="Utils\ZoomHelper.cs" />
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
@@ -597,6 +636,7 @@
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTypeViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnStrViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardViewModel.cs" />
+    <Compile Include="ViewModels\GettingStartedViewModel.cs" />
     <Compile Include="ViewModels\HelpWatermarkViewModel.cs" />
     <Compile Include="ViewModels\MeasureExpressionEditorViewModel.cs" />
     <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
@@ -609,6 +649,8 @@
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
+    <Compile Include="ViewModels\DebugAndLogTraceViewModel.cs" />
+    <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderFilter.cs" />
@@ -628,6 +670,9 @@
     </Compile>
     <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
       <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GettingStartedView.xaml.cs">
+      <DependentUpon>GettingStartedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MultipleQueriesDetectedDialogView.xaml.cs">
       <DependentUpon>MultipleQueriesDetectedDialogView.xaml</DependentUpon>
@@ -737,6 +782,12 @@
     <Compile Include="Views\QueryResultsPaneView.xaml.cs">
       <DependentUpon>QueryResultsPaneView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DebugAndLogTraceView.xaml.cs">
+      <DependentUpon>DebugAndLogTraceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RefreshTraceView.xaml.cs">
+      <DependentUpon>RefreshTraceView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RibbonView.xaml.cs">
       <DependentUpon>RibbonView.xaml</DependentUpon>
     </Compile>
@@ -772,9 +823,65 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Properties\DesignTimeResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\DaxStudioResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\CompletionList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\DataGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\FluentRibbon\DropDownButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\FluentRibbon\GalleryItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\FluentRibbon\Menu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\InsightWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\ListViewStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\ToggleSwitchSmall.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\TraceWatcherStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Theme\icons.dark.extra.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Theme\icons.dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\icons.light.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\logo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Resources\MeasureExpressionEditorResources.xaml">
       <SubType>Designer</SubType>
@@ -784,37 +891,57 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\Styles\DaxStudio.Button.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\ExpanderArrowStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Theme\AvalonDock_Dark_LightBrushs.xaml">
+    <Page Include="Resources\Styles\ModernWpf.Medium.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Theme\Dark.AvalonDock.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Dark.DaxStudio.xaml">
+    <Page Include="Theme\Dark.AvalonEdit.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Monotone.Brushes.xaml">
+    <Page Include="Theme\Dark.DaxStudio.Colors.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Monotone.Colors.xaml">
+    <Page Include="Theme\Dark.DaxStudio.Theme.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Monotone.DaxEditor.xaml">
+    <Page Include="Theme\Light.AvalonDock.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\Monotone.xaml">
+    <Page Include="Theme\Light.AvalonEdit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.DaxStudio.Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.DaxStudio.Theme.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\CrashReportingBlockedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\GettingStartedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MultipleQueriesDetectedDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -864,6 +991,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DebugAndLogTraceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RefreshTraceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\VertiPaqAnalyzerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -904,10 +1039,6 @@
     <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Light.DaxStudio.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\AllServerQueriesView.xaml">
       <SubType>Designer</SubType>
@@ -962,10 +1093,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ucSpinner.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\IconResourceDictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1045,12 +1172,32 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Page Include="Resources\Styles\DaxStudio.Spinner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\icons.light.extra.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\DaxStudio.FluentRibbonStyles.xaml">
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\DaxStudio.BaseStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
       <Name>ADOTabular</Name>
       <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\AvalonDock.Themes.DaxStudio\AvalonDock.Themes.DaxStudio.csproj">
+      <Project>{b89d0c1b-90ab-4e59-a657-a95fd84d11f1}</Project>
+      <Name>AvalonDock.Themes.DaxStudio</Name>
     </ProjectReference>
     <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
       <Project>{ee4788c1-dca6-465f-8049-28ceace6586f}</Project>
@@ -1090,143 +1237,10 @@
     <None Include="Resources\daxstudio-logo_32x32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Metadata\Table.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Folder.ico" />
-    <Resource Include="Images\Metadata\Function.png" />
-    <Resource Include="Images\Metadata\HiddenMeasure.png" />
-    <Resource Include="Images\Metadata\Measure.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\Column.png" />
-    <Resource Include="Images\Metadata\DmvTable.png" />
-    <Resource Include="Images\Metadata\HiddenColumn.png" />
-    <Resource Include="Images\Metadata\HiddenTable.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\error.circle.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\information.circle.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\warning.triangle.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\model.png" />
-    <Resource Include="Images\metro\run.png" />
-    <Resource Include="Images\metro\timer.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\metro\clipboard.paste.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\daxstudio-splashscreen.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\daxstudio-logo_250x250.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="daxstudio-logo_250x250.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-connection%4096ppi.png" />
-    <Resource Include="Images\icon-connection.png" />
-    <Resource Include="Images\icon-copy%4096ppi.png" />
-    <Resource Include="Images\icon-copy.png" />
-    <Resource Include="Images\icon-cut%4096ppi.png" />
-    <Resource Include="Images\icon-cut.png" />
-    <Resource Include="Images\icon-paste%4096ppi.png" />
-    <Resource Include="Images\icon-paste.png" />
-    <Resource Include="Images\icon-plan%4096ppi.png" />
-    <Resource Include="Images\icon-plan.png" />
-    <Resource Include="Images\icon-run%4096ppi.png" />
-    <Resource Include="Images\icon-run.png" />
-    <Resource Include="Images\icon-table%4096ppi.png" />
-    <Resource Include="Images\icon-table.png" />
-    <Resource Include="Images\icon-timer%4096ppi.png" />
-    <Resource Include="Images\icon-timer.png" />
-    <Resource Include="Images\icon-timings%4096ppi.png" />
-    <Resource Include="Images\icon-timings.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-cancel%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\metro\icon-model.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-database.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-open.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-plan%4017px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-timings%4017px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\spinnermask.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\status-pos.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\status-server.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\status-spid.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\icon-model%4016px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-clearcache%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-save.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-excelstatic%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-new%4016x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-excellinked%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-to-Upper.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-uncomment.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-comment.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-to-lower.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-externalLink%4017px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\hierarchy.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\kpi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-redo%4016x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-parameter%4016x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-undo%4016x16.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\daxstudio-logo_150x150.png" />
@@ -1235,124 +1249,7 @@
     <Folder Include="Controls\Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\FindReplace\Search.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\clear.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\SearchActive.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\WholeWord.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\RegEx.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-replace_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-replace-all_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\CaseSensitive.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\FindNext.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\FindPrev.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\Close_16xLG.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\Wildcard.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\Close_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\CaretUp_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\FindReplace\CaretDown_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-find_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-refresh%4017px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-refresh%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-excel%4024px.png" />
-    <Resource Include="Images\icon-powerBI%4024px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-database%4024px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\daxstudio-splash%4096ppi.png" />
-    <Resource Include="Images\daxstudio-splash.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-bottompane.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-bottompane%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-cancel.png" />
-    <Resource Include="Images\icon-clearcache.png" />
-    <Resource Include="Images\icon-info%4096ppi.png" />
-    <Resource Include="Images\icon-info.png" />
-    <Resource Include="Images\icon-merge%4096ppi.png" />
-    <Resource Include="Images\icon-merge.png" />
-    <Resource Include="Images\icon-redo%4096ppi.png" />
-    <Resource Include="Images\icon-redo.png" />
-    <Resource Include="Images\icon-refresh.png" />
-    <Resource Include="Images\icon-rightpane%4096ppi.png" />
-    <Resource Include="Images\icon-rightpane.png" />
-    <Resource Include="Images\icon-showcache%4096ppi.png" />
-    <Resource Include="Images\icon-showcache.png" />
-    <Resource Include="Images\icon-showinternal%4096ppi.png" />
-    <Resource Include="Images\icon-showinternal.png" />
-    <Resource Include="Images\icon-undo%4096ppi.png" />
-    <Resource Include="Images\icon-undo.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="daxstudio-splash.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-file.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-table%4096ppi2.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\hierarchy-unnatural.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\DaxStudio_File3a_x48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Files\File_Dax_x48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Files\File_Other_x48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Files\File_Other_x32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Files\File_Dax_x32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-clear-then-run%4096ppi.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\DaxStudio_x16.png" />
@@ -1366,48 +1263,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\QueryHistory\filtered_trans.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-swap-delimiters.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-devenv%4024px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-question%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-question%4016px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-warning.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\Clear.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\Pause.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\Play.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\Clear2.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\CopyAll.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\ClearFilters.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\AllServerQueries\Filters.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-all-queries%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-all-queries%4017px.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\TraceControls\pause.png" />
@@ -1426,31 +1281,6 @@
     <Resource Include="Images\TraceControls\trash2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\icon-PBIReportServer%4024px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-export-metrics.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-export-metrics%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-dax-formatter%40216ppi.png" />
-    <Resource Include="Images\icon-dax-formatter%4096ppi.png" />
-    <Resource Include="Images\icon-dax-formatter.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-showbatch%40216ppi.png" />
-    <Resource Include="Images\icon-showbatch%4096ppi.png" />
-    <Resource Include="Images\icon-showbatch.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-excel.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-profiler.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\AllServerQueries\AggMatch.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1463,160 +1293,65 @@
     <EmbeddedResource Include="Resources\AvalonDockLayout-Default.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\icon-layout-load-64.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-reset-64.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-save-64.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-load-17.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-reset-17.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-save-17.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-load-16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-reset-16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-layout-save-16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-export-data%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-copy-light.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-run-function%4096ppi.png" />
-    <Resource Include="Images\icon-run-function.png" />
-    <Resource Include="Images\icon-wait%4024px.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Metadata\Folder.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-pbi-tachometer%402x.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-run-scalar.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-run-scalar%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\Files\File_Dax_x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-view-metrics.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-view-metrics%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-csv-file.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-sql-table.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-import-metrics.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-import-metrics%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-run-benchmark.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-run-benchmark%4096ppi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-new-connected%4016x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\status-database.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\icon-copy%4032px.png" />
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="AsyncAwaitBestPractices">
+      <Version>6.0.5</Version>
+    </PackageReference>
     <PackageReference Include="AvalonEdit">
-      <Version>6.1.2.30</Version>
+      <Version>6.1.3.50</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>3.2.0</Version>
-    </PackageReference>
-    <PackageReference Include="ControlzEx">
-      <Version>4.4.0</Version>
+      <Version>4.0.210</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>27.1.1</Version>
+      <Version>28.0.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.0.36</Version>
+      <Version>1.2.5</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.0.36</Version>
+      <Version>1.2.5</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.0.36</Version>
+      <Version>1.2.5</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.0.36</Version>
+      <Version>1.2.5</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
-      <Version>4.50.0</Version>
-    </PackageReference>
-    <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013">
-      <Version>4.5.1</Version>
-    </PackageReference>
-    <PackageReference Include="Dirkster.MLib">
-      <Version>1.3.1.2</Version>
+      <Version>4.70.2</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.NumericUpDownLib">
-      <Version>2.4.2.2</Version>
-    </PackageReference>
-    <PackageReference Include="Dirkster.WatermarkControlsLib">
-      <Version>1.1.0</Version>
+      <Version>3.1.0</Version>
     </PackageReference>
     <PackageReference Include="Expression.Blend.Sdk">
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
-      <Version>8.0.3</Version>
+      <Version>9.0.4</Version>
     </PackageReference>
     <PackageReference Include="FontAwesome.WPF">
       <Version>4.7.0.9</Version>
     </PackageReference>
     <PackageReference Include="gong-wpf-dragdrop">
-      <Version>2.4.1</Version>
+      <Version>3.1.1</Version>
     </PackageReference>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
       <Version>1.1.0</Version>
     </PackageReference>
     <PackageReference Include="Humanizer">
-      <Version>2.11.10</Version>
+      <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>1.3.0</Version>
+      <Version>1.6.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
-      <Version>5.2.7</Version>
+      <Version>5.2.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>5.0.0</Version>
+      <Version>6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>5.0.3</Version>
+      <Version>6.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -1626,24 +1361,30 @@
     <PackageReference Include="Microsoft.Expression.Drawing">
       <Version>3.0.0</Version>
     </PackageReference>
+    <PackageReference Include="ModernWpfUI">
+      <Version>0.9.6</Version>
+    </PackageReference>
     <PackageReference Include="Polly">
-      <Version>7.2.2</Version>
+      <Version>7.2.3</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>2.10.0</Version>
+      <Version>2.11.0</Version>
     </PackageReference>
     <PackageReference Include="SharpCompress">
-      <Version>0.29.0</Version>
+      <Version>0.32.2</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>5.0.0</Version>
+      <Version>6.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\icon-debug-commas.png" />
+    <Resource Include="Resources\daxstudio-logo_250x250_glow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\daxstudio-logo_250x250_lighter.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

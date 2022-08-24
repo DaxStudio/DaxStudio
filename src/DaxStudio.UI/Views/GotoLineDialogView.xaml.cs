@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for GotoLineDialogView.xaml
     /// </summary>
-    public partial class GotoLineDialogView : UserControl
+    public partial class GotoLineDialogView : Controls.DaxStudioDialog
     {
         public GotoLineDialogView()
         {

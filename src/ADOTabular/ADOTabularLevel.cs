@@ -45,6 +45,8 @@ namespace ADOTabular
 
         public string TableName => Column.TableName;
 
+        public string ImageResource => Column.ImageResource;
+
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
             Column.UpdateBasicStats(connection);

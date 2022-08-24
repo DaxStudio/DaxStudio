@@ -20,6 +20,7 @@ using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
 using System.Text;
+using ControlzEx.Theming;
 using System.Collections.Generic;
 
 namespace DaxStudio.Standalone
@@ -29,6 +30,7 @@ namespace DaxStudio.Standalone
         private static ILogger _log;
         private static  IEventAggregator _eventAggregator;
         private static IGlobalOptions _options;
+
         // need to create application first
         private static readonly Application App = new Application();
         static EntryPoint()
@@ -57,7 +59,7 @@ namespace DaxStudio.Standalone
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
 
-            ConsoleHandler.RedirectToParent();
+            //ConsoleHandler.RedirectToParent();
 
             // Setup logging, default to information level to start with to log the startup and key system information
             var levelSwitch = new Serilog.Core.LoggingLevelSwitch(Serilog.Events.LogEventLevel.Information);
@@ -69,7 +71,7 @@ namespace DaxStudio.Standalone
             System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
 
             // add the custom DAX Studio accent color theme
-            App.AddDaxStudioAccentColor();
+            //App.AddDaxStudioAccentColor();
 
             // TODO - do we need to customize the navigator window to fix the styling?
             //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
@@ -82,10 +84,12 @@ namespace DaxStudio.Standalone
             // read command line arguments
             App.ReadCommandLineArgs();
 
+            var settingProvider = IoC.Get<ISettingProvider>();
+            if (App.Args().Reset) settingProvider.Reset();
+
             AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
                 
-
             // force control tooltips to display even if disabled
             ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
                 typeof(Control),
@@ -97,11 +101,12 @@ namespace DaxStudio.Standalone
             _options.LoggingLevelSwitch = levelSwitch;
             Log.Information("User Options initialized");
 
-            UpdateLoggingLevelFromOptions(_options, ref levelSwitch);
+            // if the cmdline or hotkey have not been set then read the log level from the options
+            if (!App.Args().LoggingEnabled) UpdateLoggingLevelFromOptions(_options, ref levelSwitch);
 
             // check if we are running portable that we have write access to the settings
             if (_options.IsRunningPortable)
-                if (CanWriteToSettings())
+                if (CanWriteToSettings(settingProvider))
                 {
                     Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(Main), "Test for read/write access to Settings.json: PASS");
                 }
@@ -140,7 +145,8 @@ namespace DaxStudio.Standalone
                 bootstrapper.DisplayShell();
                 App.Run();
             }
-            
+
+            levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
             Log.Information("============ DaxStudio Shutdown =============");
             Log.CloseAndFlush();
             
@@ -148,7 +154,7 @@ namespace DaxStudio.Standalone
 
         private static void UpdateLoggingLevelFromOptions(IGlobalOptions options, ref LoggingLevelSwitch levelSwitch)
         {
-            if (options.LoggingLevel == levelSwitch.MinimumLevel) return;
+            if (options.LoggingLevel >= levelSwitch.MinimumLevel) return;
             Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(UpdateLoggingLevelFromOptions), $"Setting Logging level to {options.LoggingLevel}");
             levelSwitch.MinimumLevel = options.LoggingLevel;
         }
@@ -221,9 +227,9 @@ namespace DaxStudio.Standalone
 
         }
 
-        private static bool CanWriteToSettings()
+        private static bool CanWriteToSettings(ISettingProvider settingProvider)
         {
-            var settingProvider = IoC.Get<ISettingProvider>() ;
+            
             var fileLocation = settingProvider.SettingsFile;
 
             try
@@ -296,7 +302,7 @@ namespace DaxStudio.Standalone
                 Application.Current.Dispatcher.Invoke(()=>{
                     // Show a dialog to let the user know there was a fatal crash
                     // but we are unable to automatically log the crash due to their privacy settings
-                    var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = msg}};
+                    var blockedDlg = new CrashReportingBlockedDialogView {ErrorMessage = {Text = $"{ex.Message}\n\n{ex.StackTrace}"}};
                     blockedDlg.ShowDialog();
                 });
 
@@ -310,7 +316,7 @@ namespace DaxStudio.Standalone
 
                 Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
                 Log.CloseAndFlush();
-                if (Application.Current.Dispatcher.CheckAccess())
+                if ((Application.Current?.Dispatcher?.CheckAccess()??true) == true)
                 {
                     CrashReporter.ReportCrash(ex, msg);
                 }
@@ -348,20 +354,28 @@ namespace DaxStudio.Standalone
                 {
                     case -2147221037: // Data on clipboard is invalid (Exception from HRESULT: 0x800401D3 (CLIPBRD_E_BAD_DATA))
                         e.Handled = true;
-                        _eventAggregator?.PublishOnUIThread(new OutputMessage(MessageType.Warning, "CLIPBRD_E_BAD_DATA Error - Clipboard operation failed, please try again"));
+                        _eventAggregator?.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_BAD_DATA Error - Clipboard operation failed, please try again"));
                         _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_BAD_DATA");
                         return;
                     case -2147221040: // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf DataGrid can't access clipboard 
                         e.Handled = true;
-                        _eventAggregator?.PublishOnUIThread(new OutputMessage(MessageType.Warning, "CLIPBRD_E_CANT_OPEN Error - Clipboard operation failed, please try again"));
+                        _eventAggregator?.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_CANT_OPEN Error - Clipboard operation failed, please try again"));
                         _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
                         return;
                     case unchecked((int)0x8001010E)://2147549454): // 0x_8001_010E:
                         e.Handled = true;
-                        _eventAggregator?.PublishOnUIThread(new OutputMessage(MessageType.Warning, "RPC_E_WRONG_THREAD Error - Clipboard operation failed, please try again"));
+                        _eventAggregator?.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "RPC_E_WRONG_THREAD Error - Clipboard operation failed, please try again"));
                         _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "RPC_E_WRONG_THREAD");
                         return;
                     default:
+                        if (e.Exception.Message == "A drag operation is already in progress")
+                        {
+                            _eventAggregator?.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"{e.Exception.Message}\nPlease retry the operation"));
+                            _log.Warning(e.Exception, "{class} {method} COM Error while doing DragDrop: {message}", "EntryPoint", "App_DispatcherUnhandledException", e.Exception.Message);
+                            return;
+                        }
+
+                        // for all other unhandled Exceptions we log them and exit here as we don't know if the app is in a valid state
                         Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
                         LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
                         e.Handled = true;
@@ -408,6 +422,14 @@ namespace DaxStudio.Standalone
             p.Setup<string>('d', "database")
                 .Callback(database => app.Args().Database = database)
                 .WithDescription("Database to connect to");
+
+            p.Setup<bool>('r', "reset")
+                .Callback(reset => app.Args().Reset = reset)
+                .WithDescription("Reset user preferences to the default settings");
+
+            p.Setup<bool>("nopreview")
+                .Callback(nopreview => app.Args().NoPreview = nopreview)
+                .WithDescription("Hides version information");
 
             p.SetupHelp("?", "help")
                 .Callback(text => {

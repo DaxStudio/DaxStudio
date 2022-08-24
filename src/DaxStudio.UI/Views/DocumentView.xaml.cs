@@ -17,5 +17,6 @@ namespace DaxStudio.UI.Views
         {
             ((DocumentViewModel)DataContext).EditorContextMenuOpening();
         }
+
     }
 }
