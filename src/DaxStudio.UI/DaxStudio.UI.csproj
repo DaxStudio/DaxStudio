@@ -1306,16 +1306,16 @@
       <Version>28.0.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.2.5</Version>
+      <Version>1.2.6</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.2.5</Version>
+      <Version>1.2.6</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.2.5</Version>
+      <Version>1.2.6</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.2.5</Version>
+      <Version>1.2.6</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.70.2</Version>
@@ -1342,7 +1342,7 @@
       <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>1.6.0</Version>
+      <Version>1.6.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.9</Version>
