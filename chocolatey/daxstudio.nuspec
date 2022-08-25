@@ -11,12 +11,12 @@
     <title>DAX Studio</title>
     <authors>DAXStudio.org</authors>
     <projectUrl>https://daxstudio.org/</projectUrl>
-    <iconUrl>https://cdn.jsdelivr.net/gh/teknowledgist/Chocolatey-packages@7554f6e88c7b61b1c1ea56891814387dc50f399c/Icons/daxstudio_icon.png</iconUrl>
+    <iconUrl>https://daxstudio.org/img/daxstudio-logo.png</iconUrl>
     <copyright></copyright>
     <licenseUrl>https://github.com/DaxStudio/DaxStudio/raw/master/license.rtf</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/DaxStudio/DaxStudio</projectSourceUrl>
-    <docsUrl>https://daxstudio.org/documentation/</docsUrl>
+    <docsUrl>https://daxstudio.org/docs/intro</docsUrl>
     <bugTrackerUrl>https://github.com/DaxStudio/DaxStudio/issues</bugTrackerUrl>
     <tags>daxstudio dax queries Microsoft tables PowerBI data OSS embedded</tags>
     <summary>The ultimate tool for executing and analyzing DAX queries</summary>
