@@ -37,7 +37,6 @@ namespace DaxStudio.UI.ViewModels
             Ribbon = ribbon;
             Options = options;
             SetDefaultsFromOptions();
-            
 
             _currentRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
             TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultsTargetTimer));
@@ -340,13 +339,21 @@ namespace DaxStudio.UI.ViewModels
 
         #region Event Handlers
         int _sequence;
-        public Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
         {
             _sequence++;
-            // TODO - catch servertimings from query 
-            AddTimingsToDetailsTable(_sequence, _currentRunStyle, message);
+            // catch servertimings from query 
+            try
+            {
+                AddTimingsToDetailsTable(_sequence, _currentRunStyle, message);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, nameof(BenchmarkViewModel), "HandleAsync<ServerTimingsEvent>", "Error Adding timings to details table");
+                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Adding timings to details table\n{ex.Message}"));
+            }
 
-            System.Diagnostics.Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");
+            Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");
 
 
             if (_viewAsRuns + _currentColdRun + _currentWarmRun < _totalRuns)
@@ -357,7 +364,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 BenchmarkingComplete();
             }
-            return Task.CompletedTask;
+
         }
 
         private void AddTimingsToDetailsTable(int sequence, RunStyle runStyle, ServerTimingsEvent message)

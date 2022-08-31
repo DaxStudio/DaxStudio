@@ -62,14 +62,20 @@
                 </Border.ToolTip>
             </Border>
         </DataTemplate>
-        
+
+            
             <DataTemplate x:Key="RunStyleTemplate" >
-            <Border
+                <!--<Button Click="RunStyles_Click" >
+                    <Button.Template>
+                        <ControlTemplate>-->
+                            <Border
                 BorderThickness="4"
                 BorderBrush="Transparent" 
                 ToolTip="{Binding Tooltip}"
                 IsEnabled="{Binding IsEnabled}"
-                HorizontalAlignment="Left">
+                HorizontalAlignment="Left"
+                                
+                >
                     <Grid Margin="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -89,7 +95,10 @@
 
                     </Grid>
                 </Border>
-        </DataTemplate>
+                        <!--</ControlTemplate>
+                    </Button.Template>
+                </Button>-->
+            </DataTemplate>
 
             <!--<ControlTemplate x:Key="Fluent.Ribbon.Templates.ResizeableContentControl"
                      TargetType="{x:Type Fluent:ResizeableContentControl}">
@@ -870,8 +879,9 @@
                         ItemsSource="{Binding RunStyles}"
                         SelectedItem="{Binding SelectedRunStyle}"
                         ItemTemplate="{DynamicResource RunStyleTemplate}"
+                        Fluent:GalleryItem.Click="RunStyles_Click"
                         >
-
+                        
                     </Fluent:Gallery>
                 </Fluent:SplitButton>
                 <Fluent:Button Name="CancelQuery"

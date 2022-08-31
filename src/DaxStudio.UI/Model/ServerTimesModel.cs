@@ -28,5 +28,6 @@ namespace DaxStudio.UI.Model
         public DateTime QueryStartDateTime { get; set; }
         public string Parameters { get; set; }
         public string CommandText { get; set; }
+        public int WaterfallTotalDuration { get; set; }
     }
 }

@@ -127,7 +127,7 @@ namespace DaxStudio.UI.ViewModels
             get => _selectedRunStyle;
             set { _selectedRunStyle = value;
                 NotifyOfPropertyChange(() => SelectedRunStyle);
-                _eventAggregator.PublishOnUIThreadAsync(new RunStyleChangedEvent(SelectedRunStyle));
+                _eventAggregator?.PublishOnUIThreadAsync(new RunStyleChangedEvent(SelectedRunStyle));
                 //RunQuery(); // TODO if we change run styles should we immediately run the query with the new style??
             } }
         public IGlobalOptions Options { get; private set; }
@@ -148,7 +148,14 @@ namespace DaxStudio.UI.ViewModels
         public void NewQueryWithCurrentConnection()
         {
             if (ActiveDocument == null) return;
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument));
+            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument)).ContinueWith((precedent) => { 
+                if (precedent.IsFaulted)
+                {
+                    var msg = "Error opening new document with current connection";
+                    Log.Error(precedent.Exception, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(NewQueryWithCurrentConnection), msg);
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"{msg}\n{precedent.Exception.Message}"));
+                }
+            });
         }
 
         public bool CanNewQueryWithCurrentConnection => ActiveDocument != null && ActiveDocument.IsConnected;
@@ -402,7 +409,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(RefreshConnectionDetails), "Error refreshing connection");
                 doc.OutputError(ex.Message);
             }
             finally
@@ -1084,7 +1091,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ShowSwapDelimiters));
         }
 
-        public void LaunchSqlProfiler()
+        public async void LaunchSqlProfiler()
         {
             if (ActiveDocument == null) return;
             try
@@ -1095,13 +1102,13 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchSqlProfiler", "Error launching SQL Profiler");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
             }
         }
 
         public bool CanLaunchSqlProfiler => IsActiveDocumentConnected && !string.IsNullOrEmpty(_sqlProfilerCommand);
 
-        public void LaunchExcel()
+        public async void LaunchExcel()
         {
             if (ActiveDocument == null) return;
             try
@@ -1116,7 +1123,7 @@ namespace DaxStudio.UI.ViewModels
             } catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchExcel", ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
 
             }
         }
@@ -1253,9 +1260,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void RunBenchmark()
+        public async void RunBenchmark()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
+            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
         }
 
 
@@ -1306,6 +1313,18 @@ namespace DaxStudio.UI.ViewModels
         {
             SelectedRunStyle = RunStyles.FirstOrDefault(rs => rs.Icon == message.Icon);
             return Task.CompletedTask;
+        }
+
+        public void RunStyleClicked(RunStyle runStyle)
+        {
+            if (runStyle == null)
+            {
+                // todo - log an error
+                return;
+            }
+            System.Diagnostics.Debug.WriteLine("RunStyle Clicked");
+            SelectedRunStyle = runStyle;
+            RunQuery();
         }
     }
 }

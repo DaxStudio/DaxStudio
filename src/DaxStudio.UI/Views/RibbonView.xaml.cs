@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.ViewModels;
+﻿using DaxStudio.UI.Model;
+using DaxStudio.UI.ViewModels;
 using Serilog;
 using System.Windows.Controls;
 
@@ -71,7 +72,23 @@ namespace DaxStudio.UI.Views
             }
             else
             {
-                Log.Error("{class} {method} Pmessage}", nameof(RibbonView), nameof(NewConnectedQuery_Click), "Unable to get an instance of RibbonViewModel");
+                Log.Error("{class} {method} {message}", nameof(RibbonView), nameof(NewConnectedQuery_Click), "Unable to get an instance of RibbonViewModel");
+            }
+        }
+
+        private void RunStyles_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var vm = this.DataContext as RibbonViewModel;
+            var button = sender as Button;
+            var rs = button?.DataContext as RunStyle;
+            if (vm != null)
+            {
+                vm.RunStyleClicked(rs);
+                e.Handled = false;
+            }
+            else
+            {
+                Log.Error("{class} {method} {message}", nameof(RibbonView), nameof(RunStyles_Click), "Unable to get an instance of RibbonViewModel");
             }
         }
     }

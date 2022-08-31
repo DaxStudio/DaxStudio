@@ -1,5 +1,5 @@
 ﻿<ctrl:DaxStudioDialog 
-             Caption="Request Information"
+             Caption="Query Information"
              x:Class="DaxStudio.UI.Views.RequestInformationView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -113,7 +113,8 @@
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
             <TextBlock x:Name="CommandText" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
             <Button x:Name="CopyCommandText" Style="{StaticResource CopyButton}"
-                    cal:Message.Attach="[Event Click] = [Action Copy(CommandText)]">
+                    cal:Message.Attach="[Event Click] = [Action Copy(CommandText)]"
+                    VerticalAlignment="Top">
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>

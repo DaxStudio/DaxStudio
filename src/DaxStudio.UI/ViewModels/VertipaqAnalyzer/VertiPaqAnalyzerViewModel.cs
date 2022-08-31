@@ -9,7 +9,6 @@ using DaxStudio.Interfaces;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Threading;
 using DaxStudio.UI.Interfaces;
@@ -374,11 +373,20 @@ namespace DaxStudio.UI.ViewModels
 
         internal async Task ExportAnalysisDataAsync(string fileName)
         {
-            await Task.Run(() =>
+            try
             {
-                Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
-                ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
-            });
+                await Task.Run(() =>
+                {
+                    Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
+                    ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
+                });
+            }
+            catch (Exception ex)
+            {
+                var msg = $"The following error occured while trying to export to a vpax file:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
         }
     }
 }

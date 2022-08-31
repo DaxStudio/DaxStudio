@@ -146,8 +146,11 @@ namespace DaxStudio.UI.ViewModels
 
         protected override Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
         {
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
             ActiveDocument = newItem as DocumentViewModel;
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Finished setting ActiveDocument");
             return base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
+            
         }
 
         public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.GenericTheme();
@@ -224,7 +227,7 @@ namespace DaxStudio.UI.ViewModels
 
                 await ActivateItemAsync(newDoc);
                 ActiveDocument = newDoc;
-                ActiveItem = newDoc;
+
             }
             catch (Exception ex)
             {
@@ -242,29 +245,37 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task OpenNewBlankDocumentAsync(DocumentViewModel sourceDocument)
         {
-            Log.Debug(Constants.LogMessageTemplate,nameof(DocumentTabViewModel),nameof(OpenNewBlankDocumentAsync), "Requesting new document from document factory");
-            var newDoc = _documentFactory(_windowManager, _eventAggregator);
-            newDoc.DisplayName = $"Query{_documentCount}.dax";
-            _documentCount++;
-            //newDoc.Parent = this;
-            //newDoc.ConductWith(this);
-
-            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
-
-            await ActivateItemAsync(newDoc);
-            ActiveDocument = newDoc;
-
-            new System.Action(CleanActiveDocument).BeginOnUIThread();
-
-            if (sourceDocument == null
-                || sourceDocument.Connection.IsConnected == false)
+            try
             {
-                await ConnectToServerAsync();
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Requesting new document from document factory");
+                var newDoc = _documentFactory(_windowManager, _eventAggregator);
+                newDoc.DisplayName = $"Query{_documentCount}.dax";
+                _documentCount++;
+                //newDoc.Parent = this;
+                //newDoc.ConductWith(this);
+
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
+
+                await ActivateItemAsync(newDoc);
+                ActiveDocument = newDoc;
+
+                new System.Action(CleanActiveDocument).BeginOnUIThread();
+
+                if (sourceDocument == null
+                    || sourceDocument.Connection.IsConnected == false)
+                {
+                    await ConnectToServerAsync();
+                }
+                else
+                {
+                    //await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
+                    await ActiveDocument.CopyConnectionAsync(sourceDocument);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                //await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
-                await ActiveDocument.CopyConnectionAsync(sourceDocument);
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Error opening new document");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening new document\n{ex.Message}"));
             }
 
         }
@@ -295,7 +306,7 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
             else
-                await ChangeConnection();
+                await ChangeConnectionAsync();
         }
 
         private void CleanActiveDocument()
@@ -304,7 +315,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.IsDirty = false;
         }
 
-        private async Task ChangeConnection()
+        private async Task ChangeConnectionAsync()
         {
             await ActiveDocument.ChangeConnectionAsync();
         }
@@ -343,31 +354,51 @@ namespace DaxStudio.UI.ViewModels
             await NewQueryDocumentAsync(message.FileName);
         }
 
-        public async void TabClosing(object sender, DocumentClosingEventArgs args)
+        public async Task TabClosing(object sender, DocumentClosingEventArgs args)
         {
-
-            var doc = args.Document.Content as IScreen;
-            if (doc == null) return;
-
-            args.Cancel = true; // cancel the default tab close action as we want to call 
-
-            await doc.TryCloseAsync();     // TryClose and give the document a chance to block the close
-
-            if (this.Items.Count == 0)
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Starting");
+            try
             {
-                Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
-                ActiveDocument = null;
-                await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+                var doc = args.Document.Content as IScreen;
+                if (doc == null) return;
+
+                args.Cancel = true; // cancel the default tab close action as we want to call 
+
+                await doc.TryCloseAsync();     // TryClose and give the document a chance to block the close
+
+                if (this.Items.Count == 0)
+                {
+                    Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
+                    ActiveDocument = null;
+                    await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Error while closing a tab");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error closing document:\n{ex.Message}"));
+            }
+            finally
+            {
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Finished");
             }
         }
 
-        public async void ActivateAsync(object document)
+        public async Task ActivateAsync(object document)
         {
-            if (document is DocumentViewModel doc)
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ActivateAsync), "Starting");
+            try
             {
-                await ActivateItemAsync (doc);
-                ActiveDocument = doc;
+                if (document is DocumentViewModel doc)
+                {
+                    await ActivateItemAsync(doc);
+                    ActiveDocument = doc;
+                }
             }
+            catch (Exception ex) {
+                Log.Error(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ActivateAsync), $"Error Activating document: {ex.Message}");
+            }
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ActivateAsync), "Finished");
         }
 
         public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
