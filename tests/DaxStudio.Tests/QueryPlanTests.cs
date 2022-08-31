@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.Tests.Mocks;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -13,7 +14,7 @@ namespace DaxStudio.Tests
 {
     class QueryPlanTraceViewModelTester : QueryPlanTraceViewModel
     {
-        public QueryPlanTraceViewModelTester(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public QueryPlanTraceViewModelTester(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions, windowManager)
         {
         }
 
@@ -27,6 +28,7 @@ namespace DaxStudio.Tests
     public class QueryPlanTests
     {
 		private IGlobalOptions mockOptions;
+		private IWindowManager mockWindowManager;
 		private IEventAggregator mockEventAggregator;
 
 		[TestInitialize]
@@ -34,6 +36,7 @@ namespace DaxStudio.Tests
 		{
 			mockOptions = new Mock<IGlobalOptions>().Object;
 			mockEventAggregator = new Mocks.MockEventAggregator();
+			mockWindowManager = new Mock<IWindowManager>().Object;
 		}
 
 		[TestMethod]
@@ -61,7 +64,7 @@ namespace DaxStudio.Tests
 	ColPosition<'DimProduct'[Class]>: ScaLogOp DependOnCols(0)('DimProduct'[Class]) String DominantValue=NONE
 	ColPosition<'DimProduct'[Color]>: ScaLogOp DependOnCols(1)('DimProduct'[Color]) String DominantValue=NONE
 ";
-			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions);
+			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions, mockWindowManager);
 			vm.TestPrepareLogicalQueryPlan(rawPlan);
 
 			Assert.AreEqual(21, vm.LogicalQueryPlanRows.Count);
@@ -109,7 +112,7 @@ namespace DaxStudio.Tests
 							 ColValue<'Sales'[Net Price]>: LookupPhyOp LogOp=ColValue<'Sales'[Net Price]>'Sales'[Net Price] LookupCols(42)('Sales'[Net Price]) Double
 						Constant: LookupPhyOp LogOp=Constant Double 0.8
 ";
-			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions);
+			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions,mockWindowManager);
 			vm.TestPrepareLogicalQueryPlan(rawPlan);
 
 			Assert.AreEqual(16, vm.LogicalQueryPlanRows.Count);

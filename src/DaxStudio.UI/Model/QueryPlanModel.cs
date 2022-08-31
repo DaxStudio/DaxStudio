@@ -10,8 +10,12 @@ namespace DaxStudio.UI.Model
 {
     public class QueryPlanModel
     {
-        public int FileFormatVersion { get { return 2; } }
+        public int FileFormatVersion { get { return 3; } }
         public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {get;set;}
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows { get; set; }
+        public string ActivityID { get; set; }
+        public string CommandText { get; set; }
+        public string Parameters { get; set; }
+        public DateTime StartDatetime { get; set; }
     }
 }

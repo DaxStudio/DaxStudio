@@ -10,7 +10,8 @@ namespace DaxStudio.UI.Model
 {
     public class ServerTimesModel
     {
-        public int FileFormatVersion { get { return 2; } }
+        public int FileFormatVersion { get { return 3; } }
+        public string ActivityID { get; set; }
         public long StorageEngineDuration {get;set;}
         public long StorageEngineNetParallelDuration { get; set; }
         public double  StorageEngineDurationPercentage {get;set;}
@@ -24,5 +25,8 @@ namespace DaxStudio.UI.Model
         public long TotalCpuDuration { get; set; }
         public DateTime QueryEndDateTime { get; set; }
         public bool ParallelStorageEngineEventsDetected { get; set; }
+        public DateTime QueryStartDateTime { get; set; }
+        public string Parameters { get; set; }
+        public string CommandText { get; set; }
     }
 }

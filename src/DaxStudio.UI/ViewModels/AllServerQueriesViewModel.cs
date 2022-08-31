@@ -36,7 +36,7 @@ namespace DaxStudio.UI.ViewModels
 
 
         [ImportingConstructor]
-        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
             QueryTypes = new ObservableCollection<string>

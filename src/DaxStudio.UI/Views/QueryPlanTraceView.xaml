@@ -211,7 +211,15 @@
                         </StackPanel>
                     </Button>
 
-
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ShowTraceDiagnostics]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource aboutDrawingImage}"
+                               Width="16" Height="16"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Info</TextBlock>
+                    </StackPanel>
+                </Button>
                     <!--<Rectangle DockPanel.Dock="Right"/>-->
 
 
