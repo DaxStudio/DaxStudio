@@ -194,7 +194,8 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TotalDuration);
                 }
             }
-            NotifyOfPropertyChange(() => CanExport);
+            NotifyOfPropertyChange(nameof(CanExport));
+            NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
 
         public override void OnReset() {
@@ -364,9 +365,10 @@ namespace DaxStudio.UI.ViewModels
             CommandText = m.CommandText;
             Parameters = m.Parameters;
 
-            NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
-            NotifyOfPropertyChange(() => LogicalQueryPlanRows);
-            NotifyOfPropertyChange(() => CanExport);
+            NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof(LogicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof(CanExport));
+            NotifyOfPropertyChange(nameof( CanShowTraceDiagnostics));
         }
 
         public void SavePackage(Package package)
@@ -434,6 +436,7 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJson());
         }
 
+        public bool CanShowTraceDiagnostics => CanExport;
         public async void ShowTraceDiagnostics()
         {
             var traceDiagnosticsViewModel = new RequestInformationViewModel(this);

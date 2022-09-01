@@ -99,29 +99,33 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
             <TextBlock x:Name="ActivityID"/>
             <Button x:Name="CopyActivityID" Style="{StaticResource CopyButton}"
-                    cal:Message.Attach="[Event Click] = [Action Copy(ActivityID)]">
+                    cal:Message.Attach="[Event Click] = [Action Copy(ActivityID)]"
+                    ToolTip="Copy ActivityID to clipboard">
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
             <TextBlock x:Name="StartDatetimeFormatted"/>
             <Button x:Name="CopyStartDatetime" Style="{StaticResource CopyButton}"
-                    cal:Message.Attach="[Event Click] = [Action Copy(StartDatetimeFormatted)]">
+                    cal:Message.Attach="[Event Click] = [Action Copy(StartDatetimeFormatted)]"
+                    ToolTip="Copy StartDateTime to clipboard">
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
-            <TextBlock x:Name="CommandText" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+            <TextBlock x:Name="CommandText" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="120" />
             <Button x:Name="CopyCommandText" Style="{StaticResource CopyButton}"
                     cal:Message.Attach="[Event Click] = [Action Copy(CommandText)]"
-                    VerticalAlignment="Top">
+                    VerticalAlignment="Top"
+                    ToolTip="Copy CommandText to clipboard">
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}">
             <TextBlock x:Name="Parameters" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
             <Button x:Name="CopyParameters" Style="{StaticResource CopyButton}"
-                    cal:Message.Attach="[Event Click] = [Action Copy(Parameters)]" VerticalAlignment="Top" Margin="0 8 0 0">
+                    cal:Message.Attach="[Event Click] = [Action Copy(Parameters)]" VerticalAlignment="Top" Margin="0 8 0 0"
+                    ToolTip="Copy Parameters to clipboard">
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>

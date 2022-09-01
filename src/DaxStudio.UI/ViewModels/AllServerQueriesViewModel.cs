@@ -21,6 +21,7 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -92,7 +93,8 @@ namespace DaxStudio.UI.ViewModels
                         DatabaseName = traceEvent.DatabaseFriendlyName,
                         RequestID = traceEvent.RequestID,
                         RequestParameters = traceEvent.RequestParameters,
-                        RequestProperties = traceEvent.RequestProperties
+                        RequestProperties = traceEvent.RequestProperties,
+                        ActivityID = traceEvent.ActivityId
                     };
 
                     switch (traceEvent.EventClass)
@@ -184,13 +186,14 @@ namespace DaxStudio.UI.ViewModels
                             }
                             else
                             {
-                                var newBeginEvent = new QueryBeginEvent()
-                                {
-                                    RequestID = traceEvent.RequestID,
-                                    Query = traceEvent.TextData,
-                                    RequestProperties = traceEvent.RequestProperties,
-                                    RequestParameters = traceEvent.RequestParameters,
-                                    QueryEvent = newEvent
+                        var newBeginEvent = new QueryBeginEvent()
+                        {
+                            RequestID = traceEvent.RequestID,
+                            Query = traceEvent.TextData,
+                            RequestProperties = traceEvent.RequestProperties,
+                            RequestParameters = traceEvent.RequestParameters,
+                            ActivityID = traceEvent.ActivityId,
+                            QueryEvent = newEvent
                                 };
                                 _queryBeginCache.Add(traceEvent.RequestID, newBeginEvent);
 
@@ -284,7 +287,14 @@ namespace DaxStudio.UI.ViewModels
             ProcessResults();
         }
 
-        public QueryEvent SelectedQuery { get; set; }
+        private QueryEvent _selectedQuery; 
+        public QueryEvent SelectedQuery { get => _selectedQuery;
+            set { 
+                _selectedQuery = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
+            }
+        }
 
         public override bool IsCopyAllVisible { get { return true; } }
         public override bool IsFilterVisible { get { return true; } }
@@ -345,7 +355,8 @@ namespace DaxStudio.UI.ViewModels
 
         public string GetJson()
         {
-            return JsonConvert.SerializeObject(QueryEvents, Formatting.Indented);
+            var json =  JsonConvert.SerializeObject(QueryEvents, Formatting.Indented);
+            return json;
         }
 
         void ISaveState.Load(string filename)
@@ -418,6 +429,21 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJson());
         }
 
+
+        public bool CanShowTraceDiagnostics => SelectedQuery != null;
+        public async void ShowTraceDiagnostics()
+        {
+            var traceDiagnosticsViewModel = new RequestInformationViewModel(SelectedQuery);
+            await WindowManager.ShowDialogBoxAsync(traceDiagnosticsViewModel, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+        }
 
         #endregion
 

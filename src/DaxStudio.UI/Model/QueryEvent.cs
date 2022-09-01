@@ -1,14 +1,19 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.Enums;
+using DaxStudio.UI.Interfaces;
+using Newtonsoft.Json;
 using System;
-
-
+using System.Runtime.Serialization;
 
 namespace DaxStudio.UI.Model
 {
-    public class QueryEvent: PropertyChangedBase
+    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
+    public class QueryEvent: PropertyChangedBase, ITraceDiagnostics
     {
+        
         private long _duration;
+        [JsonProperty]
         public long Duration { 
             get => _duration; 
             set
@@ -18,11 +23,15 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(nameof(IsQueryRunning));
             }
         }
-
+        
         public bool IsQueryRunning => _duration < 0;
+        [JsonProperty]
         public string Query { get; set; }
+        [JsonProperty]
         public DateTime StartTime { get; set; }
         private DateTime _endTime;
+
+        [JsonProperty]
         public DateTime EndTime { get => _endTime; 
             set
             {
@@ -30,18 +39,25 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange();
             } 
         }
+        [JsonProperty]
         public string Username { get; set; }
-        public string DatabaseName { get; internal set; }
+        [JsonProperty]
+        public string DatabaseName { get; set; }
+        [JsonProperty]
         public string QueryType { get; set; }
+        [JsonProperty]
         public string RequestID { get; set; }
         private int _aggregationMatchCount;
-        public int AggregationMatchCount { get => _aggregationMatchCount; set { 
+        [JsonProperty]
+        public int AggregationMatchCount { get => _aggregationMatchCount; 
+            set { 
                 _aggregationMatchCount = value;
                 NotifyOfPropertyChange(nameof(_aggregationMatchCount));
                 NotifyOfPropertyChange(nameof(AggregationStatusImage));
             } 
         }
         private int _aggregationMissCount;
+        [JsonProperty]
         public int AggregationMissCount { get => _aggregationMissCount; 
             set { 
                 _aggregationMissCount = value;
@@ -49,8 +65,12 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(nameof(AggregationStatusImage));
             }
         }
+        
+        [JsonProperty]
         public string RequestProperties { get; set; }
+        [JsonProperty]
         public string RequestParameters { get; set; }
+        
         public string AggregationStatus { set { }
             get {
                 if (AggregationMatchCount > 0 && AggregationMissCount > 0) return "Partial";
@@ -59,7 +79,7 @@ namespace DaxStudio.UI.Model
                 return "n/a";
             }
         }
-
+        
         public string AggregationStatusImage { get {
                 if (AggregationMatchCount > 0 && AggregationMissCount > 0) return "agg_partialDrawingImage";
                 if (AggregationMatchCount > 0 && AggregationMissCount == 0) return "agg_matchDrawingImage";
@@ -67,6 +87,24 @@ namespace DaxStudio.UI.Model
                 return string.Empty;
             } 
         
+        }
+        [JsonProperty]
+        public string ActivityID { get; set; }
+
+        
+        public DateTime StartDatetime => StartTime;
+
+        
+        public string CommandText { get => Query; 
+            set { 
+                // do nothing
+            } 
+        }
+        
+        public string Parameters { get => RequestParameters; 
+            set { 
+                // do nothing
+            } 
         }
     }
 }

@@ -15,6 +15,7 @@ namespace DaxStudio.UI.Model
         public string RequestParameters { get; set; }
         public string RequestProperties { get; set; }
         public QueryEvent QueryEvent { get; set; }
+        public string ActivityID { get; set; }
 
     }
 }
