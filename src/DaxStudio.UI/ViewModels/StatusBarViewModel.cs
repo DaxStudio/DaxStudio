@@ -7,7 +7,10 @@ using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
+using Polly;
+using Polly.Retry;
 using Serilog;
 
 namespace DaxStudio.UI.ViewModels
@@ -186,7 +189,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                System.Windows.Clipboard.SetText(ServerName);
+                ClipboardManager.SetText(ServerName);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
             }
             catch(Exception ex)
@@ -223,6 +226,6 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-
+        
     }
 }

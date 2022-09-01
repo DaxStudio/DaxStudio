@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 //using System.Windows.Interactivity;
 using Microsoft.Xaml.Behaviors;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.Behaviours
 {
@@ -56,7 +57,7 @@ namespace DaxStudio.UI.Behaviours
             var item = AssociatedObject.SelectedItem as IADOTabularObject;
             if (item != null ) //&& item.CanCopyToClipboard)
             {
-                System.Windows.Clipboard.SetText(item.DaxName);
+                ClipboardManager.SetText(item.DaxName);
                 //item.CopyToClipboard();
                 e.Handled = true;
             }

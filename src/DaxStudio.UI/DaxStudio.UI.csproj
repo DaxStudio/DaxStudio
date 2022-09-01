@@ -448,6 +448,7 @@
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />

@@ -1,4 +1,5 @@
 ﻿using DaxStudio.UI.Events;
+using DaxStudio.UI.Model;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -52,7 +53,7 @@ namespace DaxStudio.UI.Behaviours
                     sb.Append(msg.Text);
                     sb.Append('\n');
                 }
-                System.Windows.Clipboard.SetText(sb.ToString());
+                ClipboardManager.SetText(sb.ToString());
                 e.Handled = true;
             }
                 

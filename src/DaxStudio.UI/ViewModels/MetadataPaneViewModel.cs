@@ -566,7 +566,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                Clipboard.SetText(SelectedDatabase.Name);
+                ClipboardManager.SetText(SelectedDatabase.Name);
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database Name '{SelectedDatabase.Name}' to clipboard"));
             }
             catch (Exception ex)
@@ -581,7 +581,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                Clipboard.SetText(SelectedDatabaseObject.Id);
+                ClipboardManager.SetText(SelectedDatabaseObject.Id);
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database Id '{SelectedDatabaseObject.Id}' to clipboard"));
             }
             catch (Exception ex)

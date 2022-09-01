@@ -152,7 +152,7 @@ namespace DaxStudio.UI.Model
 
             // copy output to clipboard
             System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => {
-                System.Windows.Forms.Clipboard.SetText(sb.ToString());
+                ClipboardManager.SetText(sb.ToString());
             }, System.Windows.Threading.DispatcherPriority.Normal);
         }
 

@@ -2,6 +2,7 @@
 using DaxStudio.Common;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Model;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,7 @@ namespace DaxStudio.UI.ViewModels
         public void Copy(object context)
         {
 
-            Clipboard.SetText(context.ToString());
+            ClipboardManager.SetText(context.ToString());
         }
 
         public DialogResult Result => _dialogResult;
