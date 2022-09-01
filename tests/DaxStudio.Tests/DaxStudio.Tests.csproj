@@ -107,6 +107,7 @@
     <Compile Include="DaxDefineMeasureTests.cs" />
     <Compile Include="DelimiterTranslatorTests.cs" />
     <Compile Include="QueryPlanTests.cs" />
+    <Compile Include="StringExtensionTests.cs" />
     <Compile Include="TomTests.cs" />
     <Compile Include="TraceEventTests.cs" />
     <Compile Include="TreeViewDisplayFolderTests.cs" />

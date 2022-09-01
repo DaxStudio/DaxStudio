@@ -219,7 +219,7 @@ namespace DaxStudio.UI.ViewModels
                 _inputBindings = new InputBindings(_window);
             }
 
-            _inputBindings.RegisterCommands(GetInputBindingCommands());
+            ResetInputBindings();
             _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
             
         }
@@ -265,8 +265,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void ResetInputBindings()
         {
-            _inputBindings.DeregisterCommands();
-            _inputBindings.RegisterCommands(GetInputBindingCommands());
+            try
+            {
+                _inputBindings.DeregisterCommands();
+                _inputBindings.RegisterCommands(GetInputBindingCommands());
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error setting key binding: {ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(ResetInputBindings), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
         }
 
         void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)

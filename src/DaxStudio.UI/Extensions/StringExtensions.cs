@@ -50,5 +50,12 @@ namespace DaxStudio.UI.Extensions
         {
             return string.Format(input, args);
         }
+
+        public static bool IsFunctionKey(this string input)
+        {
+            if (input.Length <= 1) return false;
+            if (!input.StartsWith("F")) return false;
+            return input.Substring(1).IsNumeric();
+        }
     }
 }
