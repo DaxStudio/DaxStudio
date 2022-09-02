@@ -53,6 +53,7 @@ using UnitComboLib.ViewModel;
 using AvalonDock;
 using Constants = DaxStudio.Common.Constants;
 using Timer = System.Timers.Timer;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -854,6 +855,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
                 }
+                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
             }
             catch (Exception ex)
             {
@@ -3762,15 +3764,23 @@ namespace DaxStudio.UI.ViewModels
             set { 
                 _isFocused = value;
                 // Attempt to set the keyboard focus into the DaxEditor control
-                var e = GetEditor();
-                if (e != null && _isFocused)
+
+                if (QueryBuilder.IsVisible)
                 {
-                    e.Focus();
-                    //Dispatcher.CurrentDispatcher.BeginInvoke(
-                    //    new System.Action(delegate () { e.Focus(); })
-                    //    , DispatcherPriority.Background
-                    //    , null
-                    //);
+                    FocusManager.SetFocus(QueryBuilder, () => QueryBuilder.Columns);
+                }
+                else
+                {
+                    var e = GetEditor();
+                    if (e != null && _isFocused)
+                    {
+                        e.Focus();
+                        //Dispatcher.CurrentDispatcher.BeginInvoke(
+                        //    new System.Action(delegate () { e.Focus(); })
+                        //    , DispatcherPriority.Background
+                        //    , null
+                        //);
+                    }
                 }
 
                 NotifyOfPropertyChange(() => IsFocused); } }
@@ -4443,7 +4453,11 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(SetFocusEvent message,CancellationToken cancellationToken)
         {
-            IsFocused = true;
+            //Execute.OnUIThread(() => {
+            //    Task.Delay(100);
+                IsFocused = true;
+            //});
+            
             return Task.CompletedTask;
         }
 

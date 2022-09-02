@@ -119,11 +119,10 @@
 
             </Fluent:StatusBarItem>
             <Separator Grid.Column="3"/>
-            <Fluent:StatusBarItem Grid.Column="4">
-                <Image Source="{DynamicResource editor_smallDrawingImage}" Width="16"/>
-            </Fluent:StatusBarItem>
+
             <Fluent:StatusBarItem Grid.Column="5" Title="Editor Position">
                 <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource editor_smallDrawingImage}" Width="16"/>
                     <!--<Image Source="{StaticResource StatusPos}"></Image>-->
                     <TextBlock  x:Name="PositionText"></TextBlock>
                 </StackPanel>

@@ -72,7 +72,7 @@
                                 </aero:DataGridHeaderBorder>
                                 <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2"
                                               Padding="1">
-                                <!-- Source="{DynamicResource filter_toolbarDrawingImage}"-->
+         
                                 <Image Width="18" Height="18" Margin="0"  >
                                     <Image.Style>
                                         <Style TargetType="Image">
@@ -303,8 +303,9 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                    <!-- Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}" -->
                                 <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                           Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           
                                            TextTrimming="CharacterEllipsis"
                                            Padding="6 0 6 0"/>
                             </Border>
@@ -323,9 +324,10 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                    <!-- Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"-->
                                 <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
                                            VerticalAlignment="Top" HorizontalAlignment="right"
-                                           Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           
                                            TextTrimming="CharacterEllipsis"
                                            Padding="6 0 6 0"/>
                             </Border>
@@ -345,8 +347,9 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                    <!-- Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}" -->
                                 <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                       
                                            TextTrimming="CharacterEllipsis"
                                            Padding="6 0 6 0"/>
                             </Border>
