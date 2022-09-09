@@ -42,7 +42,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 UpdatePathForVfs(ref assPath);
             }
 
-            assPath = Path.Combine(@"C:\Program Files\Microsoft Office\root\vfs\ProgramFilesCommonX64\Microsoft Shared\Office16\DataModelv16", dllName);
+            //assPath = Path.Combine(@"C:\Program Files\Microsoft Office\root\vfs\ProgramFilesCommonX64\Microsoft Shared\Office16\DataModelv16", dllName);
             return assPath;
             
         }
@@ -120,7 +120,7 @@ namespace DaxStudio.ExcelAddin.Xmla
             }
         }
 
-        protected static string ExcelAmoAssemblyPath
+        public static string ExcelAmoAssemblyPath
         {
             get
             {

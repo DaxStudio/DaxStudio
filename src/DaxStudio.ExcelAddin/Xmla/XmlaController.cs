@@ -42,8 +42,8 @@ namespace DaxStudio.ExcelAddin.Xmla
                 var wsid = ParseRequestForWorkstationID(request);
                 if (!string.IsNullOrEmpty(wsid))
                 {
-                    Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Resetting Location based on WorkstationID to: " + loc);
                     loc = wsid;
+                    Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "Resetting Location based on WorkstationID to: " + loc);
                 }
                 
                 //connStr = $"Provider=MSOLAP;Persist Security Info=True;Initial Catalog=Microsoft_SQLServer_AnalysisServices;Data Source=$Embedded$;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;Location=\"{loc}\"";
@@ -54,7 +54,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                 var builder = new OleDbConnectionStringBuilder(connStrBase);
                 builder.Provider = MSOLAP_PROVIDER;
                 builder.DataSource = DATASOURCE;
-                builder.Add("Location", loc);
+                builder.Add("location", loc);
                 connStr = builder.ToString();
 
                 // 2010 conn str
@@ -129,7 +129,7 @@ namespace DaxStudio.ExcelAddin.Xmla
                         }
                         catch (Exception ex3)
                         {
-                            Log.Error("ERROR sending response: {class} {method} {exception}", "XmlaController", "PostRawBufferManual", ex3);
+                            Log.Error(ex3,"ERROR sending response: {class} {method} {message}", "XmlaController", "PostRawBufferManual","Error reading XMLA response");
                             result = new HttpResponseMessage(HttpStatusCode.InternalServerError)
                             {
                                 Content = new StringContent($"An unexpected error occurred (reading XMLA response): \n{ex3.Message}")
@@ -149,7 +149,7 @@ namespace DaxStudio.ExcelAddin.Xmla
             }
             catch (Exception ex4)
             {
-                Log.Error("ERROR Connecting: {class} {method} loc: '{loc}' conn:'{connStr}' ex: {exception}", "XmlaController", "PostRawBufferManual", loc, connStr, ex4);
+                Log.Error(ex4, "ERROR Connecting: {class} {method} loc: '{loc}' conn:'{connStr}'", "XmlaController", "PostRawBufferManual", loc, connStr);
                 var expResult = new HttpResponseMessage(HttpStatusCode.InternalServerError)
                 {
                     Content = new StringContent($"An unexpected error occurred: \n{ex4.Message}")
