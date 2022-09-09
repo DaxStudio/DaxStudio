@@ -3764,25 +3764,26 @@ namespace DaxStudio.UI.ViewModels
             set { 
                 _isFocused = value;
                 // Attempt to set the keyboard focus into the DaxEditor control
-
-                if (QueryBuilder.IsVisible)
+                if (_isFocused)
                 {
-                    FocusManager.SetFocus(QueryBuilder, () => QueryBuilder.Columns);
-                }
-                else
-                {
-                    var e = GetEditor();
-                    if (e != null && _isFocused)
+                    if (QueryBuilder.IsVisible)
                     {
-                        e.Focus();
-                        //Dispatcher.CurrentDispatcher.BeginInvoke(
-                        //    new System.Action(delegate () { e.Focus(); })
-                        //    , DispatcherPriority.Background
-                        //    , null
-                        //);
+                        FocusManager.SetFocus(QueryBuilder, () => QueryBuilder.Columns);
+                    }
+                    else
+                    {
+                        var e = GetEditor();
+                        if (e != null && _isFocused)
+                        {
+                            e.Focus();
+                            //Dispatcher.CurrentDispatcher.BeginInvoke(
+                            //    new System.Action(delegate () { e.Focus(); })
+                            //    , DispatcherPriority.Background
+                            //    , null
+                            //);
+                        }
                     }
                 }
-
                 NotifyOfPropertyChange(() => IsFocused); } }
 
         public Task HandleAsync(SetSelectedWorksheetEvent message,CancellationToken cancellationToken)

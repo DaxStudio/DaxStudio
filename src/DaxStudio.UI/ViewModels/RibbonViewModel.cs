@@ -574,7 +574,7 @@ namespace DaxStudio.UI.ViewModels
             var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
             foreach (var tw in TraceWatchers)
             {
-                tw.CheckEnabled(ActiveDocument.Connection, activeTrace);
+                tw.CheckEnabled(ActiveDocument?.Connection, activeTrace);
             }
         }
 
@@ -1178,10 +1178,17 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsActiveDocumentVertipaqAnalyzerRunning { get; private set; }
 
-        public Task HandleAsync(AllDocumentsClosedEvent message,CancellationToken cancellationToken)
+        public Task HandleAsync(AllDocumentsClosedEvent message, CancellationToken cancellationToken)
         {
-            this.ActiveDocument = null;
-            RefreshRibbonButtonEnabledStatus();
+            try
+            {
+                this.ActiveDocument = null;
+                RefreshRibbonButtonEnabledStatus();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "IHandle<AllDocumentsClosedEvent>", "Error updating ribbon for all documents closed event");
+            }
             return Task.CompletedTask;
         }
 

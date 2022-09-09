@@ -42,7 +42,7 @@
                                      From="0.0"
                                      To="1.0"
                                      Duration="0:0:1.0"/>
-                <ObjectAnimationUsingKeyFrames  Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.0" Duration="5">
+                <ObjectAnimationUsingKeyFrames  Storyboard.TargetProperty="Visibility" BeginTime="0:0:0.0" Duration="0">
                     <DiscreteObjectKeyFrame Value="{x:Static Visibility.Visible}" />
                 </ObjectAnimationUsingKeyFrames>
             </Storyboard>
@@ -666,12 +666,13 @@
                                 </controls:HotkeyEditorControl>-->
                                 
 
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" Hotkey="{Binding HotkeyCommentSelection, Converter={StaticResource HotKeyConverter}, NotifyOnValidationError=True, ValidatesOnNotifyDataErrors=True}"/>
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="1" Padding="2" 
+                                                              Hotkey="{Binding HotkeyCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
 
 
                                 <Label Content="Uncomment Selection" Padding="2" Grid.Row="2" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"
-                                                              />
+                                <controls:HotkeyEditorControl x:Name="hkUncomment" Grid.Column="1" Grid.Row="2" Padding="2" Hotkey="{Binding HotkeyUnCommentSelection, Converter={StaticResource HotKeyConverter}}"/>
+                                
 
                                 <Label Content="Run Query" Padding="2" Grid.Row="3" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyRunQuery, Converter={StaticResource HotKeyConverter}}"/>
