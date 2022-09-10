@@ -51,14 +51,14 @@ namespace DaxStudio.UI.Utils
                 {
                     if (port != -1)
                     {
-                        Log.Warning("{class} {method} {message} {dashPos}", "PowerBIInstance", "ctor", $"Unable to find ' - ' in Power BI title '{windowTitle}'", dashPos);
+                        Log.Warning(Constants.LogMessageTemplate, nameof(PowerBIInstance), "ctor", $"Unable to find ' - Power BI Desktop' in Power BI title '{windowTitle}'");
                     }
                     Name = windowTitle; 
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("{class} {method} {message} {stacktrace}", "PowerBIInstance", "ctor", ex.Message, ex.StackTrace);
+                Log.Error(ex,Constants.LogMessageTemplate, nameof(PowerBIInstance), "ctor", ex.Message);
                 Name = windowTitle;
             }
         }
