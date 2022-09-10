@@ -550,7 +550,7 @@
 
                         <avalondock:LayoutDocumentPane DockHeight="Auto" >
                             <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="myDocument" 
-                                                       attached:InitialFocusExtentions.SelectWhenFocused="True"
+                                                       attached:InitialFocusExtentions.SelectAllAndFocus="True"
                                                        FocusManager.FocusedElement="{Binding ElementName=daxEditor}">
 
                                 <Grid>

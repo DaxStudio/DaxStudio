@@ -212,7 +212,7 @@
                               Grid.Row="1"
 							  Text="{Binding DataSource, UpdateSourceTrigger=PropertyChanged}" 
 							  IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" 
-							  ap:InitialFocusExtentions.SelectWhenFocused="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="2"
+							  ap:InitialFocusExtentions.SelectAllAndFocus="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="2"
                               ap:DataSourcePasteHandlerHelper.PasteHandler="{Binding DataSourcePasted}"
                               >
 

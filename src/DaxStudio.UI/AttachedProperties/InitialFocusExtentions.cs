@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using DaxStudio.UI.Utils;
 
 
@@ -8,24 +11,43 @@ namespace DaxStudio.UI.AttachedProperties
     public static class InitialFocusExtentions
     {
 
-        public static bool GetSelectWhenFocused(DependencyObject obj)
+        public static bool GetSelectAllAndFocus(DependencyObject obj)
         {
-            return (bool)obj.GetValue(SelectWhenFocusedProperty);
+            return (bool)obj.GetValue(SelectAllAndFocusProperty);
         }
 
-        public static void SetSelectWhenFocused(DependencyObject obj, bool value)
+        public static void SetSelectAllAndFocus(DependencyObject obj, bool value)
         {
-            obj.SetValue(SelectWhenFocusedProperty, value);
+            obj.SetValue(SelectAllAndFocusProperty, value);
         }
 
-        // Using a DependencyProperty as the backing store for SelectWhenFocused.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectWhenFocusedProperty =
-            DependencyProperty.RegisterAttached("SelectWhenFocused", typeof(bool), typeof(InitialFocusExtentions), new UIPropertyMetadata(OnSelectOnFocusedChanged));
+        // Using a DependencyProperty as the backing store for SelectAllAndFocus.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectAllAndFocusProperty =
+            DependencyProperty.RegisterAttached("SelectAllAndFocus", typeof(bool), typeof(InitialFocusExtentions), new UIPropertyMetadata(OnSelectAllAndFocusChanged));
 
-        public static void OnSelectOnFocusedChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+
+        public static bool GetSelectAllWhenFocused(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(SelectAllWhenFocusedProperty);
+        }
+
+        public static void SetSelectAllWhenFocused(DependencyObject obj, bool value)
+        {
+            obj.SetValue(SelectAllWhenFocusedProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for SelectAllAndFocus.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectAllWhenFocusedProperty =
+            DependencyProperty.RegisterAttached("SelectAllWhenFocused", typeof(bool), typeof(InitialFocusExtentions), new UIPropertyMetadata(OnSelectAllWhenFocusedChanged));
+
+
+        public static void OnSelectAllAndFocusChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
             bool SetProperty = (bool)args.NewValue;
 
+            if (!SetProperty) return;
+
+            
             if (obj is ComboBox)
             {
 
@@ -46,8 +68,13 @@ namespace DaxStudio.UI.AttachedProperties
                 if (textBox == null) return;
                 if (SetProperty)
                 {
-                    textBox.Focus();
-                    GotFocused(textBox, null);
+                    Dispatcher.CurrentDispatcher.Invoke(() =>
+                    {
+                        Task.Delay(500);
+                        textBox.Focus();
+                        Debug.Write($"ap:IsKeyboardFocused: {textBox.IsKeyboardFocused} IsFocused: {textBox.IsFocused}");
+                        GotFocused(textBox, null);
+                    });
                 }
             }
         }
@@ -70,7 +97,42 @@ namespace DaxStudio.UI.AttachedProperties
             sender.SelectAll();
         }
 
+        public static void OnSelectAllWhenFocusedChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        {
+            bool SetProperty = (bool)args.NewValue;
+
+            if (obj is ComboBox)
+            {
+
+                var comboBox = obj as ComboBox;
+                if (comboBox == null) return;
+
+                if (SetProperty)
+                {
+                    comboBox.GotFocus += ComboBox_GotFocus;
+                }
+            }
 
 
+            if (obj is TextBox)
+            {
+                var textBox = obj as TextBox;
+                if (textBox == null) return;
+                if (SetProperty)
+                {
+                    textBox.GotFocus += TextBox_GotFocus;
+                }
+            }
+        }
+
+        private static void ComboBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            GotFocused((ComboBox)sender, e);
+        }
+
+        private static void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            GotFocused((TextBox)sender, e);
+        }
     }
 }

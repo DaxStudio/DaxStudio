@@ -3422,6 +3422,7 @@ namespace DaxStudio.UI.ViewModels
             }
             FindReplaceDialog.ShowReplace = false;
             FindReplaceDialog.IsVisible = true;
+            FindReplaceDialog.ActivateAsync();
         }
         public void Replace()
         {
@@ -3431,6 +3432,7 @@ namespace DaxStudio.UI.ViewModels
             }
             FindReplaceDialog.ShowReplace = true;
             FindReplaceDialog.IsVisible = true;
+            FindReplaceDialog.ActivateAsync();
         }
 
         public Task HandleAsync(OutputMessage message, CancellationToken cancellationToken)
