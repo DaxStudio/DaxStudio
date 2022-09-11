@@ -66,44 +66,47 @@ namespace DaxStudio.UI.ViewModels
 
         protected override async Task OnInitializeAsync(CancellationToken cancellationToken)
         {
-            var recoveringFiles = false;
-
-            // get master auto save indexes and only get crashed index files...
-            var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
-            var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
-
-            // check for auto-saved files and offer to recover them
-            if (filesToRecover.Any())
+            try
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
-                recoveringFiles = true;
-                await RecoverAutoSavedFilesAsync(autoSaveInfo);
+                var recoveringFiles = false;
+
+                // get master auto save indexes and only get crashed index files...
+                var autoSaveInfo = AutoSaver.LoadAutoSaveMasterIndex();
+                var filesToRecover = autoSaveInfo.Values.Where(idx => idx.IsCurrentVersion && idx.ShouldRecover).SelectMany(entry => entry.Files);
+
+                // check for auto-saved files and offer to recover them
+                if (filesToRecover.Any())
+                {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
+                    recoveringFiles = true;
+                    await RecoverAutoSavedFilesAsync(autoSaveInfo);
+                }
+                else
+                {
+                    // if there are no auto-save files to recover, start the auto save timer
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
+                    await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+                }
+
+                // if a filename was passed in on the command line open it
+                if (!string.IsNullOrEmpty(_host.CommandLineFileName))
+                {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
+                    await NewQueryDocumentAsync(_host.CommandLineFileName);
+                }
+
+                // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
+                if (Items.Count == 0 && !recoveringFiles)
+                {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
+                    await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // if there are no auto-save files to recover, start the auto save timer
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
-                await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnInitializeAsync), "Error Initializing DocumentTabs");
+
             }
-
-            // if a filename was passed in on the command line open it
-            if (!string.IsNullOrEmpty(_host.CommandLineFileName))
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
-                await NewQueryDocumentAsync(_host.CommandLineFileName);
-            }
-
-            // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
-            if (Items.Count == 0 && !recoveringFiles)
-            {
-                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
-                await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
-            }
-        }
-
-        public void ActiveDocumentChanged()
-        {
-
         }
 
         private async Task RecoverAutoSavedFilesAsync(Dictionary<int, AutoSaveIndex> autoSaveInfo)
@@ -119,37 +122,51 @@ namespace DaxStudio.UI.ViewModels
             get => _activeDocument;
             set
             {
-                if (_activeDocument == value) 
-                    return;  // this item is already active
-                if (this.Items.Count == 0)
+                try
                 {
-                    _activeDocument = null;
-                    return;  // no items in collection usually means we are shutting down
+                    if (_activeDocument == value)
+                        return;  // this item is already active
+                    if (this.Items.Count == 0)
+                    {
+                        _activeDocument = null;
+                        return;  // no items in collection usually means we are shutting down
+                    }
+                    Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value?.DisplayName);
+                    lock (_activeDocumentLock)
+                    {
+                        _activeDocument = value;
+
+                        NotifyOfPropertyChange(() => ActiveDocument);
+
+                        if (ActiveDocument == null) return;
+
+                        Items.Apply(i => ((DocumentViewModel)i).IsFocused = false);
+
+                        _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                    }
                 }
-                Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value?.DisplayName);
-                lock (_activeDocumentLock)
+                catch (Exception ex)
                 {
-                    _activeDocument = value;
-
-                    NotifyOfPropertyChange(() => ActiveDocument);
-
-                    if (ActiveDocument == null) return;
-                    //Log.Debug("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ActiveDocumentChanged), $"ActiveDocument changed: {ActiveDocument?.DisplayName}");
-                    Items.Apply(i => ((DocumentViewModel)i).IsFocused = false);
-
-                    //ActiveDocument.IsFocused = true;
-                    //this.ActivateAsync(value);
-                    _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), "ActiveDocument.Set", "error setting ActiveDocument");
                 }
             }
         }
 
         protected override Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
         {
-            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
-            ActiveDocument = newItem as DocumentViewModel;
-            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Finished setting ActiveDocument");
-            return base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
+            try
+            {
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
+                ActiveDocument = newItem as DocumentViewModel;
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Finished setting ActiveDocument");
+                return base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Error Changing Active Item");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Setting Active Document\n{ex.Message}"));
+                return Task.CompletedTask;
+            }
             
         }
 
@@ -332,7 +349,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FileName = "Document",
                 DefaultExt = ".dax",
-                Filter = "DAX documents|*.dax;*.msdax;*.daxx|DAX Studio documents|*.dax;*.daxx|SSMS DAX documents|*.msdax"
+                Filter = "DAX documents|*.dax;*.msdax;*.daxx;*.vpax|DAX Studio documents|*.dax;*.daxx;*.vpax|SSMS DAX documents|*.msdax"
             };
 
             // Show open file dialog box

@@ -1549,6 +1549,25 @@
 
 
             </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Testing">
+                <Fluent:Button
+                    Name="RunQueryDiagnostics"
+                    Header="Capture Diagnostics"
+                    KeyTip="B"
+                    cal:Message.Attach="[Event Click] = [Action CaptureDiagnostics()]"
+                    Icon="{DynamicResource run_benchmarkDrawingImage}"
+                    LargeIcon="{DynamicResource run_benchmarkDrawingImage}"
+                    Margin="4,0"
+                    SizeDefinition="Large,Middel,Small"
+                    >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Capture Diagnostics"
+                                          Text="Runs the given query and automatically captures Server Timings, Query Plan and model metrics"
+                                          DisableReason="You must have admin rights against the data source in order to create the Timings trace to capture the detailed timing information"
+                            />
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           
             

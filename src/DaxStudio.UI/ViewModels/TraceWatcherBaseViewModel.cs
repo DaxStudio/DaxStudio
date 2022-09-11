@@ -108,6 +108,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
             if (!IsPaused) ProcessResults();
             IsBusy = false;
+            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent(this));
         }
 
         // This method is called before a trace starts which gives you a chance to 
@@ -604,7 +605,7 @@ namespace DaxStudio.UI.ViewModels
         private void TracerOnTraceCompleted(object sender, EventArgs e)
         {
             if (IsChecked && !IsPaused) ProcessAllEvents();
-            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent());
+            
         }
 
         private void TracerOnTraceStarted(object sender, EventArgs e)

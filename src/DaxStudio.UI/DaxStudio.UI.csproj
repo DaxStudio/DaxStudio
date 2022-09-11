@@ -78,6 +78,9 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
   <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
@@ -179,7 +182,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|x86'">
@@ -322,10 +325,12 @@
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\EditorHotkeyEvent.cs" />
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />
+    <Compile Include="Events\NoQueryTextEvent.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
+    <Compile Include="Events\ViewMetricsCompleteEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
@@ -621,6 +626,7 @@
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
+    <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
     <Compile Include="Utils\UIHelper.cs" />
@@ -670,6 +676,9 @@
     <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CaptureDiagnosticsView.xaml.cs">
+      <DependentUpon>CaptureDiagnosticsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
       <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
@@ -938,6 +947,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Light.DaxStudio.Theme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CaptureDiagnosticsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -19,6 +19,8 @@ using System.Reflection;
 using Microsoft.AnalysisServices.AdomdClient;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Drawing;
+using ADOTabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -357,7 +359,11 @@ namespace DaxStudio.UI.ViewModels
         {
             ActiveDocument?.SaveAs();
         }
-        
+
+        public void SaveAsDaxx()
+        {
+            ActiveDocument?.SaveAs(Common.Constants.DAXX_Extension);
+        }
 
         public async void Connect()
         {
@@ -1272,7 +1278,13 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
         }
 
-
+        public async void CaptureDiagnostics()
+        {
+            var capdiagDialog = new CaptureDiagnosticsViewModel(this, _eventAggregator);
+            _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
+            await _windowManager.ShowDialogBoxAsync(capdiagDialog);
+            _eventAggregator.Unsubscribe(capdiagDialog);
+        }
 
         public Task HandleAsync(UpdateHotkeys message, CancellationToken cancellationToken)
         {

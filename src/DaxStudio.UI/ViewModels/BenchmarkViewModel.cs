@@ -388,7 +388,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
-            if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started) RunNextQuery();
+            if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started 
+                && message.Sender is ServerTimesViewModel) RunNextQuery();
             // TODO - need to handle trace errors
             return Task.CompletedTask;
         }

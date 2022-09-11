@@ -268,12 +268,13 @@ namespace DaxStudio.UI.ViewModels
         /// <param name="view"></param>
         protected override async void OnViewLoaded(object view)
         {
-            System.Diagnostics.Debug.WriteLine("DocumentViewModel.OnViewLoaded Called");
-            base.OnViewLoaded(view);
-            _editor = GetEditor();
-
             try
             {
+                Debug.WriteLine("DocumentViewModel.OnViewLoaded Called");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Starting");
+                base.OnViewLoaded(view);
+                _editor = GetEditor();
+
                 await _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
 
                 IntellisenseProvider.Editor = _editor;
@@ -316,7 +317,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, nameof(DocumentViewModel), nameof(OnViewLoaded), ex.Message);
                 OutputError($"Error opening a new query tab: {ex.Message}");
             }
-
+            finally
+            {
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Finished");
+            }
         }
 
         public async Task CopyConnectionAsync(DocumentViewModel sourceDocument)
@@ -538,14 +542,20 @@ namespace DaxStudio.UI.ViewModels
 
         private void OnDocumentChanged(object sender, EventArgs e)
         {
-            //Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
-            _logger.Info("In OnDocumentChanged");
-            IsDirty = _editor.Text.Length > 0;
-            ShowHelpWatermark = !IsDirty;
-            LastModifiedUtcTime = DateTime.UtcNow;
-            NotifyOfPropertyChange(() => IsDirty);
-            NotifyOfPropertyChange(() => DisplayName);
-            
+            try
+            {
+                //Log.Debug("{Class} {Event} {@EventArgs}", "DocumentViewModel", "OnDocumentChanged", e);          
+                _logger.Info("In OnDocumentChanged");
+                IsDirty = _editor.Text.Length > 0;
+                ShowHelpWatermark = !IsDirty;
+                LastModifiedUtcTime = DateTime.UtcNow;
+                NotifyOfPropertyChange(() => IsDirty);
+                NotifyOfPropertyChange(() => DisplayName);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnDocumentChanged), "Error changing document");
+            }
         }
 
         private void OnPositionChanged(object sender, EventArgs e)
@@ -756,10 +766,16 @@ namespace DaxStudio.UI.ViewModels
         
         protected override async Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
         {
-            Log.Debug("{Class} {Event} Close:{Value} Doc:{Document}", "DocumentViewModel", "OnDeactivated (close)", close, DisplayName);
-            await  base.OnDeactivateAsync(close, cancellationToken);
-            UnsubscribeAll();
-            
+            try
+            {
+                Log.Debug("{Class} {Event} Close:{Value} Doc:{Document}", "DocumentViewModel", "OnDeactivated (close)", close, DisplayName);
+                await base.OnDeactivateAsync(close, cancellationToken);
+                UnsubscribeAll();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnDeactivateAsync), "Error Deactivating");
+            }
         }
 
         protected void UnsubscribeAll()
@@ -816,11 +832,12 @@ namespace DaxStudio.UI.ViewModels
 
         protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
-            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Starting for: {DisplayName}");
-            _logger.Info("In OnActivate");
-            await base.OnActivateAsync(cancellationToken);
             try
             {
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Starting for: {DisplayName}");
+                _logger.Info("In OnActivate");
+                await base.OnActivateAsync(cancellationToken);
+
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Updating EventAggregator Subscriptions");
                 UnsubscribeAll();
                 SubscribeAll();
@@ -895,7 +912,15 @@ namespace DaxStudio.UI.ViewModels
         
         public override async Task<bool> CanCloseAsync(CancellationToken cancellationToken)
         {
-            return await Task.FromResult( DoCloseCheck());
+            try
+            {
+                return await Task.FromResult(DoCloseCheck());
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CanCloseAsync), "Error during DoCloseCheck");
+            }
+            return true;
         }
 
         internal void SwapDelimiters()
@@ -1774,6 +1799,7 @@ namespace DaxStudio.UI.ViewModels
                             if (string.IsNullOrEmpty(queryGenerated))
                             {
                                 OutputWarning("There is no query text in the edit window which can be executed.");
+                                _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
                                 ActivateOutput();
                                 IsQueryRunning = false;
                                 return;
@@ -1816,6 +1842,7 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     OutputError("There is no query text in the editor that can be executed");
                                     ActivateOutput();
+                                    _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
                                     IsQueryRunning = false;
                                     return;
                                 }
@@ -1826,6 +1853,7 @@ namespace DaxStudio.UI.ViewModels
                         {
                             OutputWarning("There is no query text in the edit window which can be executed.");
                             ActivateOutput();
+                            _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
                             IsQueryRunning = false;
                             return;
                         }
@@ -2685,8 +2713,13 @@ namespace DaxStudio.UI.ViewModels
             return client;
         }
 
-        //
         public void SaveAs()
+        {
+            SaveAs(Constants.DAX_Extension);
+        }
+
+        //
+        public void SaveAs(string defaultExt)
         {
             // Configure save file dialog box
             var dlg = new SaveFileDialog

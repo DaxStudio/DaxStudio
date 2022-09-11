@@ -83,6 +83,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => GroupedPartitions);
                 NotifyOfPropertyChange(() => SummaryViewModel);
                 IsBusy = false;
+                _eventAggregator.PublishOnUIThreadAsync(new ViewMetricsCompleteEvent());
             }
         }
 

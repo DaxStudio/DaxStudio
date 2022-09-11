@@ -104,4 +104,5 @@
     <Style TargetType="{x:Type view:ViewAsDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:GettingStartedView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:RequestInformationView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:CaptureDiagnosticsView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
 </ResourceDictionary>

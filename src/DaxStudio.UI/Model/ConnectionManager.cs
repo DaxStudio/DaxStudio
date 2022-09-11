@@ -907,17 +907,15 @@ namespace DaxStudio.UI.Model
                 || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
         }
+        private object _supportedTraceEventClassesLock = new object();
         private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
         public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
         {
             get
             {
-                if (_supportedTraceEventClasses == null)
-                {
-                    _supportedTraceEventClasses = PopulateSupportedTraceEventClasses();
-
+                lock (_supportedTraceEventClassesLock) {
+                    _supportedTraceEventClasses ??= PopulateSupportedTraceEventClasses();
                 }
-
                 return _supportedTraceEventClasses;
 
             }
