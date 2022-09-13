@@ -338,9 +338,13 @@ namespace DaxStudio.UI.ViewModels
             var m = new QueryPlanModel()
             {
                 PhysicalQueryPlanRows = this.PhysicalQueryPlanRows,
-                LogicalQueryPlanRows = this.LogicalQueryPlanRows
+                LogicalQueryPlanRows = this.LogicalQueryPlanRows,
+                ActivityID = this.ActivityID,
+                CommandText = this.CommandText,
+                Parameters = this.Parameters,
+                StartDatetime = this.StartDatetime
             };
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(m, Formatting.Indented);
             return json;
         }
 

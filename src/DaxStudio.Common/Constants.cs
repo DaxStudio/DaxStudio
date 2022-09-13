@@ -45,7 +45,7 @@
         public const int MaxLineLength = 500;
         public const string BuildDateFormat = "yyyy-MM-dd";
 
-        public const string DAX_Extension = ".dax";
-        public const string DAXX_Extension = ".daxx";
+        public const string DAX_Extension = "dax";
+        public const string DAXX_Extension = "daxx";
     }
 }

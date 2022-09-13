@@ -362,7 +362,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void SaveAsDaxx()
         {
-            ActiveDocument?.SaveAs(Common.Constants.DAXX_Extension);
+            ActiveDocument?.SaveAs(Enums.SaveAsExtension.daxx);
         }
 
         public async void Connect()
@@ -380,9 +380,11 @@ namespace DaxStudio.UI.ViewModels
 
         public ShellViewModel Shell { get; set; }
 
-        public async void Exit()
+        public void Exit(FrameworkElement view)
         {
-            await Shell.TryCloseAsync();
+            Fluent.Backstage backstage = GetBackStageParent(view) as Fluent.Backstage;
+            backstage.IsOpen = false;
+            Application.Current.Shutdown();
         }
 
         public async void Open(FrameworkElement view)

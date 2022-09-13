@@ -43,7 +43,8 @@ namespace DaxStudio.UI.Utils
                     var index = windowTitle.LastIndexOf(suffix);
                     if (index >= 1)
                     {
-                        Name = windowTitle.Substring(0,index-1).Trim();
+                        Name = windowTitle.Substring(0,index).Trim();
+                        break;
                     }
                 }
 

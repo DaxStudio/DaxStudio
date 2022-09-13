@@ -802,24 +802,32 @@
                                    Header="Exit" 
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"  
                                    VerticalAlignment="Bottom"
-                                   DockPanel.Dock="Bottom">
-                            <i:Interaction.Triggers>
+                                   DockPanel.Dock="Bottom"
+                                   cal:Message.Attach="[Event Click] = [Action Exit($view)]">
+                                       
+                            <!--<i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
                                     <cal:Action.Target>
                                         <cal:ActionMessage MethodName="Exit"/>
                                     </cal:Action.Target>
 
                                 </i:EventTrigger>
-                            </i:Interaction.Triggers>
+                            </i:Interaction.Triggers>-->
                         </Fluent:Button>
 
-
-                        <Image x:Name="backImage" 
+                        <Fluent:BackstageTabItem Height="190" DockPanel.Dock="Bottom">
+                            <Fluent:BackstageTabItem.Template>
+                                <ControlTemplate>
+                            <Image x:Name="backImage" 
                                Source="{DynamicResource logo_transparentDrawingImage}"
                                DockPanel.Dock="Bottom"
-                               Width="200"
-                               Height="200"
+                               Width="120"
+                               Height="120"
                                />
+                                </ControlTemplate>
+                            </Fluent:BackstageTabItem.Template>
+                        </Fluent:BackstageTabItem>
+                        
 
                         <!--<Fluent:BackstageTabItem DockPanel.Dock="Bottom">
                             <Fluent:BackstageTabItem.Header>
@@ -1555,8 +1563,8 @@
                     Header="Capture Diagnostics"
                     KeyTip="B"
                     cal:Message.Attach="[Event Click] = [Action CaptureDiagnostics()]"
-                    Icon="{DynamicResource run_benchmarkDrawingImage}"
-                    LargeIcon="{DynamicResource run_benchmarkDrawingImage}"
+                    Icon="{DynamicResource capture_diagnosticsDrawingImage}"
+                    LargeIcon="{DynamicResource capture_diagnosticsDrawingImage}"
                     Margin="4,0"
                     SizeDefinition="Large,Middel,Small"
                     >

@@ -1799,7 +1799,7 @@ namespace DaxStudio.UI.ViewModels
                             if (string.IsNullOrEmpty(queryGenerated))
                             {
                                 OutputWarning("There is no query text in the edit window which can be executed.");
-                                _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
+                                await _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
                                 ActivateOutput();
                                 IsQueryRunning = false;
                                 return;
@@ -1842,7 +1842,7 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     OutputError("There is no query text in the editor that can be executed");
                                     ActivateOutput();
-                                    _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
+                                    await _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
                                     IsQueryRunning = false;
                                     return;
                                 }
@@ -1853,7 +1853,7 @@ namespace DaxStudio.UI.ViewModels
                         {
                             OutputWarning("There is no query text in the edit window which can be executed.");
                             ActivateOutput();
-                            _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
+                            await _eventAggregator.PublishOnUIThreadAsync(new NoQueryTextEvent());
                             IsQueryRunning = false;
                             return;
                         }
@@ -2715,17 +2715,19 @@ namespace DaxStudio.UI.ViewModels
 
         public void SaveAs()
         {
-            SaveAs(Constants.DAX_Extension);
+            SaveAs(SaveAsExtension.dax);
         }
 
         //
-        public void SaveAs(string defaultExt)
+        public void SaveAs(SaveAsExtension saveAsExt)
         {
+            var fileWithoutExt = Path.GetFileNameWithoutExtension(FileName ?? _displayName);
+
             // Configure save file dialog box
             var dlg = new SaveFileDialog
             {
-                FileName = FileName ?? _displayName,
-                DefaultExt = ".dax",
+                FileName = fileWithoutExt,
+                FilterIndex = (int)saveAsExt,
                 Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
             };
 

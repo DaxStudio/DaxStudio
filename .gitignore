@@ -205,3 +205,5 @@ docs/.jekyll-metadata
 **/[Rr]esources/[Bb]uild[Dd]ate.txt
 *.binlog
 
+src/upgrade-assistant.clef
+src/AnalysisReport.sarif
