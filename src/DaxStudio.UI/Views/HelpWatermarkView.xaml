@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="http://www.caliburnproject.org"
-             xmlns:converters="clr-namespace:DaxStudio.UI.Converters" xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:converters="clr-namespace:DaxStudio.UI.Converters"
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="500"

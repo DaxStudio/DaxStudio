@@ -8,10 +8,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-             xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions" 
              d:DesignWidth="980"
             
              mc:Ignorable="d">
@@ -28,12 +25,6 @@
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
-
-            <fa:ImageAwesome Icon="Cogs" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
-
-
-
-
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
         
@@ -1498,9 +1489,7 @@
                                    Margin="4,0"
                                    SizeDefinition="Large,Large,Large">
                     <Fluent:Button.LargeIcon>
-
-                        <fa:FontAwesome  Icon="Warning" Foreground="OrangeRed" FontSize="32" />
-
+                        <Image Source="{DynamicResource warningDrawingImage}" Width="32"></Image>
                     </Fluent:Button.LargeIcon>
                 </Fluent:Button>
 
@@ -1539,19 +1528,11 @@
                 <Fluent:Button Header="Open Connection" x:Name="OpenConnection" Size="Middle"
                                cal:Message.Attach="[Event Click] = [Action OpenConnection()]">
 
-                    <Fluent:Button.Icon>
 
-                        <fa:FontAwesome  Icon="Plug" FontSize="16" Foreground="Green"/>
-
-                    </Fluent:Button.Icon>
                 </Fluent:Button>
                 <Fluent:Button Header="Close Connection" x:Name="CloseConnection" Size="Middle"
                                cal:Message.Attach="[Event Click] = [Action CloseConnection()]">
-                    <Fluent:Button.Icon>
 
-                        <fa:FontAwesome  Icon="Plug" Foreground="OrangeRed" FontSize="16" />
-
-                    </Fluent:Button.Icon>
                 </Fluent:Button>
 
 

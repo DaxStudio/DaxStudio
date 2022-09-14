@@ -28,9 +28,10 @@ namespace DaxStudio.UI.ViewModels
             Failed
         }
 
-        public CaptureDiagnosticsViewModel(RibbonViewModel ribbon, IEventAggregator eventAggregator)
+        public CaptureDiagnosticsViewModel(RibbonViewModel ribbon, IGlobalOptions options, IEventAggregator eventAggregator)
         {
             Ribbon = ribbon;
+            Options = options;
             EventAggregator = eventAggregator;
             
             // capture TraceWatcher checked status
@@ -157,6 +158,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         private RibbonViewModel Ribbon { get; }
+        public IGlobalOptions Options { get; }
         private IEventAggregator EventAggregator { get; }
 
         private ITraceWatcher _serverTimingsTrace;
@@ -181,6 +183,8 @@ namespace DaxStudio.UI.ViewModels
             await TryCloseAsync();
         }
         private bool _canCancel = true;
+        private bool _includeTOM;
+
         public bool CanCancel { get => _canCancel;
             set { 
                 _canCancel = value;
@@ -200,6 +204,10 @@ namespace DaxStudio.UI.ViewModels
 
         public void CaptureMetrics()
         {
+            // store the current setting and turn on the capturing of TOM
+            _includeTOM = Options.VpaxIncludeTom;
+            Options.VpaxIncludeTom = true;
+
             Ribbon.ViewAnalysisData();
         }
 
@@ -226,7 +234,7 @@ namespace DaxStudio.UI.ViewModels
         {
             IsMetricsRunning = false;
             MetricsStatus = OperationStatus.Succeeded;
-            
+            Options.VpaxIncludeTom = _includeTOM;  //reset the include TOM setting
             StartTraces();
             return Task.CompletedTask;
         }

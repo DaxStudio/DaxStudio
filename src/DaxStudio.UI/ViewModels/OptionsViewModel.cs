@@ -431,7 +431,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _neverShowHelpWatermark;
         [Category("Editor")]
-        [DisplayName("Show Help Text on Empty Document")]
+        [DisplayName("Show Getting Started Dialog")]
+        [Description("Shows a dialog with hints for getting started when first connecting")]
         [SortOrder(120)]
         [DataMember, DefaultValue(true)]
         public bool ShowHelpWatermark { get => _neverShowHelpWatermark;
@@ -1308,7 +1309,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _vpaxIncludeTom;
-        [DataMember, DefaultValue(false)]
+        [DataMember, DefaultValue(true)]
         public bool VpaxIncludeTom {
             get => _vpaxIncludeTom;
             set {

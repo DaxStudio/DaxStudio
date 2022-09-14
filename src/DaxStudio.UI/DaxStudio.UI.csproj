@@ -241,6 +241,7 @@
     <Compile Include="AttachedProperties\GridSplitterController.cs" />
     <Compile Include="AttachedProperties\ForegroundBindingHelper.cs" />
     <Compile Include="AttachedProperties\ImageBindingHelper.cs" />
+    <Compile Include="AttachedProperties\ImageSpinner.cs" />
     <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
     <Compile Include="AttachedProperties\DataGridExtensions.cs" />
     <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
@@ -1349,9 +1350,6 @@
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
       <Version>9.0.4</Version>
-    </PackageReference>
-    <PackageReference Include="FontAwesome.WPF">
-      <Version>4.7.0.9</Version>
     </PackageReference>
     <PackageReference Include="gong-wpf-dragdrop">
       <Version>3.1.1</Version>

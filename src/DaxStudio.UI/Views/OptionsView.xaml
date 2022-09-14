@@ -7,7 +7,6 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
              xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
@@ -507,18 +506,6 @@
                                  Grid.Row="1" 
                                  Margin="5" 
                                  Padding="5" />
-
-                        <!--<Button Margin="10" Grid.Column="1" HorizontalAlignment="Right" Padding="5"
-                                                Visibility="{Binding Path=HasSearchText, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                BorderThickness="0"
-                                                Background="Transparent">
-                            <fa:ImageAwesome Icon="Times" Width="8" Margin="0" />
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="Click">
-                                    <cal:ActionMessage MethodName="ClearSearchText" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Button>-->
                         
                     <ListBox x:Name="Categories" Grid.Row="2" 
                             ItemsSource="{Binding Categories}" 
@@ -711,7 +698,7 @@
 
                                 <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}"
                                             HorizontalAlignment="Center">
-                                    <fa:FontAwesome Icon="Warning" Foreground="Red" Margin="3"/>
+                                    <Image Source="{DynamicResource warningDrawingImage}" Width="16" Height="16"/>
                                     <TextBlock x:Name="HotkeyWarningMessage" Foreground="Red"/>
                                     
                                 </StackPanel>
@@ -790,7 +777,7 @@
 
                                 <ui:ToggleSwitch Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" 
                                                  OnContent="Include TOM"
-                                                 OffContent="Exclude TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                                 OffContent="Include TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include the complete Tabular Object Model (TOM) in the export for VertiPaq Analyzer (VPAX)</TextBlock>
                                 <ui:ToggleSwitch Grid.Row="2" Grid.Column="0" x:Name="VpaxReadStatisticsFromData" VerticalAlignment="Top" 
                                                  OnContent="Read statistics from data"

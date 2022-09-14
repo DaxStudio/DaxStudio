@@ -6,7 +6,6 @@
         xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
         xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         d:DesignHeight="450" d:DesignWidth="800">
     <!-- Resources -->
@@ -1129,17 +1128,25 @@
                         <Image Source="{DynamicResource powerbi_smallDrawingImage}" 
                                Width="48"  Grid.RowSpan="1" VerticalAlignment="Top"
                                Margin="16 24 16 16"/>
-                        <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="5" Style="{StaticResource SummaryHeader}"/>
-
+                        <DockPanel Grid.Column="1" Grid.ColumnSpan="5">
+                            <Menu DockPanel.Dock="Right">
+                                <MenuItem Header="...">
+                                    <MenuItem Header="Export .bim file" cal:Message.Attach="[Event Click]=[ExportBimFile()]"/>
+                                </MenuItem>
+                            </Menu>
+                            <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="6" 
+                                       DockPanel.Dock="Left"
+                                       Style="{StaticResource SummaryHeader}"/>
+                            
+                        </DockPanel>
                         <!-- Row 1 -->
                         <TextBlock Text="Total Size in Memory" Grid.Column="1" Grid.Row="1" Style="{StaticResource SummaryLabel}"/>
                         <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2" Margin="0 0 10 0"  >
                             <TextBlock Text="{Binding SummaryViewModel.FormattedTotalSize}"
                                        Style="{StaticResource SummaryValue}"
                                        FontWeight="SemiBold" ToolTip="{Binding SummaryViewModel.TotalSize, StringFormat=N0}"/>
-                            <fa:FontAwesome Icon="InfoCircle" 
-                                            FontSize="16"
-                                            Foreground="{StaticResource DaxStudioBrush}" 
+                            <Image Source="{DynamicResource infoDrawingImage}" 
+                                            Width="16"
                                             VerticalAlignment="Top"
                                             ToolTip="The total size is the total amount of memory used while the model is loaded into RAM, it will be different to the size of the file(s) on disk. (often slightly larger because some structures are decompressed when the are loaded into memory)" />
                         </StackPanel>

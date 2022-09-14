@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
-                      xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              mc:Ignorable="d" 
              
@@ -50,7 +49,6 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <!--<fa:FontAwesome Icon="InfoCircle" FontSize="50" Grid.Column="0" Foreground="{StaticResource DaxStudioBrush}" Margin="5,0"/>-->
                                     <Image Source="{DynamicResource infoDrawingImage}" Width="24" VerticalAlignment="Top" Margin="0 0 8 0"/>
                                     <TextBlock Grid.Column="1" TextWrapping="Wrap">Direct Query generates queries sent to the remote storage engine. These queries cannot be executed in DAX Studio using the connection to the local data model; they need a connection to the remote data source. By executing the DAX query in DAX Studio, you would see the same Direct Query queries in the Server Timings pane as SQL subclass type.</TextBlock>
                                 </Grid>

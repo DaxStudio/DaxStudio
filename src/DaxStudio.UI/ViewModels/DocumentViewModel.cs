@@ -4237,7 +4237,10 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
-                VpaModel viewModel = ModelAnalyzer.ImportVPAX(path);
+                //VpaModel viewModel = ModelAnalyzer.ImportVPAX(path);
+                var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(path);
+                var database = content.TomDatabase;
+                VpaModel viewModel = new Dax.ViewModel.VpaModel(content.DaxModel);
 
                 // check if PerfData Window is already open and use that
                 var vpaView = ToolWindows.FirstOrDefault(win => (win as VertiPaqAnalyzerViewModel) != null) as VertiPaqAnalyzerViewModel;
@@ -4254,7 +4257,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 // update view model
                 vpaView.ViewModel = viewModel;
-                
+                vpaView.Database = database;
                 vpaView.Activate();
             }
             catch (Exception ex)

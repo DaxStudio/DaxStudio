@@ -2,7 +2,6 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
-using FontAwesome.WPF;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
@@ -40,11 +39,9 @@ namespace DaxStudio.UI.ViewModels
 
             _currentRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
             TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultsTargetTimer));
-            ProgressIcon = FontAwesomeIcon.ClockOutline;
             ProgressSpin = false;
             ProgressMessage = "Ready";
             ProgressPercentage = 0;
-            ProgressColor = "LightGray";
             IsViewAsActive = document.IsViewAsActive;
             RepeatRunWithoutViewAs = document.IsViewAsActive;
 
@@ -70,10 +67,8 @@ namespace DaxStudio.UI.ViewModels
                 _stopwatch.Start();
                 _totalRuns = CalculatedColdCacheRuns + CalculatedWarmCacheRuns;
                 if (RepeatRunWithoutViewAs) _totalRuns = _totalRuns * 2;
-                ProgressIcon = FontAwesomeIcon.Refresh;
                 ProgressSpin = true;
                 ProgressMessage = "Starting Server Timings trace...";
-                ProgressColor = "RoyalBlue";
                 _currentResultsTarget = this.Ribbon.SelectedTarget.Icon;
                 SetSelectedOutputTarget(OutputTarget.Timer);
 
@@ -207,11 +202,8 @@ namespace DaxStudio.UI.ViewModels
 
             Document.ResultsDataSet = BenchmarkDataSet;
 
-
             ProgressSpin = false;
-            ProgressIcon = FontAwesomeIcon.CheckCircle;
             ProgressMessage = "Benchmark Complete";
-            ProgressColor = "Green";
             var duration = _stopwatch.ElapsedMilliseconds;
             Options.PlayLongOperationSound((int)(duration / 1000));
             
@@ -430,13 +422,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string _progressColor = "lightgray";
-        public string ProgressColor { get => _progressColor;
-            set {
-                _progressColor = value;
-                NotifyOfPropertyChange();
-            }
-        }
 
         private OutputTarget _currentResultsTarget;
 
@@ -450,8 +435,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private FontAwesomeIcon _progressIcon;
-
         public IEventAggregator EventAggregator { get; }
         public DocumentViewModel Document { get; }
         public RibbonViewModel Ribbon { get; }
@@ -459,12 +442,6 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IResultsTarget TimerRunTarget;
 
-        public FontAwesomeIcon ProgressIcon { get => _progressIcon;
-            set {
-                _progressIcon = value;
-                NotifyOfPropertyChange(nameof(ProgressIcon));
-            } 
-        }
         private bool _progressSpin;
         private RunStyle _currentRunStyle;
 

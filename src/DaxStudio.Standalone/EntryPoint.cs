@@ -22,6 +22,8 @@ using Constants = DaxStudio.Common.Constants;
 using System.Text;
 using ControlzEx.Theming;
 using System.Collections.Generic;
+using System.Windows.Media;
+using System.Configuration;
 
 namespace DaxStudio.Standalone
 {
@@ -70,11 +72,10 @@ namespace DaxStudio.Standalone
             // Default web requests like AAD Auth to use windows credentials for proxy auth
             System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
 
-            // add the custom DAX Studio accent color theme
-            //App.AddDaxStudioAccentColor();
-
-            // TODO - do we need to customize the navigator window to fix the styling?
-            //app.AddResourceDictionary("pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml");
+            // check if the config file has been set to force software rendering
+            bool.TryParse(ConfigurationManager.AppSettings["ForceSoftwareRendering"], out var forceSoftwareRendering);
+            if (forceSoftwareRendering)
+                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
 
             // then load Caliburn Micro bootstrapper
             Log.Debug("Loading Caliburn.Micro bootstrapper");

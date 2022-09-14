@@ -209,14 +209,20 @@ namespace DaxStudio.UI.ViewModels
             _window = view as Window;
             if (_window != null)
             {
+
                 _window.Closing += WindowClosing;
                 // SetPlacement will adjust the position if it's outside of the visible boundaries
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(OnViewLoaded), $"Setting Window Placement:\n{Options.WindowPosition}");
                 _window.SetPlacement(Options.WindowPosition);
                 _notifyIcon = new NotifyIcon(_window, _eventAggregator);
                 if (_host.DebugLogging) ShowLoggingEnabledNotification();
                 _window.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnPaste));
                 //Application.Current.LoadRibbonTheme();
                 _inputBindings = new InputBindings(_window);
+            }
+            else
+            {
+                Log.Warning(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(OnViewLoaded), "_window object is null");
             }
 
             ResetInputBindings();

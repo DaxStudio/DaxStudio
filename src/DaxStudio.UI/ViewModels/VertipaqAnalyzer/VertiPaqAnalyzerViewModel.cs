@@ -17,6 +17,8 @@ using DaxStudio.UI.Utils;
 using System;
 using System.IO;
 using Microsoft.AnalysisServices.Tabular;
+using System.Windows;
+using System.Windows.Forms;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -387,6 +389,31 @@ namespace DaxStudio.UI.ViewModels
                 var msg = $"The following error occured while trying to export to a vpax file:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
+        }
+
+        public void ExportBimFile()
+        {
+            if (Database == null)
+            {
+                System.Windows.MessageBox.Show("No bim file included in metrics", "Export BIM", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var saveAsDlg = new SaveFileDialog()
+            {
+                DefaultExt = "bim",
+                Title = "Save .bim file",
+                Filter = "Model BIM file (*.bim)|*.bim"
+            };
+            if (saveAsDlg.ShowDialog() == DialogResult.OK)
+            {
+                System.Diagnostics.Debug.WriteLine($"exporting to {saveAsDlg.FileName}");
+                var opts = new SerializeOptions();
+                opts.IgnoreInferredObjects = true;
+                opts.IgnoreInferredProperties = true;
+                
+                File.WriteAllText(saveAsDlg.FileName, JsonSerializer.SerializeDatabase(Database, opts));
             }
         }
     }

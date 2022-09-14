@@ -323,6 +323,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get 
             { 
+                if (ActiveDocument == null) return "Query window not connected to a model";
                 if (!ActiveDocument.IsAdminConnection) return "Only a server administrator can run the clear cache command";
                 if (QueryRunning) return "A query is currently executing";
                 if (!ActiveDocument.IsConnected) return "Query window not connected to a model";
@@ -1282,7 +1283,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async void CaptureDiagnostics()
         {
-            var capdiagDialog = new CaptureDiagnosticsViewModel(this, _eventAggregator);
+            var capdiagDialog = new CaptureDiagnosticsViewModel(this, Options, _eventAggregator);
             _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
             await _windowManager.ShowDialogBoxAsync(capdiagDialog);
             _eventAggregator.Unsubscribe(capdiagDialog);

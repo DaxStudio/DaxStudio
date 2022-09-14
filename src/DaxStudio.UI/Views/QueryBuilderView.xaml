@@ -6,14 +6,12 @@
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
-             xmlns:res="clr-namespace:DaxStudio.UI.Resources"
-             xmlns:local="clr-namespace:DaxStudio.UI.Views"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                          xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
+                          xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+                          xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+                          xmlns:ui="http://schemas.modernwpf.com/2019"
+                          xmlns:res="clr-namespace:DaxStudio.UI.Resources"
+                          xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties" 
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="230" 
@@ -64,55 +62,7 @@
                 <Setter Property="Padding" Value="2 0 2 0"/>
             </Style>
             
-            <!--<Style x:Key="showRow" TargetType="{x:Type RowDefinition}">
-                <Style.Setters>
-                    <Setter Property="Height" Value="*"/>
-                </Style.Setters>
-                <Style.Triggers>
-                    <DataTrigger Binding="{ShowSortOptions}" Value="False">
-                        <DataTrigger.Setters>
-                            <Setter Property="Height" Value="0"/>
-                            <Setter Property="MaxHeight" Value="0"/>
-                        </DataTrigger.Setters>
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>-->
-
-            <Style x:Key="OrderByButton" TargetType="{x:Type fa:ImageAwesome}">
-                <Setter Property="Width" Value="12"/>
-                <Setter Property="Height" Value="12"/>
-                <Setter Property="Foreground" Value="Gray"/>
-                <Setter Property="Margin" Value="0,0,5,0"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="Blue"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
             
-            <Style x:Key="EditButton" TargetType="{x:Type fa:ImageAwesome}">
-                <Setter Property="Width" Value="10"/>
-                <Setter Property="Height" Value="10"/>
-                <Setter Property="Foreground" Value="Gray"/>
-                    <Setter Property="Margin" Value="0,0,5,0"/>
-                    <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="Green"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
-            <Style x:Key="RemoveButton" TargetType="{x:Type fa:ImageAwesome}">
-                <Setter Property="Width" Value="10"/>
-                <Setter Property="Height" Value="10"/>
-                    <Setter Property="Foreground" Value="Gray"/>
-                    <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="Red"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
             <Style x:Key="EmptyColumnListStyle"
                TargetType="ListBox"
                BasedOn="{StaticResource {x:Type ListBox}}">
@@ -433,7 +383,8 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid.ContextMenu>
                             <!-- cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}" -->
@@ -441,21 +392,22 @@
                                 <MenuItem Header="Duplicate Measure" cal:Message.Attach="DuplicateMeasure()" IsEnabled="{Binding Converter={StaticResource CanDuplicateMeasureConverter}}"></MenuItem>
                             </ContextMenu>
                         </Grid.ContextMenu>
-                        <Grid>
-                                    <Image  Margin="2,1,3,1" attachedProperties:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Grid.Column="0"/>
-                                    <!--<fa:ImageAwesome Icon="Star" Width="10" Margin="7,12,0,0" Foreground="Gold" Visibility="{Binding Converter={StaticResource BoolToNotVisibleConverter},Path=IsModelItem}"/>-->
-                                    <fa:ImageAwesome Icon="SortAlphaAsc" Width="10" Margin="7,12,0,0" Foreground="MediumOrchid" Visibility="{Binding Converter={StaticResource BoolToVisibility},Path=IsSortBy}"/>
-                        </Grid>
+                        
+                        <Image  Margin="2,1,3,1" attachedProperties:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Grid.Column="0"/>
+                                        
+                        
                         <TextBlock Text="{Binding Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding DaxName}" Margin="5 1 1 1" Grid.Column="1"/>
 
+                                    <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                        <Image Source="{DynamicResource sort_ascDrawingImage}" 
+                                               Visibility="{Binding Converter={StaticResource BoolToVisibility},Path=IsSortBy}"
+                                               ToolTip="This column was added as it is a SortBy for one of the other columns"/>
+                                        <Image Source="{DynamicResource measure_accentDrawingImage}"
+                                               Visibility="{Binding ObjectType, Converter={StaticResource IsMeasureToVisibilityConverter}}"/>
+                                    </StackPanel>
                         <!-- Edit Controls -->
-                        <StackPanel Orientation="Horizontal" Grid.Column="2">
-                            <!--<fa:ImageAwesome Icon="Pencil" 
-                                         Style="{StaticResource EditButton}"
-                                         Visibility="{Binding ObjectType, Converter={StaticResource IsMeasureToVisibilityConverter}}"
-                                         ToolTip="Edit Measure Expression"
-                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action EditMeasure($dataContext)]"/>-->
+                        <StackPanel Orientation="Horizontal" Grid.Column="3">
+                            
                                         <Button Padding="1" Background="{DynamicResource Theme.Brush.Alternate.Back}"
                                                 Visibility="{Binding ObjectType, Converter={StaticResource IsMeasureToVisibilityConverter}}"
                                                 ToolTip="Edit Measure Expression"
@@ -470,12 +422,7 @@
                                                 cal:Message.Attach="[Event Click] = [Action Remove($dataContext)]">
                                             <Image Source="{DynamicResource closeDrawingImage}"/>
                                         </Button>
-                                        <!--<fa:ImageAwesome Icon="TimesCircle" 
-                                         ToolTip="Remove from query"
-                                         Style="{StaticResource RemoveButton}"  
-                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Columns, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"/>-->
-                        </StackPanel>
+                                    </StackPanel>
 
                     </Grid>
                             </ctrl:ClipBorder>
@@ -539,18 +486,8 @@
                                                 cal:Message.Attach="[Event Click] = [Action Remove($dataContext)]">
                                     <Image Source="{DynamicResource closeDrawingImage}"/>
                                 </Button>
-                                <!--<fa:ImageAwesome  
-                                         Grid.Column="1"
-                                         x:Name="RemoveFilter" 
-                                         ToolTip="Remove Filter"  
-                                         HorizontalAlignment="Right"
-                                         cal:Message.Attach="[Event MouseLeftButtonUp] = [Action Remove($dataContext)]"
-                                         cal:Action.TargetWithoutContext="{Binding Path=DataContext.Filters, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                         Icon="TimesCircle"
-                                         Style="{StaticResource RemoveButton}">-->
-                        <!--</fa:ImageAwesome>-->
 
-                        <WrapPanel  Grid.ColumnSpan="2" Orientation="Horizontal" Grid.Row="1" >
+                                <WrapPanel  Grid.ColumnSpan="2" Orientation="Horizontal" Grid.Row="1" >
                             <!-- The stack panel prevents the combobox from expanding vertically when using an IN filter -->
                             <StackPanel>
                                 <ComboBox Grid.Row="2" 
@@ -606,10 +543,9 @@
                                               ToolTip="This value is a parameter, click here to turn it back to a normal text filter">
                                                 <TextBlock>@</TextBlock>
                                 </ToggleButton>
-                                <fa:ImageAwesome Icon="ExclamationTriangle" 
+                                <Image Source="{DynamicResource failDrawingImage}"
                                                  Width="14"
                                                  Grid.Column="1"
-                                                 Foreground="OrangeRed" 
                                                  Visibility="{Binding FilterValueIsValid, Converter={StaticResource BoolToNotVisibleConverter}}"
                                                  ToolTip="{Binding FilterValueValidationMessage}"/>
                             </Grid>
@@ -652,9 +588,8 @@
                                               HorizontalAlignment="Left" Height="18"
                                               Margin="3,0"
                                               ToolTip="This value is a parameter, click here to turn it back to a normal text filter">@</ToggleButton>
-                                    <fa:ImageAwesome Icon="ExclamationTriangle" 
+                                    <Image Source="{DynamicResource failDrawingImage}"
                                                  Width="14"
-                                                 Foreground="OrangeRed" 
                                                      Grid.Column="1"
                                                  Visibility="{Binding FilterValue2IsValid, Converter={StaticResource BoolToNotVisibleConverter}}"
                                                  ToolTip="{Binding FilterValue2ValidationMessage}"/>
@@ -735,79 +670,7 @@
 
         <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.ColumnSpan="3"
                     HorizontalAlignment="Right">
-            <!--<ToggleButton x:Name="AutoGenerate" VerticalAlignment="Top" Margin="5" IsEnabled="{Binding CanAutoGenerate}" >
-                <ToggleButton.ToolTip>
-                    <Fluent:ScreenTip Title="Auto Generate Query"
-                                      Text="Updates the generated query in the editor window in real time"
-                                      DisableReason="You must be connected to a data model to use the Query Builder"/>
-                </ToggleButton.ToolTip>
-                <fa:ImageAwesome Icon="Refresh"  Width="20" Height="20" />
-                <ToggleButton.Style>
-                    <Style TargetType="{x:Type ToggleButton}">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                    <Border 
-                                        HorizontalAlignment="Center" 
-                                        VerticalAlignment="Center" 
-                                        x:Name="border" Padding="5,5,5,5" CornerRadius="3,3,3,3" 
-                                        Background="Transparent" 
-                                        BorderBrush="#66000000" BorderThickness="1,1,1,1" SnapsToDevicePixels="True">
-                                        <fa:ImageAwesome x:Name="RefreshIcon" Icon="Refresh"  Width="20" Height="20" Foreground="Black" RenderTransformOrigin="0.5,0.5">
-                                            <fa:ImageAwesome.RenderTransform>
-                                                <RotateTransform Angle="0"/>
-                                            </fa:ImageAwesome.RenderTransform>
-                                        </fa:ImageAwesome>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="fa:ImageAwesome.Foreground" TargetName="RefreshIcon" Value="Gray"/>
-                                            <Setter Property="Background" TargetName="border" Value="WhiteSmoke"/>
-                                        </Trigger>
-                                        <Trigger Property="IsChecked" Value="true">
-                                            <Setter Property="fa:ImageAwesome.Foreground" TargetName="RefreshIcon" Value="Green"/>
-                                            <Setter Property="Background" TargetName="border" Value="AliceBlue"/>
-                                            <Setter Property="BorderBrush" TargetName="border" Value="Blue"/>
-                                        </Trigger>
-                                       
-                                            <Trigger Property="IsChecked"
-                                                    Value="True">
-                                            <Trigger.EnterActions>
-                                                <BeginStoryboard>
-                                                    <Storyboard>
-                                                        <DoubleAnimation Storyboard.TargetName="RefreshIcon"
-                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                            To="180"
-                                                            Duration="0:0:0.5">
-                                                            <DoubleAnimation.EasingFunction>
-                                                                <PowerEase />
-                                                            </DoubleAnimation.EasingFunction>
-                                                        </DoubleAnimation>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </Trigger.EnterActions>
-                                            <Trigger.ExitActions>
-                                                <BeginStoryboard>
-                                                    <Storyboard>
-                                                        <DoubleAnimation Storyboard.TargetName="RefreshIcon"
-                                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                            To="0"
-                                                            Duration="0:0:0.3">
-                                                            
-                                                        </DoubleAnimation>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </Trigger.ExitActions>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ToggleButton.Style>
- 
-            </ToggleButton>-->
-
+            
             <ui:ToggleSwitch x:Name="AutoGenerate" OnContent="Auto Update" OffContent="Auto Update" Width="120" />
 
             <Button x:Name="SendTextToEditor" Margin="8 8 0 8 " Padding="4" Style="{StaticResource AccentButtonStyle}" Foreground="{DynamicResource Theme.Brush.Content.Back}">
@@ -817,30 +680,11 @@
                                       DisableReason="You must be connected to a data model to use the Query Builder"/>
                 </Button.ToolTip>
                 <StackPanel Orientation="Vertical">
-                    <!--<fa:FontAwesome Icon="Edit" 
-                                    FontSize="32"
-                                    Foreground="{StaticResource DaxStudioBrush}"
-                                    Margin="5,2,5,0" />-->
                     <TextBlock Text="Update"/>
                 </StackPanel>
 
             </Button>
-            <!--<Button x:Name="RunQuery" Margin="5"  Padding="5,3">
-                <Button.ToolTip>
-                    <Fluent:ScreenTip Title="Run Query"
-                                      Text="Executes a query based on the current content of the Query Builder"
-                                      DisableReason="You must be connected to a data model to use the Query Builder"/>
-                </Button.ToolTip>
-                <StackPanel Orientation="Vertical">
-                    --><!--<Image Source="{Binding Path=RunStyle.Icon,Converter={StaticResource RunIconsLarger}}"/>-->
-                    <!--<fa:FontAwesome Icon="Play" 
-                                    FontSize="32" 
-                                    Foreground="{StaticResource RunGreenBrush}"
-                                    Margin="5,2,5,0" />--><!--
-                    <TextBlock Text="Run Query"/>
-                </StackPanel>
-            </Button>-->
-
+            
             <Button x:Name="Clear" Margin="8" Padding="4">Reset</Button>
 
         </StackPanel>

@@ -6,14 +6,10 @@
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
-    xmlns:ae="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
-    xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-    xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:dax="clr-namespace:DAXEditorControl;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-    xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
@@ -585,7 +581,6 @@
                                                     >
                                                 <Image Source="{DynamicResource close_infobarDrawingImage}"/>
                                             </Button>
-                                            <!--<fa:FontAwesome Icon="Close" Grid.Column="2" VerticalAlignment="Center" Margin="5 0"/>-->
                                         </Grid>
 
                                     </Border>

@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
@@ -261,19 +260,17 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Updated Metadata" Margin="5"/>
-                <Button Grid.Column="1" Margin="2" x:Name="RefreshMetadata">
+                <TextBlock Text="Updated Metadata" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"/>
+                <Button Grid.Column="1" Margin="4" x:Name="RefreshMetadata" Height="24" Background="Transparent" BorderBrush="{DynamicResource Theme.Brush.InfoBar.Fore}" >
                     <StackPanel Orientation="Horizontal">
-                        <fa:FontAwesome Icon="Refresh" VerticalAlignment="Center" Margin="2" Foreground="Green"/>
-                        <TextBlock>Refresh</TextBlock>
+                        <Image Source="{DynamicResource refresh_toolbarDrawingImage}" VerticalAlignment="Center" Width="16" Margin="0 0 8 0"/>
+                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}">Refresh</TextBlock>
                     </StackPanel>
                 </Button>
 
                 <Button Grid.Column="2" Style="{StaticResource ImageButtonStyle}" Margin="2"
                         cal:Message.Attach="[Event Click] = [Action DismissRefreshMetadataPrompt()]">
-                    <fa:ImageAwesome Icon="Close" Width="10" Margin="2" VerticalAlignment="Center" 
-                                ToolTip="Dismiss Update"
-                                />
+                    <Image Source="{DynamicResource closeDrawingImage}" Width="16" VerticalAlignment="Center" ToolTip="Dismiss Update"/>
                 </Button>
             </Grid>
 
@@ -964,21 +961,7 @@
                                     
                                     Height="60"
                                     Width="60" />
-                                <!--
-                                <ui:ProgressRing
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
-                                    IsActive="{Binding IsBusy}"
-                                    Height="60"
-                                    Width="60" />
-                                -->
-                                
-                                <!--<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Label Style="{StaticResource LabelSpinnerStyle}" Height="30" VerticalContentAlignment="Center"  FontSize="18" FontWeight="Bold" Foreground="#D0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <TextBlock x:Name="BusyMessage"/>
-                                    </Label>
-                                </StackPanel>-->
+
                             </Grid>
                         </Border>
                     </Grid>

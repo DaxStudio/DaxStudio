@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:res="clr-namespace:DaxStudio.UI.Resources"
@@ -76,9 +75,8 @@
 
                 <StackPanel Grid.Row="5" Grid.ColumnSpan="4" Orientation="Vertical" Margin="0 8 0 0">
                     <CheckBox  x:Name="RepeatRunWithoutViewAs" Content='Do a second pass without "View As" (RLS) enabled' IsEnabled="{Binding IsViewAsActive}"  Margin="-2 10 0 0" />
-                    <Label  Content="(This option is only enabled if you start the benchmark while using 'View As')" Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="26 -5 0 10" Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
-                    <!--<fa:FontAwesome Icon="InfoCircle" Foreground="{DynamicResource DaxStudioBrush}" FontSize="16" VerticalAlignment="Center" Margin="10 0" ToolTip="This option is only enabled if you start the benchmark while using 'View As'"/>-->
-                </StackPanel>
+            <Label  Content="(This option is only enabled if you start the benchmark while using 'View As')" Foreground="{DynamicResource Theme.Brush.Muted.Fore}" Margin="26 -5 0 10" Visibility="{Binding IsViewAsActive, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
+        </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="0 16 0 0">
                     <Button x:Name="Run" IsDefault="True"  Content="Run" Margin="3" Padding="3" MinWidth="55" Style="{DynamicResource AccentButtonStyle}">
@@ -94,11 +92,10 @@
 
                 <StackPanel Grid.Row="7" Grid.ColumnSpan="3" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" Margin="0 8">
-                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
                                      Visibility="{Binding ProgressSpin, Converter={StaticResource BoolToVisibilityConverter}}"
                                      Margin="0 0 8 0"/>
-                        <!--<fa:ImageAwesome Icon="{Binding ProgressIcon}" Spin="{Binding ProgressSpin}" Width="16" Height="16" Foreground="{Binding ProgressColor}" Margin="2" />-->
-                        <TextBlock x:Name="ProgressMessage" Text="Ready..." 
+                <TextBlock x:Name="ProgressMessage" Text="Ready..." 
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                    Margin="2"></TextBlock>
                         <!--<ContentControl Style="{StaticResource ProgressDots}" IsEnabled="True"/>-->
