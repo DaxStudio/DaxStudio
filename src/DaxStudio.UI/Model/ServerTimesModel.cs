@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Model
 {
     public class ServerTimesModel
     {
-        public int FileFormatVersion { get { return 3; } }
+        public int FileFormatVersion { get { return 4; } }
         public string ActivityID { get; set; }
         public long StorageEngineDuration {get;set;}
         public long StorageEngineNetParallelDuration { get; set; }
@@ -28,6 +28,6 @@ namespace DaxStudio.UI.Model
         public DateTime QueryStartDateTime { get; set; }
         public string Parameters { get; set; }
         public string CommandText { get; set; }
-        public int WaterfallTotalDuration { get; set; }
+        public long WaterfallTotalDuration { get; set; }
     }
 }

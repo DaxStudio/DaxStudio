@@ -260,7 +260,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Updated Metadata" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"/>
+                <Label Content="Updated Metadata" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"/>
                 <Button Grid.Column="1" Margin="4" x:Name="RefreshMetadata" Height="24" Background="Transparent" BorderBrush="{DynamicResource Theme.Brush.InfoBar.Fore}" >
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource refresh_toolbarDrawingImage}" VerticalAlignment="Center" Width="16" Margin="0 0 8 0"/>

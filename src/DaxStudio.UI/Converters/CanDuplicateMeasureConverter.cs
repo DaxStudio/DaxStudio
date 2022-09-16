@@ -11,7 +11,14 @@ namespace DaxStudio.UI.Converters
         {
             if (value is QueryBuilderColumn column)
             {
-                return !string.IsNullOrEmpty(column.MeasureExpression);
+                try
+                {
+                    return !string.IsNullOrEmpty(column.MeasureExpression);
+                }
+                catch
+                {
+                    return false;   
+                }
             }
 
             return false;
@@ -19,7 +26,7 @@ namespace DaxStudio.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return value;
         }
     }
 }

@@ -24,6 +24,7 @@ using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
+using System.Security.Cryptography;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -90,8 +91,8 @@ namespace DaxStudio.UI.ViewModels
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
         public bool InternalBatchEvent { get; set; }
-        public DateTime StartTime { get; private set; }
-        public DateTime EndTime { get; private set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for the following functions:
@@ -588,9 +589,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateWaterfallTotalDuration(DaxStudioTraceEventArgs traceEvent)
         {
-            var maxDuration = (traceEvent.StartTime.AddMilliseconds(traceEvent.Duration == 0 ? 1 : traceEvent.Duration) - QueryStartDateTime).Milliseconds;
+            var maxDuration = (traceEvent.StartTime.AddMilliseconds(traceEvent.Duration == 0 ? 1 : traceEvent.Duration) - QueryStartDateTime).TotalMilliseconds;
             if (maxDuration > WaterfallTotalDuration)
-                WaterfallTotalDuration = maxDuration;
+                WaterfallTotalDuration = Convert.ToInt64( maxDuration);
         }
 
         private static void UpdateWaterfallDurations(IObservableCollection<TraceStorageEngineEvent> storageEngineEvents, DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
@@ -934,8 +935,12 @@ namespace DaxStudio.UI.ViewModels
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
-            // TODO update waterfall total Duration if this is an older file format
-            //if (m.FileFormatVersion <= 2) 
+            // update waterfall total Duration if this is an older file format
+            if (m.FileFormatVersion <= 3) {
+                StorageEngineEvents.Apply(se => UpdateWaterfallTotalDuration(new DaxStudioTraceEventArgs( se.Class.ToString(), se.Subclass.ToString(), se.Duration??0, se.CpuTime??0, se.Query,String.Empty, se.StartTime)));
+                UpdateWaterfallDurations(StorageEngineEvents, QueryStartDateTime, QueryEndDateTime,TotalDuration);
+            }
+
         }
 
         #endregion
@@ -1064,7 +1069,7 @@ namespace DaxStudio.UI.ViewModels
         public DateTime StartDatetime { get => QueryStartDateTime; }
         public string CommandText { get; set; }
         public string Parameters { get; set; }
-        public int WaterfallTotalDuration { get; private set; }
+        public long WaterfallTotalDuration { get; private set; }
 
         public async void ShowTraceDiagnostics()
         {

@@ -19,6 +19,7 @@ using System.IO;
 using Microsoft.AnalysisServices.Tabular;
 using System.Windows;
 using System.Windows.Forms;
+using ADOTabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -378,6 +379,14 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                if (ViewModel == null || ViewModel?.Model == null)
+                {
+                    var msg = "There is no Metrics Data to export";
+                    Log.Error(Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
+                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    return;
+                }
+
                 await Task.Run(() =>
                 {
                     Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
