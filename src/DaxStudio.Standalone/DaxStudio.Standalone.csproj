@@ -95,9 +95,9 @@
   <PropertyGroup>
     <StartupObject>DaxStudio.Standalone.EntryPoint</StartupObject>
   </PropertyGroup>
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <ApplicationIcon>DaxStudio.ico</ApplicationIcon>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\bin\Debug\</OutputPath>
@@ -244,6 +244,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DaxStudio.res" />
+    <None Include="Resources\vpax_file_icon.ico" />
+    <None Include="Resources\dax_file_icon.ico" />
     <EmbeddedResource Include="Resources\BuildDate.txt" />
     <None Include="Resources\Icon1.ico" />
     <None Include="vpax-file-icon.ico">
@@ -332,6 +335,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>FD452A79B4FA48AD217EE83AE4BF60A5461A5885</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Win32Resource>DaxStudio.res</Win32Resource>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\Web\Microsoft.Web.Publishing.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\Web\Microsoft.Web.Publishing.targets" Condition="false" />
