@@ -609,7 +609,6 @@
                                                    dd:DragDrop.DropHandler="{Binding }"
                                                    dd:DragDrop.DragHandler="{Binding}"
                                                    WordWrap="{Binding WordWrap}"
-                                                   
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
                                                    cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]; [Event ContextMenuOpening] = [EditorContextMenuOpening()]; [Event MouseHover] = [OnEditorHover($source, $eventArgs)]; [Event GotFocus] = [Action GotFocus]"

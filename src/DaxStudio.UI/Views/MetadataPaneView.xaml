@@ -478,8 +478,9 @@
                 Text="{Binding Path=CurrentCriteria, UpdateSourceTrigger=PropertyChanged, Delay=300}"
                 VerticalAlignment="Center"
                 Margin="0 4" Style="{DynamicResource SearchBoxStyle}"
-                cal:Message.Attach="[Gesture Key.Escape] = [ClearCriteria()];[Gesture Key.Down]=[SetFocusToMetadata()]"
+                
                 >
+                <!-- cal:Message.Attach="[Gesture Key.Escape] = [ClearCriteria()];[Gesture Key.Down]=[SetFocusToMetadata()]" -->
                 <i:Interaction.Triggers>
                     <trig:InputBindingTrigger>
                         <trig:InputBindingTrigger.InputBinding>

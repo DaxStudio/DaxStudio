@@ -200,8 +200,23 @@
             </Grid.ColumnDefinitions>
             <TextBox Name="SearchCriteria" 
                      Style="{DynamicResource SearchBoxStyle}"
-                     Margin="0 0 0 4">
-            <i:Interaction.Triggers>
+                     Margin="0 0 0 4"
+                     cal:Message.Attach="[Gesture Key.Escape] = [ClearSearchCriteria()]">
+                <i:Interaction.Triggers>
+                    <trig:InputBindingTrigger>
+                        <trig:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Escape"/>
+                        </trig:InputBindingTrigger.InputBinding>
+
+                        <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+
+                    </trig:InputBindingTrigger>
+                </i:Interaction.Triggers>
+                
+
+                <!--<i:Interaction.Triggers>
+                             
+                
                 <trig:InputBindingTrigger>
                     <trig:InputBindingTrigger.InputBinding>
                         <KeyBinding Key="Escape"/>
@@ -210,7 +225,7 @@
                             <cal:ActionMessage MethodName="ClearSearchCriteria"/>
                         </cal:Action.Target>
                     </trig:InputBindingTrigger>
-            </i:Interaction.Triggers>
+            </i:Interaction.Triggers>-->
         </TextBox>
         </Grid>
         
