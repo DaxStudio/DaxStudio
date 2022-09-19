@@ -468,9 +468,9 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ActivateDocumentEvent message, CancellationToken cancellationToken)
         {
             DocumentViewModel doc = null;
-            Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
             try
             {
+                Log.Debug("{Class} {Event} {Document}", "RibbonViewModel", "Handle:ActivateDocumentEvent", message.Document.DisplayName);
                 _isDocumentActivating = true;
                 ActiveDocument = message.Document;
                 doc = ActiveDocument;
@@ -757,39 +757,76 @@ namespace DaxStudio.UI.ViewModels
         }
         public async Task HandleAsync(ApplicationActivatedEvent message, CancellationToken cancellationToken)
         {
-            Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
-            if (ActiveDocument != null)
+            try
             {
-                await ActiveDocument.CheckForMetadataUpdatesAsync();
-                RefreshConnectionDetails(ActiveDocument.Connection);
+                Log.Debug("{Class} {Event} {Message}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "Start");
+
+                if (ActiveDocument != null)
+                {
+                    await ActiveDocument?.CheckForMetadataUpdatesAsync();
+                    RefreshConnectionDetails(ActiveDocument.Connection);
+                }
             }
-            
-            Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<ApplicationActivatedEvent>", "Error Activating Application");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Activating Application:\n{ex.Message}"));
+            }
+            finally
+            {
+                Log.Debug("{Class} {Event} {Messsage}", "RibbonViewModel", "Handle:ApplicationActivatedEvent", "End");
+            }
             
         }
 
         
         public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
         {
-            if (ActiveDocument != null)
-                _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
-            _traceStatus = message.TraceStatus;
-            RefreshRibbonButtonEnabledStatus();
+            try
+            {
+                if (ActiveDocument != null)
+                    _traceMessage = new StatusBarMessage(ActiveDocument, "Waiting for trace to update");
+                _traceStatus = message.TraceStatus;
+                RefreshRibbonButtonEnabledStatus();
+            }
+            catch(Exception ex)
+            {
+                var msg = $"Error updating trace status\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceChangingEvent>" , msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
             return Task.CompletedTask;
         }
 
         public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
-            if(_traceMessage != null) _traceMessage.Dispose();
-            _traceStatus = message.TraceStatus;
-            RefreshRibbonButtonEnabledStatus();
+            try
+            {
+                if (_traceMessage != null) _traceMessage.Dispose();
+                _traceStatus = message.TraceStatus;
+                RefreshRibbonButtonEnabledStatus();
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error updating trace status:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceChangedEvent>", msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(DocumentConnectionUpdateEvent message, CancellationToken cancellationToken)
         {
-            RefreshConnectionDetails(message.Connection);
-            return Task.CompletedTask;
+            try
+            {
+                RefreshConnectionDetails(message.Connection);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<DocumentConnectionUpdateEvent>", "Error updating the current connection");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error updating the current connection\n{ex.Message}"));
+            }
+           
         }
         
         public bool CanCut { get; set; }
@@ -856,11 +893,20 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(TraceWatcherToggleEvent message, CancellationToken cancellationToken)
         {
-            if (message.TraceWatcher is ServerTimesViewModel)
+            try
             {
-                NotifyOfPropertyChange(() => ServerTimingsChecked);
+                if (message.TraceWatcher is ServerTimesViewModel)
+                {
+                    NotifyOfPropertyChange(() => ServerTimingsChecked);
+                }
+                RefreshRibbonButtonEnabledStatus();
             }
-            RefreshRibbonButtonEnabledStatus();
+            catch (Exception ex)
+            {
+                var msg = $"Error enabling trace:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceWatcherToggleEvent>", msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
             return Task.CompletedTask;
         }
 
@@ -896,14 +942,32 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(FileOpenedEvent message, CancellationToken cancellationToken)
         {
-            AddToRecentFiles(message.FileName);
-            RefreshRibbonButtonEnabledStatus();
+            try
+            {
+                AddToRecentFiles(message.FileName);
+                RefreshRibbonButtonEnabledStatus();
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error opening file\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<FileOpenedEvent>", msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
             return Task.CompletedTask;
         }
 
         public Task HandleAsync(FileSavedEvent message, CancellationToken cancellationToken)
         {
-            AddToRecentFiles(message.FileName);
+            try
+            {
+                AddToRecentFiles(message.FileName);
+            }
+            catch(Exception ex)
+            {
+                var msg = $"Error saving file:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<FileSavedEvent>", msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
             return Task.CompletedTask;
         }
 
