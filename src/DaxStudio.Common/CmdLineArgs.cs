@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
+using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.Common
 {
@@ -174,6 +178,65 @@ namespace DaxStudio.Common
                     _app.Properties[AppProperties.NoPreview] = value;
                 _app.Properties.Add(AppProperties.NoPreview, value);
 
+            }
+        }
+
+        public string Query
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.Query))
+                    return (string)_app.Properties[AppProperties.Query];
+                return string.Empty;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.Query))
+                    _app.Properties[AppProperties.Query] = value;
+                _app.Properties.Add(AppProperties.Query, value);
+
+            }
+        }
+
+        public bool FromUri
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.FromUri))
+                    return (bool)_app.Properties[AppProperties.FromUri];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.FromUri))
+                    _app.Properties[AppProperties.FromUri] = value;
+                _app.Properties.Add(AppProperties.FromUri, value);
+            }
+        }
+
+        public static void ParseUri(ref Application app, string input)
+        {
+            var uri = new Uri(input);
+            var args = app.Args();
+            args.FromUri = true;
+            Type type = args.GetType();
+            NameValueCollection queryParams = HttpUtility.ParseQueryString(uri.Query);
+            var keys = app.Args().AsDictionary().Keys;
+            // map the URI query parameters to commandline parameters
+            foreach (var key in keys)
+            {
+                var value = queryParams[key];
+                if (value != null)
+                {
+                    PropertyInfo prop = type.GetProperty(key);
+                    var val = Convert.ChangeType(value, prop.PropertyType);
+                    if (string.Equals(key, "Query", StringComparison.OrdinalIgnoreCase))
+                    {
+                        val = ((string)val).Base64Decode();
+                    }
+                    prop.SetValue(args, val, null);
+
+                }
             }
         }
     }

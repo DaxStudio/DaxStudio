@@ -1,4 +1,5 @@
-﻿using DaxStudio.Interfaces;
+﻿using DaxStudio.Common.Extensions;
+using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.UI.Controls;
 using DaxStudio.UI.Extensions;

@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Extensions;
+﻿using DaxStudio.Common.Extensions;
+using DaxStudio.UI.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

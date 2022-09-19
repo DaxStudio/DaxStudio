@@ -8,6 +8,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Data;
+using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.UI.Model
 {

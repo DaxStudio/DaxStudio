@@ -135,9 +135,11 @@ namespace DAXEditorControl
 
             this.DocumentChanged += DaxEditor_DocumentChanged;
             DataObject.AddPastingHandler(this, OnDataObjectPasting);
-
+            DataObject.AddCopyingHandler(this, OnDataObjectCopying);
             RegiserKeyBindings();
         }
+
+        public EventHandler<DataObjectCopyingEventArgs> OnCopying { get; set; }
 
         private void RegiserKeyBindings()
         {
@@ -155,6 +157,11 @@ namespace DAXEditorControl
         private void OnDataObjectPasting(object sender, DataObjectPastingEventArgs e)
         {
             OnPasting?.Invoke(sender, e);
+        }
+
+        private void OnDataObjectCopying(object sender, DataObjectCopyingEventArgs e)
+        {
+            OnCopying?.Invoke(sender, e);
         }
 
         internal void UpdateSyntaxRule(string colourName,  IEnumerable<string> wordList)

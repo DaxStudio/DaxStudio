@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using DaxStudio.Common.Extensions;
 using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.Converters

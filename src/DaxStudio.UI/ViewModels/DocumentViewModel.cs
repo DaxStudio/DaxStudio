@@ -293,6 +293,7 @@ namespace DaxStudio.UI.ViewModels
                     _editor.PreviewDragEnter += OnDragEnterPreview;
                     _editor.KeyUp += OnKeyUp;
                     _editor.OnPasting += OnPasting;
+                    _editor.OnCopying += OnCopying;
                 }
                 switch (State)
                 {
@@ -311,6 +312,9 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                // set the document content to the query parameter
+                EditorText = Application.Current.Args().Query;
+                Application.Current.Args().Query = String.Empty;
             }
             catch (Exception ex)
             {
@@ -322,6 +326,20 @@ namespace DaxStudio.UI.ViewModels
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Finished");
             }
         }
+
+        protected override void OnViewReady(object view)
+        {
+            base.OnViewReady(view);
+            EditorText = Application.Current.Args().Query;
+        }
+
+        private void OnCopying(object sender, DataObjectCopyingEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Copying");
+            if (!Options.IncludeHyperlinkOnCopy) return;
+            ClipboardManager.AddHyperlinkHeaderToQuery(e.DataObject, Connection);
+        }
+
 
         public async Task CopyConnectionAsync(DocumentViewModel sourceDocument)
         {
@@ -1287,19 +1305,34 @@ namespace DaxStudio.UI.ViewModels
 
         public string EditorText
         {
+            set
+            {
+                Document.Text = value;
+                //if (!Dispatcher.CurrentDispatcher.CheckAccess())
+                //{
+                //    Dispatcher.CurrentDispatcher.Invoke(() =>
+                //    {
+                //        SetQueryTextToEditor(value);
+
+                //    });
+                //}
+                //else
+                //    SetQueryTextToEditor(value);
+            }
             get
             {
-                string qry = string.Empty;
-                if (!Dispatcher.CurrentDispatcher.CheckAccess())
-                {
-                    Dispatcher.CurrentDispatcher.Invoke(() =>
-                    { qry = GetQueryTextFromEditor();
+                //string qry = string.Empty;
+                //if (!Dispatcher.CurrentDispatcher.CheckAccess())
+                //{
+                //    Dispatcher.CurrentDispatcher.Invoke(() =>
+                //    { qry = GetQueryTextFromEditor();
 
-                        return qry;
-                    });
-                } else
-                    qry = GetQueryTextFromEditor();
+                //        return qry;
+                //    });
+                //} else
+                //    qry = GetQueryTextFromEditor();
 
+                var qry = Document.Text;
 
                 // swap delimiters if not using default style
                 if (Options.DefaultSeparator != DelimiterType.Comma)
@@ -1411,6 +1444,19 @@ namespace DaxStudio.UI.ViewModels
             return txt;
         }
 
+        private void SetQueryTextToEditor(string txt)
+        {
+            var editor = GetEditor();
+            if (editor.Dispatcher.CheckAccess())
+            {
+                editor.Text = txt;
+            }
+            else
+            {
+                editor.Dispatcher.Invoke(() => { editor.Text = txt; });
+            }
+        }
+
         private void SelectedTextToUpperInternal(DAXEditorControl.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
@@ -1497,6 +1543,7 @@ namespace DaxStudio.UI.ViewModels
             }
             return queryText;
         }
+
         #endregion
 
         #region Execute Query
@@ -4465,8 +4512,17 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ReconnectEvent message, CancellationToken cancellationToken)
         {
-            Spid = Connection?.SPID??-1;
-            return Task.CompletedTask;
+            try
+            {
+                Spid = Connection?.SPID ?? -1;
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<ReconnecteEvent>", ex.Message);
+                Spid = -1;
+                return Task.CompletedTask;
+            }
         }
 
 

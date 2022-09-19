@@ -24,6 +24,10 @@ using ControlzEx.Theming;
 using System.Collections.Generic;
 using System.Windows.Media;
 using System.Configuration;
+using System.Web;
+using System.Collections.Specialized;
+using Windows.Foundation;
+using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.Standalone
 {
@@ -431,6 +435,11 @@ namespace DaxStudio.Standalone
             p.Setup<bool>("nopreview")
                 .Callback(nopreview => app.Args().NoPreview = nopreview)
                 .WithDescription("Hides version information");
+
+            p.Setup<string>('u', "uri")
+                .Callback(uri => CmdLineArgs.ParseUri(ref app, uri))
+                .WithDescription("used by the daxstudio:// uri handler");
+                
 
             p.SetupHelp("?", "help")
                 .Callback(text => {

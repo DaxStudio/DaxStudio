@@ -2212,6 +2212,24 @@ namespace DaxStudio.UI.ViewModels
             set => _gettingStartedShow = value;
         }
 
+        // temporarily stubbed out until the implementation is finalized
+        private bool _includeHyperlinkOnCopy;
+        public bool IncludeHyperlinkOnCopy { get {
+#if DEBUG
+                return true;
+#else
+                return _includeHyperlinkOnCopy; 
+#endif
+            }
+            set { 
+                _includeHyperlinkOnCopy = value;
+                SettingProvider.SetValue(nameof(IncludeHyperlinkOnCopy), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+
+            } 
+        } 
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
         private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;

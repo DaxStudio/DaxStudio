@@ -278,6 +278,8 @@ namespace DaxStudio.UI.ViewModels
 
                 new System.Action(CleanActiveDocument).BeginOnUIThread();
 
+                
+
                 if (sourceDocument == null
                     || sourceDocument.Connection.IsConnected == false)
                 {
@@ -288,6 +290,8 @@ namespace DaxStudio.UI.ViewModels
                     //await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
                     await ActiveDocument.CopyConnectionAsync(sourceDocument);
                 }
+
+                
             }
             catch (Exception ex)
             {
@@ -321,6 +325,7 @@ namespace DaxStudio.UI.ViewModels
                                                                         server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)
                                                                         ));
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+              
             }
             else
                 await ChangeConnectionAsync();
