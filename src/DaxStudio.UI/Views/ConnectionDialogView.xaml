@@ -305,24 +305,27 @@
                                 >-->
                         <Image Source="{DynamicResource refresh_toolbarDrawingImage}" Width="16" Height="16" ap:ImageSpinner.Spin="True" Grid.Column="1"
                                Margin="0 0 4 0"
-                                >
-                            <!-- Visibility="{Binding IsLoadingDatabases, Converter={StaticResource BoolToVisibilityConverter}}"-->
+                               Visibility="{Binding IsLoadingDatabases, Converter={StaticResource BoolToVisibilityConverter}}" >
+                            <!-- -->
                     </Image>
 
                 </Grid>
 
                 <!--SelectedItem="{Binding Path=InitialCatalog}"-->
                 <ComboBox Height="23" Grid.Column="1" Grid.Row="0" x:Name="cboCatalogs" 
-                            HorizontalAlignment="Right"
+                            HorizontalAlignment="Stretch"
                             IsEditable="True"      
                             Text="{Binding InitialCatalog}"
+                            Margin="0"
 							ItemsSource="{Binding Path=Databases}"
-                            IsEnabled="{Binding ServerModeSelected}" Width="655">
+                            IsEnabled="{Binding ServerModeSelected}"
+                            cal:Message.Attach="[Event DropDownOpened]=[RefreshDatabases()]"
+                          >
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="DropDownOpened">
-                            <cal:Action.Target>
+                            <cal:Action.TargetWithoutContext>
                                 <cal:ActionMessage MethodName="RefreshDatabases"/>
-                            </cal:Action.Target>
+                            </cal:Action.TargetWithoutContext>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </ComboBox>
