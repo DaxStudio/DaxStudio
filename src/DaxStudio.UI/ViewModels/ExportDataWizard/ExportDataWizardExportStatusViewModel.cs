@@ -54,6 +54,7 @@ namespace DaxStudio.UI.ViewModels
         protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
             await base.OnActivateAsync(cancellationToken);
+            NotifyOfPropertyChange(nameof(CanRequestCancel));
             Wizard.EventAggregator.SubscribeOnPublishedThread(this);
         }
         
