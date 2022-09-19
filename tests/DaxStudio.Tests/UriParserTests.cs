@@ -10,8 +10,16 @@ namespace DaxStudio.Tests
     [TestClass]
     public class UriParserTests
     {
+        public Application mockApp;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            mockApp = Application.Current??(new Mock<Application>()).Object;
+        }
+
         [TestMethod]
-        public void TestMethod1()
+        public void ParamParsingTests()
         {
             var input = "daxstudio:?server=localhost:1234&Database=adventure%20Works%202020";
             var uri = new Uri(input);
@@ -25,7 +33,7 @@ namespace DaxStudio.Tests
         public void CmdLineArgMappingTest()
         {
             var input = "daxstudio:?server=localhost:1234&Database=adventure%20Works%202020";
-            var mockApp = (new Mock<Application>()).Object;
+            mockApp.Properties.Clear();
             var args = new CmdLineArgs(mockApp);
             CmdLineArgs.ParseUri(ref mockApp, input);
 
@@ -37,7 +45,7 @@ namespace DaxStudio.Tests
         public void QueryParameterTest()
         {
             var input = "daxstudio:?server=powerbi%3a%2f%2fapi.powerbi.com%2fv1.0%2fmyorg%2fdgosbell%2520demo&database=Adv+Wrks+Azure+DQ&query=RVZBTFVBVEUgRGltUmVzZWxsZXI=";
-            var mockApp = (new Mock<Application>()).Object;
+            mockApp.Properties.Clear();
             var args = new CmdLineArgs(mockApp);
             CmdLineArgs.ParseUri(ref mockApp, input);
 
