@@ -28,7 +28,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.PortNumber))
                     _app.Properties[AppProperties.PortNumber] = value;
-                _app.Properties.Add(AppProperties.PortNumber, value);
+                else
+                    _app.Properties.Add(AppProperties.PortNumber, value);
             }
         }
 
@@ -44,7 +45,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.FileName))
                     _app.Properties[AppProperties.FileName] = value;
-                _app.Properties.Add(AppProperties.FileName, value);
+                else
+                    _app.Properties.Add(AppProperties.FileName, value);
             }
         }
 
@@ -60,7 +62,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.LoggingEnabledByCommandLine))
                     _app.Properties[AppProperties.LoggingEnabledByCommandLine] = value;
-                _app.Properties.Add(AppProperties.LoggingEnabledByCommandLine, value);
+                else
+                    _app.Properties.Add(AppProperties.LoggingEnabledByCommandLine, value);
             }
         }
 
@@ -76,7 +79,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.LoggingEnabledByHotKey))
                     _app.Properties[AppProperties.LoggingEnabledByHotKey] = value;
-                _app.Properties.Add(AppProperties.LoggingEnabledByHotKey, value);
+                else
+                    _app.Properties.Add(AppProperties.LoggingEnabledByHotKey, value);
             }
         }
 
@@ -96,7 +100,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.CrashTest))
                     _app.Properties[AppProperties.CrashTest] = value;
-                _app.Properties.Add(AppProperties.CrashTest, value);
+                else
+                    _app.Properties.Add(AppProperties.CrashTest, value);
             }
         }
 
@@ -112,7 +117,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Server))
                     _app.Properties[AppProperties.Server] = value;
-                _app.Properties.Add(AppProperties.Server, value);
+                else
+                    _app.Properties.Add(AppProperties.Server, value);
             }
         }
         public string Database
@@ -127,7 +133,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Database))
                     _app.Properties[AppProperties.Database] = value;
-                _app.Properties.Add(AppProperties.Database, value);
+                else
+                    _app.Properties.Add(AppProperties.Database, value);
             }
         }
 
@@ -144,7 +151,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.ShowHelp))
                     _app.Properties[AppProperties.ShowHelp] = value;
-                _app.Properties.Add(AppProperties.ShowHelp, value);
+                else
+                    _app.Properties.Add(AppProperties.ShowHelp, value);
             }
         }
 
@@ -160,7 +168,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Reset))
                     _app.Properties[AppProperties.Reset] = value;
-                _app.Properties.Add(AppProperties.Reset, value);
+                else
+                    _app.Properties.Add(AppProperties.Reset, value);
             }
         }
 
@@ -176,7 +185,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.NoPreview))
                     _app.Properties[AppProperties.NoPreview] = value;
-                _app.Properties.Add(AppProperties.NoPreview, value);
+                else
+                    _app.Properties.Add(AppProperties.NoPreview, value);
 
             }
         }
@@ -193,7 +203,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Query))
                     _app.Properties[AppProperties.Query] = value;
-                _app.Properties.Add(AppProperties.Query, value);
+                else
+                    _app.Properties.Add(AppProperties.Query, value);
 
             }
         }
@@ -210,7 +221,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.FromUri))
                     _app.Properties[AppProperties.FromUri] = value;
-                _app.Properties.Add(AppProperties.FromUri, value);
+                else
+                    _app.Properties.Add(AppProperties.FromUri, value);
             }
         }
 

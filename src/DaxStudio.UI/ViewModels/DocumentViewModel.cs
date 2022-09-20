@@ -313,13 +313,16 @@ namespace DaxStudio.UI.ViewModels
 
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 // set the document content to the query parameter
-                EditorText = Application.Current.Args().Query;
-                Application.Current.Args().Query = String.Empty;
+                if (!string.IsNullOrEmpty(Application.Current.Args().Query))
+                {
+                    EditorText = Application.Current.Args().Query;
+                    Application.Current.Args().Query = String.Empty;
+                }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, nameof(DocumentViewModel), nameof(OnViewLoaded), ex.Message);
-                OutputError($"Error opening a new query tab: {ex.Message}");
+                OutputError($"Error opening a new query document: {ex.Message}");
             }
             finally
             {
