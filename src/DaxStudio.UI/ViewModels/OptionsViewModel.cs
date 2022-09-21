@@ -1372,9 +1372,12 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
-        private string _theme = "Auto";
-        [DataMember, DefaultValue("Auto")]
-        public string Theme
+        private UITheme _theme = UITheme.Auto;
+        [DataMember, DefaultValue(UITheme.Auto)]
+        [Category("Defaults")]
+        [Subcategory("Theme")]
+        [DisplayName("UI Theme / Mode (Light, Dark, Auto)")]
+        public UITheme Theme
         {
             get => _theme;
             set
@@ -1383,15 +1386,26 @@ namespace DaxStudio.UI.ViewModels
                 _theme = value;
                 NotifyOfPropertyChange(() => Theme);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
-                SettingProvider.SetValue("Theme", value, _isInitializing, this);
-
+                SettingProvider.SetValue(nameof(Theme), value, _isInitializing, this);
+                _eventAggregator.PublishOnUIThreadAsync(new ChangeThemeEvent(Theme));
             }
         }
 
-        private string _autoTheme = "Light";
-        public string AutoTheme { 
+        [JsonIgnore]
+        public IEnumerable<UITheme> UIThemes
+        {
+            get
+            {
+                var items = Enum.GetValues(typeof(UITheme)).Cast<UITheme>();
+                return items;
+            }
+        }
+
+        private UITheme _autoTheme = UITheme.Light;
+        [JsonIgnore]
+        public UITheme AutoTheme { 
             get {
-                return Theme == "Auto" ? _autoTheme : Theme;
+                return Theme == UITheme.Auto ? _autoTheme : Theme;
             } 
             set
             {

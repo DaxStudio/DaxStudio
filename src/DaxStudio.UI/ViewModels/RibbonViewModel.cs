@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Drawing;
 using ADOTabular;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -31,6 +32,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ApplicationActivatedEvent>
         , IHandle<ConnectionPendingEvent>
         , IHandle<CancelConnectEvent>
+        , IHandle<ChangeThemeEvent>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<FileOpenedEvent>
         , IHandle<FileSavedEvent>
@@ -65,19 +67,19 @@ namespace DaxStudio.UI.ViewModels
         {
             switch( this.Theme)
             {
-                case "Light": 
-                    Theme = "Dark";
+                case UITheme.Light: 
+                    Theme = UITheme.Dark;
                     break;
-                case "Dark":
-                    Theme = "Auto";
+                case UITheme.Dark:
+                    Theme = UITheme.Auto;
                     break;
                 default: 
-                    Theme = "Light";
+                    Theme = UITheme.Light;
                     break;
             }
         }
 
-        public string ThemeImageResource => Theme == "Auto"? "file_auto_themeDrawingImage":"file_themeDrawingImage";
+        public string ThemeImageResource => Theme == UITheme.Auto? "file_auto_themeDrawingImage":"file_themeDrawingImage";
 
 
 
@@ -1234,8 +1236,8 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThreadAsync(new DockManagerLoadLayout(true));
         }
 
-        private string _theme = "Light"; // default to light theme
-        public string Theme
+        private UITheme _theme = UITheme.Auto; // default to auto theme
+        public UITheme Theme
         {
             get => _theme;
             set { if (value != _theme)
@@ -1411,6 +1413,13 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Debug.WriteLine("RunStyle Clicked");
             SelectedRunStyle = runStyle;
             RunQuery();
+        }
+
+        public Task HandleAsync(ChangeThemeEvent message, CancellationToken cancellationToken)
+        {
+            Theme = message.Theme;
+            NotifyOfPropertyChange(nameof(ThemeImageResource));
+            return Task.CompletedTask;
         }
     }
 }

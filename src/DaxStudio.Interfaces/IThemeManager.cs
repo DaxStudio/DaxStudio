@@ -1,11 +1,12 @@
-﻿using System;
+﻿using DaxStudio.Interfaces.Enums;
+using System;
 
 namespace DaxStudio.Interfaces
 {
     public interface IThemeManager: IDisposable
     {
-        string CurrentTheme { get; }
+        UITheme CurrentTheme { get; }
 
-        void SetTheme(string themeName);
+        void SetTheme(UITheme themeName);
     }
 }

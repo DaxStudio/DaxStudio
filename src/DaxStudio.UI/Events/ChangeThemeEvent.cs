@@ -1,11 +1,13 @@
-﻿namespace DaxStudio.UI.Events
+﻿using DaxStudio.Interfaces.Enums;
+
+namespace DaxStudio.UI.Events
 {
     public class ChangeThemeEvent
     {
-        public ChangeThemeEvent(string theme)
+        public ChangeThemeEvent(UITheme theme)
         {
             Theme = theme;
         }
-        public string Theme { get; private set; }
+        public UITheme Theme { get; private set; }
     }
 }

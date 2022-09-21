@@ -283,7 +283,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // TODO - if theme is dark increase brightness of syntax highlights
                     //_editor.ChangeColorBrightness(1.25);
-                    _editor.SetSyntaxHighlightColorTheme(Options.AutoTheme);
+                    _editor.SetSyntaxHighlightColorTheme(Options.AutoTheme.ToString());
 
                     if (FindReplaceDialog != null) FindReplaceDialog.Editor = _editor;
                     SetDefaultHighlightFunction();
@@ -4509,7 +4509,7 @@ namespace DaxStudio.UI.ViewModels
         public void UpdateTheme()
         {
             NotifyOfPropertyChange(() => AvalonDockTheme);
-            _editor?.SetSyntaxHighlightColorTheme(Options.AutoTheme);
+            _editor?.SetSyntaxHighlightColorTheme(Options.AutoTheme.ToString());
         }
 
 
