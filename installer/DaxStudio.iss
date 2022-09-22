@@ -557,7 +557,7 @@ var
   excelPath: String;
   binaryType: Integer;
 begin
-  Result := False; // Default value - assume 32-bit unless proven otherwise.
+  Result := True; // Default value - assume 64-bit unless we explicitly find the 32 bit exe.
   // RegQueryStringValue second param is '' to get the (default) value for the key
   // with no sub-key name, as described at
   // https://stackoverflow.com/questions/913938/
@@ -570,7 +570,8 @@ begin
         Result := (binaryType = SCS_64BIT_BINARY);
       end;
     except
-      // Ignore - better just to assume it's 32-bit than to let the installation
+      // Ignore - better just to assume it's 64-bit and install both sets
+      // of registry keys than to let the installation
       // fail.  This could fail because the GetBinaryType function is not
       // available.  I understand it's only available in Windows 2000
       // Professional onwards.
@@ -579,8 +580,29 @@ begin
 end;
 
 function Is32BitExcelFromRegisteredExe(): boolean;
+var
+  excelPath: String;
+  binaryType: Integer;
 begin
-  Result := NOT Is64BitExcelFromRegisteredExe();
+  Result := True; // Default value - assume 32-bit unless proven otherwise.
+  // RegQueryStringValue second param is '' to get the (default) value for the key
+  // with no sub-key name, as described at
+  // https://stackoverflow.com/questions/913938/
+  if RegQueryStringValue(HKEY_LOCAL_MACHINE,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe',
+      '', excelPath) then begin
+    // We've got the path to Excel.
+    try
+      if GetBinaryType(excelPath, binaryType) then begin
+        Result := (binaryType <> SCS_64BIT_BINARY);
+      end;
+    except
+      // Ignore - better just to assume it's 32-bit than to let the installation
+      // fail.  This could fail because the GetBinaryType function is not
+      // available.  I understand it's only available in Windows 2000
+      // Professional onwards.
+    end;
+  end;
 end;
 
 
