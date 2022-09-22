@@ -2228,6 +2228,7 @@ namespace DaxStudio.UI.ViewModels
 
         // temporarily stubbed out until the implementation is finalized
         private bool _includeHyperlinkOnCopy;
+        [DataMember, DefaultValue(false)]
         public bool IncludeHyperlinkOnCopy { get {
 #if DEBUG
                 return true;
