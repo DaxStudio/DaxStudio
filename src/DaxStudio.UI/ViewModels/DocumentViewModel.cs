@@ -1324,18 +1324,22 @@ namespace DaxStudio.UI.ViewModels
             }
             get
             {
-                //string qry = string.Empty;
-                //if (!Dispatcher.CurrentDispatcher.CheckAccess())
-                //{
-                //    Dispatcher.CurrentDispatcher.Invoke(() =>
-                //    { qry = GetQueryTextFromEditor();
+                string qry = string.Empty;
+                if (!Dispatcher.CurrentDispatcher.CheckAccess())
+                {
+                    Dispatcher.CurrentDispatcher.Invoke(() =>
+                    {
+                        qry = GetQueryTextFromEditor();
 
-                //        return qry;
-                //    });
-                //} else
-                //    qry = GetQueryTextFromEditor();
-
-                var qry = Document.Text;
+                        return qry;
+                    });
+                }
+                else
+                {
+                    qry = GetQueryTextFromEditor();
+                }
+                //var qry = Document.Text;
+                
 
                 // swap delimiters if not using default style
                 if (Options.DefaultSeparator != DelimiterType.Comma)
