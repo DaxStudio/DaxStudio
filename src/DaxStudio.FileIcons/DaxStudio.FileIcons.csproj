@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <Win32Resource>C:\Users\dgosbell\source\repos\DaxStudio\src\DaxStudio.FileIcons\DaxStudio.res</Win32Resource>
+    <Win32Resource>DaxStudio.res</Win32Resource>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
