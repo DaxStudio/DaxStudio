@@ -5,7 +5,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
@@ -15,7 +14,7 @@
              d:DesignHeight="300" d:DesignWidth="300" >
     <UserControl.Resources>
         <ResourceDictionary>
-            <BitmapImage x:Key="DmvQuery" UriSource="pack://application:,,,/DaxStudio.UI;component/images/metadata/DmvTable.png"/>
+            
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml"/>
@@ -42,9 +41,9 @@
                         <trig:InputBindingTrigger.InputBinding>
                             <KeyBinding Key="Escape"/>
                         </trig:InputBindingTrigger.InputBinding>
-                        <cal:Action.Target>
-                            <cal:ActionMessage MethodName="ClearSearchCriteria"/>
-                        </cal:Action.Target>
+
+                        <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+
                     </trig:InputBindingTrigger>
                 </i:Interaction.Triggers>
             </TextBox>

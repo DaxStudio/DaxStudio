@@ -69,31 +69,36 @@ namespace ADOTabular
         {
             return GetDatabaseDictionary(spid, false);
         }
+
+        object _getDatabaseLock = new object();
         public IDictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
         {
-            //if (refresh) _databaseDictionary = null;
-            if (_databaseDictionary != null && !refresh) return _databaseDictionary;
-
-            IDictionary<string,DatabaseDetails> tmpDatabaseDict;
-            if (spid != -1)
+            lock (_getDatabaseLock)
             {
-                tmpDatabaseDict = GetDatabaseDictionaryFromXml();
-                var tmpDatabaseDmvDict = GetDatabaseDictionaryFromDMV();
-                foreach (var db in tmpDatabaseDict.Values)
+                //if (refresh) _databaseDictionary = null;
+                if (_databaseDictionary != null && !refresh) return _databaseDictionary;
+
+                IDictionary<string, DatabaseDetails> tmpDatabaseDict;
+                if (spid != -1)
                 {
-                    db.CompatibilityLevel = tmpDatabaseDmvDict[db.Name].CompatibilityLevel;
-                    db.Roles = tmpDatabaseDmvDict[db.Name].Roles;
-                    if (_adoTabConn.FileName.Length > 0) db.Caption = _adoTabConn.ShortFileName;
+                    tmpDatabaseDict = GetDatabaseDictionaryFromXml();
+                    var tmpDatabaseDmvDict = GetDatabaseDictionaryFromDMV();
+                    foreach (var db in tmpDatabaseDict.Values)
+                    {
+                        db.CompatibilityLevel = tmpDatabaseDmvDict[db.Name].CompatibilityLevel;
+                        db.Roles = tmpDatabaseDmvDict[db.Name].Roles;
+                        if (_adoTabConn.FileName.Length > 0) db.Caption = _adoTabConn.ShortFileName;
 
+                    }
                 }
+                else
+                    tmpDatabaseDict = GetDatabaseDictionaryFromDMV();
+
+                if (_databaseDictionary == null) _databaseDictionary = tmpDatabaseDict;
+                else MergeDatabaseDictionaries(tmpDatabaseDict);
+
+                return _databaseDictionary;
             }
-            else
-                tmpDatabaseDict = GetDatabaseDictionaryFromDMV();
-
-            if (_databaseDictionary == null) _databaseDictionary = tmpDatabaseDict;
-            else MergeDatabaseDictionaries(tmpDatabaseDict);
-
-            return _databaseDictionary;
         }
 
         private void MergeDatabaseDictionaries(IDictionary<string, DatabaseDetails> tmpDatabaseDict)

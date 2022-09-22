@@ -15,64 +15,23 @@
     <Color x:Key="WhiteColor}">#FFCCCCCC</Color>
     <Color x:Key="DaxStudioBlue">#FF0072C6</Color>
     <Color x:Key="WarningBarBackgroundColor">#FFF6C7</Color>
-    <Color x:Key="WarningBarBorderColor">#EFCB00</Color>
-    <Color x:Key="WarningBarForeColor">#000000</Color>
     <Color x:Key="MutedTextColor">#FF626161</Color>
     <Color x:Key="RunGreen">#FF75A697</Color>
     
     <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" options:Freeze="true"/>
     <!--<SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>-->
     <SolidColorBrush x:Key="WarningBarBackgroundBrush" Color="{StaticResource WarningBarBackgroundColor}" />
-    <SolidColorBrush x:Key="WarningBarBorderBrush" Color="{StaticResource WarningBarBorderColor}" />
-    <SolidColorBrush x:Key="WarningBarForeBrush" Color="{StaticResource WarningBarForeColor}" />
     <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
 
 
-    <!--<SolidColorBrush x:Key="BackstageBackgroundBrush" Color="#FF449ADE"></SolidColorBrush>-->
-    <!--<Style x:Key="MetroComboBox"  TargetType="{x:Type ComboBox}">
-        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="MinWidth" Value="60"/>
-        <Setter Property="UIElement.SnapsToDevicePixels" Value="True"/>
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-        <Setter Property="TextElement.Foreground" Value="Black"/>
-        <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="BorderBrush" Value="LightGray"/>
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Background" Value="{DynamicResource BaseBrush}" />
-    </Style>-->
 
     <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource DefaultToolTipStyle}">
-        <!--<Setter Property="Foreground" Value="#FF575757" />
-        <Setter Property="Background" Value="#FFFFFFFF" />-->
         <Setter Property="LayoutTransform">
             <Setter.Value>
                 <ScaleTransform ScaleX="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}" 
                                         ScaleY="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}"/>
             </Setter.Value>
         </Setter>
-        <!--<Setter Property="Padding" Value="5,1,6,2" />
-        <Setter Property="HasDropShadow" Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}" />
-
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ToolTip}" xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
-                    <themes:SystemDropShadowChrome Name="Shdw" themes:SystemDropShadowChrome.Color="Transparent" themes:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
-                        <Border Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
-                            <ContentPresenter TextOptions.TextFormattingMode="Display" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Border>
-                    </themes:SystemDropShadowChrome>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="HasDropShadow" Value="True">
-                            <Setter TargetName="Shdw" Property="Margin" Value="0,0,5,5" />
-                            <Setter TargetName="Shdw" Property="themes:SystemDropShadowChrome.Color" Value="#71000000" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>-->
     </Style>
     
     <Style x:Key="SearchBoxStyle" TargetType="{x:Type TextBox}">

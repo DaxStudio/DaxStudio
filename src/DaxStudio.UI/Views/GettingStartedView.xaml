@@ -7,8 +7,6 @@
              xmlns:cal="http://caliburnmicro.com"
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:converters="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:local="clr-namespace:DaxStudio.UI.Views"
              Caption="Start typing your query in this area"
              Icon="{DynamicResource editorDrawingImage}"
              mc:Ignorable="d" 
@@ -74,9 +72,6 @@
                         </Grid.ColumnDefinitions>
                     
                         
-                        <!--<fa:FontAwesome Icon="Wrench" FontSize="18" Margin="3"/>-->
-
-
                         <Button cal:Message.Attach="[Event Click] = [Action OpenQueryBuilder()]" Style="{StaticResource HyperlinkButton}" VerticalAlignment="Center">
                             <Hyperlink Focusable="False">Try the Query Builder!</Hyperlink>
                         </Button>

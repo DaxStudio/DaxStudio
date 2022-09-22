@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Windows;
@@ -24,6 +25,14 @@ namespace DaxStudio.UI.Extensions
                 if (view != null)
                 {
                     var control = FindChild(view, property);
+                    bool focus = control != null && control.Focus();
+                    return focus;
+                }
+
+                var ctrl = screen.GetView() as ContentControl;
+                if (ctrl != null)
+                {
+                    var control = FindChild(ctrl, property);
                     bool focus = control != null && control.Focus();
                     return focus;
                 }
@@ -76,7 +85,22 @@ namespace DaxStudio.UI.Extensions
                 return foundChild;
             }
 
-            private static BindingExpression GetBindingExpression(FrameworkElement control)
+        //public static FrameworkElement FindChild(ContentControl cc, string childName)
+        //{
+        //    FrameworkElement foundChild = null;
+        //    foreach ( FrameworkElement c in cc.Content)
+        //    {
+        //        if (c.Name == childName)
+        //        {
+        //            return c;
+        //        }
+        //    }
+        //    return foundChild;
+        //}
+
+
+
+        private static BindingExpression GetBindingExpression(FrameworkElement control)
             {
                 if (control == null) return null;
 

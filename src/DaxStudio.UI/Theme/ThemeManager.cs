@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Media;
 using Serilog;
 using Caliburn.Micro;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.UI.Theme
 {
@@ -31,26 +32,25 @@ namespace DaxStudio.UI.Theme
         }
 
 
-        public void SetTheme(string themeName)
+        public void SetTheme(UITheme themeName)
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ThemeManager), nameof(SetTheme), $"Setting Theme to: {themeName}");
 
             CurrentTheme = themeName;
             var windowsTheme = ThemeIsLight() ? "Light" : "Dark";
-            Options.AutoTheme = windowsTheme;
-            var actualTheme = themeName=="Auto"?windowsTheme: themeName;
-            //ControlzEx.Theming.ThemeManager.Current.ChangeTheme(_app, $"{themeName}.DaxStudio");
-
+            Enum.TryParse<UITheme>(windowsTheme, out var enumWinTheme);
+            Options.AutoTheme = enumWinTheme;
+            var actualTheme = themeName==UITheme.Auto?enumWinTheme: themeName;
+            
+            // Set ModernWpf theme
             var theme = ModernWpf.ApplicationTheme.Light;
-            Enum.TryParse(actualTheme, false, out theme);
+            Enum.TryParse(actualTheme.ToString(), false, out theme);
 
             // exit here if the new theme is the same as the current theme 
             if (ModernWpf.ThemeManager.Current.ApplicationTheme == theme) return;
 
             ModernWpf.ThemeManager.Current.ApplicationTheme = theme;
             SetAccent(AccentColor);
-
-            //ControlzEx.Theming.ThemeManager.Current.ChangeThemeBaseColor(Application.Current, themeName);
             
         }
 
@@ -71,13 +71,13 @@ namespace DaxStudio.UI.Theme
 
         public Color AccentColor { 
             get {
-                if (CurrentTheme.Equals("Dark", StringComparison.OrdinalIgnoreCase)) return _darkAccent;
+                if (CurrentTheme == UITheme.Dark) return _darkAccent;
                 return _lightAccent;
             } 
         
         }
         public IGlobalOptions Options { get; }
-        public string CurrentTheme { get; private set; }
+        public UITheme CurrentTheme { get; private set; }
 
         private readonly Application _app;
 
@@ -87,7 +87,7 @@ namespace DaxStudio.UI.Theme
             {
                 case UserPreferenceCategory.General:
                     // update the theme to match the windows theme
-                    if (Options.Theme == "Auto") SetTheme("Auto");
+                    if (Options.Theme == UITheme.Auto) SetTheme(UITheme.Auto);
                     break;
             }
         }

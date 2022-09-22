@@ -7,7 +7,10 @@ using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
+using Polly;
+using Polly.Retry;
 using Serilog;
 
 namespace DaxStudio.UI.ViewModels
@@ -132,6 +135,7 @@ namespace DaxStudio.UI.ViewModels
         }
         public Task HandleAsync(ActivateDocumentEvent message,CancellationToken cancellationToken)
         {
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(StatusBarViewModel), "HandleAsync<ActivateDocumentMessage>", "Starting");
             if (message.Document == null ) return Task.CompletedTask;
             // remove handler for previous active document
             if (ActiveDocument != null)
@@ -151,7 +155,7 @@ namespace DaxStudio.UI.ViewModels
             TimerText = ActiveDocument.ElapsedQueryTime;
             Message = ActiveDocument.StatusBarMessage;
             RowCount = ActiveDocument.RowCount;
-
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(StatusBarViewModel), "HandleAsync<ActivateDocumentMessage>", "Finished");
             return Task.CompletedTask;
         }
 
@@ -185,13 +189,13 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                System.Windows.Clipboard.SetText(ServerName);
+                ClipboardManager.SetText(ServerName);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
             }
             catch(Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", "StatusBarViewModel", "CopyServerNameToClipboard", "Error copying server name to clipboard: " + ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error copying server name to clipboard, please try again"));
+                Log.Error(ex, "{class} {method} {message}", "StatusBarViewModel", "CopyServerNameToClipboard", "Error copying server name to clipboard:\n" + ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error copying server name to clipboard:\n{ex.Message}"));
             }
         }
 
@@ -222,6 +226,6 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-
+        
     }
 }

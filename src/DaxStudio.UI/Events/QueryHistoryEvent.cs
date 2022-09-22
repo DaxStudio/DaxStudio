@@ -88,7 +88,7 @@ namespace DaxStudio.UI.Events
         }
 
         [JsonIgnore]
-        public string TypeIcon => string.IsNullOrEmpty(QueryBuilderJson) ? "Edit" : "Wrench" ;
+        public string TypeIcon => string.IsNullOrEmpty(QueryBuilderJson) ? "editorDrawingImage" : "query_builder_toolbarDrawingImage" ;
 
         [JsonIgnore]
         public string TypeTooltip => string.IsNullOrEmpty(QueryBuilderJson) ? "Query Text" : "Query Builder Query";

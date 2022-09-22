@@ -8,10 +8,7 @@
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-             xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions" 
              d:DesignWidth="980"
             
              mc:Ignorable="d">
@@ -28,12 +25,6 @@
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
                 <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
-
-            <fa:ImageAwesome Icon="Cogs" x:Key="OptionsIcon" Foreground="WhiteSmoke"/>
-
-
-
-
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
         
@@ -62,14 +53,20 @@
                 </Border.ToolTip>
             </Border>
         </DataTemplate>
-        
+
+            
             <DataTemplate x:Key="RunStyleTemplate" >
-            <Border
+                <!--<Button Click="RunStyles_Click" >
+                    <Button.Template>
+                        <ControlTemplate>-->
+                            <Border
                 BorderThickness="4"
                 BorderBrush="Transparent" 
                 ToolTip="{Binding Tooltip}"
                 IsEnabled="{Binding IsEnabled}"
-                HorizontalAlignment="Left">
+                HorizontalAlignment="Left"
+                                
+                >
                     <Grid Margin="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -89,7 +86,10 @@
 
                     </Grid>
                 </Border>
-        </DataTemplate>
+                        <!--</ControlTemplate>
+                    </Button.Template>
+                </Button>-->
+            </DataTemplate>
 
             <!--<ControlTemplate x:Key="Fluent.Ribbon.Templates.ResizeableContentControl"
                      TargetType="{x:Type Fluent:ResizeableContentControl}">
@@ -793,24 +793,32 @@
                                    Header="Exit" 
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"  
                                    VerticalAlignment="Bottom"
-                                   DockPanel.Dock="Bottom">
-                            <i:Interaction.Triggers>
+                                   DockPanel.Dock="Bottom"
+                                   cal:Message.Attach="[Event Click] = [Action Exit($view)]">
+                                       
+                            <!--<i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Click">
                                     <cal:Action.Target>
                                         <cal:ActionMessage MethodName="Exit"/>
                                     </cal:Action.Target>
 
                                 </i:EventTrigger>
-                            </i:Interaction.Triggers>
+                            </i:Interaction.Triggers>-->
                         </Fluent:Button>
 
-
-                        <Image x:Name="backImage" 
+                        <Fluent:BackstageTabItem Height="190" DockPanel.Dock="Bottom">
+                            <Fluent:BackstageTabItem.Template>
+                                <ControlTemplate>
+                            <Image x:Name="backImage" 
                                Source="{DynamicResource logo_transparentDrawingImage}"
                                DockPanel.Dock="Bottom"
-                               Width="200"
-                               Height="200"
+                               Width="120"
+                               Height="120"
                                />
+                                </ControlTemplate>
+                            </Fluent:BackstageTabItem.Template>
+                        </Fluent:BackstageTabItem>
+                        
 
                         <!--<Fluent:BackstageTabItem DockPanel.Dock="Bottom">
                             <Fluent:BackstageTabItem.Header>
@@ -870,8 +878,9 @@
                         ItemsSource="{Binding RunStyles}"
                         SelectedItem="{Binding SelectedRunStyle}"
                         ItemTemplate="{DynamicResource RunStyleTemplate}"
+                        Fluent:GalleryItem.Click="RunStyles_Click"
                         >
-
+                        
                     </Fluent:Gallery>
                 </Fluent:SplitButton>
                 <Fluent:Button Name="CancelQuery"
@@ -1480,9 +1489,7 @@
                                    Margin="4,0"
                                    SizeDefinition="Large,Large,Large">
                     <Fluent:Button.LargeIcon>
-
-                        <fa:FontAwesome  Icon="Warning" Foreground="OrangeRed" FontSize="32" />
-
+                        <Image Source="{DynamicResource warningDrawingImage}" Width="32"></Image>
                     </Fluent:Button.LargeIcon>
                 </Fluent:Button>
 
@@ -1521,23 +1528,34 @@
                 <Fluent:Button Header="Open Connection" x:Name="OpenConnection" Size="Middle"
                                cal:Message.Attach="[Event Click] = [Action OpenConnection()]">
 
-                    <Fluent:Button.Icon>
 
-                        <fa:FontAwesome  Icon="Plug" FontSize="16" Foreground="Green"/>
-
-                    </Fluent:Button.Icon>
                 </Fluent:Button>
                 <Fluent:Button Header="Close Connection" x:Name="CloseConnection" Size="Middle"
                                cal:Message.Attach="[Event Click] = [Action CloseConnection()]">
-                    <Fluent:Button.Icon>
 
-                        <fa:FontAwesome  Icon="Plug" Foreground="OrangeRed" FontSize="16" />
-
-                    </Fluent:Button.Icon>
                 </Fluent:Button>
 
 
 
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Testing">
+                <Fluent:Button
+                    Name="RunQueryDiagnostics"
+                    Header="Capture Diagnostics"
+                    KeyTip="B"
+                    cal:Message.Attach="[Event Click] = [Action CaptureDiagnostics()]"
+                    Icon="{DynamicResource capture_diagnosticsDrawingImage}"
+                    LargeIcon="{DynamicResource capture_diagnosticsDrawingImage}"
+                    Margin="4,0"
+                    SizeDefinition="Large,Middel,Small"
+                    >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Capture Diagnostics"
+                                          Text="Runs the given query and automatically captures Server Timings, Query Plan and model metrics"
+                                          DisableReason="You must have admin rights against the data source in order to create the Timings trace to capture the detailed timing information"
+                            />
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           

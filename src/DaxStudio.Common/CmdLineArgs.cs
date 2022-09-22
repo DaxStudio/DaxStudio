@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
+using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.Common
 {
@@ -24,7 +28,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.PortNumber))
                     _app.Properties[AppProperties.PortNumber] = value;
-                _app.Properties.Add(AppProperties.PortNumber, value);
+                else
+                    _app.Properties.Add(AppProperties.PortNumber, value);
             }
         }
 
@@ -40,7 +45,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.FileName))
                     _app.Properties[AppProperties.FileName] = value;
-                _app.Properties.Add(AppProperties.FileName, value);
+                else
+                    _app.Properties.Add(AppProperties.FileName, value);
             }
         }
 
@@ -56,7 +62,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.LoggingEnabledByCommandLine))
                     _app.Properties[AppProperties.LoggingEnabledByCommandLine] = value;
-                _app.Properties.Add(AppProperties.LoggingEnabledByCommandLine, value);
+                else
+                    _app.Properties.Add(AppProperties.LoggingEnabledByCommandLine, value);
             }
         }
 
@@ -72,7 +79,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.LoggingEnabledByHotKey))
                     _app.Properties[AppProperties.LoggingEnabledByHotKey] = value;
-                _app.Properties.Add(AppProperties.LoggingEnabledByHotKey, value);
+                else
+                    _app.Properties.Add(AppProperties.LoggingEnabledByHotKey, value);
             }
         }
 
@@ -92,7 +100,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.CrashTest))
                     _app.Properties[AppProperties.CrashTest] = value;
-                _app.Properties.Add(AppProperties.CrashTest, value);
+                else
+                    _app.Properties.Add(AppProperties.CrashTest, value);
             }
         }
 
@@ -108,7 +117,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Server))
                     _app.Properties[AppProperties.Server] = value;
-                _app.Properties.Add(AppProperties.Server, value);
+                else
+                    _app.Properties.Add(AppProperties.Server, value);
             }
         }
         public string Database
@@ -123,7 +133,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Database))
                     _app.Properties[AppProperties.Database] = value;
-                _app.Properties.Add(AppProperties.Database, value);
+                else
+                    _app.Properties.Add(AppProperties.Database, value);
             }
         }
 
@@ -140,7 +151,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.ShowHelp))
                     _app.Properties[AppProperties.ShowHelp] = value;
-                _app.Properties.Add(AppProperties.ShowHelp, value);
+                else
+                    _app.Properties.Add(AppProperties.ShowHelp, value);
             }
         }
 
@@ -156,7 +168,8 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.Reset))
                     _app.Properties[AppProperties.Reset] = value;
-                _app.Properties.Add(AppProperties.Reset, value);
+                else
+                    _app.Properties.Add(AppProperties.Reset, value);
             }
         }
 
@@ -172,8 +185,70 @@ namespace DaxStudio.Common
             {
                 if (_app.Properties.Contains(AppProperties.NoPreview))
                     _app.Properties[AppProperties.NoPreview] = value;
-                _app.Properties.Add(AppProperties.NoPreview, value);
+                else
+                    _app.Properties.Add(AppProperties.NoPreview, value);
 
+            }
+        }
+
+        public string Query
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.Query))
+                    return (string)_app.Properties[AppProperties.Query];
+                return string.Empty;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.Query))
+                    _app.Properties[AppProperties.Query] = value;
+                else
+                    _app.Properties.Add(AppProperties.Query, value);
+
+            }
+        }
+
+        public bool FromUri
+        {
+            get
+            {
+                if (_app.Properties.Contains(AppProperties.FromUri))
+                    return (bool)_app.Properties[AppProperties.FromUri];
+                return false;
+            }
+            set
+            {
+                if (_app.Properties.Contains(AppProperties.FromUri))
+                    _app.Properties[AppProperties.FromUri] = value;
+                else
+                    _app.Properties.Add(AppProperties.FromUri, value);
+            }
+        }
+
+        public static void ParseUri(ref Application app, string input)
+        {
+            var uri = new Uri(input);
+            var args = app.Args();
+            args.FromUri = true;
+            Type type = args.GetType();
+            NameValueCollection queryParams = HttpUtility.ParseQueryString(uri.Query);
+            var keys = app.Args().AsDictionary().Keys;
+            // map the URI query parameters to commandline parameters
+            foreach (var key in keys)
+            {
+                var value = queryParams[key];
+                if (value != null)
+                {
+                    PropertyInfo prop = type.GetProperty(key);
+                    var val = Convert.ChangeType(value, prop.PropertyType);
+                    if (string.Equals(key, "Query", StringComparison.OrdinalIgnoreCase))
+                    {
+                        val = ((string)val).Base64Decode();
+                    }
+                    prop.SetValue(args, val, null);
+
+                }
             }
         }
     }

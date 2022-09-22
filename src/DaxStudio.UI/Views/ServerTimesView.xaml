@@ -124,10 +124,10 @@
                             <MultiBinding Converter="{StaticResource WaterfallMarginConverter}">
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
                                 <Binding Path="StartOffsetMs"/>
-                                <Binding Path="TotalQueryDuration"/>
+                                <Binding Path="WaterfallDuration"/>
                                 <Binding>
                                     <Binding.Source>
-                                        <sys:Double>4</sys:Double>
+                                        <sys:Double>3</sys:Double>
                                     </Binding.Source>
                                 </Binding>
                             </MultiBinding>
@@ -136,7 +136,7 @@
                             <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
                                 <Binding Path="Duration"/>
-                                <Binding Path="TotalQueryDuration"/>
+                                <Binding Path="WaterfallDuration"/>
                                 <Binding>
                                     <Binding.Source>
                                         <sys:Double>3</sys:Double>
@@ -242,6 +242,16 @@
                     </StackPanel>
                 </Button>
 
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ShowTraceDiagnostics]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource aboutDrawingImage}"
+                               Width="16" Height="16"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Info</TextBlock>
+                    </StackPanel>
+                </Button>
+                
 
                 <!--<Rectangle DockPanel.Dock="Right"/>-->
 

@@ -176,6 +176,14 @@ Root: "HKA"; Subkey: "Software\Classes\VPAX file"; ValueType: string; ValueData:
 Root: "HKA"; Subkey: "Software\Classes\VPAX file\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -file ""%1"""; Flags: uninsdeletekey
 Root: "HKA"; Subkey: "Software\Classes\VPAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,2"; Flags: uninsdeletevalue
 
+;add uri keys
+Root: "HKCR"; Subkey: "daxstudio"; ValueType: string; ValueData: "URL:daxstudio Protocol"; Flags: uninsdeletekey
+Root: "HKCR"; Subkey: "daxstudio"; ValueType: string; ValueName: "URL Protocol"; Flags: uninsdeletekey
+Root: "HKCR"; Subkey: "daxstudio\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0" ; Flags: uninsdeletekey
+Root: "HKCR"; Subkey: "daxstudio\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -uri ""%1"""; Flags: uninsdeletekey
+
+;turn off URI warnings from office apps
+Root: "HKA"; Subkey: "Software\Policies\Microsoft\office\16.0\common\Security\Trusted Protocols\All Applications\daxstudio:"; Flags: uninsdeletekey
 
 ;Clean up beta Excel x86 Addin Keys
 ;Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
@@ -549,7 +557,7 @@ var
   excelPath: String;
   binaryType: Integer;
 begin
-  Result := False; // Default value - assume 32-bit unless proven otherwise.
+  Result := True; // Default value - assume 64-bit unless we explicitly find the 32 bit exe.
   // RegQueryStringValue second param is '' to get the (default) value for the key
   // with no sub-key name, as described at
   // https://stackoverflow.com/questions/913938/
@@ -562,7 +570,8 @@ begin
         Result := (binaryType = SCS_64BIT_BINARY);
       end;
     except
-      // Ignore - better just to assume it's 32-bit than to let the installation
+      // Ignore - better just to assume it's 64-bit and install both sets
+      // of registry keys than to let the installation
       // fail.  This could fail because the GetBinaryType function is not
       // available.  I understand it's only available in Windows 2000
       // Professional onwards.
@@ -571,8 +580,29 @@ begin
 end;
 
 function Is32BitExcelFromRegisteredExe(): boolean;
+var
+  excelPath: String;
+  binaryType: Integer;
 begin
-  Result := NOT Is64BitExcelFromRegisteredExe();
+  Result := True; // Default value - assume 32-bit unless proven otherwise.
+  // RegQueryStringValue second param is '' to get the (default) value for the key
+  // with no sub-key name, as described at
+  // https://stackoverflow.com/questions/913938/
+  if RegQueryStringValue(HKEY_LOCAL_MACHINE,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe',
+      '', excelPath) then begin
+    // We've got the path to Excel.
+    try
+      if GetBinaryType(excelPath, binaryType) then begin
+        Result := (binaryType <> SCS_64BIT_BINARY);
+      end;
+    except
+      // Ignore - better just to assume it's 32-bit than to let the installation
+      // fail.  This could fail because the GetBinaryType function is not
+      // available.  I understand it's only available in Windows 2000
+      // Professional onwards.
+    end;
+  end;
 end;
 
 
@@ -708,7 +738,7 @@ Log('pbitool exeName = ' + exeName );
   lines[3] := '  "description": "Use DAX Studio for DAX authoring, diagnosis, performance tuning and analysis.",';
   lines[4] := '  "path": "' + exeName + '",';
   lines[5] := '  "arguments": "/server=\"%server%\" /database=\"%database%\"",';
-  lines[6] := '  "iconData": "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAhCAYAAABX5MJvAAAACXBIWXMAAAsSAAALEgHS3X78AAAFfUlEQVRYhd1Xa0xTZxh+Sy+npZdDWZVV6EQoR9RECQtjYESWqSOLsNUFJyxWZxxbtpgYYZK5BPUHJv5gP/THpjTb/EEcCTFLwIgZGTgNFy+EyygZg4KrxUGZ2p6OhpNelvfrJS0ttDidyZ6k6fne837v+3zv5fu+w/N6vfCikfDCGTxDEukAUAwAB4eGhr73j+OGYIWOcsbHx0s8Ho9KIpHkKBQKlVAolE5MTDimp6eTRkZG4H5iFrwvS/tgteeRTqvVtsVjOO6aMJvN4729vZlmsxm6u7uJrKenJ0JPmvcu0G9Wwb6NMvc7a70GrVb7SSzbwUg8cboGkiSCLUspisViaG5ujuo4FK4ZExn9YHTw75o9VV+4TQWb12cE7GLKupYkwXLupJ2GkSWNG95WQWFhYWwSthlgbzWR574/hnnCbV9rx8bGWjQaTRnLsm673X5pcXTiLsxZj3TJd5s2bYKCggJQKBTg9pPAH/VkClKUCsng4OB7ubm5wuHhYb5YLL7pj4h3dnb2UwitCbNtYeqzH01rSzckB41f7PsTqvJfJs/FGQp4bBr26nQ63mISFosFjEYjHD16FLA4g/MvXgSKojwHDhxI0Gg0cO3aNVapVCqMRuOt9vb2rXq9fl6lUqWGdccauQg+ei0lOM6UuiA3lQIvJQelhA8mdpUHAPiLSTx48ADq6urCCCCys7PdtbW1RD8tLS0gPpienp7f0NAAGo0msby8vDgsHfcsDsg7PwjNfb7iYmgvtLS0AGefg9m5vyBj3boIAuDrHDQYIWdZNijHWqqpqZFfv379O71eLwjMw7YPI8GskkDbhxuhdLMaDAYDOJ1OqKyshNbWVrjR+TOYTJMLmPdokYhGYmBggF9RURHcA9rb2+HQoUPB4vbP6QojIRfxIUUmhC9PnCDOs7KyIDExEQ4fPkz2BplMKsIijBaJaPKzZ88CwzC8aAT37t0LZWVlCxEkMB2W2TliFJ3Pz88Tud1uJ6w5juPRNB1hEGsB32OHhALnORwOb2j00HlnZyd3/Pjx3yiKeh1CW9Tl9t69os++L6Yk1qKiIg5Dhp2DKUEjGAmKorhoK7bZbIREdXV1mDw/Px+Sk5N5gYLF98eOHZtgGOYttVqdjRmDJbbtJJfLZTl37lwirgQJYGTw19jY6Oro6BBgK8aDpqYmsFqtENDv7+/nUlJS1gPAVOj0aAfYE4FAsFWn031L03SWy+US0DTNm5ycFNTX1wv2798fFwEEwzDeM2fOkH2lpKQE0zuymEBYJB47XfelooTVUWyhEVQT+tNHxvHR8PrVfbCyC/fSlJK8xVrBSOwyjEwCwCtxLjJi14wTV+8ciTwjo94nXk2VhY2xa0KhVojI7spybhizOkFO8YFRSYjG2JwT2AU32XOw5QM6yyEqiW/2ZIaNHZwbGn6ZhrbRR2RcvW0NbM+gifyNC78S2cmdGlDLRdB4ewZaRx/BhT2ZIBPx4fOrUzFJLHuKosEbJhsxdnKHxrc6ik8IIFBenEGTlZ/+iWzBUJGjIiTxHc7tMtmWJRCTBJ6iNVenoN+fDnS423/K/j7nW932DN9GhCkLEA5EqeHmdEwCMUkEcM/yd/C5dIOS/J/qMBNHSAqjQ0jfngnqdU3Y4KGdezYk0MFuv2MeDyDLX4BN+xiyaiDR8KUH0xAAksP0xYNlb9tYXNgJWHC4amGCrzMxPRgdtVxInOGFB8nmpsrgIctB2+hjci85tUMDlZfH/l0k0CgSwFx/fGUCdjFJRH55YI7Uy1f+nL8kFUJVvu8yhAV6ecBKyGDUKnJWxSQR3DHzzg/iLXh7XPF7epy+c2TLqRVF4r9CaE3gUZf0nP1GHF6wki+w54n/1Vf50wMA/gFD/DxfVBUhFQAAAABJRU5ErkJggg=="';
+  lines[6] := '  "iconData": "image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMTYiIGhlaWdodD0iMjE2IiB2aWV3Qm94PSIwIDAgMjE2IDIxNiI+PHBhdGggZD0iTTE1OS40NjkxLDYyLjAyOWwtMS4wMTg5LTcuNDFMMTIwLjkzODcsMjUuNzY0LDIzLjMxMjQsMzguNTg4NWw5LjA2NjgsNjguOTkzNWMuNTU5Mi0uMDIyNSwxLjExNzctLjA1MTEsMS42OC0uMDUxMUE0MS4yNCw0MS4yNCwwLDAsMSw1OC4yLDExNS4yODg4YTQyLjM0Myw0Mi4zNDMsMCwwLDEsMTQuMDg2Miw1MS4zODRoNjAuNzQ4bC45NjQ2LTIuNjM2NmMuNzc2OS0yLjEyMzMsMS41NzgxLTQuMzA1NCwyLjM4Ni02LjUwNTcsNC4xMy0xMS4yNDY2LDEwLjI3MzctMjcuOTc5MiwxMS4yODg0LTMyLjM4NzctLjQyNTUtMi40MTU0LTEuODk1NC01Ljg4MjgtMy4zMjEtOS4yNDU3LTMuODgyMS05LjE1NzMtOC43MTM1LTIwLjU1NC0zLjc4MjItMzIuNTY2MUE0My4yMjA3LDQzLjIyMDcsMCwwLDEsMTU5LjQ2OTEsNjIuMDI5Wk05NC4zMjc5LDE0NC4zOSw4NS4xOTA1LDc0Ljk3NzlsMTkuNzE3Ni0yLjU2NDkuOTYxOSw3LjA1MzRMOTQuNjQ4Niw4MC45MDkybDcuMjEzNyw1NS4xNDUyLDExLjIyMTQtMS40NDI4Ljk2MTksNy4wNTM1WiIgc3R5bGU9ImZpbGw6IzFhMWExYSIvPjxwb2x5Z29uIHBvaW50cz0iMTI1LjQyNyA1OC45NDcgMTU4LjYxMSA1NC42MTkgMTIxLjA5OSAyNS43NjQgMTI1LjQyNyA1OC45NDciIHN0eWxlPSJmaWxsOiMzNDkyZDAiLz48cGF0aCBkPSJNMTQxLjY0MjksMTY2LjgzMzFoMjYuMDU4OWM0LjMxOTItMTIuMDkzNiwxMC45MTMzLTI4LjEzMjgsMTIuNzg1LTMxLjU4ODEsMy41OTkyLTYuNDc4NywyNy4yMTA2LTguMDYyNCwzMi44MjU1LTIxLjc0YTM1LjI1ODEsMzUuMjU4MSwwLDAsMC03Ljc3NDUtMzguNTg0NWwtOC40OTQzLDIwLjU4OGMtMy44ODcyLDkuMzU4Mi05LjA3LDYuMTkwOC0xNS44MzY5LDMuNDU1M3MtMTIuNjY5NS00LjMxOTEtOC43ODIyLTEzLjY3NzNsOC40OTQzLTIwLjU4OGEzNS4xMjczLDM1LjEyNzMsMCwwLDAtMzIuODI1NiwyMS43NGMtNS42MTQ5LDEzLjY3NzMsNi43NjY3LDI4LjIxODQsNy43NzQ1LDM4LjU4NDRDMTU2LjMsMTI3LjMyNjUsMTQ4LjEyMTYsMTQ5LjEyNDYsMTQxLjY0MjksMTY2LjgzMzFaIiBzdHlsZT0iZmlsbDojMWExYTFhIi8+PHBvbHlnb24gcG9pbnRzPSI4MC4xNzkgMTc2LjQyMiA4OC4xNTIgMTg0LjUyOCA5My43NjcgMTkwLjIzNiAxNjkuMjYgMTkwLjIzNiAxNjkuMjYgMTc2LjQyMiA4MC4xNzkgMTc2LjQyMiIgc3R5bGU9ImZpbGw6IzM0OTJkMCIvPjxwYXRoIGQ9Ik0zNC4wODY5LDE4My4zMTY3YTM0LjUxNTIsMzQuNTE1MiwwLDAsMCwxOC44NTUyLTUuNzA4NUw2NS4yMjM5LDE5MC4yMzZIODIuMzQ5MmwtMjAuNzU4LTIxLjEwMzlhMzMuODgzOSwzMy44ODM5LDAsMSwwLTQ3LjIyNDQsOC4xMywzNC44ODc0LDM0Ljg4NzQsMCwwLDAsMTkuNzIsNi4wNTQ0Wm0wLTU3LjI1NzVBMjMuNDM5NCwyMy40Mzk0LDAsMSwxLDEwLjU2MTIsMTQ5LjU4NWEyMy40MDMxLDIzLjQwMzEsMCwwLDEsMjMuNTI1Ny0yMy41MjU4WiIgc3R5bGU9ImZpbGw6IzFhMWExYSIvPjwvc3ZnPg=="';
   lines[7] := '}';
 
   Result := SaveStringsToFile(filename,lines,False);

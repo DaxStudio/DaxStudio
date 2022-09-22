@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Navigation;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Common.Extensions
 {
     public static class ObjectExtensions
     {

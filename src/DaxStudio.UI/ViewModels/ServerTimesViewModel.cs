@@ -22,10 +22,9 @@ using System;
 using System.Globalization;
 using DaxStudio.Common;
 using DaxStudio.UI.Utils;
-using System.Threading;
-using System.Threading.Tasks;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
+using System.Security.Cryptography;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -92,8 +91,8 @@ namespace DaxStudio.UI.ViewModels
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
         public bool InternalBatchEvent { get; set; }
-        public DateTime StartTime { get; private set; }
-        public DateTime EndTime { get; private set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         // String that highlight important parts of the query
         // Currently implement only the strong (~E~/~S~) for the following functions:
@@ -139,6 +138,9 @@ namespace DaxStudio.UI.ViewModels
 
         public long? StartOffsetMs { get; set; }
         public long? TotalQueryDuration { get;  set; }
+
+        [JsonIgnore]
+        public long? WaterfallDuration => TotalQueryDuration + 1;
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
@@ -352,7 +354,7 @@ namespace DaxStudio.UI.ViewModels
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     public class ServerTimesViewModel
-        : TraceWatcherBaseViewModel, ISaveState, IServerTimes
+        : TraceWatcherBaseViewModel, ISaveState, IServerTimes, ITraceDiagnostics
     {
         private bool parallelStorageEngineEventsDetected = false;
         public bool ParallelStorageEngineEventsDetected
@@ -363,17 +365,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
         private DaxStudioTraceEventArgs maxStorageEngineVertipaqEvent = null;
         private DaxStudioTraceEventArgs maxStorageEngineDirectQueryEvent = null;
-
         public IGlobalOptions Options { get; set; }
         public Dictionary<string, string> RemapColumnNames { get; set; }
         public Dictionary<string, string> RemapTableNames { get; set; }
 
         [ImportingConstructor]
         public ServerTimesViewModel(IEventAggregator eventAggregator, ServerTimingDetailsViewModel serverTimingDetails
-            , IGlobalOptions options) : base(eventAggregator, options)
+            , IGlobalOptions options, IWindowManager windowManager) : base(eventAggregator, options,windowManager)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             RemapColumnNames = new Dictionary<string, string>();
@@ -428,7 +428,20 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
         }
 
-        
+        protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
+        {
+            base.ProcessSingleEvent(singleEvent);
+            switch (singleEvent.EventClass)
+            {
+                case DaxStudioTraceEventClass.QueryEnd:
+                    QueryStartDateTime = singleEvent.StartTime;
+                    TotalDuration = singleEvent.Duration;
+                    UpdateWaterfallTotalDuration(singleEvent);
+                    break;
+            }
+        }
+
+
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
@@ -516,6 +529,7 @@ namespace DaxStudio.UI.ViewModels
                                 StorageEngineQueryCount++;
 
                             }
+                            UpdateWaterfallTotalDuration(traceEvent);
                             _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             
                             break;
@@ -525,6 +539,7 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
+                            UpdateWaterfallTotalDuration(traceEvent);
                             _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
                             
@@ -537,11 +552,16 @@ namespace DaxStudio.UI.ViewModels
                             TotalCpuDuration = traceEvent.CpuTime;
                             QueryEndDateTime = traceEvent.EndTime;
                             QueryStartDateTime = traceEvent.StartTime;
+                            ActivityID = traceEvent.ActivityId;
                             break;
-                            
+                        case DaxStudioTraceEventClass.QueryBegin:
+                            Parameters = traceEvent.RequestParameters;
+                            CommandText = traceEvent.TextData;
+                            break;
                         case DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch:
                             
                             VertipaqCacheMatches++;
+                            UpdateWaterfallTotalDuration(traceEvent);
                             _storageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, _storageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
                     }
@@ -559,11 +579,19 @@ namespace DaxStudio.UI.ViewModels
                 if (eventsProcessed) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
 
                 Events.Clear();
-                UpdateWaterfallDurations(StorageEngineEvents, QueryStartDateTime, QueryEndDateTime, TotalDuration);
+                UpdateWaterfallDurations(StorageEngineEvents, QueryStartDateTime, QueryEndDateTime, WaterfallTotalDuration);
                 NotifyOfPropertyChange(nameof(StorageEngineEvents));
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanCopyResults));
+                NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
             }
+        }
+
+        private void UpdateWaterfallTotalDuration(DaxStudioTraceEventArgs traceEvent)
+        {
+            var maxDuration = (traceEvent.StartTime.AddMilliseconds(traceEvent.Duration == 0 ? 1 : traceEvent.Duration) - QueryStartDateTime).TotalMilliseconds;
+            if (maxDuration > WaterfallTotalDuration)
+                WaterfallTotalDuration = Convert.ToInt64( maxDuration);
         }
 
         private static void UpdateWaterfallDurations(IObservableCollection<TraceStorageEngineEvent> storageEngineEvents, DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
@@ -857,7 +885,12 @@ namespace DaxStudio.UI.ViewModels
                 StoreageEngineEvents = this._storageEngineEvents,
                 TotalCpuDuration = this.TotalCpuDuration,
                 QueryEndDateTime = this.QueryEndDateTime,
-                ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected
+                QueryStartDateTime = this.QueryStartDateTime,
+                Parameters = this.Parameters,
+                CommandText = this.CommandText,
+                ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected,
+                ActivityID = this.ActivityID,
+                WaterfallTotalDuration = this.WaterfallTotalDuration
             };
             var json = JsonConvert.SerializeObject(m, Formatting.Indented, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
             return json;
@@ -884,6 +917,7 @@ namespace DaxStudio.UI.ViewModels
 
             ServerTimesModel m = JsonConvert.DeserializeObject<ServerTimesModel>(data, deseralizeSettings);
 
+            ActivityID = m.ActivityID;
             FormulaEngineDuration = m.FormulaEngineDuration;
             StorageEngineDuration = m.StorageEngineDuration;
             StorageEngineNetParallelDuration = m.StorageEngineNetParallelDuration;
@@ -893,10 +927,20 @@ namespace DaxStudio.UI.ViewModels
             StorageEngineQueryCount = m.StorageEngineQueryCount;
             TotalCpuDuration = m.TotalCpuDuration;
             QueryEndDateTime = m.QueryEndDateTime;
+            QueryStartDateTime = m.QueryStartDateTime;
+            Parameters = m.Parameters;
+            CommandText = m.CommandText;
             ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
+            WaterfallTotalDuration = m.WaterfallTotalDuration;
             this._storageEngineEvents.Clear();
             this._storageEngineEvents.AddRange(m.StoreageEngineEvents);
             NotifyOfPropertyChange(() => StorageEngineEvents);
+            // update waterfall total Duration if this is an older file format
+            if (m.FileFormatVersion <= 3) {
+                StorageEngineEvents.Apply(se => UpdateWaterfallTotalDuration(new DaxStudioTraceEventArgs( se.Class.ToString(), se.Subclass.ToString(), se.Duration??0, se.CpuTime??0, se.Query,String.Empty, se.StartTime)));
+                UpdateWaterfallDurations(StorageEngineEvents, QueryStartDateTime, QueryEndDateTime,TotalDuration);
+            }
+
         }
 
         #endregion
@@ -971,8 +1015,9 @@ namespace DaxStudio.UI.ViewModels
             TotalDuration = 0;
             ParallelStorageEngineEventsDetected = false;
             _storageEngineEvents.Clear();
-            NotifyOfPropertyChange(() => StorageEngineEvents);
-            NotifyOfPropertyChange(() => CanExport);
+            NotifyOfPropertyChange(nameof(StorageEngineEvents));
+            NotifyOfPropertyChange(nameof(CanExport));
+            NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
 
         public override void CopyAll()
@@ -1010,5 +1055,34 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJson());
         }
 
+        public bool CanShowTraceDiagnostics => _storageEngineEvents.Count > 0;
+
+        private string _activityId = string.Empty;
+        public string ActivityID { get => _activityId;
+            set
+            {
+                _activityId = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public DateTime StartDatetime { get => QueryStartDateTime; }
+        public string CommandText { get; set; }
+        public string Parameters { get; set; }
+        public long WaterfallTotalDuration { get; private set; }
+
+        public async void ShowTraceDiagnostics()
+        {
+            var traceDiagnosticsViewModel = new RequestInformationViewModel(this);
+            await WindowManager.ShowDialogBoxAsync(traceDiagnosticsViewModel, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+        }
     }
 }

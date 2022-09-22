@@ -14,7 +14,6 @@ namespace DaxStudio.Standalone
     {
         private readonly Application _app;
 
-        //private UI.ViewModels.DocumentViewModel _activeDocument;
         [ImportingConstructor]
         public DaxStudioHost(IEventAggregator eventAggregator, Application app)
         {

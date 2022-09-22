@@ -6,14 +6,10 @@
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
-    xmlns:ae="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
-    xmlns:my="clr-namespace:DaxStudio.UI"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-    xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:dax="clr-namespace:DAXEditorControl;assembly=DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-    xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
     xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
@@ -550,7 +546,7 @@
 
                         <avalondock:LayoutDocumentPane DockHeight="Auto" >
                             <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="myDocument" 
-                                                       attached:InitialFocusExtentions.SelectWhenFocused="True"
+                                                       attached:InitialFocusExtentions.SelectAllAndFocus="True"
                                                        FocusManager.FocusedElement="{Binding ElementName=daxEditor}">
 
                                 <Grid>
@@ -585,7 +581,6 @@
                                                     >
                                                 <Image Source="{DynamicResource close_infobarDrawingImage}"/>
                                             </Button>
-                                            <!--<fa:FontAwesome Icon="Close" Grid.Column="2" VerticalAlignment="Center" Margin="5 0"/>-->
                                         </Grid>
 
                                     </Border>
@@ -614,12 +609,12 @@
                                                    dd:DragDrop.DropHandler="{Binding }"
                                                    dd:DragDrop.DragHandler="{Binding}"
                                                    WordWrap="{Binding WordWrap}"
-                                                   attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
                                                    cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]; [Event ContextMenuOpening] = [EditorContextMenuOpening()]; [Event MouseHover] = [OnEditorHover($source, $eventArgs)]; [Event GotFocus] = [Action GotFocus]"
                                                   
                                     >
+                                        <!-- attached:DaxEditorFocusExtensions.IsFocused="{Binding IsFocused}"-->
                                         <!--dd:DragDrop.DragHandler="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"-->
                                         <!-- Template="{DynamicResource DAXEditorControlTemplate1}"
                                         EditorSelectedText="{Binding SelectedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"-->

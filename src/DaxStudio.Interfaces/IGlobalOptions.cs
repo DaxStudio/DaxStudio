@@ -67,8 +67,8 @@ namespace DaxStudio.Interfaces
         bool ShowTooltipSampleData { get; set; }
         bool SkipSpaceAfterFunctionName { get; set; }
         bool SortFoldersFirstInMetadata { get; set; }
-        string Theme { get; set; }
-        string AutoTheme { get; set; }
+        UITheme Theme { get; set; }
+        UITheme AutoTheme { get; set; }
         int TraceStartupTimeout { get; set; }
         string WindowPosition { get; set; }
 
@@ -149,6 +149,7 @@ namespace DaxStudio.Interfaces
         LoggingLevelSwitch LoggingLevelSwitch { get; set; }
         #endregion
         [JsonIgnore] bool GettingStartedShown { get; set; }
+        bool IncludeHyperlinkOnCopy { get; set; }
 
         //bool ShowQueryPlanNextLine { get; set; }
         //bool ShowQueryPlanLineLevel { get; set; }

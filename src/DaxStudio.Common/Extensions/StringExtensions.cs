@@ -5,7 +5,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Common.Extensions
 {
     public static class StringExtensions
     {
@@ -49,6 +49,25 @@ namespace DaxStudio.UI.Extensions
         public static string Format(this string input, params object[] args)
         {
             return string.Format(input, args);
+        }
+
+        public static bool IsFunctionKey(this string input)
+        {
+            if (input.Length <= 1) return false;
+            if (!input.StartsWith("F")) return false;
+            return input.Substring(1).IsNumeric();
+        }
+
+        public static string Base64Encode(this string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        public static string Base64Decode(this string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
     }
 }

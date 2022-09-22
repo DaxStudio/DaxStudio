@@ -22,7 +22,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -208,7 +207,15 @@
                     </StackPanel>
                 </Button>
 
-
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ShowTraceDiagnostics]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource aboutDrawingImage}"
+                               Width="16" Height="16"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Info</TextBlock>
+                    </StackPanel>
+                </Button>
                 <!--<Rectangle DockPanel.Dock="Right"/>-->
 
 
@@ -334,32 +341,7 @@
                                                 DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
                                                 Style="{StaticResource AggregateRewriteTooltipStyle}"/>
                                         </Rectangle.ToolTip>
-                                    <!--<Rectangle.ToolTip>-->
-                                            <!-- Style="{StaticResource AggregateRewriteTooltip}" 
-                                         DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"-->
-                                        <!--<ToolTip >
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Text="Aggregation Rewrite: " />
-                                                <TextBlock Text="Aggregation Hits: "  Grid.Row="1"/>
-                                                <TextBlock Text="Aggregation Misses: " Grid.Row="2"/>
-                                                <TextBlock Text="{Binding AggregationStatus}" Grid.Column="1"/>
-                                                <TextBlock Text="{Binding AggregationMatchCount}" Grid.Column="1" Grid.Row="1"/>
-                                                <TextBlock Text="{Binding AggregationMissCount}" Grid.Column="1" Grid.Row="2"/>
-                                            </Grid>
-
-                                        </ToolTip>
-
-                                    </Rectangle.ToolTip>-->
-                                </Rectangle>
+                                    </Rectangle>
 
                             </Grid>
                         </DataTemplate>

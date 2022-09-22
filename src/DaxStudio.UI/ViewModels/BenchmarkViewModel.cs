@@ -2,7 +2,6 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
-using FontAwesome.WPF;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
@@ -37,15 +36,12 @@ namespace DaxStudio.UI.ViewModels
             Ribbon = ribbon;
             Options = options;
             SetDefaultsFromOptions();
-            
 
             _currentRunStyle = Ribbon.RunStyles.FirstOrDefault(rs => rs.Icon == RunStyleIcons.RunOnly);
             TimerRunTarget = Ribbon.ResultsTargets.FirstOrDefault(t => t.GetType() == typeof(ResultsTargetTimer));
-            ProgressIcon = FontAwesomeIcon.ClockOutline;
             ProgressSpin = false;
             ProgressMessage = "Ready";
             ProgressPercentage = 0;
-            ProgressColor = "LightGray";
             IsViewAsActive = document.IsViewAsActive;
             RepeatRunWithoutViewAs = document.IsViewAsActive;
 
@@ -71,10 +67,8 @@ namespace DaxStudio.UI.ViewModels
                 _stopwatch.Start();
                 _totalRuns = CalculatedColdCacheRuns + CalculatedWarmCacheRuns;
                 if (RepeatRunWithoutViewAs) _totalRuns = _totalRuns * 2;
-                ProgressIcon = FontAwesomeIcon.Refresh;
                 ProgressSpin = true;
                 ProgressMessage = "Starting Server Timings trace...";
-                ProgressColor = "RoyalBlue";
                 _currentResultsTarget = this.Ribbon.SelectedTarget.Icon;
                 SetSelectedOutputTarget(OutputTarget.Timer);
 
@@ -208,11 +202,8 @@ namespace DaxStudio.UI.ViewModels
 
             Document.ResultsDataSet = BenchmarkDataSet;
 
-
             ProgressSpin = false;
-            ProgressIcon = FontAwesomeIcon.CheckCircle;
             ProgressMessage = "Benchmark Complete";
-            ProgressColor = "Green";
             var duration = _stopwatch.ElapsedMilliseconds;
             Options.PlayLongOperationSound((int)(duration / 1000));
             
@@ -340,13 +331,21 @@ namespace DaxStudio.UI.ViewModels
 
         #region Event Handlers
         int _sequence;
-        public Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(ServerTimingsEvent message, CancellationToken cancellationToken)
         {
             _sequence++;
-            // TODO - catch servertimings from query 
-            AddTimingsToDetailsTable(_sequence, _currentRunStyle, message);
+            // catch servertimings from query 
+            try
+            {
+                AddTimingsToDetailsTable(_sequence, _currentRunStyle, message);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, nameof(BenchmarkViewModel), "HandleAsync<ServerTimingsEvent>", "Error Adding timings to details table");
+                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Adding timings to details table\n{ex.Message}"));
+            }
 
-            System.Diagnostics.Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");
+            Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");
 
 
             if (_viewAsRuns + _currentColdRun + _currentWarmRun < _totalRuns)
@@ -357,7 +356,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 BenchmarkingComplete();
             }
-            return Task.CompletedTask;
+
         }
 
         private void AddTimingsToDetailsTable(int sequence, RunStyle runStyle, ServerTimingsEvent message)
@@ -381,7 +380,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
-            if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started) RunNextQuery();
+            if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started 
+                && message.Sender is ServerTimesViewModel) RunNextQuery();
             // TODO - need to handle trace errors
             return Task.CompletedTask;
         }
@@ -422,13 +422,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private string _progressColor = "lightgray";
-        public string ProgressColor { get => _progressColor;
-            set {
-                _progressColor = value;
-                NotifyOfPropertyChange();
-            }
-        }
 
         private OutputTarget _currentResultsTarget;
 
@@ -442,8 +435,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private FontAwesomeIcon _progressIcon;
-
         public IEventAggregator EventAggregator { get; }
         public DocumentViewModel Document { get; }
         public RibbonViewModel Ribbon { get; }
@@ -451,12 +442,6 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IResultsTarget TimerRunTarget;
 
-        public FontAwesomeIcon ProgressIcon { get => _progressIcon;
-            set {
-                _progressIcon = value;
-                NotifyOfPropertyChange(nameof(ProgressIcon));
-            } 
-        }
         private bool _progressSpin;
         private RunStyle _currentRunStyle;
 

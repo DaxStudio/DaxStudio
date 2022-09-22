@@ -15,8 +15,6 @@
     </Style>
 
     <Style x:Key="MaterialDesignCircularProgressBar" TargetType="{x:Type ProgressBar}">
-    <!--<Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
-    <Setter Property="Background" Value="Transparent" />-->
     <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="IsIndeterminate" Value="True"/>  
@@ -160,4 +158,47 @@
       </Setter.Value>
     </Setter>
   </Style>
+
+
+    <!--<Storyboard x:Key="SpinStoryboard" Storyboard.TargetProperty="RenderTransform.(RotateTransform.Angle)">
+        <DoubleAnimation From="0" To="360" BeginTime="0:0:0" Duration="0:0:1.5" RepeatBehavior="Forever"/>
+    </Storyboard>
+    
+    <Storyboard x:Key="Spinner2" TargetName="RotateTransform" TargetProperty="Angle" RepeatBehavior="Forever">
+        <DoubleAnimation From="0" To="359" Duration="0:0:2" />
+    </Storyboard>-->
+    
+    <Style x:Key="SpinningImage" TargetType="Image">
+        <!--<Style.Resources>
+            <Storyboard x:Key="Spinner" TargetProperty="RenderTransform.(RotateTransform.Angle)">
+                <DoubleAnimation From="0" To="360" BeginTime="0:0:0" Duration="0:0:1.5" RepeatBehavior="Forever"/>
+            </Storyboard>
+        </Style.Resources>-->
+        <!--<Setter Property="Storyboard.Name" Value="SpinStoryboard"/>-->
+        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <RotateTransform  Angle="0"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!--<EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <EventTrigger.Actions>
+                <BeginStoryboard Storyboard ="" />
+            </EventTrigger.Actions>
+            </EventTrigger>-->
+            <Trigger Property="Visibility" Value="Visible">
+                <Trigger.EnterActions>
+                    <BeginStoryboard Name="SpinStoryboard">
+                        <Storyboard TargetProperty="RenderTransform.(RotateTransform.Angle)">
+                            <DoubleAnimation From="0" To="360" BeginTime="0:0:0" Duration="0:0:1.5" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="SpinStoryboard" />
+                </Trigger.ExitActions>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

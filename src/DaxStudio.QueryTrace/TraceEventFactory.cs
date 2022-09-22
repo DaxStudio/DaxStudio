@@ -64,6 +64,7 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(TraceColumn.RequestParameters);
                 trc.Columns.Add(TraceColumn.RequestProperties);
                 trc.Columns.Add(TraceColumn.ApplicationName);
+                trc.Columns.Add(TraceColumn.NTUserName);
             }
 
             switch (eventClass)

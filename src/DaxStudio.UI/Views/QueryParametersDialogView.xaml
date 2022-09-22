@@ -2,13 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:viewModel="clr-namespace:DaxStudio.UI.ViewModels"
-             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
@@ -100,15 +95,13 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                 <TextBox x:Name="ValueBox" DockPanel.Dock="Left" Text="{Binding ValueString,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="2px" Padding="3px" HorizontalAlignment="Stretch" />
-                                <fa:FontAwesome Icon="CheckCircle" 
+                                <Image Source="{DynamicResource successDrawingImage}"
                                                 VerticalAlignment="Center"
                                                 Grid.Column="1"
-                                                Foreground="LightGreen" 
                                                 Visibility="{Binding IsValid, Converter={StaticResource BoolToCollapsedConverter}}"/>
-                                    <fa:FontAwesome Icon="TimesCircle" 
+                                    <Image Source="{DynamicResource failDrawingImage}"
                                                 VerticalAlignment="Center"
                                                 Grid.Column="1"
-                                                Foreground="Red" 
                                                 Visibility="{Binding IsValid, Converter={StaticResource BoolToNotCollapsedConverter}}"
                                                 ToolTip="{Binding ConversionError}" />
                                 </Grid>

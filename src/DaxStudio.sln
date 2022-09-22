@@ -13,9 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.ExcelAddin", "DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj", "{C8769178-B109-4155-ABC2-F4E4587642DB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{F92E0BFC-F721-4A08-A4FA-77DC019B14F6} = {F92E0BFC-F721-4A08-A4FA-77DC019B14F6}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAXEditor", "DAXEditor\DAXEditor.csproj", "{EE4788C1-DCA6-465F-8049-28CEACE6586F}"
 EndProject
@@ -30,6 +27,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Standalone", "Dax
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.UI", "DaxStudio.UI\DaxStudio.UI.csproj", "{5EFEFF14-3052-4DC1-B020-8E259062B899}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C8769178-B109-4155-ABC2-F4E4587642DB} = {C8769178-B109-4155-ABC2-F4E4587642DB}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Tests", "..\tests\DaxStudio.Tests\DaxStudio.Tests.csproj", "{D1ED8FBD-8493-496F-9229-497DD526E1C9}"
 EndProject

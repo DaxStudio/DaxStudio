@@ -278,6 +278,7 @@
       <Word>MINX</Word>
       <Word>MOD</Word>
       <Word>MONTH</Word>
+	  <Word>MPARAMETER</Word>
       <Word>MROUND</Word>
       <Word>NATURALINNERJOIN</Word>
       <Word>NATURALLEFTOUTERJOIN</Word>

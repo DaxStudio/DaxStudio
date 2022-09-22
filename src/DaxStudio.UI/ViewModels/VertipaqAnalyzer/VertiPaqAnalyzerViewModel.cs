@@ -9,7 +9,6 @@ using DaxStudio.Interfaces;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Threading;
 using DaxStudio.UI.Interfaces;
@@ -18,6 +17,9 @@ using DaxStudio.UI.Utils;
 using System;
 using System.IO;
 using Microsoft.AnalysisServices.Tabular;
+using System.Windows;
+using System.Windows.Forms;
+using ADOTabular;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -84,6 +86,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => GroupedPartitions);
                 NotifyOfPropertyChange(() => SummaryViewModel);
                 IsBusy = false;
+                _eventAggregator.PublishOnUIThreadAsync(new ViewMetricsCompleteEvent());
             }
         }
 
@@ -374,11 +377,53 @@ namespace DaxStudio.UI.ViewModels
 
         internal async Task ExportAnalysisDataAsync(string fileName)
         {
-            await Task.Run(() =>
+            try
             {
-                Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
-                ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
-            });
+                if (ViewModel == null || ViewModel?.Model == null)
+                {
+                    var msg = "There is no Metrics Data to export";
+                    Log.Error(Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
+                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    return;
+                }
+
+                await Task.Run(() =>
+                {
+                    Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
+                    ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
+                });
+            }
+            catch (Exception ex)
+            {
+                var msg = $"The following error occured while trying to export to a vpax file:\n{ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
+        }
+
+        public void ExportBimFile()
+        {
+            if (Database == null)
+            {
+                System.Windows.MessageBox.Show("No bim file included in metrics", "Export BIM", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var saveAsDlg = new SaveFileDialog()
+            {
+                DefaultExt = "bim",
+                Title = "Save .bim file",
+                Filter = "Model BIM file (*.bim)|*.bim"
+            };
+            if (saveAsDlg.ShowDialog() == DialogResult.OK)
+            {
+                System.Diagnostics.Debug.WriteLine($"exporting to {saveAsDlg.FileName}");
+                var opts = new SerializeOptions();
+                opts.IgnoreInferredObjects = true;
+                opts.IgnoreInferredProperties = true;
+                
+                File.WriteAllText(saveAsDlg.FileName, JsonSerializer.SerializeDatabase(Database, opts));
+            }
         }
     }
 }

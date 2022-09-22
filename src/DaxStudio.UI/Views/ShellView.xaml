@@ -5,13 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        xmlns:local="clr-namespace:DaxStudio.UI.Utils" 
-        xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-        xmlns:triggers="clr-namespace:DaxStudio.UI.Triggers"
-        xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
-        xmlns:fa="http://schemas.fontawesome.io/icons/"
-        xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"   
-        xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock"
+        xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
         GlowBrush="{x:Null}"
@@ -113,7 +107,7 @@
                            Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
                            cal:Message.Attach="[Event Click] = [Action UpdateFlagClick]">
                 <fluent:Button.Icon>
-                <fa:FontAwesome Icon="Flag" Margin="0 0"></fa:FontAwesome>
+                    <Image Source="{DynamicResource notificationsDrawingImage}" Width="16" />
                 </fluent:Button.Icon>
                 <fluent:Button.ToolTip>
     <fluent:ScreenTip Title="Update Available" Text="{Binding UpdateMessage}"></fluent:ScreenTip>

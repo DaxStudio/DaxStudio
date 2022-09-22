@@ -209,8 +209,10 @@ namespace DaxStudio.UI.ViewModels
             _window = view as Window;
             if (_window != null)
             {
+
                 _window.Closing += WindowClosing;
                 // SetPlacement will adjust the position if it's outside of the visible boundaries
+                Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(OnViewLoaded), $"Setting Window Placement:\n{Options.WindowPosition}");
                 _window.SetPlacement(Options.WindowPosition);
                 _notifyIcon = new NotifyIcon(_window, _eventAggregator);
                 if (_host.DebugLogging) ShowLoggingEnabledNotification();
@@ -218,8 +220,12 @@ namespace DaxStudio.UI.ViewModels
                 //Application.Current.LoadRibbonTheme();
                 _inputBindings = new InputBindings(_window);
             }
+            else
+            {
+                Log.Warning(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(OnViewLoaded), "_window object is null");
+            }
 
-            _inputBindings.RegisterCommands(GetInputBindingCommands());
+            ResetInputBindings();
             _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
             
         }
@@ -265,8 +271,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void ResetInputBindings()
         {
-            _inputBindings.DeregisterCommands();
-            _inputBindings.RegisterCommands(GetInputBindingCommands());
+            try
+            {
+                _inputBindings.DeregisterCommands();
+                _inputBindings.RegisterCommands(GetInputBindingCommands());
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error setting key binding: {ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(ResetInputBindings), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
         }
 
         void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)

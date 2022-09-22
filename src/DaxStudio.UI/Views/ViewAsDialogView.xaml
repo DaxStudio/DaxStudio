@@ -26,14 +26,14 @@
             <Style TargetType="ListBoxItem" BasedOn="{StaticResource DefaultListBoxItemStyle}">
                 <Setter Property="Padding" Value="8 2 8 2" />
             </Style>
-                
+
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
         </ResourceDictionary>
 
 
     </ctrl:DaxStudioDialog.Resources>
 
- 
+
     <Grid>
         <Grid.RowDefinitions>
 
@@ -55,14 +55,14 @@
         <TextBlock TextWrapping="Wrap" MaxWidth="390" 
                    HorizontalAlignment="Left"
                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                   Grid.ColumnSpan="2">You can choose to impersonate another user which will apply all the roles which that user is a member of. Or you can choose to test one or more roles directly</TextBlock> 
-        
+                   Grid.ColumnSpan="2">You can choose to impersonate another user which will apply all the roles which that user is a member of. Or you can choose to test one or more roles directly</TextBlock>
+
         <CheckBox x:Name="OtherUser" Content="Other User" Grid.Row="1" VerticalAlignment="Center" Margin="0 8 0 0" />
         <TextBox x:Name="OtherUserName"  Grid.Row="1" Grid.Column="1" Margin="0 8 0 0" 
                  ui:ControlHelper.PlaceholderText="Enter Username"
                  Padding="5"
                  Visibility="{Binding OtherUser, Converter={StaticResource BoolToHiddenConverter}}"/>
-            
+
         <Label Content="Roles" 
                 FontWeight="Normal"
                 Grid.Row="2" Margin="0 8 0 0" FontSize="18" Padding="0"/>
@@ -72,25 +72,25 @@
                 Margin="0 8 0 8"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
-        <ListBox x:Name="RoleList" 
+            <ListBox x:Name="RoleList" 
                  Background="{DynamicResource Theme.Brush.Default.Back}"
                  
                  >
-            <ListBox.ItemTemplate>
-                <DataTemplate>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
 
-                    <CheckBox IsChecked="{Binding Selected}" Content="{Binding Name}" cal:Message.Attach="[Event Click]=[Action SelectRole($this)]"/>
+                        <CheckBox IsChecked="{Binding Selected}" Content="{Binding Name}" cal:Message.Attach="[Event Click]=[Action SelectRole($this)]"/>
 
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </ctrl:ClipBorder>
-        
+
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.ColumnSpan="2">
             <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True" Style="{DynamicResource AccentButtonStyle}"/>
             <Button x:Name="Cancel" Content="Cancel" Margin="5,10" MinWidth="50" IsCancel="True"/>
         </StackPanel>
     </Grid>
-    
+
 </ctrl:DaxStudioDialog>
 

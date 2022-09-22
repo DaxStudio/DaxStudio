@@ -5,8 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+                              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
@@ -201,8 +200,23 @@
             </Grid.ColumnDefinitions>
             <TextBox Name="SearchCriteria" 
                      Style="{DynamicResource SearchBoxStyle}"
-                     Margin="0 0 0 4">
-            <i:Interaction.Triggers>
+                     Margin="0 0 0 4"
+                     cal:Message.Attach="[Gesture Key.Escape] = [ClearSearchCriteria()]">
+                <i:Interaction.Triggers>
+                    <trig:InputBindingTrigger>
+                        <trig:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Escape"/>
+                        </trig:InputBindingTrigger.InputBinding>
+
+                        <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+
+                    </trig:InputBindingTrigger>
+                </i:Interaction.Triggers>
+                
+
+                <!--<i:Interaction.Triggers>
+                             
+                
                 <trig:InputBindingTrigger>
                     <trig:InputBindingTrigger.InputBinding>
                         <KeyBinding Key="Escape"/>
@@ -211,22 +225,11 @@
                             <cal:ActionMessage MethodName="ClearSearchCriteria"/>
                         </cal:Action.Target>
                     </trig:InputBindingTrigger>
-            </i:Interaction.Triggers>
+            </i:Interaction.Triggers>-->
         </TextBox>
         </Grid>
-        <!--<Button x:Name="ClearSearchCriteria" Grid.Row="0" 
-                HorizontalAlignment="Right" 
-                Background="Transparent"
-                BorderThickness="0"
-                Margin="5"
-                Visibility="{Binding Path=HasSearchCriteria, Converter={StaticResource BoolToVisibilityConverter}}">
-            <fa:FontAwesome Icon="Times" Foreground="DimGray"/>
-        </Button>-->
         
         <!-- TreeView -->
-        <!--<controls:TreeViewEx
-        Style="{StaticResource ResourceKey=MetadataPaneViewStyle}"
-        -->
         <Border CornerRadius="4" 
                 Grid.Row="1"
                 BorderThickness="1" 

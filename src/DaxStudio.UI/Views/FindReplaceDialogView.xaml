@@ -11,7 +11,7 @@
                       xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
                       xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
                       xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-                      xmlns:res="clr-namespace:DaxStudio.UI.Resources"
+                      xmlns:res="clr-namespace:DaxStudio.UI.Resources" xmlns:viewmodels="clr-namespace:DaxStudio.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:FindReplaceDialogViewModel}"
                       Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                       mc:Ignorable="d" 
                       d:DesignWidth="300" 
@@ -106,7 +106,7 @@
                  MinWidth="150"
                  Margin="3" Grid.Row="0" Grid.Column="1"
                  cal:Message.Attach="[Key Enter] = [FindNext]"
-                 ap:InitialFocusExtentions.SelectWhenFocused="{Binding Path=IsVisible}"/>
+                 ap:InitialFocusExtentions.SelectAllAndFocus="{Binding Path=IsVisible}"/>
 
 
 
@@ -130,6 +130,7 @@
                  Margin="3" 
                  Padding="8 6 0 0"
                  cal:Message.Attach="[Key Enter] = [ReplaceText]"
+                 ap:InitialFocusExtentions.SelectAllWhenFocused="True"
                  Name="TextToReplace" Grid.Column="1" Grid.Row="1" MinWidth="50" /> 
         
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="1">

@@ -4,13 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
-             xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
-             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
-             xmlns:clr="clr-namespace:System;assembly=mscorlib"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+                              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+                              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
+                              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+                              xmlns:clr="clr-namespace:System;assembly=mscorlib"
+                              xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="700">
     <UserControl.Resources>
@@ -72,7 +71,7 @@
                                 </aero:DataGridHeaderBorder>
                                 <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2"
                                               Padding="1">
-                                <!-- Source="{DynamicResource filter_toolbarDrawingImage}"-->
+         
                                 <Image Width="18" Height="18" Margin="0"  >
                                     <Image.Style>
                                         <Style TargetType="Image">
@@ -303,8 +302,9 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                    <!-- Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}" -->
                                 <TextBlock Text="{Binding Path=ServerDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                           Foreground="{Binding ServerDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           
                                            TextTrimming="CharacterEllipsis"
                                            Padding="6 0 6 0"/>
                             </Border>
@@ -323,9 +323,10 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                    <!-- Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"-->
                                 <TextBlock Text="{Binding Path=FEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  
                                            VerticalAlignment="Top" HorizontalAlignment="right"
-                                           Foreground="{Binding FEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                           
                                            TextTrimming="CharacterEllipsis"
                                            Padding="6 0 6 0"/>
                             </Border>
@@ -345,8 +346,9 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
+                                    <!-- Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}" -->
                                 <TextBlock Text="{Binding Path=SEDurationMs,Mode=OneWay,StringFormat=\{0:#\,### ms;n/a;n/a\}}"  VerticalAlignment="Top" HorizontalAlignment="right"
-                                       Foreground="{Binding SEDurationMs, Converter={StaticResource NegativeColourConverter}, ConverterParameter={StaticResource NaColour}}"
+                                       
                                            TextTrimming="CharacterEllipsis"
                                            Padding="6 0 6 0"/>
                             </Border>
@@ -416,7 +418,9 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
-                                <fa:FontAwesome Icon="{Binding TypeIcon}" ToolTip="{Binding TypeTooltip}" Margin="0,2" />
+                                <Image ap:ImageBindingHelper.SourceResourceKey="{Binding TypeIcon}" ToolTip="{Binding TypeTooltip}" Margin="0,2" 
+                                       VerticalAlignment="Top"
+                                       Width="16" />
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

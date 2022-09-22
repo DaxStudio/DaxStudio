@@ -10,6 +10,9 @@ using DaxStudio.UI.Extensions;
 using Serilog;
 using DaxStudio.UI.Events;
 using DaxStudio.Common;
+using System.Windows.Controls;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -19,7 +22,7 @@ namespace DaxStudio.UI.ViewModels
         Prev
     }
         
-    public class FindReplaceDialogViewModel : Screen
+    public class FindReplaceDialogViewModel : Screen, IViewAware
     {
 
         // TODO - fix the following sample code to fit MVVM
@@ -41,9 +44,16 @@ namespace DaxStudio.UI.ViewModels
             //_searchDirections = new List<string>();
             //_searchDirections.Add("Next");
             //_searchDirections.Add("Prev");
+            
         }
 
-#region Properties
+        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        {
+            await Task.Delay(100); // let the screen draw for the first time before we try and set the focus
+            this.SetFocus(() => TextToFind);
+        }
+        
+        #region Properties
         //private List<string> _searchDirections;
         public IEnumerable<SearchDirection> SearchDirections
         {
@@ -133,11 +143,6 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _isVisible = value;
                     NotifyOfPropertyChange(() => IsVisible);
-                    if (value)
-                    {
-                        //FocusOnFindBox();
-                        this.SetFocus(() => TextToFind);
-                    }
                 }
                 catch(Exception ex)
                 {
@@ -146,14 +151,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        //private void FocusOnFindBox()
-        //{
-        //    var v = (FindReplaceDialogView)this.GetView();
-        //    v.FocusOnFind();
-        //}
-
-        private bool _showReplace;
-        
+        private bool _showReplace;      
 
         public bool ShowReplace
         {
@@ -168,7 +166,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
 #endregion
-
 
 #region Methods
         
@@ -310,9 +307,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
 #endregion
-
-
-
         
     }
 }

@@ -1,0 +1,137 @@
+﻿<ctrl:DaxStudioDialog 
+             Caption="Query Information"
+             x:Class="DaxStudio.UI.Views.RequestInformationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:local="clr-namespace:DaxStudio.UI.Views" 
+             xmlns:conv1="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             Icon="{DynamicResource aboutDrawingImage}"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="400"
+             Margin="0 -15 0 0"
+             MinWidth="400"
+             MinHeight="300"
+            MaxWidth="600"
+            MaxHeight="500">
+    <ctrl:DaxStudioDialog.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+
+            <Style TargetType="{x:Type Label}">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="DemiBold"/>
+                <Setter Property="Margin" Value="0 8 0 0" />
+                <Setter Property="Padding" Value="0"/>
+            </Style>
+
+            <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Margin" Value="8 8 8 5"/>
+                <Setter Property="MaxWidth" Value="400"/>
+            </Style>
+            <Style x:Key="CopyButton" TargetType="{x:Type Button}">
+                <Setter Property="Margin" Value="0 3 0 0"/>
+                <Setter Property="Height" Value="20"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <!--<Setter Property="Content">
+                    <Setter.Value>
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+                    </Setter.Value>
+                </Setter>-->
+                <!--<Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Border>
+                            <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>-->
+            </Style>
+        </ResourceDictionary>
+
+
+    </ctrl:DaxStudioDialog.Resources>
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+
+        <!--<CheckBox x:Name="Unrestricted2" Content="Unrestricted" Grid.Row="0" />
+        <Label Grid.Row="0" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>-->
+        <Label Content="Activity ID" 
+                Grid.Row="0"/>
+        <Label Content="Start Datetime" 
+                Grid.Row="1"/>
+        <Label Content="Command Text" 
+                Grid.Row="2"/>
+        <Label Content="Parameters"  Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}"
+                Grid.Row="3"/>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
+            <TextBlock x:Name="ActivityID"/>
+            <Button x:Name="CopyActivityID" Style="{StaticResource CopyButton}"
+                    cal:Message.Attach="[Event Click] = [Action Copy(ActivityID)]"
+                    ToolTip="Copy ActivityID to clipboard">
+                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
+            <TextBlock x:Name="StartDatetimeFormatted"/>
+            <Button x:Name="CopyStartDatetime" Style="{StaticResource CopyButton}"
+                    cal:Message.Attach="[Event Click] = [Action Copy(StartDatetimeFormatted)]"
+                    ToolTip="Copy StartDateTime to clipboard">
+                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
+            <TextBlock x:Name="CommandText" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="120" />
+            <Button x:Name="CopyCommandText" Style="{StaticResource CopyButton}"
+                    cal:Message.Attach="[Event Click] = [Action Copy(CommandText)]"
+                    VerticalAlignment="Top"
+                    ToolTip="Copy CommandText to clipboard">
+                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}">
+            <TextBlock x:Name="Parameters" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+            <Button x:Name="CopyParameters" Style="{StaticResource CopyButton}"
+                    cal:Message.Attach="[Event Click] = [Action Copy(Parameters)]" VerticalAlignment="Top" Margin="0 8 0 0"
+                    ToolTip="Copy Parameters to clipboard">
+                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.ColumnSpan="2">
+            <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True" Style="{DynamicResource AccentButtonStyle}"/>
+        </StackPanel>
+    </Grid>
+
+</ctrl:DaxStudioDialog>

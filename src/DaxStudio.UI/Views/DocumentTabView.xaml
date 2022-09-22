@@ -574,13 +574,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <!-- ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
-        ActiveContent="{Binding ActiveItem}"
-                    cal:Message.Attach="[Event ActiveContentChanged] = [Action ActiveDocumentChanged]"
-        DocumentPaneControlStyle="{StaticResource MyCustomDocumentPaneControlStyle}"
         
-        ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"
-        -->
         <avalondock:DockingManager 
             x:Name="Items"
             Background="{DynamicResource Theme.Brush.MenuBar.Back}"

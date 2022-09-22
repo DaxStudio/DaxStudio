@@ -1,6 +1,8 @@
-﻿using DaxStudio.Interfaces;
+﻿using DaxStudio.Common.Extensions;
+using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.UI.Controls;
+using DaxStudio.UI.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -52,8 +54,41 @@ namespace DaxStudio.UI.Validation
     {
         public override ValidationResult Validate(object value, System.Globalization.CultureInfo cultureInfo)
         {
-            string hotkey = value?.ToString()??string.Empty;
             var msg = string.Empty;
+            string hotkey = value?.ToString()??string.Empty;
+            if (!hotkey.Contains('+') )
+            {
+                if (!hotkey.IsFunctionKey())
+                {
+                    msg = $"Cannot set a single character Hotkey '{hotkey}'";
+                    this.Wrapper.Options.HotkeyWarningMessage = msg;
+                    // rollback to original value
+                    BindingOperations.GetBindingExpressionBase(
+                        ((Control)this.Wrapper.HotkeyEditorControl), HotkeyEditorControl.HotkeyProperty).UpdateTarget();
+
+                    return new ValidationResult(false, msg);
+                }
+            }
+            var hotkeyParts = hotkey.Split('+');
+            if (hotkeyParts.Length == 2)
+            {
+                var modifier = hotkeyParts[0].Trim();
+                var key = hotkeyParts[1].Trim();
+                if ( modifier.Contains("shift", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    if (key.Length == 1 && char.IsLetter(key[0]))
+                    {
+                        msg = $"Cannot set a hotkey for '{hotkey}'";
+                        this.Wrapper.Options.HotkeyWarningMessage = msg;
+                        // rollback to original value
+                        BindingOperations.GetBindingExpressionBase(
+                            ((Control)this.Wrapper.HotkeyEditorControl), HotkeyEditorControl.HotkeyProperty).UpdateTarget();
+
+                        return new ValidationResult(false, msg);
+                    }
+                }
+            }
+            
             var props = this.Wrapper.Options.GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             foreach (var prop in props)
             {

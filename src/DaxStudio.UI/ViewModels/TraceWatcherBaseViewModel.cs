@@ -21,6 +21,7 @@ using DaxStudio.Common.Enums;
 using DaxStudio.Common;
 using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -38,16 +39,18 @@ namespace DaxStudio.UI.ViewModels
         private ConcurrentQueue<DaxStudioTraceEventArgs> _events;
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
-        private IGlobalOptions _globalOptions;
+        private readonly IGlobalOptions _globalOptions;
+        private readonly IWindowManager _windowManager;
         private IQueryTrace _tracer;
 
         protected IGlobalOptions GlobalOptions { get => _globalOptions; }
 
         [ImportingConstructor]
-        protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions)
+        protected TraceWatcherBaseViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager)
         {
             _eventAggregator = eventAggregator;
             _globalOptions = globalOptions;
+            _windowManager = windowManager;
             WaitForEvent = TraceEventClass.QueryEnd;
             HideCommand = new DelegateCommand(HideTrace, CanHideTrace);
             //_eventAggregator.Subscribe(this); 
@@ -105,6 +108,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
             if (!IsPaused) ProcessResults();
             IsBusy = false;
+            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent(this));
         }
 
         // This method is called before a trace starts which gives you a chance to 
@@ -601,7 +605,7 @@ namespace DaxStudio.UI.ViewModels
         private void TracerOnTraceCompleted(object sender, EventArgs e)
         {
             if (IsChecked && !IsPaused) ProcessAllEvents();
-            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent());
+            
         }
 
         private void TracerOnTraceStarted(object sender, EventArgs e)
@@ -708,7 +712,6 @@ namespace DaxStudio.UI.ViewModels
 
         public abstract string KeyTip { get; }
         #endregion
-
-
+        protected IWindowManager WindowManager => _windowManager;
     }
 }

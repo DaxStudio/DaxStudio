@@ -431,7 +431,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _neverShowHelpWatermark;
         [Category("Editor")]
-        [DisplayName("Show Help Text on Empty Document")]
+        [DisplayName("Show Getting Started Dialog")]
+        [Description("Shows a dialog with hints for getting started when first connecting")]
         [SortOrder(120)]
         [DataMember, DefaultValue(true)]
         public bool ShowHelpWatermark { get => _neverShowHelpWatermark;
@@ -1308,7 +1309,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _vpaxIncludeTom;
-        [DataMember, DefaultValue(false)]
+        [DataMember, DefaultValue(true)]
         public bool VpaxIncludeTom {
             get => _vpaxIncludeTom;
             set {
@@ -1371,9 +1372,12 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
 
-        private string _theme = "Auto";
-        [DataMember, DefaultValue("Auto")]
-        public string Theme
+        private UITheme _theme = UITheme.Auto;
+        [DataMember, DefaultValue(UITheme.Auto)]
+        [Category("Defaults")]
+        [Subcategory("Theme")]
+        [DisplayName("UI Theme / Mode (Light, Dark, Auto)")]
+        public UITheme Theme
         {
             get => _theme;
             set
@@ -1382,15 +1386,26 @@ namespace DaxStudio.UI.ViewModels
                 _theme = value;
                 NotifyOfPropertyChange(() => Theme);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
-                SettingProvider.SetValue("Theme", value, _isInitializing, this);
-
+                SettingProvider.SetValue(nameof(Theme), value, _isInitializing, this);
+                _eventAggregator.PublishOnUIThreadAsync(new ChangeThemeEvent(Theme));
             }
         }
 
-        private string _autoTheme = "Light";
-        public string AutoTheme { 
+        [JsonIgnore]
+        public IEnumerable<UITheme> UIThemes
+        {
+            get
+            {
+                var items = Enum.GetValues(typeof(UITheme)).Cast<UITheme>();
+                return items;
+            }
+        }
+
+        private UITheme _autoTheme = UITheme.Light;
+        [JsonIgnore]
+        public UITheme AutoTheme { 
             get {
-                return Theme == "Auto" ? _autoTheme : Theme;
+                return Theme == UITheme.Auto ? _autoTheme : Theme;
             } 
             set
             {
@@ -2210,6 +2225,24 @@ namespace DaxStudio.UI.ViewModels
             get => _gettingStartedShow;
             set => _gettingStartedShow = value;
         }
+
+        // temporarily stubbed out until the implementation is finalized
+        private bool _includeHyperlinkOnCopy;
+        public bool IncludeHyperlinkOnCopy { get {
+#if DEBUG
+                return true;
+#else
+                return _includeHyperlinkOnCopy; 
+#endif
+            }
+            set { 
+                _includeHyperlinkOnCopy = value;
+                SettingProvider.SetValue(nameof(IncludeHyperlinkOnCopy), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+
+            } 
+        } 
 
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls

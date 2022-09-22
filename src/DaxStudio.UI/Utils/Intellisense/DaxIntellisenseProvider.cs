@@ -51,7 +51,7 @@ namespace DaxStudio.UI.Utils.Intellisense
         //private bool HasThrownException;
         private IEventAggregator _eventAggregator;
         private readonly IGlobalOptions _options;
-
+        private const double BaseCompletionWindowWidth = 300;
         public DaxIntellisenseProvider (IDaxDocument activeDocument, IEventAggregator eventAggregator, IGlobalOptions options)
         {
             Document = activeDocument;
@@ -256,7 +256,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             DaxStudioCompletionWindow completionWindow = new DaxStudioCompletionWindow(sender as TextArea);
             // set properties
             completionWindow.ResizeMode = ResizeMode.NoResize;
-            completionWindow.Width = completionWindow.Width * (_options.CodeCompletionWindowWidthIncrease / 100);
+            completionWindow.Width = BaseCompletionWindowWidth * (_options.CodeCompletionWindowWidthIncrease / 100);
             completionWindow.CloseAutomatically = false;
             completionWindow.WindowStyle = WindowStyle.None;
             completionWindow.Background = new SolidColorBrush(Color.FromArgb(0,0,0,0));
@@ -636,6 +636,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 // Keywords
                 tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "MPARAMETER", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "COLUMN", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "TABLE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "DEFINE", 200.0));

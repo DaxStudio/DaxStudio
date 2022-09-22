@@ -17,6 +17,8 @@ namespace DaxStudio.Common
         internal const string Server = "Server";
         internal const string ShowHelp = "ShowHelp";
         internal const string NoPreview = "NoPreview";
+        internal const string Query = "Query";
+        internal const string FromUri = "FromUri";
 
         public static CmdLineArgs _args;
 

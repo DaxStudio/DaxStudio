@@ -1,5 +1,7 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Common;
 using DaxStudio.UI.Interfaces;
+using Serilog;
 using System;
 using System.ComponentModel.Composition;
 
@@ -19,11 +21,24 @@ namespace DaxStudio.UI.Utils {
         public IShell Shell { get; set; }
 
         public void Execute(CoroutineExecutionContext context) {
-            var documentWorkspace = screen.Parent as IDocumentWorkspace;
-            if (documentWorkspace != null)
-                documentWorkspace.ActivateAsync(screen);
-
-            Completed(this, new ResultCompletionEventArgs { WasCancelled = !closeCheck() });
+            try
+            {
+                var documentWorkspace = screen.Parent as IDocumentWorkspace;
+                if (documentWorkspace != null)
+                    documentWorkspace.ActivateAsync(screen).ContinueWith((precedent) => { 
+                        if (precedent.IsFaulted)
+                        {
+                            Log.Error(precedent.Exception, Constants.LogMessageTemplate, nameof(ApplicationCloseCheck), nameof(Execute), "Error activating screen before closing");
+                        }
+                    });
+            }
+            catch (Exception ex) {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ApplicationCloseCheck), nameof(Execute), $"Error in close check\n{ex.Message}");
+            }
+            finally
+            {
+                Completed(this, new ResultCompletionEventArgs { WasCancelled = !closeCheck() });
+            }
         }
 
         public event EventHandler<ResultCompletionEventArgs> Completed = delegate { };

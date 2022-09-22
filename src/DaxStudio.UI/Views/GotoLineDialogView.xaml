@@ -37,7 +37,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Row="0" VerticalAlignment="Center" Margin="0 0 8 0">Line:</TextBlock>
-                <TextBox x:Name="LineNo" Height="22" VerticalAlignment="Top" Grid.Row="0" Grid.Column="1" Margin="2px" ap:InitialFocusExtentions.SelectWhenFocused="{Binding Path=IsFocused}">
+                <TextBox x:Name="LineNo" Height="22" VerticalAlignment="Top" Grid.Row="0" Grid.Column="1" Margin="2px" ap:InitialFocusExtentions.SelectAllAndFocus="{Binding Path=IsFocused}">
                     <Validation.ErrorTemplate>
                         <ControlTemplate>
                             <StackPanel>

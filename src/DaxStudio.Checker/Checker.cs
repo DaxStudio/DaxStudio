@@ -501,8 +501,18 @@ namespace DaxStudio.CheckerApp
 
         private MachineType GetExcelDetails()
         {
-            var appPath = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe", null, "");
-            Output.AppendIndentedLine($"Excel Path: {appPath}");
+            var key1 = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe";
+            var key2 = @"Computer\HKEY_CLASSES_ROOT\CLSID\{00024500-0000-0000-C000-000000000046}\LocalServer32";
+            var finalKey = key1;
+            var appPath = (string)Registry.GetValue(key1, null, "");
+            
+            // try key2 if key1 is null or empty
+            if (string.IsNullOrEmpty( appPath ))
+            {
+                finalKey = key2;
+                appPath = (string)Registry.GetValue(key2, null, "");
+            }
+            Output.AppendIndentedLine($"Excel Path: {appPath}\n\t{finalKey}");
             var excelArch = GetMachineType(appPath);
             Output.AppendIndentedLine($"Excel Architecture: {excelArch}");
             return excelArch;

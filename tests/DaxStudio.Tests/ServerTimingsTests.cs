@@ -20,12 +20,14 @@ namespace DaxStudio.Tests
     {
         private IGlobalOptions mockOptions;
         private IEventAggregator mockEventAggregator;
+        private IWindowManager mockWindowManager;
 
         [TestInitialize]
         public void TestSetup()
         {
             mockOptions = new Mock<IGlobalOptions>().Object;
             mockEventAggregator = new Mocks.MockEventAggregator();
+            mockWindowManager = new Mock<IWindowManager>().Object;
         }
 
         [TestMethod]
@@ -34,7 +36,7 @@ namespace DaxStudio.Tests
 
             var details = new ServerTimingDetailsViewModel();
 
-            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions);
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
 
             var e1 = CreateDSVertipaqSEEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25)); // 20
             var e2 = CreateDSVertipaqSEEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
@@ -58,7 +60,7 @@ namespace DaxStudio.Tests
 
             var details = new ServerTimingDetailsViewModel();
 
-            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions);
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
 
             var e1 = CreateDSVertipaqSEEvent(1,new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25));  // 20
             var e2 = CreateDSVertipaqSEEvent(2,new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // fully overlapped
@@ -87,7 +89,7 @@ namespace DaxStudio.Tests
 
             var details = new ServerTimingDetailsViewModel();
 
-            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions);
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions,mockWindowManager);
 
             var e1 = CreateDSDQEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25));  // 20
             var e2 = CreateDSDQEvent(2, new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // fully overlapped

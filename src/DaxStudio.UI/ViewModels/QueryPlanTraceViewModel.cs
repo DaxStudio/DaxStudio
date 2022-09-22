@@ -20,6 +20,7 @@ using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -103,7 +104,7 @@ namespace DaxStudio.UI.ViewModels
         private const string searchRecs = RecsPrefix + @"([0-9]*)";
         static Regex recsRegex = new Regex(searchRecs, RegexOptions.Compiled);
 
-        private const string CachePrefix = @"Cache:|DirectQueryResult";
+        private const string CachePrefix = @"Cache:|DirectQueryResult|DataPostFilter:";
         static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
 
         public override void PrepareQueryPlanRow(string line, int rowNumber) { 
@@ -134,10 +135,13 @@ namespace DaxStudio.UI.ViewModels
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, 
-        ISaveState
+        ISaveState,
+        ITraceDiagnostics
     {
         [ImportingConstructor]
-        public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base(eventAggregator, globalOptions)
+        public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) 
+            : base(eventAggregator, globalOptions, windowManager) 
+
         {
             _physicalQueryPlanRows = new BindableCollection<PhysicalQueryPlanRow>();
             _logicalQueryPlanRows = new BindableCollection<LogicalQueryPlanRow>();
@@ -177,13 +181,21 @@ namespace DaxStudio.UI.ViewModels
                     PreparePhysicalQueryPlan(traceEvent.TextData);
                     NotifyOfPropertyChange(() => PhysicalQueryPlanText);
                 }
+                if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryBegin)
+                {
+                    Parameters = traceEvent.RequestParameters;
+                    StartDatetime = traceEvent.StartTime;
+                }
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
                 {
+                    ActivityID = traceEvent.ActivityId;
+                    CommandText = traceEvent.TextData;
                     TotalDuration = traceEvent.Duration;
                     NotifyOfPropertyChange(() => TotalDuration);
                 }
             }
-            NotifyOfPropertyChange(() => CanExport);
+            NotifyOfPropertyChange(nameof(CanExport));
+            NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
 
         public override void OnReset() {
@@ -326,9 +338,13 @@ namespace DaxStudio.UI.ViewModels
             var m = new QueryPlanModel()
             {
                 PhysicalQueryPlanRows = this.PhysicalQueryPlanRows,
-                LogicalQueryPlanRows = this.LogicalQueryPlanRows
+                LogicalQueryPlanRows = this.LogicalQueryPlanRows,
+                ActivityID = this.ActivityID,
+                CommandText = this.CommandText,
+                Parameters = this.Parameters,
+                StartDatetime = this.StartDatetime
             };
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(m, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(m, Formatting.Indented);
             return json;
         }
 
@@ -348,11 +364,15 @@ namespace DaxStudio.UI.ViewModels
 
             PhysicalQueryPlanRows = m.PhysicalQueryPlanRows;
             LogicalQueryPlanRows = m.LogicalQueryPlanRows;
+            ActivityID = m.ActivityID;
+            StartDatetime = m.StartDatetime;
+            CommandText = m.CommandText;
+            Parameters = m.Parameters;
 
-
-            NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
-            NotifyOfPropertyChange(() => LogicalQueryPlanRows);
-            NotifyOfPropertyChange(() => CanExport);
+            NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof(LogicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof(CanExport));
+            NotifyOfPropertyChange(nameof( CanShowTraceDiagnostics));
         }
 
         public void SavePackage(Package package)
@@ -408,18 +428,39 @@ namespace DaxStudio.UI.ViewModels
 
         public override bool CanExport => _logicalQueryPlanRows.Count > 0;
 
+        public string ActivityID { get; set; }
+
+        public DateTime StartDatetime { get; set; }
+
+        public string CommandText { get; set; }
+        public string Parameters { get; set; }
+
         public override void ExportTraceDetails(string filePath)
         {
             File.WriteAllText(filePath, GetJson());
         }
 
+        public bool CanShowTraceDiagnostics => CanExport;
+        public async void ShowTraceDiagnostics()
+        {
+            var traceDiagnosticsViewModel = new RequestInformationViewModel(this);
+            await WindowManager.ShowDialogBoxAsync(traceDiagnosticsViewModel, settings: new Dictionary<string, object>
+            {
+                { "WindowStyle", WindowStyle.None},
+                { "ShowInTaskbar", false},
+                { "ResizeMode", ResizeMode.NoResize},
+                { "Background", Brushes.Transparent},
+                { "AllowsTransparency",true}
+
+            });
+        }
         //protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
         //{
         //    base.OnUpdateGlobalOptions(message);
         //    NotifyOfPropertyChange(nameof(ShowQueryPlanNextLine));
         //    NotifyOfPropertyChange(nameof(ShowQueryPlanLineLevel));
         //}
-        
+
 
         //public bool ShowQueryPlanNextLine => GlobalOptions.ShowQueryPlanNextLine;
         //public bool ShowQueryPlanLineLevel => GlobalOptions.ShowQueryPlanLineLevel;

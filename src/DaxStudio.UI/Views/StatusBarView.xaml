@@ -102,14 +102,14 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </Fluent:StatusBar.ItemsPanel>
-            <Fluent:StatusBarItem Grid.Column="0" Title="Spinner">
+            <!--<Fluent:StatusBarItem Grid.Column="0" Title="Spinner">-->
 
                 <!--<ui:ProgressRing IsActive="{Binding Working}" Visibility="{Binding Working, Converter={StaticResource BoolToVisibilityConverter}}" Width="10" Height="10" Margin="4 0 0 0">
                     <ui:ProgressRing.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </ui:ProgressRing.LayoutTransform>
                 </ui:ProgressRing>-->
-            </Fluent:StatusBarItem>
+            <!--</Fluent:StatusBarItem>-->
             <!--<Separator Grid.Column="1"/>-->
             <Fluent:StatusBarItem Grid.Column="2" Title="Status Message">
 
@@ -119,11 +119,10 @@
 
             </Fluent:StatusBarItem>
             <Separator Grid.Column="3"/>
-            <Fluent:StatusBarItem Grid.Column="4">
-                <Image Source="{DynamicResource editor_smallDrawingImage}" Width="16"/>
-            </Fluent:StatusBarItem>
+
             <Fluent:StatusBarItem Grid.Column="5" Title="Editor Position">
                 <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource editor_smallDrawingImage}" Width="16"/>
                     <!--<Image Source="{StaticResource StatusPos}"></Image>-->
                     <TextBlock  x:Name="PositionText"></TextBlock>
                 </StackPanel>

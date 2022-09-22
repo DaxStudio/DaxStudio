@@ -1,6 +1,7 @@
 ﻿extern alias ExcelAmo;
 
 using System;
+using System.IO;
 using Serilog;
 
 namespace DaxStudio.ExcelAddin.AmoWrapper
@@ -50,13 +51,34 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
             {
                 AmoServer.VoidDelegate f = delegate
                 {
-                    _xlSvr.Connect(connectionString);
+                    _xlSvr.Connect(connectionString,String.Empty);
+
                 };
                 f();
             }
 
         }
 
+        public int TableCount
+        {
+            get
+            {
+                if (_type == AmoType.AnalysisServices)
+                {
+                    return _svr.Databases[0]?.Model?.Tables?.Count ?? -1;
+                }
+                else
+                {
+                    AmoServer.ReturnDelegate<int> f = delegate
+                    {
+                        //var req = (ExcelAmo.Microsoft.AnalysisServices.XmlaRequestType)requestType;
+                        ExcelAmo.Microsoft.AnalysisServices.DatabaseCollection dbs = _xlSvr.Databases;
+                        return dbs[0].Dimensions?.Count ?? -1;
+                    };
+                    return f();
+                }
+            }
+        }
 
         public System.Xml.XmlReader SendXmlaRequest( System.IO.TextReader textReader)
         {
