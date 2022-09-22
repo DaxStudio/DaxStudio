@@ -193,7 +193,7 @@ Root: "HKA"; Subkey: "Software\Policies\Microsoft\office\16.0\common\Security\Tr
 ;Root: "HKCU"; Subkey: "Software\DaxStudio"; ValueType: none; Flags: deletevalue; ValueName: "ShowPreReleaseNotifications";
 
 ; Remove all users settings on uninstall
-Root: "HKCU"; Subkey: "Software\DaxStudio"; ValueType: none; Flags: uninsdeletekey
+;Root: "HKCU"; Subkey: "Software\DaxStudio"; ValueType: none; Flags: uninsdeletekey
 
 
 [CustomMessages]
