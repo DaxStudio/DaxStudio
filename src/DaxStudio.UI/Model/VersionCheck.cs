@@ -237,7 +237,9 @@ namespace DaxStudio.UI.Model
         {
             get
             {
-                if (ServerVersion.IsNotSet()) return false;
+                // if we don't know the remote version assume we are on the latest
+                // version until we know for sure.
+                if (ServerVersion.IsNotSet()) return true;  
                 return LocalVersion.CompareTo(ServerVersion) >= 0;
             }
         }
