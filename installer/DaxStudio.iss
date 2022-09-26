@@ -177,10 +177,10 @@ Root: "HKA"; Subkey: "Software\Classes\VPAX file\Shell\Open\Command"; ValueType:
 Root: "HKA"; Subkey: "Software\Classes\VPAX file\DefaultIcon"; ValueType: string; ValueData: "{app}\bin\DaxStudio.FileIcons.dll,2"; Flags: uninsdeletevalue
 
 ;add uri keys
-Root: "HKCR"; Subkey: "daxstudio"; ValueType: string; ValueData: "URL:daxstudio Protocol"; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "daxstudio"; ValueType: string; ValueName: "URL Protocol"; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "daxstudio\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0" ; Flags: uninsdeletekey
-Root: "HKCR"; Subkey: "daxstudio\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -uri ""%1"""; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\daxstudio"; ValueType: string; ValueData: "URL:daxstudio Protocol"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\daxstudio"; ValueType: string; ValueName: "URL Protocol"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\daxstudio\DefaultIcon"; ValueType: string; ValueData: "{app}\DaxStudio.exe,0" ; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Classes\daxstudio\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -uri ""%1"""; Flags: uninsdeletekey
 
 ;turn off URI warnings from office apps
 Root: "HKA"; Subkey: "Software\Policies\Microsoft\office\16.0\common\Security\Trusted Protocols\All Applications\daxstudio:"; Flags: uninsdeletekey
