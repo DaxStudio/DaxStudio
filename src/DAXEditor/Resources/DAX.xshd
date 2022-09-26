@@ -389,6 +389,7 @@
       <Word>UNICODE</Word>
       <Word>UNION</Word>
       <Word>UPPER</Word>
+	  <Word>USERCULTURE</Word>
       <Word>USERELATIONSHIP</Word>
       <Word>USERNAME</Word>
       <Word>USEROBJECTID</Word>

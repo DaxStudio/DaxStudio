@@ -178,7 +178,7 @@ namespace DaxStudio.UI.Extensions
                                     }
                                     else
                                     {
-                                        formatString = "yyyy-MM-dd";
+                                        formatString = autoDateFormat;
                                     }
                                     break;
                                 default:
