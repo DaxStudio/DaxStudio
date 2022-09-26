@@ -19,12 +19,16 @@
             <SolidColorBrush x:Key="WatermarkTextColor">DarkGray</SolidColorBrush>
 
             <Style TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{StaticResource WatermarkTextColor}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
                 <Setter Property="FontSize" Value="14"></Setter>
                 <Setter Property="FontFamily" Value="Segoe UI"></Setter>
             </Style>
 
+        <Style x:Key="Hyperlink" TargetType="Label">
+            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
+        </Style>
+            
             <Style x:Key="HyperlinkButton" TargetType="Button">
                 <Setter Property ="Padding" Value="0 5 0 0 "/>
                 <Setter Property="Margin" Value="0 "/>
@@ -55,10 +59,10 @@
             HorizontalAlignment="Center">
                     
                     <TextBlock >The simplest DAX query is in the form of:</TextBlock>
-                    <Border CornerRadius="8" Margin="0 20 0 20" Background="{DynamicResource Theme.Brush.Content.Back}">
+                    <Border CornerRadius="8" Margin="0 20 0 20" Background="{DynamicResource Theme.Brush.StatusBar.Back}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontFamily="Courier New" Margin="5 10">1</TextBlock>
-                            <TextBlock  FontFamily="Courier New" Margin="10 10">EVALUATE &lt;table expression&gt;</TextBlock>
+                            <TextBlock  FontFamily="Courier New" Margin="10 10"><Run Foreground="{DynamicResource Theme.Brush.Dax.Keyword}">EVALUATE</Run>  &lt;table expression&gt;</TextBlock>
                         </StackPanel>
                     </Border>
                     <TextBlock >Where the &lt;table expression&gt; can be as simple as the name of a table or it could be a DAX function that returns a table such as FILTER or SUMMARIZECOLUMNS.</TextBlock>
@@ -73,7 +77,10 @@
                     
                         
                         <Button cal:Message.Attach="[Event Click] = [Action OpenQueryBuilder()]" Style="{StaticResource HyperlinkButton}" VerticalAlignment="Center">
-                            <Hyperlink Focusable="False">Try the Query Builder!</Hyperlink>
+                            <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource query_builderDrawingImage}" Width="24" Margin="0 0 8 0"/>
+                                <TextBlock><Hyperlink Focusable="False">Try the Query Builder!</Hyperlink></TextBlock>
+                            </StackPanel>
                         </Button>
 
                         <CheckBox Grid.Column="1" 

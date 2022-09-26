@@ -44,6 +44,7 @@
     <Color x:Key="Theme.BusyPanel.Back">#30000000</Color>
     <Color x:Key="Theme.BusyPanel.Border">#000000</Color>
     <Color x:Key="Theme.BusyPanel.Text">#AA000000</Color>
+    <Color x:Key="Theme.Dax.Keyword">#035ACA</Color>
     <sys:Double x:Key="Theme.DropShadow.Opacity">0.4</sys:Double>
     
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
@@ -82,6 +83,7 @@
     <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Back" Color="{StaticResource Theme.BusyPanel.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Border" Color="{StaticResource Theme.BusyPanel.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Text" Color="{StaticResource Theme.BusyPanel.Text}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Dax.Keyword" Color="{StaticResource Theme.Dax.Keyword}" options:Freeze="true"/>
     
     <SolidColorBrush x:Key="ComboBoxItemBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{DynamicResource Theme.Default.Back}" options:Freeze="true"/>
