@@ -266,6 +266,7 @@
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\BindingProxy.cs" />
     <Compile Include="Controls\ClipBorder.cs" />
     <Compile Include="Controls\DataGridCustomCopy.cs" />
     <Compile Include="Controls\DataGridNoContextMenu.cs" />
@@ -321,6 +322,7 @@
     <Compile Include="Converters\WaterfallLengthConverter.cs" />
     <Compile Include="Converters\WaterfallMarginConverter.cs" />
     <Compile Include="Enums\SaveAsExtension.cs" />
+    <Compile Include="Events\CopyWithHeadersEvent.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
     <Compile Include="Events\EditorHotkeyEvent.cs" />
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />

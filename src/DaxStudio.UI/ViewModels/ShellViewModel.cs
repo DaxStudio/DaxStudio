@@ -266,7 +266,12 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(MoveLineUp), "Ctrl + Add");
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + OemMinus");
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + Subtract");
+            yield return new InputBindingCommand(this, nameof(CopyWithHeaders), "Ctrl + Shift + C");
+        }
 
+        public void CopyWithHeaders()
+        {
+            _eventAggregator.PublishOnUIThreadAsync(new CopyWithHeadersEvent());
         }
 
         public void ResetInputBindings()
@@ -321,10 +326,18 @@ namespace DaxStudio.UI.ViewModels
 
         #region Event Handlers
         public Task HandleAsync(NewVersionEvent message, CancellationToken cancellationToken)
-        {           
-            var newVersionText =
-                $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
-            Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
+        {
+            var newVersionText = $"A new version is available for download.\nClick here to go to the download page";
+            try
+            {
+                newVersionText = $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
+                Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), "Handle<NewVersionEvent>",ex.Message);
+
+            }
             _notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
             return Task.CompletedTask;
         }

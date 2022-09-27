@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.Composition;
 using System.Data;
 using DaxStudio.UI.Model;
-using DaxStudio.UI.Extensions;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows;
@@ -11,13 +10,9 @@ using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using DaxStudio.UI.Interfaces;
-using System.Drawing;
 using System.Linq;
-using System;
-using DaxStudio.UI.Views;
 using UnitComboLib.ViewModel;
 using System.Collections.ObjectModel;
-using System.Windows.Media;
 using UnitComboLib.Unit.Screen;
 using DaxStudio.UI.Utils;
 using System.Threading;
@@ -37,6 +32,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<QueryFinishedEvent>
         , IHandle<UpdateGlobalOptions>
         , IHandle<SizeUnitsUpdatedEvent>
+        , IHandle<CopyWithHeadersEvent>
     {
         private DataTable _resultsTable;
         private string _selectedWorksheet;
@@ -289,9 +285,29 @@ namespace DaxStudio.UI.ViewModels
             set { _selectedWorkbook = value; NotifyOfPropertyChange(() => SelectedWorkbook); } 
         }
 
-        public void CopyingRowClipboardContent(DataGrid source, DataGridRowClipboardEventArgs e)
+        private bool ShouldCopyHeader;
+        public void CopyWithHeaders()
         {
-            System.Diagnostics.Debug.WriteLine(e.ClipboardRowContent[0]);
+            ShouldCopyHeader = true;
+            ApplicationCommands.Copy.Execute(null,null);
+        }
+
+        public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)
+        {
+            
+            System.Diagnostics.Debug.WriteLine("Clipboard Copy Content");
+            if (e.IsColumnHeadersRow)
+            {
+                if (ShouldCopyHeader)
+                {
+                    ShouldCopyHeader = false;
+                }
+                else
+                {
+                    e.ClipboardRowContent.Clear();
+                }
+            }
+
         }
         public void ResizeGridColumns(DataGrid source, MouseButtonEventArgs e)
         {
@@ -398,15 +414,6 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        public DataGridClipboardCopyMode ClipboardCopyMode
-        {
-            get
-            {
-                if (_options.ExcludeHeadersWhenCopyingResults) return DataGridClipboardCopyMode.ExcludeHeader;
-                return DataGridClipboardCopyMode.IncludeHeader;
-            }
-        }
-
         protected override void OnViewLoaded(object view)
         {
             UpdateSettings();
@@ -414,7 +421,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateSettings()
         {
-            NotifyOfPropertyChange(() => ClipboardCopyMode);
 
             if (FontSize != _options.ResultFontSizePx)
             {
@@ -429,5 +435,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public Task HandleAsync(CopyWithHeadersEvent message, CancellationToken cancellationToken)
+        {
+            if (GridHasFocus) CopyWithHeaders();
+            return Task.CompletedTask;
+        }
+
+        private bool _gridHasFocus;
+        public bool GridHasFocus { get => _gridHasFocus;
+            set
+            {
+                _gridHasFocus = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public void GridGotFocus() { GridHasFocus = true; }
+        public void GridLostFocus() { GridHasFocus = false; }
     }
 }

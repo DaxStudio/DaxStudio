@@ -98,7 +98,7 @@ namespace DaxStudio.UI
                 */
 
                 ConventionManager.AddElementConvention<Fluent.Spinner>(Fluent.Spinner.ValueProperty, "Value", "ValueChanged");
-
+                ConventionManager.AddElementConvention<MenuItem>(ItemsControl.ItemsSourceProperty, "DataContext", "Click");
                 // Add Fluent Ribbon resolver
                 BindingScope.AddChildResolver<Fluent.Ribbon>(FluentRibbonChildResolver);
 

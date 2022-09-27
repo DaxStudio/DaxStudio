@@ -347,16 +347,18 @@ namespace DaxStudio.UI.Utils
             InitializeMachineSettings(options);
 
             // Clean up Preview keys
-            CleanupPreviewKeys();
+            CleanupDeprecatedKeys();
         }
 
-        private void CleanupPreviewKeys()
+        private void CleanupDeprecatedKeys()
         {
-            var previewKeys = new string[] { "ShowPreviewQueryBuilder", "ShowPreviewBenchmark" };
+            var oldKeys = new string[] { "ShowPreviewQueryBuilder", 
+                                         "ShowPreviewBenchmark", 
+                                         "ExcludeHeadersWhenCopyingResults" };
 
             var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
             if (regDaxStudio == null) return;
-            foreach (var subKey in previewKeys)
+            foreach (var subKey in oldKeys)
             {
                 regDaxStudio.DeleteValue(subKey, false);
             }

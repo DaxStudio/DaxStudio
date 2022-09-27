@@ -9,13 +9,17 @@
              xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:sel="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:res="clr-namespace:DaxStudio.UI.Resources"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ScrollingVerticalTabs.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DataGrid.xaml"/>
@@ -62,7 +66,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
+        <Grid.Resources>
+            <ctrl:BindingProxy x:Key="Proxy" Data="{Binding}" />
+        </Grid.Resources>
+
         <!-- Results Grid -->
         <ctrl:ClipBorder Style="{StaticResource BusyBlur}">
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -160,7 +168,7 @@
                             AlternationCount="2"
                             AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                             ItemsSource="{Binding DefaultView}"
-                            ClipboardCopyMode="{Binding Path=DataContext.ClipboardCopyMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            ClipboardCopyMode="IncludeHeader"
                             SelectionMode="Extended"       
                             SelectionUnit="Cell"
                             CanUserAddRows="False"
@@ -169,14 +177,22 @@
                             Background="{DynamicResource Theme.Brush.Content.Back}"
                             AutoGenerateColumns="False"
                             FontFamily="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=DataContext.FontFamily}"
-                            cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
-                                        , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"            
+                            cal:Message.Attach="[Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($this,$eventArgs)];[Event GotFocus] = [Action GridGotFocus];[Event LostFocus]=[Action GridLostFocus]"
                             custom:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=DefaultView}"
+                            cal:Action.TargetWithoutContext="{Binding Path=., RelativeSource={RelativeSource AncestorType=UserControl}}"
                             CanUserSortColumns="True"
                             RowHeaderWidth="10"
                             GridLinesVisibility="All" 
-                             
                             >
+                                    <!--<i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="CopyingRowClipboardContent">
+                                            <cal:Action.TargetWithoutContext>
+                                                <cal:ActionMessage  MethodName="$dataContext.CopyingRowClipboardContent"/>
+                                            </cal:Action.TargetWithoutContext>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>-->
+                                    <!-- cal:Message.Attach="[Event MouseDoubleClick] = [Action ResizeGridColumns($source, $eventArgs)]
+                                        , [Event CopyingRowClipboardContent] = [Action CopyingRowClipboardContent($source, $eventArgs)]"-->
                             <!--<DataGrid.Style>
                                 <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type DataGrid}">
                                     <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
@@ -195,12 +211,18 @@
                             </DataGrid.ColumnHeaderStyle>-->
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Command="Copy" >
+                                    <MenuItem Command="Copy" Header="Copy" InputGestureText="Ctrl+C">
                                         <MenuItem.Icon>
                                             <Image Source="{DynamicResource copyDrawingImage}"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
-                                </ContextMenu>
+                                            <MenuItem Header="Copy with Headers" 
+                                                      InputGestureText="Ctrl+Shift+C"
+                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                      cal:Message.Attach="CopyWithHeaders">
+                                                
+                                            </MenuItem>
+                                        </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
                         </controls:ClipBorder>

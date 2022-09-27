@@ -874,10 +874,10 @@ namespace DaxStudio.UI.ViewModels
         } 
 
         private bool _excludeHeadersWhenCopyingResults;
-        [Category("Results")]
-        [DisplayName("Exclude Headers when Copying Data")]
-        [Description("Setting this option will just copy the raw data from the results pane")]
-        [DataMember, DefaultValue(true)]
+        //[Category("Results")]
+        //[DisplayName("Exclude Headers when Copying Data")]
+        //[Description("Setting this option will just copy the raw data from the results pane")]
+        //[DataMember, DefaultValue(true)]
         public bool ExcludeHeadersWhenCopyingResults
         {
             get => _excludeHeadersWhenCopyingResults;
