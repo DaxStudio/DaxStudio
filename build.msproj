@@ -148,7 +148,7 @@
 
   <Target Name="GenerateInstallerHash" DependsOnTargets="SignedInstaller">
     <ItemGroup>
-      <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe" />
+      <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_setup.exe" />
     </ItemGroup>
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
