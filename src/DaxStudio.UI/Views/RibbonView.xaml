@@ -22,8 +22,6 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/GalleryItem.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/DropDownButton.xaml" />
-                <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Theme/Light.DaxStudio.Theme.xaml"/>-->
-                <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.FluentRibbonStyles.xaml"/>-->
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
