@@ -24,7 +24,6 @@
     <MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />
   </Target>
 
-
   <Target Name="DeleteReleaseFolder">
     <Message Text="Cleaning Release folder" Importance="High"/>
     <RemoveDir Directories="\Release\" />
@@ -33,7 +32,6 @@
   <Target Name="MakeReleaseFolder" DependsOnTargets="DeleteReleaseFolder">
     <MakeDir Directories="$(ReleaseDirectory)"/>
   </Target>
-
 
   <Target Name="Build" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Standalone" />
@@ -147,9 +145,75 @@
   <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies">
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
+
+  <Target Name="GenerateInstallerHash" DependsOnTargets="SignedInstaller">
+    <ItemGroup>
+      <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe" />
+    </ItemGroup>
+        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Hashes.txt" />
+  </Target>
   
-  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable">
+  <Target Name="GeneratePortableHash" DependsOnTargets="Portable">
+    <ItemGroup>
+      <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" />
+    </ItemGroup>
+        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Hashes.txt" />
+  </Target>
+
+  <Target Name="UnsignedGeneratePortableHash" DependsOnTargets="Portable">
+    <ItemGroup>
+      <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" />
+    </ItemGroup>
+        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Portable_Hash.txt" />
+  </Target>
+
+  <Target Name="UnsignedGenerateInstallerHash" DependsOnTargets="InstallerWithSignedAssemblies">
+    <ItemGroup>
+      <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_setup.exe" />
+    </ItemGroup>
+        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
+  </Target>
+
+  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable,GeneratePortableHash;GenerateInstallerHadh">
     <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
+
+  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash">
+    <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
+  </Target>
+
+  <UsingTask TaskName="GenerateHash" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <InputFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+            <OutputFile ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Linq" />
+            <Using Namespace="System.Security.Cryptography" />
+            <Code Type="Fragment" Language="cs"><![CDATA[
+                using (var ms = new MemoryStream())
+                using (var md5 = SHA256.Create())
+                {                
+                    foreach (var item in InputFiles)
+                    {
+                        string path = item.ItemSpec;
+                        using (FileStream stream = new FileStream(path, FileMode.Open))
+                        {
+                            var fileHash = md5.ComputeHash(stream);
+                            ms.Write(fileHash, 0, fileHash.Length);
+                        }
+                    }
+                    ms.Flush();
+                    ms.Position = 0;
+                    var dirHash = md5.ComputeHash(ms);
+                    using (TextWriter w = new StreamWriter(OutputFile, false))
+                    {
+                        w.WriteLine(string.Join("", dirHash.Select(b => b.ToString("x2"))));
+                    }
+                }
+            ]]></Code>
+        </Task>
+    </UsingTask>
 
 </Project>
