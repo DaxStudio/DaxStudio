@@ -174,7 +174,7 @@
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
 
-  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable;GeneratePortableHash;GenerateInstallerHadh">
+  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable;GeneratePortableHash;GenerateInstallerHash">
     <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 
