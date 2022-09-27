@@ -17,6 +17,7 @@
     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+    xmlns:res="clr-namespace:DaxStudio.UI.Resources"
     x:Class="DaxStudio.UI.Views.DocumentView" 
     mc:Ignorable="d" 
     d:DesignWidth="500" 
@@ -26,6 +27,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/MeasureExpressionEditorResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/CompletionList.xaml" />

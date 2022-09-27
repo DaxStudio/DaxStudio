@@ -19,5 +19,7 @@ namespace DaxStudio.Controls.PropertyGrid
             Mode = BindingMode.OneTime;
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
         }
+
+        public EnumerateBinding() { }
     }
 }

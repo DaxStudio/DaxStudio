@@ -1192,6 +1192,33 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _hotkeySwapDelimiters;
+        [DataMember, DefaultValue("Ctrl + Oem1"), Hotkey]
+        public string HotkeySwapDelimiters
+        {
+            get => _hotkeySwapDelimiters;
+            set
+            {
+                _hotkeySwapDelimiters = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeySwapDelimiters), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeySwapDelimiters);
+            }
+        }
+
+        private string _hotkeyDebugCommas;
+        [DataMember, DefaultValue("Ctrl + OemComma"), Hotkey]
+        public string HotkeyDebugCommas
+        {
+            get => _hotkeyDebugCommas;
+            set
+            {
+                _hotkeyDebugCommas = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyDebugCommas), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyDebugCommas);
+            }
+        }
 
         public void ResetKeyBindings()
         {
@@ -1482,20 +1509,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _keepMetadataSearchOpen;
-        [Category("Metadata Pane")]
-        [Subcategory("Search")]
-        [DisplayName("Keep Metadata Search Open")]
-        [DataMember, DefaultValue(true)]
-        public bool KeepMetadataSearchOpen { 
-            get => _keepMetadataSearchOpen;
-            set {
-                _keepMetadataSearchOpen = value;
-                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
-                SettingProvider.SetValue("KeepMetadataSearchOpen", value, _isInitializing, this);
-                NotifyOfPropertyChange(() => KeepMetadataSearchOpen);
-            }
-        }
 
         private bool _autoRefreshMetadataLocalMachine = true;
         [Category("Metadata Pane")]
@@ -1613,8 +1626,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _setClearCacheAndRunAsDefaultRunStyle;
         [Category("Defaults")]
-        [DisplayName("Set 'Clear Cache and Run' as default")]
-        [Description("This option affects the default run style that is selected when DAX Studio starts up. Any changes will take effect the next time DAX Studio starts up.")]
+        [DisplayName("Enable 'Clear Cache Auto' by default")]
+        [Description("Enabling this option will turn on the 'Clear Cache Auto' feature by default")]
         [DataMember, DefaultValue(false)]
         public bool SetClearCacheAsDefaultRunStyle { get => _setClearCacheAndRunAsDefaultRunStyle;
             set

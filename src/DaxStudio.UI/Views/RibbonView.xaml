@@ -1184,7 +1184,7 @@
                                FocusManager.IsFocusScope="True"
                                Visibility="{Binding ShowSwapDelimiters, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Swap Delimiters (Ctrl+,)"
+                        <Fluent:ScreenTip Title="{Binding SwapDelimitersTitle}"
                                           Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -1200,7 +1200,7 @@
                                FocusManager.IsFocusScope="True"
                                Visibility="{Binding ShowDebugCommas, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Debug Commas (Ctrl+,)"
+                        <Fluent:ScreenTip Title="{Binding DebugCommasTitle}"
                                           Text="Move the comma at the end of a line to the beginning of the next line"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
@@ -1469,6 +1469,39 @@
                         <Fluent:ScreenTip Title="Analyze in Excel"
                                    Text="Launches Excel and creates a Pivot Table connected to the current data source."
                                    ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            <Fluent:RibbonGroupBox Header="Utilities">
+                <Fluent:Button Name="SwapDelimitersUtils"
+                               Header="Swap Delimiters"
+                               KeyTip="S"
+                               cal:Message.Attach="[Event Click] = [Action SwapDelimiters()]"
+                               Icon="{DynamicResource swap_delimitersDrawingImage}"
+                               SizeDefinition="Middle,Small,Small"
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True"
+                               Visibility="{Binding ShowDebugCommas, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="{Binding SwapDelimitersTitle}"
+                                          Text="Swaps the delimiters in the selected text between the comma and semi-colon styles"
+                                           ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+
+                <Fluent:Button Name="DebugCommasUtils"
+                               Header="Debug Commas"
+                               KeyTip="D"
+                               cal:Message.Attach="[Event Click] = [Action MoveCommasToDebugMode()]"
+                               Icon="{DynamicResource debug_commas_smallDrawingImage}"
+                               SizeDefinition="Middle,Small,Small"
+                               Margin="4,0"
+                               FocusManager.IsFocusScope="True"
+                               Visibility="{Binding ShowSwapDelimiters, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="{Binding DebugCommasTitle}"
+                                          Text="Move the comma at the end of a line to the beginning of the next line"
+                                           ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>

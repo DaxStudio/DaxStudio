@@ -57,41 +57,12 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ActiveDocument);
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
-            PinSearchOpen = _options.KeepMetadataSearchOpen;
+
         }
-
-
-
-
 
         public IEnumerable<FilterableTreeViewItem> SelectedItems { get; } = new List<FilterableTreeViewItem>();
 
-        private bool _pinSearchOpen;
-        public bool PinSearchOpen
-        {
-            get => _pinSearchOpen;
-            set
-            {
-                var changed = _pinSearchOpen != _options.KeepMetadataSearchOpen;
-                if (!changed) return;
-
-                _pinSearchOpen = value;
-                NotifyOfPropertyChange(() => IsMouseOverSearch);
-                NotifyOfPropertyChange(() => PinSearchOpenLabel);
-                NotifyOfPropertyChange(() => ExpandSearch);
-            }
-        }
-        public void TogglePinSearchOpen()
-        {
-            PinSearchOpen = !PinSearchOpen;
-        }
-
-        public string PinSearchOpenLabel => PinSearchOpen ? "Unpin Search" : "Pin Search";
-
         public DocumentViewModel ActiveDocument { get; }
-
-
-
 
         public string ModelName
         {
@@ -322,35 +293,6 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
-
-        private bool _isMouseOverSearch;
-        public bool IsMouseOverSearch
-        {
-            get => _isMouseOverSearch;
-            set
-            {
-                Debug.WriteLine("MouseOver: " + value);
-                _isMouseOverSearch = value;
-                NotifyOfPropertyChange(() => IsMouseOverSearch);
-                NotifyOfPropertyChange(() => ExpandSearch);
-            }
-        }
-        private bool _isKeyboardFocusWithinSearch;
-        public bool IsKeyboardFocusWithinSearch
-        {
-            get => _isKeyboardFocusWithinSearch;
-            set
-            {
-                Debug.WriteLine("KeyboardFocusWithin: " + value);
-                _isKeyboardFocusWithinSearch = value;
-                NotifyOfPropertyChange(() => IsKeyboardFocusWithinSearch);
-                NotifyOfPropertyChange(() => ExpandSearch);
-            }
-        }
-
-        public bool ExpandSearch => IsMouseOverSearch 
-                                 || IsKeyboardFocusWithinSearch 
-                                 || PinSearchOpen; 
 
         public bool HasCriteria => _currentCriteria.Length > 0;
 
@@ -856,8 +798,6 @@ namespace DaxStudio.UI.ViewModels
             
             ShowHiddenObjects = _options.ShowHiddenMetadata;
             SortFoldersFirstInMetadata = _options.SortFoldersFirstInMetadata;
-            PinSearchOpen = _options.KeepMetadataSearchOpen;
-            NotifyOfPropertyChange(() => ExpandSearch);
             NotifyOfPropertyChange(nameof(AutoHideMetadataVerticalScrollbars));
             return Task.CompletedTask;
         }

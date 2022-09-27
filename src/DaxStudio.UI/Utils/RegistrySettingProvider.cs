@@ -13,6 +13,7 @@ using System.Security;
 using System.Runtime.Serialization;
 using System.Globalization;
 using System.Reflection;
+using Serilog;
 
 namespace DaxStudio.UI.Utils
 {
@@ -352,15 +353,30 @@ namespace DaxStudio.UI.Utils
 
         private void CleanupDeprecatedKeys()
         {
-            var oldKeys = new string[] { "ShowPreviewQueryBuilder", 
-                                         "ShowPreviewBenchmark", 
-                                         "ExcludeHeadersWhenCopyingResults" };
-
-            var regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+            var oldKeys = new string[] { "ShowPreviewQueryBuilder",
+                                         "ShowPreviewBenchmark",
+                                         "ExcludeHeadersWhenCopyingResults",
+                                         "KeepMetadataSearchOpen" };
+            RegistryKey regDaxStudio = null;
+            try
+            {
+                regDaxStudio = Registry.CurrentUser.OpenSubKey(RegistryRootKey, true);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(RegistrySettingProvider), nameof(CleanupDeprecatedKeys), "Error opening registy subkey");
+            }
             if (regDaxStudio == null) return;
             foreach (var subKey in oldKeys)
             {
-                regDaxStudio.DeleteValue(subKey, false);
+                try
+                {
+                    regDaxStudio.DeleteValue(subKey, false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(RegistrySettingProvider), nameof(CleanupDeprecatedKeys), $"Error deleting subkey: {subKey}");
+                }
             }
         }
 

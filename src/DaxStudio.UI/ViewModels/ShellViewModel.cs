@@ -253,8 +253,8 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(Redo), "Ctrl + Y");
             yield return new InputBindingCommand(this, nameof(Undo), "Ctrl + Z");
             yield return new InputBindingCommand(this, nameof(Undo), "Alt + Delete");
-            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemSemiColon");
-            yield return new InputBindingCommand(this, nameof(SwapDelimiters), "Ctrl + OemComma");
+            yield return new InputBindingCommand(this, nameof(SwapDelimiters), Options.HotkeySwapDelimiters);
+            yield return new InputBindingCommand(this, nameof(DebugCommas), Options.HotkeyDebugCommas);
             yield return new InputBindingCommand(this, nameof(Find), "F3");
             yield return new InputBindingCommand(this, nameof(FindPrev), "Shift + F3");
             yield return new InputBindingCommand(this, nameof(FormatQueryStandard), Options.HotkeyFormatQueryStandard);
@@ -267,6 +267,11 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + OemMinus");
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + Subtract");
             yield return new InputBindingCommand(this, nameof(CopyWithHeaders), "Ctrl + Shift + C");
+        }
+
+        private void DebugCommas()
+        {
+            Ribbon.MoveCommasToDebugMode();
         }
 
         public void CopyWithHeaders()

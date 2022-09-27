@@ -42,7 +42,6 @@ namespace DaxStudio.Interfaces
         bool EditorShowLineNumbers { get; set; }
         bool EditorWordWrap { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
-        bool KeepMetadataSearchOpen { get; set; }
         DateTime LastVersionCheckUTC { get; set; }
         int PreviewDataRowLimit { get; set; }
         string ProxyAddress { get; set; }
@@ -104,7 +103,8 @@ namespace DaxStudio.Interfaces
         [Hotkey] string HotkeyFormatQueryAlternate { get; set; }
         [Hotkey] string HotkeySelectWord { get; set; }
         [Hotkey] string HotkeyToggleComment { get; set; }
-
+        [Hotkey] string HotkeyDebugCommas { get; set; }
+        [Hotkey] string HotkeySwapDelimiters { get; set; }
         #endregion
 
         // Preview Features
@@ -150,6 +150,7 @@ namespace DaxStudio.Interfaces
         #endregion
         [JsonIgnore] bool GettingStartedShown { get; set; }
         bool IncludeHyperlinkOnCopy { get; set; }
+
 
         //bool ShowQueryPlanNextLine { get; set; }
         //bool ShowQueryPlanLineLevel { get; set; }

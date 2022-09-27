@@ -1041,6 +1041,8 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument?.MoveCommasToDebugMode();
         }
 
+        public string DebugCommasTitle => "Debug Commas (" + Options.HotkeyDebugCommas + ")";
+        public string SwapDelimitersTitle => "Swap Delimiters (" + Options.HotkeySwapDelimiters + ")";
         public bool ShowSwapDelimiters
         {
             get
@@ -1164,6 +1166,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanFormatQueryStandard));
             NotifyOfPropertyChange(nameof(ShowDebugCommas));
             NotifyOfPropertyChange(nameof(ShowSwapDelimiters));
+            NotifyOfPropertyChange(nameof(DebugCommasTitle));
+            NotifyOfPropertyChange(nameof(SwapDelimitersTitle));
         }
 
         public async void LaunchSqlProfiler()
