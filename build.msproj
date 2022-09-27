@@ -150,14 +150,14 @@
     <ItemGroup>
       <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).exe" />
     </ItemGroup>
-        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Hashes.txt" />
+        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
   
   <Target Name="GeneratePortableHash" DependsOnTargets="Portable">
     <ItemGroup>
       <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" />
     </ItemGroup>
-        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Hashes.txt" />
+        <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Portable_Hash.txt" />
   </Target>
 
   <Target Name="UnsignedGeneratePortableHash" DependsOnTargets="Portable">
