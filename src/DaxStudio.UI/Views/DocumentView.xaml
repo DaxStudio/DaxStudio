@@ -658,6 +658,10 @@
 
                                                 </MenuItem>
                                                 <Separator />
+                                                <MenuItem x:Name="SelecteAll" Header="Select All" InputGestureText="Ctrl+A"
+                                                      cal:Message.Attach="SelectAll()">
+                                                </MenuItem>
+                                                <Separator />
                                                 <MenuItem x:Name="CommentSelection" Header="Comment" 
                                                       cal:Message.Attach="CommentSelection()">
                                                     <MenuItem.Icon>

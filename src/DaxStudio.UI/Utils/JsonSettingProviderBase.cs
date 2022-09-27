@@ -1,7 +1,6 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json;
@@ -9,7 +8,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
