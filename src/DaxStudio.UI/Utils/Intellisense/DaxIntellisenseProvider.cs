@@ -372,8 +372,10 @@ namespace DaxStudio.UI.Utils.Intellisense
             if (f != null)
             {
                 ShowFunctionInsightWindow(offset, f);
+                return;
             }
-            else
+
+            if (Document?.Connection?.Keywords.Contains(funcName)??false)
             {
                 ShowKeywordInsightWindow(offset, funcName);
             }
@@ -417,6 +419,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 //_editor.InsightWindow?.Close();
                 _editor.InsightWindow = null;
                 _editor.InsightWindow = new InsightWindow(_editor.TextArea);
+                _editor.InsightWindow.Resources.MergedDictionaries.Add(InsightWindowCustomResources);
                 if (offset > -1)
                 {
                     _editor.InsightWindow.StartOffset = offset;
@@ -482,6 +485,7 @@ namespace DaxStudio.UI.Utils.Intellisense
             var tb = new TextBlock { TextWrapping = TextWrapping.Wrap };
             var caption = new Run(keyword);
             tb.Inlines.Add(new Bold(caption));
+            tb.Inlines.Add(new Run(" «Keyword»"));
             //tb.Inlines.Add("\n");
             //tb.Inlines.Add(f.Description);
 

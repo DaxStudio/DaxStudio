@@ -59,6 +59,7 @@ namespace DaxStudio.UI.Model
                 "EVALUATE",
                 "MEASURE",
                 "MPARAMETER",
+                "ORDER BY",
                 "RETURN",
                 "TABLE",
                 "VAR" };
