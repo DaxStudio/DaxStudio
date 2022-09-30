@@ -21,7 +21,6 @@
              d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>
-            <local:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
             <local:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter"/>

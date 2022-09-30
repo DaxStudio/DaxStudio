@@ -17,14 +17,7 @@
              d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
         <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
-        <conv:ResourceLookupConverter x:Key="Icons">
-            <ResourceDictionary>
-                <BitmapImage x:Key="Information" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-info.png  "/>
-                <BitmapImage x:Key="Warning" UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-warning.png" />
-                <BitmapImage x:Key="Error"       UriSource="pack://application:,,,/DaxStudio.UI;component/images/icon-cancel.png" />
-            </ResourceDictionary>
-        </conv:ResourceLookupConverter>
-
+        
         <conv:ResourceLookupConverter x:Key="IconNames">
             <ResourceDictionary>
                 <sys:String x:Key="Information">infoDrawingImage</sys:String>

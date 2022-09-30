@@ -358,6 +358,7 @@
                                    FocusManager.FocusedElement="{Binding ElementName=daxEditor}"
                                    Focusable="False"
                                    >
+
             <!--<avalondock:DockingManager.Theme>
                 <avalondock:Vs2013LightTheme/>
             </avalondock:DockingManager.Theme>-->
@@ -494,7 +495,7 @@
                             
                             <Setter Property="HideCommand" Value="{Binding Model.HideCommand}"/>
                             <!--<Setter Property="DockAsDocumentCommand" Value="{Binding Content.DockAsDocumentCommand}" />-->
-
+                            
                             <Setter Property="DockAsDocumentCommand" Value="{x:Null}" />
                         </Style>
                     </local:PanesStyleSelector.ToolStyle>
@@ -548,7 +549,7 @@
                     <avalondock:LayoutPanel Orientation="Vertical">
 
                         <avalondock:LayoutDocumentPane DockHeight="Auto" >
-                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="myDocument" 
+                            <avalondock:LayoutDocument CanFloat="False"  CanClose="False" ContentId="myDocument"  
                                                        attached:InitialFocusExtentions.SelectAllAndFocus="True"
                                                        FocusManager.FocusedElement="{Binding ElementName=daxEditor}">
 
