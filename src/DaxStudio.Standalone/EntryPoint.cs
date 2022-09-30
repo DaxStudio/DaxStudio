@@ -314,13 +314,18 @@ namespace DaxStudio.Standalone
                 return;
             }
 
-            Execute.OnUIThread(() => { 
+            Execute.OnUIThread(() => {
+
+                Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+                Log.CloseAndFlush();
+
+                // Application must be shutting down so just exit
+                if (Application.Current == null) return;
+
                 // add a property to the application indicating that we have crashed
                 if (!App.Properties.Contains("HasCrashed"))
                     App.Properties.Add("HasCrashed", true);
 
-                Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
-                Log.CloseAndFlush();
                 if ((Application.Current?.Dispatcher?.CheckAccess()??true) == true)
                 {
                     CrashReporter.ReportCrash(ex, msg);

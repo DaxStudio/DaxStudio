@@ -117,47 +117,54 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public DocumentViewModel ActiveDocument
-        {
-            get => _activeDocument;
-            set
-            {
-                try
-                {
-                    if (_activeDocument == value)
-                        return;  // this item is already active
-                    if (this.Items.Count == 0)
-                    {
-                        _activeDocument = null;
-                        return;  // no items in collection usually means we are shutting down
-                    }
-                    Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value?.DisplayName);
-                    lock (_activeDocumentLock)
-                    {
-                        _activeDocument = value;
+        public DocumentViewModel ActiveDocument => this.ActiveItem as DocumentViewModel;
 
-                        NotifyOfPropertyChange(() => ActiveDocument);
+        //public DocumentViewModel ActiveDocument
+        //{
+        //    get => _activeDocument;
+        //    set
+        //    {
+        //        try
+        //        {
+        //            if (_activeDocument == value)
+        //                return;  // this item is already active
+        //            if (this.Items.Count == 0)
+        //            {
+        //                _activeDocument = null;
+        //                return;  // no items in collection usually means we are shutting down
+        //            }
+        //            Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value?.DisplayName);
+        //            lock (_activeDocumentLock)
+        //            {
+        //                _activeDocument = value;
 
-                        if (ActiveDocument == null) return;
+        //                NotifyOfPropertyChange(() => ActiveDocument);
 
-                        Items.Apply(i => ((DocumentViewModel)i).IsFocused = false);
+        //                if (ActiveDocument == null) return;
 
-                        _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), "ActiveDocument.Set", "error setting ActiveDocument");
-                }
-            }
-        }
+        //                var docs = GetChildren();
+        //                docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
+
+        //                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), "ActiveDocument.Set", "error setting ActiveDocument");
+        //        }
+        //    }
+        //}
 
         protected override Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
         {
             try
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
-                ActiveDocument = newItem as DocumentViewModel;
+                //ActiveDocument = newItem as DocumentViewModel;
+                var docs = GetChildren();
+                docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
+                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Finished setting ActiveDocument");
                 return base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
             }
@@ -215,7 +222,7 @@ namespace DaxStudio.UI.ViewModels
                     newDoc.State = DocumentState.RecoveryPending;
 
                     await ActivateItemAsync(newDoc);
-                    ActiveDocument = newDoc;
+                    //ActiveDocument = newDoc;
                     newDoc.IsDirty = true;
 
                     file.ShouldOpen = false;
@@ -243,7 +250,7 @@ namespace DaxStudio.UI.ViewModels
                 newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
 
                 await ActivateItemAsync(newDoc);
-                ActiveDocument = newDoc;
+                //ActiveDocument = newDoc;
 
             }
             catch (Exception ex)
@@ -274,7 +281,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
 
                 await ActivateItemAsync(newDoc);
-                ActiveDocument = newDoc;
+                //ActiveDocument = newDoc;
 
                 new System.Action(CleanActiveDocument).BeginOnUIThread();
 
@@ -391,7 +398,7 @@ namespace DaxStudio.UI.ViewModels
                 if (this.Items.Count == 0)
                 {
                     Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
-                    ActiveDocument = null;
+                    //ActiveDocument = null;
                     await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
                 }
             }
@@ -414,7 +421,7 @@ namespace DaxStudio.UI.ViewModels
                 if (document is DocumentViewModel doc)
                 {
                     await ActivateItemAsync(doc);
-                    ActiveDocument = doc;
+                    //ActiveDocument = doc;
                 }
             }
             catch (Exception ex) {
