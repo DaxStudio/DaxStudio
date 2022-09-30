@@ -721,13 +721,20 @@ namespace DaxStudio.UI.ViewModels
             {
                 // only activate if no trace watchers are active
                 // otherwise we assume that the user will want to keep the
+                // trace active
                 QueryResultsPane.Activate();
             }
         }
 
         public void ActivateOutput()
         {
-            OutputPane.Activate();
+            if (!TraceWatchers.Any(tw => tw.IsChecked))
+            {
+                // only activate if no trace watchers are active
+                // otherwise we assume that the user will want to keep the
+                // trace active
+                OutputPane.Activate();
+            }
         }
 
         public void QueryCompleted()
