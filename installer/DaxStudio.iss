@@ -183,7 +183,7 @@ Root: "HKA"; Subkey: "Software\Classes\daxstudio\DefaultIcon"; ValueType: string
 Root: "HKA"; Subkey: "Software\Classes\daxstudio\Shell\Open\Command"; ValueType: string; ValueData: """{app}\DaxStudio.exe"" -uri ""%1"""; Flags: uninsdeletekey
 
 ;turn off URI warnings from office apps
-Root: "HKA"; Subkey: "Software\Policies\Microsoft\office\16.0\common\Security\Trusted Protocols\All Applications\daxstudio:"; Flags: uninsdeletekey
+Root: "HKA"; Subkey: "Software\Policies\Microsoft\office\16.0\common\Security\Trusted Protocols\All Applications\daxstudio:"; Flags: uninsdeletekey noerror
 
 ;Clean up beta Excel x86 Addin Keys
 ;Root: "HKLM32"; Subkey: "Software\Microsoft\Office\Excel\Addins\DaxStudio"; ValueType: none; Flags: deletekey dontcreatekey; Components: Excel; Check: Is32BitExcelFromRegisteredExe
