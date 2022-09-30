@@ -18,6 +18,7 @@ namespace DaxStudio.UI.Utils
                 if(anchorableToShow.ContentId == null) anchorableToShow.ContentId = anchorableToShow.Content.GetType().ToString();
                 if (pane != null)
                 {
+                    anchorableToShow.CanDockAsTabbedDocument = false;
                     pane.Children.Add(anchorableToShow);
                     return true;
                 }
