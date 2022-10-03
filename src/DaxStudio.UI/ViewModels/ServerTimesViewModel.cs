@@ -25,6 +25,8 @@ using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
 using System.Security.Cryptography;
+using System.Diagnostics;
+using Windows.Media.Playback;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -45,7 +47,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (this.Class == DaxStudioTraceEventClass.DirectQueryBegin || this.Class == DaxStudioTraceEventClass.DirectQueryEnd)
             {
-                if (Query.StartsWith("DEFINE",StringComparison.InvariantCultureIgnoreCase)
+                if (Query.StartsWith("DEFINE", StringComparison.InvariantCultureIgnoreCase)
                     || Query.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return DaxStudioTraceEventClassSubclass.Language.DAX;
@@ -142,7 +144,11 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public long? WaterfallDuration => TotalQueryDuration + 1;
 
-        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
+        [JsonIgnore]
+        public long? DisplayDuration => Convert.ToInt64((EndTime - StartTime).TotalMilliseconds);
+    
+
+    public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
             Options = options;
 
@@ -441,6 +447,61 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        protected struct SortableEvent : IComparable<SortableEvent>
+        {
+            public DateTime TimeStamp;
+            public bool IsStart;
+            public DaxStudioTraceEventArgs Event;
+       
+            int IComparable<SortableEvent>.CompareTo(SortableEvent y)
+            {
+                // Compare TimeStamp
+                var compareTimeStamp = this.TimeStamp.CompareTo(y.TimeStamp);
+                if (compareTimeStamp != 0) return compareTimeStamp;
+                
+                // Start is always before end
+                if (this.IsStart != y.IsStart)
+                {
+                    return this.IsStart ? -1 : 1;
+                }
+
+                // If Start, QueryBegin before SE and DirectQuery
+                if (this.IsStart)
+                {
+                    if (this.Event.EventClass == DaxStudioTraceEventClass.QueryEnd
+                        && y.Event.EventClass != DaxStudioTraceEventClass.QueryEnd)
+                    {
+                        // this is QueryStart, y is not QueryStart, this before y
+                        return -1;
+                    }
+                    else if (this.Event.EventClass != DaxStudioTraceEventClass.QueryEnd
+                        && y.Event.EventClass == DaxStudioTraceEventClass.QueryEnd)
+                    {
+                        // this is not QueryStart, y is QueryStart, this after y
+                        return 1;
+                    }
+                    else return 0;
+                }
+                else
+                {
+                    // If End, QueryEnd after SE and DirectQuery
+                    if (this.Event.EventClass == DaxStudioTraceEventClass.QueryEnd
+                        && y.Event.EventClass != DaxStudioTraceEventClass.QueryEnd)
+                    {
+                        // this is QueryEnd, y is not QueryEnd, this after y
+                        return 1;
+                    }
+                    else if (this.Event.EventClass != DaxStudioTraceEventClass.QueryEnd
+                        && y.Event.EventClass == DaxStudioTraceEventClass.QueryEnd)
+                    {
+                        // this is not QueryEnd, y is QueryEnd, this before y
+                        return -1;
+                    }
+                    else return 0;
+                }
+            }
+        }
+
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
@@ -468,6 +529,76 @@ namespace DaxStudio.UI.ViewModels
                     Events.Clear();
                     return;
                 };
+
+                bool IsEnd(DaxStudioTraceEventClass eventClass)
+                {
+                    return eventClass == DaxStudioTraceEventClass.VertiPaqSEQueryEnd
+                        || eventClass == DaxStudioTraceEventClass.DirectQueryEnd
+                        || eventClass == DaxStudioTraceEventClass.QueryEnd;
+                }
+
+                // Copy all SE events for new FE calculation
+                var seEvents =
+                    (
+                        from e in Events
+                        where IsEnd(e.EventClass)
+                        select new SortableEvent { TimeStamp = e.StartTime, IsStart = true, Event = e }
+                    ).Union(
+                        from e in Events
+                        where IsEnd(e.EventClass)
+                        select new SortableEvent { TimeStamp = e.EndTime, IsStart = false, Event = e }
+                    ).OrderBy(e => e).ToList();
+
+                // Scan events sequentially computing SE time when there are no SE events active
+                int seLevel = 0;
+                double new_FormulaEngineDuration = 0;
+                DateTime currentScanTime = DateTime.MinValue;
+                foreach ( var e in seEvents )
+                {
+                    switch (e.Event.EventClass)
+                    {
+                        case DaxStudioTraceEventClass.QueryEnd:
+                            if (e.IsStart)
+                            {
+                                currentScanTime = e.TimeStamp;
+                                // Placeholder: START FE event
+                            }
+                            else
+                            {
+                                Debug.Assert(currentScanTime > DateTime.MinValue, "Missing QueryBegin event, invalid FE calculation");
+                                Debug.Assert(seLevel == 0, "Invalid storage engine level at QueryEnd event, invalid FE calculation");
+                                if (seLevel == 0)
+                                {
+                                    new_FormulaEngineDuration += (e.TimeStamp - currentScanTime).TotalMilliseconds;
+                                    // Placeholder: END FE event
+                                }
+                            }
+                            break;
+                        case DaxStudioTraceEventClass.VertiPaqSEQueryEnd:
+                        case DaxStudioTraceEventClass.DirectQueryEnd:
+                            if (e.IsStart)
+                            {
+                                if (seLevel == 0)
+                                {
+                                    new_FormulaEngineDuration += (e.TimeStamp - currentScanTime).TotalMilliseconds;
+                                    // Placeholder: END FE event
+                                }
+                                seLevel++;
+                            }
+                            else
+                            {
+                                seLevel--;
+                                if (seLevel == 0)
+                                {
+                                    currentScanTime = e.TimeStamp;
+                                    // Placeholder: START FE event
+                                }
+                            }
+                            break;
+                    }
+                    Debug.Assert(seLevel >= 0,"Invalid storage engine level, invalid FE calculation");
+
+                }
 
                 eventsProcessed = !Events.IsEmpty;
                 while (!Events.IsEmpty)
@@ -567,7 +698,17 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
-                FormulaEngineDuration = TotalDuration - StorageEngineNetParallelDuration;
+                // New calculation for parallel SE queries (2022-10-03) Marco Russo
+                // 
+                // Old calculation commented: the FE is the difference between Total Duration and SE Duration
+                // long old_FormulaEngineDuration = TotalDuration - StorageEngineNetParallelDuration;
+
+                // New calculation: SE is Query Duration - FE Duration
+                //                  FE Duration is computed as time when there are no SE queries running
+                FormulaEngineDuration = (long)new_FormulaEngineDuration;
+                StorageEngineDuration = TotalDuration - FormulaEngineDuration;
+                // End of new calculation for parallel SE queries
+
                 if (QueryHistoryEvent != null)
                 {
                     QueryHistoryEvent.FEDurationMs = FormulaEngineDuration;
@@ -599,6 +740,8 @@ namespace DaxStudio.UI.ViewModels
             foreach(var traceEvent in storageEngineEvents)
             {
                 traceEvent.StartOffsetMs = Convert.ToInt64((traceEvent.StartTime - queryStartDateTime).TotalMilliseconds );
+                // WARNING: we recalculate the duration based on the start/end time
+                // traceEvent.Duration = Convert.ToInt64((traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds);
                 traceEvent.TotalQueryDuration = totalDuration;
             }
         }

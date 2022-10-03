@@ -135,7 +135,7 @@
                         <Border.Width >
                             <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
-                                <Binding Path="Duration"/>
+                                <Binding Path="DisplayDuration"/>
                                 <Binding Path="WaterfallDuration"/>
                                 <Binding>
                                     <Binding.Source>
