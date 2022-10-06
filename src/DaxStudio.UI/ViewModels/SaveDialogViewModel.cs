@@ -3,6 +3,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -16,7 +17,7 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<ISaveable> Documents {get; set;}
 
-        public async void Save() {
+        public async Task Save() {
             foreach (var doc in Documents)
             {
                 if (doc.ShouldSave)
@@ -24,20 +25,20 @@ namespace DaxStudio.UI.ViewModels
                 else
                     doc.IsDirty = false;
             }
-            _dialogResult = SaveDialogResult.Save;
+            Result = SaveDialogResult.Save;
             await TryCloseAsync(true);
         }
-        public async void DontSave()
+        public async Task DontSave()
         {
             foreach (var doc in Documents)
             {
                 doc.IsDirty = false;
             }
-            _dialogResult = SaveDialogResult.DontSave;
+            Result = SaveDialogResult.DontSave;
             await TryCloseAsync (true);
         }
         public void Cancel() {
-            _dialogResult = SaveDialogResult.Cancel;
+            Result = SaveDialogResult.Cancel;
             //TryClose(false);
         }
 
@@ -61,6 +62,6 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => SelectAll);
             } }
 
-        public SaveDialogResult Result { get { return _dialogResult; } }
+        public SaveDialogResult Result { get; private set; } = SaveDialogResult.Cancel;
     }
 }

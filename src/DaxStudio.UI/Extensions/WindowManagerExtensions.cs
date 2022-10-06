@@ -65,7 +65,7 @@ namespace DaxStudio.UI.Extensions
             Dictionary<string, object> settings = new Dictionary<string, object>();
             await ShowDialogBoxAsync(@this,model, settings);
         }
-            public static async Task ShowDialogBoxAsync(this IWindowManager @this, object model, Dictionary<string,object> settings)
+        public static async Task ShowDialogBoxAsync(this IWindowManager @this, object model, Dictionary<string,object> settings)
         {
 
             var shellViewModel = IoC.Get<IShell>();
