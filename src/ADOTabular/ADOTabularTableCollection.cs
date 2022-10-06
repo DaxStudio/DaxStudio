@@ -2,6 +2,7 @@
 using System.Collections;
 using ADOTabular.Interfaces;
 using Microsoft.AnalysisServices.Tabular;
+using ADOTabular.Extensions;
 
 //using Microsoft.AnalysisServices.AdomdClient;
 
@@ -57,6 +58,7 @@ namespace ADOTabular
                 _tables = new SortedDictionary<string, ADOTabularTable>();
             }
             _tables.Add(table.Name, table);
+
             Model.TOMModel.Tables.Add(new Table(){Name = table.Name, Description = table.Description, DataCategory = table.DataCategory});
         }
 

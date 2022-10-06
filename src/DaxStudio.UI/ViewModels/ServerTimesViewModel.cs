@@ -139,7 +139,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public long? StartOffsetMs { get; set; }
-        public long? TotalQueryDuration { get;  set; }
+        public long? TotalQueryDuration { get; set; } = 0;
 
         [JsonIgnore]
         public long? WaterfallDuration => TotalQueryDuration + 1;

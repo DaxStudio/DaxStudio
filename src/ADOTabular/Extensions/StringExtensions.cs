@@ -15,5 +15,13 @@ namespace ADOTabular.Extensions
                    || connectionString.StartsWith("pbiazure://", StringComparison.OrdinalIgnoreCase)
                    || connectionString.StartsWith("pbidedicated://", StringComparison.OrdinalIgnoreCase);
         }
+
+        public static string CleanTableName(this string tablename)
+        {
+            if (string.Equals(tablename, "Measures",  StringComparison.OrdinalIgnoreCase)) { 
+                return $"[{tablename}]"; 
+            }
+            return tablename; 
+        }
     }
 }

@@ -234,7 +234,7 @@ namespace ADOTabular
             foreach (var t in tabs)
             {
                 TagKpiComponentColumns(t);
-                if (tabs.Model.CSDLVersion >= 2.5)
+                if (tabs.Model.CSDLVersion >= 2.5 )
                     UpdateTomRelationships(t);
             }
 
@@ -252,6 +252,8 @@ namespace ADOTabular
             
             foreach (var r in table.Relationships)
             {
+                if (string.IsNullOrWhiteSpace( r.FromColumn) || string.IsNullOrWhiteSpace(r.ToColumn)) break;
+
                 var toTable = r.ToTable;
                 var toTomTable = table.Model.TOMModel.Tables[toTable.Name];
                 var relationship = new SingleColumnRelationship
@@ -408,6 +410,7 @@ namespace ADOTabular
                 }
             }
 
+            if (rdr.EOF) return;
 
                 rdr.ReadToFollowing("ReferentialConstraint");
                 
@@ -433,7 +436,7 @@ namespace ADOTabular
 
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
-                     && rdr.LocalName == "Association"))
+                     && rdr.LocalName == "Association") && !rdr.EOF)
             {
                 rdr.Read();
             }
@@ -461,8 +464,8 @@ namespace ADOTabular
             var result = (fromRole: string.Empty, fromColumnRef: string.Empty, fromMultiplicity: string.Empty,
                           toRole: string.Empty, toColumnRef: string.Empty, toMultiplicity: string.Empty);
 
-            while (rdr.NodeType != XmlNodeType.EndElement
-                   || rdr.LocalName != "ReferentialConstraint")
+            while ((rdr.NodeType != XmlNodeType.EndElement
+                   || rdr.LocalName != "ReferentialConstraint") && !rdr.EOF)
             {
                 if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Principal")
                 {

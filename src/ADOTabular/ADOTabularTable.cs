@@ -1,4 +1,5 @@
-﻿using ADOTabular.Interfaces;
+﻿using ADOTabular.Extensions;
+using ADOTabular.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -70,7 +71,8 @@ namespace ADOTabular
         public string InternalReference { get; private set; }
 
         public string Caption { get; private set; }
-        public string Name { get; private set; }
+        private string _name = string.Empty;
+        public string Name { get { return _name.CleanTableName(); } private set { _name = value; } }
 
         public string Description { get; private set; }
 

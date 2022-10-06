@@ -15,9 +15,9 @@ namespace DaxStudio.UI.Converters
             if (values.Length != 3 && values.Length !=4) throw new ArgumentException($"The {nameof(WaterfallLengthConverter)} needs 3-4 parameters");
             try
             {
-                var cellWidth = (double)values[0];
-                var length = (long)values[1];
-                var totalWidth = (long)values[2];
+                var cellWidth = (double)(values[0] ?? 0.0);
+                var length = (long)(values[1] ?? 0);
+                var totalWidth = (long)(values[2] ?? 0 );
                 // restrict offset and totalwidth to positive values
                 if (length < 0) length = 0;
                 if (totalWidth < 0) totalWidth = 0;
