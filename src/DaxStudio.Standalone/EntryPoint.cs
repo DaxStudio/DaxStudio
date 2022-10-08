@@ -280,7 +280,9 @@ namespace DaxStudio.Standalone
         {
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;   
-            LogFatalCrash(ex, msg, _options);
+            // check that we are noto already shutting down
+            if (!ex.StackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl"))
+                LogFatalCrash(ex, msg, _options);
             if (App.Dispatcher.CheckAccess())
             {
                 App.Shutdown(2);
