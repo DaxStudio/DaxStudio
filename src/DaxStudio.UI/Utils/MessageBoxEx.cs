@@ -134,8 +134,8 @@ namespace DaxStudio.UI.Utils
         [DllImport("user32.dll")]
         internal static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32.dll")]
-        internal static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int maxLength);
+        //[DllImport("user32.dll")]
+        //internal static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int maxLength);
 
         [DllImport("user32.dll")]
         internal static extern int EndDialog(IntPtr hDlg, IntPtr nResult);
