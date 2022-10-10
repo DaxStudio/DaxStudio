@@ -19,6 +19,8 @@ using System.Text;
 using ICSharpCode.AvalonEdit;
 using System.ComponentModel;
 using System.Windows.Documents;
+using System.Windows.Automation.Peers;
+using DAXEditor;
 
 namespace DAXEditorControl
 {
@@ -804,6 +806,12 @@ namespace DAXEditorControl
             //CaretOffset = currentLine.EndOffset;
             //Paste();
 
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            //return base.OnCreateAutomationPeer();
+            return new AutomationPeerStub(this, AutomationControlType.Edit);
         }
 
         public void Dispose()
