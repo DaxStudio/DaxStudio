@@ -1458,7 +1458,11 @@ namespace ADOTabular
             product.Name = null;
             if (_conn.Type == AdomdType.Excel) {
                 product.Type = "Excel";
-                if (ssasVersion.StartsWith("13.",StringComparison.InvariantCultureIgnoreCase)) {
+                if (ssasVersion.StartsWith("16.", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    product.Name = "Excel Microsoft 365";
+                }
+                else if (ssasVersion.StartsWith("13.",StringComparison.InvariantCultureIgnoreCase)) {
                     product.Name = "Excel 2016";
                 }
                 else if (ssasVersion.StartsWith("11.", StringComparison.InvariantCultureIgnoreCase)) {
