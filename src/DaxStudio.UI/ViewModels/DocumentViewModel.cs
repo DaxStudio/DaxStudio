@@ -2404,34 +2404,37 @@ namespace DaxStudio.UI.ViewModels
 
                 editor.Focus();
             }
-            else if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
-            {
-                currentText = defineMeasureRegex_DefineOnly.Replace(currentText, m =>
-                {
-
-                    var newSection = new StringBuilder();
-                    newSection.AppendLine();
-                    newSection.AppendLine(MODELMEASURES_BEGIN);
-                    newSection.AppendLine(measureDeclaration);
-                    newSection.AppendLine(MODELMEASURES_END);
-                    newSection.AppendLine();
-                    newSection.Append(m.Groups[0].Value);
-
-                    return newSection.ToString();
-
-                });
-                editor.Document.BeginUpdate();
-                editor.Document.Text = currentText;
-                editor.Document.EndUpdate();
-
-                editor.Focus();
-            }
             else
             {
-                measureDeclaration =
-                    $"DEFINE {Environment.NewLine}{measureDeclaration}{Environment.NewLine}";
+                var newSection = new StringBuilder();
+                newSection.AppendLine();
+                newSection.AppendLine(MODELMEASURES_BEGIN);
+                newSection.AppendLine(measureDeclaration);
+                newSection.AppendLine(MODELMEASURES_END);
+                newSection.AppendLine();
 
-                InsertTextAtSelection(measureDeclaration, false, false);
+                if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
+                {
+                    currentText = defineMeasureRegex_DefineOnly.Replace(currentText, m =>
+                    {
+                        newSection.Append(m.Groups[0].Value);
+                        return newSection.ToString();
+
+                    });
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = currentText;
+                    editor.Document.EndUpdate();
+
+                    editor.Focus();
+                }
+                else
+                {
+                    measureDeclaration =
+                        $"DEFINE {newSection}";
+//                        $"DEFINE {Environment.NewLine}{measureDeclaration}{Environment.NewLine}";
+
+                    InsertTextAtSelection(measureDeclaration, false, false);
+                }
             }
         }
 
