@@ -585,36 +585,7 @@ namespace DaxStudio.UI.ViewModels
 
         private List<ADOTabularMeasure> FindDependentMeasures(string measureName)
         {
-            var modelMeasures = GetAllMeasures();
-
-            var dependentMeasures = new List<ADOTabularMeasure>();
-            dependentMeasures.Add(modelMeasures.First(m => m.Name == measureName));
-
-            bool foundDependentMeasures;
-            do
-            {
-                foundDependentMeasures = false;
-                foreach (var modelMeasure in modelMeasures)
-                {
-                    string daxMeasureName = "[" + modelMeasure.Name.Replace("]","]]") + "]";
-                    // Iterates a copy so the original list can be modified
-                    foreach (var scanMeasure in dependentMeasures.ToList())
-                    {
-                        if (modelMeasure == scanMeasure) continue;
-                        string dax = scanMeasure.Expression;
-                        if (dax.Contains(daxMeasureName))
-                        {
-                            if (!dependentMeasures.Contains(modelMeasure))
-                            {
-                                dependentMeasures.Add(modelMeasure);
-                                foundDependentMeasures = true;
-                            }
-                        }
-                    }
-                }
-            } while (foundDependentMeasures);
-
-            return dependentMeasures;
+            return _metadataProvider.FindDependentMeasures(measureName);
         }
 
         // mrusso: create a list of all the measures that have to be included in the query 

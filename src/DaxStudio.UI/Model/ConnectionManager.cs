@@ -703,6 +703,46 @@ namespace DaxStudio.UI.Model
             return resultExpression;
         }
 
+        public List<ADOTabularMeasure> FindDependentMeasures(string measureName)
+        {
+            // New algorithm using DEPENDENCY view
+            // 
+            // TODO we could pass a query or a string as a parameter,
+            // so that if the entire query is used as a parameter we generate all the measures
+            var modelMeasures = GetAllMeasures();
+
+            var dependentMeasures = new List<ADOTabularMeasure>();
+
+            Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
+            scanMeasures.Enqueue(modelMeasures.First(m => m.Name == measureName));
+
+            while (scanMeasures.Count > 0)
+            {
+                var measure = scanMeasures.Dequeue();
+                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                dependentMeasures.Add(measure);
+
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='EVALUATE {{ {measure.Expression} }}'";
+
+                using (var dr = ExecuteReader(dmvDependency, null))
+                {
+                    while (dr.Read())
+                    {
+                        var referencedObjectType = dr.GetString(0);
+                        if (referencedObjectType != "MEASURE") continue;
+                        // var referencedTable = dr.GetString(1);
+                        var referencedMeasureName = dr.GetString(2);
+                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        {
+                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
+                            scanMeasures.Enqueue(dependentMeasure);
+                        }
+                    }
+                }
+            }
+            return dependentMeasures;
+        }
+
         public void SetSelectedDatabase(IDatabaseReference database)
         {
             var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
