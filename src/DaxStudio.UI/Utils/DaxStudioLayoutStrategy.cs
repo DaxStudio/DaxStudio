@@ -1,6 +1,7 @@
 using System.Linq;
 using DaxStudio.UI.Interfaces;
 using AvalonDock.Layout;
+using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.UI.Utils
 {
@@ -8,7 +9,10 @@ namespace DaxStudio.UI.Utils
     {
         public bool BeforeInsertAnchorable(LayoutRoot layout, LayoutAnchorable anchorableToShow, ILayoutContainer destinationContainer)
         {
-            var myViewModel = anchorableToShow.Content as IToolWindow;
+           var myViewModel = anchorableToShow.Content as IToolWindow;
+            var doc = layout.Manager.DataContext as DocumentViewModel;
+            if (doc != null && doc.IsLoadingLayout) return false;
+
             if (myViewModel != null)
             {
                 

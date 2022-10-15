@@ -492,29 +492,12 @@ namespace DaxStudio.UI.ViewModels
         private string _viewAsDescription = string.Empty;
         public string ViewAsDescription => _viewAsDescription;
 
-        private bool _informationBarIconSpin;
-        public bool InformationBarIconSpin { get => _informationBarIconSpin;
-            set {
-                _informationBarIconSpin = value;
-                NotifyOfPropertyChange();
-            }
-        }
 
-        private string _informationBarIcon = "Shield";
-        public string InformationBarIcon { get => _informationBarIcon;
-            set
-            {
-                _informationBarIcon = value;
-                NotifyOfPropertyChange();
-            }
-        }
 
         public void StopViewAs()
         {
             var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
             Connection.StopViewAs(activeTraces);
-            InformationBarIcon = "Spinner";
-            InformationBarIconSpin = true;
             _viewAsDescription = "Reconnecting...";
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
@@ -1037,7 +1020,7 @@ namespace DaxStudio.UI.ViewModels
                     if (message == null) return;
                     MetadataPane.IsBusy = true;
                     Connection.Connect(message);
-                    if (string.IsNullOrEmpty(ViewAsDescription))
+                    if (string.IsNullOrEmpty(ViewAsDescription) || ViewAsDescription == "Reconnecting...")
                         UpdateViewAsDescription(message.ConnectionString);
 
                     NotifyOfPropertyChange(() => IsAdminConnection);
@@ -1095,7 +1078,7 @@ namespace DaxStudio.UI.ViewModels
                     // if we've had an error and there are RLS "View As" settings active we need to switch those off
                     // since they could be the cause of the error and there is most likely no way to recover with
                     // them enabled
-                    if (Connection.IsTestingRls) Connection.StopViewAs(null);
+                    //if (Connection.IsTestingRls) Connection.StopViewAs(null);
 
                     // if there was an error we bail out here
                     return;
@@ -1126,8 +1109,7 @@ namespace DaxStudio.UI.ViewModels
             var userSection = string.IsNullOrWhiteSpace(user) ? string.Empty : $" User: {user}";
             var roleSection = string.IsNullOrEmpty(roles) ? string.Empty : $" Roles: {roles}";
             _viewAsDescription = $"{userSection}{roleSection}";
-            InformationBarIconSpin = false;
-            InformationBarIcon = "Shield";
+
             NotifyOfPropertyChange(nameof(ViewAsDescription));
         }
 
@@ -3998,6 +3980,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                IsLoadingLayout = true;
                 var dm = GetDockManager();
                 if (message.RestoreDefault)
                 {
@@ -4013,6 +3996,10 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 OutputError($"Error Loading Window Layout: {ex.Message}");
+            }
+            finally
+            {
+                IsLoadingLayout = false;
             }
             return Task.CompletedTask;
         }
@@ -4669,6 +4656,7 @@ namespace DaxStudio.UI.ViewModels
             //    NotifyOfPropertyChange();
             //} 
         }
+        public bool IsLoadingLayout { get; private set; }
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {
@@ -4789,6 +4777,16 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             editor.SelectAll();
+        }
+
+        internal void CopyContent(DocumentViewModel sourceDocument)
+        {
+            EditorText = sourceDocument.EditorText;
+            if (sourceDocument.QueryBuilder.IsVisible)
+            {
+                QueryBuilder.IsVisible = true;
+                QueryBuilder.CopyContent(sourceDocument.QueryBuilder);
+            }
         }
     }
 }

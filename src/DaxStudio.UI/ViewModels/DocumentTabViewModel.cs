@@ -17,6 +17,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using AvalonDock.Controls;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -267,7 +268,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument.LoadFile(fileName);
         }
 
-        private async Task OpenNewBlankDocumentAsync(DocumentViewModel sourceDocument)
+        private async Task OpenNewBlankDocumentAsync(DocumentViewModel sourceDocument, bool copyContent = false)
         {
             try
             {
@@ -296,6 +297,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     //await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
                     await ActiveDocument.CopyConnectionAsync(sourceDocument);
+                    if (copyContent) ActiveDocument.CopyContent(sourceDocument);
                 }
 
                 
@@ -541,6 +543,19 @@ namespace DaxStudio.UI.ViewModels
                 
             }
             
+        }
+
+        public async Task DuplicateTab(object tab)
+        {
+            if( tab is LayoutDocumentItem item)
+            {
+                if (item.Model is DocumentViewModel doc)
+                {
+                    await OpenNewBlankDocumentAsync(doc, copyContent: true);
+                }
+            }
+            // todo get tab.Model to get at DocumentViewModel
+            System.Diagnostics.Debug.WriteLine("duplicate tab");
         }
     }
 }

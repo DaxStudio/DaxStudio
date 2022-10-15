@@ -564,5 +564,11 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(RunStyle));
             return Task.CompletedTask;
         }
+
+        internal void CopyContent(QueryBuilderViewModel queryBuilder)
+        {
+            var json = queryBuilder.GetJson();
+            this.LoadJson(json);
+        }
     }
 }
