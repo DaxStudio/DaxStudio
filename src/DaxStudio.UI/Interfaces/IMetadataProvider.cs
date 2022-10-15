@@ -31,6 +31,7 @@ namespace DaxStudio.UI.Interfaces
         List<ADOTabularMeasure> GetAllMeasures(string filterTable = null);
         string DefineFilterDumpMeasureExpression(string tableName, bool allTables);
         string ExpandDependentMeasure(string measureName, bool ignoreNonUniqueMeasureNames);
+        List<ADOTabularMeasure> FindDependentMeasures(string measureName);
         IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPaneViewModel, IGlobalOptions options);
         void UpdateTableBasicStats(DaxStudio.UI.Model.TreeViewTable table);
 

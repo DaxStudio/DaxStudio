@@ -2343,16 +2343,6 @@ namespace DaxStudio.UI.ViewModels
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
             var editor = GetEditor();
-
-            // TODO (Marco 2018-08-04)
-            //
-            // We include a section ---- MODEL MEASURES ----
-            // where we include all the measures
-            // the section ends with ---- END MODEL MEASURES ----
-            // so we append the measures at the end of that section
-
-            // Try to find the DEFINE statements
-
             var currentText = editor.Text;
 
             // if the default separator is not the default Comma style
@@ -2363,10 +2353,13 @@ namespace DaxStudio.UI.ViewModels
                 measureExpression = dsm.ProcessString(measureExpression);
             }
 
+            // We include a section ---- MODEL MEASURES ----
+            // where we include all the measures
+            // the section ends with ---- END MODEL MEASURES ----
+            // so we append the measures at the end of that section
             var measureDeclaration = $"MEASURE {measureName} = {measureExpression}";
-            // TODO - expand measure expression and generate other measures here!!
 
-
+            // Try to find the DEFINE statements
             // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
             if (defineMeasureRegex_ModelMeasures.IsMatch(currentText))
             {
@@ -2377,30 +2370,6 @@ namespace DaxStudio.UI.ViewModels
                     measuresText.AppendLine(measureDeclaration);
 
                     return measuresText.ToString();
-
-
-                });
-                editor.Document.BeginUpdate();
-                editor.Document.Text = currentText;
-                editor.Document.EndUpdate();
-
-                editor.Focus();
-            }
-            else if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
-            {
-                currentText = defineMeasureRegex_DefineOnly.Replace(currentText, m =>
-                {
-
-                    var newSection = new StringBuilder();
-                    newSection.AppendLine();
-                    newSection.AppendLine(MODELMEASURES_BEGIN);
-                    newSection.AppendLine(measureDeclaration);
-                    newSection.AppendLine(MODELMEASURES_END);
-                    newSection.AppendLine();
-                    newSection.Append(m.Groups[0].Value);
-
-                    return newSection.ToString();
-
                 });
                 editor.Document.BeginUpdate();
                 editor.Document.Text = currentText;
@@ -2410,10 +2379,32 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                measureDeclaration =
-                    $"DEFINE {Environment.NewLine}{measureDeclaration}{Environment.NewLine}";
+                var newSection = new StringBuilder();
+                newSection.AppendLine();
+                newSection.AppendLine(MODELMEASURES_BEGIN);
+                newSection.AppendLine(measureDeclaration);
+                newSection.AppendLine(MODELMEASURES_END);
+                newSection.AppendLine();
 
-                InsertTextAtSelection(measureDeclaration, false, false);
+                if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
+                {
+                    currentText = defineMeasureRegex_DefineOnly.Replace(currentText, m =>
+                    {
+                        newSection.Append(m.Groups[0].Value);
+                        return newSection.ToString();
+
+                    });
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = currentText;
+                    editor.Document.EndUpdate();
+
+                    editor.Focus();
+                }
+                else
+                {
+                    measureDeclaration = $"DEFINE {newSection}";
+                    InsertTextAtSelection(measureDeclaration, false, false);
+                }
             }
         }
 
