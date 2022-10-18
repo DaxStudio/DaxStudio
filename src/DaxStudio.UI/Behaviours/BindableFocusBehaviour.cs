@@ -48,8 +48,14 @@ namespace DaxStudio.UI.Behaviours
         {
             if (HasFocus)
             {
-                //AssociatedObject.GotFocus += AssociatedObject_GotFocus;
-                AssociatedObject.Focus();
+                try
+                {
+                    AssociatedObject?.Focus();
+                }
+                catch 
+                { 
+                    // swallow any errors
+                }
 
             }
         }
