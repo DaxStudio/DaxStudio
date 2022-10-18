@@ -541,7 +541,7 @@
 
 
                             <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}"  
-                                                ElementStyle="{StaticResource NumCell}"
+                                                ElementStyle="{StaticResource NumTextBlockStyle}"
                                                 Header="Rows" >
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
@@ -552,7 +552,7 @@
                             
                             
                             <DataGridTextColumn Binding="{Binding ColumnCardinality, StringFormat=N0}" 
-                                                ElementStyle="{StaticResource NumCell}" 
+                                                ElementStyle="{StaticResource NumTextBlockStyle}" 
                                                 Header="Cardinality" >
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
@@ -584,7 +584,7 @@
                                                     </MultiBinding>
                                                 </Rectangle.Width>
                                             </Rectangle>
-                                            <TextBlock Text="{Binding TotalSize, StringFormat=N0}" HorizontalAlignment="Right" />
+                                            <TextBlock Text="{Binding TotalSize, StringFormat=N0}" HorizontalAlignment="Right" Style="{StaticResource TextBlockStyle}" />
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
