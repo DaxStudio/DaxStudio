@@ -409,12 +409,18 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
+            var filename = (ViewModel?.Model?.ModelName?.Name ?? "model") + ".bim";
+
+            if (CurrentDocument.IsDiskFileName) filename = (Path.GetFileNameWithoutExtension(CurrentDocument?.DisplayName) ?? "model") + ".bim";
+
             var saveAsDlg = new SaveFileDialog()
             {
+                FileName = filename,
                 DefaultExt = "bim",
                 Title = "Save .bim file",
                 Filter = "Model BIM file (*.bim)|*.bim"
             };
+            
             if (saveAsDlg.ShowDialog() == DialogResult.OK)
             {
                 System.Diagnostics.Debug.WriteLine($"exporting to {saveAsDlg.FileName}");

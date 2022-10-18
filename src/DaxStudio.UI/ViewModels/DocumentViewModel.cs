@@ -225,7 +225,7 @@ namespace DaxStudio.UI.ViewModels
 
         internal void LoadAutoSaveFile(Guid autoSaveId)
         {
-            _isLoadingFile = true;
+
             var text = AutoSaver.GetAutoSaveText(autoSaveId);
             // put contents in edit window
             var editor = GetEditor();
@@ -237,9 +237,7 @@ namespace DaxStudio.UI.ViewModels
             });
 
             LoadState();
-
             State = DocumentState.Loaded;
-
             _eventAggregator.PublishOnUIThreadAsync(new RecoverNextAutoSaveFileEvent());
         }
 
@@ -2768,7 +2766,7 @@ namespace DaxStudio.UI.ViewModels
                 // Save document 
                 FileName = dlg.FileName;
                 IsDiskFileName = true;
-                _displayName = Path.GetFileName(FileName);
+                DisplayName = Path.GetFileName(FileName);
                 Save();
             }
 
@@ -2802,6 +2800,7 @@ namespace DaxStudio.UI.ViewModels
         private void LoadState()
         {
             if (!_isLoadingFile) return;
+
             // we can only load trace watchers if we are connected to a server
             //if (!this.IsConnected) return;
 
@@ -2820,13 +2819,12 @@ namespace DaxStudio.UI.ViewModels
 
                 loader.Load(FileName);
             }
-            _isLoadingFile = false;
         }
 
         private void LoadState(Package package)
         {
             if (!_isLoadingFile) return;
-
+            _isLoadingFile = true;
 
             foreach (var tw in ToolWindows)
             {
@@ -2852,9 +2850,7 @@ namespace DaxStudio.UI.ViewModels
                 ToolWindows.Add(vpaView);
                 vpaView.LoadPackage(package);
             }
-
             _isLoadingFile = false;
-
         }
 
 
@@ -2864,16 +2860,18 @@ namespace DaxStudio.UI.ViewModels
 
             if (File.Exists(FileName))
             {
+                FileName = fileName;
+                DisplayName = Path.GetFileName(FileName);
+                IsDiskFileName = true;
+
                 if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                 {
                     ImportAnalysisData(fileName);
                     return;
                 }
 
-                FileName = fileName;
                 _isLoadingFile = true;
-                _displayName = Path.GetFileName(FileName);
-                IsDiskFileName = true;
+               
                 if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                 {
 
