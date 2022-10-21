@@ -307,7 +307,7 @@ namespace DaxStudio.UI.ViewModels
                 // swallow all errors
             }
 
-            if (Options.AnyExternalAccessAllowed())
+            if (Options?.AnyExternalAccessAllowed()??false)
             {
                 Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
                 {
@@ -315,10 +315,16 @@ namespace DaxStudio.UI.ViewModels
                 });
                 Telemetry.Flush();
             }
-
-            // Store the current window position
-            var w = sender as Window;
-            Options.WindowPosition = w.GetPlacement();
+            try
+            {
+                // Store the current window position
+                var w = sender as Window;
+                Options.WindowPosition = w.GetPlacement();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(WindowClosing), "Error saving current window position");
+            }
             _window.Closing -= WindowClosing;
 
         }

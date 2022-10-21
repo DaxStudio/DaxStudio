@@ -792,6 +792,7 @@
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"  
                                    VerticalAlignment="Bottom"
                                    DockPanel.Dock="Bottom"
+                                   IsDefinitive="False"
                                    cal:Message.Attach="[Event Click] = [Action Exit($view)]">
                                        
                             <!--<i:Interaction.Triggers>

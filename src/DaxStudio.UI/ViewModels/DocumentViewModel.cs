@@ -4189,10 +4189,10 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
-                vpaView.IsBusy = false;
+                if (vpaView != null) vpaView.IsBusy = false;
                 IsVertipaqAnalyzerRunning = false;
-                sw.Stop();
-                Options.PlayLongOperationSound((int)(sw.ElapsedMilliseconds / 1000));
+                sw?.Stop();
+                Options?.PlayLongOperationSound((int)(sw?.ElapsedMilliseconds / 1000));
             }
 
         }
