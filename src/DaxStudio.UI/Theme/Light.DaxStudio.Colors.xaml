@@ -27,7 +27,7 @@
     <Color x:Key="Theme.Control.Selected">#F3F2F1</Color>
     <Color x:Key="Theme.TextBox.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Content.Back">#FFFFFF</Color>
-    <Color x:Key="Theme.Hidden.Fore">#B3B3B3</Color>
+    <Color x:Key="Theme.Hidden.Fore">#999999</Color>
     <Color x:Key="Theme.DropShadow">#000000</Color>
     <Color x:Key="Theme.DropShadow.Accent">#104866</Color>
     <Color x:Key="Theme.LineNumbers">#999999</Color>

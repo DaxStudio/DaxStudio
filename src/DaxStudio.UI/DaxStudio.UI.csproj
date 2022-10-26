@@ -308,6 +308,7 @@
     <Compile Include="Converters\FilterValueHeightConverter.cs" />
     <Compile Include="Converters\FindResourceFromStringConverter.cs" />
     <Compile Include="Converters\FontToSupportedGlyphConverter.cs" />
+    <Compile Include="Converters\BoolToItalicConverter.cs" />
     <Compile Include="Converters\LongToFormattedMsConverter.cs" />
     <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />

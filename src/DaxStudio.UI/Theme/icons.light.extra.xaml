@@ -4,7 +4,7 @@
       <ResourceDictionary Source="./icons.light.xaml"/>
   </ResourceDictionary.MergedDictionaries>
     
-    <SolidColorBrush x:Key="MetadataHiddenBrush" SolidColorBrush.Color="#B3B3B3" />
+    <SolidColorBrush x:Key="MetadataHiddenBrush" SolidColorBrush.Color="#999999" />
     <SolidColorBrush x:Key="AccentBrush" SolidColorBrush.Color="#228ED6" />
 
     <DrawingGroup x:Key="stringHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
