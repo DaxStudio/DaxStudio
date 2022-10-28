@@ -201,6 +201,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryResultsPaneMessageEvent message, CancellationToken cancellationToken)
         {
+            if (message.Target == null) return Task.CompletedTask;
             ResultsIcon = message.Target.Icon;
             ResultsMessage = message.Target.Message;
             return Task.CompletedTask;

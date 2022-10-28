@@ -3,6 +3,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.ResultsTargets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

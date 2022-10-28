@@ -251,5 +251,10 @@ namespace DaxStudio.Common
                 }
             }
         }
+
+        public void Clear()
+        {
+            _app.Properties.Clear();
+        }
     }
 }

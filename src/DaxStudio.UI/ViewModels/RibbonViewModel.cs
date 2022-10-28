@@ -476,7 +476,7 @@ namespace DaxStudio.UI.ViewModels
                 _isDocumentActivating = true;
                 ActiveDocument = message.Document;
                 doc = ActiveDocument;
-                SelectedTarget = ActiveDocument.SelectedTarget;
+                SelectedTarget = ActiveDocument.SelectedTarget??SelectedTarget;
 
                 _traceStatus = GetTraceStatus();
 

@@ -9,25 +9,22 @@ using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
 using System.Text;
-using ControlzEx.Theming;
-using System.Collections.Generic;
 using System.Windows.Media;
 using System.Configuration;
-using System.Web;
-using System.Collections.Specialized;
-using Windows.Foundation;
 using DaxStudio.Common.Extensions;
+using System.IO.Pipes;
+using System.Runtime.Serialization.Formatters.Binary;
+//using Microsoft.Identity.Client;
+using System.Threading;
+using System.Linq;
 
 namespace DaxStudio.Standalone
 {
@@ -87,7 +84,8 @@ namespace DaxStudio.Standalone
 
             _eventAggregator = bootstrapper.GetEventAggregator();
             // read command line arguments
-            App.ReadCommandLineArgs();
+            string[] args = Environment.GetCommandLineArgs();
+            App.ReadCommandLineArgs(args);
 
             var settingProvider = IoC.Get<ISettingProvider>();
             if (App.Args().Reset) settingProvider.Reset();
@@ -136,8 +134,8 @@ namespace DaxStudio.Standalone
             // log startup switches
             if (_options.AnyExternalAccessAllowed())
             {
-                var args = App.Args().AsDictionaryForTelemetry();
-                Telemetry.TrackEvent("App.Startup", args);
+                var appArgs = App.Args().AsDictionaryForTelemetry();
+                Telemetry.TrackEvent("App.Startup", appArgs);
             }
 
             // only used for testing of crash reporting UI
@@ -145,10 +143,38 @@ namespace DaxStudio.Standalone
 
             if (!App.Args().ShowHelp)
             {
-                // Launch the User Interface
-                Log.Information("Launching User Interface");
-                bootstrapper.DisplayShell();
-                App.Run();
+                using (Mutex _mutex = new Mutex(true, @"Global\DaxStudioIPC"))
+                {
+                    NamedPipeServerStream pipe = null;
+                    var pipeCancellationToken = new CancellationTokenSource();
+                    if (_mutex.WaitOne(TimeSpan.Zero))
+                    {
+                        Log.Information("Opening Named Pipe");
+                        // start the IPC sink.
+                        pipe = new NamedPipeServerStream("DaxStudioIPC",
+                        PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+                        // it's easier to use the AsyncCallback than it is to use Tasks here:
+                        // this can't block, so some form of async is a must
+                        
+                        Task.Run(async () =>
+                        {
+                            while (true)
+                            {
+                                await pipe.WaitForConnectionAsync(pipeCancellationToken.Token);
+                                ProcessMessage(pipe, App);
+                                pipe.Disconnect();
+                            }
+                        });
+                    }
+                    // Launch the User Interface
+                    Log.Information("Launching User Interface");
+                    bootstrapper.DisplayShell();
+                    App.Run();
+
+                    // close the IPC sink
+                    pipeCancellationToken.Cancel();
+                    pipe?.Close();
+                }
             }
 
             levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
@@ -405,9 +431,9 @@ namespace DaxStudio.Standalone
             }
         }
 
-        private static void ReadCommandLineArgs(this Application app)
+        private static void ReadCommandLineArgs(this Application app, string[] args)
         {
-            string[] args = Environment.GetCommandLineArgs();
+            app.Args().Clear();
 
             var p = new FluentCommandLineParser();
             p.Setup<int>('p', "port")
@@ -477,6 +503,22 @@ namespace DaxStudio.Standalone
         {
             app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(src, UriKind.RelativeOrAbsolute) });
         }
+
+        private static void ProcessMessage(NamedPipeServerStream pipe, Application app)
+        {
+            var bf = new BinaryFormatter();
+            var inargs = bf.Deserialize(pipe) as string[];
+            app.ReadCommandLineArgs(inargs);
+            if (!string.IsNullOrEmpty(app.Args().FileName))
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
+            }
+            else
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
+            }
+        }
+
 
     }
 }
