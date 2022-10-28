@@ -150,6 +150,7 @@ namespace DaxStudio.Interfaces
         #endregion
         [JsonIgnore] bool GettingStartedShown { get; set; }
         bool IncludeHyperlinkOnCopy { get; set; }
+        int DefaultTextFileType { get; set; }
 
 
         //bool ShowQueryPlanNextLine { get; set; }

@@ -2,8 +2,7 @@
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
-using Serilog;
-using System;
+using Newtonsoft.Json;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Globalization;
@@ -37,7 +36,8 @@ namespace DaxStudio.UI.Model
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
                 DefaultExt = ".csv",
-                Filter = "Comma separated text file - UTF8|*.csv|Tab separated text file|*.txt|Comma separated text file - Unicode|*.csv|Custom Export Format (Configure in Options)|*.csv"
+                Filter = "Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv|Json file|*.json|Tab separated text file|*.txt|Custom Export Format (Configure in Options)|*.csv",
+                FilterIndex = runner.Options.DefaultTextFileType,
             };
 
             string fileName = "";
@@ -48,6 +48,9 @@ namespace DaxStudio.UI.Model
             // Process save file dialog box results 
             if (result == true)
             {
+                // Remember the file type that was chosen
+                runner.Options.DefaultTextFileType = dlg.FilterIndex;
+
                 // Save document 
                 fileName = dlg.FileName;
                 await Task.Run(() =>
@@ -57,7 +60,8 @@ namespace DaxStudio.UI.Model
 
                     string sep = "\t";
                     bool shouldQuoteStrings = true; //default to quoting all string fields
-                    string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
+                    bool toJson = false;
+                    string decimalSep = CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
                     string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
                     Encoding enc = new UTF8Encoding(false);
 
@@ -65,16 +69,20 @@ namespace DaxStudio.UI.Model
                     {
 
                         case 1: // utf-8 csv
-                            sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+                            sep =CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                             break;
-                        case 2: // tab separated
+                        
+                        case 2: // unicode csv
+                            enc = new UnicodeEncoding();
+                            sep = CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+                            break;
+                        case 3:
+                            toJson = true;
+                            break;
+                        case 4: // tab separated
                             sep = "\t";
                             break;
-                        case 3: // unicode csv
-                            enc = new UnicodeEncoding();
-                            sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
-                            break;
-                        case 4:// custom export format
+                        case 5:// custom export format
                             sep = runner.Options.GetCustomCsvDelimiter();
                             shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
                             break;
@@ -88,35 +96,17 @@ namespace DaxStudio.UI.Model
 
                         if (reader != null)
                         {
-                            int iFileCnt = 1;
-
-
+                            
                             runner.OutputMessage("Command Complete, writing output file");
 
-                            bool moreResults = true;
-
-                            while (moreResults)
+                            if (toJson)
                             {
-                                var outputFilename = fileName;
-                                int iRowCnt = 0;
-                                if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
-                                using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
-                                {
-                                    iRowCnt = reader.WriteToStream(textWriter, sep, shouldQuoteStrings, isoDateFormat, statusProgress);
-                                }
-                                runner.OutputMessage(
-                                        string.Format("Query {2} Completed ({0:N0} row{1} returned)"
-                                                    , iRowCnt
-                                                    , iRowCnt == 1 ? "" : "s", iFileCnt)
-                                        );
-
-                                runner.RowCount = iRowCnt;
-
-                                moreResults = reader.NextResult();
-
-                                iFileCnt++;
+                                WriteToJsonFile(runner,fileName, reader, statusProgress);
                             }
-
+                            else
+                            {
+                                WriteToTextFile(runner, fileName, sep, shouldQuoteStrings, isoDateFormat, enc, reader, statusProgress);
+                            }
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
@@ -134,7 +124,109 @@ namespace DaxStudio.UI.Model
             }
         }
 
-       
+        private void WriteToTextFile(IQueryRunner runner, string fileName, string sep, bool shouldQuoteStrings, string isoDateFormat, Encoding enc, ADOTabular.AdomdClientWrappers.AdomdDataReader reader, IStatusBarMessage statusProgress)
+        {
+            int iFileCnt = 1;
+            bool moreResults = true;
+
+            while (moreResults)
+            {
+                var outputFilename = fileName;
+                int iRowCnt = 0;
+                if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
+                using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
+                {
+                    iRowCnt = reader.WriteToStream(textWriter, sep, shouldQuoteStrings, isoDateFormat, statusProgress);
+                }
+                runner.OutputMessage(
+                        string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                    , iRowCnt
+                                    , iRowCnt == 1 ? "" : "s", iFileCnt)
+                        );
+
+                runner.RowCount = iRowCnt;
+
+                moreResults = reader.NextResult();
+
+                iFileCnt++;
+            }
+
+
+
+        }
+
+        private void WriteToJsonFile(IQueryRunner runner, string fileName, ADOTabular.AdomdClientWrappers.AdomdDataReader reader, IStatusBarMessage statusProgress)
+        {
+            int iQueryCnt = 1;
+
+            runner.OutputMessage("Command Complete, writing output file");
+
+            bool moreResults = true;
+
+            using (var textWriter = new StreamWriter(fileName))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+
+                jsonWriter.WriteStartObject();
+                jsonWriter.WritePropertyName("results");
+                jsonWriter.WriteStartArray();
+                jsonWriter.WriteStartObject();
+                jsonWriter.WritePropertyName("tables");
+                jsonWriter.WriteStartArray();
+
+
+                while (moreResults)
+                {
+                    int iRowCnt = 0;
+
+                    var schemaTable = reader.GetSchemaTable();
+
+                    jsonWriter.WriteStartObject();
+                    jsonWriter.WritePropertyName("rows");
+                    jsonWriter.WriteStartArray();
+                    while (reader.Read())
+                    {
+                        jsonWriter.WriteStartObject();
+
+                        for (int iCol = 0; iCol < reader.FieldCount; iCol++)
+                        {
+                            jsonWriter.WritePropertyName(reader.GetName(iCol));
+                            jsonWriter.WriteValue(reader[iCol]);
+                        }
+
+                        jsonWriter.WriteEndObject();
+                        iRowCnt++;
+
+                        if (iRowCnt % 1000 == 0)
+                        {
+                            statusProgress.Update($"Written {iRowCnt:n0} rows to the file output");
+                        }
+                    }
+
+                    jsonWriter.WriteEndArray();
+                    jsonWriter.WriteEndObject();
+
+                    runner.OutputMessage(
+                            string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                        , iRowCnt
+                                        , iRowCnt == 1 ? "" : "s", iQueryCnt)
+                            );
+
+                    runner.RowCount = iRowCnt;
+
+                    moreResults = reader.NextResult();
+
+                    iQueryCnt++;
+                }
+
+                jsonWriter.WriteEndArray();
+                jsonWriter.WriteEndObject();
+                jsonWriter.WriteEndArray();
+                jsonWriter.WriteEndObject();
+
+            }
+        }
+
 
         private string AddFileCntSuffix(string fileName, int iFileCnt)
         {

@@ -2256,7 +2256,19 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
 
             } 
-        } 
+        }
+
+        // This property is used to remember which file type was chosen last time a text file output was used
+        private int _defaultTextFileType = 0;
+        [DataMember, DefaultValue(0)]
+        public int DefaultTextFileType { get => _defaultTextFileType;
+            set {
+                _defaultTextFileType = value;
+                SettingProvider.SetValue(nameof(DefaultTextFileType), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            }
+        }
 
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
