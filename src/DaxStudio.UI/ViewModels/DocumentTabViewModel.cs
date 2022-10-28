@@ -35,7 +35,6 @@ namespace DaxStudio.UI.ViewModels
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
         private int _documentCount = 1;
-        private DocumentViewModel _activeDocument;
         private Dictionary<int,AutoSaveIndex> _autoSaveRecoveryIndex;
         private readonly IGlobalOptions _options;
         private readonly object _activeDocumentLock = new object();

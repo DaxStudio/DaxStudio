@@ -68,45 +68,34 @@ namespace DaxStudio.UI.ResultsTargets
         {
             await Task.Run(async () =>
                 {
-                    try
-                    {
-                        runner.OutputMessage("Opening .odc file in Excel");
-                        var sw = Stopwatch.StartNew();
-                        var dq = textProvider.QueryText;
 
-                        // odc queries require 'mdx compatibility=1'
-                        var fixedConnStr = runner.ConnectionStringWithInitialCatalog.Replace("mdx compatibility=3", "mdx compatibility=1");
+                    runner.OutputMessage("Opening .odc file in Excel");
+                    var sw = Stopwatch.StartNew();
+                    var dq = textProvider.QueryText;
 
-                        // create odc file
-                        var odcFile = OdcHelper.CreateOdcQueryFile(fixedConnStr, dq );
+                    // odc queries require 'mdx compatibility=1'
+                    var fixedConnStr = runner.ConnectionStringWithInitialCatalog.Replace("mdx compatibility=3", "mdx compatibility=1");
+
+                    // create odc file
+                    var odcFile = OdcHelper.CreateOdcQueryFile(fixedConnStr, dq );
 
 
-                        Process.Start(odcFile);
-                        //  write results to Excel
+                    Process.Start(odcFile);
+                    //  write results to Excel
                  
 
-                        sw.Stop();
-                        var durationMs = sw.ElapsedMilliseconds;
+                    sw.Stop();
+                    var durationMs = sw.ElapsedMilliseconds;
                      
-                        runner.OutputMessage(
-                            "Query Completed - Query sent to Excel for execution", durationMs);
-                        runner.OutputMessage("Note: odc files can only handle a query that returns a single result set. If you see an error try using one of the other output types to ensure your query is valid.");
+                    runner.OutputMessage(
+                        "Query Completed - Query sent to Excel for execution", durationMs);
+                    runner.OutputMessage("Note: odc files can only handle a query that returns a single result set. If you see an error try using one of the other output types to ensure your query is valid.");
                         
-                        runner.ActivateOutput();
-                        runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
+                    runner.ActivateOutput();
+                    runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
 
-                        await CleanUpOdcAsync(odcFile);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelLinkedOdc), nameof(OutputResultsAsync), ex.Message);
-                        runner.ActivateOutput();
-                        runner.OutputError(ex.Message);
-                    }
-                    finally
-                    {
-                        runner.QueryCompleted();
-                    }
+                    await CleanUpOdcAsync(odcFile);
+
                 });
         }
 

@@ -53,114 +53,85 @@ namespace DaxStudio.UI.Model
                 await Task.Run(() =>
                 {
 
-                    try
+                    var sw = Stopwatch.StartNew();
+
+                    string sep = "\t";
+                    bool shouldQuoteStrings = true; //default to quoting all string fields
+                    string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
+                    string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
+                    Encoding enc = new UTF8Encoding(false);
+
+                    switch (dlg.FilterIndex)
                     {
-                        runner.OutputMessage("Query Started");
 
-                        var sw = Stopwatch.StartNew();
+                        case 1: // utf-8 csv
+                            sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+                            break;
+                        case 2: // tab separated
+                            sep = "\t";
+                            break;
+                        case 3: // unicode csv
+                            enc = new UnicodeEncoding();
+                            sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+                            break;
+                        case 4:// custom export format
+                            sep = runner.Options.GetCustomCsvDelimiter();
+                            shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
+                            break;
+                    }
 
-                        string sep = "\t";
-                        bool shouldQuoteStrings = true; //default to quoting all string fields
-                        string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
-                        string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
-                        Encoding enc = new UTF8Encoding(false);
+                    var daxQuery = textProvider.QueryText;
+                    
+                    using (var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection))
+                    using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
+                    {
 
-                        switch (dlg.FilterIndex)
+                        if (reader != null)
                         {
-                            
-                            case 1: // utf-8 csv
-                                sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
-                                break;
-                            case 2: // tab separated
-                                sep = "\t";
-                                break;
-                            case 3: // unicode csv
-                                enc = new UnicodeEncoding();
-                                sep = System.Globalization.CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
-                                break;
-                            case 4:// custom export format
-                                sep = runner.Options.GetCustomCsvDelimiter();
-                                shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
-                                break;
-                        }
+                            int iFileCnt = 1;
 
-                        var daxQuery = textProvider.QueryText;
-                        var reader = runner.ExecuteDataReaderQuery(daxQuery,textProvider.ParameterCollection);
 
-                        using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
-                        {
+                            runner.OutputMessage("Command Complete, writing output file");
 
-                            try
+                            bool moreResults = true;
+
+                            while (moreResults)
                             {
-                                if (reader != null)
+                                var outputFilename = fileName;
+                                int iRowCnt = 0;
+                                if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
+                                using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
                                 {
-                                    int iFileCnt = 1;
-                                    
-
-                                    runner.OutputMessage("Command Complete, writing output file");
-
-                                    bool moreResults = true;
-
-                                    while (moreResults)
-                                    {
-                                        var outputFilename = fileName;
-                                        int iRowCnt = 0;
-                                        if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
-                                        using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
-                                        {
-                                            iRowCnt = reader.WriteToStream( textWriter, sep, shouldQuoteStrings, isoDateFormat,  statusProgress);
-                                        }
-                                        runner.OutputMessage(
-                                                string.Format("Query {2} Completed ({0:N0} row{1} returned)"
-                                                            , iRowCnt
-                                                            , iRowCnt == 1 ? "" : "s", iFileCnt)
-                                                );
-
-                                        runner.RowCount = iRowCnt;
-
-                                        moreResults = reader.NextResult();
-
-                                        iFileCnt++;
-                                    }
-
-                                    sw.Stop();
-                                    durationMs = sw.ElapsedMilliseconds;
-
-                                    runner.SetResultsMessage("Query results written to file", OutputTarget.File);
-                                    runner.ActivateOutput();
+                                    iRowCnt = reader.WriteToStream(textWriter, sep, shouldQuoteStrings, isoDateFormat, statusProgress);
                                 }
-                                else
-                                    runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
+                                runner.OutputMessage(
+                                        string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                                    , iRowCnt
+                                                    , iRowCnt == 1 ? "" : "s", iFileCnt)
+                                        );
+
+                                runner.RowCount = iRowCnt;
+
+                                moreResults = reader.NextResult();
+
+                                iFileCnt++;
                             }
-                            finally
-                            {
-                                if (reader != null)
-                                {
-                                    reader.Dispose();
-                                }
-                            }
+
+                            sw.Stop();
+                            durationMs = sw.ElapsedMilliseconds;
+
+                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                            runner.ActivateOutput();
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetTextFile), nameof(OutputResultsAsync), ex.Message);
-                        runner.ActivateOutput();
-                        runner.OutputError(ex.Message);
-#if DEBUG
-                        runner.OutputError(ex.StackTrace);
-#endif
-                    }
-                    finally
-                    {
-                        runner.OutputMessage("Query Batch Completed", durationMs);
-                        runner.QueryCompleted();
-                    }
-
                 });
 
             }
-            // else dialog was cancelled so return an empty task.
-            await Task.Run(() => { });
+            else
+            {
+                // else dialog was cancelled so return an empty task.
+                await Task.CompletedTask;
+            }
         }
 
        

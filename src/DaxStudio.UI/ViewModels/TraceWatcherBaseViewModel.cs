@@ -713,5 +713,7 @@ namespace DaxStudio.UI.ViewModels
         public abstract string KeyTip { get; }
         #endregion
         protected IWindowManager WindowManager => _windowManager;
+
+        public bool HasEvents => (Events?.Count ?? 0) > 0;
     }
 }

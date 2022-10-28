@@ -67,87 +67,61 @@ namespace DaxStudio.UI.Model
                 await Task.Run(() =>
                 {
 
-                    try
+                    var sw = Stopwatch.StartNew();
+
+                    var daxQuery = textProvider.QueryText;
+                    
+                    using (var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection))
+                    using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
                     {
-                        runner.OutputMessage("Query Started");
 
-                        var sw = Stopwatch.StartNew();
-
-                        var daxQuery = textProvider.QueryText;
-                        var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection);
-
-                        using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
+                        if (reader != null)
                         {
+                            int iFileCnt = 1;
 
-                            try
+
+                            runner.OutputMessage("Command Complete, writing output file");
+
+                            bool moreResults = true;
+
+                            using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+                            using (var xlsxWriter = new XlsxWriter(stream))
                             {
-                                if (reader != null)
+                                while (moreResults)
                                 {
-                                    int iFileCnt = 1;
+                                    // create a worksheet for the current resultset
+                                    xlsxWriter.BeginWorksheet($"Query{iFileCnt}",1);
 
+                                    // write out the current resultset
+                                    var iRowCnt = WriteToWorksheet(reader, xlsxWriter, statusProgress, runner);
 
-                                    runner.OutputMessage("Command Complete, writing output file");
+                                    // setup Excel Autofilters
+                                    xlsxWriter.SetAutoFilter(1, 1, xlsxWriter.CurrentRowNumber, reader.FieldCount);
 
-                                    bool moreResults = true;
+                                    runner.OutputMessage(
+                                            string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                                        , iRowCnt
+                                                        , iRowCnt == 1 ? "" : "s", iFileCnt)
+                                            );
 
-                                    using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
-                                    using (var xlsxWriter = new XlsxWriter(stream))
-                                    {
-                                        while (moreResults)
-                                        {
-                                            // create a worksheet for the current resultset
-                                            xlsxWriter.BeginWorksheet($"Query{iFileCnt}",1);
+                                    runner.RowCount = iRowCnt;
 
-                                            // write out the current resultset
-                                            var iRowCnt = WriteToWorksheet(reader, xlsxWriter, statusProgress, runner);
+                                    moreResults = reader.NextResult();
 
-                                            // setup Excel Autofilters
-                                            xlsxWriter.SetAutoFilter(1, 1, xlsxWriter.CurrentRowNumber, reader.FieldCount);
-
-                                            runner.OutputMessage(
-                                                    string.Format("Query {2} Completed ({0:N0} row{1} returned)"
-                                                                , iRowCnt
-                                                                , iRowCnt == 1 ? "" : "s", iFileCnt)
-                                                    );
-
-                                            runner.RowCount = iRowCnt;
-
-                                            moreResults = reader.NextResult();
-
-                                            iFileCnt++;
-                                        }
-
-                                    }
-
-                                    sw.Stop();
-                                    durationMs = sw.ElapsedMilliseconds;
-
-                                    runner.SetResultsMessage("Query results written to file", OutputTarget.File);
-                                    runner.ActivateOutput();
+                                    iFileCnt++;
                                 }
-                                else
-                                    runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
+
                             }
-                            finally
-                            {
-                                reader?.Dispose();
-                            }
+
+                            sw.Stop();
+                            durationMs = sw.ElapsedMilliseconds;
+
+                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                            runner.ActivateOutput();
                         }
+                        
                     }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelFile), nameof(OutputResultsAsync), ex.Message);
-                        runner.ActivateOutput();
-                        runner.OutputError(ex.Message);
-#if DEBUG
-                        runner.OutputError(ex.StackTrace);
-#endif
-                    }
-                    finally
-                    {
-                        runner.OutputMessage("Query Batch Completed", durationMs);
-                        runner.QueryCompleted();
-                    }
+
 
                 });
 

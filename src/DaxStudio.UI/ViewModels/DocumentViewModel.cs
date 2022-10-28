@@ -718,6 +718,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void QueryFailed()
+        {
+            _queryStopWatch?.Stop();
+            IsQueryRunning = false;
+            NotifyOfPropertyChange(() => CanRunQuery);
+            _eventAggregator.PublishOnBackgroundThreadAsync(new QueryFinishedEvent(false));
+        }
+
         public void QueryCompleted()
         {
             QueryCompleted(false);
@@ -728,6 +736,7 @@ namespace DaxStudio.UI.ViewModels
             _queryStopWatch?.Stop();
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
+            _eventAggregator.PublishOnBackgroundThreadAsync(new QueryFinishedEvent());
             QueryResultsPane.IsBusy = false;  // TODO - this should be some sort of collection of objects with a specific interface, not a hard coded object reference
             if (_currentQueryDetails != null)
             {
@@ -1606,12 +1615,9 @@ namespace DaxStudio.UI.ViewModels
                 });
 
             }
-            catch (Exception e)
+            catch
             {
-                Debug.WriteLine(e);
-                OutputError(e.Message, row, col);
-                ActivateOutput();
-                return null;
+                throw;
             }
             finally
             {
@@ -1668,12 +1674,9 @@ namespace DaxStudio.UI.ViewModels
 
                 return dr;
             }
-            catch (Exception e)
+            catch 
             {
-                Debug.WriteLine(e);
-                OutputError(e.Message, row, col);
-                ActivateOutput();
-                return null;
+                throw;
             }
             finally
             {
@@ -1908,7 +1911,6 @@ namespace DaxStudio.UI.ViewModels
                     else
                     {
 
-
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
                         if (message.QueryProvider is ISaveState)
@@ -1916,11 +1918,9 @@ namespace DaxStudio.UI.ViewModels
                         else
                             _currentQueryDetails = CreateQueryHistoryEvent(message.QueryProvider.QueryText.Trim(), ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
-                        await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
+                        OutputMessage("Query Started");
 
-                        // todo - should we be checking for exceptions in this continuation
-                        IsQueryRunning = false;
-                        NotifyOfPropertyChange(() => CanRunQuery);
+                        await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
 
                         // if the server times trace watcher is not active then just record client timings
                         if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && _currentQueryDetails != null)
@@ -1929,18 +1929,29 @@ namespace DaxStudio.UI.ViewModels
                             _currentQueryDetails.RowCount = ResultsDataSet?.RowCounts();
                             await _eventAggregator.PublishOnUIThreadAsync(_currentQueryDetails);
                         }
-                        _queryStopWatch?.Reset();
-                        await _eventAggregator.PublishOnUIThreadAsync(new QueryFinishedEvent());
-                        msg.Dispose();
+                        
+                        QueryCompleted();
 
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
-                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
-
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
+                    //await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
+                    var durationMs = _queryStopWatch.ElapsedMilliseconds;
+                    ActivateOutput();
+                    OutputError(ex.Message);
+                    OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
+                    QueryFailed();
+                                        
                 }
+                finally
+                {
+                    IsQueryRunning = false;
+                    NotifyOfPropertyChange(() => CanRunQuery);
+                    _queryStopWatch?.Reset();
+                }
+
             }
         }
 

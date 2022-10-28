@@ -64,39 +64,27 @@ namespace DaxStudio.UI.ResultsTargets
 
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
                 {
-                    try
-                    {
-                        runner.OutputMessage("Query Started");
-                        var sw = Stopwatch.StartNew();
-                        var dq = textProvider.QueryText;
+
+                    var sw = Stopwatch.StartNew();
+                    var dq = textProvider.QueryText;
                         
-                        //  write results to Excel
-                        runner.Host.Proxy.OutputLinkedResultAsync(dq
-                            , runner.SelectedWorksheet
-                            , runner.ConnectedToPowerPivot?"":runner.ConnectionStringWithInitialCatalog).ContinueWith((ascendant) => {
+                    //  write results to Excel
+                    await runner.Host.Proxy.OutputLinkedResultAsync(dq
+                        , runner.SelectedWorksheet
+                        , runner.ConnectedToPowerPivot?"":runner.ConnectionStringWithInitialCatalog);
 
-                                sw.Stop();
-                                var durationMs = sw.ElapsedMilliseconds;
+
+                    sw.Stop();
+                    var durationMs = sw.ElapsedMilliseconds;
                      
-                                runner.OutputMessage(
-                                    string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
-                                runner.ActivateOutput();
-                                runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
+                    runner.OutputMessage(
+                        string.Format("Query Completed - Query sent to Excel for execution)"), durationMs);
+                    runner.ActivateOutput();
+                    runner.SetResultsMessage("Query sent to Excel for execution", OutputTarget.Linked);
 
-                            },TaskScheduler.Default);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetExcelLinked), nameof(OutputResultsAsync), ex.Message);
-                        runner.ActivateOutput();
-                        runner.OutputError(ex.Message);
-                    }
-                    finally
-                    {
-                        runner.QueryCompleted();
-                    }
+
                 });
         }
 
