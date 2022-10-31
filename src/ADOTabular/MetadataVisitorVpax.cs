@@ -30,6 +30,7 @@ namespace ADOTabular
         {
             var model = _daxModel;
             db = new ADOTabularDatabase(_conn, model.ModelName.Name, model.ModelName.Name, model.LastUpdate, model.CompatibilityLevel.ToString(), string.Empty);
+            db.LastUpdate = model.LastDataRefresh;
             return db;
         }
 

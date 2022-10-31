@@ -546,7 +546,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (xml == null) return new Dictionary<string, string>();
 
-            XmlTextReader reader = new XmlTextReader(new StringReader(xml));
+            XmlReader reader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings() { XmlResolver = null} );
             var result = new Dictionary<string, string>();
             while (reader.Read())
             {

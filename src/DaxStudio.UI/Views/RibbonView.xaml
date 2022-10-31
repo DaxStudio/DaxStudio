@@ -731,11 +731,11 @@
                                                                 <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
                                                        Margin="0,3,10,3" Width="32" Height="32" />-->
                                                         <Image  Margin="0,3,10,3" ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Width="32"/>
-                                                        <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                                                        <TextBlock Text="{Binding ExtensionLabel}" Foreground="{DynamicResource Theme.Brush.Default.Fore}" FontSize="10" FontWeight="Bold" Margin="6,14,0,0"></TextBlock>
                                                             </Grid>
                                                             <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                                                                 <TextBlock Text="{Binding FileAndExtension}" FontSize="14" />
-                                                                <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                                                                <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{DynamicResource Theme.Brush.Muted.Fore}"></TextBlock>
                                                             </StackPanel>
                                                         </StackPanel>
                                                         <i:Interaction.Triggers>
