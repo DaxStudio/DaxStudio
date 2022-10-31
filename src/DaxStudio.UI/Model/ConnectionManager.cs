@@ -21,6 +21,7 @@ using System.Threading;
 using DaxStudio.Common.Enums;
 using System.Xml.XPath;
 using System.IO;
+using static Dax.Vpax.Tools.VpaxTools;
 
 namespace DaxStudio.UI.Model
 {
@@ -74,7 +75,7 @@ namespace DaxStudio.UI.Model
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
 
         public IEnumerable<string> Keywords => _keywords;
-        public string ApplicationName => _connection.ApplicationName;
+        public string ApplicationName => _connection?.ApplicationName??"DAX Studio";
 
         public void Cancel()
         {
@@ -320,7 +321,7 @@ namespace DaxStudio.UI.Model
                 }
             }
         }
-        public bool IsAdminConnection => _connection?.IsAdminConnection ?? false;
+        public bool IsAdminConnection => _connection.ServerType != ServerType.Offline && ( _connection?.IsAdminConnection ?? false);
 
         public bool IsConnected { get
             {
@@ -756,32 +757,47 @@ namespace DaxStudio.UI.Model
             }, context);
         }
 
-        internal void Connect(ConnectEvent message)
+        internal async void Connect(ConnectEvent message)
         {
             IsConnecting = true;
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(Connect), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
-            _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-            ServerType = message.ServerType;
-            FileName = GetFileName(message);
-            IsPowerPivot = message.PowerPivotModeSelected;
-            _connection.Open();
-            SelectedDatabase = _connection.Database;
-            
-            _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent()).Wait();
-            _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name)).Wait();
-            _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews)).Wait();
-            _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups)).Wait();
+
+            if (message.ServerType == ServerType.Offline)
+                OpenOfflineConnection(message);
+            else
+                OpenOnlineConnection(message);
+
+
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+            await _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
+            await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
+            await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
             Thread.Sleep(500);
         }
 
-        private string GetFileName(ConnectEvent message)
+        private void OpenOfflineConnection(ConnectEvent message)
         {
-            switch (message.ServerType)
-            {
-                case ServerType.PowerPivot: return message.WorkbookName;
-                case ServerType.PowerBIDesktop: return message.PowerBIFileName;
-                default: return string.Empty;
-            }
+
+            var vpaContent = message.VpaxContent; //Dax.Vpax.Tools.VpaxTools.ImportVpax(message.FileName);
+            _connection = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            _connection.ServerType = ServerType.Offline;
+            _connection.Visitor = new MetadataVisitorVpax(_connection, vpaContent.DaxModel, vpaContent.TomDatabase);
+            ServerType = message.ServerType;
+            FileName = message.FileName??String.Empty;
+            IsPowerPivot = message.PowerPivotModeSelected;
+            Databases.Add(_connection.Database);
+            SelectedDatabase = _connection.Database;
+            _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+        }
+
+        private void OpenOnlineConnection(ConnectEvent message)
+        {
+            _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+            ServerType = message.ServerType;
+            FileName = message.FileName;
+            IsPowerPivot = message.PowerPivotModeSelected;
+            _connection.Open();
+            SelectedDatabase = _connection.Database;
         }
 
         public async Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
@@ -907,7 +923,7 @@ namespace DaxStudio.UI.Model
                 builder["Roles"] = roles;
             }
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true);
             connEvent.ActiveTraces = activeTraces;
             await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             
@@ -933,7 +949,7 @@ namespace DaxStudio.UI.Model
             builder.Remove("Roles");
             builder.Remove("EffectiveUsername");
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true);
             connEvent.ActiveTraces = activeTraces;
             _eventAggregator.PublishOnUIThreadAsync(connEvent);
 

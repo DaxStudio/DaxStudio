@@ -55,7 +55,7 @@ namespace ADOTabular
             if (table == null) return;
             if (_tables == null)
             {
-                _tables = new SortedDictionary<string, ADOTabularTable>();
+                _tables ??= new SortedDictionary<string, ADOTabularTable>();
             }
             _tables.Add(table.Name, table);
 

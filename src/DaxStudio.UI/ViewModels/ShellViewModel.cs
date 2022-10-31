@@ -237,7 +237,7 @@ namespace DaxStudio.UI.ViewModels
             var visual = obj.GetData("Power BI Visuals");
         }
 
-            private IEnumerable<InputBindingCommand> GetInputBindingCommands()
+        private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // load custom key bindings from Options
             yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);

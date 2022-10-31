@@ -3,6 +3,7 @@
 namespace ADOTabular.Interfaces 
 {
     public interface IMetaDataVisitor {
+        ADOTabularDatabase Visit(ADOTabularConnection conn);
         SortedDictionary<string, ADOTabularModel> Visit(ADOTabularModelCollection models);
         void Visit(ADOTabularTableCollection tables);
         SortedDictionary<string, ADOTabularColumn> Visit(ADOTabularColumnCollection columns);

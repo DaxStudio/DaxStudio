@@ -326,7 +326,6 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), $"Connecting to Server: {server} Database:{database}");
                 await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
                                                                         false, 
-                                                                        string.Empty,
                                                                         string.Empty, 
                                                                         database,
                                                                         server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop: ADOTabular.Enums.ServerType.AnalysisServices,

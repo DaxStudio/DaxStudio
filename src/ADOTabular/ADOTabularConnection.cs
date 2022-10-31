@@ -42,7 +42,8 @@ namespace ADOTabular
             
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
-            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, connectionType);
+            if (!string.IsNullOrEmpty(connectionString))
+                _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, connectionType);
 
             Type = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
@@ -68,9 +69,14 @@ namespace ADOTabular
             get
             {
                 //_adomdConn.UnderlyingConnection.Databases
-                if (_adomdConn == null) return null;
+                
                 try
                 {
+                    if (_adomdConn == null) { 
+                        var db2 = Visitor.Visit(this);
+                        return db2;
+                    }
+
                     if (_adomdConn.State != ConnectionState.Open)
                     {
                         this.Open();
@@ -149,24 +155,17 @@ namespace ADOTabular
         public void ChangeDatabase(string database)
         {
             _currentDatabase = database;
+            if (_adomdConn == null) return; // if we have opened a vpax file the connection object will be null
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            //if (PowerBIFileName != string.Empty)
-            //{
-            //    _currentDatabase = PowerBIFileName;
-            //    ADOTabularDatabase db = Database;
-            //    _adomdConn.ChangeDatabase(db.Id);
-            //}
-            //else
-            //{
+            
             if (_adomdConn.Database != database)
             {
                 _adomdConn.ChangeDatabase(database);
             }
 
-            //}
             ConnectionChanged?.Invoke(this, new EventArgs());
 
             _spid = 0; // reset the spid to 0 so that it will get re-evaluated
@@ -216,6 +215,8 @@ namespace ADOTabular
             get
             {
                 var connstr = _connectionString;
+                if (string.IsNullOrEmpty(connstr)) return connstr;
+
                 // TODO - do we need to set the initial catalog here??
                 /* 
                 if (!connstr.Contains("Initial Catalog") && Database != null)
@@ -275,12 +276,13 @@ namespace ADOTabular
             get { 
                 if (_adoTabDatabaseColl == null)
                 {
-                    if (_adomdConn != null)
+                    if (_adomdConn != null || Database !=null)
                     {
                     _adoTabDatabaseColl = new ADOTabularDatabaseCollection(this);
                     }
                     else
                     {
+
                         throw new InvalidOperationException("Unable to populate Databases collection - a valid connection has not been established");
                     }
                 }
@@ -606,7 +608,14 @@ namespace ADOTabular
             {
                 if (_serverMode == null)
                 {
-                    _serverMode = GetServerMode();
+                    if (ServerType == ServerType.Offline)
+                    {
+                        _serverMode = "Offline";
+                    }
+                    else
+                    {
+                        _serverMode = GetServerMode();
+                    }
                 }
                 return _serverMode;
             }
@@ -921,8 +930,10 @@ namespace ADOTabular
         }
         private ADOTabularConnection CloneInternal(string connectionString, bool sameSession, bool copyDatabaseReference)
         {
+            if (this.ServerType == ServerType.Offline) return this;
+
             var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
-            if(sameSession) connStrBuilder["SessionId"] = _adomdConn.SessionID;
+            if(sameSession) connStrBuilder["SessionId"] = _adomdConn?.SessionID;
             var newConnStr = connStrBuilder.ToString();
             var cnn = new ADOTabularConnection(newConnStr, this.Type)
             {

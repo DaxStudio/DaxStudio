@@ -1102,7 +1102,7 @@ namespace ADOTabular
                     }
 
                     // create reference object
-                    IADOTabularObjectReference reference = new ADOTabularObjectReference("", objRef);
+                    IADOTabularObjectReference reference = new ADOTabularObjectReference(String.Empty, objRef);
                     parent.FolderItems.Add(reference);
                     var column = table.Columns.GetByPropertyRef(objRef);
                     if (column != null) { 
@@ -1577,6 +1577,11 @@ namespace ADOTabular
                     daxTablesRemap.RemapNames.Add(columnId, columnName);
 
             }
+        }
+
+        public ADOTabularDatabase Visit(ADOTabularConnection conn)
+        {
+            return null;
         }
     }
 

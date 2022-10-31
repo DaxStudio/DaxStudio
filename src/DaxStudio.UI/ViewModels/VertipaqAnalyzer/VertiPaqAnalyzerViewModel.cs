@@ -17,6 +17,9 @@ using DaxStudio.UI.Utils;
 using System;
 using System.IO;
 using Microsoft.AnalysisServices.Tabular;
+using ADOTabular.Enums;
+using ICSharpCode.AvalonEdit.CodeCompletion;
+using Microsoft.AspNet.SignalR.Client;
 using System.Windows;
 using System.Windows.Forms;
 using ADOTabular;
@@ -303,6 +306,9 @@ namespace DaxStudio.UI.ViewModels
                 using (Stream strm = part.GetStream())
                 {
                     var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(strm);
+                    if (!this.CurrentDocument.Connection.IsConnected)
+                        Task.Run(() => { this.CurrentDocument.Connection.Connect(new ConnectEvent(CurrentDocument.Connection.ApplicationName, content)); });
+
                     var view = new Dax.ViewModel.VpaModel(content.DaxModel);
                     // update view model
                     ViewModel = view;

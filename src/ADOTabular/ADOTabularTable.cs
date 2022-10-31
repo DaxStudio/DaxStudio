@@ -124,7 +124,7 @@ namespace ADOTabular
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
-            if (connection == null) return;
+            if (connection == null || connection.ServerType == Enums.ServerType.Offline) return;
 
             string qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"RowCount\", COUNTROWS({DaxName}) )";
             try

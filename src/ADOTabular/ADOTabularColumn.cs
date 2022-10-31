@@ -204,7 +204,7 @@ namespace ADOTabular
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
-            if (connection == null) return;
+            if (connection == null|| connection.ServerType == Enums.ServerType.Offline) return;
 
             string qry = GetBasicStatsQuery();
             try
@@ -248,7 +248,7 @@ namespace ADOTabular
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
 
-            if (connection == null) return new List<string>() { "<Not Connected>" };
+            if (connection == null || connection.ServerType == Enums.ServerType.Offline) return new List<string>() { "<Not Connected>" };
 
             string qryTemplate = GetSampleDataQueryTemplate(connection.AllFunctions.Contains("TOPNSKIP"), GroupBy.Count > 0);
             var groupByCols = string.Join(",", GroupBy.Select(gb => gb.DaxName));

@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Data.OleDb;
 using Dax.ViewModel;
 using Dax.Vpax.Tools;
+using static Dax.Vpax.Tools.VpaxTools;
 
 namespace DaxStudio.UI.Utils
 {
@@ -55,11 +56,10 @@ namespace DaxStudio.UI.Utils
             VpaxTools.ExportVpax(filename, model, viewVpa, database);
         }
 
-        public static VpaModel ImportVPAX(string filename)
+        public static VpaxContent ImportVPAX(string filename)
         {
             var content = VpaxTools.ImportVpax(filename);
-            var view = new Dax.ViewModel.VpaModel(content.DaxModel);
-            return view;
+            return content;
         }
         
     }

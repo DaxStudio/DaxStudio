@@ -230,6 +230,11 @@ namespace ADOTabular
         {
             throw new System.NotImplementedException();
         }
+
+        public ADOTabularDatabase Visit(ADOTabularConnection conn)
+        {
+            return null;
+        }
     }
 
 }

@@ -343,9 +343,8 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent(
                 cnn.ConnectionStringWithInitialCatalog,
                 cnn.IsPowerPivot,
-                cnn.IsPowerPivot ? _sourceDocument.FileName : "",
-                "",
-                cnn.IsPowerPivot ? "" : cnn.FileName,
+                cnn.ApplicationName,
+                cnn.FileName,
                 cnn.ServerType
                 , false)
             { DatabaseName = cnn.Database.Name });
@@ -3066,7 +3065,7 @@ namespace DaxStudio.UI.ViewModels
                 var serverParts = server.Split(':');
                 if (serverParts.Length != 2) {
                     // if there is no colon in the datasource this is not a local engine instance
-                    message.PowerBIFileName = String.Empty;
+                    message.FileName = String.Empty;
                     return;
                 }
                 int.TryParse(serverParts[1], out var port);
@@ -3074,12 +3073,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // if the portion of the server name after the colon is not an integer
                     // then we are probably connected to a https:// or powerbi:// endpoint
-                    message.PowerBIFileName = String.Empty;
+                    message.FileName = String.Empty;
                     return;
                 }
                 var instances = PowerBIHelper.GetLocalInstances(false);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
-                message.PowerBIFileName = selectedInstance.Name;
+                message.FileName = selectedInstance.Name;
             }
             catch (Exception ex)
             {
@@ -3100,16 +3099,13 @@ namespace DaxStudio.UI.ViewModels
             if (IsConnected)
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(this, Connection.IsPowerBIorSSDT)).Wait();
 
-
-
             Spid = Connection.SPID;
             //this.SelectedDatabase = cnn.Database.Name;
-            CurrentWorkbookName = message.WorkbookName;
+            CurrentWorkbookName = message.PowerPivotModeSelected ? message.FileName : String.Empty;
 
             //SelectedDatabase = message.DatabaseName;
 
             Databases = Connection.Databases.ToBindableCollection();
-
 
             if (Connection == null)
             { ServerName = "<Not Connected>"; }
@@ -4274,14 +4270,17 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void ImportAnalysisData(string path)
+        private async void ImportAnalysisData(string path)
         {
 
             try
             {
-                //VpaModel viewModel = ModelAnalyzer.ImportVPAX(path);
+
                 var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(path);
                 var database = content.TomDatabase;
+                if (!Connection.IsConnected)
+                    await Task.Run(()=> { Connection.Connect(new ConnectEvent(Connection.ApplicationName, content)); });
+
                 VpaModel viewModel = new Dax.ViewModel.VpaModel(content.DaxModel);
 
                 // check if PerfData Window is already open and use that

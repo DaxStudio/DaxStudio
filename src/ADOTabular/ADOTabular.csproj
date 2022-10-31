@@ -170,6 +170,7 @@
     <Compile Include="MetaDataVisitorCSDL.cs" />
     <Compile Include="Interfaces\IMetaDataVisitor.cs" />
     <Compile Include="MetaDataVisitorADOMD.cs" />
+    <Compile Include="MetadataVisitorVpax.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ConnectionStringParser.cs" />
     <Compile Include="Utils\MetadataImageHelper.cs" />
@@ -186,6 +187,12 @@
     <Compile Include="Interfaces\IADOTabularFolderReference.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Dax.ViewModel">
+      <Version>1.2.6</Version>
+    </PackageReference>
+    <PackageReference Include="Dax.ViewVpaExport">
+      <Version>1.2.6</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
       <Version>19.51.0</Version>
     </PackageReference>
