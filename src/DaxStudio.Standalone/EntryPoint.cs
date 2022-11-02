@@ -23,8 +23,7 @@ using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
 //using Microsoft.Identity.Client;
-using System.Threading;
-using System.Linq;
+
 
 namespace DaxStudio.Standalone
 {
@@ -127,10 +126,6 @@ namespace DaxStudio.Standalone
             themeManager.SetTheme(_options.Theme);
             Log.Information("ThemeManager configured");
 
-            //var theme = options.Theme;// "Light"; 
-            //if (theme == "Dark") app.LoadDarkTheme();
-            //else app.LoadLightTheme();
-
             // log startup switches
             if (_options.AnyExternalAccessAllowed())
             {
@@ -143,38 +138,11 @@ namespace DaxStudio.Standalone
 
             if (!App.Args().ShowHelp)
             {
-                using (Mutex _mutex = new Mutex(true, @"Global\DaxStudioIPC"))
-                {
-                    NamedPipeServerStream pipe = null;
-                    var pipeCancellationToken = new CancellationTokenSource();
-                    if (_mutex.WaitOne(TimeSpan.Zero))
-                    {
-                        Log.Information("Opening Named Pipe");
-                        // start the IPC sink.
-                        pipe = new NamedPipeServerStream("DaxStudioIPC",
-                        PipeDirection.In, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
-                        // it's easier to use the AsyncCallback than it is to use Tasks here:
-                        // this can't block, so some form of async is a must
-                        
-                        Task.Run(async () =>
-                        {
-                            while (true)
-                            {
-                                await pipe.WaitForConnectionAsync(pipeCancellationToken.Token);
-                                ProcessMessage(pipe, App);
-                                pipe.Disconnect();
-                            }
-                        });
-                    }
-                    // Launch the User Interface
-                    Log.Information("Launching User Interface");
-                    bootstrapper.DisplayShell();
-                    App.Run();
 
-                    // close the IPC sink
-                    pipeCancellationToken.Cancel();
-                    pipe?.Close();
-                }
+                // Launch the User Interface
+                Log.Information("Launching User Interface");
+                bootstrapper.DisplayShell();
+                App.Run();
             }
 
             levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
@@ -431,73 +399,6 @@ namespace DaxStudio.Standalone
             }
         }
 
-        private static void ReadCommandLineArgs(this Application app, string[] args)
-        {
-            app.Args().Clear();
-
-            var p = new FluentCommandLineParser();
-            p.Setup<int>('p', "port")
-                .Callback(port => app.Args().Port = port);
-
-            p.Setup<bool>('l', "log")
-                .Callback(log => app.Args().LoggingEnabledByCommandLine = log)
-                .WithDescription("Enable Debug Logging")
-                .SetDefault(false);
-
-            p.Setup<string>('f', "file")
-                .Callback(file => app.Args().FileName = file)
-                .WithDescription("Name of file to open");
-#if DEBUG
-            // only include the crashtest parameter on debug builds
-            p.Setup<bool>('c', "crashtest")
-                .Callback(crashTest => app.Args().TriggerCrashTest = crashTest)
-                .SetDefault(false);
-#endif
-            p.Setup<string>('s', "server")
-                .Callback(server => app.Args().Server = server)
-                .WithDescription("Server to connect to");
-
-            p.Setup<string>('d', "database")
-                .Callback(database => app.Args().Database = database)
-                .WithDescription("Database to connect to");
-
-            p.Setup<bool>('r', "reset")
-                .Callback(reset => app.Args().Reset = reset)
-                .WithDescription("Reset user preferences to the default settings");
-
-            p.Setup<bool>("nopreview")
-                .Callback(nopreview => app.Args().NoPreview = nopreview)
-                .WithDescription("Hides version information");
-
-            p.Setup<string>('u', "uri")
-                .Callback(uri => CmdLineArgs.ParseUri(ref app, uri))
-                .WithDescription("used by the daxstudio:// uri handler");
-                
-
-            p.SetupHelp("?", "help")
-                .Callback(text => {
-                    Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(ReadCommandLineArgs), "Printing CommandLine Help");
-                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
-                    string formattedHelp = HelpFormatter.Format(p.Options);
-                    Console.WriteLine("");
-                    Console.WriteLine($"DAX Studio { ver.ToString(3) } (build { ver.Revision })");
-                    Console.WriteLine("--------------------------------");
-                    Console.WriteLine("");
-                    Console.WriteLine("Supported command line parameters:");
-                    Console.WriteLine(formattedHelp);
-                    Console.WriteLine("");
-                    Console.WriteLine("Note: parameters can either be passed with a short name or a long name form");
-                    Console.WriteLine("eg.  DaxStudio -f myfile.dax");
-                    Console.WriteLine("     DaxStudio --file myfile.dax");
-                    Console.WriteLine("");
-                    //app.Args().HelpText = text;
-                    app.Args().ShowHelp = true;
-                });
-
-            p.Parse(args);
-            
-        }
-
 
         private static void AddResourceDictionary(this Application app, string src)
         {
@@ -518,6 +419,8 @@ namespace DaxStudio.Standalone
                 _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
             }
         }
+
+        
 
 
     }

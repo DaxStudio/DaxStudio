@@ -49,7 +49,7 @@
                                         Grid.RowSpan="2"
                                         />
 
-                                <Grid Panel.ZIndex="1" Grid.Row="1" ClipToBounds="True">
+                                <Grid Panel.ZIndex="1" Grid.Row="1" ClipToBounds="True" Background="{DynamicResource Theme.Brush.StatusBar.Back}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="6"/>
                                         <ColumnDefinition/>

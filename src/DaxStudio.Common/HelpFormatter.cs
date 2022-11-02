@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.Standalone
+namespace DaxStudio.Common
 {
     public static class HelpFormatter
     {

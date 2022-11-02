@@ -3,13 +3,14 @@ using Serilog;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Windows;
 using DaxStudio.Common;
 using constants = DaxStudio.Common.Constants;
+using System.Runtime.InteropServices;
+using static DaxStudio.Common.NativeMethods;
 
 namespace DaxStudio.Launcher
 {
@@ -34,27 +35,39 @@ namespace DaxStudio.Launcher
             }
             else
             {
-                // connect to the main app
-                var cli = new NamedPipeClientStream(".", "DaxStudioIPC", PipeDirection.Out);
-                try
-                {
-                    cli.Connect(200);
-                    var bf = new BinaryFormatter();
-                    // serialize and send the command line
-                    bf.Serialize(cli, args);
-                    cli.Close();
-                }
-                catch(TimeoutException)
-                {
-                    Log.Warning(constants.LogMessageTemplate, nameof(Startup), nameof(Main), "Timeout opening named pipe, launching new process");
-                    LaunchNewProcess(args);
-                }
-                catch(Exception ex)
-                {
-                    Log.Error(ex, constants.LogMessageTemplate, nameof(Startup), nameof(Main), "Error communicating with existing daxstudio.exe process");
-                    MessageBox.Show($"The following error occurred trying to open DAX Studio\n\n{ex.Message}", "DAX Studio Launcher");
-                }
+                // Use WM_COPYDATA to pass args to existing process
+                SendCopyDataMessage(processes[0].MainWindowHandle, args);
             }
+        }
+
+
+        private static void SendCopyDataMessage(IntPtr hwnd, string[] args)
+        {
+            // Serialize our raw string data into a binary stream
+            BinaryFormatter b = new BinaryFormatter();
+            MemoryStream stream = new MemoryStream();
+            b.Serialize(stream, args);
+            stream.Flush();
+            int dataSize = (int)stream.Length;
+
+            // Create byte array and transfer the stream data
+            byte[] bytes = new byte[dataSize];
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.Read(bytes, 0, dataSize);
+            stream.Close();
+
+            // Allocate a memory address for our byte array
+            IntPtr ptrData = Marshal.AllocCoTaskMem(dataSize);
+
+            // Copy the byte data into this memory address
+            Marshal.Copy(bytes, 0, ptrData, dataSize);
+
+            COPYDATASTRUCT cds;
+            cds.dwData = (IntPtr)100;
+            cds.lpData = ptrData;
+            cds.cbData = dataSize;
+
+            Common.NativeMethods.SendMessage(hwnd, Common.NativeMethods.WM_COPYDATA, 0, ref cds);
         }
 
         private static void LaunchNewProcess(string[] args)

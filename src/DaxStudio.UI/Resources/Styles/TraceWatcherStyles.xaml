@@ -26,7 +26,7 @@
     </Style>
 
     <Style x:Key="TraceToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}" TargetType="ToggleButton">
-        <Setter Property="Background" Value="{DynamicResource Theme.MenuBar.Back}"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
         <Setter Property="Padding" Value="4 4 4 4"/>
         <Setter Property="Margin" Value="2 2" />
     </Style>
