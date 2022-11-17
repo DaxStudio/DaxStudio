@@ -162,8 +162,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void UpdateFlagClick()
         {
-            // Open URL in Browser
-            System.Diagnostics.Process.Start( VersionChecker.DownloadUrl.ToString());
+            try
+            {
+                // Open URL in Browser
+                System.Diagnostics.Process.Start(VersionChecker.DownloadUrl.ToString());
+            }
+            catch (Exception ex){
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(UpdateFlagClick), $"Error launching download url: '{VersionChecker?.DownloadUrl?.ToString()}'");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,"Unable to open the download url, please go to https://daxstudio.org to get the latest version"));
+            }
         }
 
 
