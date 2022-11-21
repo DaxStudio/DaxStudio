@@ -29,7 +29,7 @@
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
             <conv:StringFormatConverter x:Key="StringFormatConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-            
+            <conv:BoolToRightThicknessConverter x:Key="BoolToRightThicknessConverter"/>
 
             <!--<Style x:Key="DatabaseComboStyle" TargetType="ComboBox">
                 <Setter Property="ToolTipService.ShowDuration" Value="60000"/>
@@ -536,7 +536,8 @@
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                   primitives:ScrollViewerHelper.AutoHideScrollBars="{Binding AutoHideMetadataVerticalScrollbars}"
                                   HorizontalContentAlignment="Stretch"
-                                  Margin="0,2,0,-2">
+                                  Margin="0,2,0,-2"
+                                  Padding="{Binding AutoHideMetadataVerticalScrollbars, Converter={StaticResource BoolToRightThicknessConverter},ConverterParameter=12.0}">
 
                                 <i:Interaction.Behaviors>
                                     <beh:TreeViewClipboardBehavior />
