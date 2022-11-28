@@ -863,5 +863,88 @@ ORDER BY
             var expectedJson = @"{}";
             StringAssertion.ShouldEqualWithDiff(expectedJson, json, DiffStyle.Full);
         }
+
+        [TestMethod]
+        public void TestMeasureFilter()
+        {
+
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure),
+                    modelCaps, mockEventAggregator)
+                { FilterType = FilterType.GreaterThanOrEqual, FilterValue = "1000000" });
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, false);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+FILTER(
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    ""Total Sales"", [Total Sales]
+)
+,[Total Sales] >= 1000000
+)
+ORDER BY 
+    'Product Category'[Category] ASC,
+    'Product'[Color] ASC
+/* END QUERY BUILDER */".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
+
+        [TestMethod]
+        public void TestMultipleMeasureFilter()
+        {
+
+            List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
+            List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
+
+            cols.Add(MockColumn.Create("Category", "'Product Category'[Category]", typeof(string),
+                ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
+            cols.Add(MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure));
+
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure),
+                    modelCaps, mockEventAggregator)
+                { FilterType = FilterType.GreaterThanOrEqual, FilterValue = "1000000" });
+
+            filters.Add(
+                new QueryBuilderFilter(
+                    MockColumn.CreateADOTabularColumn("Order Quantity", "[Order Quantity]", typeof(double), ADOTabularObjectType.Measure),
+                    modelCaps, mockEventAggregator)
+                { FilterType = FilterType.LessThanOrEqual, FilterValue = "50000" });
+
+            var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters, false);
+            var expectedQry = @"/* START QUERY BUILDER */
+EVALUATE
+FILTER(
+SUMMARIZECOLUMNS(
+    'Product Category'[Category],
+    'Product'[Color],
+    ""Total Sales"", [Total Sales]
+)
+,[Total Sales] >= 1000000
+&& [Order Quantity] <= 50000
+)
+ORDER BY 
+    'Product Category'[Category] ASC,
+    'Product'[Color] ASC
+/* END QUERY BUILDER */".Replace("\r", "");
+
+            StringAssertion.ShouldEqualWithDiff(expectedQry, qry, DiffStyle.Full);
+
+        }
     }
 }

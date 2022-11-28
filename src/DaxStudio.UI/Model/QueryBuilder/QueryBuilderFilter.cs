@@ -73,6 +73,9 @@ namespace DaxStudio.UI.Model
                             break;
                         case FilterType.In:
                         case FilterType.NotIn:
+                            // measures return a single scalar string value, so we do not support
+                            // In/NotIn filter types
+                            if (TabularObject.ObjectType == ADOTabular.ADOTabularObjectType.Measure) break;
                             // if the data type is string and the model supports TREATAS
                             // TabularObject.DataType == typeof(string) &&
                             if (( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) && !FilterValueIsParameter ) yield return ft;
