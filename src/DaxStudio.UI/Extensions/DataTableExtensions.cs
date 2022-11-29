@@ -96,7 +96,7 @@ namespace DaxStudio.UI.Extensions
                     OriginalCaption = col.Caption,
                     OriginalName = col.ColumnName,
                     NewCaption = (removeCaption) ? "" : name,
-                    NewName = name.Replace(' ', '`').Replace(',', '`'),
+                    NewName = name.EscapeColumnName(),
                 };
                 newColumnNames.Add(dc);
                 //col.Caption = (removeCaption) ? "" : name;
@@ -128,6 +128,26 @@ namespace DaxStudio.UI.Extensions
                     dc.ColumnName = c.NewName;
                 }
             }
+        }
+
+        public static string EscapeColumnName(this string columnName)
+        {
+            var result = new StringBuilder();
+            foreach(var c in columnName.ToCharArray())
+            {
+                switch (c)
+                {
+                    case' ': result.Append('`'); break;
+                    case ',': result.Append("\\,"); break;
+                    case '(': result.Append("\\(");break;
+                    case ')': result.Append("\\)"); break;
+                    //case ']': result.Append("\\]"); break;
+                    case '=': result.Append("\\="); break;
+                    case '}': result.Append("\\}"); break;
+                    default: result.Append(c); break;
+                }
+            }
+            return result.ToString();   
         }
 
     }
