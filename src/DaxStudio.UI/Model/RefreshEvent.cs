@@ -1,7 +1,8 @@
 ﻿using System;
 using DaxStudio.Common.Enums;
 using DaxStudio.QueryTrace;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DaxStudio.UI.Model
 {
@@ -23,7 +24,9 @@ namespace DaxStudio.UI.Model
         public string ObjectName { get; set; }
         public string ObjectPath { get; set; }
         public string ObjectReference { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventClass EventClass { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventSubclass EventSubClass { get; set; }
     }
 }
