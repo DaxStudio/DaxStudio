@@ -26,6 +26,9 @@ namespace DaxStudio.QueryTrace
             DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName)? powerBiFileName : DatabaseName;
             ActivityId = e[TraceColumn.ActivityID];
             RequestId = e[TraceColumn.RequestID];
+            SessionId = e.SessionID;
+            CurrentTime = e.CurrentTime;
+
             switch (e.EventClass)
             {
                 case TraceEventClass.QueryBegin:
@@ -87,8 +90,17 @@ namespace DaxStudio.QueryTrace
                     ObjectPath = e.ObjectPath;
                     ObjectReference = e.ObjectReference;
                     SPID = e.Spid;
+                                       
 
-                    //IntegerData = e.IntegerData;
+                    try
+                    {
+                        IntegerData = e.IntegerData;
+                    }
+                    catch 
+                    {
+                        // suppress all errors
+                    }
+
                     try
                     {
                         ProgressTotal = e.ProgressTotal;
@@ -101,14 +113,27 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.ProgressReportEnd:
                     StartTime = e.StartTime;
                     EndTime = e.EndTime;
-                    //CpuTime = e.CpuTime;
+
+                    try { CpuTime = e.CpuTime; } catch { }
+                    
                     Duration = e.Duration;
                     NTUserName = e.NTUserName;
                     //ProgressTotal = e.ProgressTotal;
                     ObjectName = e.ObjectName;
                     ObjectPath = e.ObjectPath;
                     ObjectReference = e.ObjectReference;
-                    SPID = e.Spid;
+                    SPID = e.Spid;                    
+                    ObjectId = e.ObjectID;
+                    
+                    try
+                    {
+                        IntegerData = e.IntegerData;
+                    }
+                    catch
+                    {
+                        // suppress all errors
+                    }
+
                     break;
                 case TraceEventClass.DiscoverBegin:
                 case TraceEventClass.VertiPaqSEQueryBegin:
@@ -258,5 +283,12 @@ namespace DaxStudio.QueryTrace
         public long ProgressTotal { get; set; }
         public string ActivityId { get; set; }
         public string RequestId { get; private set; }
+
+        public DateTime CurrentTime { get; set; }
+        public long IntegerData { get; set; }
+        public string SessionId { get; set; }
+        public string ObjectType { get; set; }
+        public string ObjectId { get; set; }
+
     }
 }
