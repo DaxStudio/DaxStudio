@@ -1441,6 +1441,24 @@
                             />
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+                <Fluent:Button
+                    Name="FEBenchmark"
+                    Header="Server FE Benchmark"
+                    KeyTip="F"
+                    cal:Message.Attach="[Event Click] = [Action RunServerFEBenchmark()]"
+                    Icon="{DynamicResource run_benchmarkDrawingImage}"
+                    LargeIcon="{DynamicResource run_benchmarkDrawingImage}"
+                    Margin="4,0"
+                    SizeDefinition="Large,Middel,Small"
+                    
+                    >
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Server FE Benchmark"
+                                          Text="Runs a formula engine benchmark to determine server performance"
+                                          DisableReason="You must have admin rights against the data source in order to create the Timings trace to capture the detailed timing information"
+                            />
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="External Tools">
                 <Fluent:Button Name="LaunchSqlProfiler"

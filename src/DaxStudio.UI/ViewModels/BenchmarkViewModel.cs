@@ -16,8 +16,8 @@ using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class BenchmarkViewModel : Screen, IDisposable
-        ,IHandle<ServerTimingsEvent>
+    public class BenchmarkViewModel : Screen, IDisposable, ICancellable
+        , IHandle<ServerTimingsEvent>
         ,IHandle<TraceChangedEvent>
         ,IHandle<UpdateGlobalOptions>
     {

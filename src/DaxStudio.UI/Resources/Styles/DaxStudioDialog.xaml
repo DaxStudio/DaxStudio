@@ -93,6 +93,7 @@
 
     <!-- set default view styles for dialogs -->
     <Style TargetType="{x:Type view:BenchmarkView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:BenchmarkServerFEView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:ConnectionDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:ExportDataWizardView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:FindReplaceDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>

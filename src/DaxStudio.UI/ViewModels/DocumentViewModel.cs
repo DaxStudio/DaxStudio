@@ -1727,10 +1727,14 @@ namespace DaxStudio.UI.ViewModels
             if (!CanRunQuery) return;
 
             // the benchmark run style will pop up it's own dialog
-            if (message.IsBenchmark)
+            switch (message.BenchmarkType)
             {
-                BenchmarkQuery();
-                return;
+                case RunQueryEvent.BenchmarkTypes.QueryBenchmark:
+                    BenchmarkQuery();
+                    return;
+                case RunQueryEvent.BenchmarkTypes.ServerFEBenchmark:
+                    BenchmarkServerFE();
+                    return;
             }
 
             NotifyOfPropertyChange(() => CanRunQuery);
@@ -1751,7 +1755,17 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private async void BenchmarkQuery()
+        private void BenchmarkServerFE()
+        {
+            Benchmark(() => new BenchmarkServerFEViewModel(_eventAggregator, this, _ribbon, Options));
+        }
+
+        private void BenchmarkQuery()
+        {
+            Benchmark( () => new BenchmarkViewModel(_eventAggregator, this, _ribbon, Options) );
+        }
+
+        private async void Benchmark<T>(Func<T> createViewModel) where T : ICancellable, IDisposable
         {
 
             try
@@ -1762,8 +1776,7 @@ namespace DaxStudio.UI.ViewModels
 
                 var serverTimingsInitialState = serverTimingsTrace?.IsChecked ?? false;
 
-                //using (var dialog = new ExportDataDialogViewModel(_eventAggregator, ActiveDocument))
-                using (var dialog = new BenchmarkViewModel(_eventAggregator, this, _ribbon, Options))
+                using (var dialog = createViewModel())
                 {
 
                     await _windowManager.ShowDialogBoxAsync(dialog, settings: new Dictionary<string, object>
@@ -1789,7 +1802,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(BenchmarkQuery), ex.Message);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Running BenchmarkQuery: {ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Running BenchmarkServerFE: {ex.Message}"));
             }
             finally
             {
@@ -1820,7 +1833,7 @@ namespace DaxStudio.UI.ViewModels
 
                     // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
                     // see if the query builder is active and try and use that to get the Query text.
-                    if (EditorText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel))
+                    if (EditorText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel) && !(message.QueryProvider is BenchmarkServerFEViewModel.BenchmarkFEQuery))
                     {
                         if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0)
                         {
