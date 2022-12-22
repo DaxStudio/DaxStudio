@@ -41,4 +41,10 @@
         <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource model_smallGeometry}" />
     </DrawingGroup>
     <DrawingImage x:Key="model_small_accentDrawingImage" Drawing="{StaticResource model_small_accentDrawingGroup}" />
+    <Geometry x:Key="tableHiddenGeometry">F1 M16,16z M0,0z M14.4,2.27L14.4,2.27A1.09,1.09,0,0,0,14.13,1.87A1.09,1.09,0,0,0,13.73,1.6A1.12,1.12,0,0,0,13.25,1.5L2.75,1.5A1.12,1.12,0,0,0,2.27,1.6A1.09,1.09,0,0,0,1.87,1.87A1.09,1.09,0,0,0,1.6,2.27A1.12,1.12,0,0,0,1.5,2.75L1.5,13.25A1.12,1.12,0,0,0,1.6,13.73A1.09,1.09,0,0,0,1.87,14.13A1.09,1.09,0,0,0,2.27,14.4A1.12,1.12,0,0,0,2.75,14.5L13.25,14.5A1.12,1.12,0,0,0,13.73,14.4A1.27,1.27,0,0,0,14.4,13.73A1.12,1.12,0,0,0,14.5,13.25L14.5,2.75A1.12,1.12,0,0,0,14.4,2.27z M5.32,13.91L2.75,13.91A0.63,0.63,0,0,1,2.29,13.71A0.63,0.63,0,0,1,2.09,13.25L2.09,10.68 5.32,10.68z M5.32,10.09L2.09,10.09 2.09,5.91 5.32,5.91z M10.09,13.91L5.91,13.91 5.91,10.68 10.09,10.68z M10.09,10.09L5.91,10.09 5.91,5.91 10.09,5.91z M13.91,13.25A0.68,0.68,0,0,1,13.25,13.91L10.68,13.91 10.68,10.68 13.91,10.68z M13.91,10.09L10.68,10.09 10.68,5.91 13.91,5.91z</Geometry>
+    <DrawingGroup x:Key="tableHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource tableHiddenGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="tableHiddenDrawingImage" Drawing="{StaticResource tableHiddenDrawingGroup}" />
+
 </ResourceDictionary>
