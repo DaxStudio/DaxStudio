@@ -304,7 +304,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override bool CanExport => _debugEvents.Count > 0;
 
-        public override string ImageResource => "refresh_traceDrawingImage";  //TODO - get proper image
+        public override string ImageResource => "evaluate_logDrawingImage"; 
 
         public override void ExportTraceDetails(string filePath)
         {

@@ -9,7 +9,7 @@
              xmlns:local="clr-namespace:DaxStudio.UI.Views"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              Caption="Benchmark Server FE"
-             Icon="{DynamicResource run_benchmarkDrawingImage}"
+             Icon="{DynamicResource fe_benchmarkDrawingImage}"
              mc:Ignorable="d"
              d:DesignHeight="380" d:DesignWidth="500">
     <ctrl:DaxStudioDialog.Resources>
