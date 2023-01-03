@@ -1446,8 +1446,8 @@
                     Header="Server FE Benchmark"
                     KeyTip="F"
                     cal:Message.Attach="[Event Click] = [Action RunServerFEBenchmark()]"
-                    Icon="{DynamicResource run_benchmarkDrawingImage}"
-                    LargeIcon="{DynamicResource run_benchmarkDrawingImage}"
+                    Icon="{DynamicResource fe_benchmarkDrawingImage}"
+                    LargeIcon="{DynamicResource fe_benchmarkDrawingImage}"
                     Margin="4,0"
                     SizeDefinition="Large,Middel,Small"
                     
