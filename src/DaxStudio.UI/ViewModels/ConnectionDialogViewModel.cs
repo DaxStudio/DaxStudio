@@ -680,17 +680,23 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_locales == null)
                 {
-                    _locales = new SortedList<string, LocaleIdentifier>();
-                    _locales.Add("<Default>", new LocaleIdentifier() { DisplayName = "<Default>", LCID = -1 });
+                    _locales = new SortedList<string, LocaleIdentifier>
+                    {
+                        { "<Default>", new LocaleIdentifier() { DisplayName = "<Default>", LCID = -1 } }
+                    };
                     try
                     {
                         foreach (var ci in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
                         {
+                            // skip this locale if we already have it in the collection
+                            if (_locales.ContainsKey(ci.DisplayName)) continue;
+                            
                             _locales.Add(ci.DisplayName, new LocaleIdentifier()
                             {
                                 DisplayName = string.Format("{0} - {1}", ci.DisplayName, ci.LCID),
                                 LCID = ci.LCID
                             });
+                            
                         }
                     }
                     catch (Exception ex)
