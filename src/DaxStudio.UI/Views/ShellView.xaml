@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
+        xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d" 
         d:DesignWidth="466" 
         GlowBrush="{x:Null}"
@@ -20,7 +21,11 @@
         MinWidth="460"                    
         Height="720"
         Width="1120"
-        Top="5">
+        Top="5"
+        dd:DragDrop.IsDragSource="True"
+        dd:DragDrop.IsDropTarget="True"
+        dd:DragDrop.DropHandler="{Binding}"
+                     >
     <!--<WindowChrome.WindowChrome>
         <WindowChrome x:Name="chrome" ResizeBorderThickness="8" CornerRadius="20" GlassFrameThickness="0" NonClientFrameEdges="None" />
     </WindowChrome.WindowChrome>-->

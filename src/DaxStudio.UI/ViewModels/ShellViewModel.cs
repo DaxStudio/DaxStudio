@@ -26,6 +26,7 @@ using DaxStudio.UI.Views;
 using System.Windows.Interop;
 using common = DaxStudio.Common;
 using DaxStudio.Common.Extensions;
+using GongSolutions.Wpf.DragDrop;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -34,6 +35,7 @@ namespace DaxStudio.UI.ViewModels
         Screen,
         IShell,
         IDisposable,
+        IDropTarget,
         IHandle<NewVersionEvent>,
         IHandle<AutoSaveEvent>,
         IHandle<StartAutoSaveTimerEvent>,
@@ -680,6 +682,42 @@ namespace DaxStudio.UI.ViewModels
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public void DragEnter(IDropInfo dropInfo)
+        {
+            //
+            System.Diagnostics.Debug.WriteLine("ShellViewModel DragEnter");
+        }
+
+        public void DragOver(IDropInfo dropInfo)
+        {
+            //
+            System.Diagnostics.Debug.WriteLine("ShellViewModel DragOver");
+            if (((DataObject)dropInfo.Data).ContainsFileDropList())
+            {
+                dropInfo.Effects = DragDropEffects.Copy;
+                return;
+            }
+            dropInfo.NotHandled = true;
+            //dropInfo.Effects = DragDropEffects.All;
+        }
+
+        public void DragLeave(IDropInfo dropInfo)
+        {
+            //
+        }
+
+        public void Drop(IDropInfo dropInfo)
+        {
+            System.Diagnostics.Debug.WriteLine("ShellViewModel Drop");
+            if (!((DataObject)dropInfo.Data).ContainsFileDropList()) { 
+                dropInfo.NotHandled = true;
+                return; 
+            }
+            
+            var file = ((DataObject)dropInfo.Data).GetFileDropList()[0];
+            _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file));
         }
     }
 
