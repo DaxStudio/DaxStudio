@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Linq;
@@ -12,10 +11,7 @@ using ADOTabular.Interfaces;
 using ADOTabular.Enums;
 using ADOTabular.Extensions;
 using Microsoft.AnalysisServices.Tabular;
-
-using Tuple = System.Tuple;
 using System.Threading.Tasks;
-using System.Globalization;
 
 namespace ADOTabular
 {
@@ -1347,14 +1343,8 @@ namespace ADOTabular
         {
             if (keywords == null) throw new ArgumentNullException(nameof(keywords));
 
-            //DataRowCollection drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0].Rows;
-            //DataRowCollection drFunctions = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Tables[0].Rows;
             var drKeywords = _conn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Tables[0];
             var drFunctions = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Tables[0].Select("ORIGIN=3 OR ORIGIN=4");
-
-            //var ds = drKeywords.DataSet.Tables;
-            //ds.Add(drFunctions);
-
 
             var kwords = from keyword in drKeywords.AsEnumerable()
                          join function in drFunctions.AsEnumerable() on keyword["Keyword"] equals function["FUNCTION_NAME"] into a
@@ -1362,7 +1352,6 @@ namespace ADOTabular
                          where kword == null
                          select new { Keyword = (string)keyword["Keyword"] , Matched = (kword==null) };
 
-            //foreach (DataRow dr in drKeywords)
             foreach (var dr in kwords)
             {
                 keywords.Add(dr.Keyword);

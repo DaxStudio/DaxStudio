@@ -183,6 +183,7 @@ namespace DaxStudio.UI.ViewModels
 
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
+            
             MetadataPane = new MetadataPaneViewModel(Connection, _eventAggregator, this, Options);
             FunctionPane = new FunctionPaneViewModel(Connection, _eventAggregator, this, Options);
             DmvPane = new DmvPaneViewModel(Connection, _eventAggregator, this, Options);
@@ -1009,11 +1010,10 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        public ConnectionManager Connection { get; }
+        public ConnectionManager Connection { get; }  
 
 
-
-        private void UpdateConnections(ConnectEvent message)
+        private async Task UpdateConnectionsAsync(ConnectEvent message)
         {
             _logger.Info("In UpdateConnections");
             OutputPane.AddInformation("Establishing Connection");
@@ -1025,9 +1025,11 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (message == null) return;
                     MetadataPane.IsBusy = true;
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Starting Connect");
                     Connection.Connect(message);
-                    if (string.IsNullOrEmpty(ViewAsDescription) || ViewAsDescription == "Reconnecting...")
-                        UpdateViewAsDescription(message.ConnectionString);
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished Connect");
+
+                    UpdateViewAsDescription(message.ConnectionString);
 
                     NotifyOfPropertyChange(() => IsAdminConnection);
                     var activeTrace = TraceWatchers.FirstOrDefault(t => t.IsChecked);
@@ -1049,7 +1051,7 @@ namespace DaxStudio.UI.ViewModels
                             traceWatcher.IsChecked = true;
                         }
                     }
-
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Starting - Editor Function highlight updates");
                     Execute.OnUIThread(() =>
                     {
                         try
@@ -1064,10 +1066,11 @@ namespace DaxStudio.UI.ViewModels
                             Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "UpdateConnections", "Error Updating SyntaxHighlighting: " + ex.Message);
                         }
                     });
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished - Editor Function highlight updates");
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
+                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
 
                     // if the xmla endpoint is not enabled it returns a generic WebException so we add extra info 
                     // to the error to help people potentially mitigate the issue.
@@ -1078,7 +1081,7 @@ namespace DaxStudio.UI.ViewModels
                     }
 
                     var msg = $"The following error occurred while updating the connection{extraInfo}: {ex.Message}";
-                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnections), msg);
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
                     OutputError(msg);
                     ActivateOutput();
                     // if we've had an error and there are RLS "View As" settings active we need to switch those off
@@ -3022,12 +3025,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 using (var msg = NewStatusBarMessage("Connecting..."))
                 {
-                    await Task.Run(() =>
+                    await Task.Run(async () =>
                         {
 
                             if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
-                            SetupConnection(message);
+                            await SetupConnectionAsync(message);
 
                         }, cancellationToken);
 
@@ -3100,24 +3103,27 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void SetupConnection(ConnectEvent message) //, ADOTabularConnection cnn)
+        private async Task SetupConnectionAsync(ConnectEvent message) //, ADOTabularConnection cnn)
         {
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Starting");
 
-            UpdateConnections(message);
-            Log.Debug("{Class} {Event} {Connection}", "DocumentViewModel", "Publishing ConnectionChangedEvent", Connection == null ? "<null>" : Connection.ConnectionString);
+            await UpdateConnectionsAsync(message);
+
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Notifying of Property Changes");
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => IsAdminConnection);
             NotifyOfPropertyChange(() => IsViewAsActive);
-
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), $"Publishing ConnectionChangedEvent: {(Connection == null ? "<null>" : Connection.ConnectionString)}");
             if (IsConnected)
-                _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(this, Connection.IsPowerBIorSSDT)).Wait();
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(this, Connection.IsPowerBIorSSDT));
 
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Getting SPID");
             Spid = Connection.SPID;
             //this.SelectedDatabase = cnn.Database.Name;
             CurrentWorkbookName = message.PowerPivotModeSelected ? message.FileName : String.Empty;
 
             //SelectedDatabase = message.DatabaseName;
-
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Getting Databases");
             Databases = Connection.Databases.ToBindableCollection();
 
             if (Connection == null)
@@ -3160,6 +3166,7 @@ namespace DaxStudio.UI.ViewModels
 
                 }
             }
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Finished");
         }
 
 

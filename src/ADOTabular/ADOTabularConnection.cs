@@ -12,6 +12,7 @@ using ADOTabular.Enums;
 using ADOTabular.Extensions;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
+using System.Threading;
 
 namespace ADOTabular
 {
@@ -297,34 +298,32 @@ namespace ADOTabular
                 return _adoTabDatabaseColl.Count;
             }
         }
-#pragma warning disable CA1725 // Parameter names should match base declaration
-        public DataSet GetSchemaDataSet(string schemaName)
+
+        public DataSet GetSchemaDataSet(string dataSet)
         {
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            return _adomdConn.GetSchemaDataSet(schemaName, null,true);
+            return _adomdConn.GetSchemaDataSet(dataSet, null,true);
         }
 
 
-        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection)
+        public DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions)
         {
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection,true);
+            return _adomdConn.GetSchemaDataSet(dataSet, restrictions,true);
         }
 
-        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection, bool throwOnInlineErrors)
+        public DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions, bool throwOnErrors)
         {
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection, throwOnInlineErrors);
+            return _adomdConn.GetSchemaDataSet(dataSet, restrictions, throwOnErrors);
             
         }
-#pragma warning restore CA1725 // Parameter names should match base declaration
-
 
         public void ExecuteNonQuery(string command)
         {
@@ -408,7 +407,6 @@ namespace ADOTabular
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
             rdr.Connection = this;
             rdr.CommandText = command;
-     
             return rdr;
 
         }
@@ -416,17 +414,24 @@ namespace ADOTabular
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             _runningCommand = _adomdConn.CreateCommand();
-            _runningCommand.CommandType = CommandType.Text;
-            _runningCommand.CommandText = query;
-            var dt = new DataTable("DAXResult");
-            using (var da = new AdomdDataAdapter(_runningCommand))
+            try
             {
-                if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-                da.Fill(dt);
+                _runningCommand.CommandType = CommandType.Text;
+                _runningCommand.CommandText = query;
+                var dt = new DataTable("DAXResult");
+                using (var da = new AdomdDataAdapter(_runningCommand))
+                {
+                    if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+                    da.Fill(dt);
+                }
+                _runningCommand.Dispose();
+                _runningCommand = null;
+                return dt;
             }
-            _runningCommand.Dispose();
-            _runningCommand = null;
-            return dt;
+            finally
+            {
+                _runningCommand = null; 
+            }
         }
 
         public int ExecuteCommand(string command) {
@@ -701,7 +706,7 @@ namespace ADOTabular
                         //var resColl = new AdomdRestrictionCollection {{"SESSION_ID", SessionID}};
                         //var ds = GetSchemaDataSet("DISCOVER_SESSIONS", resColl);
                         var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
-                        foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => string.Equals( dr["SESSION_ID"].ToString().ToUpper(), SessionId, StringComparison.OrdinalIgnoreCase )))
+                        foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => string.Equals( dr["SESSION_ID"].ToString(), SessionId, StringComparison.OrdinalIgnoreCase )))
                         {
                             _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
@@ -766,15 +771,17 @@ namespace ADOTabular
                 }
                 else
                 {
+#pragma warning disable CA1031 // Do not catch general exception types
                     try
                     {
                         ShortFileName = new FileInfo(_powerBIFileName).Name;
                     }
-                    catch
+                    catch 
                     {
                         // if there are any errors fallback to using the filename as the ShortName
                         ShortFileName = _powerBIFileName;
                     }
+#pragma warning restore CA1031 // Do not catch general exception types
                 }
             }
         }

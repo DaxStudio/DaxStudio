@@ -75,6 +75,7 @@
     <Compile Include="CrashReporter.cs" />
     <Compile Include="Enums\DaxStudioTraceEventClass.cs" />
     <Compile Include="Exceptions\SaveSettingValueException.cs" />
+    <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="HelpFormatter.cs" />

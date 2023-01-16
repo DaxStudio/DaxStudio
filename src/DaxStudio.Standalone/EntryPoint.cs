@@ -178,7 +178,10 @@ namespace DaxStudio.Standalone
             config.WriteTo.File(logPath
                 , rollingInterval: RollingInterval.Day
                 );
-
+#if DEBUG
+            // if we are debugging write to the log window
+            config.WriteTo.DaxStudioOutput();
+#endif
             _log = config.CreateLogger();
             Log.Logger = _log;
 
@@ -264,6 +267,7 @@ namespace DaxStudio.Standalone
 
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
+            if (Application.Current?.Dispatcher?.HasShutdownStarted??true) return;
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
             e.SetObserved();
@@ -273,18 +277,27 @@ namespace DaxStudio.Standalone
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
-            Exception ex = e.ExceptionObject as Exception;   
-            // check that we are noto already shutting down
-            if (!ex.StackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl"))
-                LogFatalCrash(ex, msg, _options);
-            if (App.Dispatcher.CheckAccess())
+            Exception ex = e.ExceptionObject as Exception;
+
+            if ((Application.Current?.Dispatcher?.HasShutdownStarted ?? false))
+            {
+                Log.Error(ex, nameof(EntryPoint), nameof(CurrentDomainOnUnhandledException), "Error during shutdown");
+                App?.Shutdown(2);
+                return;
+            }
+
+            // check that we are not already shutting down
+            if (!ex.StackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl") 
+                && !(Application.Current?.Dispatcher?.HasShutdownStarted??true))
+                    LogFatalCrash(ex, msg, _options);
+            
+            if (App?.Dispatcher?.CheckAccess()??true)
             {
                 App.Shutdown(2);
             }
             else
             {
                 App.Dispatcher.Invoke(() => App.Shutdown(2));
-
             }
         }
 
@@ -297,6 +310,7 @@ namespace DaxStudio.Standalone
             UpdateErrorForLoaderExceptions(ref msg, ex);
 
             Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+            Log.CloseAndFlush();
 
             if (_options.BlockCrashReporting)
             {
@@ -312,11 +326,8 @@ namespace DaxStudio.Standalone
 
             Execute.OnUIThread(() => {
 
-                Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
-                Log.CloseAndFlush();
-
                 // Application must be shutting down so just exit
-                if (Application.Current == null) return;
+                if (Application.Current == null || App == null) return;
 
                 // add a property to the application indicating that we have crashed
                 if (!App.Properties.Contains("HasCrashed"))
@@ -351,7 +362,12 @@ namespace DaxStudio.Standalone
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-
+            if ((Application.Current?.Dispatcher?.HasShutdownStarted??false))
+            {
+                Log.Error(e.Exception, nameof(EntryPoint), nameof(App_DispatcherUnhandledException), "Error during shutdown");
+                App?.Shutdown(3);
+                return;
+            }
 
             if (e.Exception is System.Runtime.InteropServices.COMException comException)
             {

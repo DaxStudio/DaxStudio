@@ -28,7 +28,8 @@ namespace DaxStudio.UI.ViewModels
         {
             Waiting,
             Succeeded,
-            Failed
+            Failed,
+            Skipped
         }
 
         public CaptureDiagnosticsViewModel(RibbonViewModel ribbon, IGlobalOptions options, IEventAggregator eventAggregator)
@@ -248,6 +249,8 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
             bool _tracesStarted;
+            bool _tracesWaiting;
+
             lock (traceEventLock)
             {
                 switch (message.TraceStatus)
@@ -285,10 +288,17 @@ namespace DaxStudio.UI.ViewModels
                 }
                 _tracesStarted = QueryPlanStatus == OperationStatus.Succeeded 
                                 && ServerTimingsStatus == OperationStatus.Succeeded ;
+                _tracesWaiting = QueryPlanStatus == OperationStatus.Waiting
+                                || ServerTimingsStatus == OperationStatus.Waiting;
+
             }
             if (_tracesStarted)
             {
                 RunQuery();
+            }
+            if (!_tracesStarted && !_tracesWaiting)
+            {
+                SkipQuery();
             }
 
             return Task.CompletedTask;
@@ -302,7 +312,13 @@ namespace DaxStudio.UI.ViewModels
             Ribbon.RunQuery();
         }
 
-
+        public void SkipQuery()
+        {
+            QueryStatus = OperationStatus.Skipped;
+            SaveAsStatus = OperationStatus.Skipped;
+            OverallStatus = "Failed to capture full diagnostics check the log window for errors";
+            CanClose = true;
+        }
         public Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
         {
             if (message.Trace is ServerTimesViewModel && message.Trace.HasEvents) _serverTimingsComplete = true;
@@ -340,6 +356,8 @@ namespace DaxStudio.UI.ViewModels
                     return TickImage;
                 case OperationStatus.Failed: 
                     return CrossImage;
+                case OperationStatus.Skipped:
+                    return "warningDrawingImage";
                 default:
                     return string.Empty;
             }
@@ -350,6 +368,12 @@ namespace DaxStudio.UI.ViewModels
             if (_serverTimingsTrace != null) _serverTimingsTrace.IsChecked = _serverTimingsChecked;
             if (_queryPlanTrace != null) _queryPlanTrace.IsChecked = _queryPlanChecked;
             if (_selectedResultsTarget != null) Ribbon.SelectedTarget = _selectedResultsTarget;
+        }
+
+        private string _overallStatus;
+        public string OverallStatus { 
+            get => _overallStatus; 
+            set { _overallStatus = value; NotifyOfPropertyChange(); } 
         }
 
         public Task HandleAsync(QueryFinishedEvent message, CancellationToken cancellationToken)

@@ -326,7 +326,11 @@
 		TabularSchemaAnalyticsAimetadata,
 		DiscoverObjectCounters,
 		GraphCreated,
-		GraphFinished
-	}
+		GraphFinished,
+        RemoveDiscontinuedFeatures,
+        DiscoverModelSecurity,
+        ParallelSession
+
+    }
 
 }

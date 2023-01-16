@@ -69,6 +69,11 @@ namespace ADOTabular
             return InternalTableCollection.ContainsKey(index);
         }
 
+        public bool TryGetValue(string index, out ADOTabularTable table)
+        {
+            return InternalTableCollection.TryGetValue(index, out table);
+        }
+
         public ADOTabularTable this[int index]
         {
             get

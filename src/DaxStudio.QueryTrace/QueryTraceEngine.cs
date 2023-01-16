@@ -14,6 +14,7 @@ using Polly;
 using ADOTabular.Enums;
 using Trace = Microsoft.AnalysisServices.Trace;
 using DaxStudio.Common.Enums;
+using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.QueryTrace
 {
@@ -292,11 +293,12 @@ namespace DaxStudio.QueryTrace
                         );
 
                     policy.Execute(() => {
-                        //if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
                         Debug.WriteLine("Connection.PingTrace()");
-                        //_connection.PingTrace(); 
-                        _connectionManager.PingTrace();
-                        Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
+                        if ((DateTime.UtcNow - _utcPingStart).Seconds <= this.TraceStartTimeoutSecs)
+                        {
+                            _connectionManager.PingTrace();
+                            Log.Verbose("{class} {method} {message}", "QueryTraceEngine", "OnTimerElapsed", "Pinging Connection");
+                        }
                     });
                 }
                     
@@ -368,22 +370,12 @@ namespace DaxStudio.QueryTrace
                 e = e.InnerException;
             }
             TraceError?.Invoke(this, e.Message);
-            Log.Error(ex,"{class} {method} {message}", "QueryTraceEngine", "RaiseError", GetAllExceptionMessages( ex));
+            Log.Error(ex,"{class} {method} {message}", "QueryTraceEngine", "RaiseError", ex.GetAllExceptionMessages());
             if (ex.InnerException != null)
                 Log.Error("{class} {method} {message}/n{stacktrace}", "QueryTraceEngine", "RaiseError (InnerException)", ex.InnerException.Message, ex.InnerException.StackTrace);
         }
 
-        public string GetAllExceptionMessages(Exception ex)
-        {
-            var innerEx = ex;
-            var msg = "";
-            while (innerEx != null)
-            {
-                msg = innerEx.Message + "\n";
-                innerEx = innerEx.InnerException;
-            }
-            return msg;
-        }
+
 
         // private variables
         private bool _traceStarted;

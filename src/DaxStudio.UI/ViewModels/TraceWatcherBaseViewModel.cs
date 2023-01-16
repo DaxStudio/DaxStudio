@@ -51,7 +51,6 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             _globalOptions = globalOptions;
             _windowManager = windowManager;
-            WaitForEvent = TraceEventClass.QueryEnd;
             HideCommand = new DelegateCommand(HideTrace, CanHideTrace);
             //_eventAggregator.Subscribe(this); 
         }
@@ -68,8 +67,6 @@ namespace DaxStudio.UI.ViewModels
         
 
         public DelegateCommand HideCommand { get; set; }
-        //public List<DaxStudioTraceEventClass> MonitoredEvents { get => GetMonitoredEvents(); }
-        public TraceEventClass WaitForEvent { get; set; }
 
         // this is a list of the events captured by this trace watcher
         public ConcurrentQueue<DaxStudioTraceEventArgs> Events
@@ -357,12 +354,6 @@ namespace DaxStudio.UI.ViewModels
             IsPaused = true;
         }
 
-        public void Start()
-        {
-            IsChecked = true;
-            IsPaused = false;
-        }
-
         private async Task StartTraceAsync()
         {
             await Task.Run(async () =>
@@ -506,7 +497,8 @@ namespace DaxStudio.UI.ViewModels
             if(!Events.Any(ev => ev.EventClass == DaxStudioTraceEventClass.QueryEnd)) {
                 Reset();
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
-                    "Trace Stopped: QueryEnd event not received - Server Timing End Event timeout exceeded. You could try increasing this timeout in the Options"));
+                    "Trace Stopped: QueryEnd event not received - End Event timeout exceeded. You could try increasing this timeout in the Options"));
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
             }
         }
 
@@ -570,10 +562,14 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), innerEx.Message, innerEx.StackTrace);
                 }
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.GetAllMessages()));
             }
             catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), ex.Message, ex.StackTrace);
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
             }
         }
 

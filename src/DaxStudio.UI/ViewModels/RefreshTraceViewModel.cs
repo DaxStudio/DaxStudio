@@ -236,8 +236,7 @@ namespace DaxStudio.UI.ViewModels
         }
         protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
         {
-            return traceEvent.EventClass == DaxStudioTraceEventClass.CommandEnd &&
-                   traceEvent.TextData.Contains("<Refresh ");
+            return false; // this trace should keep running until manually stopped
         }
 
         protected override bool ShouldStartCapturing(DaxStudioTraceEventArgs traceEvent)

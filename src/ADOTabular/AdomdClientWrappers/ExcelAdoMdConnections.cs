@@ -1,4 +1,7 @@
+using Newtonsoft.Json;
 using System;
+using System.Buffers;
+using System.CodeDom;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -18,9 +21,8 @@ namespace ADOTabular.AdomdClientWrappers
         private static string _excelAdomdClientAssemblyPath;
 
         [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
-#pragma warning disable CA1838 // Avoid 'StringBuilder' parameters for P/Invokes
-        private static extern uint GetModuleFileName([In] IntPtr hModule, [Out] StringBuilder lpFilename, [In, MarshalAs(UnmanagedType.U4)] int nSize);
-#pragma warning restore CA1838 // Avoid 'StringBuilder' parameters for P/Invokes
+        private static extern uint GetModuleFileName([In] IntPtr hModule, [Out] char[] lpFilename, [In, MarshalAs(UnmanagedType.U4)] int nSize);
+
         [DllImport("Kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
@@ -62,12 +64,25 @@ namespace ADOTabular.AdomdClientWrappers
             }
 
             int lpFilenameLen = 2048;
-            StringBuilder lpFilename = new StringBuilder(lpFilenameLen);
-            if (GetModuleFileName(moduleHandle, lpFilename, lpFilenameLen) == 0)
+            //StringBuilder lpFilename = new StringBuilder(lpFilenameLen);
+            string lpFilename = string.Empty;
+            char[] buffer = ArrayPool<char>.Shared.Rent(lpFilenameLen);
+            try
             {
-                int num3 = Marshal.GetLastWin32Error();
-                throw new Win32Exception(num3);
+                int len = buffer.Length;
+                var result = GetModuleFileName(moduleHandle, buffer, lpFilenameLen);
+                if (result == 0)
+                {
+                    int num3 = Marshal.GetLastWin32Error();
+                    throw new Win32Exception(num3);
+                }
+                lpFilename = new string(buffer);
             }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
+            }
+                                    
             string directoryName = Path.GetDirectoryName(lpFilename.ToString());
             return directoryName;
         }
