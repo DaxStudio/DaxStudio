@@ -686,38 +686,49 @@ namespace DaxStudio.UI.ViewModels
 
         public void DragEnter(IDropInfo dropInfo)
         {
-            //
-            System.Diagnostics.Debug.WriteLine("ShellViewModel DragEnter");
+            // Do nothing
         }
 
         public void DragOver(IDropInfo dropInfo)
         {
             //
             System.Diagnostics.Debug.WriteLine("ShellViewModel DragOver");
+            if (dropInfo != null) 
+            if ((dropInfo.Data is DataObject)) 
             if (((DataObject)dropInfo.Data).ContainsFileDropList())
             {
                 dropInfo.Effects = DragDropEffects.Copy;
                 return;
             }
             dropInfo.NotHandled = true;
-            //dropInfo.Effects = DragDropEffects.All;
         }
 
         public void DragLeave(IDropInfo dropInfo)
         {
-            //
+            // Do Nothing
         }
 
-        public void Drop(IDropInfo dropInfo)
+        public async void Drop(IDropInfo dropInfo)
         {
             System.Diagnostics.Debug.WriteLine("ShellViewModel Drop");
-            if (!((DataObject)dropInfo.Data).ContainsFileDropList()) { 
+            if (dropInfo == null) return;
+
+            if (dropInfo == null
+                || !(dropInfo.Data is DataObject)
+                || !((DataObject)dropInfo.Data).ContainsFileDropList())
+            {
+                // if we are not dragging a file then mark this event as NotHandled and return
                 dropInfo.NotHandled = true;
-                return; 
+                return;
             }
-            
-            var file = ((DataObject)dropInfo.Data).GetFileDropList()[0];
-            _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file));
+
+            // Open the first file in the list
+            var files = ((DataObject)dropInfo.Data).GetFileDropList();           
+            await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(files[0]));
+
+            // TODO we should look at looping over all files, but currently this does not work,
+            //      it appears that the second file starts to open before the first has finished opening 
+            //      and we endup with errors or incorrectly loaded files.
         }
     }
 

@@ -22,10 +22,14 @@
         Height="720"
         Width="1120"
         Top="5"
-        dd:DragDrop.IsDragSource="True"
         dd:DragDrop.IsDropTarget="True"
-        dd:DragDrop.DropHandler="{Binding}"
+    dd:DragDrop.DropHandler="{Binding}"
+
                      >
+    <!--
+            dd:DragDrop.IsDragSource="True"
+ -->
+    
     <!--<WindowChrome.WindowChrome>
         <WindowChrome x:Name="chrome" ResizeBorderThickness="8" CornerRadius="20" GlassFrameThickness="0" NonClientFrameEdges="None" />
     </WindowChrome.WindowChrome>-->
