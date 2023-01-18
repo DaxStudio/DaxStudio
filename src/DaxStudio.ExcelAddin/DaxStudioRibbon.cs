@@ -120,7 +120,7 @@ namespace DaxStudio.ExcelAddin
 
 
             Log.Debug("{class} {method} About to launch DaxStudio on path: {path} port: {port}", "DaxStudioRibbon", "BtnDaxClick", path, _port);
-            // start Dax Studio process
+            // start DAX Studio process
             ProcessStartInfo psi = new ProcessStartInfo(path)
             {
                 Arguments = $"-port {_port}",

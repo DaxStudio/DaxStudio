@@ -87,7 +87,10 @@
             <Style x:Key="RightHeader" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                 <Setter Property="HorizontalContentAlignment" Value="Right"/>
             </Style>
-
+            
+            <Style x:Key="LeftHeader" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+            </Style>
+            
             <Style TargetType="ToolTip">
                 <Style.Resources>
                     <Style TargetType="ContentPresenter">
@@ -151,14 +154,23 @@
                           VerticalGridLinesBrush="Transparent"
                           CanUserSortColumns="True" 
                           
-
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True"
                           CanUserReorderColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           cal:Message.Attach="[Event Sorting] = [Action OnTableSorting($eventArgs)]" >
-
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextWrapping="Wrap" Text="{Binding}"></TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
                         <DataGrid.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>
@@ -223,6 +235,11 @@
                                         <TextBlock Text="{Binding ColumnName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}">
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.ColumnName, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn  x:Name="colRows"
                                                      Header="Cardinality"
@@ -280,6 +297,13 @@
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TotalSize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ContentTemplate">
+                                            <Setter.Value>
+                                                <DataTemplate>
+                                                    <TextBlock TextWrapping="Wrap" Text="{Binding}" MaxHeight="40" Margin="0 4" ></TextBlock>
+                                                </DataTemplate>
+                                            </Setter.Value>
+                                        </Setter>
                                     </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
@@ -335,7 +359,7 @@
                             <DataGridTextColumn Binding="{Binding Encoding}" 
                                                 x:Name="colEncoding" 
                                                 Header="Encoding"
-                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                
                                                 ElementStyle="{StaticResource TextCenteredBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
@@ -347,11 +371,18 @@
                             <DataGridTextColumn Binding="{Binding TypeName}" 
                                                 x:Name="colDataType"
                                                 Header="Data Type"
-                                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                
                                                 ElementStyle="{StaticResource TextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.DataType, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ContentTemplate">
+                                            <Setter.Value>
+                                                <DataTemplate>
+                                                    <TextBlock TextWrapping="Wrap" Text="{Binding}"></TextBlock>
+                                                </DataTemplate>
+                                            </Setter.Value>
+                                        </Setter>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>

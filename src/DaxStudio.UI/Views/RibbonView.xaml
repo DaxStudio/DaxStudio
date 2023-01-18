@@ -1683,7 +1683,7 @@
 
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Report a Bug"
-                                          Text="Submit a bug report to the Github project site for DAX Studio"
+                                          Text="Submit a bug report to the GitHub project site for DAX Studio"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -1699,7 +1699,7 @@
 
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Feature Request"
-                                          Text="Submit an idea for a new feature to the Github project site for DAX Studio"
+                                          Text="Submit an idea for a new feature to the GitHub project site for DAX Studio"
                                            ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -1715,7 +1715,7 @@
 
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Ask a Question"
-                                          Text="Start a discussion on the Github project site for DAX Studio. You can ask questions or suggest features and improvements."
+                                          Text="Start a discussion on the GitHub project site for DAX Studio. You can ask questions or suggest features and improvements."
                         ></Fluent:ScreenTip>
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
@@ -1736,7 +1736,7 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
                 <Fluent:Button Name="hlpAbout"
-                               Header="About DaxStudio"
+                               Header="About DAX Studio"
                                KeyTip="I"
                                cal:Message.Attach="[Event Click] = [Action ShowHelpAbout()]"
                                Icon="{DynamicResource aboutDrawingImage}"

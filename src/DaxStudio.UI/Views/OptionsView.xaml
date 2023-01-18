@@ -102,7 +102,7 @@
             <conv:ResourceLookupConverter x:Key="CategoryIconNames">
                 <ResourceDictionary>
                     <sys:String x:Key="Custom Export Format">options_exportDrawingImage</sys:String>
-                    <sys:String x:Key="Dax Formatter">options_dax_formatterDrawingImage</sys:String>
+                    <sys:String x:Key="DAX Formatter">options_dax_formatterDrawingImage</sys:String>
                     <sys:String x:Key="Defaults">options_defaultsDrawingImage</sys:String>
                     <sys:String x:Key="Editor">options_editorDrawingImage</sys:String>
                     <sys:String x:Key="Metadata Pane">options_metadata_paneDrawingImage</sys:String>

@@ -150,9 +150,11 @@
                                     <Paragraph>LargeXlsx</Paragraph>
                                 </ListItem>
                                 <ListItem>
-                                    <Paragraph>VertipaqAnalyzer by SQLBI</Paragraph>
+                                    <Paragraph>VertiPaq-Analyzer by SQLBI</Paragraph>
                                 </ListItem>
-                                
+                                <ListItem>
+                                    <Paragraph>Kinnara/ModernWpf</Paragraph>
+                                </ListItem>
                             </List>
                         </FlowDocument>
                     </FlowDocumentScrollViewer>

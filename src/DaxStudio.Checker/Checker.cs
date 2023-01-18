@@ -234,13 +234,13 @@ namespace DaxStudio.CheckerApp
 
         public void CheckDaxStudioBindings()
         {
-            Output.AppendHeaderLine("Dax Studio Configuration");
+            Output.AppendHeaderLine("DAX Studio Configuration");
 
             string str = TryGetPathFromRegistry();
             if (str == null)
             {
                 Output.AppendRange("      WARN > ").Bold().Color("Orange");
-                Output.AppendLine("Dax Studio registry key not found.");
+                Output.AppendLine("DAX Studio registry key not found.");
                 str = DEFAULT_DAX_STUDIO_PATH;
                 Output.AppendIndentedLine($"  Attempting to use default installation path: {str}");
             }
@@ -250,7 +250,7 @@ namespace DaxStudio.CheckerApp
                 if (string.IsNullOrEmpty(str))
                 {
                     Output.AppendRange("      WARN > ").Bold().Color("Orange");
-                    Output.AppendLine("Dax Studio registry 'Path' value not found.");
+                    Output.AppendLine("DAX Studio registry 'Path' value not found.");
                     str = DEFAULT_DAX_STUDIO_PATH;
 
                     string path = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;

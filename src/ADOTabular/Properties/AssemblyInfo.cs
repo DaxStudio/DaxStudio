@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("daxstudio.org")]
 [assembly: AssemblyProduct("ADOTabular")]
-[assembly: AssemblyCopyright("Copyright © Dax Studio 2012")]
+[assembly: AssemblyCopyright("Copyright © DAX Studio 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

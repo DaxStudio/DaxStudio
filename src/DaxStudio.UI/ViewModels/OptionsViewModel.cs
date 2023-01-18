@@ -755,7 +755,7 @@ namespace DaxStudio.UI.ViewModels
         public bool LongOperationSoundEnabled => PlaySoundAfterLongOperation;
         public bool LongQuerySecondsEnabled => PlaySoundAfterLongOperation;
 
-        [Category("Dax Formatter")]
+        [Category("DAX Formatter")]
         [DisplayName("Default Format Style")]
         [DataMember, DefaultValue(DaxFormatStyle.LongLine)]
         public DaxFormatStyle DefaultDaxFormatStyle {
@@ -787,7 +787,7 @@ namespace DaxStudio.UI.ViewModels
                 return items;
             }
         }
-        [Category("Dax Formatter")]
+        [Category("DAX Formatter")]
         [DisplayName("Skip space after function name")]
         [DataMember, DefaultValue(false)]
         public bool SkipSpaceAfterFunctionName {
