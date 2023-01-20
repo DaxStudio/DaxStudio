@@ -30,6 +30,7 @@ using Microsoft.Win32;
 using DaxStudio.UI.Utils;
 using Serilog;
 using Serilog.Events;
+using System.Text;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -961,6 +962,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private CustomCsvEncodingType _csvCustomEncodingType = CustomCsvEncodingType.UTF8;
+        [Category("Custom Export Format")]
+        [DisplayName("CSV Encoding")]
+        [DataMember, DefaultValue(CustomCsvEncodingType.UTF8)]
+        public CustomCsvEncodingType CustomCsvEncodingType
+        {
+            get => _csvCustomEncodingType;
+            set
+            {
+                _csvCustomEncodingType = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(CustomCsvEncodingType), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => CustomCsvEncodingType);
+            }
+        }
+
         #region Hotkeys
         private string _hotkeyWarningMessage = string.Empty;
         [JsonIgnore]
@@ -1264,6 +1281,17 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
+
+        public Encoding GetCustomCsvEncoding()
+        {
+            switch (CustomCsvEncodingType)
+            {
+                case CustomCsvEncodingType.UTF8: return new UTF8Encoding(false);
+                case CustomCsvEncodingType.Unicode: return new UnicodeEncoding( );
+                default: return new UTF8Encoding(false);
+            }
+        }
+
         #endregion
 
         #region View Specific Properties

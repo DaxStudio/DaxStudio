@@ -128,6 +128,7 @@ namespace DaxStudio.Interfaces
 
         // Methods
         string GetCustomCsvDelimiter();
+        System.Text.Encoding GetCustomCsvEncoding();
         void Initialize();
 
         // 

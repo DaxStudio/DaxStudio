@@ -108,6 +108,7 @@
     </Compile>
     <Compile Include="Attributes\HotkeyAttribute.cs" />
     <Compile Include="Enums\CsvCustomDelimiterType.cs" />
+    <Compile Include="Enums\CsvCustomEncodingType.cs" />
     <Compile Include="Enums\DaxFormatStyle.cs" />
     <Compile Include="Enums\DelimiterType.cs" />
     <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />

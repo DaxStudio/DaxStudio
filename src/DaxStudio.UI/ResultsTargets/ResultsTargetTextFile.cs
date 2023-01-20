@@ -84,6 +84,7 @@ namespace DaxStudio.UI.Model
                             break;
                         case 5:// custom export format
                             sep = runner.Options.GetCustomCsvDelimiter();
+                            enc = runner.Options.GetCustomCsvEncoding();
                             shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
                             break;
                     }
