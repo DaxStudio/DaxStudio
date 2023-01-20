@@ -30,7 +30,8 @@ namespace DaxStudio.UI.Model
         private string _caption = string.Empty;
         
         private IADOTabularObject _selectedTable;
-    
+
+        [DataMember]
         public IADOTabularObject SelectedTable { get => _selectedTable;
             set {
                 _selectedTable = value;

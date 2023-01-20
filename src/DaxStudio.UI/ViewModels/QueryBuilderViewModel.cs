@@ -434,7 +434,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var settings = new JsonSerializerSettings()
             {
-                ContractResolver = new InterfaceContractResolver(typeof(IADOTabularColumn))
+                ContractResolver = new InterfaceContractResolver(typeof(IADOTabularColumn), typeof(IADOTabularObject))
             };
             string json = JsonConvert.SerializeObject(this, settings);
             return json;

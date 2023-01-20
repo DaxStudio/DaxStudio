@@ -462,6 +462,7 @@
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />
+    <Compile Include="Model\QueryBuilder\ADOTabularTableStub.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilder.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderColumn.cs" />
     <Compile Include="Model\QueryBuilder\QueryBuilderDropHandler.cs" />

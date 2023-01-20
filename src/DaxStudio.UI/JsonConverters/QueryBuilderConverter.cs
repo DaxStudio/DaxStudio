@@ -52,10 +52,11 @@ namespace DaxStudio.UI.JsonConverters
                 var _ = Enum.TryParse( col["SortDirection"].ToString(), out sortDirection);
                 string measureExpression = col["MeasureExpression"]?.ToString()??String.Empty;
                 string measureCaption = col["Caption"]?.ToString()??"MyMeasure";
-                
+                IADOTabularObject tab = col["SelectedTable"].ToObject<ADOTabularTableStub>();
                 var queryBuilderCol = new QueryBuilderColumn(obj, isModelItem, _eventAggregator);
                 queryBuilderCol.MeasureExpression = isOverridden?measureExpression:string.Empty;
                 queryBuilderCol.SortDirection = sortDirection;
+                queryBuilderCol.SelectedTable = tab;
                 if (isOverridden) queryBuilderCol.Caption = measureCaption;
                 vm.Columns.Add(queryBuilderCol);
             }

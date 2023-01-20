@@ -114,7 +114,7 @@ namespace DaxStudio.UI.Model
             var meas = columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure && c.IsOverriden);
             if (!meas.Any()) return string.Empty;
             // build a comma separated list of "Caption", [DaxName] values
-            return meas.Select(c => $"MEASURE {c.SelectedTable.DaxName}[{c.Caption}] = {c.MeasureExpression}" ).Aggregate((current, next) => current + "\n" + next);
+            return meas.Select(c => $"MEASURE {c?.SelectedTable?.DaxName??string.Empty}[{c.Caption}] = {c.MeasureExpression}" ).Aggregate((current, next) => current + "\n" + next);
         }
 
         private static string BuildColumns(ICollection<QueryBuilderColumn> columns)
