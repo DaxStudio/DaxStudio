@@ -306,8 +306,8 @@ namespace DaxStudio.UI.ViewModels
                 using (Stream strm = part.GetStream())
                 {
                     var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(strm);
-                    if (!this.CurrentDocument.Connection.IsConnected)
-                        Task.Run(() => { this.CurrentDocument.Connection.Connect(new ConnectEvent(CurrentDocument.Connection.ApplicationName, content)); });
+                    if (!CurrentDocument.Connection.IsConnected)
+                        Task.Run(async () => { await CurrentDocument.Connection.ConnectAsync(new ConnectEvent(CurrentDocument.Connection.ApplicationName, content)); });
 
                     var view = new Dax.ViewModel.VpaModel(content.DaxModel);
                     // update view model

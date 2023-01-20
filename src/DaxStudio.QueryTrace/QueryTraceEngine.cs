@@ -373,6 +373,7 @@ namespace DaxStudio.QueryTrace
             Log.Error(ex,"{class} {method} {message}", "QueryTraceEngine", "RaiseError", ex.GetAllExceptionMessages());
             if (ex.InnerException != null)
                 Log.Error("{class} {method} {message}/n{stacktrace}", "QueryTraceEngine", "RaiseError (InnerException)", ex.InnerException.Message, ex.InnerException.StackTrace);
+            
         }
 
 

@@ -1026,7 +1026,7 @@ namespace DaxStudio.UI.ViewModels
                     if (message == null) return;
                     MetadataPane.IsBusy = true;
                     Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Starting Connect");
-                    Connection.Connect(message);
+                    await Connection.ConnectAsync(message);
                     Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished Connect");
 
                     UpdateViewAsDescription(message.ConnectionString);
@@ -1953,7 +1953,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
                     //await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
-                    var durationMs = _queryStopWatch.ElapsedMilliseconds;
+                    var durationMs = _queryStopWatch?.ElapsedMilliseconds??0;
                     ActivateOutput();
                     OutputError(ex.Message);
                     OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
@@ -4299,7 +4299,7 @@ namespace DaxStudio.UI.ViewModels
                 var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(path);
                 var database = content.TomDatabase;
                 if (!Connection.IsConnected)
-                    await Task.Run(()=> { Connection.Connect(new ConnectEvent(Connection.ApplicationName, content)); });
+                    await Task.Run(async ()=> {await Connection.ConnectAsync(new ConnectEvent(Connection.ApplicationName, content)); });
 
                 VpaModel viewModel = new Dax.ViewModel.VpaModel(content.DaxModel);
 

@@ -145,12 +145,12 @@ namespace DaxStudio.UI.Model
             _connection.Cancel();
         }
 
-        public ConnectionManager Clone()
-        {
-            var newConn = new ConnectionManager(_eventAggregator);
-            newConn.Connect(new ConnectEvent(ConnectionStringWithInitialCatalog, IsPowerPivot, ApplicationName, FileName??String.Empty, this.ServerType, false));
-            return newConn;
-        }
+        //public ConnectionManager Clone()
+        //{
+        //    var newConn = new ConnectionManager(_eventAggregator);
+        //    newConn.ConnectAsync(new ConnectEvent(ConnectionStringWithInitialCatalog, IsPowerPivot, ApplicationName, FileName??String.Empty, this.ServerType, false));
+        //    return newConn;
+        //}
 
         public void Close()
         {
@@ -775,8 +775,9 @@ namespace DaxStudio.UI.Model
 
         public void SetSelectedDatabase(IDatabaseReference database)
         {
+            if (database.Name == SelectedDatabase.Name) return;
+
             var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
-            //if (database.Name == _connection.Database?.Name) return;
             _retry.Execute(ctx =>
             {
                 if (database != null)_connection.ChangeDatabase(database.Name);
@@ -786,10 +787,10 @@ namespace DaxStudio.UI.Model
             }, context);
         }
 
-        internal async void Connect(ConnectEvent message)
+        internal async Task ConnectAsync(ConnectEvent message)
         {
             IsConnecting = true;
-            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(Connect), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
 
             if (message.ServerType == ServerType.Offline)
                 OpenOfflineConnection(message);

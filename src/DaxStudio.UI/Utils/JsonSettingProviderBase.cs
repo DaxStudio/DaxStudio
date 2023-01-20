@@ -1,9 +1,14 @@
-﻿using DaxStudio.Common;
+﻿using ADOTabular;
+using comm= DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.JsonConverters;
+using DaxStudio.UI.Model;
 using Newtonsoft.Json;
+using Polly;
+using Polly.Retry;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -25,7 +30,7 @@ namespace DaxStudio.UI.Utils
         private IGlobalOptions _options;
         private IDictionary<string, object> _optionsDict;
         private static readonly object _locker = new Object();
-
+        private RetryPolicy _retry;
         //[Import]
         public IGlobalOptions Options {
             get => _options;
@@ -40,6 +45,25 @@ namespace DaxStudio.UI.Utils
             // todo - if running portable use local path, otherwise use AppData
             SettingsFile = Path.Combine(SettingsPath, "settings.json");
             //ReadSettings();
+            ConfigureRetryPolicy();
+        }
+
+        private void ConfigureRetryPolicy() {
+            _retry = Policy
+                  .Handle<System.IO.IOException>()
+                  .WaitAndRetry(3, retryAttempt =>
+                        TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                        (exception, timespan, retryCount, context) =>
+                        {
+                            
+                            var msg =
+                                $"An error occurred attempting to write to settings.json: {exception.Message}\n(retry: {retryCount})";
+                            // TODO - pass in IEventAggregator instance
+                            //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                            Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(JsonSettingProviderBase),
+                                "RetryPolicy", msg);
+                        }
+            );
         }
 
         //private void ReadSettings()
@@ -95,26 +119,28 @@ namespace DaxStudio.UI.Utils
         public void SetValue(string subKey, DateTime value, bool isInitializing, object options, string propertyName)
         {
                 if (isInitializing) return;
-                _optionsDict[subKey] = value.ToString(Constants.IsoDateFormat, CultureInfo.InvariantCulture);
+                _optionsDict[subKey] = value.ToString(comm.Constants.IsoDateFormat, CultureInfo.InvariantCulture);
                 // write json file
                 SaveSettingsFile();
         }
 
         private void SaveSettingsFile()
         {
-            lock (_locker)
-            {
-                using (StreamWriter file = File.CreateText(SettingsFile))
+            _retry.Execute(() =>{ 
+                lock (_locker)
                 {
-                    JsonSerializer serializer = new JsonSerializer
+                    using (StreamWriter file = File.CreateText(SettingsFile))
                     {
-                        Formatting = Formatting.Indented,
-                        NullValueHandling = NullValueHandling.Ignore,
-                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
-                    };
-                    serializer.Serialize(file, Options);
+                        JsonSerializer serializer = new JsonSerializer
+                        {
+                            Formatting = Formatting.Indented,
+                            NullValueHandling = NullValueHandling.Ignore,
+                            DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate
+                        };
+                        serializer.Serialize(file, Options);
+                    }
                 }
-            }
+            });
         }
 
         public bool IsFileLoggingEnabled()
@@ -129,7 +155,7 @@ namespace DaxStudio.UI.Utils
             if (existingItem == null)
             {
                 Options.RecentFiles.Insert(0, file);
-                while (Options.RecentFiles.Count > Constants.MaxRecentFiles)
+                while (Options.RecentFiles.Count > comm.Constants.MaxRecentFiles)
                 {
                     Options.RecentFiles.RemoveAt(Options.RecentFiles.Count - 1);
                 }
@@ -163,7 +189,7 @@ namespace DaxStudio.UI.Utils
             { 
                 // server does not exist in list, so insert it as the first item
                 Options.RecentServers.Insert(0, currentServer);
-                while (Options.RecentServers.Count > Constants.MaxMruSize)
+                while (Options.RecentServers.Count > comm.Constants.MaxMruSize)
                 {
                     Options.RecentServers.RemoveAt(Options.RecentServers.Count - 1);
                 }

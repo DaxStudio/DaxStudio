@@ -638,6 +638,7 @@ namespace DaxStudio.UI.ViewModels
                 _tracer?.Stop();
                 _tracer?.Dispose();
                 _tracer = null;
+                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
             }
             catch (Exception ex)
             {
