@@ -193,7 +193,8 @@ namespace DaxStudio.UI.ViewModels
             get { 
                 try {
                     var modelCaps = GetModelCapabilities();
-                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items, AutoGenerate); 
+                    var firstTableName = GetFirstTableName();
+                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items, AutoGenerate, firstTableName); 
                 }
                 catch (Exception ex)
                 {
@@ -203,6 +204,12 @@ namespace DaxStudio.UI.ViewModels
                 return string.Empty;
             } 
         
+        }
+
+        private string GetFirstTableName()
+        {
+            var model = Document.Connection.SelectedModel;
+            return model?.Tables.Count > 0? model?.Tables[0].DaxName : string.Empty;
         }
 
         private IModelCapabilities GetModelCapabilities()

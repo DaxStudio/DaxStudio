@@ -16,6 +16,7 @@ using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using DaxStudio.UI.Events;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -45,7 +46,8 @@ namespace DaxStudio.UI.ViewModels
 
         public IADOTabularObject SelectedTable { get => _column?.SelectedTable;
             set {
-                _column.SelectedTable = value;
+                var t = Tables.FirstOrDefault(t2 => t2.Name == value.Name);
+                _column.SelectedTable = t ?? value;
                 NotifyOfPropertyChange();
             } 
         }
