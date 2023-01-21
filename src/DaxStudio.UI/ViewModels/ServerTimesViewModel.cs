@@ -1156,6 +1156,7 @@ namespace DaxStudio.UI.ViewModels
             StorageEngineQueryCount = 0;
             VertipaqCacheMatches = 0;
             TotalDuration = 0;
+            WaterfallTotalDuration= 0;
             ParallelStorageEngineEventsDetected = false;
             _storageEngineEvents.Clear();
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
