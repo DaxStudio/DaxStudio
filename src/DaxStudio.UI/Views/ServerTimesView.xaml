@@ -413,7 +413,12 @@
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
                     
                     <!-- Horizontal Bar FE vs SE -->
-                    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <ctrl:StorageEngineTime ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Height="5" Width="100" Margin="0,2,0,5">
+                            </ctrl:StorageEngineTime>
+                        </StackPanel>
+                        <!--
+                    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                             <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
                             <Rectangle.Width>
                                 <MultiBinding Converter="{StaticResource MultiConverter}">
@@ -431,6 +436,7 @@
                             </Rectangle.Width>
                         </Rectangle>
                     </StackPanel>
+                    -->
                     
                     <!-- SE Queries -->
                     <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}"

@@ -274,6 +274,9 @@
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
       <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\StorageEngineTime.xaml.cs">
+      <DependentUpon>StorageEngineTime.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TextBoxEx.cs" />
     <Compile Include="Controls\TreeViewEx.cs" />
     <Compile Include="Controls\Utils.cs" />
@@ -837,6 +840,10 @@
       <DependentUpon>ViewAsDialogView.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\HotKeyEditorControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\StorageEngineTime.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

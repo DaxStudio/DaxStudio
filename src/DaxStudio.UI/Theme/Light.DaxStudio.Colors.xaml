@@ -11,6 +11,7 @@
     
     <!--<Color x:Key="Theme.PrimaryAccentColor">#FF0072C6</Color>-->
     <Color x:Key="Theme.PrimaryAccentColor">#FF228ED6</Color>
+    <Color x:Key="Theme.Accent1">#FF94D4FF</Color>
     <Color x:Key="Theme.Accent2">#FFFFB947</Color>
     <Color x:Key="Theme.Icons.Red">#ED1C24</Color>
     <Color x:Key="Theme.Default.Back">#FFFFFF</Color>
@@ -46,8 +47,9 @@
     <Color x:Key="Theme.BusyPanel.Text">#AA000000</Color>
     <Color x:Key="Theme.Dax.Keyword">#035ACA</Color>
     <sys:Double x:Key="Theme.DropShadow.Opacity">0.4</sys:Double>
-    
+
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Accent1" Color="{StaticResource Theme.Accent1}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Accent2" Color="{StaticResource Theme.Accent2}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Icons.Red" Color="{StaticResource Theme.Icons.Red}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
