@@ -967,7 +967,7 @@ namespace DaxStudio.UI.ViewModels
                     from e in fse
                     where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
                     select e;
-                var displayLayersEvents = nonBatchEvents.ToList().Concat(batchEvents);
+                var displayLayersEvents = batchEvents.ToList().Concat(nonBatchEvents);
                 return new BindableCollection<TraceStorageEngineEvent>(displayLayersEvents);
             }
         }

@@ -120,6 +120,14 @@
             <DataTemplate x:Key="WaterfallCell">
                 <Grid HorizontalAlignment="Left">
                     <!-- TODO: instead of ItemsSource, we should get the same binding of the other StorageEngineTime because of the correct sort order of the elements -->
+
+                    <!--
+                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=ListEvents}" Width="100" Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
+                    </ctrl:StorageEngineTime>
+                    -->
+
+                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=ListEvents}" Width="100" Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
+                    </ctrl:StorageEngineTime>
                     
                     <Border HorizontalAlignment="Left" Panel.ZIndex="1">
                         <Border.Style>
@@ -184,9 +192,6 @@
                             </Grid>
                         </Border.ToolTip>
                     </Border>
-
-                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=ListEvents}" Width="100" Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
-                    </ctrl:StorageEngineTime>
 
                 </Grid>
             </DataTemplate>
@@ -436,7 +441,7 @@
                     <!-- Horizontal Bar FE vs SE -->
                     
                         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
-                            <ctrl:StorageEngineTime ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Height="5" Width="100" Margin="0,2,0,5">
+                            <ctrl:StorageEngineTime x:Name="EnginesDisplay" ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Height="5" Width="100" Margin="0,2,0,5">
                             </ctrl:StorageEngineTime>
                         </StackPanel>
                     

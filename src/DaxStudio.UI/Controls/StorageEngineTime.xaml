@@ -20,6 +20,7 @@
             Background="#FFFAC700"
             Canvas.ZIndex="0"/>
         <!--
+        Should we use Border or Rectangle? None of them supports ZIndex (Canvas.ZIndex or Panel.ZIndex) in the ItemsControl so far
         <Rectangle 
             Height="{Binding ElementName=canvas, Path=ActualHeight}" 
             Width="{Binding ElementName=canvas, Path=ActualWidth}" 
@@ -76,6 +77,7 @@
                         </Border.Width>
                     </Border>
                     <!--
+                    See comment above about using Border vs. Rectangle
                     <Rectangle Canvas.Left="100" Canvas.Top="0" Height="{Binding ElementName=canvas, Path=ActualHeight}">
                         <Rectangle.Style>
                             <Style TargetType="{x:Type Rectangle}">
