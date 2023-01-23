@@ -101,6 +101,13 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool IsInternalEvent
+        {
+            get
+            {
+                return this.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal;
+            }
+        }
 
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
@@ -1168,6 +1175,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TextColumnWidth);
                     break;
                 default:
+                    UpdateWaterfallDurations(StorageEngineEvents, QueryStartDateTime, QueryEndDateTime, TotalDuration);
                     NotifyOfPropertyChange(() => StorageEngineEvents);
                     NotifyOfPropertyChange(() => StorageEngineEventsDisplayLayers);
                     break;
