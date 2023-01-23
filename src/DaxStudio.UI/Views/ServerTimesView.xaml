@@ -433,8 +433,11 @@
                     <!-- Horizontal Bar FE vs SE -->
                     
                         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
-                            <ctrl:StorageEngineTime x:Name="EnginesDisplay" ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Height="5" Width="100" Margin="0,2,0,5">
+                            <Canvas Height="15" Width="100" Margin="0,0,0,1">
+                                <Border Canvas.Left="0" Canvas.Top="0" Width="100" Height="15" Background="{DynamicResource Theme.Brush.MenuBar.Back}"></Border>
+                            <ctrl:StorageEngineTime x:Name="EnginesDisplay" ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Canvas.Left="0" Canvas.Top="5" Width="100" Height="5">
                             </ctrl:StorageEngineTime>
+                            </Canvas>
                         </StackPanel>
                     
                     <!--   
