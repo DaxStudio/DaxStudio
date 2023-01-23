@@ -24,7 +24,7 @@ namespace DaxStudio.UI.Converters
             
                 // restrict offset and totalWidth to positive values
                 if (offset < 0) offset = 0;
-                if (totalWidth < 0) totalWidth = 0;
+                if (totalWidth <= 1) totalWidth = 1;
                 var verticalMargin = 0.0;
                 if (values.Length == 4) double.TryParse(values[3]?.ToString(), out verticalMargin);
 

@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Converters
 
                 // restrict offset and totalwidth to positive values
                 if (length < 0L) length = 0;
-                if (totalWidth <= 1L) totalWidth = 0;
+                if (totalWidth <= 1L) totalWidth = 1L;
                 var minWidth = 1.0;
                 if (values.Length == 4) minWidth = (double)(values[3] ?? 0.0);
                 // force a small minWidth so that 0 duration events are visible

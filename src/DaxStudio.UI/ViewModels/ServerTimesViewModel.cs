@@ -932,40 +932,36 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly BindableCollection<TraceStorageEngineEvent> _storageEngineEvents;
 
-        private IEnumerable<TraceStorageEngineEvent> GetStorageEngineEvents()
-        {
-            var fse = from e in _storageEngineEvents
-                      where
-                      (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal && ServerTimingDetails.ShowInternal)
-                      ||
-                      (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan && ServerTimingDetails.ShowBatch)
-                      ||
-                      (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch && ServerTimingDetails.ShowCache)
-                      ||
-                      ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
-                          && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
-                          && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
-                       ) && ServerTimingDetails.ShowScan)
-                       ||
-                       (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
-
-
-                      select e;
-            return fse;
-        }
-
         public IObservableCollection<TraceStorageEngineEvent> StorageEngineEvents
         {
             get
             {
-                return new BindableCollection<TraceStorageEngineEvent>(GetStorageEngineEvents());
+                var fse = from e in _storageEngineEvents
+                          where
+                              (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal && ServerTimingDetails.ShowInternal)
+                              ||
+                              (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan && ServerTimingDetails.ShowBatch)
+                              ||
+                              (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch && ServerTimingDetails.ShowCache)
+                              ||
+                              ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
+                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
+                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                               ) && ServerTimingDetails.ShowScan)
+                               ||
+                               (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
+                          select e;
+                return new BindableCollection<TraceStorageEngineEvent>(fse);
             }
         }
         public IObservableCollection<TraceStorageEngineEvent> StorageEngineEventsDisplayLayers
         {
             get
             {
-                var fse = GetStorageEngineEvents();
+                var fse = from e in _storageEngineEvents
+                          where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted
+                              && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
+                          select e;
                 var batchEvents =
                     from e in fse
                     where e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan
