@@ -120,9 +120,22 @@
             <DataTemplate x:Key="WaterfallCell">
                 <Grid HorizontalAlignment="Left">
                     <!-- TODO: instead of ItemsSource, we should get the same binding of the other StorageEngineTime because of the correct sort order of the elements -->
-                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=ListEvents}" Width="100" Margin="0,3,0,3" Opacity="0.25">
-                    </ctrl:StorageEngineTime>
-                    <Border Background="{DynamicResource Theme.Brush.Accent}">
+                    
+                    <Border HorizontalAlignment="Left" Panel.ZIndex="1">
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="true">
+                                        <Setter Property="Background" Value="#FF29A9FF" />
+                                        <!-- #FF29A9FF -->
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="false">
+                                        <Setter Property="Background" Value="#FF228ED6" />
+                                        <!-- #FF228ED6 -->
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <Border.Margin >
                             <MultiBinding Converter="{StaticResource WaterfallMarginConverter}">
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
@@ -130,11 +143,12 @@
                                 <Binding Path="WaterfallDuration"/>
                                 <Binding>
                                     <Binding.Source>
-                                        <sys:Double>3</sys:Double>
+                                        <sys:Double>6</sys:Double>
                                     </Binding.Source>
                                 </Binding>
                             </MultiBinding>
                         </Border.Margin>
+                        
                         <Border.Width >
                             <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
@@ -142,7 +156,7 @@
                                 <Binding Path="WaterfallDuration"/>
                                 <Binding>
                                     <Binding.Source>
-                                        <sys:Double>3</sys:Double>
+                                        <sys:Double>1</sys:Double>
                                     </Binding.Source>
                                 </Binding>
                             </MultiBinding>
@@ -170,6 +184,10 @@
                             </Grid>
                         </Border.ToolTip>
                     </Border>
+
+                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=ListEvents}" Width="100" Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
+                    </ctrl:StorageEngineTime>
+
                 </Grid>
             </DataTemplate>
             
@@ -416,11 +434,13 @@
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
                     
                     <!-- Horizontal Bar FE vs SE -->
+                    
                         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
                             <ctrl:StorageEngineTime ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Height="5" Width="100" Margin="0,2,0,5">
                             </ctrl:StorageEngineTime>
                         </StackPanel>
-                        <!--
+                    
+                    <!--   
                     <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                             <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
                             <Rectangle.Width>

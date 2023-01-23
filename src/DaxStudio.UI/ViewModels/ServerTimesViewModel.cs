@@ -93,6 +93,15 @@ namespace DaxStudio.UI.ViewModels
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
         public bool InternalBatchEvent { get; set; }
+        public bool IsBatchEvent
+        {
+            get
+            {
+                return this.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan;
+            }
+        }
+
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 

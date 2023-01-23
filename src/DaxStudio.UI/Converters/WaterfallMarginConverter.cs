@@ -16,7 +16,6 @@ namespace DaxStudio.UI.Converters
             Debug.Assert(values.Length == 3 || values.Length == 4, $"The {nameof(WaterfallMarginConverter)} needs 3-4 parameters");
             if (values.Length != 3 && values.Length != 4) { return Binding.DoNothing; }
             
-            
             try
             {
                 double.TryParse(values[0]?.ToString(), out var cellWidth);

@@ -13,12 +13,20 @@
         <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
     </UserControl.Resources>
     <Canvas Name="canvas">
+        <Border
+            Height="{Binding ElementName=canvas, Path=ActualHeight}" 
+            Width="{Binding ElementName=canvas, Path=ActualWidth}" 
+            Canvas.Left="0" Canvas.Top="0" 
+            Background="#FFFAC700"
+            Canvas.ZIndex="0"/>
+        <!--
         <Rectangle 
             Height="{Binding ElementName=canvas, Path=ActualHeight}" 
             Width="{Binding ElementName=canvas, Path=ActualWidth}" 
             Canvas.Left="0" Canvas.Top="0" 
             Fill="#FFFAC700"
             Panel.ZIndex="0"/>
+        -->
         <ItemsControl DataContext="{Binding ElementName=StorageEngineTimeControl}" ItemsSource="{Binding ItemsSource}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -41,15 +49,42 @@
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
+                    <Border Height="{Binding ElementName=canvas, Path=ActualHeight}">
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="true">
+                                        <Setter Property="Background" Value="#FF29A9FF" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="false">
+                                        <Setter Property="Background" Value="#FF228ED6" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.Width>
+                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType={x:Type UserControl}}"/>
+                                <Binding Path="DisplayDuration"/>
+                                <Binding Path="WaterfallDuration"/>
+                                <Binding>
+                                    <Binding.Source>
+                                        <sys:Double>1</sys:Double>
+                                    </Binding.Source>
+                                </Binding>
+                            </MultiBinding>
+                        </Border.Width>
+                    </Border>
+                    <!--
                     <Rectangle Canvas.Left="100" Canvas.Top="0" Height="{Binding ElementName=canvas, Path=ActualHeight}">
                         <Rectangle.Style>
                             <Style TargetType="{x:Type Rectangle}">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=InternalBatchEvent}" Value="True">
-                                        <Setter Property="Fill" Value="#FF29A9FF" />
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="true">
+                                        <Setter Property="Fill" Value="#FF29A9FF" /> 
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=InternalBatchEvent}" Value="False">
-                                        <Setter Property="Fill" Value="#FF228ED6" />
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="false">
+                                        <Setter Property="Fill" Value="#FF228ED6" />  
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -67,6 +102,7 @@
                             </MultiBinding>
                         </Rectangle.Width>
                     </Rectangle>
+    -->
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

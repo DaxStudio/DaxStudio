@@ -16,15 +16,16 @@ namespace DaxStudio.UI.Converters
             try
             {
                 var cellWidth = (double)(values[0] ?? 0.0);
-                var length = (long)(values[1] ?? 0);
-                var totalWidth = (long)(values[2] ?? 0 );
+                var length = (long)(values[1] ?? 0L);
+                var totalWidth = (long)(values[2] ?? 0L);
+
                 // restrict offset and totalwidth to positive values
-                if (length < 0) length = 0;
-                if (totalWidth < 0) totalWidth = 0;
+                if (length < 0L) length = 0;
+                if (totalWidth <= 1L) totalWidth = 0;
                 var minWidth = 1.0;
-                if (values.Length == 4) minWidth = (double)values[3];
+                if (values.Length == 4) minWidth = (double)(values[3] ?? 0.0);
                 // force a small minWidth so that 0 duration events are visible
-                if (length == 0) return minWidth;
+                if (length == 0L) return minWidth;
                 // calculate a proportional width
                 var calcLength = (cellWidth / totalWidth) * (length);
                 if (calcLength < minWidth) calcLength = minWidth;
