@@ -119,7 +119,10 @@
 
             <DataTemplate x:Key="WaterfallCell">
                 <Grid HorizontalAlignment="Left">
-                    <Border Background="{DynamicResource Theme.Brush.Accent}" >
+                    <!-- TODO: instead of ItemsSource, we should get the same binding of the other StorageEngineTime because of the correct sort order of the elements -->
+                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=ListEvents}" Width="100" Margin="0,3,0,3" Opacity="0.25">
+                    </ctrl:StorageEngineTime>
+                    <Border Background="{DynamicResource Theme.Brush.Accent}">
                         <Border.Margin >
                             <MultiBinding Converter="{StaticResource WaterfallMarginConverter}">
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
