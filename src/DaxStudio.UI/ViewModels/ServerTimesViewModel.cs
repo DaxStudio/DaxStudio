@@ -700,6 +700,7 @@ namespace DaxStudio.UI.ViewModels
                             QueryEndDateTime = traceEvent.EndTime;
                             QueryStartDateTime = traceEvent.StartTime;
                             ActivityID = traceEvent.ActivityId;
+                            UpdateWaterfallTotalDuration(traceEvent);
                             break;
                         case DaxStudioTraceEventClass.QueryBegin:
                             Parameters = traceEvent.RequestParameters;
@@ -747,12 +748,29 @@ namespace DaxStudio.UI.ViewModels
         {
             var maxDuration = (traceEvent.StartTime.AddMilliseconds(traceEvent.Duration == 0 ? 1 : traceEvent.Duration) - QueryStartDateTime).TotalMilliseconds;
             if (maxDuration > WaterfallTotalDuration)
-                WaterfallTotalDuration = Convert.ToInt64( maxDuration);
+                WaterfallTotalDuration = Convert.ToInt64(maxDuration);
         }
 
         private void UpdateWaterfallDurations(DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
         {
-            foreach(var traceEvent in AllStorageEngineEvents)
+            /*
+            WaterfallTotalDuration = 
+                AllStorageEngineEvents.Count > 0 
+                ? AllStorageEngineEvents.Max( traceEvent => traceEvent.Duration.Value + traceEvent.StartOffsetMs.Value ) 
+                : 0;
+                from traceEvent in AllStorageEngineEvents
+                
+            WaterfallTotalDuration = 0;
+            foreach( var traceEvent in AllStorageEngineEvents)
+            {
+                var maxDuration = traceEvent.Duration + traceEvent.StartOffsetMs;
+                if (maxDuration > WaterfallTotalDuration)
+                {
+                    WaterfallTotalDuration = maxDuration.Value;
+                }
+            }
+            */
+            foreach (var traceEvent in AllStorageEngineEvents)
             {
                 traceEvent.StartOffsetMs = Convert.ToInt64((traceEvent.StartTime - queryStartDateTime).TotalMilliseconds );
                 // WARNING: we recalculate the duration based on the start/end time
@@ -1136,7 +1154,7 @@ namespace DaxStudio.UI.ViewModels
             // update waterfall total Duration if this is an older file format
             if (m.FileFormatVersion <= 3) {
                 AllStorageEngineEvents.Apply(se => UpdateWaterfallTotalDuration(new DaxStudioTraceEventArgs( se.Class.ToString(), se.Subclass.ToString(), se.Duration??0, se.CpuTime??0, se.Query,String.Empty, se.StartTime)));
-                UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime,TotalDuration);
+                UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime, WaterfallTotalDuration);
             }
         }
 
@@ -1189,7 +1207,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TextColumnWidth);
                     break;
                 default:
-                    UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime, TotalDuration);
+                    UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime, WaterfallTotalDuration);
                     break;
             }
         }

@@ -119,7 +119,7 @@
 
             <DataTemplate x:Key="WaterfallCell">
                 <Grid HorizontalAlignment="Left">
-                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" Width="100" Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
+                    <ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ActualWidth}" Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
                     </ctrl:StorageEngineTime>
                     
                     <Border HorizontalAlignment="Left" Panel.ZIndex="1">

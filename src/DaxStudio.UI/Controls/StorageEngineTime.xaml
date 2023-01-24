@@ -32,7 +32,7 @@
                     <Setter Property="Canvas.Left">
                         <Setter.Value>
                             <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
-                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType={x:Type UserControl}}"/>
+                                <Binding Path="ActualWidth" ElementName="canvas"/>
                                 <Binding Path="StartOffsetMs"/>
                                 <Binding Path="WaterfallDuration"/>
                             </MultiBinding>
@@ -43,7 +43,7 @@
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Height="{Binding ElementName=canvas, Path=ActualHeight}">
+                    <Border HorizontalAlignment="Left" Height="{Binding ElementName=canvas, Path=ActualHeight}">
                         <Border.Style>
                             <Style TargetType="{x:Type Border}">
                                 <Setter Property="Background" Value="{DynamicResource Theme.Brush.Accent}" />
