@@ -753,23 +753,6 @@ namespace DaxStudio.UI.ViewModels
 
         private void UpdateWaterfallDurations(DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
         {
-            /*
-            WaterfallTotalDuration = 
-                AllStorageEngineEvents.Count > 0 
-                ? AllStorageEngineEvents.Max( traceEvent => traceEvent.Duration.Value + traceEvent.StartOffsetMs.Value ) 
-                : 0;
-                from traceEvent in AllStorageEngineEvents
-                
-            WaterfallTotalDuration = 0;
-            foreach( var traceEvent in AllStorageEngineEvents)
-            {
-                var maxDuration = traceEvent.Duration + traceEvent.StartOffsetMs;
-                if (maxDuration > WaterfallTotalDuration)
-                {
-                    WaterfallTotalDuration = maxDuration.Value;
-                }
-            }
-            */
             foreach (var traceEvent in AllStorageEngineEvents)
             {
                 traceEvent.StartOffsetMs = Convert.ToInt64((traceEvent.StartTime - queryStartDateTime).TotalMilliseconds );
