@@ -27,6 +27,7 @@ using DaxStudio.UI.Extensions;
 using System.Security.Cryptography;
 using System.Diagnostics;
 using Windows.Media.Playback;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -398,11 +399,22 @@ namespace DaxStudio.UI.ViewModels
             , IGlobalOptions options, IWindowManager windowManager) : base(eventAggregator, options,windowManager)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
+            _storageEngineEvents.CollectionChanged += _storageEngineEvents_CollectionChanged;
             RemapColumnNames = new Dictionary<string, string>();
             RemapTableNames = new Dictionary<string, string>();
             Options = options;
             ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
+        }
+
+        private bool _storageEngineEventsDisplayLayersCached = false;
+        private bool IsStorageEngineEventsDisplayLayersCached { 
+            get { return _storageEngineEventsDisplayLayersCached; } 
+        }
+
+        private void _storageEngineEvents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            _storageEngineEventsDisplayLayersCached = false;
         }
 
         #region Tooltip properties
@@ -523,7 +535,7 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            if (AllStorageEngineEvents?.Count > 0 ) return;
+            if (AllStorageEngineEvents?.Count > 0) return;
             // results have not been cleared so this is probably an end event from some other
             // action like a tooltip populating
 
@@ -541,7 +553,8 @@ namespace DaxStudio.UI.ViewModels
             if (Events != null)
             {
                 // exit early if this is an internal query
-                if (IsDaxStudioInternalQuery()) {
+                if (IsDaxStudioInternalQuery())
+                {
                     Events.Clear();
                     return;
                 };
@@ -569,7 +582,7 @@ namespace DaxStudio.UI.ViewModels
                 int seLevel = 0;
                 double new_FormulaEngineDuration = 0;
                 DateTime currentScanTime = DateTime.MinValue;
-                foreach ( var e in seEvents )
+                foreach (var e in seEvents)
                 {
                     switch (e.Event.EventClass)
                     {
@@ -612,19 +625,19 @@ namespace DaxStudio.UI.ViewModels
                             }
                             break;
                     }
-                    Debug.Assert(seLevel >= 0,"Invalid storage engine level, invalid FE calculation");
+                    Debug.Assert(seLevel >= 0, "Invalid storage engine level, invalid FE calculation");
 
                 }
 
                 eventsProcessed = !Events.IsEmpty;
                 while (!Events.IsEmpty)
                 {
-                    
+
                     Events.TryDequeue(out var traceEvent);
                     switch (traceEvent.EventClass)
                     {
                         case DaxStudioTraceEventClass.VertiPaqSEQueryBegin:
-                            
+
                             // At the start of a batch, we just activate the flag BatchScan
                             if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
                             {
@@ -637,10 +650,10 @@ namespace DaxStudio.UI.ViewModels
                                 batchStorageEngineCpu = 0;
                                 batchStorageEngineQueryCount = 0;
                             }
-                            
+
                             break;
                         case DaxStudioTraceEventClass.VertiPaqSEQueryEnd:
-                            
+
                             // At the end of a batch, we compute the cost for the batch and assign the cost to the complete query
                             if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
                             {
@@ -678,7 +691,7 @@ namespace DaxStudio.UI.ViewModels
                             }
                             UpdateWaterfallTotalDuration(traceEvent);
                             AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
-                            
+
                             break;
                         case DaxStudioTraceEventClass.DirectQueryEnd:
                             UpdateForParallelOperations(ref maxStorageEngineDirectQueryEvent, traceEvent);
@@ -689,12 +702,12 @@ namespace DaxStudio.UI.ViewModels
                             UpdateWaterfallTotalDuration(traceEvent);
                             AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
-                            
+
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             AllStorageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
                         case DaxStudioTraceEventClass.QueryEnd:
-                            
+
                             TotalDuration = traceEvent.Duration;
                             TotalCpuDuration = traceEvent.CpuTime;
                             QueryEndDateTime = traceEvent.EndTime;
@@ -707,7 +720,7 @@ namespace DaxStudio.UI.ViewModels
                             CommandText = traceEvent.TextData;
                             break;
                         case DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch:
-                            
+
                             VertipaqCacheMatches++;
                             UpdateWaterfallTotalDuration(traceEvent);
                             AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
@@ -972,6 +985,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
+        private IObservableCollection<TraceStorageEngineEvent> _cachedStorageEngineEventsDisplayLayers;
         /// <summary>
         /// Access to the storage engine events to display in the layered visualization (FE yellow below SE blue)
         /// </summary>
@@ -979,21 +994,64 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                var fse = from e in AllStorageEngineEvents
-                          where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted
-                              && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
-                          select e;
-                var batchEvents =
-                    from e in fse
-                    where e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan
-                    select e;
-                var nonBatchEvents =
-                    from e in fse
-                    where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
-                    select e;
-                var displayLayersEvents = batchEvents.ToList().Concat(nonBatchEvents);
-                return new BindableCollection<TraceStorageEngineEvent>(displayLayersEvents);
+                if (!IsStorageEngineEventsDisplayLayersCached)
+                {
+                    var fse = from e in AllStorageEngineEvents
+                              where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted
+                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
+                              select e;
+                    var batchEvents = CollapseEvents(
+                        from e in fse
+                        where e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                        select e);
+
+                    var nonBatchEvents = CollapseEvents(
+                        from e in fse
+                        where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                        select e);
+
+                    var displayLayersEvents = batchEvents.ToList().Concat(nonBatchEvents);
+                    _cachedStorageEngineEventsDisplayLayers = new BindableCollection<TraceStorageEngineEvent>(displayLayersEvents);
+                    _storageEngineEventsDisplayLayersCached = true;
+                }
+                return _cachedStorageEngineEventsDisplayLayers;
             }
+        }
+
+        public IEnumerable<TraceStorageEngineEvent> CollapseEvents(IEnumerable<TraceStorageEngineEvent> events)
+        {
+            var listItems = events.ToList();
+            var listRemove = new List<TraceStorageEngineEvent>();
+            bool restartLoop = true;
+            while (listItems.Count > 0 && restartLoop)
+            {
+                restartLoop = false;
+                for (int itemIndex = 0; itemIndex < listItems.Count; itemIndex++)
+                {
+                    var item = listItems.ElementAt(itemIndex);
+                    listRemove.Clear();
+                    // Search contiguous
+                    for (int i = 0; i < listItems.Count; i++)
+                    {
+                        var candidate = listItems.ElementAt(i);
+                        if (candidate != item)
+                        {
+                            if (candidate.StartTime >= item.StartTime && candidate.StartTime <= item.EndTime)
+                            {
+                                item.EndTime = candidate.EndTime > item.EndTime ? candidate.EndTime : item.EndTime;
+                                listRemove.Add(candidate);
+                            }
+                        }
+                    }
+                    if (listRemove.Count > 0)
+                    {
+                        listRemove.ForEach(r => listItems.Remove(r));
+                        restartLoop = true;
+                        break;
+                    }
+                }
+            }
+            return listItems;
         }
 
         private TraceStorageEngineEvent _selectedEvent;

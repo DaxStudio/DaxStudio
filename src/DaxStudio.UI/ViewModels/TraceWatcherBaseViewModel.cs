@@ -22,6 +22,7 @@ using DaxStudio.Common;
 using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
 using System.Windows;
+using Windows.UI.Core;
 
 namespace DaxStudio.UI.ViewModels
 {

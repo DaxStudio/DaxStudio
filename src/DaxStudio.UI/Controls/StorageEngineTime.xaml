@@ -24,7 +24,13 @@
         <ItemsControl DataContext="{Binding ElementName=StorageEngineTimeControl}" ItemsSource="{Binding ItemsSource}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas/>
+                    <Canvas>
+                        <Canvas.CacheMode>
+                            <BitmapCache EnableClearType="False" 
+                                     RenderAtScale="1" 
+                                     SnapsToDevicePixels="False"  />
+                        </Canvas.CacheMode>
+                    </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemContainerStyle>
