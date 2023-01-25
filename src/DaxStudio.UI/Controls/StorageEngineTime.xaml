@@ -59,7 +59,7 @@
                         </Border.Style>
                         <Border.Width>
                             <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
-                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType={x:Type UserControl}}"/>
+                                <Binding Path="ActualWidth" ElementName="canvas"/>
                                 <Binding Path="DisplayDuration"/>
                                 <Binding Path="WaterfallDuration"/>
                                 <Binding>

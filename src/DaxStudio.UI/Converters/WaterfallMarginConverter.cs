@@ -27,8 +27,9 @@ namespace DaxStudio.UI.Converters
                 if (totalWidth <= 1) totalWidth = 1;
                 var verticalMargin = 0.0;
                 if (values.Length == 4) double.TryParse(values[3]?.ToString(), out verticalMargin);
+                var newOffset = (cellWidth / totalWidth) * offset;
 
-                return new Thickness((cellWidth / totalWidth) * offset, verticalMargin, 0, verticalMargin);
+                return new Thickness(newOffset, verticalMargin, 0, verticalMargin);
             }
             catch (Exception ex)
             {

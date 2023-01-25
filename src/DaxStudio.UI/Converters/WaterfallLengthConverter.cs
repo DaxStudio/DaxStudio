@@ -15,20 +15,23 @@ namespace DaxStudio.UI.Converters
             if (values.Length != 3 && values.Length !=4) throw new ArgumentException($"The {nameof(WaterfallLengthConverter)} needs 3-4 parameters");
             try
             {
-                var cellWidth = (double)(values[0] ?? 0.0);
-                var length = (long)(values[1] ?? 0L);
-                var totalWidth = (long)(values[2] ?? 0L);
+                double.TryParse(values[0]?.ToString(), out var cellWidth);
+                long.TryParse(values[1]?.ToString(), out var length);
+                long.TryParse(values[2]?.ToString(), out var totalWidth);
 
                 // restrict offset and totalwidth to positive values
                 if (length < 0L) length = 0;
                 if (totalWidth <= 1L) totalWidth = 1L;
-                var minWidth = 1.0;
+                var minWidth = 0.001;
                 if (values.Length == 4) minWidth = (double)(values[3] ?? 0.0);
                 // force a small minWidth so that 0 duration events are visible
                 if (length == 0L) return minWidth;
                 // calculate a proportional width
                 var calcLength = (cellWidth / totalWidth) * (length);
-                if (calcLength < minWidth) calcLength = minWidth;
+                // Marco 2023-01-25 disabled the minimum width for the visualization,
+                // we might consider an exception for the waterfall display if required,
+                // but it should not be applied to the StorageEngineTime visual
+                // if (calcLength < minWidth) calcLength = minWidth;
                 return calcLength;
             }
             catch (Exception ex)
