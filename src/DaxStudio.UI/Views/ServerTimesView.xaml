@@ -429,21 +429,48 @@
 
                         <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
+
+                        <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <DockPanel Height="15" Width="100" Margin="0,0,0,0" Background="{DynamicResource Theme.Brush.Table.Header.Back}">
+                                <Rectangle Height="5" Fill="{DynamicResource Theme.Brush.Accent2}" DockPanel.Dock="Left">
+                                    <Rectangle.Width>
+                                        <MultiBinding Converter="{StaticResource MultiConverter}">
+                                            <Binding Path="FormulaEngineDurationPercentage"/>
+                                            <Binding Source="{StaticResource BarWidth}" />
+                                        </MultiBinding>
+                                    </Rectangle.Width>
+                                </Rectangle>
+                                <Rectangle Height="5" Fill="{StaticResource DaxStudioBrush}" DockPanel.Dock="Right">
+                                    <Rectangle.Width>
+                                        <MultiBinding Converter="{StaticResource MultiConverter}">
+                                            <Binding Path="StorageEngineDurationPercentage"/>
+                                            <Binding Source="{StaticResource BarWidth}" />
+                                        </MultiBinding>
+                                    </Rectangle.Width>
+                                </Rectangle>
+                                <ctrl:StorageEngineTime 
+                                    Visibility="Hidden"
+                                    x:Name="EnginesDisplay" 
+                                    ItemsSource="{Binding StorageEngineEventsDisplayLayers}" 
+                                    Canvas.Left="0" Canvas.Top="5" 
+                                    Width="100" Height="5"
+                                    DockPanel.Dock="Bottom"
+                                    />
+                            </DockPanel>
+                        </StackPanel>
                     
-                    <!-- Horizontal Bar FE vs SE -->
-                    
+                        <!-- Horizontal Bar FE vs SE -->
+<!--
                         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
                             <Canvas Height="15" Width="100" Margin="0,0,0,1">
-                                <!-- <Line X1="0" Y1="2" X2="0" Y2="10" Stroke="Black" StrokeThickness="0.5" /> -->
 
                                 <Border Canvas.Left="0" Canvas.Top="0" Width="100" Height="15" Background="{DynamicResource Theme.Brush.MenuBar.Back}"></Border>
                                 <ctrl:StorageEngineTime x:Name="EnginesDisplay" ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Canvas.Left="0" Canvas.Top="5" Width="100" Height="5">
                                 </ctrl:StorageEngineTime>
 
-                                <!-- <Line X1="0" Y1="10" X2="100" Y2="10" Stroke="Black" StrokeThickness="0.5" /> -->
                             </Canvas>
                         </StackPanel>
-                    
+-->
                     <!--   
                     <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                             <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
@@ -511,7 +538,11 @@
             Grid.Column="2" 
             Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
             >
-            
+<!--
+                              AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                  AlternationCount="2"
+
+            -->
             <DataGrid Name="ListEvents" 
                   SelectedItem="{Binding SelectedEvent}" 
                   ap:DataGridHorizontalScroll.ScrollToColumn="1"
@@ -519,7 +550,6 @@
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
                   AlternationCount="2"
-                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                   Background="{DynamicResource Theme.Brush.Content.Back}"
                   behaviours:GridViewColumnResize.Enabled="True" 
                   VerticalAlignment="Stretch" 
@@ -566,8 +596,23 @@
                 <Style x:Key="DataGridColumnHeaderRight" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DsDataGridColumnHeaderStyle}">
                     <Setter Property="HorizontalContentAlignment" Value="Right"/>
                 </Style>
+                    <Style x:Key="DataGridColumnHeaderWaterfall" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DsDataGridColumnHeaderWaterfallStyle}">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Margin" Value="0 0 0 0" />
+                        <Setter Property="ContentTemplate" >
+                            <Setter.Value>
+                                <DataTemplate >
+                                    <DockPanel HorizontalAlignment="Stretch" Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridColumnHeader}, Path=ActualWidth}">
+                                        <!--<ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="0 0 0 0" Height="8" Opacity="1"/>-->
+                                        <ctrl:StorageEngineTime ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=DataContext}" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="0 0 0 0" Height="8" Opacity="1"/>
+                                        <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center"  Margin="0 0 0 0">Waterfall</TextBlock>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
 
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" >
+                    <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" >
                     <Setter Property="HorizontalAlignment" Value="Right" />
                     <Setter Property="Padding" Value="6 0 6 0"/>
                     <Setter Property="VerticalAlignment" Value="Center" />
@@ -577,10 +622,27 @@
                     <Setter Property="Padding" Value="6 0 6 0"/>
                     <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
-                
                 </DataGrid.Resources>
-
-            <DataGrid.Columns>
+                <!-- TODO This is a fix for mouseover that is hidden by alternate color
+                          the workaround is to apply IsMouseOver after AlternationIndex 
+                          and remove the AlternatingRowBackground from the DataGrid
+                         HOWEVER, this does not work with Dark theme, must be fixed in 
+                         Fluent or in other classes to support the style? -->
+                <DataGrid.RowStyle >
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <Trigger Property="AlternationIndex" Value="1">
+                                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Alternate}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFCCCCCC" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                
+                
+                <DataGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                 <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
@@ -600,9 +662,10 @@
                     <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
+                    <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
                     <!--behaviours:GridViewColumnResize.Width="Auto" -->
-                    <DataGridTemplateColumn Width="100" Header="Waterfall" CellTemplate="{StaticResource WaterfallCell}" />
+                    <DataGridTemplateColumn Width="100" Header="Waterfall" CellTemplate="{StaticResource WaterfallCell}" HeaderStyle="{StaticResource DataGridColumnHeaderWaterfall}" >
+                    </DataGridTemplateColumn>
 
 
                     <DataGridTextColumn Header="Query" Width="*"

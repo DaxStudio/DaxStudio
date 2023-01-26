@@ -736,6 +736,7 @@ namespace DaxStudio.UI.ViewModels
                 // New calculation: SE is Query Duration - FE Duration
                 //                  FE Duration is computed as time when there are no SE queries running
                 FormulaEngineDuration = (long)new_FormulaEngineDuration;
+                TotalDuration = FormulaEngineDuration > TotalDuration ? FormulaEngineDuration : TotalDuration;
                 StorageEngineDuration = TotalDuration - FormulaEngineDuration;
                 // End of new calculation for parallel SE queries
 
