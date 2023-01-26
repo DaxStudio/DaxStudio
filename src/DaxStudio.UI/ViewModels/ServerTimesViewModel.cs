@@ -1348,7 +1348,7 @@ namespace DaxStudio.UI.ViewModels
             });
         }
 
-        public bool ShowWaterfallOnRows { get; set; } = false; // TODO WATERFALL: set in global properties
+        public bool ShowWaterfallOnRows { get; set; }
 
         public void SwichWaterfallOnRowsVisibility()
         {
