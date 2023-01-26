@@ -69,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showQueryPlanNextLine;
         //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
+        private bool _showWaterfallOnRows;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
         private LongOperationSounds _queryEndSound;
@@ -344,7 +345,25 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlTableNames), value, _isInitializing, this);
             }
         }
-#endregion
+
+        [DisplayName("Waterfall background on rows (default)")]
+        [Category("Server Timings")]
+        [Description("Show by deafult the waterfall background as a background on storage engine event rows.")]
+        [DataMember, DefaultValue(true)]
+        public bool ShowWaterfallOnRows
+        {
+            get => _showWaterfallOnRows;
+            set
+            {
+                if (_showWaterfallOnRows == value) return;
+                _showWaterfallOnRows = value;
+                NotifyOfPropertyChange(() => ShowWaterfallOnRows);
+                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ShowWaterfallOnRows), value, _isInitializing, this);
+            }
+        }
+
+        #endregion
 
         #region Query Plan properties
         //[DisplayName("Show next line")]
@@ -382,7 +401,7 @@ namespace DaxStudio.UI.ViewModels
         //        SettingProvider.SetValue<bool>(nameof(ShowQueryPlanLineLevel), value, _isInitializing, this);
         //    }
         //}
-#endregion
+        #endregion
 
         #region Http Proxy properties
 

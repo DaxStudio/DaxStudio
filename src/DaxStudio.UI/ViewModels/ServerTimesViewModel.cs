@@ -85,6 +85,8 @@ namespace DaxStudio.UI.ViewModels
             return DaxStudioTraceEventClassSubclass.Language.Unknown;
         }
 
+        public bool ShowWaterfall { get; set; } = false;
+
         public long? Duration { get; set; }
         public long? NetParallelDuration { get; set; }
         public long? CpuTime { get; set; }
@@ -168,7 +170,6 @@ namespace DaxStudio.UI.ViewModels
     public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
             Options = options;
-
             RowNumber = rowNumber;
             Class = ev.EventClass;
             Subclass = ev.EventSubclass;
@@ -403,6 +404,8 @@ namespace DaxStudio.UI.ViewModels
             RemapColumnNames = new Dictionary<string, string>();
             RemapTableNames = new Dictionary<string, string>();
             Options = options;
+            // Use global option as a default but doesn't change it at runtime
+            ShowWaterfallOnRows = options.ShowWaterfallOnRows;
             ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
@@ -1344,5 +1347,14 @@ namespace DaxStudio.UI.ViewModels
 
             });
         }
+
+        public bool ShowWaterfallOnRows { get; set; } = false; // TODO WATERFALL: set in global properties
+
+        public void SwichWaterfallOnRowsVisibility()
+        {
+            ShowWaterfallOnRows = !ShowWaterfallOnRows;
+            NotifyOfPropertyChange(nameof(ShowWaterfallOnRows));
+        }
+
     }
 }
