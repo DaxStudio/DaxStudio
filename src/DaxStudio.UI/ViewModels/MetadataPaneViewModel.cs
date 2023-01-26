@@ -992,6 +992,30 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public async Task ProcessDatabaseDefrag()
+        {
+            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Starting Process Defragment"));
+            await ActiveDocument.Connection.ProcessDatabaseAsync("ProcessDefragment");
+            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Finished Process Defragment"));
+
+        }
+
+        public async Task ProcessDatabaseFull()
+        {
+            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Starting Process Full"));
+            await ActiveDocument.Connection.ProcessDatabaseAsync("ProcessFull");
+            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Finished Process Full"));
+
+        }
+
+        public async Task ProcessDatabaseRecalc()
+        {
+            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Starting Process Calculate"));
+            await ActiveDocument.Connection.ProcessDatabaseAsync("calculate");
+            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Finished Process Calculate"));
+
+        }
+
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => CanSelectDatabase);
@@ -1030,22 +1054,21 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message));
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message),cancellationToken);
             }
             return Task.CompletedTask;
         }
 
-        public async Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
 
-            await Execute.OnUIThreadAsync(() =>
-            {
-                Databases.IsNotifying = false;
-                Databases = _metadataProvider.GetDatabases().ToBindableCollection();
-                Databases.IsNotifying = true;
-                NotifyOfPropertyChange(nameof(Databases));
-                return Task.CompletedTask;
-            });
+
+            Databases.IsNotifying = false;
+            Task.Run(()=> Databases = _metadataProvider.GetDatabases().ToBindableCollection());
+            Databases.IsNotifying = true;
+            NotifyOfPropertyChange(nameof(Databases));
+                
+
             var ml = _metadataProvider.GetModels();
             //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
             if (Dispatcher.CurrentDispatcher.CheckAccess())
@@ -1059,6 +1082,7 @@ namespace DaxStudio.UI.ViewModels
 
             NotifyOfPropertyChange(() => CanSelectDatabase);
             NotifyOfPropertyChange(() => CanSelectModel);
+            return Task.CompletedTask;
         }
 
         public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)
@@ -1079,6 +1103,7 @@ namespace DaxStudio.UI.ViewModels
         {
             await RefreshTablesAsync();
         }
+
     }
 
 

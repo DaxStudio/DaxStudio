@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -48,7 +49,7 @@ namespace DaxStudio.UI.AttachedProperties
             var scrollToEndHandler = new NotifyCollectionChangedEventHandler(
                 (s1, e1) =>
                 {
-                    if (listView.Items.Count <= 0 || e1?.NewItems == null) return;
+                    if (listView.Items.Count <= 0 || e1?.NewItems == null || !listView.IsVisible) return;
                     try
                     {
                         //object lastItem = listView.Items[listView.Items.Count - 1];
@@ -79,12 +80,24 @@ namespace DaxStudio.UI.AttachedProperties
                 {
                     data.CollectionChanged += scrollToEndHandler;
                     listView.GotFocus += gotFocusHandler;
+                    listView.IsVisibleChanged+= isVisibleHandler;
                 }
             }
             else if (data != null) 
             {
                 data.CollectionChanged -= scrollToEndHandler;
                 listView.GotFocus -= gotFocusHandler;
+                listView.IsVisibleChanged -= isVisibleHandler;
+            }
+        }
+
+        private static void isVisibleHandler(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var listView = sender as ListView;
+            if (listView != null && listView.IsVisible && listView.Items.Count > 0 )
+            {
+                //object lastItem = listView.Items[listView.Items.Count - 1];
+                listView.ScrollIntoView(listView.SelectedItem);
             }
         }
     }

@@ -20,7 +20,7 @@ namespace DaxStudio.UI.ViewModels.DesignData
                 doc.Text = "//Test Comment\n EVALUATE FILTER(table, table[Column] = \"Hello Designer\"";
                 OutputPaneViewModel output = new OutputPaneViewModel(null);
                 output.DisplayName = "Output";
-                output.Messages.Add(new Events.OutputMessage(Events.MessageType.Information, "Hello Designer"));
+                output.AddInformation("Hello Designer");
                 return new DesignDocumentViewModel() { Document = doc , OutputPane = output };
             }
         }

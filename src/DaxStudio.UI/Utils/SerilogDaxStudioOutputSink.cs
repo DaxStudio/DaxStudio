@@ -79,7 +79,7 @@ namespace DaxStudio.UI.Utils
         /// <returns></returns>
         public static LoggerConfiguration DaxStudioOutput(
             this LoggerSinkConfiguration sinkConfiguration,
-            LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+            LogEventLevel restrictedToMinimumLevel = LogEventLevel.Debug,
             string outputTemplate = DefaultConsoleOutputTemplate,
             IFormatProvider formatProvider = null)
         {

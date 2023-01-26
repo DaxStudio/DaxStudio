@@ -6,7 +6,9 @@
         xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
         xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+        xmlns:Fluent="urn:fluent-ribbon"
         mc:Ignorable="d"
+        x:Name="VertipaqAnalyzerView"
         d:DesignHeight="450" d:DesignWidth="800">
     <!-- Resources -->
     <UserControl.Resources>
@@ -15,8 +17,10 @@
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:MinusConverter x:Key="MinusConverter"/>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:DatetimeToLocalTimeConverter x:Key="DateTimeToLocalTimeConverter"/>
-
+            <conv:VpaColumnDaxNameConverter x:Key="VpaColumnDaxNameConverter"/>
+            
             <Style x:Key="SummaryHeader" TargetType="{x:Type TextBlock}">
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="FontSize" Value="36"/>
@@ -116,6 +120,10 @@
                 <TextBlock  Text="-" HorizontalAlignment="Right" Style="{StaticResource TextBlockStyle}"/>
             </DataTemplate>
 
+            <controls:BindingProxy x:Key="ColumnsShowDashedTableColumn" Data="{Binding ColumnsShowDashedTableColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+            <controls:BindingProxy x:Key="ColumnsShowDaxColumnName" Data="{Binding ColumnsShowDaxColumnName, Converter={StaticResource BoolToCollapsedConverter}}"/>
+            <controls:BindingProxy x:Key="ColumnsShowTwoColumns" Data="{Binding ColumnsShowTwoColumns, Converter={StaticResource BoolToCollapsedConverter}}"/>
+            
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
@@ -237,7 +245,12 @@
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}">
-                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.ColumnName, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <!--<Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.ColumnName, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>-->
+                                        <Setter Property="ToolTip">
+                                            <Setter.Value>
+                                                <Fluent:ScreenTip Title="Name" Text="{Binding DataContext.Tooltips.ColumnName, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                            </Setter.Value>
+                                        </Setter> 
                                     </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
@@ -391,10 +404,16 @@
                                                      ClipboardContentBinding="{Binding ReferentialIntegrityViolationCount}"
                                                      CellTemplate="{StaticResource DashTemplate}" 
                                                      Header="RI Violations"
+                                                     
                                                      SortMemberPath="ReferentialIntegrityViolationCount" >
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.RIViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ToolTip">
+                                            <Setter.Value>
+                                                <Fluent:ScreenTip  DataContext="{Binding PlacementTarget, RelativeSource={RelativeSource self}}" Title="RI Violations" Text="{Binding Path=Tag}"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="Tag" Value="{Binding DataContext.Tooltips.RIViolations, Mode=OneTime, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
@@ -406,7 +425,11 @@
                                                      SortMemberPath="UserHierarchiesSize">
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.UserHierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="ToolTip">
+                                            <Setter.Value>
+                                                <Fluent:ScreenTip Title="User Hierarchy Size" Text="{Binding DataContext.Tooltips.UserHierarchySize, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                            </Setter.Value>
+                                        </Setter> 
                                     </Style>
                                 </DataGridTemplateColumn.HeaderStyle>
                             </DataGridTemplateColumn>
@@ -562,7 +585,8 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding TableColumnName}" 
                                                 Header="Table-Column"
-                                                MinWidth="160">
+                                                MinWidth="160"
+                                                Visibility="{Binding Path=Data, Source={StaticResource ColumnsShowDashedTableColumn}}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
                                         <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableColumn, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
@@ -570,6 +594,38 @@
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
 
+                            <DataGridTextColumn Binding="{Binding Column, Converter={StaticResource VpaColumnDaxNameConverter}}" 
+                                                Header="Table[Column]"
+                                                MinWidth="160"
+                                                Visibility="{Binding Path=Data, Source={StaticResource ColumnsShowDaxColumnName}}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableColumn, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding TableName}" 
+                                                Header="Table"
+                                                MinWidth="160"
+                                                Visibility="{Binding Path=Data, Source={StaticResource ColumnsShowTwoColumns}}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.TableName, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding ColumnName}" 
+                                                Header="Column"
+                                                MinWidth="160"
+                                                Visibility="{Binding Path=Data, Source={StaticResource ColumnsShowTwoColumns}}">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
+                                        <Setter Property="ToolTip" Value="{Binding DataContext.Tooltips.ColumnName, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
 
                             <DataGridTextColumn Binding="{Binding TableRowsCount, StringFormat=N0}"  
                                                 ElementStyle="{StaticResource NumTextBlockStyle}"
