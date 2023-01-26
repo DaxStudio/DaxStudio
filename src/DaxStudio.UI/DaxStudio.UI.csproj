@@ -324,6 +324,7 @@
     <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
     <Compile Include="Converters\StringPercentToDoubleConverter.cs" />
     <Compile Include="Converters\TableImageConverter.cs" />
+    <Compile Include="Converters\VpaColumnDaxNameConverter.cs" />
     <Compile Include="Converters\WaterfallLengthConverter.cs" />
     <Compile Include="Converters\WaterfallMarginConverter.cs" />
     <Compile Include="Enums\SaveAsExtension.cs" />

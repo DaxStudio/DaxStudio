@@ -196,6 +196,9 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             // NotifyOfPropertyChange(() => ShowTraceColumns);
+            NotifyOfPropertyChange(nameof(ColumnsShowDashedTableColumn));
+            NotifyOfPropertyChange(nameof(ColumnsShowDaxColumnName));
+            NotifyOfPropertyChange(nameof(ColumnsShowTwoColumns));
             Log.Information("VertiPaq Analyzer Handle UpdateGlobalOptions call");
             return Task.CompletedTask;
         }
@@ -348,37 +351,39 @@ namespace DaxStudio.UI.ViewModels
 
         public class TooltipStruct
         {
-            public string Cardinality => "The total number of distinct values in a column";
-            public string TableSize => "The total size of a table including all columns, relationships and hierarchies";
-            public string TotalSize => "The total size of the column = Data + Dictionary + Hierarchies";
-            public string DictionarySize => "The size of the dictionary";
-            public string DataSize => "The size of the data for the column";
-            public string HierarchySize => "The size of hierarchy structures";
+            public string Cardinality => "Cardinality: The total number of distinct values in a column";
+            public string TableSize => "Table Size: The total size of a table including all columns, relationships and hierarchies in bytes";
+            public string TotalSize => "Total Size:The total size of the column = Data + Dictionary + Hierarchies in bytes";
+            public string DictionarySize => "Dictionary: The size of the dictionary in bytes";
+            public string DataSize => "Data: The size of the data for the column in bytes";
+            public string HierarchySize => "Heir Size: The size of hierarchy structures in bytes";
             public string DataType => "The data type for the column";
             public string Encoding => "The encoding type for the column";
-            public string RIViolations => "Indicates the number of relationships where there are values on the 'many' side of a relationship that do not exist on the '1' side";
-            public string UserHierarchySize => "The size of user hierarchy structures";
-            public string RelationshipSize => "The size taken up by relationship structures";
-            public string PercentOfTable => "The space taken up as a percentage of the parent table";
-            public string PercentOfDatabase => "The space taken up as a percentage of the total size of the database";
-            public string Segments => "The number of segments";
-            public string TotalSegments => "The total number of segments";
-            public string Pageable => "The number of pageable segments";
-            public string Resident => "The number of resident segments";
-            public string Temperature => "Scaled numeric feequency of segment access";
-            public string LastAccessed => "Last access time of a pageable segment";
-            public string Partitions => "The number of partitions";
-            public string Columns => "The number of columns in the table";
+            public string RIViolations => "Indicates the number of Referential Integrity (RI) Violations. Which are relationships where there are values on the 'many' side of a relationship that do not exist on the '1' side";
+            public string UserHierarchySize => "User Hier Size: The size of user hierarchy structures in bytes";
+            public string RelationshipSize => "Rel Size: The size taken up by relationship structures";
+            public string PercentOfTable => "% Table: The space taken up by a column as a percentage of the parent table";
+            public string PercentOfDatabase => "% DB: The space taken up by a table or column as a percentage of the total size of the database";
+            public string Segments => "Segments: The number of segments";
+            public string TotalSegments => "Total Segments: The total number of segments";
+            public string Pageable => "Pageable: The number of pageable segments";
+            public string Resident => "Resident: The number of memory resident segments";
+            public string Temperature => "Temperature: Scaled numeric feequency of segment access";
+            public string LastAccessed => "Last Accessed: Last access time of a pageable segment";
+            public string Partitions => "Partitions: The number of partitions";
+            public string Columns => "Columns: The number of columns in the table";
             public string TableRows => "The total number of rows in the table";
-            public string MaxFromCardinality => "The maximum number of distinct values on the 'from' side of the relationship";
-            public string MaxToCardinality => "The maximum number of distinct values on the 'to' side of the relationship";
-            public string MaxOneToManyRatio => "The maximum ratio of rows between the 'to' and the 'from' side of the relationship (only for 1:M type)";
-            public string MissingKeys => "The number of distinct missing key values";
-            public string InvalidRows => "The number of rows with missing keys";
-            public string SampleViolations => "3 examples of any missing key values\nNote: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported";
-            public string TableColumn => "A combination of the table and column name in the form '<table>-<column>'";
-            public string TableRelationship => "The name of the relationship";
-            public string OneToManyRatio => "This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
+            public string MaxFromCardinality => "Max From Cardinality: The maximum number of distinct values on the 'from' side of the relationship";
+            public string MaxToCardinality => "Max To Cardinality: The maximum number of distinct values on the 'to' side of the relationship";
+            public string MaxOneToManyRatio => "1:M Ratio %: The maximum ratio of rows between the 'to' and the 'from' side of the relationship (only for 1:M type)";
+            public string MissingKeys => "Missing Keys: The number of distinct missing key values";
+            public string InvalidRows => "Invalid Rows: The number of rows with missing keys";
+            public string SampleViolations => "Sample Violations: 3 examples of any missing key values\nNote: The 'Sample Violations' data is not saved out to the .vpax file when the metrics are exported";
+            public string TableColumn => "Table-Column: A combination of the table and column name in the form '<table>-<column>'";
+            public string TableRelationship => "Table/Relationship: The name of the relationship";
+            public string OneToManyRatio => "1:M Ratio %: This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
+            public string TableName => "Table: The name of the table";
+            public string ColumnName => "Column: The name of the column";
         }
 
         internal async Task ExportAnalysisDataAsync(string fileName)
@@ -437,5 +442,10 @@ namespace DaxStudio.UI.ViewModels
                 File.WriteAllText(saveAsDlg.FileName, JsonSerializer.SerializeDatabase(Database, opts));
             }
         }
+
+        public bool ColumnsShowTwoColumns => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.TwoColumns;
+        public bool ColumnsShowDashedTableColumn => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.TableDashColumn;
+        public bool ColumnsShowDaxColumnName => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.DaxNameFormat;
+
     }
 }

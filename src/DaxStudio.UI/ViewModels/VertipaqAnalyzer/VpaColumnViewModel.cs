@@ -14,6 +14,7 @@ namespace DaxStudio.UI.ViewModels
         public VpaColumnViewModel(VpaColumn col)
         {
             _col = col;
+            
         }
         public VpaColumnViewModel(VpaColumn col, VpaTableViewModel table)
         {
@@ -22,9 +23,10 @@ namespace DaxStudio.UI.ViewModels
         }
         public VpaTableViewModel Table { get; }
         public string TableColumnName => _col.TableColumnName;
-        public long TableRowsCount => _col.TableRowsCount;
-        public long TableSize => Table.TableSize;
+        public string TableName => _col.Table.TableName;
         public string ColumnName => _col.ColumnName;
+        public long TableRowsCount => _col.TableRowsCount;
+        public long TableSize => _col.Table.TableSize;
         public string TypeName => _col.TypeName;
         public long ColumnCardinality => _col.ColumnCardinality;
         public string Encoding => _col.Encoding;

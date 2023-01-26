@@ -153,7 +153,7 @@ namespace DaxStudio.Interfaces
         bool IncludeHyperlinkOnCopy { get; set; }
         int DefaultTextFileType { get; set; }
 
-
+        VpaTableColumnDisplay VpaTableColumnDisplay { get; set; }
         //bool ShowQueryPlanNextLine { get; set; }
         //bool ShowQueryPlanLineLevel { get; set; }
     }
