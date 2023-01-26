@@ -53,7 +53,7 @@ namespace DaxStudio.UI.Model
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
         private static readonly IEnumerable<string> _keywords;
-
+         
         private string processModelTemplate = @"
 <Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
   <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">

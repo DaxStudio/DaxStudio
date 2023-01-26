@@ -29,9 +29,5 @@ namespace DaxStudio.UI.Views
             e.Handled = true;
         }
 
-        private void ListEvents_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
-        {
-
-        }
     }
 }
