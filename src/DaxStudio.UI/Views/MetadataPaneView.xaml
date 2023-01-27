@@ -25,10 +25,11 @@
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToNotVisibleConverter x:Key="BoolToNotVisibleConverter"/>
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+            <conv:BoolToItalicConverter x:Key="BoolToItalicConverter"/>
             <conv:DataBindingDebugConverter x:Key="DebugConverter" />
             <conv:StringFormatConverter x:Key="StringFormatConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-            
+            <conv:BoolToRightThicknessConverter x:Key="BoolToRightThicknessConverter"/>
 
             <!--<Style x:Key="DatabaseComboStyle" TargetType="ComboBox">
                 <Setter Property="ToolTipService.ShowDuration" Value="60000"/>
@@ -535,7 +536,8 @@
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                   primitives:ScrollViewerHelper.AutoHideScrollBars="{Binding AutoHideMetadataVerticalScrollbars}"
                                   HorizontalContentAlignment="Stretch"
-                                  Margin="0,2,0,-2">
+                                  Margin="0,2,0,-2"
+                                  Padding="{Binding AutoHideMetadataVerticalScrollbars, Converter={StaticResource BoolToRightThicknessConverter},ConverterParameter=12.0}">
 
                                 <i:Interaction.Behaviors>
                                     <beh:TreeViewClipboardBehavior />
@@ -561,7 +563,7 @@
 
                                             <TextBlock  Text="{Binding Caption}"  
                                                         Grid.Column="1"
-                                                         
+                                                        FontStyle="{Binding IsVisible, Converter={StaticResource BoolToItalicConverter}}"
                                                         TextTrimming="CharacterEllipsis"
                                                         ap:ForegroundBindingHelper.ResourceKey ="{Binding ForegroundBrush}"
                                                         />
@@ -712,6 +714,7 @@
                                             <TextBlock x:Name="Caption" 
                                                    Grid.Column="1"
                                                    Margin="6 0 0 0"
+                                                   FontStyle="{Binding IsVisible, Converter={StaticResource BoolToItalicConverter}}"
                                                    ap:ForegroundBindingHelper.ResourceKey ="{Binding ForegroundBrush}"
                                                    Text="{Binding Caption}" 
                                                    TextTrimming="CharacterEllipsis"

@@ -45,7 +45,9 @@ namespace DaxStudio.UI.Model
                 FileAndExtension = Path.GetFileName(_fullPath);
                 Folder = Path.GetDirectoryName(_fullPath);
                 Extension = Path.GetExtension(_fullPath).TrimStart('.').ToUpper();
-                ExtensionLabel = Extension == "DAX"|| Extension == "DAXX" ? "":Extension;
+                ExtensionLabel = Extension == "DAX"
+                                || Extension == "DAXX" 
+                                || Extension == "VPAX" ? "":Extension;
             }
         }
 
@@ -77,8 +79,10 @@ namespace DaxStudio.UI.Model
                         return "daxDrawingImage";
                     case "DAXX":
                         return "daxxDrawingImage";
+                    case "VPAX":
+                        return "vpaxDrawingImage";
                     default:
-                        return "fileDrawingImage";
+                        return "generic_fileDrawingImage";
                     
                     };
             }

@@ -11,6 +11,7 @@
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:res="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:views="clr-namespace:DaxStudio.UI.Views"
              xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:utils="clr-namespace:DaxStudio.UI.Utils" 
@@ -25,7 +26,7 @@
             <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
             <local:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter"/>
             <avalonDockConverters:ActivateCommandLayoutItemFromLayoutModelConverter x:Key="ActivateCommandLayoutItemFromLayoutModelConverter" />
-
+            <ui:BindingProxy x:Key="Proxy"  Value="{Binding}"/>
             <Style x:Key="MyCustomDocumentPaneControlStyle" 
                    TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
                 <!--BasedOn="{StaticResource AvalonDockThemeVs2013DocumentPaneControlStyle}">-->
@@ -48,7 +49,7 @@
                                         Grid.RowSpan="2"
                                         />
 
-                                <Grid Panel.ZIndex="1" Grid.Row="1" ClipToBounds="True">
+                                <Grid Panel.ZIndex="1" Grid.Row="1" ClipToBounds="True" Background="{DynamicResource Theme.Brush.StatusBar.Back}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="6"/>
                                         <ColumnDefinition/>
@@ -563,6 +564,8 @@
             </Style>
 
             <ResourceDictionary.MergedDictionaries>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
@@ -583,8 +586,60 @@
             IsVirtualizingDocument="False"
             cal:Message.Attach="[Event DocumentClosing] = [Action TabClosing($view,$eventArgs)]"
             Margin="-6"
+            Tag="{Binding .}"
             >
 
+            <avalondock:DockingManager.DocumentContextMenu>
+                <ContextMenu 
+                    cal:Action.Target="{Binding Source={StaticResource Proxy}, Path=Value}">
+                    <MenuItem
+			Command="{Binding Path=CloseCommand}"
+			Header="{x:Static avalonDockProperties:Resources.Document_Close}"
+			Visibility="{Binding Path=IsEnabled, RelativeSource={RelativeSource Self}, Mode=OneWay, Converter={avalonDockConverters:BoolToVisibilityConverter}}" />
+                    <MenuItem Command="{Binding Path=CloseAllButThisCommand}" Header="{x:Static avalonDockProperties:Resources.Document_CloseAllButThis}" />
+                    <MenuItem Command="{Binding Path=CloseAllCommand}" Header="{x:Static avalonDockProperties:Resources.Document_CloseAll}" />
+                    <MenuItem Command="{Binding Path=FloatCommand}" Header="{x:Static avalonDockProperties:Resources.Document_Float}" />
+                    <MenuItem Command="{Binding Path=DockAsDocumentCommand}" Header="{x:Static avalonDockProperties:Resources.Document_DockAsDocument}" />
+                    <MenuItem Header="Duplicate" cal:Message.Attach="DuplicateTab($dataContext)" />
+                    <MenuItem
+			Command="{Binding Path=NewHorizontalTabGroupCommand}"
+			Header="{x:Static avalonDockProperties:Resources.Document_NewHorizontalTabGroup}"
+			Visibility="{Binding Path=IsEnabled, RelativeSource={RelativeSource Self}, Mode=OneWay, Converter={avalonDockConverters:BoolToVisibilityConverter}}">
+                        <MenuItem.Icon>
+                            <Path
+					Width="14"
+					Height="14"
+					VerticalAlignment="Center"
+					Data="{DynamicResource HTabGroup}"
+					Fill="{DynamicResource {x:Static reskeys:ResourceKeys.ToolWindowCaptionButtonInactiveGlyph}}"
+					Stretch="Uniform" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem
+			Command="{Binding Path=NewVerticalTabGroupCommand}"
+			Header="{x:Static avalonDockProperties:Resources.Document_NewVerticalTabGroup}"
+			Visibility="{Binding Path=IsEnabled, RelativeSource={RelativeSource Self}, Mode=OneWay, Converter={avalonDockConverters:BoolToVisibilityConverter}}">
+                        <MenuItem.Icon>
+                            <Path
+					Width="14"
+					Height="14"
+					VerticalAlignment="Center"
+					Data="{DynamicResource VTabGroup}"
+					Fill="{DynamicResource {x:Static reskeys:ResourceKeys.ToolWindowCaptionButtonInactiveGlyph}}"
+					Stretch="Uniform" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+			Command="{Binding Path=MoveToNextTabGroupCommand}"
+			Header="{x:Static avalonDockProperties:Resources.Document_MoveToNextTabGroup}"
+			Visibility="{Binding Path=IsEnabled, RelativeSource={RelativeSource Self}, Mode=OneWay, Converter={avalonDockConverters:BoolToVisibilityConverter}}" />
+                    <MenuItem
+			Command="{Binding Path=MoveToPreviousTabGroupCommand}"
+			Header="{x:Static avalonDockProperties:Resources.Document_MoveToPreviousTabGroup}"
+			Visibility="{Binding Path=IsEnabled, RelativeSource={RelativeSource Self}, Mode=OneWay, Converter={avalonDockConverters:BoolToVisibilityConverter}}" />
+                </ContextMenu>
+            </avalondock:DockingManager.DocumentContextMenu>
             <avalondock:DockingManager.LayoutItemTemplateSelector>
                 <selectors:AvalonDockTemplateSelector>
                     <selectors:AvalonDockTemplateSelector.DocumentViewTemplate>
@@ -677,6 +732,7 @@
 
             <avalondock:DockingManager.Resources>
                 <ResourceDictionary>
+                    
                     <ResourceDictionary.MergedDictionaries>
                         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/AvalonDock.NavigatorWindow.xaml"/>
                     </ResourceDictionary.MergedDictionaries>

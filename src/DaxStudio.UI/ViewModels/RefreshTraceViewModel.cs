@@ -49,12 +49,14 @@ namespace DaxStudio.UI.ViewModels
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
             return new List<DaxStudioTraceEventClass>
-                { DaxStudioTraceEventClass.CommandBegin,
+                { 
+                  DaxStudioTraceEventClass.CommandBegin,
                   DaxStudioTraceEventClass.CommandEnd,
                   DaxStudioTraceEventClass.JobGraph,
                   DaxStudioTraceEventClass.ProgressReportBegin,
-                  DaxStudioTraceEventClass.ProgressReportCurrent,
+                  //DaxStudioTraceEventClass.ProgressReportCurrent,
                   DaxStudioTraceEventClass.ProgressReportEnd,
+                  DaxStudioTraceEventClass.ProgressReportError,
                   DaxStudioTraceEventClass.Error
             };
         }
@@ -67,11 +69,11 @@ namespace DaxStudio.UI.ViewModels
             base.ProcessSingleEvent(traceEvent);
             var newEvent = new RefreshEvent()
             {
-
                 StartTime = traceEvent.StartTime,
+                EndTime = traceEvent.EndTime,
                 Username = traceEvent.NTUserName,
                 Text = traceEvent.TextData,
-                CpuDuration = traceEvent.CpuTime,
+                CpuTime = traceEvent.CpuTime,
                 Duration = traceEvent.Duration,
                 DatabaseName = traceEvent.DatabaseFriendlyName,
                 RequestID = traceEvent.RequestID,
@@ -84,8 +86,10 @@ namespace DaxStudio.UI.ViewModels
                 EventSubClass = traceEvent.EventSubclass,
                 ProgressTotal = traceEvent.ProgressTotal,
                 ActivityID = traceEvent.ActivityId,
-                SPID = traceEvent.SPID
-
+                SPID = traceEvent.SPID,                
+                SessionId = traceEvent.SessionId,
+                IntegerData = traceEvent.IntegerData,
+                CurrentTime = traceEvent.CurrentTime
             };
             try
             {
@@ -130,7 +134,9 @@ namespace DaxStudio.UI.ViewModels
                     if (!newEvent.Text.Contains("<Refresh")) return;
 
                     cmd = Commands[newEvent.RequestID];
-                    cmd.EndDateTime = newEvent.EndTime;
+           
+                    cmd.EndDateTime = newEvent.EndTime;                    
+
                     cmd.Duration = newEvent.Duration;
 
                     break;
@@ -230,8 +236,7 @@ namespace DaxStudio.UI.ViewModels
         }
         protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
         {
-            return traceEvent.EventClass == DaxStudioTraceEventClass.CommandEnd &&
-                   traceEvent.TextData.Contains("<Refresh ");
+            return false; // this trace should keep running until manually stopped
         }
 
         protected override bool ShouldStartCapturing(DaxStudioTraceEventArgs traceEvent)
@@ -420,7 +425,7 @@ namespace DaxStudio.UI.ViewModels
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
         public long Duration { get; set; }
-        public long CpuDuration { get; set; }
+        public long CpuTime { get; set; }
         public long ProgressTotal { get; internal set; }
     }
 
@@ -525,7 +530,7 @@ namespace DaxStudio.UI.ViewModels
                 case DaxStudioTraceEventClass.ProgressReportEnd:
                     partition.Status = RefreshStatus.Successful;
                     partition.Duration = newEvent.Duration;
-                    partition.CpuDuration = newEvent.CpuDuration;
+                    partition.CpuTime = newEvent.CpuTime;
                     partition.ProgressTotal = newEvent.ProgressTotal;
                     break;
                 case DaxStudioTraceEventClass.ProgressReportError:
@@ -546,7 +551,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (xml == null) return new Dictionary<string, string>();
 
-            XmlTextReader reader = new XmlTextReader(new StringReader(xml));
+            XmlReader reader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings() { XmlResolver = null} );
             var result = new Dictionary<string, string>();
             while (reader.Read())
             {

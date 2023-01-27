@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="DaxStudio.UI.Controls.StorageEngineTime"
+             x:Name="StorageEngineTimeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="800" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Canvas Name="canvas">
+        <Border
+            Height="{Binding ElementName=canvas, Path=ActualHeight}" 
+            Width="{Binding ElementName=canvas, Path=ActualWidth}" 
+            Canvas.Left="0" Canvas.Top="0" 
+            Background="#FFFAC700"
+            Canvas.ZIndex="0"/>
+        <ItemsControl DataContext="{Binding ElementName=StorageEngineTimeControl}" ItemsSource="{Binding ItemsSource}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas>
+                        <Canvas.CacheMode>
+                            <BitmapCache EnableClearType="False" 
+                                     RenderAtScale="1" 
+                                     SnapsToDevicePixels="False"  />
+                        </Canvas.CacheMode>
+                    </Canvas>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                                <Binding Path="ActualWidth" ElementName="canvas"/>
+                                <Binding Path="StartOffsetMs"/>
+                                <Binding Path="WaterfallDuration"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Canvas.Top" Value="0" />
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border HorizontalAlignment="Left" Height="{Binding ElementName=canvas, Path=ActualHeight}">
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Accent}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsBatchEvent}" Value="true">
+                                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Accent1}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsInternalEvent}" Value="true">
+                                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Accent3}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.Width>
+                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                                <Binding Path="ActualWidth" ElementName="canvas"/>
+                                <Binding Path="DisplayDuration"/>
+                                <Binding Path="WaterfallDuration"/>
+                                <Binding>
+                                    <Binding.Source>
+                                        <sys:Double>1</sys:Double>
+                                    </Binding.Source>
+                                </Binding>
+                            </MultiBinding>
+                        </Border.Width>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Canvas>
+</UserControl>

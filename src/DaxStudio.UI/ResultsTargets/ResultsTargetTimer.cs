@@ -5,6 +5,7 @@ using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Serilog;
+using Caliburn.Micro;
 
 namespace DaxStudio.UI.Model
 {
@@ -33,32 +34,33 @@ namespace DaxStudio.UI.Model
 
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
-            try
-            {
+
+            await Task.Run(() => { 
                 runner.OutputMessage("Query Started");
                 var sw = Stopwatch.StartNew();
 
                 var dq = textProvider.QueryText;
-                var res = await runner.ExecuteDataTableQueryAsync(dq);
+
+                var rowCnt = 0;
+                using (var rdr = runner.ExecuteDataReaderQuery(dq, textProvider.ParameterCollection))
+                {
+                    if (rdr != null)
+                    {
+                        while (rdr.Read())
+                        {
+                            rowCnt++;
+                        }
+                    }
+                }
 
                 sw.Stop();
                 var durationMs = sw.ElapsedMilliseconds;
-                runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count, res.Rows.Count == 1 ? "" : "s"), durationMs);
-                runner.RowCount = res.Rows.Count;
+                runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", rowCnt, rowCnt == 1 ? "" : "s"), durationMs);
+                runner.RowCount = rowCnt;
                 runner.SetResultsMessage("Query timings sent to Log tab", OutputTarget.Timer);
-                //runner.QueryCompleted();
                 runner.ActivateOutput();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetTimer), nameof(OutputResultsAsync), ex.Message);
-                runner.ActivateOutput();
-                runner.OutputError(ex.Message);
-            }
-            finally
-            {
-                runner.QueryCompleted();
-            }
+
+            });
         }
 
     }

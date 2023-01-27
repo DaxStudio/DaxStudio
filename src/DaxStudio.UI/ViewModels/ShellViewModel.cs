@@ -19,6 +19,14 @@ using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Input;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using DaxStudio.UI.Views;
+using System.Windows.Interop;
+using common = DaxStudio.Common;
+using DaxStudio.Common.Extensions;
+using GongSolutions.Wpf.DragDrop;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,6 +34,8 @@ namespace DaxStudio.UI.ViewModels
     public class ShellViewModel :
         Screen,
         IShell,
+        IDisposable,
+        IDropTarget,
         IHandle<NewVersionEvent>,
         IHandle<AutoSaveEvent>,
         IHandle<StartAutoSaveTimerEvent>,
@@ -81,7 +91,6 @@ namespace DaxStudio.UI.ViewModels
             DisplayName = AppTitle;
 
             Application.Current.Activated += OnApplicationActivated;
-            
 
             AutoSaveTimer = new System.Timers.Timer(Constants.AutoSaveIntervalMs);
             AutoSaveTimer.Elapsed += AutoSaveTimerElapsed;
@@ -155,8 +164,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void UpdateFlagClick()
         {
-            // Open URL in Browser
-            System.Diagnostics.Process.Start( VersionChecker.DownloadUrl.ToString());
+            try
+            {
+                // Open URL in Browser
+                System.Diagnostics.Process.Start(VersionChecker.DownloadUrl.ToString());
+            }
+            catch (Exception ex){
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(UpdateFlagClick), $"Error launching download url: '{VersionChecker?.DownloadUrl?.ToString()}'");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,"Unable to open the download url, please go to https://daxstudio.org to get the latest version"));
+            }
         }
 
 
@@ -198,10 +214,10 @@ namespace DaxStudio.UI.ViewModels
         protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
             await base.OnActivateAsync(cancellationToken);
-            await _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
+            await _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent(),cancellationToken);
         }
 
-        
+        HwndSource hwndSource;
         protected override  void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
@@ -219,6 +235,9 @@ namespace DaxStudio.UI.ViewModels
                 _window.CommandBindings.Add(new CommandBinding(ApplicationCommands.Paste, OnPaste));
                 //Application.Current.LoadRibbonTheme();
                 _inputBindings = new InputBindings(_window);
+
+                hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(_window).Handle);
+                hwndSource.AddHook(new HwndSourceHook(WndProc));
             }
             else
             {
@@ -237,7 +256,7 @@ namespace DaxStudio.UI.ViewModels
             var visual = obj.GetData("Power BI Visuals");
         }
 
-            private IEnumerable<InputBindingCommand> GetInputBindingCommands()
+        private IEnumerable<InputBindingCommand> GetInputBindingCommands()
         {
             // load custom key bindings from Options
             yield return new InputBindingCommand(this, nameof(CommentSelection), Options.HotkeyCommentSelection);
@@ -307,7 +326,7 @@ namespace DaxStudio.UI.ViewModels
                 // swallow all errors
             }
 
-            if (Options.AnyExternalAccessAllowed())
+            if (Options?.AnyExternalAccessAllowed()??false)
             {
                 Telemetry.TrackEvent("App.Shutdown", new Dictionary<string, string>
                 {
@@ -315,10 +334,16 @@ namespace DaxStudio.UI.ViewModels
                 });
                 Telemetry.Flush();
             }
-
-            // Store the current window position
-            var w = sender as Window;
-            Options.WindowPosition = w.GetPlacement();
+            try
+            {
+                // Store the current window position
+                var w = sender as Window;
+                Options.WindowPosition = w.GetPlacement();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(WindowClosing), "Error saving current window position");
+            }
             _window.Closing -= WindowClosing;
 
         }
@@ -369,6 +394,8 @@ namespace DaxStudio.UI.ViewModels
 
 #region Overlay code
         private int _overlayDependencies;
+        private bool disposedValue;
+
         public void ShowOverlay()
         {
             _overlayDependencies++;
@@ -588,7 +615,121 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
+        // NativeWindow override to filter our WM_COPYDATA packet
 
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+                 
+            
+            // If our message
+            if (msg == common.NativeMethods.WM_COPYDATA)
+            {
+                // msg.LParam contains a pointer to the COPYDATASTRUCT struct
+                common.NativeMethods.COPYDATASTRUCT dataStruct =
+                    (common.NativeMethods.COPYDATASTRUCT)Marshal.PtrToStructure(
+                    lParam, typeof(common.NativeMethods.COPYDATASTRUCT));
+
+                // Create a byte array to hold the data
+                byte[] bytes = new byte[dataStruct.cbData];
+
+                // Make a copy of the original data referenced by 
+                // the COPYDATASTRUCT struct
+                Marshal.Copy(dataStruct.lpData, bytes, 0,
+                    dataStruct.cbData);
+                // Deserialize the data back into a string
+                MemoryStream stream = new MemoryStream(bytes);
+                BinaryFormatter b = new BinaryFormatter();
+
+                // This is the message sent from the other application
+                string[] rawmessage = (string[])b.Deserialize(stream);
+
+                // do something with our message
+                var app = Application.Current;
+                app.ReadCommandLineArgs(rawmessage);
+
+                if (!string.IsNullOrEmpty(app.Args().FileName))
+                {
+                    _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
+                }
+                else
+                {
+                    _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
+                }
+
+                handled = true;
+            }
+            return IntPtr.Zero;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    //  dispose managed state (managed objects)
+                    _notifyIcon.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void DragEnter(IDropInfo dropInfo)
+        {
+            // Do nothing
+        }
+
+        public void DragOver(IDropInfo dropInfo)
+        {
+            //
+            System.Diagnostics.Debug.WriteLine("ShellViewModel DragOver");
+            if (dropInfo != null) 
+            if ((dropInfo.Data is DataObject)) 
+            if (((DataObject)dropInfo.Data).ContainsFileDropList())
+            {
+                dropInfo.Effects = DragDropEffects.Copy;
+                return;
+            }
+            dropInfo.NotHandled = true;
+        }
+
+        public void DragLeave(IDropInfo dropInfo)
+        {
+            // Do Nothing
+        }
+
+        public async void Drop(IDropInfo dropInfo)
+        {
+            System.Diagnostics.Debug.WriteLine("ShellViewModel Drop");
+            if (dropInfo == null) return;
+
+            if (dropInfo == null
+                || !(dropInfo.Data is DataObject)
+                || !((DataObject)dropInfo.Data).ContainsFileDropList())
+            {
+                // if we are not dragging a file then mark this event as NotHandled and return
+                dropInfo.NotHandled = true;
+                return;
+            }
+
+            // Open the first file in the list
+            var files = ((DataObject)dropInfo.Data).GetFileDropList();           
+            await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(files[0]));
+
+            // TODO we should look at looping over all files, but currently this does not work,
+            //      it appears that the second file starts to open before the first has finished opening 
+            //      and we endup with errors or incorrectly loaded files.
+        }
     }
 
 

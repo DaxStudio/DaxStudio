@@ -551,7 +551,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 // we cache this to a local variable in case there are any exceptions thrown while building the ConnectionString
                 connectionString = ConnectionString;
-                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, PowerPivotModeSelected ? WorkbookName : powerBIFileName,GetApplicationName(ConnectionType),PowerPivotModeSelected?WorkbookName:powerBIFileName, serverType, false);
+                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType),PowerPivotModeSelected?WorkbookName:powerBIFileName, serverType, false);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
                 await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             }
@@ -680,17 +680,23 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_locales == null)
                 {
-                    _locales = new SortedList<string, LocaleIdentifier>();
-                    _locales.Add("<Default>", new LocaleIdentifier() { DisplayName = "<Default>", LCID = -1 });
+                    _locales = new SortedList<string, LocaleIdentifier>
+                    {
+                        { "<Default>", new LocaleIdentifier() { DisplayName = "<Default>", LCID = -1 } }
+                    };
                     try
                     {
                         foreach (var ci in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
                         {
+                            // skip this locale if we already have it in the collection
+                            if (_locales.ContainsKey(ci.DisplayName)) continue;
+                            
                             _locales.Add(ci.DisplayName, new LocaleIdentifier()
                             {
                                 DisplayName = string.Format("{0} - {1}", ci.DisplayName, ci.LCID),
                                 LCID = ci.LCID
                             });
+                            
                         }
                     }
                     catch (Exception ex)

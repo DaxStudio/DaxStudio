@@ -78,7 +78,11 @@ namespace ADOTabular
 
         public List<IADOTabularObjectReference> FolderItems { get; }
 
-        public bool IsVisible { get; private set; }
+        private bool _isVisible = true;
+        public bool IsVisible { 
+            get { return _isVisible && !Private && !ShowAsVariationsOnly; } 
+            private set { _isVisible = value; } 
+        }
 
         public ADOTabularColumnCollection Columns
         {
@@ -124,7 +128,7 @@ namespace ADOTabular
 
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
-            if (connection == null) return;
+            if (connection == null || connection.ServerType == Enums.ServerType.Offline) return;
 
             string qry = $"{Constants.InternalQueryHeader}\nEVALUATE ROW(\"RowCount\", COUNTROWS({DaxName}) )";
             try

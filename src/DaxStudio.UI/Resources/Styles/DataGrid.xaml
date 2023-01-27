@@ -12,6 +12,18 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+    <Style x:Key="DsDataGridColumnHeaderWaterfallStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+        <Setter Property="Padding" Value="0 0"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+        <Setter Property="FontWeight" Value="DemiBold"/>
+        <Style.Triggers>
+            <Trigger Property="SortDirection" Value="{x:Null}">
+                <Setter Property="Padding" Value="0 0" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 
     <Style x:Key="DsDataGridRowHeaderStyle" TargetType="DataGridRowHeader" BasedOn="{StaticResource DefaultDataGridRowHeaderStyle}">
         <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
@@ -110,12 +122,13 @@
         <Setter Property="ColumnHeaderStyle" Value="{StaticResource DsDataGridColumnHeaderStyle}"/>
         <Setter Property="RowHeaderStyle" Value="{StaticResource DsDataGridRowHeaderStyle}"/>
         <Setter Property="AlternationCount" Value="2"/>
+        <!--
         <Setter Property="AlternatingRowBackground" Value="{DynamicResource Theme.Brush.Table.Alternate}"/>
+        -->
         <Setter Property="RowHeaderWidth" Value="10"/>
         <Setter Property="CanUserAddRows" Value="False"/>
         <Setter Property="CanUserDeleteRows" Value="False" />
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
-
     </Style>
 </ResourceDictionary>

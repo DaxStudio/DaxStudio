@@ -55,98 +55,70 @@ namespace DaxStudio.UI.Model
             await Task.Run(() =>
                 {
                     long durationMs = 0;
-                    try
-                    {
-                        runner.OutputMessage("Query Started");
 
-                        var sw = Stopwatch.StartNew();
+                    var sw = Stopwatch.StartNew();
                         
-                        string sep = "\t";
-                        bool shouldQuoteStrings = true; //default to quoting all string fields
-                        string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
-                        string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
-                        Encoding enc = new UTF8Encoding(false);
+                    string sep = "\t";
+                    bool shouldQuoteStrings = true; //default to quoting all string fields
+                    string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
+                    string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
+                    Encoding enc = new UTF8Encoding(false);
                            
-                        var daxQuery = textProvider.QueryText;
-                        var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection);
+                    var daxQuery = textProvider.QueryText;
 
-                        using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
+                    using (var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection))
+                    using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
+                    {
+
+                        if (reader != null)
                         {
 
-                            try
+
+                            runner.OutputMessage("Command Complete, writing output to clipboard");
+
+                            bool moreResults = true;
+
+                            while (moreResults)
                             {
-                                if (reader != null)
+
+                                int iRowCnt = 0;
+
+
+                                using (StringWriter textWriter = new StringWriter(sb))
+                                //using (var textWriter = new System.IO.StreamWriter( stringWriter, false, enc))
                                 {
+                                    iRowCnt = reader.WriteToStream(textWriter, sep, shouldQuoteStrings, isoDateFormat, statusProgress);
+                                }
 
+                                runner.OutputMessage(
+                                        string.Format("Query Completed ({0:N0} row{1} returned)"
+                                                    , iRowCnt
+                                                    , iRowCnt == 1 ? "" : "s")
+                                        );
 
-                                    runner.OutputMessage("Command Complete, writing output to clipboard");
+                                runner.RowCount = iRowCnt;
 
-                                    bool moreResults = true;
+                                moreResults = reader.NextResult();
 
-                                    while (moreResults)
+                                if (moreResults)
+                                {
+                                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Output to Clipboard only copies the first table of results"));
+                                    while (reader.NextResult())
                                     {
-
-                                        int iRowCnt = 0;
-                                        
-                                        
-                                        using (StringWriter textWriter = new StringWriter(sb))
-                                        //using (var textWriter = new System.IO.StreamWriter( stringWriter, false, enc))
-                                        {
-                                            iRowCnt = reader.WriteToStream(textWriter, sep, shouldQuoteStrings, isoDateFormat, statusProgress);
-                                        }
-
-                                        runner.OutputMessage(
-                                                string.Format("Query Completed ({0:N0} row{1} returned)"
-                                                            , iRowCnt
-                                                            , iRowCnt == 1 ? "" : "s")
-                                                );
-
-                                        runner.RowCount = iRowCnt;
-
-                                        moreResults = reader.NextResult();
-
-                                        if (moreResults)
-                                        {
-                                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Output to Clipboard only copies the first table of results"));
-                                            while (reader.NextResult())
-                                            {
-                                                // loop thru 
-                                            }
-                                        }
+                                        // loop thru 
                                     }
-
-                                    sw.Stop();
-                                    durationMs = sw.ElapsedMilliseconds;
-
-                                    runner.SetResultsMessage("Query results written to file", OutputTarget.File);
-                                    runner.ActivateOutput();
-                                }
-                                else
-                                    runner.OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
-                            }
-                            finally
-                            {
-                                if (reader != null)
-                                {
-                                    reader.Dispose();
                                 }
                             }
+
+                            sw.Stop();
+                            durationMs = sw.ElapsedMilliseconds;
+
+                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                            runner.ActivateOutput();
                         }
+
                     }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ResultsTargetClipboard), nameof(OutputResultsAsync), ex.Message);
-                        runner.ActivateOutput();
-                        runner.OutputError(ex.Message);
-#if DEBUG
-                        runner.OutputError(ex.StackTrace);
-#endif
-                    }
-                    finally
-                    {
-                        runner.OutputMessage("Query Batch Completed", durationMs);
-                        runner.QueryCompleted();
-                    }
+
 
                 });
 

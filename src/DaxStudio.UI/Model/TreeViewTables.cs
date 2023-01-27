@@ -322,6 +322,7 @@ namespace DaxStudio.UI.Model
                     case MetadataImages.Measure:
                         return "measure";
                     case MetadataImages.HiddenTable:
+                        return "tableHiddenDrawingImage";
                     case MetadataImages.Table:
 
                         return _table.IsDateTable? "date_tableDrawingImage": "tableDrawingImage";

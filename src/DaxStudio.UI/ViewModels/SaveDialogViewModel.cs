@@ -11,7 +11,7 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class SaveDialogViewModel : Screen
     {
-        private SaveDialogResult _dialogResult = SaveDialogResult.Cancel;
+
         [ImportingConstructor]
         public SaveDialogViewModel() { }
 

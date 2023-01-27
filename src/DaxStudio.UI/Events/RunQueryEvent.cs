@@ -6,30 +6,37 @@ namespace DaxStudio.UI.Events
 {
     public class RunQueryEvent
     {
+        public enum BenchmarkTypes
+        {
+            NoBenchmark = 0,
+            QueryBenchmark,
+            ServerFEBenchmark
+        }
+
         public RunQueryEvent(IResultsTarget target)
         {
             ResultsTarget = target;
             RunStyle = new RunStyle("Run", RunStyleIcons.RunOnly,  "");
-            IsBenchmark = false;
+            BenchmarkType = BenchmarkTypes.NoBenchmark;
         }
         public RunQueryEvent(IResultsTarget target, RunStyle runStyle)
         {
             ResultsTarget = target;
             RunStyle = runStyle;
-            IsBenchmark = false;
+            BenchmarkType = BenchmarkTypes.NoBenchmark;
         }
 
-        public RunQueryEvent(IResultsTarget target, RunStyle runStyle, bool isBenchmark)
+        public RunQueryEvent(IResultsTarget target, RunStyle runStyle, BenchmarkTypes benchmarkType )
         {
             ResultsTarget = target;
             RunStyle = runStyle;
-            IsBenchmark = isBenchmark;
+            BenchmarkType = benchmarkType;
         }
         public IResultsTarget ResultsTarget { get; set; }
 
         public RunStyle RunStyle { get; }
 
         public IQueryTextProvider QueryProvider { get; set; }
-        public bool IsBenchmark { get; set; }
+        public BenchmarkTypes BenchmarkType { get; set; }
     }
 }

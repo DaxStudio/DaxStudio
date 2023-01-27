@@ -12,6 +12,7 @@
              xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
              xmlns:markupExtensions="clr-namespace:DaxStudio.UI.MarkupExtensions"
              xmlns:local="clr-namespace:DaxStudio.Common.Enums;assembly=DaxStudio.Common"
+             xmlns:res="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:queryTrace="clr-namespace:DaxStudio.QueryTrace;assembly=DaxStudio.QueryTrace"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
@@ -21,10 +22,12 @@
 
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>

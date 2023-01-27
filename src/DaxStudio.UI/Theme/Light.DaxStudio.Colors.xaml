@@ -11,7 +11,9 @@
     
     <!--<Color x:Key="Theme.PrimaryAccentColor">#FF0072C6</Color>-->
     <Color x:Key="Theme.PrimaryAccentColor">#FF228ED6</Color>
+    <Color x:Key="Theme.Accent1">#FF64B0E2</Color>
     <Color x:Key="Theme.Accent2">#FFFFB947</Color>
+    <Color x:Key="Theme.Accent3">#FF1B72AB</Color>
     <Color x:Key="Theme.Icons.Red">#ED1C24</Color>
     <Color x:Key="Theme.Default.Back">#FFFFFF</Color>
     <Color x:Key="Theme.Alternate.Back">#F3F2F1</Color>
@@ -27,7 +29,7 @@
     <Color x:Key="Theme.Control.Selected">#F3F2F1</Color>
     <Color x:Key="Theme.TextBox.Border">#D6D6D6</Color>
     <Color x:Key="Theme.Content.Back">#FFFFFF</Color>
-    <Color x:Key="Theme.Hidden.Fore">#B3B3B3</Color>
+    <Color x:Key="Theme.Hidden.Fore">#999999</Color>
     <Color x:Key="Theme.DropShadow">#000000</Color>
     <Color x:Key="Theme.DropShadow.Accent">#104866</Color>
     <Color x:Key="Theme.LineNumbers">#999999</Color>
@@ -46,9 +48,11 @@
     <Color x:Key="Theme.BusyPanel.Text">#AA000000</Color>
     <Color x:Key="Theme.Dax.Keyword">#035ACA</Color>
     <sys:Double x:Key="Theme.DropShadow.Opacity">0.4</sys:Double>
-    
+
     <SolidColorBrush x:Key="Theme.Brush.Accent" Color="{StaticResource Theme.PrimaryAccentColor}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Accent1" Color="{StaticResource Theme.Accent1}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Accent2" Color="{StaticResource Theme.Accent2}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Accent3" Color="{StaticResource Theme.Accent3}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Icons.Red" Color="{StaticResource Theme.Icons.Red}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Muted.Fore" Color="{StaticResource Theme.Muted.Fore}" options:Freeze="true"/>

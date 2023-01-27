@@ -48,7 +48,7 @@
             <RowDefinition Height="28"/>
             <RowDefinition Height="28"/>
             <RowDefinition Height="28"/>
-            
+            <RowDefinition Height="Auto" MinHeight="28"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -62,7 +62,7 @@
             Text="Run the current query text or query builder and captures Server Timings, Query Plan and model metrics" 
             TextWrapping="Wrap"
             Margin="0 0 0 16"
-                    
+            Foreground="{DynamicResource Theme.Brush.Default.Fore}"        
             Grid.Row="1" Grid.ColumnSpan="3"/>
 
         <Label Content="Capture Model Metrics" Grid.Column="2"  Grid.Row="2" Margin="10,0,0,0"  VerticalAlignment="Center"/>
@@ -70,7 +70,8 @@
         <Label Content="Start Query Plan trace" Grid.Column="2" Grid.Row="4" Margin="10,0,0,0" VerticalAlignment="Center" />
         <Label Content="Run Query" Grid.Column="2" Grid.Row="5" Margin="10,0,0,0" VerticalAlignment="Center" />
         <Label Content="Save as .daxx file" Grid.Column="2" Grid.Row="6" Margin="10,0,0,0" VerticalAlignment="Center" />
-
+        <Label Content="{Binding OverallStatus}" Grid.Column="2" Grid.Row="7" Margin="10 0 0 0" VerticalAlignment="Center"/>
+        
         <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
                      Visibility="{Binding IsMetricsRunning, Converter={StaticResource BoolToVisibilityConverter}}"
                      Margin="2"
@@ -123,7 +124,7 @@
                Grid.Column="1"
                Grid.Row="6"/>
 
-        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="0 16 0 0" >
+        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="0 16 0 0" >
             <Button x:Name="Close" IsDefault="True"  Content="Close" Margin="3" Padding="3" MinWidth="55" Style="{DynamicResource AccentButtonStyle}"/>
             <Button x:Name="Cancel" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
         </StackPanel>

@@ -16,7 +16,6 @@ namespace DaxStudio.UI.Converters
             Debug.Assert(values.Length == 3 || values.Length == 4, $"The {nameof(WaterfallMarginConverter)} needs 3-4 parameters");
             if (values.Length != 3 && values.Length != 4) { return Binding.DoNothing; }
             
-            
             try
             {
                 double.TryParse(values[0]?.ToString(), out var cellWidth);
@@ -25,11 +24,12 @@ namespace DaxStudio.UI.Converters
             
                 // restrict offset and totalWidth to positive values
                 if (offset < 0) offset = 0;
-                if (totalWidth < 0) totalWidth = 0;
+                if (totalWidth <= 1) totalWidth = 1;
                 var verticalMargin = 0.0;
                 if (values.Length == 4) double.TryParse(values[3]?.ToString(), out verticalMargin);
+                var newOffset = (cellWidth / totalWidth) * offset;
 
-                return new Thickness((cellWidth / totalWidth) * offset, verticalMargin, 0, verticalMargin);
+                return new Thickness(newOffset, verticalMargin, 0, verticalMargin);
             }
             catch (Exception ex)
             {

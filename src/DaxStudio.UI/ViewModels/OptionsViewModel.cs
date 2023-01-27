@@ -30,6 +30,7 @@ using Microsoft.Win32;
 using DaxStudio.UI.Utils;
 using Serilog;
 using Serilog.Events;
+using System.Text;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -68,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showQueryPlanNextLine;
         //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
+        private bool _showWaterfallOnRows;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
         private LongOperationSounds _queryEndSound;
@@ -343,7 +345,25 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlTableNames), value, _isInitializing, this);
             }
         }
-#endregion
+
+        [DisplayName("Waterfall background on rows (default)")]
+        [Category("Server Timings")]
+        [Description("Show by deafult the waterfall background as a background on storage engine event rows.")]
+        [DataMember, DefaultValue(true)]
+        public bool ShowWaterfallOnRows
+        {
+            get => _showWaterfallOnRows;
+            set
+            {
+                if (_showWaterfallOnRows == value) return;
+                _showWaterfallOnRows = value;
+                NotifyOfPropertyChange(() => ShowWaterfallOnRows);
+                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ShowWaterfallOnRows), value, _isInitializing, this);
+            }
+        }
+
+        #endregion
 
         #region Query Plan properties
         //[DisplayName("Show next line")]
@@ -381,7 +401,7 @@ namespace DaxStudio.UI.ViewModels
         //        SettingProvider.SetValue<bool>(nameof(ShowQueryPlanLineLevel), value, _isInitializing, this);
         //    }
         //}
-#endregion
+        #endregion
 
         #region Http Proxy properties
 
@@ -755,7 +775,7 @@ namespace DaxStudio.UI.ViewModels
         public bool LongOperationSoundEnabled => PlaySoundAfterLongOperation;
         public bool LongQuerySecondsEnabled => PlaySoundAfterLongOperation;
 
-        [Category("Dax Formatter")]
+        [Category("DAX Formatter")]
         [DisplayName("Default Format Style")]
         [DataMember, DefaultValue(DaxFormatStyle.LongLine)]
         public DaxFormatStyle DefaultDaxFormatStyle {
@@ -787,7 +807,7 @@ namespace DaxStudio.UI.ViewModels
                 return items;
             }
         }
-        [Category("Dax Formatter")]
+        [Category("DAX Formatter")]
         [DisplayName("Skip space after function name")]
         [DataMember, DefaultValue(false)]
         public bool SkipSpaceAfterFunctionName {
@@ -958,6 +978,22 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => UseTabDelimiter);
                 NotifyOfPropertyChange(() => UseOtherDelimiter);
                 NotifyOfPropertyChange(() => CustomCsvDelimiterEnabled);
+            }
+        }
+
+        private CustomCsvEncodingType _csvCustomEncodingType = CustomCsvEncodingType.UTF8;
+        [Category("Custom Export Format")]
+        [DisplayName("CSV Encoding")]
+        [DataMember, DefaultValue(CustomCsvEncodingType.UTF8)]
+        public CustomCsvEncodingType CustomCsvEncodingType
+        {
+            get => _csvCustomEncodingType;
+            set
+            {
+                _csvCustomEncodingType = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(CustomCsvEncodingType), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => CustomCsvEncodingType);
             }
         }
 
@@ -1264,6 +1300,17 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
+
+        public Encoding GetCustomCsvEncoding()
+        {
+            switch (CustomCsvEncodingType)
+            {
+                case CustomCsvEncodingType.UTF8: return new UTF8Encoding(false);
+                case CustomCsvEncodingType.Unicode: return new UnicodeEncoding( );
+                default: return new UTF8Encoding(false);
+            }
+        }
+
         #endregion
 
         #region View Specific Properties
@@ -2256,7 +2303,19 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
 
             } 
-        } 
+        }
+
+        // This property is used to remember which file type was chosen last time a text file output was used
+        private int _defaultTextFileType = 0;
+        [DataMember, DefaultValue(0)]
+        public int DefaultTextFileType { get => _defaultTextFileType;
+            set {
+                _defaultTextFileType = value;
+                SettingProvider.SetValue(nameof(DefaultTextFileType), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            }
+        }
 
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls

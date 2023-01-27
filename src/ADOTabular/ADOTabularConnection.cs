@@ -12,6 +12,7 @@ using ADOTabular.Enums;
 using ADOTabular.Extensions;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
+using System.Threading;
 
 namespace ADOTabular
 {
@@ -42,7 +43,8 @@ namespace ADOTabular
             
             ShowHiddenObjects = showHiddenObjects;
             ConnectionString = connectionString;
-            _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, connectionType);
+            if (!string.IsNullOrEmpty(connectionString))
+                _adomdConn = new ADOTabular.AdomdClientWrappers.AdomdConnection(ConnectionString, connectionType);
 
             Type = connectionType;
             //   _adomdConn.ConnectionString = connectionString;
@@ -68,9 +70,14 @@ namespace ADOTabular
             get
             {
                 //_adomdConn.UnderlyingConnection.Databases
-                if (_adomdConn == null) return null;
+                
                 try
                 {
+                    if (_adomdConn == null) { 
+                        var db2 = Visitor.Visit(this);
+                        return db2;
+                    }
+
                     if (_adomdConn.State != ConnectionState.Open)
                     {
                         this.Open();
@@ -149,24 +156,17 @@ namespace ADOTabular
         public void ChangeDatabase(string database)
         {
             _currentDatabase = database;
+            if (_adomdConn == null) return; // if we have opened a vpax file the connection object will be null
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            //if (PowerBIFileName != string.Empty)
-            //{
-            //    _currentDatabase = PowerBIFileName;
-            //    ADOTabularDatabase db = Database;
-            //    _adomdConn.ChangeDatabase(db.Id);
-            //}
-            //else
-            //{
+            
             if (_adomdConn.Database != database)
             {
                 _adomdConn.ChangeDatabase(database);
             }
 
-            //}
             ConnectionChanged?.Invoke(this, new EventArgs());
 
             _spid = 0; // reset the spid to 0 so that it will get re-evaluated
@@ -216,6 +216,8 @@ namespace ADOTabular
             get
             {
                 var connstr = _connectionString;
+                if (string.IsNullOrEmpty(connstr)) return connstr;
+
                 // TODO - do we need to set the initial catalog here??
                 /* 
                 if (!connstr.Contains("Initial Catalog") && Database != null)
@@ -275,12 +277,13 @@ namespace ADOTabular
             get { 
                 if (_adoTabDatabaseColl == null)
                 {
-                    if (_adomdConn != null)
+                    if (_adomdConn != null || Database !=null)
                     {
                     _adoTabDatabaseColl = new ADOTabularDatabaseCollection(this);
                     }
                     else
                     {
+
                         throw new InvalidOperationException("Unable to populate Databases collection - a valid connection has not been established");
                     }
                 }
@@ -295,34 +298,32 @@ namespace ADOTabular
                 return _adoTabDatabaseColl.Count;
             }
         }
-#pragma warning disable CA1725 // Parameter names should match base declaration
-        public DataSet GetSchemaDataSet(string schemaName)
+
+        public DataSet GetSchemaDataSet(string dataSet)
         {
             if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            return _adomdConn.GetSchemaDataSet(schemaName, null,true);
+            return _adomdConn.GetSchemaDataSet(dataSet, null,true);
         }
 
 
-        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection)
+        public DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions)
         {
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection,true);
+            return _adomdConn.GetSchemaDataSet(dataSet, restrictions,true);
         }
 
-        public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictionCollection, bool throwOnInlineErrors)
+        public DataSet GetSchemaDataSet(string dataSet, AdomdRestrictionCollection restrictions, bool throwOnErrors)
         {
             if (_adomdConn.State != ConnectionState.Open)
             {
                 _adomdConn.Open();
             }
-            return _adomdConn.GetSchemaDataSet(schemaName, restrictionCollection, throwOnInlineErrors);
+            return _adomdConn.GetSchemaDataSet(dataSet, restrictions, throwOnErrors);
             
         }
-#pragma warning restore CA1725 // Parameter names should match base declaration
-
 
         public void ExecuteNonQuery(string command)
         {
@@ -406,7 +407,6 @@ namespace ADOTabular
             AdomdDataReader rdr = _runningCommand.ExecuteReader();
             rdr.Connection = this;
             rdr.CommandText = command;
-     
             return rdr;
 
         }
@@ -414,17 +414,24 @@ namespace ADOTabular
         public DataTable ExecuteDaxQueryDataTable(string query)
         {
             _runningCommand = _adomdConn.CreateCommand();
-            _runningCommand.CommandType = CommandType.Text;
-            _runningCommand.CommandText = query;
-            var dt = new DataTable("DAXResult");
-            using (var da = new AdomdDataAdapter(_runningCommand))
+            try
             {
-                if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-                da.Fill(dt);
+                _runningCommand.CommandType = CommandType.Text;
+                _runningCommand.CommandText = query;
+                var dt = new DataTable("DAXResult");
+                using (var da = new AdomdDataAdapter(_runningCommand))
+                {
+                    if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
+                    da.Fill(dt);
+                }
+                _runningCommand.Dispose();
+                _runningCommand = null;
+                return dt;
             }
-            _runningCommand.Dispose();
-            _runningCommand = null;
-            return dt;
+            finally
+            {
+                _runningCommand = null; 
+            }
         }
 
         public int ExecuteCommand(string command) {
@@ -606,7 +613,14 @@ namespace ADOTabular
             {
                 if (_serverMode == null)
                 {
-                    _serverMode = GetServerMode();
+                    if (ServerType == ServerType.Offline)
+                    {
+                        _serverMode = "Offline";
+                    }
+                    else
+                    {
+                        _serverMode = GetServerMode();
+                    }
                 }
                 return _serverMode;
             }
@@ -692,7 +706,7 @@ namespace ADOTabular
                         //var resColl = new AdomdRestrictionCollection {{"SESSION_ID", SessionID}};
                         //var ds = GetSchemaDataSet("DISCOVER_SESSIONS", resColl);
                         var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
-                        foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => string.Equals( dr["SESSION_ID"].ToString().ToUpper(), SessionId, StringComparison.OrdinalIgnoreCase )))
+                        foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => string.Equals( dr["SESSION_ID"].ToString(), SessionId, StringComparison.OrdinalIgnoreCase )))
                         {
                             _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
                         }
@@ -757,15 +771,17 @@ namespace ADOTabular
                 }
                 else
                 {
+#pragma warning disable CA1031 // Do not catch general exception types
                     try
                     {
                         ShortFileName = new FileInfo(_powerBIFileName).Name;
                     }
-                    catch
+                    catch 
                     {
                         // if there are any errors fallback to using the filename as the ShortName
                         ShortFileName = _powerBIFileName;
                     }
+#pragma warning restore CA1031 // Do not catch general exception types
                 }
             }
         }
@@ -921,8 +937,10 @@ namespace ADOTabular
         }
         private ADOTabularConnection CloneInternal(string connectionString, bool sameSession, bool copyDatabaseReference)
         {
+            if (this.ServerType == ServerType.Offline) return this;
+
             var connStrBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
-            if(sameSession) connStrBuilder["SessionId"] = _adomdConn.SessionID;
+            if(sameSession) connStrBuilder["SessionId"] = _adomdConn?.SessionID;
             var newConnStr = connStrBuilder.ToString();
             var cnn = new ADOTabularConnection(newConnStr, this.Type)
             {

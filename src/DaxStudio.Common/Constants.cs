@@ -7,6 +7,7 @@
         //public const string LogFolder = @"%APPDATA%\DaxStudio\log\";
         public const string ExcelLogFileName = "DaxStudioExcel-.log";
         public const string StandaloneLogFileName = "DaxStudio-.log";
+        public const string LauncherLogFileName = "DaxStudioLauncher-.log";
         //public const string AutoSaveIndexPath = @"%APPDATA%\DaxStudio\AutoSaveMasterIndex.json";
         //public const string AutoSaveFolder = @"%APPDATA%\DaxStudio\AutoSaveFiles";
         //public const string AvalonDockLayoutFile = @"%APPDATA%\DaxStudio\WindowLayouts\Custom.xml";

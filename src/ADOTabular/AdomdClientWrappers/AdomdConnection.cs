@@ -2,16 +2,17 @@
 using System;
 using System.Data;
 using System.Threading;
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular.AdomdClientWrappers
 {
     public sealed class AdomdConnection:IDisposable
     {
         private readonly AdomdType _type;
-        private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
+        private Adomd.AdomdConnection _conn;
         
         private readonly Object rowsetLock = new Object();
-        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
+        public AdomdConnection(Adomd.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
             _conn = connection;
@@ -19,7 +20,7 @@ namespace ADOTabular.AdomdClientWrappers
         
         public AdomdConnection(string connectionString, AdomdType type)
         {
-            _conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
+            _conn = new Adomd.AdomdConnection(connectionString);
         }
 
         internal AdomdType Type
@@ -60,7 +61,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             if (database == null) return; 
             if (database.Trim().Length == 0) return;
-            if (String.Compare(database, _conn.Database, true) == 0) return;
+            if (string.Equals(database, _conn.Database, StringComparison.OrdinalIgnoreCase)) return;
             _conn.ChangeDatabase(database);
         }
 
@@ -132,13 +133,13 @@ namespace ADOTabular.AdomdClientWrappers
 
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictions, bool throwOnInlineErrors)
         {
-            Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
+            Adomd.AdomdRestrictionCollection coll = new Adomd.AdomdRestrictionCollection();
             if (restrictions != null)
             {
                 
                 foreach (AdomdClientWrappers.AdomdRestriction res in restrictions)
                 {
-                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction( res.Name, res.Value));
+                    coll.Add(new Adomd.AdomdRestriction( res.Name, res.Value));
                 }
             }
             if (_conn.State != ConnectionState.Open)
@@ -149,6 +150,7 @@ namespace ADOTabular.AdomdClientWrappers
             // wait 10 seconds before timing out
             if (Monitor.TryEnter(rowsetLock, new TimeSpan(0,0,10 )))
             {
+            
                 try
                 {
                     return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);

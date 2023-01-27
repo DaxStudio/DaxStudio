@@ -32,6 +32,7 @@ namespace DaxStudio.UI.Interfaces
         //bool IsOutputActive { get; }
         void QueryCompleted();
         void QueryCompleted(bool isCancelled);
+        void QueryFailed();
         IDaxStudioHost Host { get; }
         string SelectedWorksheet { get; set; }
         string ConnectionStringWithInitialCatalog { get; }

@@ -17,6 +17,9 @@ using DaxStudio.UI.Utils;
 using System;
 using System.IO;
 using Microsoft.AnalysisServices.Tabular;
+using ADOTabular.Enums;
+using ICSharpCode.AvalonEdit.CodeCompletion;
+using Microsoft.AspNet.SignalR.Client;
 using System.Windows;
 using System.Windows.Forms;
 using ADOTabular;
@@ -303,6 +306,9 @@ namespace DaxStudio.UI.ViewModels
                 using (Stream strm = part.GetStream())
                 {
                     var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(strm);
+                    if (!CurrentDocument.Connection.IsConnected)
+                        Task.Run(async () => { await CurrentDocument.Connection.ConnectAsync(new ConnectEvent(CurrentDocument.Connection.ApplicationName, content)); });
+
                     var view = new Dax.ViewModel.VpaModel(content.DaxModel);
                     // update view model
                     ViewModel = view;
@@ -409,12 +415,18 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
+            var filename = (ViewModel?.Model?.ModelName?.Name ?? "model") + ".bim";
+
+            if (CurrentDocument.IsDiskFileName) filename = (Path.GetFileNameWithoutExtension(CurrentDocument?.DisplayName) ?? "model") + ".bim";
+
             var saveAsDlg = new SaveFileDialog()
             {
+                FileName = filename,
                 DefaultExt = "bim",
                 Title = "Save .bim file",
                 Filter = "Model BIM file (*.bim)|*.bim"
             };
+            
             if (saveAsDlg.ShowDialog() == DialogResult.OK)
             {
                 System.Diagnostics.Debug.WriteLine($"exporting to {saveAsDlg.FileName}");

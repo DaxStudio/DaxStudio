@@ -1,13 +1,14 @@
 ﻿using System;
 using DaxStudio.Common.Enums;
 using DaxStudio.QueryTrace;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DaxStudio.UI.Model
 {
     public class RefreshEvent
     {
-        public long CpuDuration { get; set; }
+        public long CpuTime { get; set; }
         public long Duration { get; set; }
         public string Text { get; set; }
         public DateTime StartTime { get; set; }
@@ -23,7 +24,13 @@ namespace DaxStudio.UI.Model
         public string ObjectName { get; set; }
         public string ObjectPath { get; set; }
         public string ObjectReference { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventClass EventClass { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventSubclass EventSubClass { get; set; }
+
+        public DateTime CurrentTime { get; set; }
+        public string SessionId { get; set; }
+        public long IntegerData { get; set; }
     }
 }

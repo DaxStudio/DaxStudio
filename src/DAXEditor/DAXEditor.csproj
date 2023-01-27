@@ -111,6 +111,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutomationPeerStub.cs" />
     <Compile Include="BracketRenderer\BracketHighlightRenderer.cs" />
     <Compile Include="BracketRenderer\BracketSearchResult.cs" />
     <Compile Include="BracketRenderer\DefaultBracketSearcher.cs" />

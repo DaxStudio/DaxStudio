@@ -56,8 +56,19 @@ namespace DaxStudio.QueryTrace
             {
                 trc.Columns.Add(TraceColumn.ObjectPath);
                 trc.Columns.Add(TraceColumn.ObjectName);
-                trc.Columns.Add(TraceColumn.ObjectReference);
+                trc.Columns.Add(TraceColumn.ObjectReference);                                    
             }
+
+            switch(eventClass)
+            {
+                case TraceEventClass.ProgressReportCurrent:
+                case TraceEventClass.ProgressReportEnd:
+                    {
+                        trc.Columns.Add(TraceColumn.IntegerData);
+                    }
+                    break;
+            }
+
             
             if (eventClass == TraceEventClass.QueryBegin)
             {
@@ -90,6 +101,7 @@ namespace DaxStudio.QueryTrace
                     break;
 
             }
+
             return trc;
         }
 

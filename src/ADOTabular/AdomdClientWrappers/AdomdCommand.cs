@@ -1,6 +1,7 @@
 ﻿using ADOTabular.Enums;
 using System;
 using System.Data;
+using System.Threading;
 
 namespace ADOTabular.AdomdClientWrappers
 {
@@ -70,6 +71,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public AdomdDataReader ExecuteReader()
         {
+
             return new AdomdDataReader(_command.ExecuteReader( ));
         }
 

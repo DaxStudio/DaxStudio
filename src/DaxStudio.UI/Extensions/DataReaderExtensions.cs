@@ -138,13 +138,14 @@ namespace DaxStudio.UI.Extensions
                     foreach (DataRow row in dtSchema.Rows)
                     {
                         string columnName = Convert.ToString(row["ColumnName"]);
+                        string columnDaxName = GetColumnDaxName(columnName, reader.Connection);
                         Type columnType = (Type)row["DataType"];
                         if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
                         DataColumn column = new DataColumn(columnName, columnType); // (Type)(row["DataType"]));
                         column.Unique = (bool)row[Constants.IsUnique];
                         column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                         daxCol = null;
-                        reader.Connection.Columns.TryGetValue(columnName, out daxCol);
+                        reader.Connection.Columns.TryGetValue(columnDaxName, out daxCol);
                         if (IsSessionsDmv && columnName == Common.Constants.SessionSpidColumn)
                         {
                             column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
@@ -204,7 +205,11 @@ namespace DaxStudio.UI.Extensions
                         if (reader.IsDataReader(i))
                             dataRow[((DataColumn)listCols[i])] = reader.GetDataReaderValue(i); 
                         else
-                            dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
+                        {
+                            //dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
+                            dataRow[i] = reader[i] ?? DBNull.Value;
+                        }
+                            
                     }
                     dt.Rows.Add(dataRow);
                 }
@@ -215,6 +220,18 @@ namespace DaxStudio.UI.Extensions
             }
             return ds;
 
+        }
+
+        private static string GetColumnDaxName(string columnName, ADOTabular.ADOTabularConnection connection)
+        {
+            var parts = columnName.Split('[');
+            if (parts.Length != 2) return columnName;
+
+            if (!connection.Database.Models[0].Tables.TryGetValue( parts[0], out var table)) return columnName;
+            
+
+            var tableName = table.DaxName;
+            return $"{tableName}[{parts[1]}";
         }
 
         /// <summary>

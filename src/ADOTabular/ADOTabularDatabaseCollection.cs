@@ -52,9 +52,22 @@ namespace ADOTabular
 
         private DataTable GetDatabaseTable()
         {
-            if (_dsDatabases == null)
+            if (_dsDatabases == null )
             {
-                _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
+                if (_adoTabConn.ServerType == Enums.ServerType.Offline)
+                {
+                    var dt = new DataTable();
+                    dt.Columns.Add("CATALOG_NAME", typeof(string));
+                    dt.Columns.Add("DATE_MODIFIED", typeof(string));
+                    dt.Rows.Add((_adoTabConn.Database.Name));
+                    _dsDatabases = _dsDatabases ??new DataSet();
+                    _dsDatabases.Tables.Add(dt);
+                }
+                else
+                {
+                    _dsDatabases = _adoTabConn.GetSchemaDataSet("DBSCHEMA_CATALOGS");
+                    
+                }
                 _dsDatabases.Tables[0].PrimaryKey = new[] {
                     _dsDatabases.Tables[0].Columns["CATALOG_NAME"]
                 };
@@ -73,9 +86,19 @@ namespace ADOTabular
         object _getDatabaseLock = new object();
         public IDictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid, bool refresh)
         {
+
+            if (_databaseDictionary == null && _adoTabConn.ServerType == Enums.ServerType.Offline) 
+            {
+                _databaseDictionary = new Dictionary<string, DatabaseDetails>();
+                var db = _adoTabConn.Database;
+                DatabaseDetails tmpDD = new DatabaseDetails(db.Name, db.Id, db.Caption, string.Empty, db.CompatibilityLevel, string.Empty);
+                _databaseDictionary.Add(db.Name, tmpDD);
+                return _databaseDictionary;
+            }
+
             lock (_getDatabaseLock)
             {
-                //if (refresh) _databaseDictionary = null;
+
                 if (_databaseDictionary != null && !refresh) return _databaseDictionary;
 
                 IDictionary<string, DatabaseDetails> tmpDatabaseDict;
@@ -261,6 +284,13 @@ namespace ADOTabular
         public bool Contains(string databaseName)
         {
             return GetDatabaseTable().Rows.Contains(databaseName);
+        }
+
+        public void Add(ADOTabularDatabase db)
+        {
+            DatabaseDetails dd = new DatabaseDetails(db.Name, db.Id, db.Caption, db.LastUpdate.ToLongDateString(), db.CompatibilityLevel, db.Roles);
+            _databaseDictionary = _databaseDictionary ?? new Dictionary<string, DatabaseDetails>();
+            _databaseDictionary.Add(dd.Name, dd);
         }
 
         public int Count => GetDatabaseTable().Rows.Count;

@@ -9,25 +9,21 @@ using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Views;
 using Serilog.Core;
 using Constants = DaxStudio.Common.Constants;
 using System.Text;
-using ControlzEx.Theming;
-using System.Collections.Generic;
 using System.Windows.Media;
 using System.Configuration;
-using System.Web;
-using System.Collections.Specialized;
-using Windows.Foundation;
 using DaxStudio.Common.Extensions;
+using System.IO.Pipes;
+using System.Runtime.Serialization.Formatters.Binary;
+//using Microsoft.Identity.Client;
+
 
 namespace DaxStudio.Standalone
 {
@@ -87,7 +83,8 @@ namespace DaxStudio.Standalone
 
             _eventAggregator = bootstrapper.GetEventAggregator();
             // read command line arguments
-            App.ReadCommandLineArgs();
+            string[] args = Environment.GetCommandLineArgs();
+            App.ReadCommandLineArgs(args);
 
             var settingProvider = IoC.Get<ISettingProvider>();
             if (App.Args().Reset) settingProvider.Reset();
@@ -129,15 +126,11 @@ namespace DaxStudio.Standalone
             themeManager.SetTheme(_options.Theme);
             Log.Information("ThemeManager configured");
 
-            //var theme = options.Theme;// "Light"; 
-            //if (theme == "Dark") app.LoadDarkTheme();
-            //else app.LoadLightTheme();
-
             // log startup switches
             if (_options.AnyExternalAccessAllowed())
             {
-                var args = App.Args().AsDictionaryForTelemetry();
-                Telemetry.TrackEvent("App.Startup", args);
+                var appArgs = App.Args().AsDictionaryForTelemetry();
+                Telemetry.TrackEvent("App.Startup", appArgs);
             }
 
             // only used for testing of crash reporting UI
@@ -145,6 +138,7 @@ namespace DaxStudio.Standalone
 
             if (!App.Args().ShowHelp)
             {
+
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
                 bootstrapper.DisplayShell();
@@ -184,7 +178,10 @@ namespace DaxStudio.Standalone
             config.WriteTo.File(logPath
                 , rollingInterval: RollingInterval.Day
                 );
-
+#if DEBUG
+            // if we are debugging write to the log window
+            config.WriteTo.DaxStudioOutput();
+#endif
             _log = config.CreateLogger();
             Log.Logger = _log;
 
@@ -270,6 +267,7 @@ namespace DaxStudio.Standalone
 
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
+            if (Application.Current?.Dispatcher?.HasShutdownStarted??true) return;
             var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
             //e.Exception.InnerExceptions
             e.SetObserved();
@@ -279,18 +277,27 @@ namespace DaxStudio.Standalone
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
-            Exception ex = e.ExceptionObject as Exception;   
-            // check that we are noto already shutting down
-            if (!ex.StackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl"))
-                LogFatalCrash(ex, msg, _options);
-            if (App.Dispatcher.CheckAccess())
+            Exception ex = e.ExceptionObject as Exception;
+
+            if ((Application.Current?.Dispatcher?.HasShutdownStarted ?? false))
+            {
+                Log.Error(ex, nameof(EntryPoint), nameof(CurrentDomainOnUnhandledException), "Error during shutdown");
+                App?.Shutdown(2);
+                return;
+            }
+
+            // check that we are not already shutting down
+            if (!ex.StackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl") 
+                && !(Application.Current?.Dispatcher?.HasShutdownStarted??true))
+                    LogFatalCrash(ex, msg, _options);
+            
+            if (App?.Dispatcher?.CheckAccess()??true)
             {
                 App.Shutdown(2);
             }
             else
             {
                 App.Dispatcher.Invoke(() => App.Shutdown(2));
-
             }
         }
 
@@ -303,6 +310,7 @@ namespace DaxStudio.Standalone
             UpdateErrorForLoaderExceptions(ref msg, ex);
 
             Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
+            Log.CloseAndFlush();
 
             if (_options.BlockCrashReporting)
             {
@@ -318,11 +326,8 @@ namespace DaxStudio.Standalone
 
             Execute.OnUIThread(() => {
 
-                Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
-                Log.CloseAndFlush();
-
                 // Application must be shutting down so just exit
-                if (Application.Current == null) return;
+                if (Application.Current == null || App == null) return;
 
                 // add a property to the application indicating that we have crashed
                 if (!App.Properties.Contains("HasCrashed"))
@@ -357,7 +362,12 @@ namespace DaxStudio.Standalone
 
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-
+            if ((Application.Current?.Dispatcher?.HasShutdownStarted??false))
+            {
+                Log.Error(e.Exception, nameof(EntryPoint), nameof(App_DispatcherUnhandledException), "Error during shutdown");
+                App?.Shutdown(3);
+                return;
+            }
 
             if (e.Exception is System.Runtime.InteropServices.COMException comException)
             {
@@ -405,78 +415,29 @@ namespace DaxStudio.Standalone
             }
         }
 
-        private static void ReadCommandLineArgs(this Application app)
-        {
-            string[] args = Environment.GetCommandLineArgs();
-
-            var p = new FluentCommandLineParser();
-            p.Setup<int>('p', "port")
-                .Callback(port => app.Args().Port = port);
-
-            p.Setup<bool>('l', "log")
-                .Callback(log => app.Args().LoggingEnabledByCommandLine = log)
-                .WithDescription("Enable Debug Logging")
-                .SetDefault(false);
-
-            p.Setup<string>('f', "file")
-                .Callback(file => app.Args().FileName = file)
-                .WithDescription("Name of file to open");
-#if DEBUG
-            // only include the crashtest parameter on debug builds
-            p.Setup<bool>('c', "crashtest")
-                .Callback(crashTest => app.Args().TriggerCrashTest = crashTest)
-                .SetDefault(false);
-#endif
-            p.Setup<string>('s', "server")
-                .Callback(server => app.Args().Server = server)
-                .WithDescription("Server to connect to");
-
-            p.Setup<string>('d', "database")
-                .Callback(database => app.Args().Database = database)
-                .WithDescription("Database to connect to");
-
-            p.Setup<bool>('r', "reset")
-                .Callback(reset => app.Args().Reset = reset)
-                .WithDescription("Reset user preferences to the default settings");
-
-            p.Setup<bool>("nopreview")
-                .Callback(nopreview => app.Args().NoPreview = nopreview)
-                .WithDescription("Hides version information");
-
-            p.Setup<string>('u', "uri")
-                .Callback(uri => CmdLineArgs.ParseUri(ref app, uri))
-                .WithDescription("used by the daxstudio:// uri handler");
-                
-
-            p.SetupHelp("?", "help")
-                .Callback(text => {
-                    Log.Information(Constants.LogMessageTemplate, nameof(EntryPoint), nameof(ReadCommandLineArgs), "Printing CommandLine Help");
-                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
-                    string formattedHelp = HelpFormatter.Format(p.Options);
-                    Console.WriteLine("");
-                    Console.WriteLine($"DAX Studio { ver.ToString(3) } (build { ver.Revision })");
-                    Console.WriteLine("--------------------------------");
-                    Console.WriteLine("");
-                    Console.WriteLine("Supported command line parameters:");
-                    Console.WriteLine(formattedHelp);
-                    Console.WriteLine("");
-                    Console.WriteLine("Note: parameters can either be passed with a short name or a long name form");
-                    Console.WriteLine("eg.  DaxStudio -f myfile.dax");
-                    Console.WriteLine("     DaxStudio --file myfile.dax");
-                    Console.WriteLine("");
-                    //app.Args().HelpText = text;
-                    app.Args().ShowHelp = true;
-                });
-
-            p.Parse(args);
-            
-        }
-
 
         private static void AddResourceDictionary(this Application app, string src)
         {
             app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(src, UriKind.RelativeOrAbsolute) });
         }
+
+        private static void ProcessMessage(NamedPipeServerStream pipe, Application app)
+        {
+            var bf = new BinaryFormatter();
+            var inargs = bf.Deserialize(pipe) as string[];
+            app.ReadCommandLineArgs(inargs);
+            if (!string.IsNullOrEmpty(app.Args().FileName))
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
+            }
+            else
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
+            }
+        }
+
+        
+
 
     }
 }

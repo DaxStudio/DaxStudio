@@ -27,6 +27,8 @@ namespace ADOTabular.Interfaces
         AdomdType Type { get; }
         IMetaDataVisitor Visitor { get; set; }
         bool IsAdminConnection { get; }
+
+        ServerType ServerType { get; }
         #endregion
 
         #region Methods

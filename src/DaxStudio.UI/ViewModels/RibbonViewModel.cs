@@ -312,6 +312,12 @@ namespace DaxStudio.UI.ViewModels
             && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
             && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
 
+
+        public bool CanRunServerFEBenchmark =>
+            !QueryRunning
+            && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
+            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+
         public void CancelQuery()
         {
             _eventAggregator.PublishOnUIThreadAsync(new CancelQueryEvent());
@@ -476,7 +482,7 @@ namespace DaxStudio.UI.ViewModels
                 _isDocumentActivating = true;
                 ActiveDocument = message.Document;
                 doc = ActiveDocument;
-                SelectedTarget = ActiveDocument.SelectedTarget;
+                SelectedTarget = ActiveDocument.SelectedTarget??SelectedTarget;
 
                 _traceStatus = GetTraceStatus();
 
@@ -573,6 +579,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanLoadPowerBIPerformanceData));
             NotifyOfPropertyChange(nameof(CanDisplayQueryBuilder));
             NotifyOfPropertyChange(nameof(CanRunBenchmark));
+            NotifyOfPropertyChange(nameof(CanRunServerFEBenchmark));
             NotifyOfPropertyChange(nameof(CanNewQueryWithCurrentConnection));
             NotifyOfPropertyChange(nameof(TraceWatchers));
             UpdateTraceWatchers();
@@ -620,6 +627,7 @@ namespace DaxStudio.UI.ViewModels
                 case nameof(ActiveDocument.IsQueryRunning):
                     NotifyOfPropertyChange(() => CanRunQuery);
                     NotifyOfPropertyChange(() => CanRunBenchmark);
+                    NotifyOfPropertyChange(() => CanRunServerFEBenchmark);
                     NotifyOfPropertyChange(() => CanCancelQuery);
                     NotifyOfPropertyChange(() => CanClearCache);
                     NotifyOfPropertyChange(nameof(CanClearCacheAuto));
@@ -632,6 +640,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => CanViewAnalysisData);
                     NotifyOfPropertyChange(() => CanExportAnalysisData);
                     NotifyOfPropertyChange(() => CanRunBenchmark);
+                    NotifyOfPropertyChange(() => CanRunServerFEBenchmark);
                     NotifyOfPropertyChange(() => CanShowViewAsDialog);
                     break;
                 case nameof(ActiveDocument.IsConnected):
@@ -1348,7 +1357,11 @@ namespace DaxStudio.UI.ViewModels
 
         public async void RunBenchmark()
         {
-            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, true));
+            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.QueryBenchmark));
+        }
+        public async void RunServerFEBenchmark()
+        {
+            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.ServerFEBenchmark));
         }
 
         public async void CaptureDiagnostics()

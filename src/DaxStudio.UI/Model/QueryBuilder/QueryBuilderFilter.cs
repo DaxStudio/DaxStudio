@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using ADOTabular.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.Model
 {
@@ -73,6 +74,9 @@ namespace DaxStudio.UI.Model
                             break;
                         case FilterType.In:
                         case FilterType.NotIn:
+                            // measures return a single scalar string value, so we do not support
+                            // In/NotIn filter types
+                            if (TabularObject.ObjectType == ADOTabular.ADOTabularObjectType.Measure) break;
                             // if the data type is string and the model supports TREATAS
                             // TabularObject.DataType == typeof(string) &&
                             if (( ModelCapabilities.DAXFunctions.TreatAs || ModelCapabilities.TableConstructor) && !FilterValueIsParameter ) yield return ft;
@@ -100,7 +104,7 @@ namespace DaxStudio.UI.Model
         [DataMember]
         public string FilterValue { get => _filterValue;
             set {
-                _filterValue = FilterValueIsParameter? value.Trim() : value;
+                _filterValue = FilterValueIsParameter? (value??string.Empty).Trim() : value??string.Empty;
                 if (_filterValue == "@" || _filterValue == "@@")
                 {
                     //IsNotifying = false;
@@ -108,7 +112,7 @@ namespace DaxStudio.UI.Model
                     //IsNotifying = true;
                     if (FilterValueIsParameter) _filterValue = _filterValue.TrimStart('@');
                 }
-                
+                if (_filterValue.IsNullOrEmpty()) FilterValueIsParameter= false;
                 FilterValueValidationMessage = ValidateInput(FilterValue, FilterValueIsParameter);
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValueIsValid));
@@ -134,8 +138,8 @@ namespace DaxStudio.UI.Model
                 if (_filterValueIsParameter && !value && !FilterValue.StartsWith("@")) { FilterValue = "@" + FilterValue; }
                 _filterValueIsParameter = value;
                 NotifyOfPropertyChange();
-                if (FilterType == FilterType.In) FilterType = FilterType.Is;
-                if (FilterType == FilterType.NotIn) FilterType = FilterType.IsNot;
+                if (_filterValueIsParameter && FilterType == FilterType.In) FilterType = FilterType.Is;
+                if (_filterValueIsParameter && FilterType == FilterType.NotIn) FilterType = FilterType.IsNot;
                 NotifyOfPropertyChange(nameof(FilterTypes));
                 EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
             } 
@@ -191,7 +195,7 @@ namespace DaxStudio.UI.Model
             set {
                 _filterValue2 = value;
                 
-                _filterValue2 = FilterValue2IsParameter ? value.Trim() : value;
+                _filterValue2 = FilterValue2IsParameter ? (value??string.Empty).Trim() : value??string.Empty;
                 if (_filterValue2.StartsWith("@"))
                 {
                     //IsNotifying = false;
@@ -199,7 +203,7 @@ namespace DaxStudio.UI.Model
                     //IsNotifying = true;
                     if (FilterValue2IsParameter) _filterValue2 = _filterValue2.TrimStart('@');
                 }
-
+                if (_filterValue2.IsNullOrEmpty()) FilterValue2IsParameter = false;
                 FilterValue2ValidationMessage = ValidateInput(FilterValue2, FilterValue2IsParameter);
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValue2IsValid));

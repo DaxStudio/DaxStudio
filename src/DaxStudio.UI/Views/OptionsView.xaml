@@ -102,7 +102,7 @@
             <conv:ResourceLookupConverter x:Key="CategoryIconNames">
                 <ResourceDictionary>
                     <sys:String x:Key="Custom Export Format">options_exportDrawingImage</sys:String>
-                    <sys:String x:Key="Dax Formatter">options_dax_formatterDrawingImage</sys:String>
+                    <sys:String x:Key="DAX Formatter">options_dax_formatterDrawingImage</sys:String>
                     <sys:String x:Key="Defaults">options_defaultsDrawingImage</sys:String>
                     <sys:String x:Key="Editor">options_editorDrawingImage</sys:String>
                     <sys:String x:Key="Metadata Pane">options_metadata_paneDrawingImage</sys:String>
@@ -185,6 +185,7 @@
                     <nud:DoubleUpDown  Value="{Binding Value,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
                                        IsReadOnly="False" 
                                        IsEnabled="{Binding ValueEnabled}"
+                                       IsUpdateValueWhenLostFocus="True"
                                        MinValue="{Binding MinValue, Mode=OneTime}" 
                                        MaxValue="{Binding MaxValue, Mode=OneTime}" 
                                        FormatString="#,#.0"
@@ -208,6 +209,7 @@
                                         IsEnabled="{Binding ValueEnabled}"
                                         MinValue="{Binding MinValue, Mode=OneTime}" 
                                         MaxValue="{Binding MaxValue, Mode=OneTime}" 
+                                        IsUpdateValueWhenLostFocus="True"
                                         MinWidth="120"
                                         DisplayLength="5"
                                         Margin="2"  

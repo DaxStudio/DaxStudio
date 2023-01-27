@@ -123,11 +123,13 @@ namespace DaxStudio.Interfaces
         bool ReplaceXmSqlColumnNames { get; set; }
         bool ReplaceXmSqlTableNames { get; set; }
 
+        bool ShowWaterfallOnRows { get; set; }
 
         #region Methods
 
         // Methods
         string GetCustomCsvDelimiter();
+        System.Text.Encoding GetCustomCsvEncoding();
         void Initialize();
 
         // 
@@ -150,6 +152,7 @@ namespace DaxStudio.Interfaces
         #endregion
         [JsonIgnore] bool GettingStartedShown { get; set; }
         bool IncludeHyperlinkOnCopy { get; set; }
+        int DefaultTextFileType { get; set; }
 
 
         //bool ShowQueryPlanNextLine { get; set; }

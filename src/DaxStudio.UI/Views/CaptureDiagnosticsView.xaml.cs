@@ -16,7 +16,7 @@ using System.Windows.Shapes;
 namespace DaxStudio.UI.Views
 {
     /// <summary>
-    /// Interaction logic for BenchmarkView.xaml
+    /// Interaction logic for BenchmarkView.xaml and BenchmarkServerFEView.xaml
     /// </summary>
     public partial class CaptureDiagnosticsView : DaxStudio.UI.Controls.DaxStudioDialog
     {

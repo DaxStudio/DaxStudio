@@ -1,0 +1,100 @@
+﻿<ctrl:DaxStudioDialog x:Class="DaxStudio.UI.Views.BenchmarkServerFEView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:res="clr-namespace:DaxStudio.UI.Resources"
+             xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             Caption="Benchmark Server FE"
+             Icon="{DynamicResource fe_benchmarkDrawingImage}"
+             mc:Ignorable="d"
+             d:DesignHeight="380" d:DesignWidth="500">
+    <ctrl:DaxStudioDialog.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+                <!--<ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>-->
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <conv:RelativeWidthConverter x:Key="RelativeWidthConverter"/>
+            <conv:BoolNotConverter x:Key="BoolNotConverter"/>
+            <conv:AllNumericConverter x:Key="AllNumericConverter"/>
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter"/>
+
+            <!--<Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Foreground" Value="Gray"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>-->
+
+
+        </ResourceDictionary>
+    </ctrl:DaxStudioDialog.Resources>
+
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Label
+                    Content="Run a formula engine benchmark on connected Tabular Server" 
+                    Margin="0 0 0 16"
+                    Grid.Row="1" Grid.ColumnSpan="3"/>
+
+        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="0 16 0 0">
+            <Button x:Name="Run" IsDefault="True"  Content="Run" Margin="3" Padding="3" MinWidth="55" Style="{DynamicResource AccentButtonStyle}"/>
+            <Button x:Name="Cancel" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" Margin="0 8">
+                <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                     Visibility="{Binding ProgressSpin, Converter={StaticResource BoolToVisibilityConverter}}"
+                                     Margin="0 0 8 0"/>
+                <TextBlock x:Name="ProgressMessage" Text="Ready..." 
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                   Margin="2"></TextBlock>
+                <!--<ContentControl Style="{StaticResource ProgressDots}" IsEnabled="True"/>-->
+
+            </StackPanel>
+            <Grid x:Name="gridProgress">
+                <ProgressBar  Height="8" Value="{Binding ProgressPercentage}"/>
+                <!--<Rectangle x:Name="ProgressBackground" Fill="LightGray" Height="3"></Rectangle>
+                        <Rectangle x:Name="ProgressRectangle" Fill="RoyalBlue" Height="3"  HorizontalAlignment="Left" >
+                            <Rectangle.Width>
+                                <MultiBinding Converter="{StaticResource RelativeWidthConverter}">
+                                    <Binding Path="ProgressPercentage"/>
+                                    <Binding Path="ActualWidth" ElementName="gridProgress"/>
+                                </MultiBinding>
+                            </Rectangle.Width>
+                        </Rectangle>-->
+            </Grid>
+        </StackPanel>
+
+    </Grid>
+    <!--</Border>
+    </Border>-->
+</ctrl:DaxStudioDialog>

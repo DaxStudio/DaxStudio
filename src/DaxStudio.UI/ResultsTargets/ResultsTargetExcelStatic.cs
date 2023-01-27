@@ -40,47 +40,34 @@ namespace DaxStudio.UI.Model
         {
             await Task.Run(async () =>
                 {
-                    try
+
+                    var sw = Stopwatch.StartNew();
+
+                    var dq = textProvider.QueryText;
+
+                    DataTable res = await runner.ExecuteDataTableQueryAsync(dq);
+
+                    if (res == null || res.Rows?.Count == 0)
                     {
-                        runner.OutputMessage("Query Started");
-                        var sw = Stopwatch.StartNew();
+                        Log.Warning("{class} {method} {message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), "Query Result DataTable has no rows");
+                        runner.ActivateOutput();
+                        runner.OutputWarning("Unable to send results to Excel as there are no rows in the result set");
+                        return;
+                    }
 
-                        var dq = textProvider.QueryText;
+                    sw.Stop();
+                    var durationMs = sw.ElapsedMilliseconds;
 
-                        DataTable res = await runner.ExecuteDataTableQueryAsync(dq);
-
-                        if (res == null || res.Rows?.Count == 0)
-                        {
-                            Log.Warning("{class} {method} {message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), "Query Result DataTable has no rows");
-                            runner.ActivateOutput();
-                            runner.OutputWarning("Unable to send results to Excel as there are no rows in the result set");
-                            return;
-                        }
-
-                        sw.Stop();
-                        var durationMs = sw.ElapsedMilliseconds;
-
-                        // write results to Excel
-                        await runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet); //.ContinueWith((ascendant) => {
+                    // write results to Excel
+                    await runner.Host.Proxy.OutputStaticResultAsync(res, runner.SelectedWorksheet); //.ContinueWith((ascendant) => {
                         
-                        runner.OutputMessage(
-                            string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
-                                            res.Rows.Count == 1 ? "" : "s"), durationMs);
-                        runner.RowCount = res.Rows.Count;
-                        runner.ActivateOutput();
-                        runner.SetResultsMessage("Static results sent to Excel", OutputTarget.Static);
-                        //},TaskScheduler.Default);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "{class} {method} {message}", nameof(ResultsTargetExcelStatic), nameof(OutputResultsAsync), ex.Message);
-                        runner.ActivateOutput();
-                        runner.OutputError(ex.Message);
-                    }
-                    finally
-                    {
-                        runner.QueryCompleted();
-                    }
+                    runner.OutputMessage(
+                        string.Format("Query Completed ({0:N0} row{1} returned)", res.Rows.Count,
+                                        res.Rows.Count == 1 ? "" : "s"), durationMs);
+                    runner.RowCount = res.Rows.Count;
+                    runner.ActivateOutput();
+                    runner.SetResultsMessage("Static results sent to Excel", OutputTarget.Static);
+
                 });
         }
 

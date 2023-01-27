@@ -21,6 +21,9 @@ using System.Threading;
 using DaxStudio.Common.Enums;
 using System.Xml.XPath;
 using System.IO;
+using static Dax.Vpax.Tools.VpaxTools;
+using DaxStudio.Controls.DataGridFilter.Querying;
+using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.UI.Model
 {
@@ -50,7 +53,69 @@ namespace DaxStudio.UI.Model
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
         private static readonly IEnumerable<string> _keywords;
-        private readonly SemaphoreSlim _commandSemaphore;
+         
+        private string processModelTemplate = @"
+<Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+  <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>3728f81b-7e47-4c69-b519-c5b3060c2a33</DatabaseID>
+    <Model>
+      <xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:sql=""urn:schemas-microsoft-com:xml-sql"">
+        <xs:element>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type=""row""/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:complexType name=""row"">
+          <xs:sequence>
+            <xs:element name=""RefreshType"" type=""xs:long"" sql:field=""RefreshType"" minOccurs=""0""/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:schema>
+      <row xmlns=""urn:schemas-microsoft-com:xml-analysis:rowset"">
+        <RefreshType>3</RefreshType>
+      </row>
+    </Model>
+  </Refresh>
+  <SequencePoint xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>3728f81b-7e47-4c69-b519-c5b3060c2a33</DatabaseID>
+  </SequencePoint>
+</Batch>
+";
+
+        private string processTableTemplate = @"
+<Batch Transaction=""true"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+  <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>Adventure Works</DatabaseID>
+    <Tables>
+      <xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:sql=""urn:schemas-microsoft-com:xml-sql"">
+        <xs:element>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type=""row""/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:complexType name=""row"">
+          <xs:sequence>
+            <xs:element name=""ID"" type=""xs:unsignedLong"" sql:field=""ID"" minOccurs=""0""/>
+            <xs:element name=""ID.Table"" type=""xs:string"" sql:field=""ID.Table"" minOccurs=""0""/>
+            <xs:element name=""RefreshType"" type=""xs:long"" sql:field=""RefreshType"" minOccurs=""0""/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:schema>
+      <row xmlns=""urn:schemas-microsoft-com:xml-analysis:rowset"">
+        <ID>22</ID>
+        <RefreshType>8</RefreshType>
+      </row>
+    </Tables>
+  </Refresh>
+  <SequencePoint xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>Adventure Works</DatabaseID>
+  </SequencePoint>
+</Batch>
+";
         static ConnectionManager()
         {
             _keywords = new List<string>()
@@ -67,19 +132,25 @@ namespace DaxStudio.UI.Model
         public ConnectionManager(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            _commandSemaphore = new SemaphoreSlim(1, 1);
             ConfigureRetryPolicy();
         }
 
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
 
         public IEnumerable<string> Keywords => _keywords;
-        public string ApplicationName => _connection.ApplicationName;
+        public string ApplicationName => _connection?.ApplicationName??"DAX Studio";
 
         public void Cancel()
         {
             _connection.Cancel();
         }
+
+        //public ConnectionManager Clone()
+        //{
+        //    var newConn = new ConnectionManager(_eventAggregator);
+        //    newConn.ConnectAsync(new ConnectEvent(ConnectionStringWithInitialCatalog, IsPowerPivot, ApplicationName, FileName??String.Empty, this.ServerType, false));
+        //    return newConn;
+        //}
 
         public void Close()
         {
@@ -126,18 +197,12 @@ namespace DaxStudio.UI.Model
             _connection?.ConnectionStringWithInitialCatalog ?? string.Empty;
 
         public ADOTabularDatabase Database => _retry.Execute(() => {
-            using (new SemaphoreSlimLock(_commandSemaphore))
-            {
-                return _connection?.Database;
-            }
+            return _connection?.Database;
         });
         public string DatabaseName => _retry.Execute(() => _connection?.Database?.Name ?? string.Empty);
         public DaxMetadata DaxMetadataInfo {
             get {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    return _connection?.DaxMetadataInfo;
-                }
+                return _connection?.DaxMetadataInfo;
             }
         }
         public DaxColumnsRemap DaxColumnsRemapInfo
@@ -163,9 +228,7 @@ namespace DaxStudio.UI.Model
                     }
 
                     var remapInfo = _retry.Execute(() => {
-                        using (new SemaphoreSlimLock(_commandSemaphore)) {
-                            return conn?.DaxColumnsRemapInfo;
-                        }
+                        return conn?.DaxColumnsRemapInfo;
                     });
                     return remapInfo;
                 }
@@ -207,11 +270,8 @@ namespace DaxStudio.UI.Model
                     {
                         conn = _connection;
                     }
-                    using (new SemaphoreSlimLock(_commandSemaphore))
-                    {
-                        var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
-                        return remapInfo;
-                    }
+                    var remapInfo = _retry.Execute(() => conn?.DaxTablesRemapInfo);
+                    return remapInfo;
                 }
                 catch (Exception ex)
                 {
@@ -235,10 +295,7 @@ namespace DaxStudio.UI.Model
         {
             return _retry.Execute(() =>
             {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    return _connection.ExecuteDaxQueryDataTable(query);    
-                }
+               return _connection.ExecuteDaxQueryDataTable(query);    
             });
         }
 
@@ -246,10 +303,7 @@ namespace DaxStudio.UI.Model
         {
             return _retry.Execute(() =>
             {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    return _connection.ExecuteReader(query, paramList);
-                }
+                return _connection.ExecuteReader(query, paramList);
             });
         }
         public string FileName
@@ -287,16 +341,13 @@ namespace DaxStudio.UI.Model
                 {
                     bool hasChanged = await Task.Run(() =>
                     {
-                        using (new SemaphoreSlimLock(_commandSemaphore))
-                        {
-                            var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
-                            conn.ChangeDatabase(this.SelectedDatabaseName);
-                            if (conn.State != ConnectionState.Open) conn.Open();
-                            var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
-                            _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
-                            conn.Close(true); // close and end the session
-                            return dbChanges;
-                        }
+                        var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
+                        conn.ChangeDatabase(this.SelectedDatabaseName);
+                        if (conn.State != ConnectionState.Open) conn.Open();
+                        var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
+                        _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
+                        conn.Close(true); // close and end the session
+                        return dbChanges;
                     });
                     return hasChanged;
                 }
@@ -314,13 +365,10 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularDatabaseCollection Databases {
             get {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    return _connection.Databases;
-                }
+                return _connection.Databases;
             }
         }
-        public bool IsAdminConnection => _connection?.IsAdminConnection ?? false;
+        public bool IsAdminConnection => _connection.ServerType != ServerType.Offline && ( _connection?.IsAdminConnection ?? false);
 
         public bool IsConnected { get
             {
@@ -341,22 +389,19 @@ namespace DaxStudio.UI.Model
         public void Refresh()
         {
             if (_connection?.State == ConnectionState.Open) {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    _connection.Refresh();
-                }
+                _connection.Refresh();
             }
         }
         public string ServerEdition => _connection.ServerEdition;
         public string ServerLocation => _connection.ServerLocation;
-        public string ServerMode { get { using (new SemaphoreSlimLock(_commandSemaphore)) { return _connection.ServerMode; } } }
+        public string ServerMode { get { return _connection.ServerMode; } }
         public string ServerName => _connection?.ServerName ?? string.Empty;
         public string ServerNameForHistory => !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
 
-        public int SPID { get { using (new SemaphoreSlimLock(_commandSemaphore)) { return _connection.SPID; } } }
+        public int SPID { get { return _connection.SPID; } }
         public string ShortFileName => _connection.ShortFileName;
 
         public  bool ShouldAutoRefreshMetadata( IGlobalOptions options)
@@ -390,24 +435,21 @@ namespace DaxStudio.UI.Model
         public ADOTabularDatabaseCollection GetDatabases()
         {
             return _retry.Execute(() => {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    return _connection.Databases;
-                }
+                return _connection.Databases;
             });
         }
 
         public ADOTabularModelCollection GetModels()
         {
-            return _retry.Execute(() => { using (new SemaphoreSlimLock(_commandSemaphore)) { return _connection.Database.Models; } });
+            return _retry.Execute(() => { return _connection.Database.Models; });
     }
 
         public ADOTabularTableCollection GetTables()
         {
-            using (new SemaphoreSlimLock(_commandSemaphore))
+            using (var _tempConn = _connection.Clone())
             {
-                return _connection.Database.Models[SelectedModelName].Tables;
-            }
+                return _tempConn.Database.Models[SelectedModelName].Tables;
+            }            
         }
 
         public AdomdType Type => AdomdType.AnalysisServices; // _connection.Type;
@@ -493,13 +535,10 @@ namespace DaxStudio.UI.Model
         {
             _retry.Execute(() =>
             {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    var tempConn = _connection.Clone(true);
-                    tempConn.Open();
-                    tempConn.Ping();
-                    tempConn.Close(false);
-                }
+                var tempConn = _connection.Clone(true);
+                tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close(false);
             });
         }
 
@@ -507,13 +546,10 @@ namespace DaxStudio.UI.Model
         {
             _retry.Execute(() =>
             {
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    var tempConn = _connection.Clone(true);
-                    tempConn.Open();
-                    tempConn.PingTrace();
-                    tempConn.Close(false);
-                }
+                var tempConn = _connection.Clone(true);
+                tempConn.Open();
+                tempConn.PingTrace();
+                tempConn.Close(false);
             });            
         }
 
@@ -524,19 +560,13 @@ namespace DaxStudio.UI.Model
                 var tempConn = _connection.CloneWithoutRLS();
                 //tempConn.Open();
                 var tmpDb = tempConn.Database;
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    tmpDb.ClearCache();
-                }
+                tmpDb.ClearCache();
                 tempConn.Close();
             }
             else
             {
                 var db = this.Database;
-                using (new SemaphoreSlimLock(_commandSemaphore))
-                {
-                    db.ClearCache();
-                }
+                db.ClearCache();
             }
         }
         public ADOTabularModel SelectedModel { get; set; }
@@ -703,10 +733,51 @@ namespace DaxStudio.UI.Model
             return resultExpression;
         }
 
+        public List<ADOTabularMeasure> FindDependentMeasures(string measureName)
+        {
+            // New algorithm using DEPENDENCY view
+            // 
+            // TODO we could pass a query or a string as a parameter,
+            // so that if the entire query is used as a parameter we generate all the measures
+            var modelMeasures = GetAllMeasures();
+
+            var dependentMeasures = new List<ADOTabularMeasure>();
+
+            Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
+            scanMeasures.Enqueue(modelMeasures.First(m => m.Name == measureName));
+
+            while (scanMeasures.Count > 0)
+            {
+                var measure = scanMeasures.Dequeue();
+                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                dependentMeasures.Add(measure);
+
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='EVALUATE {{ {measure.Expression} }}'";
+
+                using (var dr = ExecuteReader(dmvDependency, null))
+                {
+                    while (dr.Read())
+                    {
+                        var referencedObjectType = dr.GetString(0);
+                        if (referencedObjectType != "MEASURE") continue;
+                        // var referencedTable = dr.GetString(1);
+                        var referencedMeasureName = dr.GetString(2);
+                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        {
+                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
+                            scanMeasures.Enqueue(dependentMeasure);
+                        }
+                    }
+                }
+            }
+            return dependentMeasures;
+        }
+
         public void SetSelectedDatabase(IDatabaseReference database)
         {
+            if (database.Name == SelectedDatabase.Name) return;
+
             var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
-            //if (database.Name == _connection.Database?.Name) return;
             _retry.Execute(ctx =>
             {
                 if (database != null)_connection.ChangeDatabase(database.Name);
@@ -716,32 +787,47 @@ namespace DaxStudio.UI.Model
             }, context);
         }
 
-        internal void Connect(ConnectEvent message)
+        internal async Task ConnectAsync(ConnectEvent message)
         {
             IsConnecting = true;
-            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(Connect), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
-            _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
-            ServerType = message.ServerType;
-            FileName = GetFileName(message);
-            IsPowerPivot = message.PowerPivotModeSelected;
-            _connection.Open();
-            SelectedDatabase = _connection.Database;
-            
-            _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent()).Wait();
-            _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name)).Wait();
-            _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews)).Wait();
-            _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups)).Wait();
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
+
+            if (message.ServerType == ServerType.Offline)
+                OpenOfflineConnection(message);
+            else
+                OpenOnlineConnection(message);
+
+
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+            await _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
+            await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
+            await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
             Thread.Sleep(500);
         }
 
-        private string GetFileName(ConnectEvent message)
+        private void OpenOfflineConnection(ConnectEvent message)
         {
-            switch (message.ServerType)
-            {
-                case ServerType.PowerPivot: return message.WorkbookName;
-                case ServerType.PowerBIDesktop: return message.PowerBIFileName;
-                default: return string.Empty;
-            }
+
+            var vpaContent = message.VpaxContent; //Dax.Vpax.Tools.VpaxTools.ImportVpax(message.FileName);
+            _connection = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            _connection.ServerType = ServerType.Offline;
+            _connection.Visitor = new MetadataVisitorVpax(_connection, vpaContent.DaxModel, vpaContent.TomDatabase);
+            ServerType = message.ServerType;
+            FileName = message.FileName??String.Empty;
+            IsPowerPivot = message.PowerPivotModeSelected;
+            Databases.Add(_connection.Database);
+            SelectedDatabase = _connection.Database;
+            _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+        }
+
+        private void OpenOnlineConnection(ConnectEvent message)
+        {
+            _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+            ServerType = message.ServerType;
+            FileName = message.FileName;
+            IsPowerPivot = message.PowerPivotModeSelected;
+            _connection.Open();
+            SelectedDatabase = _connection.Database;
         }
 
         public async Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
@@ -769,8 +855,12 @@ namespace DaxStudio.UI.Model
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)
         {
             return _retry.Execute(() => {
-                var tvt =  SelectedModel.TreeViewTables(options, _eventAggregator, metadataPane);
-                return tvt;
+                using (var tmpConn = _connection.Clone(false))
+                {
+                    var tmpModel = tmpConn.Database.Models[SelectedModel.Name];
+                    var tvt = tmpModel.TreeViewTables(options, _eventAggregator, metadataPane);
+                    return tvt;
+                }
             });
         }
 
@@ -867,7 +957,7 @@ namespace DaxStudio.UI.Model
                 builder["Roles"] = roles;
             }
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true);
             connEvent.ActiveTraces = activeTraces;
             await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             
@@ -893,7 +983,7 @@ namespace DaxStudio.UI.Model
             builder.Remove("Roles");
             builder.Remove("EffectiveUsername");
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, string.Empty, this.ApplicationName, FileName, ServerType, true);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true);
             connEvent.ActiveTraces = activeTraces;
             _eventAggregator.PublishOnUIThreadAsync(connEvent);
 
@@ -941,6 +1031,60 @@ namespace DaxStudio.UI.Model
                 }
             }
             return result;
+        }
+
+        public async Task ProcessDatabaseAsync(string refreshType)
+        {
+//            var refreshCommand = $@"
+//{{  
+//    ""refresh"": {{
+//        ""type"": ""{refreshType}"",  
+//        ""objects"": [
+//            {{
+//                ""database"": ""{_connection.Database.Name}""
+//            }}  
+//        ]  
+//    }}
+//}}";
+            var refreshCommand = $@"
+<Process xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">  
+  <Object>  
+    <DatabaseID>{_connection.Database.Id}</DatabaseID>  
+  </Object>  
+  <Type>{refreshType}</Type>  
+</Process>
+";
+
+            await Task.Run(() => _connection.ExecuteNonQuery(refreshCommand));
+        }
+
+        public async Task ProcessTableAsync(string tableName)
+        {
+            var refreshType = "defragment";
+//            var refreshCommand = $@"
+//{{  
+//    ""refresh"": {{
+//        ""type"": ""{refreshType}"",  
+//        ""objects"": [
+//            {{
+//                ""database"": ""{_connection.Database.Name}"",
+//                ""table"": ""{tableName}""
+//            }}  
+//        ]  
+//    }}
+//}}";
+            var refreshCommand = $@"
+<Process xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">  
+  <Object>  
+    <DatabaseID>{_connection.Database.Id}</DatabaseID>  
+    <Table></Table>
+  </Object>  
+  <Type>{refreshType}</Type>  
+</Process>
+";
+            await Task.Run(() => _connection.ExecuteNonQuery(refreshCommand));
+            return;
+
         }
 
     }

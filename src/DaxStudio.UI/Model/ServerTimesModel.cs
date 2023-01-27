@@ -13,7 +13,7 @@ namespace DaxStudio.UI.Model
         public double  StorageEngineDurationPercentage {get;set;}
         public long FormulaEngineDuration {get;set;}
         public double FormulaEngineDurationPercentage { get; set; }
-        public BindableCollection<TraceStorageEngineEvent> StoreageEngineEvents { get; set; }
+        public BindableCollection<TraceStorageEngineEvent> StorageEngineEvents { get; set; }
         public long StorageEngineCpu { get; set; }
         public long TotalDuration { get; set; }
         public long StorageEngineQueryCount { get; set; }

@@ -55,7 +55,7 @@ namespace ADOTabular
             if (table == null) return;
             if (_tables == null)
             {
-                _tables = new SortedDictionary<string, ADOTabularTable>();
+                _tables ??= new SortedDictionary<string, ADOTabularTable>();
             }
             _tables.Add(table.Name, table);
 
@@ -67,6 +67,11 @@ namespace ADOTabular
         public bool ContainsKey(string index)
         {
             return InternalTableCollection.ContainsKey(index);
+        }
+
+        public bool TryGetValue(string index, out ADOTabularTable table)
+        {
+            return InternalTableCollection.TryGetValue(index, out table);
         }
 
         public ADOTabularTable this[int index]
