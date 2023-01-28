@@ -11,6 +11,7 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static LargeXlsx.XlsxAlignment;
 
@@ -21,7 +22,7 @@ namespace DaxStudio.UI.Model
     {
         private readonly IDaxStudioHost _host;
         private readonly IEventAggregator _eventAggregator;
-
+        private static Regex columnNameRegex = new Regex("(?:'?)(?<table>[^'\\[]+)(?:'?)(?<column>.+)(?:$)", RegexOptions.Compiled | RegexOptions.Singleline);
         [ImportingConstructor]
         public ResultsTargetExcelFile(IDaxStudioHost host, IEventAggregator eventAggregator)
         {
@@ -158,9 +159,17 @@ namespace DaxStudio.UI.Model
             {
                 // write out the column name
                 xlsxWriter.Write(colName);
-
+                var daxColumnName = reader.GetName(colIdx);
                 // cache the column formatstrings as Excel Styles
-                reader.Connection.Columns.TryGetValue(reader.GetName(colIdx), out daxCol);
+                reader.Connection.Columns.TryGetValue(daxColumnName, out daxCol);
+                // in case the table name is quote, try stripping the quotes and checking for  the column
+                if (daxCol == null && daxColumnName[0] != '\'')
+                {
+                    daxColumnName = columnNameRegex.Replace(daxColumnName, "'${table}'${column}");
+                    reader.Connection.Columns.TryGetValue(daxColumnName, out daxCol);
+                }
+
+
                 if (daxCol != null)
                     columnStyles[colIdx] = GetStyle(daxCol);
                 else
