@@ -1,4 +1,5 @@
 ﻿using Dax.ViewModel;
+using DaxStudio.UI.ViewModels;
 using System;
 using System.Globalization;
 using System.Windows.Data;
@@ -9,9 +10,9 @@ namespace DaxStudio.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var col = value as VpaColumn;
+            var col = value as VpaColumnViewModel;
             if (col == null) return Binding.DoNothing;
-            return $"'{col.Table.TableName}'[{col.ColumnName}]";
+            return $"'{col.TableName}'[{col.ColumnName}]";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

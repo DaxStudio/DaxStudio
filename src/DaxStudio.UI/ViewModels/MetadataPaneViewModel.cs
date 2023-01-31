@@ -1104,6 +1104,18 @@ namespace DaxStudio.UI.ViewModels
             await RefreshTablesAsync();
         }
 
+        public bool ShowDataRefreshMenu
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
     }
 
 

@@ -401,6 +401,11 @@
                             <Image Source="{DynamicResource copyDrawingImage}"/>
                         </MenuItem.Icon>
                     </MenuItem>
+                    <MenuItem Header="Data Refresh"  Visibility="{Binding ShowDataRefreshMenu}">
+                        <MenuItem Header="Defragment" cal:Message.Attach="[Event Click] = [Action ProcessDatabaseDefrag()]"></MenuItem>
+                        <MenuItem Header="Full" cal:Message.Attach="[Event Click] = [Action ProcessDatabaseFull()]"></MenuItem>
+                        <MenuItem Header="Recalculate" cal:Message.Attach="[Event Click] = [Action ProcessDatabaseRecalc()]"></MenuItem>
+                    </MenuItem>
                 </ContextMenu>
             </ComboBox.ContextMenu>
         </ComboBox>
