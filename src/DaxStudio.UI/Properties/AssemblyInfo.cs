@@ -9,7 +9,7 @@ using System.Windows;
 // associated with an assembly.
 [assembly: AssemblyTitle("DaxStudio.UI")]
 [assembly: AssemblyDescription("DaxStudio Common UI Library")]
-
+[assembly: InternalsVisibleTo("DaxStudio.Tests")]
 // moved to CommonAssemblyInfo.cs at Solution level
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("DaxStudio.org")]

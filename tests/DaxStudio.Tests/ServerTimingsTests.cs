@@ -172,30 +172,33 @@ namespace DaxStudio.Tests
             vm.Events.Enqueue(e2);
             vm.Events.Enqueue(e3);
 
+            vm.QueryStartDateTime = e3.StartTime;
+            vm.QueryEndDateTime = e3.EndTime;
+            
             vm.ProcessAllEvents();
 
-            var scanBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0,0,255));
-            var batchBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 255));
-            var internalBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 0));
-            var feBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255,0,0));
-
-            var img = WaterfallHeatmapImageGenerator.GenerateVector(vm.StorageEngineEvents.ToList(), 75, 10,feBrush, scanBrush, batchBrush, internalBrush) ;
-
-
-            // assert overlaps are detected
             Assert.AreEqual(2, vm.StorageEngineEvents.Count);
             Assert.AreEqual(75, vm.TotalDuration);
             Assert.AreEqual(35, vm.StorageEngineDuration);
             Assert.AreEqual(40, vm.FormulaEngineDuration);
 
-            var rectangles = ((GeometryGroup)((GeometryDrawing)((DrawingGroup)img.Drawing).Children[0]).Geometry).Children;
+            // generate vector image
+            var scanBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 0, 255));
+            var batchBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 255));
+            var internalBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 0));
+            var feBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 0, 0));
 
-            Assert.AreEqual(2, rectangles.Count);
-            Assert.AreEqual((40/76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Left);
-            Assert.AreEqual((5/76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Left);
+            var img = WaterfallHeatmapImageGenerator.GenerateVector(vm.StorageEngineEvents.ToList(), 75, 10, feBrush, scanBrush, batchBrush, internalBrush);
 
-            Assert.AreEqual((15 / 76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Width);
-            Assert.AreEqual((20 / 76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Width);
+            var rectangles = ((GeometryGroup)((GeometryDrawing)((DrawingGroup)img.Drawing).Children[1]).Geometry).Children;
+
+            Assert.AreEqual(2, rectangles.Count, "Expected 2 scan rectangles");
+            
+            Assert.AreEqual( (5.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Left,"First rectangle left position");
+            Assert.AreEqual((40.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Left,"Second rectangle left position");
+
+            Assert.AreEqual((20.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Width, "First rectangle length");
+            Assert.AreEqual((15.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Width,"Second rectangle length");
         }
 
     }
