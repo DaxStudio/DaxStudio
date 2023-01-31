@@ -368,7 +368,7 @@ namespace DaxStudio.UI.ViewModels
             public string TotalSegments => "The total number of segments";
             public string Pageable => "The number of pageable segments";
             public string Resident => "The number of memory resident segments";
-            public string Temperature => "A scaled numeric feequency of segment access";
+            public string Temperature => "A scaled numeric frequency of segment access";
             public string LastAccessed => "Last access time of a pageable segment";
             public string Partitions => "The number of partitions";
             public string Columns => "The number of columns in the table";
