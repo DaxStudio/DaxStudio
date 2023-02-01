@@ -749,6 +749,11 @@
                                                  Grid.ColumnSpan="2"/>
                                 <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show the XMLA commands in the All Queries window. The new setting will be active after you restart DAX Studio.</TextBlock>
 
+                                <ui:ToggleSwitch Grid.Row="5" Grid.Column="0" x:Name="EnablePasteFileOnExistingWindow" VerticalAlignment="Top" Margin="2,7,2,0" 
+                                                 OnContent="Paste file content with drag-and-drop" 
+                                                 OffContent="Paste file content with drag-and-drop"
+                                                 Grid.ColumnSpan="2"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Paste the content of the file on existing connections replacing the current DAX code by using CTRL+ALT while doing drag-and-drop.</TextBlock>
 
                             </Grid>
                         </GroupBox>

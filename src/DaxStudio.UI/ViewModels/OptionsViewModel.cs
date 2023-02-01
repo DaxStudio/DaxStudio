@@ -1443,6 +1443,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _enablePasteFileOnExistingWindow;
+        [DataMember, DefaultValue(false)]
+        public bool EnablePasteFileOnExistingWindow
+        {
+            get => _enablePasteFileOnExistingWindow;
+
+            set
+            {
+                _enablePasteFileOnExistingWindow = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(EnablePasteFileOnExistingWindow), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => EnablePasteFileOnExistingWindow);
+
+            }
+        }
+
         #endregion
 
 

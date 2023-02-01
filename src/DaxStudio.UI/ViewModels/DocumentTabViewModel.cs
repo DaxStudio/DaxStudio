@@ -28,6 +28,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<NewDocumentEvent>
         , IHandle<OpenFileEvent>
         , IHandle<OpenDaxFileEvent>
+        , IHandle<PasteDaxFileEvent>
         , IHandle<RecoverNextAutoSaveFileEvent>
         , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
@@ -182,6 +183,30 @@ namespace DaxStudio.UI.ViewModels
         //else return new Theme.DaxStudioLightTheme();
 
         public IAutoSaver AutoSaver { get; }
+
+        public async Task PasteQueryDocumentAsync(string fileName )
+        {
+            await PasteQueryDocumentAsync(fileName, null);
+        }
+
+        public async Task PasteQueryDocumentAsync(string fileName, DocumentViewModel sourceDocument)
+        {
+            try
+            {
+                // 1 Open BlankDocument
+                if (string.IsNullOrEmpty(fileName)) await OpenNewBlankDocumentAsync(sourceDocument);
+                // 2 Open Document in current window even if it's not empty!
+                else if (ActiveDocument != null) OpenFileInActiveDocument(fileName);
+                // 3 Open Document in a new window if there is no current window
+                else await OpenFileInNewWindowAsync(fileName);
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error pasting DAX file in current document: {ex.Message}";
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(PasteQueryDocumentAsync), msg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+            }
+        }
 
         public async Task NewQueryDocumentAsync(string fileName)
         {
@@ -351,7 +376,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
         {
-            await NewQueryDocumentAsync("",message.ActiveDocument);
+            await NewQueryDocumentAsync("", message.ActiveDocument);
         }
 
         public async Task HandleAsync(OpenFileEvent message, CancellationToken cancellationToken)
@@ -381,6 +406,11 @@ namespace DaxStudio.UI.ViewModels
         public async Task HandleAsync(OpenDaxFileEvent message, CancellationToken cancellationToken)
         {
             await NewQueryDocumentAsync(message.FileName);
+        }
+
+        public async Task HandleAsync(PasteDaxFileEvent message, CancellationToken cancellationToken)
+        {
+            await PasteQueryDocumentAsync(message.FileName);
         }
 
         public async Task TabClosing(object sender, DocumentClosingEventArgs args)

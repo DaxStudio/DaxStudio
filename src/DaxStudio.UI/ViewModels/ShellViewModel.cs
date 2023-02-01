@@ -649,6 +649,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (!string.IsNullOrEmpty(app.Args().FileName))
                 {
+                    // TODOPASTE
                     _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
                 }
                 else
@@ -723,8 +724,14 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // Open the first file in the list
-            var files = ((DataObject)dropInfo.Data).GetFileDropList();           
-            await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(files[0]));
+            var files = ((DataObject)dropInfo.Data).GetFileDropList();
+            object targetEvent =
+                (dropInfo.KeyStates & (DragDropKeyStates.ControlKey | DragDropKeyStates.AltKey)) == (DragDropKeyStates.ControlKey | DragDropKeyStates.AltKey)
+                && Options.EnablePasteFileOnExistingWindow
+                ? (object) new PasteDaxFileEvent(files[0])            
+                : (object) new OpenDaxFileEvent(files[0]);
+            await _eventAggregator.PublishOnUIThreadAsync(targetEvent);
+            
 
             // TODO we should look at looping over all files, but currently this does not work,
             //      it appears that the second file starts to open before the first has finished opening 
