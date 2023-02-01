@@ -1443,10 +1443,15 @@ namespace DaxStudio.UI.ViewModels
                 if (this.StorageEngineEvents.Count == 0) return new DrawingImage();
                 if (_storageEventHeatmap != null) return _storageEventHeatmap;
                 var element = (FrameworkElement)this.GetView();
-                Brush scanBrush = (Brush)element.FindResource("Theme.Brush.Accent");
-                Brush feBrush = (Brush)element.FindResource("Theme.Brush.Accent2");
-                Brush batchBrush = (Brush)element.FindResource("Theme.Brush.Accent1");
-                Brush internalBrush = (Brush)element.FindResource("Theme.Brush.Accent3");
+
+                // TODO WATERFALL
+                // I manually applied the colors from the light theme because
+                // I was always getting the colors from the dark theme
+                // even though the light theme is selected
+                Brush scanBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF228ED6"); // (Brush)element.FindResource("Theme.Brush.Accent");
+                Brush feBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#FFFAC700"); // (Brush)element.FindResource("Theme.Brush.Accent2");
+                Brush batchBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF64B0E2"); // (Brush)element.FindResource("Theme.Brush.Accent1");
+                Brush internalBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF1B72AB"); // (Brush)element.FindResource("Theme.Brush.Accent3");
 
                 //_storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateVector(this.StorageEngineEvents.ToList(), 500, 10, feBrush, scanBrush, batchBrush, internalBrush  );
                 _storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateBitmap(this.StorageEngineEvents.ToList(), 5000, 10, feBrush, scanBrush, batchBrush, internalBrush);
