@@ -523,8 +523,6 @@ namespace DaxStudio.UI.ViewModels
                 if (file.EndsWith(".dax", StringComparison.InvariantCultureIgnoreCase)
                  || file.EndsWith(".msdax", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    // TODOPASTE
-
                     _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(files[0]));
                     _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(files[0]));  // add this file to the recently used list
                 } else

@@ -649,7 +649,6 @@ namespace DaxStudio.UI.ViewModels
 
                 if (!string.IsNullOrEmpty(app.Args().FileName))
                 {
-                    // TODOPASTE
                     _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
                 }
                 else
