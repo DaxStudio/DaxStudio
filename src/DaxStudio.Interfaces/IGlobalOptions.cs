@@ -114,6 +114,7 @@ namespace DaxStudio.Interfaces
         bool VpaxReadStatisticsFromData { get; set; }
         bool VpaxReadStatisticsFromDirectQuery { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
+        bool VpaxAdjustSegmentsMetrics { get; set; }
 
         bool ShowDebugCommas { get; set; }
         bool ShowXmlaInAllQueries { get; set; }

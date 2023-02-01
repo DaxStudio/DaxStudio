@@ -617,6 +617,21 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
+        
+        private bool _vpaxAdjustSegmentsMetrics = false;
+        [DataMember, DefaultValue(false)]
+        public bool VpaxAdjustSegmentsMetrics
+        {
+            get => _vpaxAdjustSegmentsMetrics;
+            set
+            {
+                if (_vpaxAdjustSegmentsMetrics == value) return;
+                _vpaxAdjustSegmentsMetrics = value;
+                NotifyOfPropertyChange(() => VpaxAdjustSegmentsMetrics);
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(VpaxAdjustSegmentsMetrics), value, _isInitializing, this);
+            }
+        }
 
         [Category("Query History")]
         [DisplayName("Show Trace Timings (SE/FE)")]

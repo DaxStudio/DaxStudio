@@ -762,9 +762,11 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="94"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -782,12 +784,16 @@
                                                  OnContent="Read statistics from data"
                                                  OffContent="Read statistics from data" Grid.ColumnSpan="2" Margin="2,7,2,0" />
                                 <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Scan the data to retrieve statistics about columns, tables, and relationships. It could be a long operation in large database.</TextBlock>
-                                <ui:ToggleSwitch Grid.Row="4" Grid.Column="0" x:Name="VpaxReadStatisticsFromDirectQuery" VerticalAlignment="Top" 
+                                <ui:ToggleSwitch Grid.Row="4" Grid.Column="0" x:Name="VpaxAdjustSegmentsMetrics" VerticalAlignment="Top" 
+                                                 OnContent="Automatically adjust segments metrics"
+                                                 OffContent="Display original segment metrics" Grid.ColumnSpan="2" Margin="2,7,2,0" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Segment metrics can be adjusted automatically (e.g. by multiplying the original values) to display easier-to-read numbers.</TextBlock>
+                                <ui:ToggleSwitch Grid.Row="6" Grid.Column="0" x:Name="VpaxReadStatisticsFromDirectQuery" VerticalAlignment="Top" 
                                                  OnContent="Read statistics from DirectQuery tables"
                                                  OffContent="Ignore statistics from DirectQuery tables" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include DirectQuery tables in statistics collection</TextBlock>
-                                <Label Grid.Row="6" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
-                                <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="6" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="100" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
+                                <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include DirectQuery tables in statistics collection</TextBlock>
+                                <Label Grid.Row="8" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
+                                <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="9" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
                             </Grid>
                         </GroupBox>
                     </WrapPanel>
