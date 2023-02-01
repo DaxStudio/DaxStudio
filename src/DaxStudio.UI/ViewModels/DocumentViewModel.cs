@@ -590,6 +590,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
+        public bool FormatXmSql => Options.FormatXmSql;
+        
         public bool WordWrap => Options.EditorWordWrap;
 
         public bool ConvertTabsToSpaces => Options.EditorConvertTabsToSpaces;

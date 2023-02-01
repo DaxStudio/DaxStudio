@@ -69,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showQueryPlanNextLine;
         //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
+        private bool _formatXmSql;
         private bool _showWaterfallOnRows;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
@@ -346,7 +347,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [DisplayName("Waterfall background on rows (default)")]
+        [DisplayName("Format xmSQL code")]
+        [Category("Server Timings")]
+        [Description("Format xmSQL code by splitting long lines and indenting by semantics.")]
+        [DataMember, DefaultValue(true)]
+        public bool FormatXmSql
+        {
+            get => _formatXmSql;
+            set
+            {
+                if (_formatXmSql == value) return;
+                _formatXmSql = value;
+                NotifyOfPropertyChange(() => FormatXmSql);
+                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(FormatXmSql), value, _isInitializing, this);
+            }
+        }
+        
+                [DisplayName("Waterfall background on rows (default)")]
         [Category("Server Timings")]
         [Description("Show by deafult the waterfall background as a background on storage engine event rows.")]
         [DataMember, DefaultValue(true)]

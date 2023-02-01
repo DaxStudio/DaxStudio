@@ -17,7 +17,7 @@ namespace DaxStudio.UI.Converters {
     /// </summary>
     [ValueConversion(typeof(string), typeof(object))]
     public sealed class XmSqlToDocumentConverter : IValueConverter {
-        /// <summary>
+       /// <summary>
         /// Converts a string containing valid XAML into WPF objects.
         /// </summary>
         /// <param name="value">The string to convert.</param>
@@ -33,24 +33,53 @@ namespace DaxStudio.UI.Converters {
             if (s != null) {
                 Paragraph paragraph = new Paragraph();
                 // paragraph.Margin = new Thickness(0);
-                while (s.IndexOf("|~S~|") != -1) {
-                    //up to |~S~| is normal
-                    paragraph.Inlines.Add(new Run(s.Substring(0, s.IndexOf("|~S~|"))));
-                    //between |~S~| and |~E~| is highlighted
-                    int length = s.IndexOf("|~E~|") - (s.IndexOf("|~S~|") + 5);
-                    if (length < 0)
+                int posHighlight = s.IndexOf("|~S~|");
+                int posKeyword = s.IndexOf("|~K~|");
+                int posEnd = s.IndexOf("|~E~|");
+                while (posHighlight != -1 || posKeyword != -1) {
+                    if (posHighlight >= 0 && (posHighlight < posKeyword || posKeyword == -1))
                     {
-                        Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
-                        Debug.WriteLine(s);
-                        break;
+                        //up to |~S~| is normal
+                        paragraph.Inlines.Add(new Run(s.Substring(0, posHighlight)));
+                        //between |~S~| and |~E~| is highlighted
+                        int length = posEnd - (posHighlight + 5);
+                        if (length < 0)
+                        {
+                            Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
+                            Debug.WriteLine(s);
+                            break;
+                        }
+                        var highlightRun = new Run(s.Substring(posHighlight + 5, length))
+                        { FontWeight = FontWeights.Bold };
+                        highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
+                        highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
+                        paragraph.Inlines.Add(highlightRun);
+                        //the rest of the string (after the |~E~|)
                     }
-                    var highlightRun = new Run(s.Substring(s.IndexOf("|~S~|") + 5, length))
-                    { FontWeight = FontWeights.Bold};
-                    highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
-                    highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
-                    paragraph.Inlines.Add(highlightRun);
-                    //the rest of the string (after the |~E~|)
-                    s = s.Substring(s.IndexOf("|~E~|") + 5);
+                    else if (posKeyword >= 0)
+                    {
+                        //up to |~K~| is normal
+                        paragraph.Inlines.Add(new Run(s.Substring(0, posKeyword)));
+                        //between |~K~| and |~E~| is highlighted
+                        int length = posEnd - (posKeyword + 5);
+                        if (length < 0)
+                        {
+                            Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
+                            Debug.WriteLine(s);
+                            break;
+                        }
+                        var highlightRun = new Run(s.Substring(posKeyword + 5, length))
+                        { FontWeight = FontWeights.Bold };
+                        //highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
+                        //highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
+                        paragraph.Inlines.Add(highlightRun);
+                        //the rest of the string (after the |~E~|)
+                    }
+                    s = s.Substring(posEnd + 5);
+
+                    posHighlight = s.IndexOf("|~S~|");
+                    posKeyword = s.IndexOf("|~K~|");
+                    posEnd = s.IndexOf("|~E~|");
                 }
                 if (s.Length > 0) {
                     paragraph.Inlines.Add(new Run(s));

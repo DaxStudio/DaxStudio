@@ -32,6 +32,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 using DaxStudio.UI.Views;
 using System.Windows.Markup;
 using System.Runtime.InteropServices;
+using Fclp.Internals.Extensions;
+using SharpCompress.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -128,11 +130,18 @@ namespace DaxStudio.UI.ViewModels
         // - 'MinMaxColumnPositionCallback'
         // - 'Cond'
         private string _queryRichText = "";
+
+        private static string HighlightXmSqlKeyword(Match match)
+        {
+            return $"|~K~|{match.Value}|~E~|";
+        }
         public string QueryRichText {
             set {
                 if (Options.HighlightXmSqlCallbacks)
                 {
-                    var sb = new StringBuilder(value);
+                    string keywordsHighlighted = value.HighlightXmSqlKeywords(HighlightXmSqlKeyword);
+
+                    var sb = new StringBuilder(keywordsHighlighted);
                     // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
                     sb.Replace("|~S~|CallbackDataID|~E~|", "CallbackDataID");
                     sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
@@ -196,7 +205,7 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 default:
                     // Format xmSQL
-                    string queryFormatted = ev.TextData.FormatXmSql();
+                    string queryFormatted = Options.FormatXmSql ? ev.TextData.FormatXmSql() : ev.TextData;
                     // Replace column names
                     string queryRemapped = Options.ReplaceXmSqlColumnNames ? queryFormatted.ReplaceTableOrColumnNames( remapColumns ) : queryFormatted;
                     // replace table names
@@ -205,7 +214,7 @@ namespace DaxStudio.UI.ViewModels
                     Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags().RemoveDoubleBracketsInCallbacks() : queryRemapped;
                     QueryRichText = Query;
                     // Set flag in case any highlight is present
-                    HighlightQuery = QueryRichText.Contains("|~E~|");
+                    HighlightQuery = QueryRichText.Contains("|~S~|");
                     break;
             }
             
@@ -223,8 +232,13 @@ namespace DaxStudio.UI.ViewModels
             if (Query != null && Query?.Length > 0)
             {
                 long rows, bytes;
-                if (Query.ExtractEstimatedSize(out rows, out bytes))
+                if (Query.ExtractEstimatedSize(out rows, out bytes, out string formattedQuery))
                 {
+                    if (Options.FormatXmSql)
+                    {
+                        Query = formattedQuery;
+                    }
+
                     EstimatedRows = rows;
                     EstimatedKBytes = 1 + bytes / 1024;
                 }
@@ -268,12 +282,15 @@ namespace DaxStudio.UI.ViewModels
 
     public static class TraceStorageEngineExtensions {
         const string searchGuid = @"([_-]\{?([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}?)";
-        const string searchXmSqlFormatStep1 = @"\r\nSELECT([\w\W]+)\r\nFROM";
-        const string searchXmSqlFormatStep2 = @"LEFT OUTER JOIN\s+(.+?)\s+ON";
+        const string searchXmSqlFormatStep1 = @"\r\nSELECT([\w\W]+?)\r\nFROM";
+        const string searchXmSqlFormatStep2 = @"(LEFT OUTER JOIN|INNER JOIN)\s+(.+?)\s+ON";
+        const string searchXmSqlFormatStep3 = @"\,\r\n(DEFINE TABLE|CREATE)";
+        const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
         //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
         // const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]"; // old version that didn't include specific handling of callback content
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + @"[^\)]*\){1,}(\.[^\)]*\))?]|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
+        const string searchXmSqlKeywords = searchXmSqlCallbackStart + @"[^\)]*\){1,}(\.[^\)]*\))?]|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCAST|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
@@ -294,8 +311,11 @@ namespace DaxStudio.UI.ViewModels
         static Regex guidRemoval = new Regex(searchGuid, RegexOptions.Compiled);
         static Regex xmSqlFormatStep1 = new Regex(searchXmSqlFormatStep1, RegexOptions.Compiled);
         static Regex xmSqlFormatStep2 = new Regex(searchXmSqlFormatStep2, RegexOptions.Compiled);
+        static Regex xmSqlFormatStep3 = new Regex(searchXmSqlFormatStep3, RegexOptions.Compiled);
+        static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
+        static Regex xmSqlKeywords = new Regex(searchXmSqlKeywords, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
         static Regex xmSqlParenthesis = new Regex(searchXmSqlParenthesis, RegexOptions.Compiled);
         static Regex xmSqlAliasRemoval = new Regex(searchXmSqlAlias, RegexOptions.Compiled);
@@ -365,33 +385,52 @@ namespace DaxStudio.UI.ViewModels
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);
             return result;
         }
+        public static string HighlightXmSqlKeywords(this string xmSqlQuery, MatchEvaluator evaluator )
+        {
+            return xmSqlKeywords.Replace(xmSqlQuery, evaluator);
+        }
 
         private static string FormatStep1(Match match)
         {
-            return match.Value.Replace(",\r\n", ",\r\n\t").Replace("SELECT\r\n", "SELECT\r\n\t");
+            return match.Value
+                .Replace(",\r\n", ",\r\n\t")
+                .Replace("], [", "],\r\n\t[")
+                .Replace("SELECT\r\n", "SELECT\r\n\t");
         }
         private static string FormatStep2(Match match)
         {
             return match.Value.Substring(0,match.Value.Length-3) + "\r\n\t\tON";
         }
+        private static string FormatStep3(Match match)
+        {
+            return match.Value.Replace(",",",\r\n");
+        }
+        private static string FormatStep4(Match match)
+        {
+            return match.Value.Replace(" MANYTOMANY FROM", "\r\n\tMANYTOMANY\r\n\tFROM").Replace(" TO ","\r\n\t\tTO ");
+        }
 
         public static string FormatXmSql(this string xmSqlQuery)
         {
-            var step1 = xmSqlFormatStep1.Replace(xmSqlQuery, FormatStep1);
-            var step2 = xmSqlFormatStep2.Replace(step1, FormatStep2);
             // New line after ' :=  (only table name)
-            var stepTable = step2.Replace("] := ", "] :=\r\n");
-            // Replace TAB with 4 spaces
-            var stepFinal = stepTable; // stepTable.Replace("\t", "    ");
+            var stepTable = xmSqlQuery.Replace("] := ", "] :=\r\n");
+
+            var step1 = xmSqlFormatStep1.Replace(stepTable, FormatStep1);
+            var step2 = xmSqlFormatStep2.Replace(step1, FormatStep2);
+            var step3 = xmSqlFormatStep3.Replace(step2, FormatStep3);
+            var step4 = xmSqlFormatStep4.Replace(step3, FormatStep4);
+
+            var stepFinal = step4;
             return stepFinal;
         }
 
-        public static bool ExtractEstimatedSize(this string daxQuery, out long rows, out long bytes) {
+        public static bool ExtractEstimatedSize(this string daxQuery, out long rows, out long bytes, out string daxQueryFormatted) {
             var m = xmSqlPatternSize.Match(daxQuery);
             string rowsString = m.Groups["rows"].Value;
             string bytesString = m.Groups["bytes"].Value;
             bool foundRows = long.TryParse(rowsString, out rows);
             bool foundBytes = long.TryParse(bytesString, out bytes);
+            daxQueryFormatted = xmSqlPatternSize.Replace(daxQuery, $"Estimated size ( volume, marshalling bytes ) : {(foundRows ? rows.ToString("#,#") : rowsString)}, {(foundBytes ? bytes.ToString("#,#") : bytesString)}");
             return foundRows && foundBytes;
         }
 

@@ -123,6 +123,7 @@ namespace DaxStudio.Interfaces
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }
         bool ReplaceXmSqlTableNames { get; set; }
+        bool FormatXmSql { get; set; }
 
         bool ShowWaterfallOnRows { get; set; }
 
