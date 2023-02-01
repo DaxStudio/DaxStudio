@@ -618,8 +618,8 @@ namespace DaxStudio.UI.ViewModels
 
         }
         
-        private bool _vpaxAdjustSegmentsMetrics = false;
-        [DataMember, DefaultValue(false)]
+        private bool _vpaxAdjustSegmentsMetrics = true;
+        [DataMember, DefaultValue(true)]
         public bool VpaxAdjustSegmentsMetrics
         {
             get => _vpaxAdjustSegmentsMetrics;
