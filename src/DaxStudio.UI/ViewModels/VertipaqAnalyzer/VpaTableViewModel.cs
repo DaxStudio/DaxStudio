@@ -2,6 +2,7 @@
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -17,11 +18,13 @@ namespace DaxStudio.UI.ViewModels
         private readonly VpaTable _table;
         private readonly VertiPaqAnalyzerViewModel _parentViewModel;
         private readonly VpaSort _sort;
-        public VpaTableViewModel(VpaTable table, VertiPaqAnalyzerViewModel parentViewModel, VpaSort sort)
+        private IGlobalOptions _options;
+        public VpaTableViewModel(VpaTable table, VertiPaqAnalyzerViewModel parentViewModel, VpaSort sort, IGlobalOptions options)
         {
+            _options = options;
             _table = table;
             _parentViewModel = parentViewModel;
-            Columns = _table.Columns.Select(c => new VpaColumnViewModel(c, this));
+            Columns = _table.Columns.Select(c => new VpaColumnViewModel(c, this, options));
             if (Columns.Any()) {
                 ColumnMaxTotalSize = Columns.Max(c => c.TotalSize);
                 ColumnsMaxCardinality = Columns.Max(c => c.ColumnCardinality);
@@ -112,7 +115,7 @@ namespace DaxStudio.UI.ViewModels
         public long SegmentsTotalNumber => _table.SegmentsTotalNumber;
         public int? SegmentsPageable => _table.SegmentsPageable;
         public int? SegmentsResident => _table.SegmentsResident;
-        public double? SegmentsAverageTemperature => _table.SegmentsAverageTemperature * 1000;
+        public double? SegmentsAverageTemperature => _table.SegmentsAverageTemperature * ((bool)_options?.VpaxAdjustSegmentsMetrics ? 1000 : 1);
         public DateTime? SegmentsLastAccessed => _table.SegmentsLastAccessed;
         public long ReferentialIntegrityViolationCount => _table.ReferentialIntegrityViolationCount;
 

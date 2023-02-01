@@ -103,7 +103,7 @@ namespace DaxStudio.UI.ViewModels
                     // Skip the special column "RowNumber-GUID" that is not relevant for the analysis
                     const string ROWNUMBER_COLUMNNAME = "RowNumber-";
 
-                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table )).SelectMany(t => t.Columns.Where(c => !c.ColumnName.StartsWith(ROWNUMBER_COLUMNNAME)));
+                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table, _globalOptions )).SelectMany(t => t.Columns.Where(c => !c.ColumnName.StartsWith(ROWNUMBER_COLUMNNAME)));
                     _groupedColumns = CollectionViewSource.GetDefaultView(cols);
                     _groupedColumns.GroupDescriptions.Add(new TableGroupDescription("Table"));
                     // sort by TableSize then by TotalSize
@@ -124,7 +124,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_groupedRelationships == null && ViewModel != null)
                 {
-                    var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this, VpaSort.Relationship)).SelectMany(t => t.RelationshipsFrom);
+                    var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this, VpaSort.Relationship, _globalOptions)).SelectMany(t => t.RelationshipsFrom);
                     _groupedRelationships = CollectionViewSource.GetDefaultView(rels);
                     _groupedRelationships.GroupDescriptions.Add(new RelationshipGroupDescription("Table"));
                     _groupedRelationships.SortDescriptions.Add(new SortDescription("UsedSize", ListSortDirection.Descending));
@@ -142,7 +142,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var partitions = from t in ViewModel.Tables
                                      from p in t.Partitions
-                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this, VpaSort.Partition), this);
+                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this, VpaSort.Partition, _globalOptions), this, _globalOptions);
 
                     _groupedPartitions = CollectionViewSource.GetDefaultView(partitions);
                     _groupedPartitions.GroupDescriptions.Add(new PartitionGroupDescription("Table"));
@@ -160,7 +160,7 @@ namespace DaxStudio.UI.ViewModels
                 if (_sortedColumns == null && ViewModel != null)
                 {
                     long maxSize = ViewModel.Columns.Max(c => c.TotalSize);
-                    var cols = ViewModel.Columns.Select(c => new VpaColumnViewModel(c) { MaxColumnTotalSize = maxSize });
+                    var cols = ViewModel.Columns.Select(c => new VpaColumnViewModel(c,_globalOptions) { MaxColumnTotalSize = maxSize });
 
                     _sortedColumns = CollectionViewSource.GetDefaultView(cols);
                     _sortedColumns.SortDescriptions.Add(new SortDescription(nameof(VpaColumn.TotalSize), ListSortDirection.Descending));

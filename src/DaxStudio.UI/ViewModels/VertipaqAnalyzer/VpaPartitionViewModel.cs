@@ -21,8 +21,10 @@ namespace DaxStudio.UI.ViewModels
     {
         private readonly VpaPartition _partition;
         private readonly VertiPaqAnalyzerViewModel _parentViewModel;
-        public VpaPartitionViewModel(VpaPartition partition, VpaTableViewModel table, VertiPaqAnalyzerViewModel parentViewModel)
+        private IGlobalOptions _options;
+        public VpaPartitionViewModel(VpaPartition partition, VpaTableViewModel table, VertiPaqAnalyzerViewModel parentViewModel, IGlobalOptions options)
         {
+            _options = options;
             _partition = partition;
             _parentViewModel = parentViewModel;
             Table = table;
@@ -40,7 +42,7 @@ namespace DaxStudio.UI.ViewModels
         public int SegmentsTotalNumber => _partition.SegmentsTotalNumber;
         public int? SegmentsPageable => _partition.SegmentsPageable;
         public int? SegmentsResident => _partition.SegmentsResident;
-        public double? SegmentsAverageTemperature => _partition.SegmentsAverageTemperature * 1000;
+        public double? SegmentsAverageTemperature => _partition.SegmentsAverageTemperature * ((bool)_options?.VpaxAdjustSegmentsMetrics ? 1000 : 1);
         public DateTime? SegmentsLastAccessed => _partition.SegmentsLastAccessed;
 
         public int CompareTo(object obj)

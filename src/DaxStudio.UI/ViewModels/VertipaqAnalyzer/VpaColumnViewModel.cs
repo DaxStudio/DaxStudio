@@ -1,4 +1,5 @@
 ﻿using Dax.ViewModel;
+using DaxStudio.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,18 @@ namespace DaxStudio.UI.ViewModels
     public class VpaColumnViewModel
     {
         readonly VpaColumn _col;
+        private IGlobalOptions _options;
 
-        public VpaColumnViewModel(VpaColumn col)
+        public VpaColumnViewModel(VpaColumn col, IGlobalOptions options)
         {
             _col = col;
-            
+            _options = options;
         }
-        public VpaColumnViewModel(VpaColumn col, VpaTableViewModel table)
+        public VpaColumnViewModel(VpaColumn col, VpaTableViewModel table, IGlobalOptions options)
         {
             _col = col;
             Table = table;
+            _options = options;
         }
         public VpaTableViewModel Table { get; }
         public string TableColumnName => _col.TableColumnName;
@@ -40,7 +43,7 @@ namespace DaxStudio.UI.ViewModels
         public long PartitionsNumber => _col.PartitionsNumber;
         public int? SegmentsPageable => _col.SegmentsPageable;
         public int? SegmentsResident => _col.SegmentsResident;
-        public double? SegmentsAverageTemperature => _col.SegmentsAverageTemperature * 1000;
+        public double? SegmentsAverageTemperature => _col.SegmentsAverageTemperature * ((bool)_options?.VpaxAdjustSegmentsMetrics ? 1000 : 1);
         public DateTime? SegmentsLastAccessed => _col.SegmentsLastAccessed;
         public long ReferentialIntegrityViolationCount => Table.ReferentialIntegrityViolationCount;
         public long UserHierarchiesSize => Table.UserHierarchiesSize;
