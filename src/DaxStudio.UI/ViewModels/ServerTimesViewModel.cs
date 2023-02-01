@@ -201,7 +201,6 @@ namespace DaxStudio.UI.ViewModels
                 case DaxStudioTraceEventClass.DirectQueryEnd:
                     // Don't process DirectQuery text
                     Query = ev.TextData;
-                    QueryRichText = Query;
                     break;
                 default:
                     // Format xmSQL
@@ -212,9 +211,6 @@ namespace DaxStudio.UI.ViewModels
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
                     Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags().RemoveDoubleBracketsInCallbacks() : queryRemapped;
-                    QueryRichText = Query;
-                    // Set flag in case any highlight is present
-                    HighlightQuery = QueryRichText.Contains("|~S~|");
                     break;
             }
             
@@ -242,6 +238,15 @@ namespace DaxStudio.UI.ViewModels
                     EstimatedRows = rows;
                     EstimatedKBytes = 1 + bytes / 1024;
                 }
+
+                QueryRichText = Query;
+                // Set flag in case any highlight is present
+                HighlightQuery = QueryRichText.Contains("|~S~|");
+            }
+            else
+            {
+                QueryRichText = null;
+                HighlightQuery = false;
             }
         }
         public TraceStorageEngineEvent() { }
@@ -430,7 +435,7 @@ namespace DaxStudio.UI.ViewModels
             string bytesString = m.Groups["bytes"].Value;
             bool foundRows = long.TryParse(rowsString, out rows);
             bool foundBytes = long.TryParse(bytesString, out bytes);
-            daxQueryFormatted = xmSqlPatternSize.Replace(daxQuery, $"Estimated size ( volume, marshalling bytes ) : {(foundRows ? rows.ToString("#,#") : rowsString)}, {(foundBytes ? bytes.ToString("#,#") : bytesString)}");
+            daxQueryFormatted = xmSqlPatternSize.Replace(daxQuery, $"Estimated size: rows = {(foundRows ? rows.ToString("#,#") : rowsString)}  bytes = {(foundBytes ? bytes.ToString("#,#") : bytesString)}");
             return foundRows && foundBytes;
         }
 
