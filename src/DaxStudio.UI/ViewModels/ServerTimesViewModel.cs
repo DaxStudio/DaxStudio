@@ -31,6 +31,7 @@ using System.Windows.Threading;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 using DaxStudio.UI.Views;
 using System.Windows.Markup;
+using System.Runtime.InteropServices;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -194,8 +195,10 @@ namespace DaxStudio.UI.ViewModels
                     QueryRichText = Query;
                     break;
                 default:
+                    // Format xmSQL
+                    string queryFormatted = ev.TextData.FormatXmSql();
                     // Replace column names
-                    string queryRemapped = Options.ReplaceXmSqlColumnNames ? ev.TextData.ReplaceTableOrColumnNames( remapColumns ) : ev.TextData;
+                    string queryRemapped = Options.ReplaceXmSqlColumnNames ? queryFormatted.ReplaceTableOrColumnNames( remapColumns ) : queryFormatted;
                     // replace table names
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
@@ -265,6 +268,8 @@ namespace DaxStudio.UI.ViewModels
 
     public static class TraceStorageEngineExtensions {
         const string searchGuid = @"([_-]\{?([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}?)";
+        const string searchXmSqlFormatStep1 = @"\r\nSELECT([\w\W]+)\r\nFROM";
+        const string searchXmSqlFormatStep2 = @"LEFT OUTER JOIN\s+(.+?)\s+ON";
         //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
         // const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]"; // old version that didn't include specific handling of callback content
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
@@ -287,6 +292,8 @@ namespace DaxStudio.UI.ViewModels
         //const string searchQuotedIdentifiers = @"\'([^ ])*\'";
 
         static Regex guidRemoval = new Regex(searchGuid, RegexOptions.Compiled);
+        static Regex xmSqlFormatStep1 = new Regex(searchXmSqlFormatStep1, RegexOptions.Compiled);
+        static Regex xmSqlFormatStep2 = new Regex(searchXmSqlFormatStep2, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
@@ -350,13 +357,33 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlQuery.Replace("]]", "]");
         }
-        public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
+        public static string RemoveXmSqlSquareBrackets(this string xmSqlQuery) {
             string daxQueryNoBrackets = xmSqlSquareBracketsWithSpaceRemoval.Replace(
-                            daxQuery,
+                            xmSqlQuery,
                             RemoveSquareBracketsWithSpace);
             string daxQueryNoDots = xmSqlDotSeparator.Replace(daxQueryNoBrackets, "[");
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);
             return result;
+        }
+
+        private static string FormatStep1(Match match)
+        {
+            return match.Value.Replace(",\r\n", ",\r\n\t").Replace("SELECT\r\n", "SELECT\r\n\t");
+        }
+        private static string FormatStep2(Match match)
+        {
+            return match.Value.Substring(0,match.Value.Length-3) + "\r\n\t\tON";
+        }
+
+        public static string FormatXmSql(this string xmSqlQuery)
+        {
+            var step1 = xmSqlFormatStep1.Replace(xmSqlQuery, FormatStep1);
+            var step2 = xmSqlFormatStep2.Replace(step1, FormatStep2);
+            // New line after ' :=  (only table name)
+            var stepTable = step2.Replace("] := ", "] :=\r\n");
+            // Replace TAB with 4 spaces
+            var stepFinal = stepTable; // stepTable.Replace("\t", "    ");
+            return stepFinal;
         }
 
         public static bool ExtractEstimatedSize(this string daxQuery, out long rows, out long bytes) {
@@ -1292,7 +1319,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanExport));
             NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
-
+        
         public override void CopyAll()
         {
             Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");

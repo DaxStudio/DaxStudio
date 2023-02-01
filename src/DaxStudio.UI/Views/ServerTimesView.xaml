@@ -14,6 +14,7 @@
              d:DesignHeight="300" d:DesignWidth="800"
              
              cal:View.ApplyConventions="False">
+    
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -37,7 +38,6 @@
             <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
             <conv:WaterfallMarginConverter x:Key="WaterfallMarginConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
-
             <Style x:Key="WaterfallCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
                 <Setter Property="ToolTip">
                     <Setter.Value>
@@ -79,7 +79,6 @@
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                  Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
-                    
                         <ctrl:BindableRichTextBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Command="Copy">

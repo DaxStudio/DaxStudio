@@ -28,7 +28,8 @@ namespace DaxStudio.UI.Converters {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             FlowDocument doc = new FlowDocument();
 
-           string s = value as string;
+            string tabReplacement = new string(' ', 4);
+            string s = (value as string).Replace("\t", tabReplacement);
             if (s != null) {
                 Paragraph paragraph = new Paragraph();
                 // paragraph.Margin = new Thickness(0);
