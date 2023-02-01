@@ -2317,6 +2317,21 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private VpaTableColumnDisplay _vpaTableColumnDisplay;
+        [Category("Defaults")]
+        [Subcategory("VertiPaq Analyzer")]
+        [DisplayName("Table/Column name display in Columns tab")]
+        [Description("Determines how the table and column name are formatted in the View Metrics Columns tab")]
+        [DataMember, DefaultValue(VpaTableColumnDisplay.TableDashColumn)]
+        public VpaTableColumnDisplay VpaTableColumnDisplay { get => _vpaTableColumnDisplay;
+            set {
+                _vpaTableColumnDisplay = value;
+                SettingProvider.SetValue(nameof(VpaTableColumnDisplay), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            } 
+        }
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
         private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;

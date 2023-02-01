@@ -105,7 +105,7 @@ Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: igno
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 ; TODO - ngen DaxStudio
 ;Filename: {win}\Microsoft.NET\Framework64\v4.0.30319\ngen.exe Parameters: "install ""{app}\{#MyAppExeName}"""; StatusMsg: Optimizing performance for your system ...; Flags: runhidden; Check: CheckFramework;

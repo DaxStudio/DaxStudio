@@ -576,10 +576,11 @@ namespace DaxStudio.UI.Model
 
 
             SelectedModel = model;
-            SelectedModelName = model.Name;
+            
 
             if (SelectedModel != null)
             {
+                SelectedModelName = model.Name;
                 if (_connection.IsMultiDimensional)
                 {
                     if (_connection.Is2012SP1OrLater)

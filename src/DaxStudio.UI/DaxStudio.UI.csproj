@@ -324,6 +324,7 @@
     <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
     <Compile Include="Converters\StringPercentToDoubleConverter.cs" />
     <Compile Include="Converters\TableImageConverter.cs" />
+    <Compile Include="Converters\VpaColumnDaxNameConverter.cs" />
     <Compile Include="Converters\WaterfallLengthConverter.cs" />
     <Compile Include="Converters\WaterfallMarginConverter.cs" />
     <Compile Include="Enums\SaveAsExtension.cs" />
@@ -625,6 +626,7 @@
     <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
     <Compile Include="Utils\TraceWatcherFactory.cs" />
     <Compile Include="Utils\UserHelper.cs" />
+    <Compile Include="Utils\WaterfallHeatmapImageGenerator.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
     <Compile Include="Utils\XlsxHelper.cs" />
     <Compile Include="Utils\ZoomHelper.cs" />

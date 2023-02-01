@@ -28,6 +28,9 @@ using System.Security.Cryptography;
 using System.Diagnostics;
 using Windows.Media.Playback;
 using System.Windows.Threading;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
+using DaxStudio.UI.Views;
+using System.Windows.Markup;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -758,6 +761,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanCopyResults));
                 NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
+                NotifyOfPropertyChange(nameof(StorageEventHeatmap));
             }
         }
 
@@ -1275,6 +1279,7 @@ namespace DaxStudio.UI.ViewModels
             TotalDuration = 0;
             WaterfallTotalDuration= 0;
             ParallelStorageEngineEventsDetected = false;
+            StorageEventHeatmap = null;
             AllStorageEngineEvents.Clear();
             NotifyOfPropertyChange(nameof(AllStorageEngineEvents));
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
@@ -1350,10 +1355,49 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ShowWaterfallOnRows { get; set; }
 
-        public void SwichWaterfallOnRowsVisibility()
+        public void SwitchWaterfallOnRowsVisibility()
         {
             ShowWaterfallOnRows = !ShowWaterfallOnRows;
             NotifyOfPropertyChange(nameof(ShowWaterfallOnRows));
+        }
+
+        private ImageSource _storageEventHeatmap;
+        public ImageSource StorageEventHeatmap { 
+            get {
+                if (this.StorageEngineEvents.Count == 0) return new DrawingImage();
+                if (_storageEventHeatmap != null) return _storageEventHeatmap;
+                var element = (FrameworkElement)this.GetView();
+                Brush scanBrush = (Brush)element.FindResource("Theme.Brush.Accent");
+                Brush feBrush = (Brush)element.FindResource("Theme.Brush.Accent2");
+                Brush batchBrush = (Brush)element.FindResource("Theme.Brush.Accent1");
+                Brush internalBrush = (Brush)element.FindResource("Theme.Brush.Accent3");
+
+                //_storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateVector(this.StorageEngineEvents.ToList(), 500, 10, feBrush, scanBrush, batchBrush, internalBrush  );
+                _storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateBitmap(this.StorageEngineEvents.ToList(), 5000, 10, feBrush, scanBrush, batchBrush, internalBrush);
+#if DEBUG
+                //TODO - remove debug code
+                using (StreamWriter writer = File.CreateText("c:\\temp\\heatmap.xaml"))
+                {
+                    XamlWriter.Save(_storageEventHeatmap, writer);
+                }
+#endif                    
+                return _storageEventHeatmap;
+            }
+            set {
+                _storageEventHeatmap = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+
+        private double _waterfallColumnWidth = 100.0;
+        public double WaterfallColumnWidth { get => _waterfallColumnWidth; set { _waterfallColumnWidth = value; 
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(WaterfallHeatmapXScale));
+            } 
+        } 
+        private double BaseWaterfallColumnWidth => 100.0;
+        public double WaterfallHeatmapXScale {
+            get => WaterfallColumnWidth / BaseWaterfallColumnWidth;
         }
 
     }

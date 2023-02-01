@@ -1,14 +1,18 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
+using DaxStudio.UI.Utils;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices;
 using Microsoft.AnalysisServices.Tabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Media;
 using System.Xml;
 using amo = Microsoft.AnalysisServices;
 
@@ -152,5 +156,50 @@ namespace DaxStudio.Tests
             { EndTime = endTime };
 
         }
+
+        [TestMethod]
+        public void TestHeatMap()
+        {
+
+            var details = new ServerTimingDetailsViewModel();
+
+            var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
+
+            var e1 = CreateDSVertipaqSEEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25)); // 20
+            var e2 = CreateDSVertipaqSEEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
+            var e3 = CreateDSQueryEndEvent(5, new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
+            vm.Events.Enqueue(e1);
+            vm.Events.Enqueue(e2);
+            vm.Events.Enqueue(e3);
+
+            vm.QueryStartDateTime = e3.StartTime;
+            vm.QueryEndDateTime = e3.EndTime;
+            
+            vm.ProcessAllEvents();
+
+            Assert.AreEqual(2, vm.StorageEngineEvents.Count);
+            Assert.AreEqual(75, vm.TotalDuration);
+            Assert.AreEqual(35, vm.StorageEngineDuration);
+            Assert.AreEqual(40, vm.FormulaEngineDuration);
+
+            // generate vector image
+            var scanBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 0, 255));
+            var batchBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 255));
+            var internalBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 0));
+            var feBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 0, 0));
+
+            var img = WaterfallHeatmapImageGenerator.GenerateVector(vm.StorageEngineEvents.ToList(), 75, 10, feBrush, scanBrush, batchBrush, internalBrush);
+
+            var rectangles = ((GeometryGroup)((GeometryDrawing)((DrawingGroup)img.Drawing).Children[1]).Geometry).Children;
+
+            Assert.AreEqual(2, rectangles.Count, "Expected 2 scan rectangles");
+            
+            Assert.AreEqual( (5.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Left,"First rectangle left position");
+            Assert.AreEqual((40.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Left,"Second rectangle left position");
+
+            Assert.AreEqual((20.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[0]).Rect.Width, "First rectangle length");
+            Assert.AreEqual((15.0 / 76.0) * 75.0, ((RectangleGeometry)rectangles[1]).Rect.Width,"Second rectangle length");
+        }
+
     }
 }

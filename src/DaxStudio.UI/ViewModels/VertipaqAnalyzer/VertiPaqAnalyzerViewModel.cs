@@ -196,6 +196,9 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
         {
             // NotifyOfPropertyChange(() => ShowTraceColumns);
+            NotifyOfPropertyChange(nameof(ColumnsShowDashedTableColumn));
+            NotifyOfPropertyChange(nameof(ColumnsShowDaxColumnName));
+            NotifyOfPropertyChange(nameof(ColumnsShowTwoColumns));
             Log.Information("VertiPaq Analyzer Handle UpdateGlobalOptions call");
             return Task.CompletedTask;
         }
@@ -349,23 +352,23 @@ namespace DaxStudio.UI.ViewModels
         public class TooltipStruct
         {
             public string Cardinality => "The total number of distinct values in a column";
-            public string TableSize => "The total size of a table including all columns, relationships and hierarchies";
-            public string TotalSize => "The total size of the column = Data + Dictionary + Hierarchies";
-            public string DictionarySize => "The size of the dictionary";
-            public string DataSize => "The size of the data for the column";
-            public string HierarchySize => "The size of hierarchy structures";
+            public string TableSize => "The total size of a table including all columns, relationships and hierarchies in bytes";
+            public string TotalSize => "The total size of the column = Data + Dictionary + Hierarchies in bytes";
+            public string DictionarySize => "The size of the column's dictionary in bytes";
+            public string DataSize => "The size of the data for the column in bytes";
+            public string HierarchySize => "The size of hierarchy structures in bytes";
             public string DataType => "The data type for the column";
             public string Encoding => "The encoding type for the column";
-            public string RIViolations => "Indicates the number of relationships where there are values on the 'many' side of a relationship that do not exist on the '1' side";
-            public string UserHierarchySize => "The size of user hierarchy structures";
-            public string RelationshipSize => "The size taken up by relationship structures";
-            public string PercentOfTable => "The space taken up as a percentage of the parent table";
-            public string PercentOfDatabase => "The space taken up as a percentage of the total size of the database";
+            public string RIViolations => "Indicates the number of Referential Integrity (RI) Violations. Which are relationships where there are values on the 'many' side of a relationship that do not exist on the '1' side";
+            public string UserHierarchySize => "The size of user hierarchy structures in bytes";
+            public string RelationshipSize => "The size taken up by relationship structures in bytes";
+            public string PercentOfTable => "The space taken up by a column as a percentage of the parent table";
+            public string PercentOfDatabase => "The space taken up by a table or column as a percentage of the total size of the database";
             public string Segments => "The number of segments";
             public string TotalSegments => "The total number of segments";
             public string Pageable => "The number of pageable segments";
-            public string Resident => "The number of resident segments";
-            public string Temperature => "Scaled numeric feequency of segment access";
+            public string Resident => "The number of memory resident segments";
+            public string Temperature => "A scaled numeric frequency of segment access";
             public string LastAccessed => "Last access time of a pageable segment";
             public string Partitions => "The number of partitions";
             public string Columns => "The number of columns in the table";
@@ -379,6 +382,8 @@ namespace DaxStudio.UI.ViewModels
             public string TableColumn => "A combination of the table and column name in the form '<table>-<column>'";
             public string TableRelationship => "The name of the relationship";
             public string OneToManyRatio => "This is the ratio of the rows on the 1 side of a relationship to the rows on the many side";
+            public string TableName => "The name of the table";
+            public string ColumnName => "The name of the column";
         }
 
         internal async Task ExportAnalysisDataAsync(string fileName)
@@ -437,5 +442,10 @@ namespace DaxStudio.UI.ViewModels
                 File.WriteAllText(saveAsDlg.FileName, JsonSerializer.SerializeDatabase(Database, opts));
             }
         }
+
+        public bool ColumnsShowTwoColumns => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.TwoColumns;
+        public bool ColumnsShowDashedTableColumn => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.TableDashColumn;
+        public bool ColumnsShowDaxColumnName => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.DaxNameFormat;
+
     }
 }

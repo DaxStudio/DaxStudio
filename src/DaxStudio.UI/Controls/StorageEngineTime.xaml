@@ -14,7 +14,7 @@
             <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Canvas Name="canvas">
+    <Grid Name="canvas">
         <Border
             Height="{Binding ElementName=canvas, Path=ActualHeight}" 
             Width="{Binding ElementName=canvas, Path=ActualWidth}" 
@@ -79,5 +79,5 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-    </Canvas>
+    </Grid>
 </UserControl>

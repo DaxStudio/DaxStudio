@@ -10,6 +10,7 @@ namespace DaxStudio.UI.Converters
 {
     internal class WaterfallMarginConverter : IMultiValueConverter
     {
+        const double RightMargin = 2;
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null) return Binding.DoNothing;
@@ -21,7 +22,8 @@ namespace DaxStudio.UI.Converters
                 double.TryParse(values[0]?.ToString(), out var cellWidth);
                 long.TryParse(values[1]?.ToString(), out var offset);
                 long.TryParse(values[2]?.ToString(), out var totalWidth);
-            
+
+                cellWidth -= RightMargin;
                 // restrict offset and totalWidth to positive values
                 if (offset < 0) offset = 0;
                 if (totalWidth <= 1) totalWidth = 1;
