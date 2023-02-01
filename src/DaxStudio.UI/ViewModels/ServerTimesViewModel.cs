@@ -266,7 +266,9 @@ namespace DaxStudio.UI.ViewModels
     public static class TraceStorageEngineExtensions {
         const string searchGuid = @"([_-]\{?([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}?)";
         //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
-        const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
+        // const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]"; // old version that didn't include specific handling of callback content
+        const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
+        const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + @"[^\)]*\){1,}(\.[^\)]*\))?]|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
@@ -285,8 +287,8 @@ namespace DaxStudio.UI.ViewModels
         //const string searchQuotedIdentifiers = @"\'([^ ])*\'";
 
         static Regex guidRemoval = new Regex(searchGuid, RegexOptions.Compiled);
+        static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
-        //static Regex xmSqlSquareBracketsNoSpaceRemoval = new Regex(searchXmSqlSquareBracketsNoSpace, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
         static Regex xmSqlParenthesis = new Regex(searchXmSqlParenthesis, RegexOptions.Compiled);
         static Regex xmSqlAliasRemoval = new Regex(searchXmSqlAlias, RegexOptions.Compiled);
@@ -304,7 +306,17 @@ namespace DaxStudio.UI.ViewModels
             return guidRemoval.Replace(daxQuery, "");
         }
         private static string RemoveSquareBracketsWithSpace(Match match) {
-            return match.Value.Replace("[", "'").Replace("]", "'");
+            if (xmSqlCallbackStart.IsMatch(match.Value))
+            {
+                // If required, modify the content of a CallbackDataID
+                // We currently transform ]] in ] for measure references
+                return match.Value.Replace("]]", "]");
+            }
+            else
+            {
+                // Apply the squar bracket transformation outside of callbacks
+                return match.Value.Replace("[", "'").Replace("]", "'");
+            }
         }
         private static string RemoveSquareBracketsNoSpace(Match match) {
             return match.Value.Replace("[", "").Replace("]", "");
@@ -339,15 +351,8 @@ namespace DaxStudio.UI.ViewModels
             return xmSqlQuery.Replace("]]", "]");
         }
         public static string RemoveXmSqlSquareBrackets(this string daxQuery) {
-            // Reviewed on 2017-10-13
-            // The first removal should be useless and I commented it.
-            // Code was originally written on a plane offline... 
-            // string daxQueryNoBracketsOnTableNames = xmSqlSquareBracketsNoSpaceRemoval.Replace(
-            //             daxQuery,
-            //             RemoveSquareBracketsNoSpace
-            //        );
             string daxQueryNoBrackets = xmSqlSquareBracketsWithSpaceRemoval.Replace(
-                            daxQuery,  // daxQueryNoBracketsOnTableNames,
+                            daxQuery,
                             RemoveSquareBracketsWithSpace);
             string daxQueryNoDots = xmSqlDotSeparator.Replace(daxQueryNoBrackets, "[");
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);
