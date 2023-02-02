@@ -301,6 +301,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlFormatStep2 = @"(LEFT OUTER JOIN|INNER JOIN)\s+(.+?)\s+ON";
         const string searchXmSqlFormatStep3 = @"\,\r\n(DEFINE TABLE|CREATE)";
         const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
+        const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
         //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
         // const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]"; // old version that didn't include specific handling of callback content
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
@@ -331,6 +332,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlFormatStep2 = new Regex(searchXmSqlFormatStep2, RegexOptions.Compiled);
         static Regex xmSqlFormatStep3 = new Regex(searchXmSqlFormatStep3, RegexOptions.Compiled);
         static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
+        static Regex xmSqlFormatStep5 = new Regex(searchXmSqlFormatStep5, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlCallbackDax = new Regex(searchXmSqlCallbackDax, RegexOptions.Compiled);
         static Regex xmSqlTotalValues = new Regex(searchXmSqlTotalValues, RegexOptions.Compiled);
@@ -434,7 +436,11 @@ namespace DaxStudio.UI.ViewModels
         }
         private static string FormatStep4(Match match)
         {
-            return match.Value.Replace(" MANYTOMANY FROM", "\r\n\tMANYTOMANY\r\n\tFROM").Replace(" TO ","\r\n\t\tTO ");
+            return match.Value.Replace(" MANYTOMANY FROM", "\r\n\tMANYTOMANY\r\n\tFROM").Replace(" TO ", "\r\n\t\tTO ");
+        }
+        private static string FormatStep5(Match match)
+        {
+            return "\r\n\t";
         }
 
         public static string FormatXmSql(this string xmSqlQuery)
@@ -446,8 +452,9 @@ namespace DaxStudio.UI.ViewModels
             var step2 = xmSqlFormatStep2.Replace(step1, FormatStep2);
             var step3 = xmSqlFormatStep3.Replace(step2, FormatStep3);
             var step4 = xmSqlFormatStep4.Replace(step3, FormatStep4);
+            var step5 = xmSqlFormatStep5.Replace(step4, FormatStep5);
 
-            var stepFinal = step4;
+            var stepFinal = step5;
             return stepFinal;
         }
 
