@@ -303,17 +303,14 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlFormatStep3 = @"\,\r\n(DEFINE TABLE|CREATE)";
         const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
         const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
-        //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
-        // const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]"; // old version that didn't include specific handling of callback content
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
         const string searchXmSqlCallbackEnd = @"[^\)]*\){1,}(\.[^\)]*\))?]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)([\w\W]*?)(?=\)\s?\])";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
-        const string searchXmSqlKeywords = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCAST|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
+        const string searchXmSqlKeywords = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|RJOIN|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCASTCOALESCE|PFCAST|COALESCE|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
-        // const string searchXmSqlLineage = @" \( [0-9]+ \) ";
         const string searchXmSqlLineageBracket = @" \( [0-9]+ \) \]";
         const string searchXmSqlLineageQuoted = @" \( [0-9]+ \) \'";
         const string searchXmSqlLineageDollar = @" \( [0-9]+ \) \$";
@@ -323,10 +320,7 @@ namespace DaxStudio.UI.ViewModels
         const string seachXmSqlPremiumTags = @"<pii>|</pii>|<ccon>|</ccon>";
 
         const string searchXmSqlPatternSize = @"[\'\[]Estimated size .* : (?<rows>\d+), (?<bytes>\d+)[\'\]]";
-        const string searchXmSqlTotalValues = @"(?<=\.\.\[).*?(?=\stotal\svalues)";
-
-        //const string searchDaxQueryPlanSquareBrackets = @"^\'\[([^\[^ ])*\]";
-        //const string searchQuotedIdentifiers = @"\'([^ ])*\'";
+        const string searchXmSqlTotalValues = @"(?<=\.\.\[).*?(?=\stotal\s)";
 
         static Regex guidRemoval = new Regex(searchGuid, RegexOptions.Compiled);
         static Regex xmSqlFormatStep1 = new Regex(searchXmSqlFormatStep1, RegexOptions.Compiled);
