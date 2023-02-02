@@ -483,12 +483,13 @@
                                />
                         </StackPanel>
 
+                        
                         <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
-
+                        <!-- Horizontal Bar FE vs SE -->
                         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
                             <StackPanel Height="15" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0" Background="{DynamicResource Theme.Brush.Table.Header.Back}" >
-                            <!-- <DockPanel Height="15" Width="100" Margin="0,0,0,0" Background="{DynamicResource Theme.Brush.Table.Header.Back}"> -->
+                                <!-- <DockPanel Height="15" Width="100" Margin="0,0,0,0" Background="{DynamicResource Theme.Brush.Table.Header.Back}"> -->
                                 <Rectangle Height="5" Fill="{DynamicResource Theme.Brush.Accent2}" DockPanel.Dock="Left">
                                     <Rectangle.Width>
                                         <MultiBinding Converter="{StaticResource MultiConverter}">
@@ -505,56 +506,17 @@
                                         </MultiBinding>
                                     </Rectangle.Width>
                                 </Rectangle>
-                            
-                            <!--</DockPanel>-->
+
+                                <!--</DockPanel>-->
                             </StackPanel>
-                            <!--<ctrl:StorageEngineTime 
-                                    Visibility="Visible"
-                                    x:Name="EnginesDisplay" 
-                                    ItemsSource="{Binding StorageEngineEventsDisplayLayers}" 
-                                    Canvas.Left="0" Canvas.Top="5" 
-                                    Width="100" Height="5"
-                                    DockPanel.Dock="Bottom"
-                                    />-->
                             <!-- <Image Source="{Binding StorageEventHeatmap}" Width="120" Height="5"/> -->
 
                             <StackPanel Height="1">
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- Horizontal Bar FE vs SE -->
 
-                        <!--<StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
-                            <Canvas Height="15" Width="100" Margin="0,0,0,1">
 
-                                <Border Canvas.Left="0" Canvas.Top="0" Width="100" Height="15" Background="{DynamicResource Theme.Brush.MenuBar.Back}"></Border>
-                                <ctrl:StorageEngineTime x:Name="EnginesDisplay" ItemsSource="{Binding StorageEngineEventsDisplayLayers}" Canvas.Left="0" Canvas.Top="5" Width="100" Height="5">
-                                </ctrl:StorageEngineTime>
-
-                            </Canvas>
-                        </StackPanel>-->
-
-                    <!--   
-                    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                            <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
-                            <Rectangle.Width>
-                                <MultiBinding Converter="{StaticResource MultiConverter}">
-                                    <Binding Path="FormulaEngineDurationPercentage"/>
-                                    <Binding Source="{StaticResource BarWidth}" />
-                                </MultiBinding>
-                            </Rectangle.Width>
-                        </Rectangle>    
-                        <Rectangle Height="5" HorizontalAlignment="Right" Margin="0,2,0,5" Fill="{StaticResource DaxStudioBrush}">
-                            <Rectangle.Width>
-                                <MultiBinding Converter="{StaticResource MultiConverter}">
-                                    <Binding Path="StorageEngineDurationPercentage"/>
-                                    <Binding Source="{StaticResource BarWidth}" />
-                                </MultiBinding>
-                            </Rectangle.Width>
-                        </Rectangle>
-                    </StackPanel>
-                    -->
-                    
                     <!-- SE Queries -->
                     <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>

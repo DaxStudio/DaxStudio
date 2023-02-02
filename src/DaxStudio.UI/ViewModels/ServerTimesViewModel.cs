@@ -479,7 +479,6 @@ namespace DaxStudio.UI.ViewModels
             , IGlobalOptions options, IWindowManager windowManager) : base(eventAggregator, options,windowManager)
         {
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
-            _storageEngineEvents.CollectionChanged += _storageEngineEvents_CollectionChanged;
             RemapColumnNames = new Dictionary<string, string>();
             RemapTableNames = new Dictionary<string, string>();
             Options = options;
@@ -489,15 +488,6 @@ namespace DaxStudio.UI.ViewModels
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
 
-        private bool _storageEngineEventsDisplayLayersCached = false;
-        private bool IsStorageEngineEventsDisplayLayersCached { 
-            get { return _storageEngineEventsDisplayLayersCached; } 
-        }
-
-        private void _storageEngineEvents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            _storageEngineEventsDisplayLayersCached = false;
-        }
 
         #region Tooltip properties
         public string TotalTooltip => "The total server side duration of the query";
@@ -859,7 +849,6 @@ namespace DaxStudio.UI.ViewModels
             }
 
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
-            NotifyOfPropertyChange(nameof(StorageEngineEventsDisplayLayers));
         }
 
         private bool IsDaxStudioInternalQuery()
@@ -1066,39 +1055,6 @@ namespace DaxStudio.UI.ViewModels
                                (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
-            }
-        }
-
-
-        private IObservableCollection<TraceStorageEngineEvent> _cachedStorageEngineEventsDisplayLayers;
-        /// <summary>
-        /// Access to the storage engine events to display in the layered visualization (FE yellow below SE blue)
-        /// </summary>
-        public IObservableCollection<TraceStorageEngineEvent> StorageEngineEventsDisplayLayers
-        {
-            get
-            {
-                if (!IsStorageEngineEventsDisplayLayersCached)
-                {
-                    var fse = from e in AllStorageEngineEvents
-                              where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted
-                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
-                              select e;
-                    var batchEvents = CollapseEvents(
-                        from e in fse
-                        where e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan
-                        select e);
-
-                    var nonBatchEvents = CollapseEvents(
-                        from e in fse
-                        where e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
-                        select e);
-
-                    var displayLayersEvents = batchEvents.ToList().Concat(nonBatchEvents);
-                    _cachedStorageEngineEventsDisplayLayers = new BindableCollection<TraceStorageEngineEvent>(displayLayersEvents);
-                    _storageEngineEventsDisplayLayersCached = true;
-                }
-                return _cachedStorageEngineEventsDisplayLayers;
             }
         }
 
@@ -1359,7 +1315,6 @@ namespace DaxStudio.UI.ViewModels
             AllStorageEngineEvents.Clear();
             NotifyOfPropertyChange(nameof(AllStorageEngineEvents));
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
-            NotifyOfPropertyChange(nameof(StorageEngineEventsDisplayLayers));
             NotifyOfPropertyChange(nameof(CanExport));
             NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
