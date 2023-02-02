@@ -439,6 +439,11 @@ namespace DaxStudio.UI.ViewModels
         {
             File.WriteAllText(filePath, GetJson());
         }
+        public override void CopyEventContent()
+        {
+            Log.Warning("CopyEventContent not implemented for QueryPlanTraceViewModel");
+            throw new NotImplementedException();
+        }
 
         public bool CanShowTraceDiagnostics => CanExport;
         public async void ShowTraceDiagnostics()

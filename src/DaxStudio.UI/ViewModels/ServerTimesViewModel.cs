@@ -34,6 +34,7 @@ using System.Windows.Markup;
 using System.Runtime.InteropServices;
 using Fclp.Internals.Extensions;
 using SharpCompress.Common;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1358,6 +1359,14 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
         
+        public void Copy()
+        {
+            Log.Warning("Copy not implemented for ServerTimesViewModel");
+        }
+        public override void CopyEventContent()
+        {
+            Log.Warning("CopyEventContent not implemented for ServerTimesViewModel");
+        }
         public override void CopyAll()
         {
             Log.Warning("CopyAll Method not implemented for ServerTimesViewModel");
