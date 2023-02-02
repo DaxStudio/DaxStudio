@@ -135,11 +135,16 @@ namespace DaxStudio.UI.ViewModels
         {
             return $"|~K~|{match.Value}|~E~|";
         }
+        private static string HighlightXmSqlDaxCallback(Match match)
+        {
+            return $"|~F~|{match.Value}|~E~|";
+        }
         public string QueryRichText {
             set {
                 if (Options.HighlightXmSqlCallbacks)
                 {
-                    string keywordsHighlighted = value.HighlightXmSqlKeywords(HighlightXmSqlKeyword);
+                    string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
+                    string keywordsHighlighted = callbackDaxHighlighted.HighlightXmSqlKeywords(HighlightXmSqlKeyword);
 
                     var sb = new StringBuilder(keywordsHighlighted);
                     // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
@@ -294,8 +299,10 @@ namespace DaxStudio.UI.ViewModels
         //const string searchXmSqlSquareBracketsNoSpace = @"(?<![\.'])\[([^\[^ ])*\]";
         // const string searchXmSqlSquareBracketsWithSpace = @"(?<![\.0-9a-zA-Z'])\[([^\[])*\]"; // old version that didn't include specific handling of callback content
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
-        const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + @"[^\)]*\){1,}(\.[^\)]*\))?]|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
-        const string searchXmSqlKeywords = searchXmSqlCallbackStart + @"[^\)]*\){1,}(\.[^\)]*\))?]|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCAST|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
+        const string searchXmSqlCallbackEnd = @"[^\)]*\){1,}(\.[^\)]*\))?]";
+        const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)([\w\W]*?)(?=\)\s?\])";
+        const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
+        const string searchXmSqlKeywords = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCAST|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
@@ -319,6 +326,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlFormatStep3 = new Regex(searchXmSqlFormatStep3, RegexOptions.Compiled);
         static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
+        static Regex xmSqlCallbackDax = new Regex(searchXmSqlCallbackDax, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
         static Regex xmSqlKeywords = new Regex(searchXmSqlKeywords, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
@@ -394,7 +402,10 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlKeywords.Replace(xmSqlQuery, evaluator);
         }
-
+        public static string HighlightXmSqlDaxCallback(this string xmSqlQuery, MatchEvaluator evaluator )
+        {
+            return xmSqlCallbackDax.Replace(xmSqlQuery, evaluator);
+        }
         private static string FormatStep1(Match match)
         {
             return match.Value

@@ -84,6 +84,8 @@
     <SolidColorBrush x:Key="Theme.Brush.Trace.Record.Fill" Color="{StaticResource Theme.Default.Fore}" options:Freeze="false"/>
     <SolidColorBrush x:Key="Theme.Brush.xmSQLHighlight.Back" Color="Yellow" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.xmSQLHighlight.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.xmSQLCallback.Back" Color="Yellow" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.xmSQLCallback.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Back" Color="{StaticResource Theme.BusyPanel.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Border" Color="{StaticResource Theme.BusyPanel.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.BusyPanel.Text" Color="{StaticResource Theme.BusyPanel.Text}" options:Freeze="true"/>

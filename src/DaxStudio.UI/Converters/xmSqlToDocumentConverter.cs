@@ -35,9 +35,10 @@ namespace DaxStudio.UI.Converters {
                 // paragraph.Margin = new Thickness(0);
                 int posHighlight = s.IndexOf("|~S~|");
                 int posKeyword = s.IndexOf("|~K~|");
+                int posDaxCallback = s.IndexOf("|~F~|");
                 int posEnd = s.IndexOf("|~E~|");
-                while (posHighlight != -1 || posKeyword != -1) {
-                    if (posHighlight >= 0 && (posHighlight < posKeyword || posKeyword == -1))
+                while (posHighlight != -1 || posKeyword != -1 || posDaxCallback != -1) {
+                    if (posHighlight >= 0 && (posHighlight < posKeyword || posKeyword == -1) && (posHighlight < posDaxCallback || posDaxCallback == -1))
                     {
                         //up to |~S~| is normal
                         paragraph.Inlines.Add(new Run(s.Substring(0, posHighlight)));
@@ -56,7 +57,7 @@ namespace DaxStudio.UI.Converters {
                         paragraph.Inlines.Add(highlightRun);
                         //the rest of the string (after the |~E~|)
                     }
-                    else if (posKeyword >= 0)
+                    else if (posKeyword >= 0 && (posKeyword < posDaxCallback || posDaxCallback == -1) && (posKeyword < posHighlight || posHighlight == -1))
                     {
                         //up to |~K~| is normal
                         paragraph.Inlines.Add(new Run(s.Substring(0, posKeyword)));
@@ -70,8 +71,24 @@ namespace DaxStudio.UI.Converters {
                         }
                         var highlightRun = new Run(s.Substring(posKeyword + 5, length))
                         { FontWeight = FontWeights.Bold };
-                        //highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
-                        //highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
+                        paragraph.Inlines.Add(highlightRun);
+                        //the rest of the string (after the |~E~|)
+                    }
+                    else if (posDaxCallback >= 0 && (posDaxCallback < posHighlight || posHighlight == -1) && (posDaxCallback < posKeyword || posKeyword == -1))
+                    {
+                        //up to |~F~| is normal
+                        paragraph.Inlines.Add(new Run(s.Substring(0, posDaxCallback)));
+                        //between |~F~| and |~E~| is highlighted
+                        int length = posEnd - (posDaxCallback + 5);
+                        if (length < 0)
+                        {
+                            Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
+                            Debug.WriteLine(s);
+                            break;
+                        }
+                        var highlightRun = new Run(s.Substring(posDaxCallback + 5, length));
+                        highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLCallback.Back");
+                        highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLCallback.Fore");
                         paragraph.Inlines.Add(highlightRun);
                         //the rest of the string (after the |~E~|)
                     }
@@ -79,6 +96,7 @@ namespace DaxStudio.UI.Converters {
 
                     posHighlight = s.IndexOf("|~S~|");
                     posKeyword = s.IndexOf("|~K~|");
+                    posDaxCallback = s.IndexOf("|~F~|");
                     posEnd = s.IndexOf("|~E~|");
                 }
                 if (s.Length > 0) {
