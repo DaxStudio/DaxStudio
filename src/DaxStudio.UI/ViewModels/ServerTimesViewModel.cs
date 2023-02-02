@@ -139,12 +139,17 @@ namespace DaxStudio.UI.ViewModels
         {
             return $"|~F~|{match.Value}|~E~|";
         }
+        private static string HighlightXmSqlTotalValues(Match match)
+        {
+            return $"|~N~|{match.Value}|~E~|";
+        }
         public string QueryRichText {
             set {
                 if (Options.HighlightXmSqlCallbacks)
                 {
                     string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
-                    string keywordsHighlighted = callbackDaxHighlighted.HighlightXmSqlKeywords(HighlightXmSqlKeyword);
+                    string totalValuesHighlighted = callbackDaxHighlighted.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
+                    string keywordsHighlighted = totalValuesHighlighted.HighlightXmSqlKeywords(HighlightXmSqlKeyword);
 
                     var sb = new StringBuilder(keywordsHighlighted);
                     // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
@@ -233,7 +238,7 @@ namespace DaxStudio.UI.ViewModels
             if (Query != null && Query?.Length > 0)
             {
                 long rows, bytes;
-                if (Query.ExtractEstimatedSize(out rows, out bytes, out string formattedQuery))
+                if (Query.ExtractEstimatedSize(out rows, out bytes, out string formattedQuery, true))
                 {
                     if (Options.FormatXmSql)
                     {
@@ -315,7 +320,8 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlRowNumberGuidQuoted = @"\$RowNumber [0-9A-F ]*\'";
         const string seachXmSqlPremiumTags = @"<pii>|</pii>|<ccon>|</ccon>";
 
-        const string searchXmSqlPatternSize = @"Estimated size .* : (?<rows>\d+), (?<bytes>\d+)";
+        const string searchXmSqlPatternSize = @"[\'\[]Estimated size .* : (?<rows>\d+), (?<bytes>\d+)[\'\]]";
+        const string searchXmSqlTotalValues = @"(?<=\.\.\[).*?(?=\stotal\svalues)";
 
         //const string searchDaxQueryPlanSquareBrackets = @"^\'\[([^\[^ ])*\]";
         //const string searchQuotedIdentifiers = @"\'([^ ])*\'";
@@ -327,6 +333,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlCallbackDax = new Regex(searchXmSqlCallbackDax, RegexOptions.Compiled);
+        static Regex xmSqlTotalValues = new Regex(searchXmSqlTotalValues, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
         static Regex xmSqlKeywords = new Regex(searchXmSqlKeywords, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
@@ -406,6 +413,10 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlCallbackDax.Replace(xmSqlQuery, evaluator);
         }
+        public static string HighlightXmSqlTotalValues(this string xmSqlQuery, MatchEvaluator evaluator )
+        {
+            return xmSqlTotalValues.Replace(xmSqlQuery, evaluator);
+        }
         private static string FormatStep1(Match match)
         {
             return match.Value
@@ -440,7 +451,17 @@ namespace DaxStudio.UI.ViewModels
             return stepFinal;
         }
 
-        public static bool ExtractEstimatedSize(this string daxQuery, out long rows, out long bytes, out string daxQueryFormatted) {
+        private static string FormatNumber(Match match)
+        {
+            long number;
+            long.TryParse(match.Value, out number);
+            bool validNumber = long.TryParse(match.Value, out number);
+            return validNumber ? number.ToString("#,#") : match.Value;
+        }
+
+        public static bool ExtractEstimatedSize(this string daxQuery, out long rows, out long bytes, out string daxQueryFormatted, bool formatTotalValues) {
+            // Format the number if requested
+            daxQuery = formatTotalValues ? xmSqlTotalValues.Replace(daxQuery, FormatNumber) : daxQuery;
             var m = xmSqlPatternSize.Match(daxQuery);
             string rowsString = m.Groups["rows"].Value;
             string bytesString = m.Groups["bytes"].Value;

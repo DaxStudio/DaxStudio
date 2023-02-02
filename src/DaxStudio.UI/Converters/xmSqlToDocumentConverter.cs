@@ -10,6 +10,10 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Xml;
+using System.Collections.Generic;
+using ICSharpCode.NRefactory.Parser;
+using System.Linq;
+using Fclp.Internals.Extensions;
 
 namespace DaxStudio.UI.Converters {
     /// <summary>
@@ -17,7 +21,28 @@ namespace DaxStudio.UI.Converters {
     /// </summary>
     [ValueConversion(typeof(string), typeof(object))]
     public sealed class XmSqlToDocumentConverter : IValueConverter {
-       /// <summary>
+        private void FormatHighlight(Run run)
+        {
+            run.FontWeight = FontWeights.Bold;
+            run.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
+            run.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
+        }
+        private void FormatKeyword(Run run)
+        {
+            run.FontWeight = FontWeights.Bold;
+        }
+        private void FormatNumber(Run run) {
+            run.FontWeight = FontWeights.Bold;
+            run.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLNumber.Back");
+            run.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLNumber.Fore");
+        }
+        private void FormatDaxCallback(Run run)
+        {
+            run.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLCallback.Back");
+            run.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLCallback.Fore");
+        }
+
+        /// <summary>
         /// Converts a string containing valid XAML into WPF objects.
         /// </summary>
         /// <param name="value">The string to convert.</param>
@@ -33,71 +58,58 @@ namespace DaxStudio.UI.Converters {
             if (s != null) {
                 Paragraph paragraph = new Paragraph();
                 // paragraph.Margin = new Thickness(0);
-                int posHighlight = s.IndexOf("|~S~|");
-                int posKeyword = s.IndexOf("|~K~|");
-                int posDaxCallback = s.IndexOf("|~F~|");
-                int posEnd = s.IndexOf("|~E~|");
-                while (posHighlight != -1 || posKeyword != -1 || posDaxCallback != -1) {
-                    if (posHighlight >= 0 && (posHighlight < posKeyword || posKeyword == -1) && (posHighlight < posDaxCallback || posDaxCallback == -1))
-                    {
-                        //up to |~S~| is normal
-                        paragraph.Inlines.Add(new Run(s.Substring(0, posHighlight)));
-                        //between |~S~| and |~E~| is highlighted
-                        int length = posEnd - (posHighlight + 5);
-                        if (length < 0)
-                        {
-                            Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
-                            Debug.WriteLine(s);
-                            break;
-                        }
-                        var highlightRun = new Run(s.Substring(posHighlight + 5, length))
-                        { FontWeight = FontWeights.Bold };
-                        highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLHighlight.Back");
-                        highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLHighlight.Fore");
-                        paragraph.Inlines.Add(highlightRun);
-                        //the rest of the string (after the |~E~|)
-                    }
-                    else if (posKeyword >= 0 && (posKeyword < posDaxCallback || posDaxCallback == -1) && (posKeyword < posHighlight || posHighlight == -1))
-                    {
-                        //up to |~K~| is normal
-                        paragraph.Inlines.Add(new Run(s.Substring(0, posKeyword)));
-                        //between |~K~| and |~E~| is highlighted
-                        int length = posEnd - (posKeyword + 5);
-                        if (length < 0)
-                        {
-                            Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
-                            Debug.WriteLine(s);
-                            break;
-                        }
-                        var highlightRun = new Run(s.Substring(posKeyword + 5, length))
-                        { FontWeight = FontWeights.Bold };
-                        paragraph.Inlines.Add(highlightRun);
-                        //the rest of the string (after the |~E~|)
-                    }
-                    else if (posDaxCallback >= 0 && (posDaxCallback < posHighlight || posHighlight == -1) && (posDaxCallback < posKeyword || posKeyword == -1))
-                    {
-                        //up to |~F~| is normal
-                        paragraph.Inlines.Add(new Run(s.Substring(0, posDaxCallback)));
-                        //between |~F~| and |~E~| is highlighted
-                        int length = posEnd - (posDaxCallback + 5);
-                        if (length < 0)
-                        {
-                            Debug.WriteLine($"IndexOf(|~E~|) - IndexOf(|~E~|) = {length} (should not be negative, see following dump of string to convert)");
-                            Debug.WriteLine(s);
-                            break;
-                        }
-                        var highlightRun = new Run(s.Substring(posDaxCallback + 5, length));
-                        highlightRun.SetResourceReference(Run.BackgroundProperty, "Theme.Brush.xmSQLCallback.Back");
-                        highlightRun.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLCallback.Fore");
-                        paragraph.Inlines.Add(highlightRun);
-                        //the rest of the string (after the |~E~|)
-                    }
-                    s = s.Substring(posEnd + 5);
 
-                    posHighlight = s.IndexOf("|~S~|");
-                    posKeyword = s.IndexOf("|~K~|");
-                    posDaxCallback = s.IndexOf("|~F~|");
-                    posEnd = s.IndexOf("|~E~|");
+                var formats = new List<(string token, Action<Run> format)> {
+                    ( "|~S~|", FormatHighlight ),
+                    ( "|~K~|", FormatKeyword ),
+                    ( "|~N~|", FormatNumber ),
+                    ( "|~F~|", FormatDaxCallback )
+                };
+
+                while (s.Length > 0)
+                {
+                    var formatList = new (string token, Action<Run> format, int position)[formats.Count];
+                    for(int i = 0; i < formats.Count;i++)
+                    {
+                        formatList[i].token = formats[i].token;
+                        formatList[i].format = formats[i].format;
+                        formatList[i].position = 0;
+                    }
+
+                    // Find token
+                    for (int n = 0; n < formatList.Length; n++)
+                    {
+                        formatList[n].position = s.IndexOf(formatList[n].token);
+                    }
+                    int posEnd = s.IndexOf("|~E~|");
+                    var tokens = formatList.Where(t => t.position >= 0);
+                    if (tokens.IsNullOrEmpty())
+                    {
+                        if (posEnd >= 0)
+                        {
+                            Debug.WriteLine($"IndexOf(|~E~|) = {posEnd} (initial token not found, see following dump of string to convert)");
+                            Debug.WriteLine(s);
+                        }
+                        break;
+                    }
+                    int posToken = tokens.Min(t => t.position);
+                    var tokenFirst = formatList.FirstOrDefault(t => t.position == posToken);
+
+                    //up to |~S~| is normal
+                    paragraph.Inlines.Add(new Run(s.Substring(0, posToken)));
+                    //between |~S~| and |~E~| is highlighted
+                    int length = posEnd - (posToken + 5);
+                    if (length < 0)
+                    {
+                        Debug.WriteLine($"IndexOf(|~E~|) - IndexOf({tokenFirst.token}) = {length} (should not be negative, see following dump of string to convert)");
+                        Debug.WriteLine(s);
+                        break;
+                    }
+                    var run = new Run(s.Substring(posToken + 5, length));
+                    tokenFirst.format(run);
+                    paragraph.Inlines.Add(run);
+
+                    s = s.Substring(posEnd + 5);
                 }
                 if (s.Length > 0) {
                     paragraph.Inlines.Add(new Run(s));
