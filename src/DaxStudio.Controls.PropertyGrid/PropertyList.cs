@@ -86,7 +86,8 @@ namespace DaxStudio.Controls.PropertyGrid
             if (!string.IsNullOrWhiteSpace(text))
             {
                 return p.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) ||
-                       p.Subcategory.Contains(text, StringComparison.OrdinalIgnoreCase);
+                       p.Subcategory.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                       p.Description.Contains(text, StringComparison.OrdinalIgnoreCase);
             }
 
             if (!string.IsNullOrEmpty(cat))
