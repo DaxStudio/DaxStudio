@@ -212,6 +212,11 @@ namespace DaxStudio.UI.ViewModels
             // not supported by AllQueries
             throw new NotImplementedException();
         }
+        public override void CopyEventContent()
+        {
+            Log.Warning("CopyEventContent not implemented for DebugAndLogTraceViewModel");
+            throw new NotImplementedException();
+        }
 
         public override void ClearFilters()
         {

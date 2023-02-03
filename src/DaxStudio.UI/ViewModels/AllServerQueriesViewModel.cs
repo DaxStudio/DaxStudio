@@ -22,6 +22,7 @@ using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
 using System.Windows;
+using Serilog;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -295,6 +296,11 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
             }
         }
+        public override void CopyEventContent()
+        {
+            Log.Warning("CopyEventContent not implemented for AllServerQueriesViewModel");
+            throw new NotImplementedException();
+        }
 
         public override bool IsCopyAllVisible { get { return true; } }
         public override bool IsFilterVisible { get { return true; } }
@@ -321,6 +327,7 @@ namespace DaxStudio.UI.ViewModels
             sb.AppendLine();
             _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
         }
+
 
         public override void CopyResults()
         {

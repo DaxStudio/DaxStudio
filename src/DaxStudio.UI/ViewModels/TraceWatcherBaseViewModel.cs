@@ -418,6 +418,7 @@ namespace DaxStudio.UI.ViewModels
         public abstract void ClearAll();
         public virtual bool IsCopyAllVisible { get { return false; } }
         public abstract void CopyAll();
+        public abstract void CopyEventContent();
 
         public virtual bool CanCopyResults => false;
         public abstract void CopyResults();

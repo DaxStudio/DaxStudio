@@ -82,9 +82,9 @@
                         <ctrl:BindableRichTextBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Command="Copy">
-                                <MenuItem.Icon>
-                                    <Image Source="{DynamicResource copyDrawingImage}"/>
-                                </MenuItem.Icon>
+                                    <MenuItem.Icon>
+                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                    </MenuItem.Icon>
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Command="SelectAll"></MenuItem>
