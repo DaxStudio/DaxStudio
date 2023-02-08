@@ -375,7 +375,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 return;
             }
 
-            if (Document?.Connection?.Keywords.Contains(funcName)??false)
+            if (Document?.Connection?.Keywords.Contains(funcName, StringComparer.OrdinalIgnoreCase)??false)
             {
                 ShowKeywordInsightWindow(offset, funcName);
             }

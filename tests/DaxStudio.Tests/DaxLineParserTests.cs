@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.UI.Utils;
+using Castle.Components.DictionaryAdapter.Xml;
 
 namespace DaxStudio.Tests
 {
@@ -236,6 +237,12 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void TestFindFunctionNameWithLeadingBrace()
+        {
+            Assert.AreEqual("value", DaxLineParser.GetPreceedingWord("evaluate {value"));
+        }
+
+        [TestMethod]
         public void TestParseOpenTable()
         {
             //                        0
@@ -309,5 +316,18 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual("EVALUATE", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
         }
+
+        [TestMethod]
+        public void TestBraceThenFunction()
+        {
+            var qry = "EVALUATE {VALUE(";
+            var daxState = DaxLineParser.ParseLine(qry, 16, 0);
+            Assert.AreEqual(LineState.Other, daxState.LineState, "LineState");
+            Assert.AreEqual(15, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(16, daxState.EndOffset, "EndOffset");
+
+            Assert.AreEqual("(", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
+        }
+
     }
 }

@@ -343,6 +343,8 @@ namespace DaxStudio.UI.Utils
                     case ',':
                     case ';':
                     case '.':
+                    case '{':
+                    case '}':
                     case ' ':
                     case '\t':
                         if (!inStr && !inTab && !inCol) { word = ""; pos = i + 1; }
