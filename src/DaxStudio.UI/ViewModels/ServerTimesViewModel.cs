@@ -33,6 +33,7 @@ using Windows.ApplicationModel.VoiceCommands;
 using ControlzEx.Theming;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq.Dynamic;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -130,6 +131,12 @@ namespace DaxStudio.UI.ViewModels
         // - 'Cond'
         private string _queryRichText = "";
 
+        private static string HighlightXmSqlToken(Match match)
+        {
+            return string.IsNullOrEmpty(match.Groups["DAX"].Value) 
+                ? HighlightXmSqlKeyword(match) 
+                : HighlightXmSqlDaxCallback(match);
+        }
         private static string HighlightXmSqlKeyword(Match match)
         {
             return $"|~K~|{match.Value}|~E~|";
@@ -146,9 +153,9 @@ namespace DaxStudio.UI.ViewModels
             set {
                 if (Options.HighlightXmSqlCallbacks)
                 {
-                    string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
-                    string totalValuesHighlighted = callbackDaxHighlighted.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
-                    string keywordsHighlighted = totalValuesHighlighted.HighlightXmSqlKeywords(HighlightXmSqlKeyword);
+                    // string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
+                    string totalValuesHighlighted = value.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
+                    string keywordsHighlighted = totalValuesHighlighted.HighlightXmSqlTokens(HighlightXmSqlToken);
 
                     var sb = new StringBuilder(keywordsHighlighted);
                     // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
@@ -303,9 +310,9 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
         const string searchXmSqlCallbackEnd = @"[^\)]*\){1,}(\.[^\)]*\))?]";
-        const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)([\w\W]*?)(?=\)\s?\])";
+        const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?)(?=\)\s?\])";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
-        const string searchXmSqlKeywords = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|RJOIN|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCASTCOALESCE|PFCAST|COALESCE|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
+        const string searchXmSqlKeywords = searchXmSqlCallbackDax + @"|" + searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|RJOIN|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCASTCOALESCE|PFCAST|COALESCE|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
@@ -327,7 +334,6 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
         static Regex xmSqlFormatStep5 = new Regex(searchXmSqlFormatStep5, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
-        static Regex xmSqlCallbackDax = new Regex(searchXmSqlCallbackDax, RegexOptions.Compiled);
         static Regex xmSqlTotalValues = new Regex(searchXmSqlTotalValues, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
         static Regex xmSqlKeywords = new Regex(searchXmSqlKeywords, RegexOptions.Compiled);
@@ -400,13 +406,9 @@ namespace DaxStudio.UI.ViewModels
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);
             return result;
         }
-        public static string HighlightXmSqlKeywords(this string xmSqlQuery, MatchEvaluator evaluator )
+        public static string HighlightXmSqlTokens(this string xmSqlQuery, MatchEvaluator evaluator )
         {
             return xmSqlKeywords.Replace(xmSqlQuery, evaluator);
-        }
-        public static string HighlightXmSqlDaxCallback(this string xmSqlQuery, MatchEvaluator evaluator )
-        {
-            return xmSqlCallbackDax.Replace(xmSqlQuery, evaluator);
         }
         public static string HighlightXmSqlTotalValues(this string xmSqlQuery, MatchEvaluator evaluator )
         {
