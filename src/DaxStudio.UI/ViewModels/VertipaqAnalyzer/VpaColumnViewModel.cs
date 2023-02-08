@@ -45,9 +45,9 @@ namespace DaxStudio.UI.ViewModels
         public int? SegmentsResident => _col.SegmentsResident;
         public double? SegmentsAverageTemperature => _col.SegmentsAverageTemperature * ((bool)_options?.VpaxAdjustSegmentsMetrics ? 1000 : 1);
         public DateTime? SegmentsLastAccessed => _col.SegmentsLastAccessed;
-        public long ReferentialIntegrityViolationCount => Table.ReferentialIntegrityViolationCount;
-        public long UserHierarchiesSize => Table.UserHierarchiesSize;
-        public long RelationshipsSize => Table.RelationshipSize;
+        public long ReferentialIntegrityViolationCount => Table?.ReferentialIntegrityViolationCount??0;
+        public long UserHierarchiesSize => Table?.UserHierarchiesSize??0;
+        public long RelationshipsSize => Table?.RelationshipSize??0;
 
         public long ColumnsNumber => 1;
         //public long MaxColumnCardinality { get; set; }

@@ -106,14 +106,16 @@
                     <sys:String x:Key="Defaults">options_defaultsDrawingImage</sys:String>
                     <sys:String x:Key="Editor">options_editorDrawingImage</sys:String>
                     <sys:String x:Key="Metadata Pane">options_metadata_paneDrawingImage</sys:String>
-                    <sys:String x:Key="Proxy">options_proxyDrawingImage</sys:String>
+                    <sys:String x:Key="Preview">options_previewDrawingImage</sys:String>
                     <sys:String x:Key="Privacy">options_privacyDrawingImage</sys:String>
+                    <sys:String x:Key="Proxy">options_proxyDrawingImage</sys:String>
                     <sys:String x:Key="Query History">options_query_historyDrawingImage</sys:String>
                     <sys:String x:Key="Results">options_resultsDrawingImage</sys:String>
                     <sys:String x:Key="Server Timings">options_server_timingsDrawingImage</sys:String>
                     <sys:String x:Key="Sounds">options_soundsDrawingImage</sys:String>
                     <sys:String x:Key="Timeouts">options_timeoutsDrawingImage</sys:String>
                     <sys:String x:Key="Trace">options_traceDrawingImage</sys:String>
+                    <sys:String x:Key="VertiPaq Analyzer">options_vertipaq_analyzerDrawingImage</sys:String>
                     <sys:String x:Key="Logging">options_loggingDrawingImage</sys:String>
                 </ResourceDictionary>
             </conv:ResourceLookupConverter>
@@ -136,6 +138,8 @@
                 <Setter Property="TextWrapping" Value="Wrap"/>
                 <Setter Property="Grid.Row" Value="1"/>
                 <Setter Property="Foreground" Value="Gray"/>
+                <Setter Property="pg:TextBlockHighlighter.Selection" Value="{Binding ElementName=Search, Path=Text}"/>
+                <Setter Property="pg:TextBlockHighlighter.HighlightColor" Value="Yellow"/>
             </Style>
 
 

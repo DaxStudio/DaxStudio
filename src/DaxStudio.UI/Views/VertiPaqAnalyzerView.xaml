@@ -566,10 +566,10 @@
                               ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
-
                           HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
                           VerticalGridLinesBrush="Transparent"
                           CanUserSortColumns="True" 
+                              HeadersVisibility="Column"
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True" 

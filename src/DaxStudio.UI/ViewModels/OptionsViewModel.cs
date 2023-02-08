@@ -31,6 +31,10 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using Serilog.Events;
 using System.Text;
+using Humanizer;
+using static LargeXlsx.XlsxAlignment;
+using System.ComponentModel.Composition.Primitives;
+using System.Numerics;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -575,6 +579,9 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _vpaxReadStatisticsFromData = true;
         [DataMember, DefaultValue(true)]
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Read statistics from data")]
+        [Description("Scan the data to retrieve statistics about columns, tables, and relationships. It could be a long operation in large database.")]
         public bool VpaxReadStatisticsFromData
         {
             get => _vpaxReadStatisticsFromData;
@@ -590,6 +597,9 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _vpaxReadStatisticsFromDirectQuery = false;
         [DataMember, DefaultValue(false)]
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Read statistics from DirectQuery tables")]
+        [Description("Include DirectQuery tables in statistics collection")]
         public bool VpaxReadStatisticsFromDirectQuery
         {
             get => _vpaxReadStatisticsFromDirectQuery;
@@ -605,7 +615,10 @@ namespace DaxStudio.UI.ViewModels
 
 
         private int _vpaxSampleReferentialIntegrityViolations = 3;
-        [DataMember, DefaultValue(3)]
+        [DataMember, DefaultValue(3),MinValue(0), MaxValue(10)]
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Sample Referential Integrity violations")]
+        [Description("The number of sample referential integrity violations to display. (these values are NOT stored in the vpax file when you export metrics)")]
         public int VpaxSampleReferentialIntegrityViolations {
             get => _vpaxSampleReferentialIntegrityViolations;
             set {
@@ -1417,6 +1430,9 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _vpaxIncludeTom;
         [DataMember, DefaultValue(true)]
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Include TOM")]
+        [Description("Include the complete Tabular Object Model(TOM) in the export for VertiPaq Analyzer(VPAX)")]
         public bool VpaxIncludeTom {
             get => _vpaxIncludeTom;
             set {
@@ -1447,6 +1463,9 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _showDebugCommas;
         [DataMember, DefaultValue(true)]
+        [Category("Preview")]
+        [DisplayName("Show Debug Commas")]
+        [Description("Enabling this option moves the \"Swap Delimiters\" button to the Advanced tab")]
         public bool ShowDebugCommas
         {
             get => _showDebugCommas;
@@ -1463,6 +1482,9 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _showXmlaInAllQueries;
         [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show XMLA Commands")]
+        [Description("Show XMLA commands in the All Queries trace")]
         public bool ShowXmlaInAllQueries
         {
             get => _showXmlaInAllQueries;
@@ -2367,8 +2389,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private VpaTableColumnDisplay _vpaTableColumnDisplay;
-        [Category("Defaults")]
-        [Subcategory("VertiPaq Analyzer")]
+        [Category("VertiPaq Analyzer")]
         [DisplayName("Table/Column name display in Columns tab")]
         [Description("Determines how the table and column name are formatted in the View Metrics Columns tab")]
         [DataMember, DefaultValue(VpaTableColumnDisplay.TableDashColumn)]

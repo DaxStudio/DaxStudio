@@ -364,8 +364,8 @@ namespace DaxStudio.UI.ViewModels
             public string RelationshipSize => "The size taken up by relationship structures in bytes";
             public string PercentOfTable => "The space taken up by a column as a percentage of the parent table";
             public string PercentOfDatabase => "The space taken up by a table or column as a percentage of the total size of the database";
-            public string Segments => "The number of segments";
-            public string TotalSegments => "The total number of segments";
+            public string Segments => "The maximum number of segments of any single column";
+            public string TotalSegments => "The total number of segments for all columns";
             public string Pageable => "The number of pageable segments";
             public string Resident => "The number of memory resident segments";
             public string Temperature => "A scaled numeric frequency of segment access";
