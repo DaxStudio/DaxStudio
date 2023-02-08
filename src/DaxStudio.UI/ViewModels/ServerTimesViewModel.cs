@@ -693,6 +693,8 @@ namespace DaxStudio.UI.ViewModels
                     {
                         Log.Debug($">> NOT row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Millisecond} EndTime={traceEvent.EndTime.Millisecond} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
+                    // Align NetParallelDuration to Duration
+                    traceEvent.NetParallelDuration = traceEvent.Duration;
                 }
                 // END TODO CHECK 
                 
@@ -745,8 +747,8 @@ namespace DaxStudio.UI.ViewModels
                             {
                                 if (seLevel == 0)
                                 {
-                                    var delta = (e.TimeStamp - currentScanTime).TotalMilliseconds;
-                                    delta = (delta < e.Event.Duration && e.Event.Duration > 0) ? e.Event.Duration : delta;
+                                    var delta = (e.Event.StartTime - currentScanTime).TotalMilliseconds;
+                                    // delta = (delta < e.Event.Duration && e.Event.Duration > 0) ? e.Event.Duration : delta;
                                     Log.Debug($"FE += {delta}ms VertiPaqSEQueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond}");
                                     new_FormulaEngineDuration += delta;
                                     // Placeholder: END FE event
@@ -800,12 +802,16 @@ namespace DaxStudio.UI.ViewModels
                                 // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
                                 System.Diagnostics.Debug.Assert(batchScan == 0, "Nested VertiScan batches detected or missed SE QueryBegin events!");
 
+                                Log.Debug($"FIX EndScan traceEvent.Duration={traceEvent.Duration}ms batchStorageEngineDuration={batchStorageEngineDuration}");
                                 // Fix 
                                 // Subtract from the batch event the total computed for the scan events within the batch
-                                traceEvent.Duration = Math.Max( (long)(traceEvent.Duration - batchStorageEngineDuration), 0 );
+                                traceEvent.Duration = Math.Max((long)(traceEvent.Duration - batchStorageEngineDuration), 0);
+                                traceEvent.NetParallelDuration = traceEvent.Duration;
                                 traceEvent.CpuTime = Math.Max((long)(traceEvent.CpuTime - batchStorageEngineCpu), 0 );
 
                                 StorageEngineDuration += traceEvent.Duration;
+                                StorageEngineNetParallelDuration += traceEvent.Duration;
+                                Log.Debug($"StorageEngineDuration)={StorageEngineDuration}");
                                 StorageEngineCpu += traceEvent.CpuTime;
                                 // Currently, we do not compute a storage engine query for the batch event - we might uncomment this if we decide to show the Batch event by default
                                 StorageEngineQueryCount++;
@@ -824,9 +830,8 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     // Ignore internal batch events to update parallel operation
                                     UpdateForParallelOperations(ref maxStorageEngineVertipaqEvent, traceEvent);
+                                    StorageEngineDuration += traceEvent.Duration;
                                 }
-
-                                StorageEngineDuration += traceEvent.Duration;
                                 StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                                 StorageEngineCpu += traceEvent.CpuTime;
                                 StorageEngineQueryCount++;
