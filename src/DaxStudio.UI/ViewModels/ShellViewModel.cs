@@ -595,6 +595,7 @@ namespace DaxStudio.UI.ViewModels
             ThemeManager.SetTheme(message.Theme);
             //if (message.Theme == "Dark") SetDarkTheme();
             //else SetLightTheme();
+            _eventAggregator.PublishOnUIThreadAsync(new ThemeChangedEvent());
             return Task.CompletedTask;
         }
 

@@ -24,17 +24,15 @@ using DaxStudio.Common;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
-using System.Security.Cryptography;
 using System.Diagnostics;
-using Windows.Media.Playback;
-using System.Windows.Threading;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
-using DaxStudio.UI.Views;
 using System.Windows.Markup;
 using System.Runtime.InteropServices;
 using Fclp.Internals.Extensions;
 using SharpCompress.Common;
 using Windows.ApplicationModel.VoiceCommands;
+using ControlzEx.Theming;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -491,7 +489,7 @@ namespace DaxStudio.UI.ViewModels
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     public class ServerTimesViewModel
-        : TraceWatcherBaseViewModel, ISaveState, IServerTimes, ITraceDiagnostics
+        : TraceWatcherBaseViewModel, ISaveState, IServerTimes, ITraceDiagnostics, IHandle<ThemeChangedEvent>
     {
         private bool parallelStorageEngineEventsDetected = false;
         public bool ParallelStorageEngineEventsDetected
@@ -1280,6 +1278,7 @@ namespace DaxStudio.UI.ViewModels
 
         public int TextGridRow { get { return ServerTimingDetails?.LayoutBottom ?? false ? 4 : 2; } }
         public int TextGridRowSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 1 : 3; } }
+        public int TextGridColumnSpan { get { return ServerTimingDetails?.LayoutBottom ?? false ? 3 : 1; } }
         public int TextGridColumn { get { return ServerTimingDetails?.LayoutBottom ?? false ? 2 : 4; } }
 
         public GridLength TextColumnWidth { get { return ServerTimingDetails?.LayoutBottom ?? false ? new GridLength(0, GridUnitType.Pixel) : new GridLength(1, GridUnitType.Star); } }
@@ -1319,6 +1318,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TextGridColumn);
                     NotifyOfPropertyChange(() => TextGridRow);
                     NotifyOfPropertyChange(() => TextGridRowSpan);
+                    NotifyOfPropertyChange(() => TextGridColumnSpan);
                     NotifyOfPropertyChange(() => TextColumnWidth);
                     break;
                 default:
@@ -1434,6 +1434,13 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ShowWaterfallOnRows));
         }
 
+        public Task HandleAsync(ThemeChangedEvent message, CancellationToken cancellationToken)
+        {
+            StorageEventHeatmap = null;
+            NotifyOfPropertyChange(nameof(StorageEventHeatmap));
+            return Task.CompletedTask;
+        }
+
         private ImageSource _storageEventHeatmap;
         public ImageSource StorageEventHeatmap { 
             get {
@@ -1445,10 +1452,15 @@ namespace DaxStudio.UI.ViewModels
                 // I manually applied the colors from the light theme because
                 // I was always getting the colors from the dark theme
                 // even though the light theme is selected
-                Brush scanBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF228ED6"); // (Brush)element.FindResource("Theme.Brush.Accent");
-                Brush feBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#FFFAC700"); // (Brush)element.FindResource("Theme.Brush.Accent2");
-                Brush batchBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF64B0E2"); // (Brush)element.FindResource("Theme.Brush.Accent1");
-                Brush internalBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF1B72AB"); // (Brush)element.FindResource("Theme.Brush.Accent3");
+                //Brush scanBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF228ED6"); // (Brush)element.FindResource("Theme.Brush.Accent");
+                //Brush feBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#FFFAC700"); // (Brush)element.FindResource("Theme.Brush.Accent2");
+                //Brush batchBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF64B0E2"); // (Brush)element.FindResource("Theme.Brush.Accent1");
+                //Brush internalBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF1B72AB"); // (Brush)element.FindResource("Theme.Brush.Accent3");
+
+                Brush scanBrush = (Brush)element.FindResource("Theme.Brush.Accent");
+                Brush feBrush = (Brush)element.FindResource("Theme.Brush.Accent2");
+                Brush batchBrush =  (Brush)element.FindResource("Theme.Brush.Accent1");
+                Brush internalBrush = (Brush)element.FindResource("Theme.Brush.Accent3");
 
                 //_storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateVector(this.StorageEngineEvents.ToList(), 500, 10, feBrush, scanBrush, batchBrush, internalBrush  );
                 _storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateBitmap(this.StorageEngineEvents.ToList(), 5000, 10, feBrush, scanBrush, batchBrush, internalBrush);

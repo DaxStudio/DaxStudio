@@ -14,7 +14,6 @@
              d:DesignHeight="300" d:DesignWidth="800"
              
              cal:View.ApplyConventions="False">
-    
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -38,6 +37,7 @@
             <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
             <conv:WaterfallMarginConverter x:Key="WaterfallMarginConverter"/>
             <sys:Double x:Key="BarWidth">100.0</sys:Double>
+
             <Style x:Key="WaterfallCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
                 <Setter Property="ToolTip">
                     <Setter.Value>
@@ -65,7 +65,51 @@
                 </Setter>
             </Style>
 
-            <ctrl:BindingProxy x:Key="proxy" Data="{Binding}"/>
+
+            <Style x:Key="DataGridColumnHeaderWaterfall" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0 0 0 0" />
+                <Setter Property="Padding" Value="0 0"/>
+                <Setter Property="MinHeight" Value="28"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
+                <Setter Property="FontWeight" Value="DemiBold"/>
+
+                <Setter Property="ContentTemplate" >
+                    <Setter.Value>
+                        <DataTemplate >
+                            <Border cal:Message.Attach="[Event MouseDown] = [Action SwitchWaterfallOnRowsVisibility]" Background="Transparent" HorizontalAlignment="Center">
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                    <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center"  Margin="0 0 0 0">Waterfall</TextBlock>
+                                    <DockPanel HorizontalAlignment="Stretch" 
+                                                Height="8"
+                                               
+                                               >
+                                        <!-- 
+                                        TODO WATERFALL
+                                        We should use Event Click, but it's probably used by something else!
+                                        cal:Message.Attach="[Event Click] = [Action SwichWaterfallOnRowsVisibility]"
+                                        -->
+                                        <!--<Image Source="{Binding StorageEventHeatmap}" Width="100" Height="5"/>-->
+                                        <!--<ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="0 0 0 0" Height="8" Opacity="1"/>-->
+                                        <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                               DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0 0 0 0" 
+                                               Stretch="Fill"
+                                               Height="8" Opacity="1"/>
+
+
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="SortDirection" Value="{x:Null}">
+                        <Setter Property="Padding" Value="0 0" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
 
             <!-- Data Templates -->
         
@@ -79,6 +123,7 @@
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                  Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
+                    
                         <ctrl:BindableRichTextBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Command="Copy">
@@ -144,41 +189,42 @@
             </DataTemplate>
 
             <DataTemplate x:Key="WaterfallCell">
-                <!-- Width="{Binding Path=ActualWidth,RelativeSource={RelativeSource AncestorType=DataGridCell}}"-->
-                <Grid HorizontalAlignment="Left"  >
+                <Grid HorizontalAlignment="Left">
+
                     <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" >
-                         <!--Width="{Binding Path=DataContext.WaterfallColumnWidth, RelativeSource={RelativeSource AncestorType=UserControl},Mode=TwoWay}"--> 
-                    <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" DockPanel.Dock="Left"
+                        <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" DockPanel.Dock="Left"
                            Height="12"
                            Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ShowWaterfallOnRows}" 
                            Stretch="Fill" 
-                           Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
-                        <!--<Image.RenderTransform>
-                            <ScaleTransform CenterX="0" ScaleY="1" ScaleX="{Binding Path=DataContext.WaterfallHeatmapXScale, RelativeSource={RelativeSource AncestorType=UserControl}}" >
-                                
-                            </ScaleTransform>
-                        </Image.RenderTransform>-->
-                    </Image>
+                           Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0"/>
                     </DockPanel>
-                    <!--<ctrl:StorageEngineTime 
-                        ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" 
-                        Width="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=ActualWidth}" 
-                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ShowWaterfallOnRows}" 
-                        Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0">
-                        
-                        --><!-- Note: not sure whether the following setter works or not --><!--
-                        <ctrl:StorageEngineTime.Style>
-                            <Style TargetType="{x:Type ctrl:StorageEngineTime}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=Self, ElementName=Visibility}" Value="Hidden">
-                                        <Setter Property="ItemsControl.DataContext" Value="{x:Null}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ctrl:StorageEngineTime.Style>
-                    </ctrl:StorageEngineTime>-->
-                    
-                    <Border HorizontalAlignment="Left" Panel.ZIndex="1">
+
+
+                    <Border HorizontalAlignment="Left" >
+                        <Border.Margin >
+                            <MultiBinding Converter="{StaticResource WaterfallMarginConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
+                                <Binding Path="StartOffsetMs"/>
+                                <Binding Path="WaterfallDuration"/>
+                                <Binding>
+                                    <Binding.Source>
+                                        <sys:Double>6</sys:Double>
+                                    </Binding.Source>
+                                </Binding>
+                            </MultiBinding>
+                        </Border.Margin>
+                        <Border.Width >
+                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
+                                <Binding Path="DisplayDuration"/>
+                                <Binding Path="WaterfallDuration"/>
+                                <Binding>
+                                    <Binding.Source>
+                                        <sys:Double>1</sys:Double>
+                                    </Binding.Source>
+                                </Binding>
+                            </MultiBinding>
+                        </Border.Width>
                         <Border.Style>
                             <Style TargetType="{x:Type Border}">
                                 <Setter Property="Background" Value="{DynamicResource Theme.Brush.Accent}" />
@@ -192,55 +238,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <Border.Margin >
-                            <MultiBinding Converter="{StaticResource WaterfallMarginConverter}">
-                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
-                                <Binding Path="StartOffsetMs"/>
-                                <Binding Path="WaterfallDuration"/>
-                                <Binding>
-                                    <Binding.Source>
-                                        <sys:Double>6</sys:Double>
-                                    </Binding.Source>
-                                </Binding>
-                            </MultiBinding>
-                        </Border.Margin>
-                        
-                        <Border.Width >
-                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
-                                <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
-                                <Binding Path="DisplayDuration"/>
-                                <Binding Path="WaterfallDuration"/>
-                                <Binding>
-                                    <Binding.Source>
-                                        <sys:Double>1.0</sys:Double>
-                                    </Binding.Source>
-                                </Binding>
-                            </MultiBinding>
-                        </Border.Width>
-                        <Border.ToolTip>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
-                                <TextBlock>Start Time:</TextBlock>
-                                <TextBlock Grid.Row="1">Start Offset:</TextBlock>
-                                <StackPanel Orientation="Horizontal" Grid.Row="2">
-                                    <TextBlock>Duration:</TextBlock>
-                                    <Border Background="{DynamicResource Theme.Brush.Accent}" Width="10" Margin="3"/>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding StartTime,StringFormat='HH:mm:ss.fff' }"/>
-                                <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding StartOffsetMs,StringFormat='#,0\m\s'}"/>
-                                <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Duration,StringFormat='#,0\m\s'}"/>
-                            </Grid>
-                        </Border.ToolTip>
                     </Border>
-
                 </Grid>
             </DataTemplate>
             
@@ -486,6 +484,7 @@
                         
                         <TextBlock Grid.Row="5" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center"
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
+
                         <!-- Horizontal Bar FE vs SE -->
                         <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
                             <StackPanel Height="15" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,0" Background="{DynamicResource Theme.Brush.Table.Header.Back}" >
@@ -516,6 +515,29 @@
                         </StackPanel>
 
 
+
+
+                    
+                    <!-- Horizontal Bar FE vs SE -->
+                    <!--<StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
+                            <Rectangle.Width>
+                                <MultiBinding Converter="{StaticResource MultiConverter}">
+                                    <Binding Path="FormulaEngineDurationPercentage"/>
+                                    <Binding Source="{StaticResource BarWidth}" />
+                                </MultiBinding>
+                            </Rectangle.Width>
+                        </Rectangle>    
+                        <Rectangle Height="5" HorizontalAlignment="Right" Margin="0,2,0,5" Fill="{StaticResource DaxStudioBrush}">
+                            <Rectangle.Width>
+                                <MultiBinding Converter="{StaticResource MultiConverter}">
+                                    <Binding Path="StorageEngineDurationPercentage"/>
+                                    <Binding Source="{StaticResource BarWidth}" />
+                                </MultiBinding>
+                            </Rectangle.Width>
+                        </Rectangle>
+                    </StackPanel>-->
+                    
 
                     <!-- SE Queries -->
                     <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}"
@@ -562,12 +584,9 @@
             Grid.Row="2"
             Grid.Column="2" 
             Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
+            Grid.ColumnSpan="{Binding TextGridColumnSpan}"
             >
-<!--
-                              AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
-                  AlternationCount="2"
-
-            -->
+            
             <DataGrid Name="ListEvents" 
                   SelectedItem="{Binding SelectedEvent}" 
                   ap:DataGridHorizontalScroll.ScrollToColumn="1"
@@ -575,6 +594,7 @@
                   HorizontalAlignment="Stretch" 
                   AutoGenerateColumns="False"
                   AlternationCount="2"
+                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                   Background="{DynamicResource Theme.Brush.Content.Back}"
                   behaviours:GridViewColumnResize.Enabled="True" 
                   VerticalAlignment="Stretch" 
@@ -621,42 +641,8 @@
                 <Style x:Key="DataGridColumnHeaderRight" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DsDataGridColumnHeaderStyle}">
                     <Setter Property="HorizontalContentAlignment" Value="Right"/>
                 </Style>
-                    <Style x:Key="DataGridColumnHeaderWaterfall" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DsDataGridColumnHeaderWaterfallStyle}">
-                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                        <Setter Property="Margin" Value="0 0 0 0" />
-                        
-                        <Setter Property="ContentTemplate" >
-                            <Setter.Value>
-                                <DataTemplate >
-                                    <Border cal:Message.Attach="[Event MouseDown] = [Action SwitchWaterfallOnRowsVisibility]" Background="Transparent" HorizontalAlignment="Center">
-                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                                            <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center"  Margin="0 0 0 0">Waterfall</TextBlock>
-                                    <DockPanel HorizontalAlignment="Stretch" 
-                                                Height="8"
-                                               
-                                               >
-                                        <!-- 
-                                        TODO WATERFALL
-                                        We should use Event Click, but it's probably used by something else!
-                                        cal:Message.Attach="[Event Click] = [Action SwichWaterfallOnRowsVisibility]"
-                                        -->
-                                        <!--<Image Source="{Binding StorageEventHeatmap}" Width="100" Height="5"/>-->
-                                        <!--<ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="0 0 0 0" Height="8" Opacity="1"/>-->
-                                        <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                               DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0 0 0 0" 
-                                               Stretch="Fill"
-                                               Height="8" Opacity="1"/>
 
-                                        
-                                    </DockPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-
-                    <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" >
+                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" >
                     <Setter Property="HorizontalAlignment" Value="Right" />
                     <Setter Property="Padding" Value="6 0 6 0"/>
                     <Setter Property="VerticalAlignment" Value="Center" />
@@ -666,26 +652,23 @@
                     <Setter Property="Padding" Value="6 0 6 0"/>
                     <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
-                </DataGrid.Resources>
-                <!-- TODO WATERFALL
-                          This is a fix for mouseover that is hidden by alternate color
-                          the workaround is to apply IsMouseOver after AlternationIndex 
-                          and remove the AlternatingRowBackground from the DataGrid
-                         HOWEVER, this does not work with Dark theme, must be fixed in 
-                         Fluent or in other classes to support the style? -->
-                <DataGrid.RowStyle >
+
+
+
+            </DataGrid.Resources>
+                <!--<DataGrid.RowStyle BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <Style TargetType="DataGridRow">
                         <Style.Triggers>
                             <Trigger Property="AlternationIndex" Value="1">
-                                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Alternate}" />
+                                <Setter  TargetName="BackgroundRectangle"  Property="Fill" Value="{DynamicResource Theme.Brush.Table.Alternate}" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FFCCCCCC" />
+                                <Setter TargetName="BackgroundRectangle" Property="Fill" Value="#FFCCCCCC" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
-                </DataGrid.RowStyle>
-                
+                </DataGrid.RowStyle>-->
+
                 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
@@ -707,12 +690,9 @@
                     <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                    <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
-                    <!--behaviours:GridViewColumnResize.Width="Auto"
-                    Width="{Binding Path=Data.WaterfallColumnWidth, Source={StaticResource proxy}, Mode=TwoWay}"
-                    -->
-                    <DataGridTemplateColumn Width="100" Header="Waterfall" CellTemplate="{StaticResource WaterfallCell}" HeaderStyle="{StaticResource DataGridColumnHeaderWaterfall}" CellStyle="{StaticResource WaterfallCellStyle}" CanUserSort="False" >
-                    </DataGridTemplateColumn>
+                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
+                    <!--behaviours:GridViewColumnResize.Width="Auto" -->
+                    <DataGridTemplateColumn Width="100" Header="Waterfall" CellTemplate="{StaticResource WaterfallCell}" CellStyle="{StaticResource WaterfallCellStyle}" HeaderStyle="{StaticResource DataGridColumnHeaderWaterfall}"/>
 
 
                     <DataGridTextColumn Header="Query" Width="*"
@@ -753,6 +733,7 @@
         <ctrl:ClipBorder
             Grid.Row="{Binding TextGridRow}"
             Grid.RowSpan="{Binding TextGridRowSpan}"
+            Grid.ColumnSpan="{Binding TextGridColumnSpan}"
             Grid.Column="{Binding TextGridColumn}"
             >
             <ScrollViewer Background="{DynamicResource Theme.Brush.Content.Back}">
