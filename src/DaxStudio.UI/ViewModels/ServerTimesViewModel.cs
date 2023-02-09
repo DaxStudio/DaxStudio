@@ -26,11 +26,6 @@ using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
 using System.Diagnostics;
 using System.Windows.Markup;
-using System.Runtime.InteropServices;
-using Fclp.Internals.Extensions;
-using SharpCompress.Common;
-using Windows.ApplicationModel.VoiceCommands;
-using ControlzEx.Theming;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Dynamic;
@@ -149,6 +144,7 @@ namespace DaxStudio.UI.ViewModels
         {
             return $"|~N~|{match.Value}|~E~|";
         }
+        [JsonIgnore]
         public string QueryRichText {
             set {
                 if (Options.HighlightXmSqlCallbacks)
@@ -682,9 +678,9 @@ namespace DaxStudio.UI.ViewModels
                         traceEvent.EndTime = traceEvent.StartTime.AddMilliseconds((double)traceEvent.Duration);
                         Log.Debug($">> fix EndTime row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Millisecond} EndTime={traceEvent.EndTime.Millisecond} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
-                    else if (traceEvent.EndTime >= traceEvent.StartTime && (traceEvent.EndTime - traceEvent.StartTime).Milliseconds > traceEvent.Duration)
+                    else if (traceEvent.EndTime >= traceEvent.StartTime && (traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds > traceEvent.Duration)
                     {
-                        traceEvent.Duration = (traceEvent.EndTime - traceEvent.StartTime).Milliseconds;
+                        traceEvent.Duration = Convert.ToInt64((traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds);
                         Log.Debug($">> fix Duration row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Millisecond} EndTime={traceEvent.EndTime.Millisecond} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     else
@@ -1313,9 +1309,9 @@ namespace DaxStudio.UI.ViewModels
             CommandText = m.CommandText;
             ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
             WaterfallTotalDuration = m.WaterfallTotalDuration;
-            this.AllStorageEngineEvents.Clear();
-            this.AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
-
+            AllStorageEngineEvents.Clear();
+            AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
+            AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
             // update waterfall total Duration if this is an older file format
             if (m.FileFormatVersion <= 3) {
                 AllStorageEngineEvents.Apply(se => UpdateWaterfallTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, String.Empty, se.StartTime)));

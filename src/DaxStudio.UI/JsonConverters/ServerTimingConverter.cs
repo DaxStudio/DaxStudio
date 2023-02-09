@@ -17,7 +17,7 @@ namespace DaxStudio.UI.JsonConverters
         {
             // load the json string
             var jsonObject = JObject.Load(reader);
-
+            jsonObject["QueryRichText"] = jsonObject["Query"];
             // instantiate the appropriate object based on the json string
             var target = Create(objectType, jsonObject);
 
