@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
+using DaxStudio.Tests.Helpers;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices;
@@ -42,13 +43,10 @@ namespace DaxStudio.Tests
 
             var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
 
-            var e1 = CreateDSVertipaqSEEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25)); // 20
-            var e2 = CreateDSVertipaqSEEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
-            var e3 = CreateDSQueryEndEvent(5, new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
-            vm.Events.Enqueue(e1);
-            vm.Events.Enqueue(e2);
-            vm.Events.Enqueue(e3);
-            
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 20);  // 20
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 40), 15); // +15
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 75);
+           
             vm.ProcessAllEvents();
 
             // assert overlaps are detected
@@ -66,16 +64,11 @@ namespace DaxStudio.Tests
 
             var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
 
-            var e1 = CreateDSVertipaqSEEvent(1,new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25));  // 20
-            var e2 = CreateDSVertipaqSEEvent(2,new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // fully overlapped
-            var e3 = CreateDSVertipaqSEEvent(3,new DateTime(2022, 7, 10, 1, 1, 1, 15), new DateTime(2022, 7, 10, 1, 1, 1, 30)); // +5 partial overlap
-            var e4 = CreateDSVertipaqSEEvent(4,new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
-            var e5 = CreateDSQueryEndEvent(5,new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
-            vm.Events.Enqueue(e1);
-            vm.Events.Enqueue(e2);
-            vm.Events.Enqueue(e3);
-            vm.Events.Enqueue(e4);
-            vm.Events.Enqueue(e5);
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 25);  // 20
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 10), 10); // fully overlapped
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 15), 15); // +5 partial overlap
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 40), 15); // +15
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 75);
 
             vm.ProcessAllEvents();
 
@@ -96,16 +89,11 @@ namespace DaxStudio.Tests
 
             var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions,mockWindowManager);
 
-            var e1 = CreateDSDQEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25));  // 20
-            var e2 = CreateDSDQEvent(2, new DateTime(2022, 7, 10, 1, 1, 1, 10), new DateTime(2022, 7, 10, 1, 1, 1, 20)); // fully overlapped
-            var e3 = CreateDSDQEvent(3, new DateTime(2022, 7, 10, 1, 1, 1, 15), new DateTime(2022, 7, 10, 1, 1, 1, 30)); // +5 partial overlap
-            var e4 = CreateDSDQEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
-            var e5 = CreateDSQueryEndEvent(5, new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
-            vm.Events.Enqueue(e1);
-            vm.Events.Enqueue(e2);
-            vm.Events.Enqueue(e3);
-            vm.Events.Enqueue(e4);
-            vm.Events.Enqueue(e5);
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 20);
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 10), 10);
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 15), 20);
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 40), 20);
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 75);
 
             vm.ProcessAllEvents();
 
@@ -119,44 +107,6 @@ namespace DaxStudio.Tests
             Assert.AreEqual(true, vm.ParallelStorageEngineEventsDetected);
         }
 
-        private DaxStudioTraceEventArgs CreateDSVertipaqSEEvent(int sequence,DateTime startTime, DateTime endTime)
-        {
-            return new DaxStudioTraceEventArgs(TraceEventClass.VertiPaqSEQueryEnd.ToString()
-                , TraceEventSubclass.VertiPaqScan.ToString()
-                , (long)(endTime - startTime).TotalMilliseconds
-                , 10
-                , $"Test Event {sequence}"
-                , ""
-                , startTime)
-            { EndTime = endTime};
-
-        }
-        private DaxStudioTraceEventArgs CreateDSDQEvent(int sequence, DateTime startTime, DateTime endTime)
-        {
-            return new DaxStudioTraceEventArgs(TraceEventClass.DirectQueryEnd.ToString()
-                , TraceEventSubclass.NotAvailable.ToString()
-                , (long)(endTime - startTime).TotalMilliseconds
-                , 10
-                , $"Test Event {sequence}"
-                , ""
-                , startTime)
-            { EndTime = endTime };
-
-        }
-
-        private DaxStudioTraceEventArgs CreateDSQueryEndEvent(int sequence, DateTime startTime, DateTime endTime)
-        {
-            return new DaxStudioTraceEventArgs(TraceEventClass.QueryEnd.ToString()
-                , TraceEventSubclass.DAXQuery.ToString()
-                , (long)(endTime - startTime).TotalMilliseconds
-                , 10
-                , $"Test Query {sequence}"
-                , ""
-                , startTime)
-            { EndTime = endTime };
-
-        }
-
         [TestMethod]
         public void TestHeatMap()
         {
@@ -165,16 +115,10 @@ namespace DaxStudio.Tests
 
             var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions, mockWindowManager);
 
-            var e1 = CreateDSVertipaqSEEvent(1, new DateTime(2022, 7, 10, 1, 1, 1, 5), new DateTime(2022, 7, 10, 1, 1, 1, 25)); // 20
-            var e2 = CreateDSVertipaqSEEvent(4, new DateTime(2022, 7, 10, 1, 1, 1, 40), new DateTime(2022, 7, 10, 1, 1, 1, 55)); // +15
-            var e3 = CreateDSQueryEndEvent(5, new DateTime(2022, 7, 10, 1, 1, 1, 0), new DateTime(2022, 7, 10, 1, 1, 1, 75));
-            vm.Events.Enqueue(e1);
-            vm.Events.Enqueue(e2);
-            vm.Events.Enqueue(e3);
-
-            vm.QueryStartDateTime = e3.StartTime;
-            vm.QueryEndDateTime = e3.EndTime;
-            
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 20);
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 40), 15);
+            vm.AddTestEvent(TraceEventClass.QueryEnd, TraceEventSubclass.DAXQuery, new DateTime(2022, 7, 10, 1, 1, 1, 0), 75);
+           
             vm.ProcessAllEvents();
 
             Assert.AreEqual(2, vm.StorageEngineEvents.Count);
