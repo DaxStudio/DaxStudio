@@ -712,93 +712,14 @@
                     <WrapPanel Width="{Binding ElementName=AdvancedScrollViewer, Path=ViewportWidth}" Orientation="Horizontal" >
                         <GroupBox Header="Publish Functions">
                             <StackPanel>
-                                <Button Name="PublishDaxFunctions" MinWidth="150">Publish Functions</Button>
-                                <TextBlock Margin="10,0,0,10" Foreground="{StaticResource MutedTextBrush}" Name="CanPublishDaxFunctionsMessage"></TextBlock>
+                                <DockPanel>
+                                    <Button Name="PublishDaxFunctions" MinWidth="150" DockPanel.Dock="Left">Publish Functions</Button>
+                                    <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" DockPanel.Dock="Right" TextWrapping="Wrap" Name="CanPublishDaxFunctionsMessage"></TextBlock>
+                                </DockPanel>
+                                <TextBlock Margin="10,6,0,20" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap">Send DAX functions to the service that feeds DAX Guide. The content sent is the same as the ZIP file that can be exported.</TextBlock>
                                 <Button  Name="ExportDAXFunctions" MinWidth="150">Export Functions</Button>
+                                <TextBlock Margin="10,6,0,10" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" >Export DAX functions to a ZIP file named with the version of the connected AS/Tabular engine. The ZIP file contains a JSON file with the functions detected.</TextBlock>
                             </StackPanel>
-                        </GroupBox>
-
-                        <GroupBox Header="Preview Features">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <ui:ToggleSwitch Grid.Row="1" Grid.Column="0" x:Name="ShowDebugCommas" VerticalAlignment="Top" Margin="2,7,2,0" 
-                                                 OnContent="Show Debug Commas" 
-                                                 OffContent="Show Debug Commas" Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show a button to move commas from the end of a line to the beginning of the following line. Activating this featurs hides the Swap Delimiters button.</TextBlock>
-                                
-                                <ui:ToggleSwitch Grid.Row="3" Grid.Column="0" x:Name="ShowXmlaInAllQueries" VerticalAlignment="Top" Margin="2,7,2,0" 
-                                                 OnContent="Show XMLA Commands" 
-                                                 OffContent="Show XMLA Commands"
-                                                 Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Show the XMLA commands in the All Queries window. The new setting will be active after you restart DAX Studio.</TextBlock>
-
-                                <ui:ToggleSwitch Grid.Row="5" Grid.Column="0" x:Name="EnablePasteFileOnExistingWindow" VerticalAlignment="Top" Margin="2,7,2,0" 
-                                                 OnContent="Paste file content with drag-and-drop" 
-                                                 OffContent="Paste file content with drag-and-drop"
-                                                 Grid.ColumnSpan="2"/>
-                                <TextBlock Grid.Row="6" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Paste the content of the file on existing connections replacing the current DAX code by using CTRL+ALT while doing drag-and-drop.</TextBlock>
-
-                            </Grid>
-                        </GroupBox>
-                        <GroupBox Header="VertiPaq Analyzer">
-                            <Grid Margin="5,5,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="94"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <ui:ToggleSwitch Grid.Column="0" x:Name="VpaxIncludeTom" VerticalAlignment="Top" 
-                                                 OnContent="Include TOM"
-                                                 OffContent="Include TOM" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include the complete Tabular Object Model (TOM) in the export for VertiPaq Analyzer (VPAX)</TextBlock>
-                                <ui:ToggleSwitch Grid.Row="2" Grid.Column="0" x:Name="VpaxReadStatisticsFromData" VerticalAlignment="Top" 
-                                                 OnContent="Read statistics from data"
-                                                 OffContent="Read statistics from data" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Scan the data to retrieve statistics about columns, tables, and relationships. It could be a long operation in large database.</TextBlock>
-                                <ui:ToggleSwitch Grid.Row="4" Grid.Column="0" x:Name="VpaxAdjustSegmentsMetrics" VerticalAlignment="Top" 
-                                                 OnContent="Automatically adjust segments metrics"
-                                                 OffContent="Display original segment metrics" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Segment metrics can be adjusted automatically (e.g. by multiplying the original values) to display easier-to-read numbers.</TextBlock>
-                                <ui:ToggleSwitch Grid.Row="6" Grid.Column="0" x:Name="VpaxReadStatisticsFromDirectQuery" VerticalAlignment="Top" 
-                                                 OnContent="Read statistics from DirectQuery tables"
-                                                 OffContent="Ignore statistics from DirectQuery tables" Grid.ColumnSpan="2" Margin="2,7,2,0" />
-                                <TextBlock Grid.Row="7" Grid.Column="1" TextWrapping="Wrap" Foreground="Gray" FontStyle="Italic" Margin="2,0,0,0">Include DirectQuery tables in statistics collection</TextBlock>
-                                <Label Grid.Row="8" Grid.Column="1" Content="Sample referential integrity violations:" HorizontalAlignment="Left"/>
-                                <nud:NumericUpDown Name="ctrlSampleReferentialIntegrityViolations" Value="{Binding VpaxSampleReferentialIntegrityViolations,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Grid.Row="9" Grid.Column="2" MinValue="0"  MaxValue="1000" Margin="2" Width="80" HorizontalAlignment="Left" IsReadOnly="False"></nud:NumericUpDown>
-                            </Grid>
                         </GroupBox>
                     </WrapPanel>
                 </ScrollViewer>
