@@ -36,7 +36,6 @@
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <conv:TimelineLengthConverter x:Key="TimelineLengthConverter"/>
             <conv:TimelineMarginConverter x:Key="TimelineMarginConverter"/>
-            <sys:Double x:Key="BarWidth">100.0</sys:Double>
 
             <Style x:Key="TimelineCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
                 <Setter Property="ToolTip">
@@ -480,9 +479,8 @@
                    Text="{Binding StorageEngineDurationPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
 
                         <!-- Horizontal Bar FE vs SE -->
-                        <StackPanel Name="DurationBar" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-
-                            <StackPanel Background="{DynamicResource Theme.Brush.Table.Header.Back}" Height="15" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="8,0,8,0" >
+                        <StackPanel Name="DurationBar" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="10,0,10,0">
+                            <StackPanel Background="{DynamicResource Theme.Brush.Table.Header.Back}" Height="15" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0,0,0,0">
                                 <Rectangle Height="5" Fill="{DynamicResource Theme.Brush.Accent2}">
                                     <Rectangle.Width>
                                         <MultiBinding Converter="{StaticResource MultiConverter}" Mode="TwoWay">
@@ -502,31 +500,6 @@
                             </StackPanel>
                             <StackPanel Height="1" />
                         </StackPanel>
-
-
-
-
-                    
-                    <!-- Horizontal Bar FE vs SE -->
-                    <!--<StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Rectangle Height="5" HorizontalAlignment="Left" Margin="0,2,0,5" Fill="{DynamicResource Theme.Brush.Accent2}">
-                            <Rectangle.Width>
-                                <MultiBinding Converter="{StaticResource MultiConverter}">
-                                    <Binding Path="FormulaEngineDurationPercentage"/>
-                                    <Binding Source="{StaticResource BarWidth}" />
-                                </MultiBinding>
-                            </Rectangle.Width>
-                        </Rectangle>    
-                        <Rectangle Height="5" HorizontalAlignment="Right" Margin="0,2,0,5" Fill="{StaticResource DaxStudioBrush}">
-                            <Rectangle.Width>
-                                <MultiBinding Converter="{StaticResource MultiConverter}">
-                                    <Binding Path="StorageEngineDurationPercentage"/>
-                                    <Binding Source="{StaticResource BarWidth}" />
-                                </MultiBinding>
-                            </Rectangle.Width>
-                        </Rectangle>
-                    </StackPanel>-->
-                    
 
                     <!-- SE Queries -->
                     <TextBlock Text="SE Queries" Grid.Row="7" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding SEQueriesTooltip}"
