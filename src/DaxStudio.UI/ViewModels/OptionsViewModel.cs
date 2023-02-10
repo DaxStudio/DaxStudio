@@ -1518,6 +1518,9 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _enablePasteFileOnExistingWindow;
         [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Paste file content with drag & drop")]
+        [Description("Paste the content of the file on existing connections replacing the current DAX code by using CTRL+ALT while doing drag & drop.")]
         public bool EnablePasteFileOnExistingWindow
         {
             get => _enablePasteFileOnExistingWindow;
