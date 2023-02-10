@@ -54,6 +54,7 @@ namespace DaxStudio.UI.Model
         private RetryPolicy _retry;
         private static readonly IEnumerable<string> _keywords;
          
+#pragma warning disable CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
         private string processModelTemplate = @"
 <Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
   <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
@@ -83,7 +84,9 @@ namespace DaxStudio.UI.Model
   </SequencePoint>
 </Batch>
 ";
+#pragma warning restore CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
 
+#pragma warning disable CS0414 // The field 'ConnectionManager.processTableTemplate' is assigned but its value is never used
         private string processTableTemplate = @"
 <Batch Transaction=""true"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
   <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
@@ -116,6 +119,7 @@ namespace DaxStudio.UI.Model
   </SequencePoint>
 </Batch>
 ";
+#pragma warning restore CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
         static ConnectionManager()
         {
             _keywords = new List<string>()
