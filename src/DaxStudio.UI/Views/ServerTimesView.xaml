@@ -78,28 +78,21 @@
                 <Setter Property="ContentTemplate" >
                     <Setter.Value>
                         <DataTemplate >
-                            <Border cal:Message.Attach="[Event MouseDown] = [Action SwitchWaterfallOnRowsVisibility]" Background="Transparent" HorizontalAlignment="Center">
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                                    <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center"  Margin="0 0 0 0">Waterfall</TextBlock>
-                                    <DockPanel HorizontalAlignment="Stretch" 
-                                                Height="8"
-                                               
-                                               >
-                                        <!-- 
+                            <!-- 
                                         TODO WATERFALL
                                         We should use Event Click, but it's probably used by something else!
                                         cal:Message.Attach="[Event Click] = [Action SwichWaterfallOnRowsVisibility]"
                                         -->
-                                        <!--<Image Source="{Binding StorageEventHeatmap}" Width="100" Height="5"/>-->
-                                        <!--<ctrl:StorageEngineTime ItemsSource="{Binding Path=ItemsSource, ElementName=EnginesDisplay}" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="0 0 0 0" Height="8" Opacity="1"/>-->
-                                        <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                               DockPanel.Dock="Left" HorizontalAlignment="Stretch" Margin="0 0 0 0" 
+                            <Border cal:Message.Attach="[Event MouseDown] = [Action SwitchWaterfallOnRowsVisibility]" Background="Transparent" HorizontalAlignment="Center" MinHeight="28">
+                                <Grid HorizontalAlignment="Center" Margin="0 0 0 0">
+                                    <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0">Timeline</TextBlock>
+                                    <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                               HorizontalAlignment="Stretch" Margin="0 0 0 0" 
+                                               VerticalAlignment="Bottom"
                                                Stretch="Fill"
-                                               Height="8" Opacity="1"/>
+                                               Height="6" Opacity="1"/>
 
-
-                                    </DockPanel>
-                                </StackPanel>
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </Setter.Value>

@@ -1510,15 +1510,6 @@ namespace DaxStudio.UI.ViewModels
                 if (_storageEventHeatmap != null) return _storageEventHeatmap;
                 var element = (FrameworkElement)this.GetView();
 
-                // TODO WATERFALL
-                // I manually applied the colors from the light theme because
-                // I was always getting the colors from the dark theme
-                // even though the light theme is selected
-                //Brush scanBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF228ED6"); // (Brush)element.FindResource("Theme.Brush.Accent");
-                //Brush feBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#FFFAC700"); // (Brush)element.FindResource("Theme.Brush.Accent2");
-                //Brush batchBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF64B0E2"); // (Brush)element.FindResource("Theme.Brush.Accent1");
-                //Brush internalBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF1B72AB"); // (Brush)element.FindResource("Theme.Brush.Accent3");
-
                 Brush scanBrush = (Brush)element.FindResource("Theme.Brush.Accent");
                 Brush feBrush = (Brush)element.FindResource("Theme.Brush.Accent2");
                 Brush batchBrush =  (Brush)element.FindResource("Theme.Brush.Accent1");
@@ -1544,8 +1535,8 @@ namespace DaxStudio.UI.ViewModels
         public double StorageEventHeatmapHeight { get 
             {
                 switch (Options.StorageEventHeatmapStyle) {
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 10;
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 24;
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 8.0;
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 24.0;
                     default: return 12.0; 
                 }; 
             } 
@@ -1553,8 +1544,8 @@ namespace DaxStudio.UI.ViewModels
 
         public double WaterfallVerticalMargin { get {
                 switch (Options.StorageEventHeatmapStyle) {
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 4;
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 6;
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 6.0;
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 6.0;
                     default: return 6.0; 
                 };
             } 
