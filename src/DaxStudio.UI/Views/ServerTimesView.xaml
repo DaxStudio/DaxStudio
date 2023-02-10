@@ -403,7 +403,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
@@ -416,9 +417,11 @@
                         </ContextMenu>
                     </Grid.ContextMenu>
 
-                        <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" HorizontalAlignment="Right" Grid.RowSpan="11" Margin="0 4 0 4" />
+                        <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" HorizontalAlignment="Right" Grid.RowSpan="12" Margin="0 4 0 4" />
                         <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" VerticalAlignment="Bottom" Grid.Row="2" Grid.ColumnSpan="2" Margin="4 0 4 0" />
                         <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" VerticalAlignment="Bottom" Grid.Row="6" Grid.ColumnSpan="2" Margin="4 0 4 0" />
+                        <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" VerticalAlignment="Bottom" Grid.Row="9" Grid.ColumnSpan="2" Margin="4 0 4 0" 
+                                Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ShowTotalDirectQueryDuration}"/>
                         <!-- Total Duration -->
                     <TextBlock Text="Total" Grid.Row="0" Grid.Column="0" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" ToolTip="{Binding TotalTooltip}"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
@@ -518,12 +521,20 @@
                        ToolTip="{Binding SECacheTooltip}" />
                     <TextBlock Grid.Row="9" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" 
                         Text="{Binding VertipaqCacheMatchesPercentage, StringFormat='0.0%'}"  FontSize="10" Foreground="{DynamicResource Theme.Brush.Accent}"/>
-<!--
-                    <TextBlock Text="Total CPU" Grid.Row="10" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="gray"/>
-                    <TextBlock Grid.Row="11" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" Foreground="Gray"
-                       Text="{Binding TotalCpuDuration, StringFormat='#,0 ms'}"  />
--->
-                </Grid>
+
+                    <!--
+                        <TextBlock Text="Total CPU" Grid.Row="10" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" Foreground="gray"/>
+                        <TextBlock Grid.Row="11" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" Foreground="Gray"
+                           Text="{Binding TotalCpuDuration, StringFormat='#,0 ms'}"  />
+                    -->
+                        <TextBlock Text="Total DQ" Grid.Row="10" Grid.Column="1" Padding="0,4,0,0" HorizontalAlignment="Center" FontWeight="Bold" 
+                                   Visibility="{Binding Converter={StaticResource BoolToCollapsedConverter}, RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ShowTotalDirectQueryDuration}" 
+                                   Foreground="gray"  />
+                        <TextBlock Grid.Row="11" Grid.Column="1" Padding="0,0,0,5" HorizontalAlignment="Center" Foreground="Gray"
+                                   Visibility="{Binding Converter={StaticResource BoolToCollapsedConverter}, RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ShowTotalDirectQueryDuration}" 
+                                   Text="{Binding TotalDirectQueryDuration, StringFormat='#,0 ms'}"  />
+
+                    </Grid>
                 
                 
             </Grid>

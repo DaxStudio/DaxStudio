@@ -7,7 +7,8 @@
         double StorageEngineCpuFactor { get; }
         long StorageEngineDuration { get; }
         long StorageEngineQueryCount { get; }
-        long TotalCpuDuration { get;  }
+        long TotalDirectQueryDuration { get; }
+        long TotalCpuDuration { get; }
         double TotalCpuFactor { get; }
         long TotalDuration { get; }
         int VertipaqCacheMatches { get;  }

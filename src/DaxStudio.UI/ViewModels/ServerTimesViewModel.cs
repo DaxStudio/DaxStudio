@@ -565,6 +565,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
+        public bool ShowTotalDirectQueryDuration => Options.ShowTotalDirectQueryDuration;
+
         protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
         {
             base.OnUpdateGlobalOptions(message);
@@ -848,6 +850,7 @@ namespace DaxStudio.UI.ViewModels
                             break;
                         case DaxStudioTraceEventClass.DirectQueryEnd:
                             UpdateForParallelOperations(ref maxStorageEngineDirectQueryEvent, traceEvent);
+                            TotalDirectQueryDuration += traceEvent.Duration;
                             StorageEngineDuration += traceEvent.Duration;
                             StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                             StorageEngineCpu += traceEvent.CpuTime;
@@ -1003,6 +1006,18 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => TotalCpuFactor);
             }
         }
+
+        private long _totalDirectQueryDuration;
+        public long TotalDirectQueryDuration
+        {
+            get { return _totalDirectQueryDuration; }
+            set
+            {
+                _totalDirectQueryDuration = value;
+                NotifyOfPropertyChange(() => TotalDirectQueryDuration);
+            }
+        }
+
 
         public double TotalCpuFactor
         {
@@ -1284,6 +1299,7 @@ namespace DaxStudio.UI.ViewModels
                 StorageEngineQueryCount = this.StorageEngineQueryCount,
                 StorageEngineEvents = this._storageEngineEvents,
                 TotalCpuDuration = this.TotalCpuDuration,
+                TotalDirectQueryDuration = this.TotalDirectQueryDuration,
                 QueryEndDateTime = this.QueryEndDateTime,
                 QueryStartDateTime = this.QueryStartDateTime,
                 Parameters = this.Parameters,
@@ -1326,6 +1342,7 @@ namespace DaxStudio.UI.ViewModels
             VertipaqCacheMatches = m.VertipaqCacheMatches;
             StorageEngineQueryCount = m.StorageEngineQueryCount;
             TotalCpuDuration = m.TotalCpuDuration;
+            TotalDirectQueryDuration = m.TotalDirectQueryDuration;
             QueryEndDateTime = m.QueryEndDateTime;
             QueryStartDateTime = m.QueryStartDateTime;
             Parameters = m.Parameters;
@@ -1409,7 +1426,7 @@ namespace DaxStudio.UI.ViewModels
             FormulaEngineDuration = 0;
             StorageEngineDuration = 0;
             StorageEngineNetParallelDuration = 0;
-            TotalCpuDuration = 0;
+            TotalDirectQueryDuration = 0;
             StorageEngineCpu = 0;
             StorageEngineQueryCount = 0;
             VertipaqCacheMatches = 0;

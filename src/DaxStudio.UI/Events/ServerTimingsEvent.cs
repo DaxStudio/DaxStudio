@@ -16,6 +16,7 @@ namespace DaxStudio.UI.Events
             StorageEngineCpuFactor = timings.StorageEngineCpuFactor;
             StorageEngineDuration = timings.StorageEngineDuration;
             StorageEngineQueryCount = timings.StorageEngineQueryCount;
+            TotalDirectQueryDuration = timings.TotalDirectQueryDuration;
             TotalCpuDuration = timings.TotalCpuDuration;
             TotalCpuFactor = timings.TotalCpuFactor;
             TotalDuration = timings.TotalDuration;
@@ -27,6 +28,7 @@ namespace DaxStudio.UI.Events
         public double StorageEngineCpuFactor { get; }
         public long StorageEngineDuration { get; }
         public long StorageEngineQueryCount { get; }
+        public long TotalDirectQueryDuration { get; }
         public long TotalCpuDuration { get; }
         public double TotalCpuFactor { get; }
         public long TotalDuration {get;}

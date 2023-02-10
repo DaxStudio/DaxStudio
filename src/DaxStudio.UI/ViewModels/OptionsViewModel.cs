@@ -1518,6 +1518,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showTotalDirectQueryDuration;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show total DirectQuery duration")]
+        [Description("Show the total duration of DirectQuery storage engine requests in Server Timings.")]
+        public bool ShowTotalDirectQueryDuration
+        {
+            get => _showTotalDirectQueryDuration;
+
+            set
+            {
+                _showTotalDirectQueryDuration = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowTotalDirectQueryDuration), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowTotalDirectQueryDuration);
+            }
+
+        }
         #endregion
 
 

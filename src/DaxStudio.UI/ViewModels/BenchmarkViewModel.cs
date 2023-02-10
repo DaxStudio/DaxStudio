@@ -313,6 +313,7 @@ namespace DaxStudio.UI.ViewModels
             if (RepeatRunWithoutViewAs) details.Columns.Add("RLS", typeof(string));
             details.Columns.Add("TotalDuration", typeof(int));
             details.Columns.Add("TotalCpuDuration", typeof(int));
+            details.Columns.Add("TotalDirectQueryDuration", typeof(int));
             details.Columns.Add("TotalCpuFactor", typeof(double));
             details.Columns.Add("StorageEngineDuration", typeof(int));
             details.Columns.Add("StorageEngineQueryCount", typeof(int));
@@ -368,6 +369,7 @@ namespace DaxStudio.UI.ViewModels
             if (RepeatRunWithoutViewAs) dr["RLS"] = _viewAsStatus;
             dr["TotalDuration"] = message.TotalDuration;
             dr["TotalCpuDuration"] = message.TotalCpuDuration;
+            dr["TotalDirectQueryDuration"] = message.TotalDirectQueryDuration;
             dr["TotalCpuFactor"] = message.TotalCpuFactor;
             dr["StorageEngineDuration"] = message.StorageEngineDuration;
             dr["StorageEngineQueryCount"] = message.StorageEngineQueryCount;

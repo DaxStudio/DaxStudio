@@ -18,6 +18,7 @@ namespace DaxStudio.UI.Model
         public long TotalDuration { get; set; }
         public long StorageEngineQueryCount { get; set; }
         public int VertipaqCacheMatches { get; set; }
+        public long TotalDirectQueryDuration { get; set; }
         public long TotalCpuDuration { get; set; }
         public DateTime QueryEndDateTime { get; set; }
         public bool ParallelStorageEngineEventsDetected { get; set; }

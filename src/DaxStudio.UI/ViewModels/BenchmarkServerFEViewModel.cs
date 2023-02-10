@@ -250,6 +250,7 @@ ROW (
             details.Columns.Add("Sequence", typeof(int));
             details.Columns.Add("TotalDuration", typeof(int));
             details.Columns.Add("TotalCpuDuration", typeof(int));
+            details.Columns.Add("TotalDirectQueryDuration", typeof(int));
             //details.Columns.Add("TotalCpuFactor", typeof(double));
             //details.Columns.Add("StorageEngineDuration", typeof(int));
             //details.Columns.Add("StorageEngineQueryCount", typeof(int));
@@ -303,6 +304,7 @@ ROW (
             dr["Sequence"] = sequence;
             dr["TotalDuration"] = message.TotalDuration;
             dr["TotalCpuDuration"] = message.TotalCpuDuration;
+            dr["TotalDirectQueryDuration"] = message.TotalDirectQueryDuration;
             //dr["TotalCpuFactor"] = message.TotalCpuFactor;
             //dr["StorageEngineDuration"] = message.StorageEngineDuration;
             //dr["StorageEngineQueryCount"] = message.StorageEngineQueryCount;
