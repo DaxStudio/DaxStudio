@@ -308,7 +308,14 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlCallbackEnd = @"[^\)]*\){1,}(\.[^\)]*\))?]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?)(?=\)\s?\])";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
-        const string searchXmSqlKeywords = searchXmSqlCallbackDax + @"|" + searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|ASDATAID|AUTO|BITMAP|CAST|COLUMN|DEFINE|DCOUNT|COUNT|CREATE|DC_KIND|DENSE|FROM|ININDEX|INNER|RJOIN|JOIN|LEFT|MANYTOMANY|NULL|OUTER|PFCASTCOALESCE|PFCAST|COALESCE|PFDATAID|REAL|REDUCED BY|RELATION|REVERSE|SELECT|SHALLOW|SIMPLEINDEXN|TABLE|VAND|WHERE|WITH|MAX|MIN|SUM|NOT|INB|INT|IS|IN|AS|TO|SET|ON";
+        const string searchXmSqlKeywords = searchXmSqlCallbackDax + @"|" + searchXmSqlCallbackStart + searchXmSqlCallbackEnd
+                    + @"|TESTCALLBACKIDENT|TESTCALLBACKSUM|PFCASTCOALESCE|DATAID2STRING|SEQUENCEINDEX|NEXTROWINDEX|SIMPLEINDEXN|SIMPLEINDEXV|DESERIALIZE|FLUSHCACHES|SIMPLEINDEX"
+                    + @"|DICTIONARY|DISCRETIZE|MANYTOMANY|NOVERTIPAQ|PARTITIONS|PFCOALESCE|DIMENSION|HIERARCHY|MANYTOONE|NOTIMEOUT|ROWFILTER|SEPARATOR|SERIALIZE|TOKENIZED|VERTICALC"
+                    + @"|ANYTOKEN|ASDATAID|COALESCE|CONTAINS|ENDMATCH|NVARCHAR|PFDATAID|RELATION|FOREIGN|GENERAL|ININDEX|NATURAL|NOSPLIT|ORDERBY|PRIMARY|REDUCED|REVERSE|SEGMENT|SHALLOW|VARIANT"
+                    + @"|APPEND|BITMAP|COLUMN|CREATE|DCOUNT|DEFINE|PFCAST|PREFIX|SELECT|STRING|SUMSQR|SYSTEM|COUNT|INDEX|INNER|NORLE|OUTER|PAGED|RJOIN|TABLE|USING|VALUE|VANDR|WHERE"
+                    + @"|AUTO|BLOB|C123|CAST|DESC|DROP|DUMP|EXEC|FACT|FROM|HASH|IN32|IN64|JOIN|LEFT|LOAD|NINB|NINH|NULL|REAL|ROWS|SIZE|SKIP|WITH"
+                    + @"|AND|ASC|IN0|INB|INH|INT|INX|KEY|MAX|MIN|NIN|NOT|SET|SUM|TOP"
+                    + @"|AS|BY|IN|IS|ON|OR|PF|TO|TW|UH";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
