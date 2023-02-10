@@ -4,6 +4,7 @@
     // could possibly be trimmed down as we only use a small subset of these
     public enum DaxStudioTraceEventClass
     {
+        Total = -1,
         NotAvailable = 0,
         AuditLogin = 1,
         AuditLogout = 2,

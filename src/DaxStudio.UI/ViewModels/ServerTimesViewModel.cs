@@ -562,6 +562,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
+            NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
+            NotifyOfPropertyChange(nameof(WaterfallVerticalMargin));
         }
 
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
@@ -870,6 +872,16 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
+                // TODO - do we want to add a total row at the end?
+                /*
+                var totalSEDuration = AllStorageEngineEvents
+                                        .Where(e => 
+                                            (e.Class == DaxStudioTraceEventClass.VertiPaqSEQueryEnd && (e.Subclass == DaxStudioTraceEventSubclass.VertiPaqScan || e.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)) 
+                                            || e.Class == DaxStudioTraceEventClass.DirectQueryEnd).Sum(e => e.Duration)??0;
+
+                AllStorageEngineEvents.Add(new TraceStorageEngineEvent(new DaxStudioTraceEventArgs("Total", "NotAvailable", totalSEDuration, 0, string.Empty, string.Empty, QueryStartDateTime), AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                */
+
                 // New calculation for parallel SE queries (2022-10-03) Marco Russo
                 // 
                 // Old calculation commented: the FE is the difference between Total Duration and SE Duration
@@ -1131,8 +1143,10 @@ namespace DaxStudio.UI.ViewModels
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
                                ) && ServerTimingDetails.ShowScan)
-                               ||
-                               (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
+                              ||
+                              (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
+                              || 
+                              (e.ClassSubclass.Class == DaxStudioTraceEventClass.Total)
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
             }
@@ -1204,7 +1218,7 @@ namespace DaxStudio.UI.ViewModels
             ToggleScrollLeft();
             ClearAll();
             Events.Clear();
-            ProcessResults();
+        //    ProcessResults();
         }
 
         #region ISaveState methods
@@ -1527,16 +1541,24 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        private double _waterfallColumnWidth = 100.0;
-        public double WaterfallColumnWidth { get => _waterfallColumnWidth; set { _waterfallColumnWidth = value; 
-                NotifyOfPropertyChange();
-                NotifyOfPropertyChange(nameof(WaterfallHeatmapXScale));
+        public double StorageEventHeatmapHeight { get 
+            {
+                switch (Options.StorageEventHeatmapStyle) {
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 10;
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 24;
+                    default: return 12.0; 
+                }; 
             } 
-        } 
-        private double BaseWaterfallColumnWidth => 100.0;
-        public double WaterfallHeatmapXScale {
-            get => WaterfallColumnWidth / BaseWaterfallColumnWidth;
         }
 
+        public double WaterfallVerticalMargin { get {
+                switch (Options.StorageEventHeatmapStyle) {
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 4;
+                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 6;
+                    default: return 6.0; 
+                };
+            } 
+        }
+         
     }
 }

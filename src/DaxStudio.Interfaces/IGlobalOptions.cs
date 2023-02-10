@@ -160,5 +160,6 @@ namespace DaxStudio.Interfaces
         VpaTableColumnDisplay VpaTableColumnDisplay { get; set; }
         //bool ShowQueryPlanNextLine { get; set; }
         //bool ShowQueryPlanLineLevel { get; set; }
+        StorageEventHeatmapStyle StorageEventHeatmapStyle { get; set; }
     }
 }

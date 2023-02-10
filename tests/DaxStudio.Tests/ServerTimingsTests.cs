@@ -102,7 +102,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(75, vm.TotalDuration);
 
 
-            /// TODO - the total duration is wrong it should be 70 ///
+            /// TODO - the total duration is wrong it should be 70 - the new calc is actually calculating the NetParallelDuration ///
             Assert.AreEqual(50, vm.StorageEngineDuration);
             // The test for StorageEngineNetParallelDuration is now obsolete
             Assert.AreEqual(50, vm.StorageEngineNetParallelDuration, "If this returns 60 it is double counting overlapped events");

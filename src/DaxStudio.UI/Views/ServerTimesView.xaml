@@ -193,10 +193,10 @@
 
                     <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" >
                         <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" DockPanel.Dock="Left"
-                           Height="12"
+                           Height="{Binding Path=DataContext.StorageEventHeatmapHeight, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ShowWaterfallOnRows}" 
                            Stretch="Fill" 
-                           Margin="0,6,0,6" Opacity="0.25" Panel.ZIndex="0"/>
+                            Opacity="0.25" Panel.ZIndex="0"/>
                     </DockPanel>
 
 
@@ -206,11 +206,12 @@
                                 <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=DataGridCell}"/>
                                 <Binding Path="StartOffsetMs"/>
                                 <Binding Path="WaterfallDuration"/>
-                                <Binding>
+                                <Binding Path="DataContext.WaterfallVerticalMargin" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                <!--<Binding>
                                     <Binding.Source>
                                         <sys:Double>6</sys:Double>
                                     </Binding.Source>
-                                </Binding>
+                                </Binding>-->
                             </MultiBinding>
                         </Border.Margin>
                         <Border.Width >

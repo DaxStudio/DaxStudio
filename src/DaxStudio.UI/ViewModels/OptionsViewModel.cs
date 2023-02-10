@@ -385,6 +385,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
+        private StorageEventHeatmapStyle _storageEventHeatmapStyle = StorageEventHeatmapStyle.Standard;
+        [Category("Server Timings")]
+        [SortOrder(10)]
+        [DisplayName("Storage Event Heatmap Style")]
+        [Description("This setting controls the size of the heatmap image in the Waterfall column of the server timings results")]
+        [DataMember, DefaultValue(StorageEventHeatmapStyle.Standard)]
+        public StorageEventHeatmapStyle StorageEventHeatmapStyle
+        {
+            get => _storageEventHeatmapStyle;
+            set
+            {
+                _storageEventHeatmapStyle = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(StorageEventHeatmapStyle), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
         #endregion
 
         #region Query Plan properties
