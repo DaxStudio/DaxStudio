@@ -29,6 +29,7 @@ using System.Windows.Markup;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Dynamic;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -521,7 +522,7 @@ namespace DaxStudio.UI.ViewModels
             RemapTableNames = new Dictionary<string, string>();
             Options = options;
             // Use global option as a default but doesn't change it at runtime
-            ShowWaterfallOnRows = options.ShowWaterfallOnRows;
+            StorageEventHeatmapStyle = options.StorageEventHeatmapStyle;
             ServerTimingDetails = serverTimingDetails;
             //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
         }
@@ -1496,12 +1497,18 @@ namespace DaxStudio.UI.ViewModels
             });
         }
 
-        public bool ShowWaterfallOnRows { get; set; }
+        public bool ShowWaterfallOnRows { get => this.StorageEventHeatmapStyle != StorageEventHeatmapStyle.None; }
+
+        public StorageEventHeatmapStyle StorageEventHeatmapStyle { get; set; }
 
         public void SwitchWaterfallOnRowsVisibility()
         {
-            ShowWaterfallOnRows = !ShowWaterfallOnRows;
+            this.StorageEventHeatmapStyle = StorageEventHeatmapStyle.Next();
+
             NotifyOfPropertyChange(nameof(ShowWaterfallOnRows));
+            NotifyOfPropertyChange(nameof(StorageEventHeatmapStyle));
+            NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
+            NotifyOfPropertyChange(nameof(WaterfallVerticalMargin));
         }
 
         public Task HandleAsync(ThemeChangedEvent message, CancellationToken cancellationToken)
@@ -1542,7 +1549,7 @@ namespace DaxStudio.UI.ViewModels
 
         public double StorageEventHeatmapHeight { get 
             {
-                switch (Options.StorageEventHeatmapStyle) {
+                switch (this.StorageEventHeatmapStyle) {
                     case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 8.0;
                     case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 24.0;
                     default: return 12.0; 
@@ -1551,7 +1558,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public double WaterfallVerticalMargin { get {
-                switch (Options.StorageEventHeatmapStyle) {
+                switch (this.StorageEventHeatmapStyle) {
                     case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 6.0;
                     case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 6.0;
                     default: return 6.0; 

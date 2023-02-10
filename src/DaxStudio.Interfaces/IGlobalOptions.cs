@@ -126,8 +126,6 @@ namespace DaxStudio.Interfaces
         bool ReplaceXmSqlTableNames { get; set; }
         bool FormatXmSql { get; set; }
 
-        bool ShowWaterfallOnRows { get; set; }
-
         #region Methods
 
         // Methods
