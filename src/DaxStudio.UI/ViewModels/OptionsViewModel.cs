@@ -372,8 +372,8 @@ namespace DaxStudio.UI.ViewModels
         private StorageEventHeatmapStyle _storageEventHeatmapStyle = StorageEventHeatmapStyle.Standard;
         [Category("Server Timings")]
         [SortOrder(10)]
-        [DisplayName("Storage Event Heatmap Style")]
-        [Description("This setting controls the size of the heatmap image in the Waterfall column of the server timings results")]
+        [DisplayName("Storage events Timeline heatmap style")]
+        [Description("This setting controls the size of the heatmap image in the Timeline column of the server timings results")]
         [DataMember, DefaultValue(StorageEventHeatmapStyle.Standard)]
         public StorageEventHeatmapStyle StorageEventHeatmapStyle
         {

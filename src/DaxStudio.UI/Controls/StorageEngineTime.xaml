@@ -11,7 +11,7 @@
              d:DesignHeight="100" d:DesignWidth="800" >
     <UserControl.Resources>
         <ResourceDictionary>
-            <conv:WaterfallLengthConverter x:Key="WaterfallLengthConverter"/>
+            <conv:TimelineLengthConverter x:Key="TimelineLengthConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Name="canvas">
@@ -37,10 +37,10 @@
                 <Style TargetType="ContentPresenter">
                     <Setter Property="Canvas.Left">
                         <Setter.Value>
-                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                            <MultiBinding Converter="{StaticResource TimelineLengthConverter}">
                                 <Binding Path="ActualWidth" ElementName="canvas"/>
                                 <Binding Path="StartOffsetMs"/>
-                                <Binding Path="WaterfallDuration"/>
+                                <Binding Path="TimelineDuration"/>
                             </MultiBinding>
                         </Setter.Value>
                     </Setter>
@@ -64,10 +64,10 @@
                             </Style>
                         </Border.Style>
                         <Border.Width>
-                            <MultiBinding Converter="{StaticResource WaterfallLengthConverter}">
+                            <MultiBinding Converter="{StaticResource TimelineLengthConverter}">
                                 <Binding Path="ActualWidth" ElementName="canvas"/>
                                 <Binding Path="DisplayDuration"/>
-                                <Binding Path="WaterfallDuration"/>
+                                <Binding Path="TimelineDuration"/>
                                 <Binding>
                                     <Binding.Source>
                                         <sys:Double>1</sys:Double>

@@ -8,13 +8,13 @@ using System.Windows.Data;
 
 namespace DaxStudio.UI.Converters
 {
-    internal class WaterfallMarginConverter : IMultiValueConverter
+    internal class TimelineMarginConverter : IMultiValueConverter
     {
         const double RightMargin = 2;
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null) return Binding.DoNothing;
-            Debug.Assert(values.Length == 3 || values.Length == 4, $"The {nameof(WaterfallMarginConverter)} needs 3-4 parameters");
+            Debug.Assert(values.Length == 3 || values.Length == 4, $"The {nameof(TimelineMarginConverter)} needs 3-4 parameters");
             if (values.Length != 3 && values.Length != 4) { return Binding.DoNothing; }
             
             try
@@ -35,8 +35,8 @@ namespace DaxStudio.UI.Converters
             }
             catch (Exception ex)
             {
-                Debug.Assert(false, "Error calculating Waterfall margin");
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(WaterfallMarginConverter), nameof(Convert), "Error calculating waterfall margin");
+                Debug.Assert(false, "Error calculating Timeline margin");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(TimelineMarginConverter), nameof(Convert), "Error calculating timeline margin");
                 return Binding.DoNothing;
             }
         }

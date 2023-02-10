@@ -135,7 +135,7 @@ namespace DaxStudio.Tests
             var internalBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 255, 0));
             var feBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 0, 0));
 
-            var img = WaterfallHeatmapImageGenerator.GenerateVector(vm.StorageEngineEvents.ToList(), 75, 10, feBrush, scanBrush, batchBrush, internalBrush);
+            var img = TimelineHeatmapImageGenerator.GenerateVector(vm.StorageEngineEvents.ToList(), 75, 10, feBrush, scanBrush, batchBrush, internalBrush);
 
             var rectangles = ((GeometryGroup)((GeometryDrawing)((DrawingGroup)img.Drawing).Children[1]).Geometry).Children;
 

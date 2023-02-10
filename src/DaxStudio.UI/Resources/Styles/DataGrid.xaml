@@ -12,7 +12,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    <Style x:Key="DsDataGridColumnHeaderWaterfallStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+    <Style x:Key="DsDataGridColumnHeaderTimelineStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
         <Setter Property="Padding" Value="0 0"/>
         <Setter Property="MinHeight" Value="28"/>
         <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>

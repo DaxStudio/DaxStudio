@@ -11,7 +11,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace DaxStudio.UI.Utils
 {
-    public static class WaterfallHeatmapImageGenerator
+    public static class TimelineHeatmapImageGenerator
     {
         const double MinWidth = 0.01;
         public static DrawingImage GenerateVector(List<TraceStorageEngineEvent> events, double totalWidth, double height, Brush feBrush, Brush scanBrush, Brush batchBrush, Brush internalBrush)
@@ -59,14 +59,14 @@ namespace DaxStudio.UI.Utils
 
         private static double CalculateStart(TraceStorageEngineEvent e, double totalWidth)
         {
-            if (e.WaterfallDuration == null) return 0;
-            return (((double)(e.StartOffsetMs ?? 0)) / ((double)(e.WaterfallDuration ?? 1))) * totalWidth;
+            if (e.TimelineDuration == null) return 0;
+            return (((double)(e.StartOffsetMs ?? 0)) / ((double)(e.TimelineDuration ?? 1))) * totalWidth;
         }
 
         private static double CalculateWidth(TraceStorageEngineEvent e, double totalWidth)
         {
             if (e.DisplayDuration == null) return 0;
-            var dur = (((double)(e.DisplayDuration ?? 0)) / ((double)(e.WaterfallDuration ?? 1))) * totalWidth;
+            var dur = (((double)(e.DisplayDuration ?? 0)) / ((double)(e.TimelineDuration ?? 1))) * totalWidth;
             return dur >= MinWidth?dur:MinWidth;
         }
 

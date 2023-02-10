@@ -8,13 +8,13 @@ using System.Windows.Data;
 
 namespace DaxStudio.UI.Converters
 {
-    internal class WaterfallLengthConverter : IMultiValueConverter
+    internal class TimelineLengthConverter : IMultiValueConverter
     {
 
         const double MinWidth = 0.001;
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length != 3 && values.Length !=4) throw new ArgumentException($"The {nameof(WaterfallLengthConverter)} needs 3-4 parameters");
+            if (values.Length != 3 && values.Length !=4) throw new ArgumentException($"The {nameof(TimelineLengthConverter)} needs 3-4 parameters");
             try
             {
                 double.TryParse(values[0]?.ToString(), out var cellWidth);
@@ -31,15 +31,15 @@ namespace DaxStudio.UI.Converters
                 // calculate a proportional width
                 var calcLength = (cellWidth / totalWidth) * (length);
                 // Marco 2023-01-25 disabled the minimum width for the visualization,
-                // we might consider an exception for the waterfall display if required,
+                // we might consider an exception for the timeline display if required,
                 // but it should not be applied to the StorageEngineTime visual
                 if (calcLength < minWidth) calcLength = minWidth;
                 return calcLength;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate,nameof(WaterfallLengthConverter),nameof(Convert),"Error calculating waterfall length");
-                Debug.Assert(false, $"Error calculating waterfall length: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate,nameof(TimelineLengthConverter),nameof(Convert),"Error calculating timeline length");
+                Debug.Assert(false, $"Error calculating timeline length: {ex.Message}");
                 return Binding.DoNothing;
             }
         }

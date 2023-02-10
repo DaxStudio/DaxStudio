@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
             return DaxStudioTraceEventClassSubclass.Language.Unknown;
         }
 
-        public bool ShowWaterfall { get; set; } = false;
+        public bool ShowTimeline { get; set; } = false;
 
         public long? Duration { get; set; }
         public long? NetParallelDuration { get; set; }
@@ -187,7 +187,7 @@ namespace DaxStudio.UI.ViewModels
         public long? TotalQueryDuration { get; set; } = 0;
 
         [JsonIgnore]
-        public long? WaterfallDuration => TotalQueryDuration + 1;
+        public long? TimelineDuration => TotalQueryDuration + 1;
 
         [JsonIgnore]
         public long? DisplayDuration => Convert.ToInt64((EndTime - StartTime).TotalMilliseconds);
@@ -572,7 +572,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
-            NotifyOfPropertyChange(nameof(WaterfallVerticalMargin));
+            NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
         }
 
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
@@ -583,7 +583,7 @@ namespace DaxStudio.UI.ViewModels
                 case DaxStudioTraceEventClass.QueryEnd:
                     QueryStartDateTime = singleEvent.StartTime;
                     TotalDuration = singleEvent.Duration;
-                    UpdateWaterfallTotalDuration(singleEvent);
+                    UpdateTimelineTotalDuration(singleEvent);
                     break;
             }
         }
@@ -842,7 +842,7 @@ namespace DaxStudio.UI.ViewModels
                                 StorageEngineQueryCount++;
 
                             }
-                            UpdateWaterfallTotalDuration(traceEvent);
+                            UpdateTimelineTotalDuration(traceEvent);
                             AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
 
                             break;
@@ -852,7 +852,7 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineNetParallelDuration += traceEvent.NetParallelDuration;
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
-                            UpdateWaterfallTotalDuration(traceEvent);
+                            UpdateTimelineTotalDuration(traceEvent);
                             AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
 
@@ -866,7 +866,7 @@ namespace DaxStudio.UI.ViewModels
                             QueryEndDateTime = traceEvent.EndTime;
                             QueryStartDateTime = traceEvent.StartTime;
                             ActivityID = traceEvent.ActivityId;
-                            UpdateWaterfallTotalDuration(traceEvent);
+                            UpdateTimelineTotalDuration(traceEvent);
                             break;
                         case DaxStudioTraceEventClass.QueryBegin:
                             Parameters = traceEvent.RequestParameters;
@@ -875,7 +875,7 @@ namespace DaxStudio.UI.ViewModels
                         case DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch:
 
                             VertipaqCacheMatches++;
-                            UpdateWaterfallTotalDuration(traceEvent);
+                            UpdateTimelineTotalDuration(traceEvent);
                             AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
                     }
@@ -924,7 +924,7 @@ namespace DaxStudio.UI.ViewModels
                 if (eventsProcessed) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
 
                 Events.Clear();
-                UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime, WaterfallTotalDuration);
+                UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
                 NotifyOfPropertyChange(nameof(CanExport));
                 NotifyOfPropertyChange(nameof(CanCopyResults));
                 NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
@@ -932,14 +932,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void UpdateWaterfallTotalDuration(DaxStudioTraceEventArgs traceEvent)
+        private void UpdateTimelineTotalDuration(DaxStudioTraceEventArgs traceEvent)
         {
             var maxDuration = (traceEvent.StartTime.AddMilliseconds(traceEvent.Duration == 0 ? 1 : traceEvent.Duration) - QueryStartDateTime).TotalMilliseconds;
-            if (maxDuration > WaterfallTotalDuration)
-                WaterfallTotalDuration = Convert.ToInt64(maxDuration);
+            if (maxDuration > TimelineTotalDuration)
+                TimelineTotalDuration = Convert.ToInt64(maxDuration);
         }
 
-        private void UpdateWaterfallDurations(DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
+        private void UpdateTimelineDurations(DateTime queryStartDateTime, DateTime queryEndDateTime, long totalDuration)
         {
             foreach (var traceEvent in AllStorageEngineEvents)
             {
@@ -1290,7 +1290,7 @@ namespace DaxStudio.UI.ViewModels
                 CommandText = this.CommandText,
                 ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected,
                 ActivityID = this.ActivityID,
-                WaterfallTotalDuration = this.WaterfallTotalDuration
+                TimelineTotalDuration = this.TimelineTotalDuration
             };
             var json = JsonConvert.SerializeObject(m, Formatting.Indented, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
             return json;
@@ -1331,14 +1331,14 @@ namespace DaxStudio.UI.ViewModels
             Parameters = m.Parameters;
             CommandText = m.CommandText;
             ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
-            WaterfallTotalDuration = m.WaterfallTotalDuration;
+            TimelineTotalDuration = m.TimelineTotalDuration;
             AllStorageEngineEvents.Clear();
             AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
             AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
-            // update waterfall total Duration if this is an older file format
+            // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 3) {
-                AllStorageEngineEvents.Apply(se => UpdateWaterfallTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, String.Empty, se.StartTime)));
-                UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime, WaterfallTotalDuration);
+                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, String.Empty, se.StartTime)));
+                UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
         }
 
@@ -1393,7 +1393,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TextColumnWidth);
                     break;
                 default:
-                    UpdateWaterfallDurations(QueryStartDateTime, QueryEndDateTime, WaterfallTotalDuration);
+                    UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
                     break;
             }
         }
@@ -1414,7 +1414,7 @@ namespace DaxStudio.UI.ViewModels
             StorageEngineQueryCount = 0;
             VertipaqCacheMatches = 0;
             TotalDuration = 0;
-            WaterfallTotalDuration= 0;
+            TimelineTotalDuration= 0;
             ParallelStorageEngineEventsDetected = false;
             StorageEventHeatmap = null;
             AllStorageEngineEvents.Clear();
@@ -1481,7 +1481,7 @@ namespace DaxStudio.UI.ViewModels
         public DateTime StartDatetime { get => QueryStartDateTime; }
         public string CommandText { get; set; }
         public string Parameters { get; set; }
-        public long WaterfallTotalDuration { get; private set; }
+        public long TimelineTotalDuration { get; private set; }
 
         public async void ShowTraceDiagnostics()
         {
@@ -1497,18 +1497,18 @@ namespace DaxStudio.UI.ViewModels
             });
         }
 
-        public bool ShowWaterfallOnRows { get => this.StorageEventHeatmapStyle != StorageEventHeatmapStyle.None; }
+        public bool ShowTimelineOnRows { get => this.StorageEventHeatmapStyle != StorageEventHeatmapStyle.None; }
 
         public StorageEventHeatmapStyle StorageEventHeatmapStyle { get; set; }
 
-        public void SwitchWaterfallOnRowsVisibility()
+        public void SwitchTimelineOnRowsVisibility()
         {
             this.StorageEventHeatmapStyle = StorageEventHeatmapStyle.Next();
 
-            NotifyOfPropertyChange(nameof(ShowWaterfallOnRows));
+            NotifyOfPropertyChange(nameof(ShowTimelineOnRows));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapStyle));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
-            NotifyOfPropertyChange(nameof(WaterfallVerticalMargin));
+            NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
         }
 
         public Task HandleAsync(ThemeChangedEvent message, CancellationToken cancellationToken)
@@ -1530,8 +1530,8 @@ namespace DaxStudio.UI.ViewModels
                 Brush batchBrush =  (Brush)element.FindResource("Theme.Brush.Accent1");
                 Brush internalBrush = (Brush)element.FindResource("Theme.Brush.Accent3");
 
-                //_storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateVector(this.StorageEngineEvents.ToList(), 500, 10, feBrush, scanBrush, batchBrush, internalBrush  );
-                _storageEventHeatmap = WaterfallHeatmapImageGenerator.GenerateBitmap(this.StorageEngineEvents.ToList(), 5000, 10, feBrush, scanBrush, batchBrush, internalBrush);
+                //_storageEventHeatmap = TimelineHeatmapImageGenerator.GenerateVector(this.StorageEngineEvents.ToList(), 500, 10, feBrush, scanBrush, batchBrush, internalBrush  );
+                _storageEventHeatmap = TimelineHeatmapImageGenerator.GenerateBitmap(this.StorageEngineEvents.ToList(), 5000, 10, feBrush, scanBrush, batchBrush, internalBrush);
 #if DEBUG
                 //TODO - remove debug code
                 using (StreamWriter writer = File.CreateText("c:\\temp\\heatmap.xaml"))
@@ -1557,13 +1557,17 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
-        public double WaterfallVerticalMargin { get {
-                switch (this.StorageEventHeatmapStyle) {
+        public double TimelineVerticalMargin
+        {
+            get
+            {
+                switch (this.StorageEventHeatmapStyle)
+                {
                     case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 6.0;
                     case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 6.0;
-                    default: return 6.0; 
+                    default: return 6.0;
                 };
-            } 
+            }
         }
          
     }
