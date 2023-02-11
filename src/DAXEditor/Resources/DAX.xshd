@@ -430,6 +430,7 @@
       <Word>NONE</Word>
       <Word>ON</Word>
       <Word>ORDER</Word>
+      <Word>REL</Word>
       <Word>RETURN</Word>
       <Word>ROWS</Word>
       <Word>SELECT</Word>
@@ -440,6 +441,7 @@
       <Word>VAR</Word>
       <Word>WHERE</Word>
       <!-- These are both keyword and functions...
+      <Word>ABS</Word>
       <Word>DAY</Word>
       <Word>MONTH</Word>
       <Word>YEAR</Word>

@@ -654,6 +654,8 @@ namespace DaxStudio.UI.Utils.Intellisense
                 tmpData.Add(new DaxCompletionData(this, "RETURN", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "START", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "AT", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "REL", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "ABS", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "$SYSTEM", 200.0));
 
                 // Data Types
