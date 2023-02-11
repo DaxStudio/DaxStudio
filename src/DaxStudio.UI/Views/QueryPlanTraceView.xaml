@@ -153,11 +153,15 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
-        <TextBlock Name="TraceStatusText" 
+        <TextBlock x:Name="TraceStatusText"
+                   Grid.ColumnSpan="5"
+                   Grid.Row="1"
+                   Text="{Binding TraceStatusText}"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
@@ -229,7 +233,7 @@
 
 
 
-        <controls:ClipBorder Grid.Row="1"
+        <controls:ClipBorder Grid.Row="2"
                              CornerRadius="4"
                              BorderThickness="1"
                              Style="{StaticResource BusyBlur}"
@@ -328,14 +332,14 @@
                 </DataGrid.ContextMenu>
             </DataGrid>
         </controls:ClipBorder>
-        <GridSplitter Grid.Row="2" Height="5"  ResizeDirection="Rows" 
+        <GridSplitter Grid.Row="3" Height="5"  ResizeDirection="Rows" 
             Grid.Column="0"
             Width="Auto" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
                       Background="Transparent"
             Margin="0"/>
-        <controls:ClipBorder Grid.Row="3"
+        <controls:ClipBorder Grid.Row="4"
                              CornerRadius="4"
                              BorderThickness="1"
                              BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
@@ -426,7 +430,7 @@
         <!-- Busy overlay -->
         <Border 
                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="4" Style="{StaticResource BusyPanel}">
+                Grid.RowSpan="5" Style="{StaticResource BusyPanel}">
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >

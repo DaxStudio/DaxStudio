@@ -311,6 +311,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _errorMessage;
+        public virtual string ErrorMessage
+        {
+            get => _errorMessage;
+            set { 
+                _errorMessage = value;
+                NotifyOfPropertyChange(() => ErrorMessage);
+            }
+        }
+
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
             Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
@@ -472,10 +482,11 @@ namespace DaxStudio.UI.ViewModels
 
         public abstract string ImageResource { get; }
 
-        public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent)
+        public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent, string errorMessage)
         {
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(QueryCompleted), isCancelled);
             _queryHistoryEvent = queryHistoryEvent;
+            ErrorMessage = errorMessage;
             if (isCancelled) return;
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
 

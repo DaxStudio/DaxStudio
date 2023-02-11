@@ -727,7 +727,18 @@
             Style="{StaticResource BusyPanel}">
                 
             <Grid>
-
+                <!-- 
+                <Label 
+                        x:Name="ErrorMessage" 
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="200"
+                        Height="20"
+                        Margin="0 0 10 0"
+                        Grid.Row="0"
+                    />
+-->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <ProgressBar 
                                     x:Name="spinner"

@@ -265,6 +265,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public override string TraceStatusText
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ErrorMessage) ? base.TraceStatusText : ErrorMessage;
+            }
+        }
+
+        public override string ErrorMessage
+        {
+            get => base.ErrorMessage;
+            set
+            {
+                base.ErrorMessage = value;
+                NotifyOfPropertyChange(() => TraceStatusText);
+            }
+        }
+
         public string PhysicalQueryPlanText { get; private set; }
         public string LogicalQueryPlanText { get; private set; }
         public long TotalDuration { get; private set; }

@@ -720,12 +720,17 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void QueryFailed()
+        public void QueryFailed(string errorMessage)
         {
             _queryStopWatch?.Stop();
             IsQueryRunning = false;
             NotifyOfPropertyChange(() => CanRunQuery);
             _eventAggregator.PublishOnBackgroundThreadAsync(new QueryFinishedEvent(false));
+
+            foreach (var tw in TraceWatchers)
+            {
+                if (tw.IsChecked) tw.QueryCompleted(true, _currentQueryDetails, errorMessage);
+            }
         }
 
         public void QueryCompleted()
@@ -1959,7 +1964,7 @@ namespace DaxStudio.UI.ViewModels
                     ActivateOutput();
                     OutputError(ex.Message);
                     OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
-                    QueryFailed();
+                    QueryFailed(ex.Message);
                                         
                 }
                 finally

@@ -567,6 +567,24 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ShowTotalDirectQueryDuration => Options.ShowTotalDirectQueryDuration;
 
+        public override string TraceStatusText
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ErrorMessage) ? base.TraceStatusText : ErrorMessage;
+            }
+        }
+
+        public override string ErrorMessage
+        {
+            get => base.ErrorMessage;
+            set
+            {
+                base.ErrorMessage = value;
+                NotifyOfPropertyChange(() => TraceStatusText);
+            }
+        }
+
         protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
         {
             base.OnUpdateGlobalOptions(message);

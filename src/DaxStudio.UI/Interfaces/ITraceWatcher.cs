@@ -30,7 +30,7 @@ namespace DaxStudio.UI.Interfaces
         int SortOrder { get; }
         void ProcessAllEvents();
 
-        void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent);
+        void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent, string errorMessage = null);
         QueryTraceStatus TraceStatus { get; }
         string TraceSuffix { get; }
         bool IsPreview { get; }
