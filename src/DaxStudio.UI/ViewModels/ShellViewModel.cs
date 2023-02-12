@@ -288,7 +288,7 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(CopyWithHeaders), "Ctrl + Shift + C");
         }
 
-        private void DebugCommas()
+        public void DebugCommas()
         {
             Ribbon.MoveCommasToDebugMode();
         }
@@ -307,7 +307,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                var msg = $"Error setting key binding: {ex.Message}";
+                var msg = $"Error setting key binding: {ex.Message} Position: {ex.StackTrace}";
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(ResetInputBindings), msg);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
             }
