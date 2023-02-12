@@ -286,6 +286,12 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + OemMinus");
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + Subtract");
             yield return new InputBindingCommand(this, nameof(CopyWithHeaders), "Ctrl + Shift + C");
+            yield return new InputBindingCommand(this, nameof(CopySEQuery), Options.HotkeyCopySEQuery);
+        }
+
+        public void CopySEQuery()
+        {
+            _eventAggregator.PublishOnUIThreadAsync(new CopySEQueryEvent());
         }
 
         public void DebugCommas()

@@ -1231,8 +1231,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
-
         private string _hotkeyFormatQueryAlternate;
         [DataMember, DefaultValue("Ctrl + F6"), Hotkey]
         public string HotkeyFormatQueryAlternate
@@ -1244,6 +1242,20 @@ namespace DaxStudio.UI.ViewModels
                 if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
                 SettingProvider.SetValue(nameof(HotkeyFormatQueryAlternate), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => HotkeyFormatQueryAlternate);
+            }
+        }
+
+        private string _hotkeyCopySEQuery;
+        [DataMember, DefaultValue("F9"), Hotkey]
+        public string HotkeyCopySEQuery
+        {
+            get => _hotkeyCopySEQuery;
+            set
+            {
+                _hotkeyCopySEQuery = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyCopySEQuery), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyCopySEQuery);
             }
         }
 

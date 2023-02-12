@@ -499,7 +499,9 @@ namespace DaxStudio.UI.ViewModels
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     public class ServerTimesViewModel
-        : TraceWatcherBaseViewModel, ISaveState, IServerTimes, ITraceDiagnostics, IHandle<ThemeChangedEvent>
+        : TraceWatcherBaseViewModel, ISaveState, IServerTimes, ITraceDiagnostics
+            , IHandle<ThemeChangedEvent>
+            , IHandle<CopySEQueryEvent>
     {
         private bool parallelStorageEngineEventsDetected = false;
         public bool ParallelStorageEngineEventsDetected
@@ -1567,6 +1569,12 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(StorageEventHeatmapStyle));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
+        }
+
+        public Task HandleAsync(CopySEQueryEvent message, CancellationToken cancellationToken)
+        {
+            CopySEQuery();
+            return Task.CompletedTask;
         }
 
         public Task HandleAsync(ThemeChangedEvent message, CancellationToken cancellationToken)
