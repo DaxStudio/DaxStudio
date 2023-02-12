@@ -1033,7 +1033,8 @@ namespace DaxStudio.UI.ViewModels
                     if (message == null) return;
                     MetadataPane.IsBusy = true;
                     Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Starting Connect");
-                    await Connection.ConnectAsync(message);
+
+                    await Connection.ConnectAsync(message, this.UniqueID);
                     Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished Connect");
 
                     UpdateViewAsDescription(message.ConnectionString);
@@ -3920,7 +3921,7 @@ namespace DaxStudio.UI.ViewModels
 
         public DaxIntellisenseProvider IntellisenseProvider { get; set; }
 
-        public object UniqueID { get { return _uniqueId; } }
+        public Guid UniqueID { get { return _uniqueId; } }
 
         private int _rowCount;
         private string _serverVersion = "";
@@ -4306,7 +4307,7 @@ namespace DaxStudio.UI.ViewModels
                 var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(path);
                 var database = content.TomDatabase;
                 if (!Connection.IsConnected)
-                    await Task.Run(async ()=> {await Connection.ConnectAsync(new ConnectEvent(Connection.ApplicationName, content)); });
+                    await Task.Run(async ()=> {await Connection.ConnectAsync(new ConnectEvent(Connection.ApplicationName, content), UniqueID); });
 
                 VpaModel viewModel = new Dax.ViewModel.VpaModel(content.DaxModel);
 

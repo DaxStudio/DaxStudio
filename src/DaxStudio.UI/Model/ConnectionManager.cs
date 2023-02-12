@@ -24,6 +24,8 @@ using System.IO;
 using static Dax.Vpax.Tools.VpaxTools;
 using DaxStudio.Controls.DataGridFilter.Querying;
 using DaxStudio.UI.ViewModels;
+using System.Data.Common;
+using System.Data.OleDb;
 
 namespace DaxStudio.UI.Model
 {
@@ -53,6 +55,7 @@ namespace DaxStudio.UI.Model
         private readonly IEventAggregator _eventAggregator;
         private RetryPolicy _retry;
         private static readonly IEnumerable<string> _keywords;
+        private static readonly Regex guidRegex = new Regex("([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})", RegexOptions.Compiled);
          
 #pragma warning disable CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
         private string processModelTemplate = @"
@@ -792,7 +795,7 @@ namespace DaxStudio.UI.Model
             }, context);
         }
 
-        internal async Task ConnectAsync(ConnectEvent message)
+        internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
         {
             IsConnecting = true;
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
@@ -800,7 +803,7 @@ namespace DaxStudio.UI.Model
             if (message.ServerType == ServerType.Offline)
                 OpenOfflineConnection(message);
             else
-                OpenOnlineConnection(message);
+                OpenOnlineConnection(message, uniqueId);
 
 
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
@@ -825,14 +828,24 @@ namespace DaxStudio.UI.Model
             _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
         }
 
-        private void OpenOnlineConnection(ConnectEvent message)
+        private void OpenOnlineConnection(ConnectEvent message, Guid uniqueId)
         {
+            var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
             _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
             ServerType = message.ServerType;
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
             _connection.Open();
             SelectedDatabase = _connection.Database;
+        }
+
+        private object UpdateApplicationName(string connectionString, Guid uniqueId)
+        {
+            var builder = new OleDbConnectionStringBuilder(connectionString);
+            var appName = (string)builder["Application Name"];
+            appName = guidRegex.Replace(appName,uniqueId.ToString());
+            builder["Application Name"] = appName;
+            return builder.ToString();
         }
 
         public async Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
