@@ -30,6 +30,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Dynamic;
 using DaxStudio.Interfaces.Enums;
+using DaxStudio.UI.Converters;
+using System.Windows.Documents;
+using System.Windows.Controls;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1524,6 +1527,19 @@ namespace DaxStudio.UI.ViewModels
         public string CommandText { get; set; }
         public string Parameters { get; set; }
         public long TimelineTotalDuration { get; private set; }
+
+        public void CopySEQuery()
+        {
+            if (SelectedEvent != null)
+            {
+                FlowDocument doc = (FlowDocument)new XmSqlToDocumentConverter().Convert(SelectedEvent.QueryRichText, null, null, null);
+                var x = new RichTextBox();
+                x.Document = doc;
+                // Skip the end of paragraph
+                x.Selection.Select( doc.ContentStart, doc.ContentEnd.GetPositionAtOffset(-1) );
+                x.Copy();
+            }
+        }
 
         public async void ShowTraceDiagnostics()
         {

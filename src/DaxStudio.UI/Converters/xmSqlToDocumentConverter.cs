@@ -42,6 +42,21 @@ namespace DaxStudio.UI.Converters {
             run.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLCallback.Fore");
         }
 
+        private IEnumerable<Inline> GetInlinesFromString(string input)
+        {
+            // Reduce CRLF and LF to CR only
+            input = input.Replace("\r\n", "\r").Replace("\n", "\r");
+            while (input.Contains('\r'))
+            {
+                int posCR = input.IndexOf('\r');
+                string s = input.Substring(0, posCR);
+                if (s.Length > 0) yield return new Run(s);
+                yield return new LineBreak();
+                input = input.Substring(posCR + 1);
+            }
+            if (input.Length > 0) yield return new Run(input);
+        }
+
         /// <summary>
         /// Converts a string containing valid XAML into WPF objects.
         /// </summary>
@@ -96,7 +111,12 @@ namespace DaxStudio.UI.Converters {
                     var tokenFirst = formatList.FirstOrDefault(t => t.position == posToken);
 
                     //up to |~S~| is normal
-                    paragraph.Inlines.Add(new Run(s.Substring(0, posToken)));
+                    {
+                        // Add CR/LF
+                        // paragraph.Inlines.Add(new Run());
+                        // paragraph.Inlines.Add(new LineBreak());
+                        paragraph.Inlines.AddRange(GetInlinesFromString(s.Substring(0, posToken)));
+                    }
                     //between |~S~| and |~E~| is highlighted
                     int length = posEnd - (posToken + 5);
                     if (length < 0)
@@ -112,11 +132,10 @@ namespace DaxStudio.UI.Converters {
                     s = s.Substring(posEnd + 5);
                 }
                 if (s.Length > 0) {
-                    paragraph.Inlines.Add(new Run(s));
+                    paragraph.Inlines.AddRange(GetInlinesFromString(s));
+                    // paragraph.Inlines.Add(new Run(s));
                 }
-
                 doc.Blocks.Add(paragraph);
-
             }
             return doc;
         }

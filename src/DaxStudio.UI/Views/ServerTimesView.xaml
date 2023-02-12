@@ -316,7 +316,6 @@
                         <TextBlock>Info</TextBlock>
                     </StackPanel>
                 </Button>
-                
 
                 <!--<Rectangle DockPanel.Dock="Right"/>-->
 
@@ -370,6 +369,16 @@
                         <TextBlock>Scan</TextBlock>
                     </StackPanel>
                 </ToggleButton>
+
+                <Button DockPanel.Dock="Right" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopySEQuery]">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Copy SE query</TextBlock>
+                    </StackPanel>
+                </Button>
+
             </DockPanel>
         </ctrl:ClipBorder>
         
