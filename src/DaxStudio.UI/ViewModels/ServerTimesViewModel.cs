@@ -598,12 +598,19 @@ namespace DaxStudio.UI.ViewModels
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
         {
             base.ProcessSingleEvent(singleEvent);
+
+            // These events are processed in "real-time" during the execution, just to show that something is moving in total time
+            // We do not provide details of FE/SE until the execution is completed
             switch (singleEvent.EventClass)
             {
-                case DaxStudioTraceEventClass.QueryEnd:
+                case DaxStudioTraceEventClass.QueryBegin:
+                    // Reset duration when query begins
                     QueryStartDateTime = singleEvent.StartTime;
-                    TotalDuration = singleEvent.Duration;
-                    UpdateTimelineTotalDuration(singleEvent);
+                    TotalDuration = 0;
+                    break;
+                default:
+                    // Updates the Total for each following event
+                    TotalDuration = (long)(singleEvent.CurrentTime - QueryStartDateTime).TotalMilliseconds;
                     break;
             }
         }
