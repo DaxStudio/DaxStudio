@@ -628,15 +628,15 @@ namespace DaxStudio.UI.ViewModels
        
             int IComparable<SortableEvent>.CompareTo(SortableEvent y)
             {
-                // Compare TimeStamp
-                var compareTimeStamp = this.TimeStamp.CompareTo(y.TimeStamp);
-                if (compareTimeStamp != 0) return compareTimeStamp;
-                
                 // Start is always before end
                 if (this.IsStart != y.IsStart)
                 {
                     return this.IsStart ? -1 : 1;
                 }
+
+                // Compare TimeStamp meaningful only for comparable events
+                // (QueryEnd has another priority)
+                var compareTimeStamp = this.TimeStamp.CompareTo(y.TimeStamp);
 
                 // If Start, QueryBegin before SE and DirectQuery
                 if (this.IsStart)
@@ -653,7 +653,7 @@ namespace DaxStudio.UI.ViewModels
                         // this is not QueryStart, y is QueryStart, this after y
                         return 1;
                     }
-                    else return 0;
+                    else return compareTimeStamp;
                 }
                 else
                 {
@@ -670,7 +670,7 @@ namespace DaxStudio.UI.ViewModels
                         // this is not QueryEnd, y is QueryEnd, this before y
                         return -1;
                     }
-                    else return 0;
+                    else return compareTimeStamp;
                 }
             }
         }
@@ -753,6 +753,7 @@ namespace DaxStudio.UI.ViewModels
                 DateTime currentScanTime = DateTime.MinValue;
                 foreach (var e in seEvents)
                 {
+                    Log.Debug($"** lev={seLevel} Event {e.Event.EventClass} Time={e.TimeStamp.TimeOfDay}");
                     switch (e.Event.EventClass)
                     {
                         case DaxStudioTraceEventClass.QueryEnd:
@@ -991,7 +992,7 @@ namespace DaxStudio.UI.ViewModels
             return endEvent != null && endEvent.TextData.Contains(Constants.InternalQueryHeader);
         }
 
-        // This function assumes that the events arrive in starttime order, then we check if
+        // This function assumes that the events arrive in StartTime order, then we check if
         // the start/end times of the current event overlap with the end time of the previous
         // event with the latest end time.
         private void UpdateForParallelOperations(ref DaxStudioTraceEventArgs maxEvent,  DaxStudioTraceEventArgs traceEvent)
@@ -1002,9 +1003,14 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            if (maxEvent.EndTime > traceEvent.StartTime)
+            // Any difference below 3 ms is ignored because it could be caused by the 
+            // time fix for events that have 0ms of duration but present an effective time (EndTime-StartTime)
+            var overlapEventsMs = (maxEvent.EndTime - traceEvent.StartTime).TotalMilliseconds;
+            if (overlapEventsMs > 0)
             {
-                ParallelStorageEngineEventsDetected = true;
+                // Display warning only when the overlap is greater than 10 ms
+                ParallelStorageEngineEventsDetected = (overlapEventsMs > 10);
+
                 if (maxEvent.EndTime > traceEvent.EndTime)
                 {
                     // fully overlapped
