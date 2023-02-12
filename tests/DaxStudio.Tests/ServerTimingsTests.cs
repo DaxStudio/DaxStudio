@@ -89,7 +89,7 @@ namespace DaxStudio.Tests
 
             var vm = new ServerTimesViewModel(mockEventAggregator, details, mockOptions,mockWindowManager);
 
-            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 20);  // 20
+            vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 5), 25);  // 25
             vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 10), 10); // +0
             vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 15), 20); // +10
             vm.AddTestEvent(TraceEventClass.VertiPaqSEQueryEnd, TraceEventSubclass.VertiPaqScan, new DateTime(2022, 7, 10, 1, 1, 1, 40), 20); // +20
