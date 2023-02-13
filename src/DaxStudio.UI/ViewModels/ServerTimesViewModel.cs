@@ -1567,15 +1567,6 @@ namespace DaxStudio.UI.ViewModels
                 rt.Copy();
                 rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
                 return;
-
-                FlowDocument doc = (FlowDocument)new XmSqlToDocumentConverter().Convert(SelectedEvent.QueryRichText, null, null, null);
-                var x = new RichTextBox();
-                DataObject.AddCopyingHandler(x, OnCopyEventDetails);
-                x.Document = doc;
-                // Skip the end of paragraph
-                x.Selection.Select( doc.ContentStart, doc.ContentEnd.GetPositionAtOffset(-1) );
-                x.Copy();
-
             }
         }
 

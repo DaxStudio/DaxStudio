@@ -132,8 +132,10 @@ namespace DaxStudio.UI.Model
                 if (!data.GetDataPresent(Clipboard_RichText_Format)) return;
 
                 var richText = (string)data.GetData(Clipboard_RichText_Format);
-                // replaces "soft" line breaks with "hard" paragraph breaks
-                var newRichText = richText.Replace("\\line", "\\par");
+                // Replaces "hard" paragraph breaks with line breaks
+                // in Word this does not replace the paragraph style
+                // and only keeps the character style
+                var newRichText = richText.Replace("\\par", "\\line");
 
                 var context = new Polly.Context().WithFormat(Clipboard_RichText_Format).WithData(newRichText);
                 _retrySetData.Execute((ctx) =>
