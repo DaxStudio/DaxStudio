@@ -369,13 +369,13 @@ namespace DaxStudio.UI.ViewModels
         
 
 
-        private StorageEventHeatmapStyle _storageEventHeatmapStyle = StorageEventHeatmapStyle.Standard;
+        private StorageEventTimelineStyle _storageEventHeatmapStyle = StorageEventTimelineStyle.Standard;
         [Category("Server Timings")]
         [SortOrder(10)]
         [DisplayName("Storage events Timeline heatmap style")]
         [Description("This setting controls the size of the heatmap image in the Timeline column of the server timings results")]
-        [DataMember, DefaultValue(StorageEventHeatmapStyle.Standard)]
-        public StorageEventHeatmapStyle StorageEventHeatmapStyle
+        [DataMember, DefaultValue(StorageEventTimelineStyle.Standard)]
+        public StorageEventTimelineStyle StorageEventHeatmapStyle
         {
             get => _storageEventHeatmapStyle;
             set

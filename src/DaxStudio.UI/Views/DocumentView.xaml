@@ -780,7 +780,7 @@
 
                         <!-- Bottom Output panes -->
 
-                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="70" DockHeight="260">
+                        <avalondock:LayoutAnchorablePaneGroup Orientation="Vertical" DockMinHeight="70" DockHeight="300">
 
                             <avalondock:LayoutAnchorablePane Name="DockBottom" DockMinHeight="70"/>
                         </avalondock:LayoutAnchorablePaneGroup>

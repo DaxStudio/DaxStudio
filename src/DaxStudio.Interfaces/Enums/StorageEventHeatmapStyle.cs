@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace DaxStudio.Interfaces.Enums
 {
-    public enum StorageEventHeatmapStyle
+    public enum StorageEventTimelineStyle
     {
         [Description("None")] None,
         [Description("Thin")] Thin,

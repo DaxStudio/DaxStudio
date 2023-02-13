@@ -33,6 +33,11 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Converters;
 using System.Windows.Documents;
 using System.Windows.Controls;
+using DaxStudio.UI.Views;
+using DaxStudio.Common.Extensions;
+using Microsoft.AspNet.SignalR.Client;
+using System.Web;
+using DaxStudio.UI.Controls;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -497,9 +502,13 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
-    //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
+
     public class ServerTimesViewModel
-        : TraceWatcherBaseViewModel, ISaveState, IServerTimes, ITraceDiagnostics
+        : TraceWatcherBaseViewModel
+            , ISaveState
+            , IServerTimes
+            , ITraceDiagnostics
+            , IViewAware
             , IHandle<ThemeChangedEvent>
             , IHandle<CopySEQueryEvent>
     {
@@ -527,9 +536,24 @@ namespace DaxStudio.UI.ViewModels
             RemapTableNames = new Dictionary<string, string>();
             Options = options;
             // Use global option as a default but doesn't change it at runtime
-            StorageEventHeatmapStyle = options.StorageEventHeatmapStyle;
+            StorageEventTimelineStyle = options.StorageEventHeatmapStyle;
             ServerTimingDetails = serverTimingDetails;
-            //ServerTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
+
+            this.ViewAttached += ServerTimesViewModel_ViewAttached;
+        }
+
+        private void ServerTimesViewModel_ViewAttached(object sender, ViewAttachedEventArgs e)
+        {
+            var view = e.View as ServerTimesView;
+            if (view == null) return;
+
+            DataObject.AddCopyingHandler(view.EventDetails, OnCopyEventDetails);
+            
+        }
+
+        private void OnCopyEventDetails(object sender, DataObjectCopyingEventArgs e)
+        {
+            ClipboardManager.ReplaceLineBreaks(e.DataObject);
         }
 
 
@@ -545,11 +569,6 @@ namespace DaxStudio.UI.ViewModels
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
-            //return new List<TraceEventClass> 
-            //    { TraceEventClass.QuerySubcube
-            //    , TraceEventClass.VertiPaqSEQueryEnd
-            //    , TraceEventClass.VertiPaqSEQueryCacheMatch
-            //    , TraceEventClass.QueryEnd };
 
             return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.QuerySubcube
@@ -597,6 +616,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
+            NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
         }
 
@@ -1540,12 +1560,22 @@ namespace DaxStudio.UI.ViewModels
         {
             if (SelectedEvent != null)
             {
+                var view = GetView() as ServerTimesView;
+                var details = view.EventDetails;
+                var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox ;
+                rt.SelectAll();
+                rt.Copy();
+                rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
+                return;
+
                 FlowDocument doc = (FlowDocument)new XmSqlToDocumentConverter().Convert(SelectedEvent.QueryRichText, null, null, null);
                 var x = new RichTextBox();
+                DataObject.AddCopyingHandler(x, OnCopyEventDetails);
                 x.Document = doc;
                 // Skip the end of paragraph
                 x.Selection.Select( doc.ContentStart, doc.ContentEnd.GetPositionAtOffset(-1) );
                 x.Copy();
+
             }
         }
 
@@ -1563,16 +1593,27 @@ namespace DaxStudio.UI.ViewModels
             });
         }
 
-        public bool ShowTimelineOnRows { get => this.StorageEventHeatmapStyle != StorageEventHeatmapStyle.None; }
+        public bool ShowTimelineOnRows { get => this.StorageEventTimelineStyle != StorageEventTimelineStyle.None; }
 
-        public StorageEventHeatmapStyle StorageEventHeatmapStyle { get; set; }
+        private StorageEventTimelineStyle _storageEventTimelineStyle;
+        public StorageEventTimelineStyle StorageEventTimelineStyle { get => _storageEventTimelineStyle;
+            set
+            {
+                _storageEventTimelineStyle = value;
+                NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
+                NotifyOfPropertyChange(nameof(ShowTimelineOnRows));
+                NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
+                NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
+            }
+                
+        }
 
         public void SwitchTimelineOnRowsVisibility()
         {
-            this.StorageEventHeatmapStyle = StorageEventHeatmapStyle.Next();
+            this.StorageEventTimelineStyle = StorageEventTimelineStyle.Next();
 
             NotifyOfPropertyChange(nameof(ShowTimelineOnRows));
-            NotifyOfPropertyChange(nameof(StorageEventHeatmapStyle));
+            NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
         }
@@ -1621,9 +1662,9 @@ namespace DaxStudio.UI.ViewModels
 
         public double StorageEventHeatmapHeight { get 
             {
-                switch (this.StorageEventHeatmapStyle) {
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 8.0;
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 24.0;
+                switch (this.StorageEventTimelineStyle) {
+                    case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.Thin: return 8.0;
+                    case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.FullHeight: return 24.0;
                     default: return 12.0; 
                 }; 
             } 
@@ -1633,14 +1674,16 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                switch (this.StorageEventHeatmapStyle)
+                switch (this.StorageEventTimelineStyle)
                 {
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.Thin: return 6.0;
-                    case DaxStudio.Interfaces.Enums.StorageEventHeatmapStyle.FullHeight: return 6.0;
+                    case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.Thin: return 6.0;
+                    case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.FullHeight: return 6.0;
                     default: return 6.0;
                 };
             }
         }
+
+        
          
     }
 }

@@ -111,6 +111,7 @@
                                              MinHeight="100"
                                              IsReadOnly="True"
                                              BorderThickness="0"
+                                           x:Name="QueryRichText"
                                              DataContext="{Binding}"
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
@@ -393,8 +394,13 @@
         <!--  -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="2"  Grid.RowSpan="3">
 
-            <ctrl:ClipBorder 
-                >
+            <ctrl:ClipBorder>
+                <ctrl:ClipBorder.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy (with Header)" cal:Message.Attach="[Event Click] = [Action CopyResults()]"></MenuItem>
+                        <MenuItem Header="Copy (data only)" cal:Message.Attach="[Event Click] = [Action CopyResultsData()]"></MenuItem>
+                    </ContextMenu>
+                </ctrl:ClipBorder.ContextMenu>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -419,12 +425,7 @@
                         <ColumnDefinition Width="*" />
       
                     </Grid.ColumnDefinitions>
-                    <Grid.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Copy (with Header)" cal:Message.Attach="[Event Click] = [Action CopyResults()]"></MenuItem>
-                            <MenuItem Header="Copy (data only)" cal:Message.Attach="[Event Click] = [Action CopyResultsData()]"></MenuItem>
-                        </ContextMenu>
-                    </Grid.ContextMenu>
+
 
                         <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" HorizontalAlignment="Right" Grid.RowSpan="12" Margin="0 4 0 4" />
                         <Border BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="0.5" VerticalAlignment="Bottom" Grid.Row="2" Grid.ColumnSpan="2" Margin="4 0 4 0" />
@@ -719,7 +720,7 @@
             Grid.Column="{Binding TextGridColumn}"
             >
             <ScrollViewer Background="{DynamicResource Theme.Brush.Content.Back}">
-                <ContentControl Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
+                <ContentControl x:Name="EventDetails" Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
                 </ContentControl>
                 <!-- Query Event Template -->
 
