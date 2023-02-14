@@ -318,6 +318,7 @@
     <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
     <Compile Include="Converters\MinWidthOrientationConverter.cs" />
     <Compile Include="Converters\NotZeroConverter.cs" />
+    <Compile Include="Converters\ObjectToBooleanConverter.cs" />
     <Compile Include="Converters\OutputTargetImageResourceConverter.cs" />
     <Compile Include="Converters\QueryPlanMarginConverter.cs" />
     <Compile Include="Converters\QueryPlanSelectionConverter.cs" />

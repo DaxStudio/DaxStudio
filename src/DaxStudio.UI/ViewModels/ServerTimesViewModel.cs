@@ -1558,16 +1558,49 @@ namespace DaxStudio.UI.ViewModels
 
         public void CopySEQuery()
         {
-            if (SelectedEvent != null)
+            if (SelectedEvent == null)
             {
-                var view = GetView() as ServerTimesView;
-                var details = view.EventDetails;
-                var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox ;
-                rt.SelectAll();
-                rt.Copy();
-                rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
+                Log.Debug("SelectedEvent is null on CopySEQuery");
+                // TODO we should provide a visual notification that copy did not work because of missing selection
                 return;
             }
+            
+            var view = GetView() as ServerTimesView;
+            var details = view.EventDetails;
+            var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox ;
+                
+            // Remove initial SET DC_KIND line
+            TextPointer secondLine = rt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward).GetLineStartPosition(1);
+            string firstLineContent = (secondLine != null) ? new TextRange(rt.Document.ContentStart, secondLine).Text : null;
+
+            TextPointer startSelection = (firstLineContent != null) && firstLineContent.StartsWith("SET DC_KIND")
+                ? secondLine
+                : rt.Document.ContentStart;
+
+            // Remove last empty lines and Estimated size
+            TextPointer endSelection;
+            TextPointer lastLine = null;
+            string lastLineContent;
+            int index = 0;
+            do
+            {
+                endSelection = lastLine ?? rt.Document.ContentEnd;
+                lastLine = rt.Document.ContentEnd.GetNextInsertionPosition(LogicalDirection.Backward).GetLineStartPosition(--index);
+                lastLineContent = (lastLine != null) ? new TextRange(lastLine, endSelection).Text : null;
+            } while (lastLineContent != null
+                        && (lastLineContent.StartsWith("Estimated") || lastLineContent == "\r\n"));
+            Console.WriteLine(lastLineContent);
+
+            // Remove the last CRLF from selection
+            if (lastLineContent.EndsWith("\r\n"))
+            {
+                endSelection = endSelection.GetPositionAtOffset(-2) ?? endSelection;
+            }
+                
+            rt.Selection.Select(startSelection, endSelection);
+            rt.Copy();
+            rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
+            return;
         }
 
         public async void ShowTraceDiagnostics()
