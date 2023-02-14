@@ -760,7 +760,7 @@ namespace DaxStudio.UI.Model
                 if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
                 dependentMeasures.Add(measure);
 
-                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='EVALUATE {{ {measure.Expression} }}'";
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='EVALUATE {{ {measure.Expression.Replace("'", "''" )} }}'";
 
                 using (var dr = ExecuteReader(dmvDependency, null))
                 {
