@@ -713,11 +713,9 @@ namespace DaxStudio.UI.Model
                 foundDependentMeasures = false;
                 foreach (var modelMeasure in modelMeasures)
                 {
-                    //string daxMeasureName = "[" + modelMeasure.Name + "]";
-                    //string newExpression = resultExpression.Replace(daxMeasureName, " CALCULATE ( " + modelMeasure.Expression + " )");
                     Regex daxMeasureRegex = new Regex($@"[^\w']?\[{ modelMeasure.Name.Replace("]","]]")}]|'{modelMeasure.Table.DaxName}'\[{modelMeasure.Name.Replace("]", "]]")}]|{modelMeasure.Table.DaxName}\[{modelMeasure.Name.Replace("]", "]]")}]");
-
-                    string newExpression = daxMeasureRegex.Replace(resultExpression, " CALCULATE ( " + modelMeasure.Expression + " )");
+                    bool hasComments = modelMeasure.Expression.Contains(@"--") || modelMeasure.Expression.Contains(@"/*");
+                    string newExpression = daxMeasureRegex.Replace(resultExpression, $" CALCULATE ( { modelMeasure.Expression}{(hasComments ? "\r\n" : string.Empty)})");
 
                     if (newExpression != resultExpression)
                     {
