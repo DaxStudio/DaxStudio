@@ -156,7 +156,7 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public string QueryRichText {
             set {
-                if (Options.HighlightXmSqlCallbacks)
+                if (Options.HighlightXmSqlCallbacks && ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.xmSQL)
                 {
                     // string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
                     string totalValuesHighlighted = value.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
