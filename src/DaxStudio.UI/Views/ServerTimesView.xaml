@@ -36,6 +36,7 @@
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <conv:TimelineLengthConverter x:Key="TimelineLengthConverter"/>
             <conv:TimelineMarginConverter x:Key="TimelineMarginConverter"/>
+            <conv:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter"/>
 
             <Style x:Key="TimelineCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
                 <Setter Property="ToolTip">
@@ -372,7 +373,9 @@
                 </ToggleButton>
 
                 <Button DockPanel.Dock="Right" Style="{StaticResource TraceButton}"
-                        cal:Message.Attach="[Event Click] = [Action CopySEQuery]">
+                        cal:Message.Attach="[Event Click] = [Action CopySEQuery]"
+                        IsEnabled="{Binding SelectedEvent, Converter={StaticResource ObjectToBooleanConverter}}"
+                        >
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource copy_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
