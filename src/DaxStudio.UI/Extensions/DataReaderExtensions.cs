@@ -1,5 +1,6 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -138,7 +139,7 @@ namespace DaxStudio.UI.Extensions
                     foreach (DataRow row in dtSchema.Rows)
                     {
                         string columnName = Convert.ToString(row["ColumnName"]);
-                        string columnDaxName = GetColumnDaxName(columnName, reader.Connection);
+                        string columnDaxName = DaxHelper.GetDaxResultColumnName(columnName, reader.Connection);
                         Type columnType = (Type)row["DataType"];
                         if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
                         DataColumn column = new DataColumn(columnName, columnType); // (Type)(row["DataType"]));
@@ -222,17 +223,7 @@ namespace DaxStudio.UI.Extensions
 
         }
 
-        private static string GetColumnDaxName(string columnName, ADOTabular.ADOTabularConnection connection)
-        {
-            var parts = columnName.Split('[');
-            if (parts.Length != 2) return columnName;
 
-            if (!connection.Database.Models[0].Tables.TryGetValue( parts[0], out var table)) return columnName;
-            
-
-            var tableName = table.DaxName;
-            return $"{tableName}[{parts[1]}";
-        }
 
         /// <summary>
         /// Writes a DataTable object to a StreamWriter
@@ -288,6 +279,92 @@ namespace DaxStudio.UI.Extensions
                                 csvWriter.WriteField(fieldValue.ToString(), shouldQuoteStrings);
                         else
                             csvWriter.WriteField(fieldValue);
+                    }
+
+                    csvWriter.NextRecord();
+
+                    if (iRowCnt % 1000 == 0)
+                    {
+                        statusProgress.Update($"Written {iRowCnt:n0} rows to the file output");
+                    }
+
+                }
+
+            }
+
+            return iRowCnt;
+        }
+
+        /// <summary>
+        /// Writes a DataTable object to a StreamWriter
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="textWriter"></param>
+        /// <param name="sep"></param>
+        /// <param name="shouldQuoteStrings"></param>
+        /// <param name="isoDateFormat"></param>
+        /// <param name="statusProgress"></param>
+        /// <returns></returns>
+        public static int WriteToStreamWithFormatting(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, TextWriter textWriter, string sep, bool shouldQuoteStrings, Dictionary<int,string> formatStrings, IStatusBarMessage statusProgress)
+        {
+
+            int iMaxCol = reader.FieldCount - 1;
+            int iRowCnt = 0;
+
+            // CSV Writer config
+            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = sep };
+
+
+            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
+            {
+
+                // write out clean column names
+                foreach (var colName in reader.CleanColumnNames())
+                {
+                    csvWriter.WriteField(colName);
+                }
+
+                csvWriter.NextRecord();
+
+                while (reader.Read())
+                {
+                    iRowCnt++;
+
+                    for (int iCol = 0; iCol < reader.FieldCount; iCol++)
+                    {
+                        var fieldValue = reader[iCol];
+
+                        // quote all string fields
+                        if (reader.GetFieldType(iCol) == typeof(string))
+                            if (reader.IsDBNull(iCol))
+                                csvWriter.WriteField("", shouldQuoteStrings);
+                            else
+                                csvWriter.WriteField(fieldValue.ToString(), shouldQuoteStrings);
+                        else
+                            if (!string.IsNullOrEmpty(formatStrings[iCol]))
+                                switch (fieldValue)
+                                {
+                                    case int intValue:
+                                        csvWriter.WriteField(intValue.ToString(formatStrings[iCol]));
+                                        break;
+                                    case long longValue:
+                                        csvWriter.WriteField(longValue.ToString(formatStrings[iCol]));
+                                        break;
+                                    case decimal decimalValue:
+                                        csvWriter.WriteField(decimalValue.ToString(formatStrings[iCol]));
+                                        break;
+                                    case DateTime dateTimeValue:
+                                        csvWriter.WriteField(dateTimeValue.ToString(formatStrings[iCol]));
+                                        break;
+
+                                    default:
+                                        csvWriter.WriteField(fieldValue);
+                                        break;
+
+                                }
+                                
+                            else
+                                csvWriter.WriteField(fieldValue);
                     }
 
                     csvWriter.NextRecord();

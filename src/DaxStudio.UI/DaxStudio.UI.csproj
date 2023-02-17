@@ -485,6 +485,7 @@
     <Compile Include="ResultsTargets\ResultsTargetClipboard.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelLinkedOdc.cs" />
     <Compile Include="ResultsTargets\ResultsTargetExcelFile.cs" />
+    <Compile Include="ResultsTargets\ResultsTargetFormattedTextFile.cs" />
     <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
     <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
     <Compile Include="Converters\WorkbookNameConverter.cs" />

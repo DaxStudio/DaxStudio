@@ -145,5 +145,18 @@ namespace DaxStudio.UI.Utils
             }
 
         }
+
+        // returns a dax column name without the single quotes around the table name
+        public static string GetDaxResultColumnName(string columnName, ADOTabular.ADOTabularConnection connection)
+        {
+            var parts = columnName.Split('[');
+            if (parts.Length != 2) return columnName;
+
+            if (!connection.Database.Models[0].Tables.TryGetValue(parts[0], out var table)) return columnName;
+
+
+            var tableName = table.DaxName;
+            return $"{tableName}[{parts[1]}";
+        }
     }
 }
