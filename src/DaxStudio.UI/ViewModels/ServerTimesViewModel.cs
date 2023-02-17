@@ -80,17 +80,13 @@ namespace DaxStudio.UI.ViewModels
                         return DaxStudioTraceEventClassSubclass.Language.SQL;
                     case DaxStudioTraceEventSubclass.DAXQuery:
                         return DaxStudioTraceEventClassSubclass.Language.DAX;
-                    case DaxStudioTraceEventSubclass.VertiPaq:
-                    case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
-                    case DaxStudioTraceEventSubclass.VertiPaqCacheNotFound:
-                    case DaxStudioTraceEventSubclass.VertiPaqCacheProbe:
-                    case DaxStudioTraceEventSubclass.VertiPaqScan:
-                    case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
-                    case DaxStudioTraceEventSubclass.VertiPaqScanLocal:
-                    case DaxStudioTraceEventSubclass.VertiPaqScanQueryPlan:
-                    case DaxStudioTraceEventSubclass.VertiPaqScanRemote:
-                        return DaxStudioTraceEventClassSubclass.Language.xmSQL;
+                    default:
+                        return DaxStudioTraceEventClassSubclass.Language.Unknown;
                 }
+            }
+            else if (this.Class == DaxStudioTraceEventClass.VertiPaqSEQueryBegin || this.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch || this.Class == DaxStudioTraceEventClass.VertiPaqSEQueryEnd)
+            {
+                return DaxStudioTraceEventClassSubclass.Language.xmSQL;
             }
             return DaxStudioTraceEventClassSubclass.Language.Unknown;
         }
