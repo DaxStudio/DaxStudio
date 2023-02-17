@@ -813,7 +813,7 @@
                     BorderThickness="1"
                     SnapsToDevicePixels="True">
                     <DataGrid ItemsSource="{Binding GroupedRelationships, UpdateSourceTrigger=PropertyChanged}" 
-                              ClipboardCopyMode="IncludeHeader"
+                          ClipboardCopyMode="IncludeHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
@@ -822,6 +822,7 @@
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True" 
+                          CanUserReorderColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           cal:Message.Attach="[Event Sorting] = [Action OnRelationshipSorting($eventArgs)]">
@@ -987,6 +988,7 @@
                               VirtualizingPanel.IsVirtualizing="True"
                               VirtualizingPanel.IsContainerVirtualizable="True" 
                               CanUserAddRows="False"
+                              CanUserReorderColumns="False"
                               IsReadOnly="True"
                               cal:Message.Attach="[Event Sorting] = [Action OnPartitionSorting($eventArgs)]">
                         <DataGrid.GroupStyle>
