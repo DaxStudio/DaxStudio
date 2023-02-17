@@ -979,10 +979,11 @@ namespace DaxStudio.UI.ViewModels
 
                 Events.Clear();
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
-                NotifyOfPropertyChange(nameof(CanExport));
-                NotifyOfPropertyChange(nameof(CanCopyResults));
-                NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
-                NotifyOfPropertyChange(nameof(StorageEventHeatmap));
+                //NotifyOfPropertyChange(nameof(CanExport));
+                //NotifyOfPropertyChange(nameof(CanCopyResults));
+                //NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
+                //NotifyOfPropertyChange(nameof(StorageEventHeatmap));
+                Refresh(); // update all data bindings
             }
         }
 
@@ -1114,11 +1115,11 @@ namespace DaxStudio.UI.ViewModels
             private set
             {
                 _totalDuration = value;
-                NotifyOfPropertyChange(() => TotalDuration);
-                NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
-                NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
-                NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
-                NotifyOfPropertyChange(() => TotalCpuFactor);
+                //NotifyOfPropertyChange(() => TotalDuration);
+                //NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
+                //NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
+                //NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
+                //NotifyOfPropertyChange(() => TotalCpuFactor);
             }
         }
         private long _formulaEngineDuration;
@@ -1128,8 +1129,8 @@ namespace DaxStudio.UI.ViewModels
             private set
             {
                 _formulaEngineDuration = value;
-                NotifyOfPropertyChange(() => FormulaEngineDuration);
-                NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
+                //NotifyOfPropertyChange(() => FormulaEngineDuration);
+                //NotifyOfPropertyChange(() => FormulaEngineDurationPercentage);
             }
         }
         private long _storageEngineDuration;
@@ -1139,9 +1140,9 @@ namespace DaxStudio.UI.ViewModels
             private set
             {
                 _storageEngineDuration = value;
-                NotifyOfPropertyChange(() => StorageEngineDuration);
-                NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
-                NotifyOfPropertyChange(() => StorageEngineCpuFactor);
+                //NotifyOfPropertyChange(() => StorageEngineDuration);
+                //NotifyOfPropertyChange(() => StorageEngineDurationPercentage);
+                //NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
 
@@ -1163,8 +1164,8 @@ namespace DaxStudio.UI.ViewModels
             private set
             {
                 _storageEngineCpu = value;
-                NotifyOfPropertyChange(() => StorageEngineCpu);
-                NotifyOfPropertyChange(() => StorageEngineCpuFactor);
+                //NotifyOfPropertyChange(() => StorageEngineCpu);
+                //NotifyOfPropertyChange(() => StorageEngineCpuFactor);
             }
         }
         private long _storageEngineQueryCount;
@@ -1174,7 +1175,7 @@ namespace DaxStudio.UI.ViewModels
             private set
             {
                 _storageEngineQueryCount = value;
-                NotifyOfPropertyChange(() => StorageEngineQueryCount);
+                //NotifyOfPropertyChange(() => StorageEngineQueryCount);
             }
         }
 
@@ -1185,8 +1186,8 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _vertipaqCacheMatches = value;
-                NotifyOfPropertyChange(() => VertipaqCacheMatches);
-                NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
+                //NotifyOfPropertyChange(() => VertipaqCacheMatches);
+                //NotifyOfPropertyChange(() => VertipaqCacheMatchesPercentage);
             }
         }
 
