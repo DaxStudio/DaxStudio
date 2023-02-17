@@ -112,8 +112,9 @@
                                              MinHeight="100"
                                              IsReadOnly="True"
                                              BorderThickness="0"
-                                           x:Name="QueryRichText"
+                                             x:Name="QueryRichText"
                                              DataContext="{Binding}"
+                                             FontFamily="Open Sans"
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                  Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
