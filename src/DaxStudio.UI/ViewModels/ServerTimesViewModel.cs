@@ -96,8 +96,6 @@ namespace DaxStudio.UI.ViewModels
             return DaxStudioTraceEventClassSubclass.Language.Unknown;
         }
 
-        public bool ShowTimeline { get; set; } = false;
-
         public long? Duration { get; set; }
         public long? NetParallelDuration { get; set; }
         public long? CpuTime { get; set; }
@@ -200,9 +198,28 @@ namespace DaxStudio.UI.ViewModels
 
         [JsonIgnore]
         public long? DisplayDuration => Convert.ToInt64((EndTime - StartTime).TotalMilliseconds);
-    
 
-    public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
+        // SQL Formatter for DirectQuery
+        private static ISqlTokenizer _tokenizer = new PoorMansTSqlFormatterLib.Tokenizers.TSqlStandardTokenizer();
+        private static ISqlTokenParser _parser = new PoorMansTSqlFormatterLib.Parsers.TSqlStandardParser();
+        private static ISqlTreeFormatter _formatter = new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter();
+        //private static ISqlTreeFormatter _formatter = new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter(
+        //                        indentString: "\t",
+        //                        spacesPerTab: 4,
+        //                        maxLineWidth: 80,
+        //                        expandCommaLists: true,
+        //                        trailingCommas: true,
+        //                        spaceAfterExpandedComma: true,
+        //                        expandBooleanExpressions: true,
+        //                        expandCaseStatements: true,
+        //                        expandBetweenConditions: true,
+        //                        breakJoinOnSections: true,
+        //                        uppercaseKeywords: true,
+        //                        htmlColoring: false,
+        //                        keywordStandardization:true
+        //                    );
+
+        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
             Options = options;
             RowNumber = rowNumber;
@@ -213,59 +230,21 @@ namespace DaxStudio.UI.ViewModels
             EndTime = ev.EndTime;
             switch (Class)
             {
-                //case DaxStudioTraceEventClass.DirectQueryEnd:
-                //    Query = ev.TextData;
-                //    break;
                 case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                     // the rewrite event does not have a query or storage engine timings
                     break;
                 case DaxStudioTraceEventClass.DirectQueryBegin:
                 case DaxStudioTraceEventClass.DirectQueryEnd:
                     // Format SQL code
-                    // TODO move interfaces to static or class elements (but one static instance could be enough
                     // Apply bold to keywords
                     // Replace base queries with table alias (optional?)
                     if (!IsDaxDirectQuery(ev.TextData))
                     {
-                        ISqlTokenizer _tokenizer;
-                        ISqlTokenParser _parser;
-                        ISqlTreeFormatter innerFormatter;
-                        ISqlTreeFormatter _formatter;
-
-                        _tokenizer = new PoorMansTSqlFormatterLib.Tokenizers.TSqlStandardTokenizer();
-                        _parser = new PoorMansTSqlFormatterLib.Parsers.TSqlStandardParser();
-                        innerFormatter = new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter();
-                        /*                            
-                                                    new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatterOptions
-                                                {
-                                                    IndentString = txt_Indent.Text,
-                                                    SpacesPerTab = int.Parse(txt_IndentWidth.Text),
-                                                    MaxLineWidth = int.Parse(txt_MaxWidth.Text),
-                                                    ExpandCommaLists = chk_ExpandCommaLists.Checked,
-                                                    TrailingCommas = chk_TrailingCommas.Checked,
-                                                    SpaceAfterExpandedComma = chk_SpaceAfterComma.Checked,
-                                                    ExpandBooleanExpressions = chk_ExpandBooleanExpressions.Checked,
-                                                    ExpandCaseStatements = chk_ExpandCaseStatements.Checked,
-                                                    ExpandBetweenConditions = chk_ExpandBetweenConditions.Checked,
-                                                    ExpandInLists = chk_ExpandInLists.Checked,
-                                                    BreakJoinOnSections = chk_BreakJoinOnSections.Checked,
-                                                    UppercaseKeywords = chk_UppercaseKeywords.Checked,
-                                                    HTMLColoring = chk_Coloring.Checked,
-                                                    KeywordStandardization = chk_EnableKeywordStandardization.Checked,
-                                                    NewStatementLineBreaks = int.Parse(txt_StatementBreaks.Text),
-                                                    NewClauseLineBreaks = int.Parse(txt_ClauseBreaks.Text)
-                                                }
-                                                );
-                        */
-                        _formatter = innerFormatter; //  new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter();
-
 
                         // Do formatting
                         var tokenizedSql = _tokenizer.TokenizeSQL(ev.TextData);
-
                         var parsedSql = _parser.ParseSQL(tokenizedSql);
-
-                        string text = innerFormatter.FormatSQLTree(parsedSql);
+                        string text = _formatter.FormatSQLTree(parsedSql);
                         Query = text;
 
                         /*
@@ -569,7 +548,7 @@ namespace DaxStudio.UI.ViewModels
             , IHandle<ThemeChangedEvent>
             , IHandle<CopySEQueryEvent>
     {
-        private bool parallelStorageEngineEventsDetected = false;
+        private bool parallelStorageEngineEventsDetected;
         public bool ParallelStorageEngineEventsDetected
         { get => parallelStorageEngineEventsDetected; 
             set { 
@@ -578,8 +557,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private DaxStudioTraceEventArgs maxStorageEngineVertipaqEvent = null;
-        private DaxStudioTraceEventArgs maxStorageEngineDirectQueryEvent = null;
+        private DaxStudioTraceEventArgs maxStorageEngineVertipaqEvent;
+        private DaxStudioTraceEventArgs maxStorageEngineDirectQueryEvent;
         public IGlobalOptions Options { get; set; }
         public Dictionary<string, string> RemapColumnNames { get; set; }
         public Dictionary<string, string> RemapTableNames { get; set; }
@@ -702,8 +681,20 @@ namespace DaxStudio.UI.ViewModels
             public DateTime TimeStamp;
             public bool IsStart;
             public DaxStudioTraceEventArgs Event;
-       
+
             int IComparable<SortableEvent>.CompareTo(SortableEvent y)
+            {
+                return this.CompareTo(y);
+            }
+            public override int GetHashCode()
+            {
+                int hash = 23;
+                hash = hash * 31 + TimeStamp.GetHashCode();
+                hash = hash * 31 + Event.GetHashCode();
+                return hash;
+            }
+
+            int CompareTo(SortableEvent y)
             {
                 // Start is always before end
                 if (this.IsStart != y.IsStart)
@@ -749,6 +740,40 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else return compareTimeStamp;
                 }
+            }
+            int CompareTo(object obj)
+            {
+                if (!(obj is SortableEvent)) throw new Exception($"Invalid argument obj type {obj.GetType().Name} in SortableEvent.CompareTo");
+                return this.CompareTo((SortableEvent)obj);
+            }
+            public override bool Equals(object obj)
+            {
+                if (!(obj is SortableEvent)) return false; //avoid double casting
+                return CompareTo((SortableEvent)obj) == 0;
+            }
+            public static bool operator ==(SortableEvent left, SortableEvent right)
+            {
+                return left.Equals(right);
+            }
+            public static bool operator !=(SortableEvent left, SortableEvent right)
+            {
+                return !(left == right);
+            }
+            public static bool operator <(SortableEvent left, SortableEvent right)
+            {
+                return left.CompareTo(right) < 0;
+            }
+            public static bool operator >(SortableEvent left, SortableEvent right)
+            {
+                return left.CompareTo(right) > 0;
+            }
+            public static bool operator <=(SortableEvent left, SortableEvent right)
+            {
+                return left.CompareTo(right) <= 0;
+            }
+            public static bool operator >=(SortableEvent left, SortableEvent right)
+            {
+                return left.CompareTo(right) >= 0;
             }
         }
 
@@ -1631,7 +1656,7 @@ namespace DaxStudio.UI.ViewModels
             TextPointer secondLine = rt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward).GetLineStartPosition(1);
             string firstLineContent = (secondLine != null) ? new TextRange(rt.Document.ContentStart, secondLine).Text : null;
 
-            TextPointer startSelection = (firstLineContent != null) && firstLineContent.StartsWith("SET DC_KIND")
+            TextPointer startSelection = (firstLineContent != null) && firstLineContent.StartsWith("SET DC_KIND", StringComparison.InvariantCulture)
                 ? secondLine
                 : rt.Document.ContentStart;
 
@@ -1646,11 +1671,11 @@ namespace DaxStudio.UI.ViewModels
                 lastLine = rt.Document.ContentEnd.GetNextInsertionPosition(LogicalDirection.Backward).GetLineStartPosition(--index);
                 lastLineContent = (lastLine != null) ? new TextRange(lastLine, endSelection).Text : null;
             } while (lastLineContent != null
-                        && (lastLineContent.StartsWith("Estimated") || lastLineContent == "\r\n"));
+                        && (lastLineContent.StartsWith("Estimated", StringComparison.InvariantCulture) || lastLineContent == "\r\n"));
             Console.WriteLine(lastLineContent);
 
             // Remove the last CRLF from selection
-            if (lastLineContent.EndsWith("\r\n"))
+            if (lastLineContent.EndsWith("\r\n", StringComparison.InvariantCulture))
             {
                 endSelection = endSelection.GetPositionAtOffset(-2) ?? endSelection;
             }

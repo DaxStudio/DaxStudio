@@ -375,7 +375,7 @@ namespace DaxStudio.UI.Model
                 return _connection.Databases;
             }
         }
-        public bool IsAdminConnection => _connection.ServerType != ServerType.Offline && ( _connection?.IsAdminConnection ?? false);
+        public bool IsAdminConnection => _connection?.ServerType != ServerType.Offline && ( _connection?.IsAdminConnection ?? false);
 
         public bool IsConnected { get
             {
