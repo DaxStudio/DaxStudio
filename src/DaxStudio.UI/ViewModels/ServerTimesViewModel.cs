@@ -202,22 +202,26 @@ namespace DaxStudio.UI.ViewModels
         // SQL Formatter for DirectQuery
         private static ISqlTokenizer _tokenizer = new PoorMansTSqlFormatterLib.Tokenizers.TSqlStandardTokenizer();
         private static ISqlTokenParser _parser = new PoorMansTSqlFormatterLib.Parsers.TSqlStandardParser();
-        private static ISqlTreeFormatter _formatter = new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter();
-        //private static ISqlTreeFormatter _formatter = new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter(
-        //                        indentString: "\t",
-        //                        spacesPerTab: 4,
-        //                        maxLineWidth: 80,
-        //                        expandCommaLists: true,
-        //                        trailingCommas: true,
-        //                        spaceAfterExpandedComma: true,
-        //                        expandBooleanExpressions: true,
-        //                        expandCaseStatements: true,
-        //                        expandBetweenConditions: true,
-        //                        breakJoinOnSections: true,
-        //                        uppercaseKeywords: true,
-        //                        htmlColoring: false,
-        //                        keywordStandardization:true
-        //                    );
+        private static ISqlTreeFormatter _formatter = new PoorMansTSqlFormatterLib.Formatters.TSqlDaxStudioFormatter(new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatterOptions
+        {
+            BreakBeforeJoin = true,
+            BreakJoinOnSections = false,
+            ExpandBetweenConditions = true,
+            ExpandBooleanExpressions = true,
+            ExpandCaseStatements = true,
+            ExpandCommaLists = true,
+            ExpandInLists = true,
+            HTMLColoring = false,
+            IndentString = "\t", // 4 spaces to get a good indentation on tooltips
+            KeywordStandardization = true,
+            MaxLineWidth = 160,
+            NewClauseLineBreaks = 1,
+            NewStatementLineBreaks = 1,
+            SpaceAfterExpandedComma = true,
+            SpacesPerTab = 4,
+            TrailingCommas = true,
+            UppercaseKeywords = true
+        });
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
@@ -238,21 +242,12 @@ namespace DaxStudio.UI.ViewModels
                     // Format SQL code
                     // Apply bold to keywords
                     // Replace base queries with table alias (optional?)
-                    if (!IsDaxDirectQuery(ev.TextData))
+                    if (!IsDaxDirectQuery(ev.TextData) && Options.FormatDirectQuerySql)
                     {
-
-                        // Do formatting
                         var tokenizedSql = _tokenizer.TokenizeSQL(ev.TextData);
                         var parsedSql = _parser.ParseSQL(tokenizedSql);
                         string text = _formatter.FormatSQLTree(parsedSql);
                         Query = text;
-
-                        /*
-                        if (!splitContainer4.Panel2Collapsed && !splitContainer5.Panel2Collapsed)
-                            txt_ParsedXml.Text = parsedSql.ToXmlDoc().OuterXml;
-
-                        webBrowser_OutputSql.SetHTML(_formatter.FormatSQLTree(parsedSql));
-                        */
                     }
                     else
                     {
@@ -297,6 +292,11 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 QueryRichText = Query;
+                // Clean highlight code (in case SQL has been formatted)
+                if (Query.Contains("|~"))
+                {
+                    Query = Query.StripFormatDelimiters();
+                }
                 // Set flag in case any highlight is present
                 HighlightQuery = QueryRichText.Contains("|~S~|");
             }
@@ -376,6 +376,8 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlPatternSize = @"[\'\[]Estimated size .* : (?<rows>\d+), (?<bytes>\d+)[\'\]]";
         const string searchXmSqlTotalValues = @"(?<=\.\.\[).*?(?=\stotal\s)";
 
+        const string searchFormatDelimiters = @"\|\~.~\|";
+
         static Regex guidRemoval = new Regex(searchGuid, RegexOptions.Compiled);
         static Regex xmSqlFormatStep1 = new Regex(searchXmSqlFormatStep1, RegexOptions.Compiled);
         static Regex xmSqlFormatStep2 = new Regex(searchXmSqlFormatStep2, RegexOptions.Compiled);
@@ -398,6 +400,8 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlPremiumTagsRemoval = new Regex(seachXmSqlPremiumTags, RegexOptions.Compiled);
 
         static Regex xmSqlPatternSize = new Regex(searchXmSqlPatternSize, RegexOptions.Compiled);
+
+        static Regex formatDelimiters = new Regex(searchFormatDelimiters, RegexOptions.Compiled);
 
         public static string RemoveDaxGuids(this string daxQuery) {
             return guidRemoval.Replace(daxQuery, "");
@@ -535,6 +539,11 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             return xmSqlQuery;
+        }
+
+        public static string StripFormatDelimiters( this string query )
+        {
+            return formatDelimiters.Replace(query, "");
         }
     }
 

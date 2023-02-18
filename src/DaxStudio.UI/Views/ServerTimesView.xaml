@@ -26,6 +26,7 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:EventClassSubclassConverter x:Key="EventClassSubclass"></conv:EventClassSubclassConverter>
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
+            <conv:QueryTabToSpacesConverter x:Key="QueryTabToSpaces"></conv:QueryTabToSpacesConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
             <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
             <conv:MatchingResultColourConverter x:Key="MatchingResultColourConverter"></conv:MatchingResultColourConverter>
@@ -687,7 +688,7 @@
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Padding" Value="6 2 6 0"/>
-                                <Setter Property="ToolTip" Value="{Binding Query}"/>
+                                <Setter Property="ToolTip" Value="{Binding Query, Converter={StaticResource QueryTabToSpaces}}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HighlightQuery}" Value="True">
                                         <Setter Property="FontWeight" Value="Bold"/>

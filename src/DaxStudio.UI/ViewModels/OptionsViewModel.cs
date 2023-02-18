@@ -74,6 +74,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
         private bool _formatXmSql;
+        private bool _formatDirectQuerySql;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
         private LongOperationSounds _queryEndSound;
@@ -366,8 +367,24 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue<bool>(nameof(FormatXmSql), value, _isInitializing, this);
             }
         }
-        
 
+        [DisplayName("Format DirectQuery SQL code")]
+        [Category("Server Timings")]
+        [Description("Format DirectQuery SQL code by reducing code and replacing result placeholders.")]
+        [DataMember, DefaultValue(true)]
+        public bool FormatDirectQuerySql
+        {
+            get => _formatDirectQuerySql;
+            set
+            {
+                if (_formatDirectQuerySql == value) return;
+                _formatDirectQuerySql = value;
+                NotifyOfPropertyChange(() => FormatDirectQuerySql);
+                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(FormatDirectQuerySql), value, _isInitializing, this);
+            }
+        }
+        
 
         private StorageEventTimelineStyle _storageEventHeatmapStyle = StorageEventTimelineStyle.Standard;
         [Category("Server Timings")]

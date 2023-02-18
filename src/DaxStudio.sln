@@ -62,6 +62,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.FileIcons", "DaxS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Launcher", "DaxStudio.UriHandler\DaxStudio.Launcher.csproj", "{A59D633B-3B8C-4C2F-9CE7-D0DCBCE6567C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.SqlFormatter", "DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj", "{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -449,6 +451,30 @@ Global
 		{A59D633B-3B8C-4C2F-9CE7-D0DCBCE6567C}.Tests|x64.Build.0 = Debug|Any CPU
 		{A59D633B-3B8C-4C2F-9CE7-D0DCBCE6567C}.Tests|x86.ActiveCfg = Debug|Any CPU
 		{A59D633B-3B8C-4C2F-9CE7-D0DCBCE6567C}.Tests|x86.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|x64.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Debug|x86.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|x64.ActiveCfg = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|x64.Build.0 = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|x86.ActiveCfg = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Release|x86.Build.0 = Release|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|Any CPU.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|x64.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|x64.Build.0 = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|x86.ActiveCfg = Debug|Any CPU
+		{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}.Tests|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
