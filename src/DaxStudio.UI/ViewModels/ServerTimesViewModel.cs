@@ -38,6 +38,7 @@ using DaxStudio.Common.Extensions;
 using Microsoft.AspNet.SignalR.Client;
 using System.Web;
 using DaxStudio.UI.Controls;
+using PoorMansTSqlFormatterLib.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -54,12 +55,16 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public string Query { get; set; }
+
+        private bool IsDaxDirectQuery ( string query ) =>
+            query.StartsWith("DEFINE", StringComparison.InvariantCultureIgnoreCase)
+               || query.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase);
+      
         private DaxStudioTraceEventClassSubclass.Language GetQueryLanguage()
         {
             if (this.Class == DaxStudioTraceEventClass.DirectQueryBegin || this.Class == DaxStudioTraceEventClass.DirectQueryEnd)
             {
-                if (Query.StartsWith("DEFINE", StringComparison.InvariantCultureIgnoreCase)
-                    || Query.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase))
+                if (IsDaxDirectQuery(Query))
                 {
                     return DaxStudioTraceEventClassSubclass.Language.DAX;
                 }
@@ -216,8 +221,64 @@ namespace DaxStudio.UI.ViewModels
                     break;
                 case DaxStudioTraceEventClass.DirectQueryBegin:
                 case DaxStudioTraceEventClass.DirectQueryEnd:
-                    // Don't process DirectQuery text
-                    Query = ev.TextData;
+                    // Format SQL code
+                    // TODO move interfaces to static or class elements (but one static instance could be enough
+                    // Apply bold to keywords
+                    // Replace base queries with table alias (optional?)
+                    if (!IsDaxDirectQuery(ev.TextData))
+                    {
+                        ISqlTokenizer _tokenizer;
+                        ISqlTokenParser _parser;
+                        ISqlTreeFormatter innerFormatter;
+                        ISqlTreeFormatter _formatter;
+
+                        _tokenizer = new PoorMansTSqlFormatterLib.Tokenizers.TSqlStandardTokenizer();
+                        _parser = new PoorMansTSqlFormatterLib.Parsers.TSqlStandardParser();
+                        innerFormatter = new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter();
+                        /*                            
+                                                    new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatterOptions
+                                                {
+                                                    IndentString = txt_Indent.Text,
+                                                    SpacesPerTab = int.Parse(txt_IndentWidth.Text),
+                                                    MaxLineWidth = int.Parse(txt_MaxWidth.Text),
+                                                    ExpandCommaLists = chk_ExpandCommaLists.Checked,
+                                                    TrailingCommas = chk_TrailingCommas.Checked,
+                                                    SpaceAfterExpandedComma = chk_SpaceAfterComma.Checked,
+                                                    ExpandBooleanExpressions = chk_ExpandBooleanExpressions.Checked,
+                                                    ExpandCaseStatements = chk_ExpandCaseStatements.Checked,
+                                                    ExpandBetweenConditions = chk_ExpandBetweenConditions.Checked,
+                                                    ExpandInLists = chk_ExpandInLists.Checked,
+                                                    BreakJoinOnSections = chk_BreakJoinOnSections.Checked,
+                                                    UppercaseKeywords = chk_UppercaseKeywords.Checked,
+                                                    HTMLColoring = chk_Coloring.Checked,
+                                                    KeywordStandardization = chk_EnableKeywordStandardization.Checked,
+                                                    NewStatementLineBreaks = int.Parse(txt_StatementBreaks.Text),
+                                                    NewClauseLineBreaks = int.Parse(txt_ClauseBreaks.Text)
+                                                }
+                                                );
+                        */
+                        _formatter = innerFormatter; //  new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter();
+
+
+                        // Do formatting
+                        var tokenizedSql = _tokenizer.TokenizeSQL(ev.TextData);
+
+                        var parsedSql = _parser.ParseSQL(tokenizedSql);
+
+                        string text = innerFormatter.FormatSQLTree(parsedSql);
+                        Query = text;
+
+                        /*
+                        if (!splitContainer4.Panel2Collapsed && !splitContainer5.Panel2Collapsed)
+                            txt_ParsedXml.Text = parsedSql.ToXmlDoc().OuterXml;
+
+                        webBrowser_OutputSql.SetHTML(_formatter.FormatSQLTree(parsedSql));
+                        */
+                    }
+                    else
+                    {
+                        Query = ev.TextData;
+                    }
                     break;
                 default:
                     // Format xmSQL
