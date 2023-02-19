@@ -840,8 +840,11 @@ namespace DaxStudio.UI.Model
         private object UpdateApplicationName(string connectionString, Guid uniqueId)
         {
             var builder = new OleDbConnectionStringBuilder(connectionString);
-            var appName = (string)builder["Application Name"];
-            appName = guidRegex.Replace(appName,uniqueId.ToString());
+            if (!builder.TryGetValue("Application Name", out object value) || !(value is string) )
+            {
+                return builder.ToString();
+            }
+            string appName = guidRegex.Replace(value as string, uniqueId.ToString());
             builder["Application Name"] = appName;
             return builder.ToString();
         }
