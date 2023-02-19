@@ -481,7 +481,6 @@
     <Compile Include="Model\QueryParameter.cs" />
     <Compile Include="Model\RefreshEvent.cs" />
     <Compile Include="Model\SettingsProviderFactory.cs" />
-    <Compile Include="Model\SqlFormatter.cs" />
     <Compile Include="Model\TreeViewFunctions.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
     <Compile Include="ResultsTargets\ResultsTargetClipboard.cs" />

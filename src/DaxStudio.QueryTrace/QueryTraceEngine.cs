@@ -113,7 +113,7 @@ namespace DaxStudio.QueryTrace
         private readonly bool _filterForCurrentSession;
         private readonly string _powerBiFileName;
         private readonly string _suffix = string.Empty;
-        private bool _isInternalQuery = false;
+        private bool _isInternalQuery;
 
         public QueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
         {

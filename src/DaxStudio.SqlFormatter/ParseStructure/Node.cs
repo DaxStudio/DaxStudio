@@ -25,7 +25,7 @@ namespace PoorMansTSqlFormatterLib.ParseStructure
     public interface Node
     {
         string Name { get; }
-        string TextValue { get; }
+        string TextValue { get; set; }
         IDictionary<string, string> Attributes { get; }
         void SetAttribute(string name, string value);
         string GetAttributeValue(string name);

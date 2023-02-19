@@ -39,6 +39,7 @@ using Microsoft.AspNet.SignalR.Client;
 using System.Web;
 using DaxStudio.UI.Controls;
 using PoorMansTSqlFormatterLib.Interfaces;
+using PoorMansTSqlFormatterLib.ParseStructure;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -223,6 +224,124 @@ namespace DaxStudio.UI.ViewModels
             UppercaseKeywords = true
         });
 
+        static Regex searchColumnNames = new Regex(@"c\d+", RegexOptions.Compiled);
+        static Regex searchTableNames = new Regex(@"t\d+", RegexOptions.Compiled);
+        /// <summary>
+        /// Rename column aliases created by DirectQuery SQL by using meaningful column names
+        /// </summary>
+        /// <param name="node">Root node of the tree to scan</param>
+        /// <returns>Node with replaced structure</returns>
+        private Node RenameSqlColumnAliases(Node node)
+        {
+            Dictionary<string, string> aliases = new Dictionary<string, string>();
+
+            ScanNode(node);
+            ReplaceAliases(node);
+            return node;
+
+            void ScanNode( Node node )
+            {
+                if (node.Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
+                        && !string.IsNullOrEmpty(node?.TextValue)) {
+                    if (searchColumnNames.Match(node.TextValue).Value == node.TextValue) {
+                        // Check if parent has AS definition and store it if found
+                        string definition = GetParentColumnDefinition(node, node.Parent.Children);
+                        if (definition != null)
+                        {
+                            aliases.Add(node.TextValue, definition);
+                        }
+                    }
+                    
+                    // The table alias cannot be resolved without a refactor of the tree that removes
+                    // the internal $Table references and searches for the table aliases in the 
+                    // node tree after it has been rebuilt and simplified
+
+                    //else if (searchTableNames.Match(node.TextValue).Value == node.TextValue)
+                    //{
+                    //    // Check if parent has AS definition and store it if found
+                    //    string definition = GetParentTableDefinition(node, node.Parent.Children);
+                    //    if (definition != null)
+                    //    {
+                    //        aliases.Add(node.TextValue, definition);
+                    //    }
+                    //}
+                }
+                ScanNodeList(node.Children);
+            }
+
+            void ScanNodeList(IEnumerable<Node> listNodes)
+            {
+                foreach (Node contentElement in listNodes)
+                {
+                    ScanNode(contentElement);
+                }
+            }
+
+            void ReplaceAliases(Node node)
+            {
+                if (node.Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
+                    && !string.IsNullOrEmpty(node?.TextValue)
+                    && (aliases.TryGetValue(node.TextValue, out string description))
+                    )
+                    {
+                        node.TextValue = description;
+                    }
+                ReplaceNodeList(node.Children);
+            }
+
+            void ReplaceNodeList(IEnumerable<Node> listNodes)
+            {
+                foreach (Node contentElement in listNodes)
+                {
+                    ReplaceAliases(contentElement);
+                }
+            }
+
+            string GetParentColumnDefinition( Node node, IEnumerable<Node> listNodes )
+            {
+                var step1 = listNodes.TakeWhile(n => n != node);
+                var lastAs = step1.LastOrDefault(n => n.Name == SqlStructureConstants.ENAME_OTHERKEYWORD && n.TextValue.ToUpperInvariant() == "AS");
+                var step2 = step1.TakeWhile(n => n != lastAs);
+                var step3 = step2.Where(n => n.Name != SqlStructureConstants.ENAME_WHITESPACE);
+                var step4 = step3.ToArray();
+                var previousNodes = step4;
+                if (previousNodes.Length >= 3
+                    && previousNodes[previousNodes.Length - 3].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
+                    && previousNodes[previousNodes.Length - 2].Name == SqlStructureConstants.ENAME_PERIOD
+                    && previousNodes[previousNodes.Length - 1].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
+                    )
+                {
+                    return $"{previousNodes[previousNodes.Length - 3].TextValue}_{previousNodes[previousNodes.Length - 1].TextValue}";
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            string GetParentTableDefinition(Node node, IEnumerable<Node> listNodes)
+            {
+                var step1 = listNodes.TakeWhile(n => n != node);
+                var lastAs = step1.LastOrDefault(n => n.Name == SqlStructureConstants.ENAME_OTHERKEYWORD && n.TextValue.ToUpperInvariant() == "AS");
+                var step2 = step1.TakeWhile(n => n != lastAs);
+                var step3 = step2.Where(n => n.Name != SqlStructureConstants.ENAME_WHITESPACE);
+                var step4 = step3.ToArray();
+                var previousNodes = step4;
+                if (previousNodes.Length >= 3
+                    && previousNodes[previousNodes.Length - 3].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
+                    && previousNodes[previousNodes.Length - 2].Name == SqlStructureConstants.ENAME_PERIOD
+                    && previousNodes[previousNodes.Length - 1].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
+                    )
+                {
+                    return $"{previousNodes[previousNodes.Length - 3].TextValue}_{previousNodes[previousNodes.Length - 1].TextValue}";
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
             Options = options;
@@ -246,7 +365,8 @@ namespace DaxStudio.UI.ViewModels
                     {
                         var tokenizedSql = _tokenizer.TokenizeSQL(ev.TextData);
                         var parsedSql = _parser.ParseSQL(tokenizedSql);
-                        string text = _formatter.FormatSQLTree(parsedSql);
+                        var renamedSql = RenameSqlColumnAliases(parsedSql);
+                        string text = _formatter.FormatSQLTree(renamedSql);
                         Query = text;
                     }
                     else
