@@ -949,11 +949,11 @@ namespace PoorMansTSqlFormatterLib.Formatters
 
             //for linebreak detection, use actual string content rather than counting "AddOutputLineBreak()" calls,
             // because we also want to detect the content of strings and comments.
-#if SIMPLIFIEDFW
-            private static Regex _lineBreakMatcher = new Regex(@"(\r|\n)+");
-#else
+//#if SIMPLIFIEDFW
+//            private static Regex _lineBreakMatcher = new Regex(@"(\r|\n)+");
+//#else
             private static Regex _lineBreakMatcher = new Regex(@"(\r|\n)+", RegexOptions.Compiled);
-#endif
+//#endif
 
             public bool OutputContainsLineBreak { get { return _lineBreakMatcher.IsMatch(_outBuilder.ToString()); } }
 

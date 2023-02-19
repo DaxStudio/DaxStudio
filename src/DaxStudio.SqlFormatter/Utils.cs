@@ -90,7 +90,7 @@ namespace PoorMansTSqlFormatterLib
                 return raw;
         }
 
-#if SIMPLIFIEDFW
+//#if SIMPLIFIEDFW
 
         //Invariant conversions are not implemented in Bridge.Net and .Net Standard...
         public static string ToLowerInvariant(this string value) => value.ToLower();
@@ -98,7 +98,7 @@ namespace PoorMansTSqlFormatterLib
         public static char ToLowerInvariant(this char value) => char.ToLower(value);
         public static char ToUpperInvariant(this char value) => char.ToUpper(value);
 
-#endif
+//#endif
 
     }
 }
