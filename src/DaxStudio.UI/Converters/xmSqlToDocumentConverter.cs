@@ -96,7 +96,7 @@ namespace DaxStudio.UI.Converters
 
                 // We stop the formatting after a timeout, we lose the format for long string,
                 // but this makes the window more usable
-                const long FORMAT_TIMEOUT_MILLISECONDS = 1000;
+                const long FORMAT_TIMEOUT_MILLISECONDS = 4000;
                 DateTime formatTimeout = DateTime.Now.AddMilliseconds(FORMAT_TIMEOUT_MILLISECONDS);
 
                 int sIndex = 0;
