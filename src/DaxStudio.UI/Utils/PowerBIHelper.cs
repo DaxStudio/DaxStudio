@@ -125,17 +125,17 @@ namespace DaxStudio.UI.Utils
                     {
                         _port = tcpRow.LocalEndPoint.Port;
                         _instances.Add(new PowerBIInstance(parentTitle, _port, _icon));
-                        Log.Debug("{class} {method} PowerBI found on port: {port}", "PowerBIHelper", "Refresh", _port);
+                        Log.Debug("{class} {method} PowerBI found on port: {port}", nameof(PowerBIHelper), nameof(GetLocalInstances), _port);
                     }
                     else
                     {
-                        Log.Debug("{class} {method} PowerBI port not found for process: {processName} PID: {pid}", "PowerBIHelper", "Refresh", proc.ProcessName, proc.Id);
+                        Log.Debug("{class} {method} PowerBI port not found for process: {processName} PID: {pid}", nameof(PowerBIHelper), nameof(GetLocalInstances), proc.ProcessName, proc.Id);
                     }
                     
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("{class} {Method} {Error} {StackTrace}", "PowerBIHelper", "Refresh", ex.Message, ex.StackTrace);
+                    Log.Error("{class} {Method} {Error} {StackTrace}", nameof(PowerBIHelper), nameof(GetLocalInstances), ex.Message, ex.StackTrace);
                 }
 
             }

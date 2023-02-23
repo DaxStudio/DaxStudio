@@ -808,7 +808,7 @@ namespace DaxStudio.UI.Model
             await _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_connection.Database?.Name));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
-            Thread.Sleep(500);
+            await Task.Delay(300);
         }
 
         private void OpenOfflineConnection(ConnectEvent message)
@@ -829,22 +829,21 @@ namespace DaxStudio.UI.Model
         private void OpenOnlineConnection(ConnectEvent message, Guid uniqueId)
         {
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
-            _connection = new ADOTabularConnection(message.ConnectionString, AdomdType.AnalysisServices);
+            _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
             ServerType = message.ServerType;
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
             _connection.Open();
+            
             SelectedDatabase = _connection.Database;
         }
 
-        private object UpdateApplicationName(string connectionString, Guid uniqueId)
+        private string UpdateApplicationName(string connectionString, Guid uniqueId)
         {
             var builder = new OleDbConnectionStringBuilder(connectionString);
-            if (!builder.TryGetValue("Application Name", out object value) || !(value is string) )
-            {
-                return builder.ToString();
-            }
-            string appName = guidRegex.Replace(value as string, uniqueId.ToString());
+            builder.TryGetValue("Application Name", out var appName);
+            if (appName == null) return connectionString;
+            appName = guidRegex.Replace((appName ?? string.Empty).ToString(), uniqueId.ToString());
             builder["Application Name"] = appName;
             return builder.ToString();
         }

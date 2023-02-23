@@ -128,11 +128,17 @@ namespace ADOTabular
         public void Open()
         {
             _adomdConn.Open();
+            CacheDatabases();
             ChangeDatabase(_adomdConn.Database);
             CacheKeywords();
             CacheFunctionGroups();
             UpdateServerProperties();
             // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
+        }
+
+        private void CacheDatabases()
+        {
+            this.Databases.GetDatabaseDictionary(this.SPID);
         }
 
         private void CacheFunctionGroups()
