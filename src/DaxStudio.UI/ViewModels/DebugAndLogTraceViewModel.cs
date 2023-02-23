@@ -180,7 +180,7 @@ namespace DaxStudio.UI.ViewModels
 
         public new bool IsBusy => false;
 
-        public RefreshEvent SelectedQuery { get; set; }
+        public TraceEvent SelectedQuery { get; set; }
 
         public override bool IsCopyAllVisible => true;
         public override bool IsFilterVisible => true;
@@ -316,7 +316,7 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJson());
         }
 
-        public void TextDoubleClick(RefreshEvent refreshEvent)
+        public void TextDoubleClick(TraceEvent refreshEvent)
         {
             if (refreshEvent == null) return; // it the user clicked on an empty query exit here
             _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
@@ -363,29 +363,29 @@ namespace DaxStudio.UI.ViewModels
 
  
 
-        private void UpdateDatabase(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateDatabase(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO
         }
 
-        private void UpdateHierarchy(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateHierarchy(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO
         }
 
-        private void UpdateRelationship(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateRelationship(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO
         }
 
-        private void UpdateColumn(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateColumn(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO update column info
         }
 
  
 
-        public void UpdateItem(RefreshEvent newEvent)
+        public void UpdateItem(TraceEvent newEvent)
         {
             // TODO parse ObjectReference XML
             //      then update

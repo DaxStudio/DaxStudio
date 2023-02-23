@@ -196,6 +196,11 @@ namespace DaxStudio.UI.ViewModels
                     if (value)
                     {
                         _eventAggregator.SubscribeOnPublishedThread(this);
+                        if (!ShouldStartTrace()) {
+                            _isChecked = false;
+                            NotifyOfPropertyChange();
+                            return; 
+                        }
                         StartTraceAsync().SafeFireAndForget(onException: ex =>
                         {
                             Log.Error(ex, Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(IsChecked), "error setting IsChecked");
@@ -725,5 +730,11 @@ namespace DaxStudio.UI.ViewModels
         protected IWindowManager WindowManager => _windowManager;
 
         public bool HasEvents => (Events?.Count ?? 0) > 0;
+
+        /// <summary>
+        /// This method gives sub classes the opportunity to do work
+        /// and possible cancel the startup of a trace watcher
+        /// </summary>
+        public virtual bool ShouldStartTrace() {   return true;  }
     }
 }

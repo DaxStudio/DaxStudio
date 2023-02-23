@@ -329,6 +329,7 @@
     <Compile Include="Converters\VpaColumnDaxNameConverter.cs" />
     <Compile Include="Converters\TimelineLengthConverter.cs" />
     <Compile Include="Converters\TimelineMarginConverter.cs" />
+    <Compile Include="Enums\CustomTraceOutput.cs" />
     <Compile Include="Enums\SaveAsExtension.cs" />
     <Compile Include="Events\CopySEQuery.cs" />
     <Compile Include="Events\PasteDaxFileEvent.cs" />
@@ -466,6 +467,7 @@
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
+    <Compile Include="Model\CustomTraceTemplate.cs" />
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
@@ -479,7 +481,7 @@
     <Compile Include="Model\QueryBuilder\QueryBuilderFilterList.cs" />
     <Compile Include="Model\QueryInfo.cs" />
     <Compile Include="Model\QueryParameter.cs" />
-    <Compile Include="Model\RefreshEvent.cs" />
+    <Compile Include="Model\TraceEvent.cs" />
     <Compile Include="Model\SettingsProviderFactory.cs" />
     <Compile Include="Model\TreeViewFunctions.cs" />
     <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
@@ -641,6 +643,7 @@
     <Compile Include="ViewModels\BenchmarkServerFEViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
     <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
+    <Compile Include="ViewModels\CustomTraceDialogViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
     <Compile Include="Utils\UIHelper.cs" />
@@ -672,6 +675,7 @@
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
     <Compile Include="ViewModels\DebugAndLogTraceViewModel.cs" />
+    <Compile Include="ViewModels\CustomTraceViewModel.cs" />
     <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
     <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
@@ -699,6 +703,9 @@
     </Compile>
     <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
       <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CustomTraceDialogView.xaml.cs">
+      <DependentUpon>CustomTraceDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GettingStartedView.xaml.cs">
       <DependentUpon>GettingStartedView.xaml</DependentUpon>
@@ -813,6 +820,9 @@
     </Compile>
     <Compile Include="Views\DebugAndLogTraceView.xaml.cs">
       <DependentUpon>DebugAndLogTraceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CustomTraceView.xaml.cs">
+      <DependentUpon>CustomTraceView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RefreshTraceView.xaml.cs">
       <DependentUpon>RefreshTraceView.xaml</DependentUpon>
@@ -983,6 +993,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\CustomTraceDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\GettingStartedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1036,6 +1050,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DebugAndLogTraceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CustomTraceView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

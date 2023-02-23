@@ -40,7 +40,7 @@ namespace DaxStudio.UI.ViewModels
         [ImportingConstructor]
         public RefreshTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
         {
-            _refreshEvents = new BindableCollection<RefreshEvent>();
+            _refreshEvents = new BindableCollection<TraceEvent>();
             _globalOptions = globalOptions;
             Commands = new Dictionary<string, RefreshCommand>();
 
@@ -67,30 +67,8 @@ namespace DaxStudio.UI.ViewModels
             if (IsPaused) return;
 
             base.ProcessSingleEvent(traceEvent);
-            var newEvent = new RefreshEvent()
-            {
-                StartTime = traceEvent.StartTime,
-                EndTime = traceEvent.EndTime,
-                Username = traceEvent.NTUserName,
-                Text = traceEvent.TextData,
-                CpuTime = traceEvent.CpuTime,
-                Duration = traceEvent.Duration,
-                DatabaseName = traceEvent.DatabaseFriendlyName,
-                RequestID = traceEvent.RequestID,
-                RequestParameters = traceEvent.RequestParameters,
-                RequestProperties = traceEvent.RequestProperties,
-                ObjectName = traceEvent.ObjectName,
-                ObjectPath = traceEvent.ObjectPath,
-                ObjectReference = traceEvent.ObjectReference,
-                EventClass = traceEvent.EventClass,
-                EventSubClass = traceEvent.EventSubclass,
-                ProgressTotal = traceEvent.ProgressTotal,
-                ActivityID = traceEvent.ActivityId,
-                SPID = traceEvent.SPID,                
-                SessionId = traceEvent.SessionId,
-                IntegerData = traceEvent.IntegerData,
-                CurrentTime = traceEvent.CurrentTime
-            };
+            var newEvent = new TraceEvent(traceEvent);
+        
             try
             {
 
@@ -107,7 +85,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public Dictionary<string, RefreshCommand> Commands { get; set; }
-        private void AddEventToCommand(RefreshEvent newEvent)
+        private void AddEventToCommand(TraceEvent newEvent)
         {
             RefreshCommand cmd;
             var reqId = newEvent.RequestID;
@@ -207,11 +185,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private readonly BindableCollection<RefreshEvent> _refreshEvents;
+        private readonly BindableCollection<TraceEvent> _refreshEvents;
 
         public override bool CanHide => true;
         public override string ContentId => "refresh-trace";
-        public IObservableCollection<RefreshEvent> RefreshEvents => _refreshEvents;
+        public IObservableCollection<TraceEvent> RefreshEvents => _refreshEvents;
 
         public string DefaultQueryFilter => "cat";
 
@@ -267,7 +245,7 @@ namespace DaxStudio.UI.ViewModels
 
         public new bool IsBusy => false;
 
-        public RefreshEvent SelectedQuery { get; set; }
+        public TraceEvent SelectedQuery { get; set; }
 
         public override bool IsCopyAllVisible => true;
         public override bool IsFilterVisible => true;
@@ -343,7 +321,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadJson(string data)
         {
-            List<RefreshEvent> re = JsonConvert.DeserializeObject<List<RefreshEvent>>(data);
+            List<TraceEvent> re = JsonConvert.DeserializeObject<List<TraceEvent>>(data);
 
             _refreshEvents.Clear();
             _refreshEvents.AddRange(re);
@@ -404,7 +382,7 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJson());
         }
 
-        public void TextDoubleClick(RefreshEvent refreshEvent)
+        public void TextDoubleClick(TraceEvent refreshEvent)
         {
             if (refreshEvent == null) return; // it the user clicked on an empty query exit here
             _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
@@ -449,7 +427,7 @@ namespace DaxStudio.UI.ViewModels
         public Dictionary<string, RefreshTable> Tables { get; set; }
         public Dictionary<string, RefreshRelationship> Relationships { get; set; }
 
-        public void CreateItem(RefreshEvent newEvent)
+        public void CreateItem(TraceEvent newEvent)
         {
             // TODO parse ObjectReference XML
             //      then create
@@ -464,7 +442,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private void UpdateTable(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateTable(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             string tableName = string.Empty;
             reference.TryGetValue("Table", out tableName);
@@ -500,27 +478,27 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void UpdateDatabase(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateDatabase(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO
         }
 
-        private void UpdateHierarchy(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateHierarchy(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO
         }
 
-        private void UpdateRelationship(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateRelationship(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO
         }
 
-        private void UpdateColumn(RefreshEvent newEvent, Dictionary<string, string> reference)
+        private void UpdateColumn(TraceEvent newEvent, Dictionary<string, string> reference)
         {
             // TODO update column info
         }
 
-        private void UpdatePartition(RefreshEvent newEvent, Dictionary<string, string> reference, RefreshTable table)
+        private void UpdatePartition(TraceEvent newEvent, Dictionary<string, string> reference, RefreshTable table)
         {
 
             table.Partitions.TryGetValue(reference["Partition"], out var partition);
@@ -547,7 +525,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public void UpdateItem(RefreshEvent newEvent)
+        public void UpdateItem(TraceEvent newEvent)
         {
             // TODO parse ObjectReference XML
             //      then update

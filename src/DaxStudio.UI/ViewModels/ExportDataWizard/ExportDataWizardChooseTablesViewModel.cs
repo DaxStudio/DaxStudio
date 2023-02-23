@@ -27,19 +27,15 @@ namespace DaxStudio.UI.ViewModels
     {
         static StatusIcons()
         {
-            Icons = new Dictionary<ExportStatus, StatusIcon>();
-            //Icons.Add(ExportStatus.Done, new StatusIcon("CheckCircle", "green"));
-            //Icons.Add(ExportStatus.Exporting, new StatusIcon("Refresh", "royalblue", true));
-            //Icons.Add(ExportStatus.Error, new StatusIcon("TimesCircle", "red"));
-            //Icons.Add(ExportStatus.Ready, new StatusIcon("ChevronCircleRight", "lightgray"));
-            //Icons.Add(ExportStatus.Skipped, new StatusIcon("ChevronCircleRight", "lightgray"));
-            //Icons.Add(ExportStatus.Cancelled, new StatusIcon("ExclamationTriangle", "goldenrod"));
-            Icons.Add(ExportStatus.Done, new StatusIcon("successDrawingImage", "green"));
-            Icons.Add(ExportStatus.Exporting, new StatusIcon("refresh_toolbarDrawingImage", "royalblue", true));
-            Icons.Add(ExportStatus.Error, new StatusIcon("failDrawingImage", "red"));
-            Icons.Add(ExportStatus.Ready, new StatusIcon("select_arrow_rightDrawingImage", "lightgray"));
-            Icons.Add(ExportStatus.Skipped, new StatusIcon("select_arrow_rightDrawingImage", "lightgray"));
-            Icons.Add(ExportStatus.Cancelled, new StatusIcon("warningDrawingImage", "goldenrod"));
+            Icons = new Dictionary<ExportStatus, StatusIcon>
+            {
+                { ExportStatus.Done, new StatusIcon("successDrawingImage", "green") },
+                { ExportStatus.Exporting, new StatusIcon("refresh_toolbarDrawingImage", "royalblue", true) },
+                { ExportStatus.Error, new StatusIcon("failDrawingImage", "red") },
+                { ExportStatus.Ready, new StatusIcon("select_arrow_rightDrawingImage", "lightgray") },
+                { ExportStatus.Skipped, new StatusIcon("select_arrow_rightDrawingImage", "lightgray") },
+                { ExportStatus.Cancelled, new StatusIcon("warningDrawingImage", "goldenrod") }
+            };
         }
         public static Dictionary<ExportStatus, StatusIcon> Icons { get; private set; }
     }

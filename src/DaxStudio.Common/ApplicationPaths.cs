@@ -21,10 +21,12 @@ namespace DaxStudio.Common
                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DaxStudio");
 
             LogPath = Path.Combine(BasePath, "Log");
+            CustomTraceTemplatePath = Path.Combine(BasePath, "CustomTraceTemplates");
             QueryHistoryPath = Path.Combine(BasePath, "QueryHistory");
             AutoSavePath = Path.Combine(BasePath, "AutoSaveFiles");
         }
 
+        public static string CustomTraceTemplatePath { get; }
         public static string LogPath {get;}
         public static string QueryHistoryPath { get; }
         private static string PortableFile { get; }

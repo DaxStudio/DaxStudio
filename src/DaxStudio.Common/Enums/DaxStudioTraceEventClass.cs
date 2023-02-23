@@ -1,7 +1,11 @@
-﻿namespace DaxStudio.Common.Enums
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace DaxStudio.Common.Enums
 {
     // Copied from Microsoft.AnalysisServices 11.0
     // could possibly be trimmed down as we only use a small subset of these
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum DaxStudioTraceEventClass
     {
         Total = -1,

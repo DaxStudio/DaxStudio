@@ -6,8 +6,34 @@ using Newtonsoft.Json.Converters;
 
 namespace DaxStudio.UI.Model
 {
-    public class RefreshEvent
+    public class TraceEvent
     {
+        public TraceEvent() { }
+        public TraceEvent(DaxStudioTraceEventArgs traceEvent)
+        {
+            StartTime = traceEvent.StartTime;
+            EndTime = traceEvent.EndTime;
+            Username = traceEvent.NTUserName;
+            Text = traceEvent.TextData;
+            CpuTime = traceEvent.CpuTime;
+            Duration = traceEvent.Duration;
+            DatabaseName = traceEvent.DatabaseFriendlyName;
+            RequestID = traceEvent.RequestID;
+            RequestParameters = traceEvent.RequestParameters;
+            RequestProperties = traceEvent.RequestProperties;
+            ObjectName = traceEvent.ObjectName;
+            ObjectPath = traceEvent.ObjectPath;
+            ObjectReference = traceEvent.ObjectReference;
+            EventClass = traceEvent.EventClass;
+            EventSubClass = traceEvent.EventSubclass;
+            ProgressTotal = traceEvent.ProgressTotal;
+            ActivityID = traceEvent.ActivityId;
+            SPID = traceEvent.SPID;                
+            SessionId = traceEvent.SessionId;
+            IntegerData = traceEvent.IntegerData;
+            CurrentTime = traceEvent.CurrentTime;
+        }
+
         public long CpuTime { get; set; }
         public long Duration { get; set; }
         public string Text { get; set; }
