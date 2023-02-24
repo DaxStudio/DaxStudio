@@ -20,10 +20,13 @@ namespace DaxStudio.UI.Utils
                     switch (formatString)
                     {
                         case "G": return XlsxStyle.Default.With(XlsxNumberFormat.ShortDateTime);
-                        case "D": return XlsxStyle.Default.With(new XlsxNumberFormat("dddd, mmm dd, yyyy"));
+                        case "D": return XlsxStyle.Default.With(new XlsxNumberFormat(@"dddd,\ mmm\ dd,\ yyyy"));
+                        case "d": return XlsxStyle.Default.With(XlsxNumberFormat.ShortDate);
+                        case "T": return XlsxStyle.Default.With(new XlsxNumberFormat(@"h:mm:ss\ AM/PM"));
+                        case "t": return XlsxStyle.Default.With(new XlsxNumberFormat("HH:mm:ss"));
                         default:
                             if (!string.IsNullOrEmpty(formatString))
-                                return XlsxStyle.Default.With(new XlsxNumberFormat(formatString.ToLower().Replace("%", "")));
+                                return XlsxStyle.Default.With(new XlsxNumberFormat(formatString.ToLower().Replace("%", "").Replace(" ",@"\ ")));
                             else
                                 // default to short datetime
                                 return XlsxStyle.Default.With(XlsxNumberFormat.ShortDateTime);

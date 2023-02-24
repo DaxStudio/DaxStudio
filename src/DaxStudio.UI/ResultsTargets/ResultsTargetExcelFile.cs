@@ -209,6 +209,8 @@ namespace DaxStudio.UI.Model
                             xlsxWriter.Write(dec, columnStyles[iCol]);
                             break;
                         case DateTime dt:
+                            // if this is day 0 for tabular 30 dec 1899 move it to the day 0 for Excel 1 Jan 1900
+                            if ((dt.Year == 1899) && (dt.Month == 12) && (dt.Day == 30)) dt = dt.AddDays(2);
                             xlsxWriter.Write(dt, columnStyles[iCol]);
                             break;
                         case string str:
