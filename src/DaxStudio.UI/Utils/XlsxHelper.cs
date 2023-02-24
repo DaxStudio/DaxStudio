@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Utils
                         case "D": return XlsxStyle.Default.With(new XlsxNumberFormat(@"dddd,\ mmm\ dd,\ yyyy"));
                         case "d": return XlsxStyle.Default.With(XlsxNumberFormat.ShortDate);
                         case "T": return XlsxStyle.Default.With(new XlsxNumberFormat(@"h:mm:ss\ AM/PM"));
-                        case "t": return XlsxStyle.Default.With(new XlsxNumberFormat("HH:mm:ss"));
+                        case "t": return XlsxStyle.Default.With(new XlsxNumberFormat("hh:mm:ss"));
                         default:
                             if (!string.IsNullOrEmpty(formatString))
                                 return XlsxStyle.Default.With(new XlsxNumberFormat(formatString.ToLower().Replace("%", "").Replace(" ",@"\ ")));

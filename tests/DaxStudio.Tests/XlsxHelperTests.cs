@@ -19,9 +19,23 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestLongDateFormat()
         {
-            Assert.AreEqual("dddd, mmm dd, yyyy", XlsxHelper.GetStyle("datetime", "D").NumberFormat.FormatCode);
+            Assert.AreEqual(@"dddd,\ mmm\ dd,\ yyyy", XlsxHelper.GetStyle("datetime", "D").NumberFormat.FormatCode);
         }
-
+        [TestMethod]
+        public void TestShortDateFormat()
+        {
+            Assert.AreEqual(LargeXlsx.XlsxNumberFormat.ShortDate.FormatCode, XlsxHelper.GetStyle("datetime", "d").NumberFormat.FormatCode);
+        }
+        [TestMethod]
+        public void TestLongTimeFormat()
+        {
+            Assert.AreEqual(@"h:mm:ss\ AM/PM", XlsxHelper.GetStyle("datetime", "T").NumberFormat.FormatCode);
+        }
+        [TestMethod]
+        public void TestShortTimeFormat()
+        {
+            Assert.AreEqual("hh:mm:ss", XlsxHelper.GetStyle("datetime", "t").NumberFormat.FormatCode);
+        }
         [TestMethod]
         public void TestCustomDateFormat()
         {
