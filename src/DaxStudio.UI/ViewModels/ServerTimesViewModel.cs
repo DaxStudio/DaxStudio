@@ -57,10 +57,12 @@ namespace DaxStudio.UI.ViewModels
         }
         public string Query { get; set; }
 
-        private bool IsDaxDirectQuery ( string query ) =>
-            query.StartsWith("DEFINE", StringComparison.InvariantCultureIgnoreCase)
-               || query.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase);
-      
+        private bool IsDaxDirectQuery(string query)
+        {
+            string sampleQueryStart = query.Substring(0,Math.Min(query.Length,100)).Replace(" ", "").Replace("\n", "").Replace("\r", "");
+            return sampleQueryStart.StartsWith("DEFINE", StringComparison.InvariantCultureIgnoreCase)
+                   || sampleQueryStart.StartsWith("EVALUATE", StringComparison.InvariantCultureIgnoreCase);
+        }
         private DaxStudioTraceEventClassSubclass.Language GetQueryLanguage()
         {
             if (this.Class == DaxStudioTraceEventClass.DirectQueryBegin || this.Class == DaxStudioTraceEventClass.DirectQueryEnd)
@@ -375,14 +377,15 @@ namespace DaxStudio.UI.ViewModels
                     }
                     break;
                 default:
+                    string rawText = Options.SimplifyXmSqlSyntax ? ev.TextData.RemovePremiumTags() : ev.TextData;
                     // Format xmSQL
-                    string queryFormatted = Options.FormatXmSql ? ev.TextData.FormatXmSql() : ev.TextData;
+                    string queryFormatted = Options.FormatXmSql ? rawText.FormatXmSql() : rawText;
                     // Replace column names
                     string queryRemapped = Options.ReplaceXmSqlColumnNames ? queryFormatted.ReplaceTableOrColumnNames( remapColumns ) : queryFormatted;
                     // replace table names
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
-                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemovePremiumTags().RemoveDoubleBracketsInCallbacks() : queryRemapped;
+                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemoveDoubleBracketsInCallbacks() : queryRemapped;
                     break;
             }
             
