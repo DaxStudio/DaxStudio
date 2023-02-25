@@ -1847,9 +1847,9 @@ namespace DaxStudio.UI.ViewModels
                 
         }
 
-        public void SwitchTimelineOnRowsVisibility()
+        public void SetTimelineOnRowsVisibility(StorageEventTimelineStyle style)
         {
-            this.StorageEventTimelineStyle = StorageEventTimelineStyle.Next();
+            this.StorageEventTimelineStyle = style;
 
             NotifyOfPropertyChange(nameof(ShowTimelineOnRows));
             NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));

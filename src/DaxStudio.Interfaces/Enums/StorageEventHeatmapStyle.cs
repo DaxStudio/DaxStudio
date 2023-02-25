@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 
 namespace DaxStudio.Interfaces.Enums
 {
@@ -15,7 +17,7 @@ namespace DaxStudio.Interfaces.Enums
     {
         public static T Next<T>(this T src) where T : struct
         {
-            if (!typeof(T).IsEnum) throw new ArgumentException(String.Format("Argument {0} is not an Enum", typeof(T).FullName));
+            if (!typeof(T).IsEnum) throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Argument {0} is not an Enum", typeof(T).FullName));
 
             T[] Arr = (T[])Enum.GetValues(src.GetType());
             int j = Array.IndexOf<T>(Arr, src) + 1;

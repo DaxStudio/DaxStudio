@@ -12,7 +12,6 @@
              xmlns:cal="http://caliburnmicro.com"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             
              cal:View.ApplyConventions="False">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -79,12 +78,7 @@
                 <Setter Property="ContentTemplate" >
                     <Setter.Value>
                         <DataTemplate >
-                            <!-- 
-                                        TODO WATERFALL
-                                        We should use Event Click, but it's probably used by something else!
-                                        cal:Message.Attach="[Event Click] = [Action SwichTimelineOnRowsVisibility]"
-                                        -->
-                            <Border cal:Message.Attach="[Event MouseDown] = [Action SwitchTimelineOnRowsVisibility]" Background="Transparent" HorizontalAlignment="Center" MinHeight="28">
+                            <Border  Background="Transparent" HorizontalAlignment="Center" MinHeight="28">
                                 <Grid HorizontalAlignment="Center" Margin="0 0 0 0">
                                     <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0">Timeline</TextBlock>
                                     <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
@@ -94,7 +88,22 @@
                                                Height="6" Opacity="1"/>
 
                                 </Grid>
+
+                                <!-- 
+                                        TODO TIMELINE
+                                        We should fix the message routing because we currently don't reach the SetTimelineOnRowsVisibility method.
+                                 -->
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="None" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.None)"/>
+                                        <MenuItem Header="Thin" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.Thin)" />
+                                        <MenuItem Header="Standard" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.Standard)" />
+                                        <MenuItem Header="Full Height" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.FullHeight)" />
+                                    </ContextMenu>
+                                </Border.ContextMenu>
+
                             </Border>
+
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
