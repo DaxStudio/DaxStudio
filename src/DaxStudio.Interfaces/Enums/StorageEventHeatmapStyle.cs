@@ -9,7 +9,7 @@ namespace DaxStudio.Interfaces.Enums
     {
         [Description("None")] None,
         [Description("Thin")] Thin,
-        [Description("Standard")] Standard,
+        [Description("Medium")] Medium,
         [Description("Full Height")] FullHeight
     }
 

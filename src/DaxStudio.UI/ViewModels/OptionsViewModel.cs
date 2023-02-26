@@ -386,7 +386,7 @@ namespace DaxStudio.UI.ViewModels
         }
         
 
-        private StorageEventTimelineStyle _storageEventHeatmapStyle = StorageEventTimelineStyle.Standard;
+        private StorageEventTimelineStyle _storageEventHeatmapStyle = StorageEventTimelineStyle.Thin;
         [Category("Server Timings")]
         [SortOrder(10)]
         [DisplayName("Storage events Timeline heatmap style")]

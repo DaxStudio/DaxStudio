@@ -78,14 +78,22 @@
                 <Setter Property="ContentTemplate" >
                     <Setter.Value>
                         <DataTemplate >
-                            <Border  Background="Transparent" HorizontalAlignment="Center" MinHeight="28">
-                                <Grid HorizontalAlignment="Center" Margin="0 0 0 0">
+                            <!--<Border  Background="Transparent" HorizontalAlignment="Center" MinHeight="28">-->
+                                <Grid HorizontalAlignment="Center" Margin="0 0 0 0" MinHeight="28" Background="Transparent" Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                     <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0">Timeline</TextBlock>
                                     <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                HorizontalAlignment="Stretch" Margin="0 0 0 0" 
                                                VerticalAlignment="Bottom"
                                                Stretch="Fill"
                                                Height="6" Opacity="1"/>
+                                <Grid.ContextMenu >
+                                    <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                        <MenuItem Header="None" cal:Message.Attach="SetTimelineOnRowsVisibility('NONE')"/>
+                                        <MenuItem Header="Thin" cal:Message.Attach="SetTimelineOnRowsVisibility('THIN')" />
+                                        <MenuItem Header="Medium" cal:Message.Attach="SetTimelineOnRowsVisibility('MEDIUM')" />
+                                        <MenuItem Header="Full Height" cal:Message.Attach="SetTimelineOnRowsVisibility('FULLHEIGHT')" />
+                                    </ContextMenu>
+                                </Grid.ContextMenu>
 
                                 </Grid>
 
@@ -93,7 +101,7 @@
                                         TODO TIMELINE
                                         We should fix the message routing because we currently don't reach the SetTimelineOnRowsVisibility method.
                                  -->
-                                <Border.ContextMenu>
+                                <!--<Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="None" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.None)"/>
                                         <MenuItem Header="Thin" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.Thin)" />
@@ -102,7 +110,7 @@
                                     </ContextMenu>
                                 </Border.ContextMenu>
 
-                            </Border>
+                            </Border>-->
 
                         </DataTemplate>
                     </Setter.Value>
@@ -626,7 +634,14 @@
                             <MenuItem Header="Batch" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowBatch}" />
                             <MenuItem Header="Cache" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowCache}" />
                             <MenuItem Header="Internal" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowInternal}" />
-                        </CompositeCollection>
+                                <Separator/>
+                                <MenuItem Header="Timeline style">
+                                    <MenuItem Header="None" cal:Message.Attach="SetTimelineOnRowsVisibility('NONE')"/>
+                                    <MenuItem Header="Thin" cal:Message.Attach="SetTimelineOnRowsVisibility('THIN')" />
+                                    <MenuItem Header="Medium" cal:Message.Attach="SetTimelineOnRowsVisibility('MEDIUM')" />
+                                    <MenuItem Header="Full Height" cal:Message.Attach="SetTimelineOnRowsVisibility('FULLHEIGHT')" />
+                                </MenuItem>
+                            </CompositeCollection>
                     </ContextMenu.ItemsSource>
                 </ContextMenu>
             </DataGrid.ContextMenu>
