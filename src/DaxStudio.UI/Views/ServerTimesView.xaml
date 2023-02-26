@@ -78,10 +78,9 @@
                 <Setter Property="ContentTemplate" >
                     <Setter.Value>
                         <DataTemplate >
-                            <!--<Border  Background="Transparent" HorizontalAlignment="Center" MinHeight="28">-->
-                                <Grid HorizontalAlignment="Center" Margin="0 0 0 0" MinHeight="28" Background="Transparent" Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                                    <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0">Timeline</TextBlock>
-                                    <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                            <Grid HorizontalAlignment="Center" Margin="0 0 0 0" MinHeight="28" Background="Transparent" Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0">Timeline</TextBlock>
+                                <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                HorizontalAlignment="Stretch" Margin="0 0 0 0" 
                                                VerticalAlignment="Bottom"
                                                Stretch="Fill"
@@ -94,24 +93,7 @@
                                         <MenuItem Header="Full Height" cal:Message.Attach="SetTimelineOnRowsVisibility('FULLHEIGHT')" />
                                     </ContextMenu>
                                 </Grid.ContextMenu>
-
-                                </Grid>
-
-                                <!-- 
-                                        TODO TIMELINE
-                                        We should fix the message routing because we currently don't reach the SetTimelineOnRowsVisibility method.
-                                 -->
-                                <!--<Border.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="None" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.None)"/>
-                                        <MenuItem Header="Thin" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.Thin)" />
-                                        <MenuItem Header="Standard" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.Standard)" />
-                                        <MenuItem Header="Full Height" cal:Message.Attach="SetTimelineOnRowsVisibility(StorageEventTimelineStyle.FullHeight)" />
-                                    </ContextMenu>
-                                </Border.ContextMenu>
-
-                            </Border>-->
-
+                            </Grid>
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
