@@ -385,7 +385,17 @@ namespace DaxStudio.UI.ViewModels
                     // replace table names
                     queryRemapped = Options.ReplaceXmSqlTableNames ? queryRemapped.ReplaceTableOrColumnNames( remapTables ) : queryRemapped;
 
-                    Query = Options.SimplifyXmSqlSyntax ? queryRemapped.RemoveDaxGuids().RemoveXmSqlSquareBrackets().RemoveAlias().RemoveLineage().FixEmptyArguments().RemoveRowNumberGuid().RemoveDoubleBracketsInCallbacks() : queryRemapped;
+                    Query = Options.SimplifyXmSqlSyntax 
+                                ? queryRemapped
+                                    .RemoveDaxGuids()
+                                    .RemoveXmSqlSquareBrackets()
+                                    .RemoveAlias()
+                                    .RemoveLineage()
+                                    .FixEmptyArguments()
+                                    .RemoveRowNumberGuid()
+                                    .RemoveDoubleBracketsInCallbacks()
+                                    .RemoveDoubleSpaces()
+                                : queryRemapped;
                     break;
             }
             
@@ -487,6 +497,7 @@ namespace DaxStudio.UI.ViewModels
                     + @"|AS|BY|IN|IS|ON|OR|PF|TO|TW|UH";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
+        const string searchXmSqlRemoveDoubleSpaces = @"(?<![\r\n ])(?<whitespace> {2,})";
         const string searchXmSqlAlias = @" AS[\r\n\t\s]?\'[^\']*\'";
         const string searchXmSqlLineageBracket = @" \( [0-9]+ \) \]";
         const string searchXmSqlLineageQuoted = @" \( [0-9]+ \) \'";
@@ -507,6 +518,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlFormatStep3 = new Regex(searchXmSqlFormatStep3, RegexOptions.Compiled);
         static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
         static Regex xmSqlFormatStep5 = new Regex(searchXmSqlFormatStep5, RegexOptions.Compiled);
+        static Regex xmSqlRemoveDoubleSpaces = new Regex(searchXmSqlRemoveDoubleSpaces, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlTotalValues = new Regex(searchXmSqlTotalValues, RegexOptions.Compiled);
         static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
@@ -549,6 +561,10 @@ namespace DaxStudio.UI.ViewModels
             string parenthesis = match.Value.Trim();
             return " " + parenthesis + " ";
         }
+        private static string RemoveDoubleSpaces(Match match)
+        {
+            return " ";
+        }
         public static string RemoveAlias(this string xmSqlQuery) {
             return xmSqlAliasRemoval.Replace(xmSqlQuery, "");
         }
@@ -581,6 +597,10 @@ namespace DaxStudio.UI.ViewModels
             string daxQueryNoDots = xmSqlDotSeparator.Replace(daxQueryNoBrackets, "[");
             string result = xmSqlParenthesis.Replace(daxQueryNoDots, FixSpaceParenthesis);
             return result;
+        }
+        public static string RemoveDoubleSpaces(this string xmSqlQuery)
+        {
+            return xmSqlRemoveDoubleSpaces.Replace(xmSqlQuery, RemoveDoubleSpaces);
         }
         public static string HighlightXmSqlTokens(this string xmSqlQuery, MatchEvaluator evaluator )
         {
