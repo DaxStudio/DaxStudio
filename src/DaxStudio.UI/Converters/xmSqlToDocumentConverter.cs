@@ -16,6 +16,7 @@ using System.Linq;
 using Fclp.Internals.Extensions;
 using ICSharpCode.SharpDevelop.Dom;
 using DaxStudio.Controls.PropertyGrid;
+using PoorMansTSqlFormatterLib;
 
 namespace DaxStudio.UI.Converters
 {
@@ -46,7 +47,7 @@ namespace DaxStudio.UI.Converters
             run.SetResourceReference(Run.ForegroundProperty, "Theme.Brush.xmSQLCallback.Fore");
         }
 
-        private IEnumerable<Inline> GetInlinesFromString(string input)
+        private IEnumerable<Inline> GetInlinesFromString(string input, Action<Run> format = null)
         {
             // Reduce CRLF and LF to CR only
             input = input.Replace("\r\n", "\r").Replace("\n", "\r");
@@ -54,28 +55,42 @@ namespace DaxStudio.UI.Converters
             {
                 int posCR = input.IndexOf('\r');
                 string s = input.Substring(0, posCR);
-                if (s.Length > 0) yield return new Run(s);
+                if (s.Length > 0)
+                {
+                    var run = new Run(s);
+                    if (format != null)
+                        format(run);
+                    yield return run;
+                }
                 yield return new LineBreak();
                 input = input.Substring(posCR + 1);
             }
-            if (input.Length > 0) yield return new Run(input);
+            if (input.Length > 0)
+            {
+                var run = new Run(input);
+                if (format != null)
+                    format(run);
+                yield return run;
+            }
         }
 
 
-        /// <summary>
-        /// Converts a string containing valid XAML into WPF objects.
-        /// </summary>
-        /// <param name="value">The string to convert.</param>
-        /// <param name="targetType">This parameter is not used.</param>
-        /// <param name="parameter">This parameter is not used.</param>
-        /// <param name="culture">This parameter is not used.</param>
-        /// <returns>A WPF object.</returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+        /// <summary>
+        /// Converts a string containing valid XAML into WPF objects.
+        /// </summary>
+        /// <param name="value">The string to convert.</param>
+        /// <param name="targetType">This parameter is not used.</param>
+        /// <param name="parameter">This parameter is not used.</param>
+        /// <param name="culture">This parameter is not used.</param>
+        /// <returns>A WPF object.</returns>
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
             FlowDocument doc = new FlowDocument();
 
             string tabReplacement = new string(' ', 4);
             string s = (value as string).Replace("\t", tabReplacement);
-            if (s != null) {
+            if (s != null)
+            {
                 Paragraph paragraph = new Paragraph();
                 // paragraph.Margin = new Thickness(0);
 
@@ -137,23 +152,19 @@ namespace DaxStudio.UI.Converters
                         Debug.WriteLine(s);
                         break;
                     }
-                    var run = new Run(s.Substring(posToken + 5, length));
-                    tokenFirst.format(run);
-                    paragraph.Inlines.Add(run);
-                    
-                    // s = s.Substring(posEnd + 5);
+
+                    paragraph.Inlines.AddRange(GetInlinesFromString(s.Substring(posToken + 5, length), tokenFirst.format));
                     sIndex = posEnd + 5;
                 }
-                if (sIndex < s.Length) {
+                if (sIndex < s.Length)
+                {
                     s = s.Substring(sIndex);
-                    foreach( var f in formats)
+                    foreach (var f in formats)
                     {
                         s = s.Replace(f.token, "");
                     }
                     s = s.Replace("|~E~|", "");
-                    paragraph.Inlines.Add(new Run(s));
-                    // paragraph.Inlines.AddRange(GetInlinesFromString(s.Substring(sIndex)));
-                    // paragraph.Inlines.Add(new Run(s));
+                    paragraph.Inlines.AddRange(GetInlinesFromString(s, null));
                 }
                 doc.Blocks.Add(paragraph);
             }
@@ -161,14 +172,15 @@ namespace DaxStudio.UI.Converters
         }
 
         /// <summary>
-                /// Converts WPF framework objects into a XAML string.
-                /// </summary>
-                /// <param name="value">The WPF Famework object to convert.</param>
-                /// <param name="targetType">This parameter is not used.</param>
-                /// <param name="parameter">This parameter is not used.</param>
-                /// <param name="culture">This parameter is not used.</param>
-                /// <returns>A string containg XAML.</returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+        /// Converts WPF framework objects into a XAML string.
+        /// </summary>
+        /// <param name="value">The WPF Famework object to convert.</param>
+        /// <param name="targetType">This parameter is not used.</param>
+        /// <param name="parameter">This parameter is not used.</param>
+        /// <param name="culture">This parameter is not used.</param>
+        /// <returns>A string containg XAML.</returns>
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
             throw new NotImplementedException("This converter cannot be used in two-way binding.");
         }
     }
