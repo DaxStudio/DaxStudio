@@ -395,6 +395,7 @@ namespace DaxStudio.UI.ViewModels
                                     .RemoveRowNumberGuid()
                                     .RemoveDoubleBracketsInCallbacks()
                                     .RemoveDoubleSpaces()
+                                    .FormatIndexSize()
                                 : queryRemapped;
                     break;
             }
@@ -602,6 +603,10 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlRemoveDoubleSpaces.Replace(xmSqlQuery, RemoveDoubleSpaces);
         }
+        public static string FormatIndexSize(this string xmSqlQuery)
+        {
+            return xmSqlTotalValues.Replace(xmSqlQuery, FormatNumber);
+        }
         public static string HighlightXmSqlTokens(this string xmSqlQuery, MatchEvaluator evaluator )
         {
             return xmSqlKeywords.Replace(xmSqlQuery, evaluator);
@@ -651,9 +656,7 @@ namespace DaxStudio.UI.ViewModels
 
         private static string FormatNumber(Match match)
         {
-            long number;
-            long.TryParse(match.Value, out number);
-            bool validNumber = long.TryParse(match.Value, out number);
+            bool validNumber = long.TryParse(match.Value, out long number);
             return validNumber ? number.ToString("#,#") : match.Value;
         }
 
