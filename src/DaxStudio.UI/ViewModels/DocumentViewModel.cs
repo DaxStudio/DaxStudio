@@ -54,6 +54,7 @@ using AvalonDock;
 using Constants = DaxStudio.Common.Constants;
 using Timer = System.Timers.Timer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
+using System.Linq.Dynamic;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -293,6 +294,7 @@ namespace DaxStudio.UI.ViewModels
                     _editor.KeyUp += OnKeyUp;
                     _editor.OnPasting += OnPasting;
                     _editor.OnCopying += OnCopying;
+                    RemoveShiftEnterBinding(_editor.TextArea.InputBindings);
                 }
                 switch (State)
                 {
@@ -329,6 +331,26 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void RemoveShiftEnterBinding(InputBindingCollection inputBindings)
+        {
+            InputBinding shiftEnter = null;
+            foreach( InputBinding binding in inputBindings)
+            {
+                if (binding is KeyBinding keyBinding)
+                {
+                    if (keyBinding.Modifiers == ModifierKeys.Shift && keyBinding.Key == Key.Enter)
+                    {
+                        shiftEnter = binding;
+                        break;
+                    }
+                }
+            }
+
+            if (shiftEnter != null)
+            {
+                inputBindings.Remove(shiftEnter);
+            }
+        }
 
         private void OnCopying(object sender, DataObjectCopyingEventArgs e)
         {
