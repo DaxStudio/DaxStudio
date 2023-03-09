@@ -2342,7 +2342,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(SendTextToEditor message, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(message.DatabaseName))
+            if (!string.IsNullOrEmpty(message.DatabaseName) && Databases != null)
             {
                 if (Databases.Any(db => db.Name == message.DatabaseName))
                     if (Connection.SelectedDatabaseName != message.DatabaseName)
