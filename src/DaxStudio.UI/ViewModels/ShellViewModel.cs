@@ -27,6 +27,7 @@ using System.Windows.Interop;
 using common = DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using GongSolutions.Wpf.DragDrop;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -287,8 +288,18 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(MoveLineDown), "Ctrl + Subtract");
             yield return new InputBindingCommand(this, nameof(CopyWithHeaders), "Ctrl + Shift + C");
             yield return new InputBindingCommand(this, nameof(CopySEQuery), Options.HotkeyCopySEQuery);
+            yield return new InputBindingCommand(this, nameof(CopyPasteServerTimings), Options.HotkeyCopyPasteServerTimings);
+            yield return new InputBindingCommand(this, nameof(CopyPasteServerTimingsData), Options.HotkeyCopyPasteServerTimingsData);
         }
 
+        public void CopyPasteServerTimings()
+        {
+            _eventAggregator.PublishOnUIThreadAsync(new CopyPasteServerTimingsEvent(includeHeader: true));
+        }
+        public void CopyPasteServerTimingsData()
+        {
+            _eventAggregator.PublishOnUIThreadAsync(new CopyPasteServerTimingsEvent(includeHeader: false));
+        }
         public void CopySEQuery()
         {
             _eventAggregator.PublishOnUIThreadAsync(new CopySEQueryEvent());

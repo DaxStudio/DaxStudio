@@ -395,6 +395,8 @@
                     <ContextMenu>
                         <MenuItem Header="Copy (with Header)" cal:Message.Attach="[Event Click] = [Action CopyResults()]"></MenuItem>
                         <MenuItem Header="Copy (data only)" cal:Message.Attach="[Event Click] = [Action CopyResultsData()]"></MenuItem>
+                        <MenuItem Header="Copy for comments (with Header)" cal:Message.Attach="[Event Click] = [Action CopyResultsForComments()]" Visibility="{Binding IsCopyResultsForCommentsVisible, Converter={StaticResource BoolToCollapsedConverter}}"></MenuItem>
+                        <MenuItem Header="Copy for comments (data only)" cal:Message.Attach="[Event Click] = [Action CopyResultsForCommentsData()]" Visibility="{Binding IsCopyResultsForCommentsDataVisible, Converter={StaticResource BoolToCollapsedConverter}}"></MenuItem>
                     </ContextMenu>
                 </ctrl:ClipBorder.ContextMenu>
             <Grid>

@@ -631,6 +631,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="24"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
@@ -654,48 +655,52 @@
 
                                 <Label Content="Copy SE Query" Padding="2" Grid.Row="3" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="3" Padding="2" Hotkey="{Binding HotkeyCopySEQuery, Converter={StaticResource HotKeyConverter}}"/>
-
-                                <Label Content="Debug Commas" Padding="2" Grid.Row="4" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="4" Padding="2" Hotkey="{Binding HotkeyDebugCommas, Converter={StaticResource HotKeyConverter}}"/>
-                                                               
-                                <Label Content="Format Query" Padding="2" Grid.Row="5" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="5" Padding="2" Hotkey="{Binding HotkeyFormatQueryStandard, Converter={StaticResource HotKeyConverter}}"/>
-
-                                <Label Content="Format Query (alternate style)" Padding="2" Grid.Row="6" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="6" Padding="2" Hotkey="{Binding HotkeyFormatQueryAlternate, Converter={StaticResource HotKeyConverter}}"/>
-
-                                <Label Content="New Document" Padding="2" Grid.Row="7" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="7" Padding="2" Hotkey="{Binding HotkeyNewDocument, Converter={StaticResource HotKeyConverter}}"/>
-
-                                <Label Content="New Document (Current Connection)" Padding="2" Grid.Row="8" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="8" Padding="2" Hotkey="{Binding HotkeyNewDocumentWithCurrentConnection, Converter={StaticResource HotKeyConverter}}"/>
                                 
-                                <Label Content="Open Document" Padding="2" Grid.Row="9" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="9" Padding="2" Hotkey="{Binding HotkeyOpenDocument, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Copy Server Timings (with/without header)" Padding="2" Grid.Row="4" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="4" Padding="2" Hotkey="{Binding HotkeyCopyPasteServerTimings, Converter={StaticResource HotKeyConverter}}"/>
+                                <controls:HotkeyEditorControl Grid.Column="2" Grid.Row="4" Padding="2" Hotkey="{Binding HotkeyCopyPasteServerTimingsData, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Run Query" Padding="2" Grid.Row="10" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="10" Padding="2" Hotkey="{Binding HotkeyRunQuery, Converter={StaticResource HotKeyConverter}}"/>
-                                <controls:HotkeyEditorControl Grid.Column="2" Grid.Row="10" Padding="2" Hotkey="{Binding HotkeyRunQueryAlt, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Debug Commas" Padding="2" Grid.Row="5" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="5" Padding="2" Hotkey="{Binding HotkeyDebugCommas, Converter={StaticResource HotKeyConverter}}"/>
+                                                               
+                                <Label Content="Format Query" Padding="2" Grid.Row="6" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="6" Padding="2" Hotkey="{Binding HotkeyFormatQueryStandard, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Save Document" Padding="2" Grid.Row="11" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="11" Padding="2" Hotkey="{Binding HotkeySaveDocument, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Format Query (alternate style)" Padding="2" Grid.Row="7" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="7" Padding="2" Hotkey="{Binding HotkeyFormatQueryAlternate, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Select Word" Padding="2" Grid.Row="12" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="12" Padding="2" Hotkey="{Binding HotkeySelectWord, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="New Document" Padding="2" Grid.Row="8" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="8" Padding="2" Hotkey="{Binding HotkeyNewDocument, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Selection To Lower" Padding="2" Grid.Row="13" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="13" Padding="2" Hotkey="{Binding HotkeyToLower, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="New Document (Current Connection)" Padding="2" Grid.Row="9" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="9" Padding="2" Hotkey="{Binding HotkeyNewDocumentWithCurrentConnection, Converter={StaticResource HotKeyConverter}}"/>
+                                
+                                <Label Content="Open Document" Padding="2" Grid.Row="10" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="10" Padding="2" Hotkey="{Binding HotkeyOpenDocument, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Selection To Upper" Padding="2" Grid.Row="14" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="14" Padding="2" Hotkey="{Binding HotkeyToUpper, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Run Query" Padding="2" Grid.Row="11" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="11" Padding="2" Hotkey="{Binding HotkeyRunQuery, Converter={StaticResource HotKeyConverter}}"/>
+                                <controls:HotkeyEditorControl Grid.Column="2" Grid.Row="11" Padding="2" Hotkey="{Binding HotkeyRunQueryAlt, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Swap Delimiters" Padding="2" Grid.Row="15" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="15" Padding="2" Hotkey="{Binding HotkeySwapDelimiters, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Save Document" Padding="2" Grid.Row="12" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="12" Padding="2" Hotkey="{Binding HotkeySaveDocument, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <Label Content="Toggle Comment" Padding="2" Grid.Row="16" />
-                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="16" Padding="2" Hotkey="{Binding HotkeyToggleComment, Converter={StaticResource HotKeyConverter}}"/>
+                                <Label Content="Select Word" Padding="2" Grid.Row="13" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="13" Padding="2" Hotkey="{Binding HotkeySelectWord, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}"
+                                <Label Content="Selection To Lower" Padding="2" Grid.Row="14" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="14" Padding="2" Hotkey="{Binding HotkeyToLower, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Selection To Upper" Padding="2" Grid.Row="15" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="15" Padding="2" Hotkey="{Binding HotkeyToUpper, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Swap Delimiters" Padding="2" Grid.Row="16" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="16" Padding="2" Hotkey="{Binding HotkeySwapDelimiters, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <Label Content="Toggle Comment" Padding="2" Grid.Row="17" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="17" Padding="2" Hotkey="{Binding HotkeyToggleComment, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}"
                                             HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource warningDrawingImage}" Width="16" Height="16"/>
                                     <TextBlock x:Name="HotkeyWarningMessage" Foreground="Red"/>
