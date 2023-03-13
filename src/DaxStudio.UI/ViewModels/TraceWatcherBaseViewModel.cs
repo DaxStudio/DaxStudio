@@ -438,7 +438,6 @@ namespace DaxStudio.UI.ViewModels
         public virtual bool CanCopyResults => false;
         public abstract void CopyResults();
         public virtual bool IsCopyResultsVisible => false;
-        
         public virtual bool CanExport { get { return true; }  }  // TODO - should this be conditional on whether we have data?
 
         public void Export() {

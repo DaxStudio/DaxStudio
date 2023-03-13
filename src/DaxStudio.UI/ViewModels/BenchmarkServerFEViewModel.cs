@@ -27,12 +27,18 @@ namespace DaxStudio.UI.ViewModels
         {
             const string _benchmarkQuery = @"EVALUATE
 ROW (
-    ""x"", COUNTROWS (
-        CROSSJOIN (
-            SELECTCOLUMNS ( CALENDAR ( 1, 10000 ), ""Num1"", INT([Date]) ),
-            SELECTCOLUMNS ( CALENDAR ( 1, 10000 ), ""Num2"", INT([Date]) )
+    ""x"",
+        COUNTROWS (
+            FILTER (
+                CROSSJOIN (
+                    SELECTCOLUMNS ( CALENDAR ( 1, 3800 ), ""Num1"", INT ( [Date] ) ),
+                    SELECTCOLUMNS ( CALENDAR ( 1, 3800 ), ""Num2"", INT ( [Date] ) )
+                ),
+                ( [Num1] + [Num2] + LEN ( """" & [Num1] ) )
+                    * ( 1.0 * [Num1] - CURRENCY ( [Num2] ) )
+                > 0
+            )
         )
-    )
 )";
 
             public string EditorText => _benchmarkQuery;

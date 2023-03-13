@@ -102,6 +102,8 @@ namespace DaxStudio.Interfaces
         [Hotkey] string HotkeyFormatQueryStandard { get; set; }
         [Hotkey] string HotkeyFormatQueryAlternate { get; set; }
         [Hotkey] string HotkeyCopySEQuery { get; set; }
+        [Hotkey] string HotkeyCopyPasteServerTimings { get; set; }
+        [Hotkey] string HotkeyCopyPasteServerTimingsData { get; set; }
         [Hotkey] string HotkeySelectWord { get; set; }
         [Hotkey] string HotkeyToggleComment { get; set; }
         [Hotkey] string HotkeyDebugCommas { get; set; }
@@ -109,8 +111,7 @@ namespace DaxStudio.Interfaces
         #endregion
 
         // Preview Features
-        bool ShowExportMetrics { get; set; }
-        bool ShowExportAllData { get; set; }
+        bool ShowCopyMetricsComments { get; set; }
         bool VpaxIncludeTom { get; set; }
         bool VpaxReadStatisticsFromData { get; set; }
         bool VpaxReadStatisticsFromDirectQuery { get; set; }

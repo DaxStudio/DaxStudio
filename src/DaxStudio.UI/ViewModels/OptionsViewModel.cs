@@ -1276,6 +1276,34 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _hotkeyCopyPasteServerTimings;
+        [DataMember, DefaultValue("Ctrl + F9"), Hotkey]
+        public string HotkeyCopyPasteServerTimings
+        {
+            get => _hotkeyCopyPasteServerTimings;
+            set
+            {
+                _hotkeyCopyPasteServerTimings = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyCopyPasteServerTimings), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyCopyPasteServerTimings);
+            }
+        }
+
+        private string _hotkeyCopyPasteServerTimingsData;
+        [DataMember, DefaultValue("Ctrl + Shift + F9"), Hotkey]
+        public string HotkeyCopyPasteServerTimingsData
+        {
+            get => _hotkeyCopyPasteServerTimingsData;
+            set
+            {
+                _hotkeyCopyPasteServerTimingsData = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyCopyPasteServerTimingsData), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyCopyPasteServerTimingsData);
+            }
+        }
+
         private string _hotkeySelectWord;
         [DataMember, DefaultValue("Ctrl + W"), Hotkey]
         public string HotkeySelectWord
@@ -1421,42 +1449,24 @@ namespace DaxStudio.UI.ViewModels
 
         // Preview Feature Toggles
 
-        private bool _showExportMetrics;
+        private bool _showCopyMetricsComments;
         [DataMember, DefaultValue(false)]
-        public bool ShowExportMetrics
+        [Category("Preview")]
+        [DisplayName("Copy server timings for comments")]
+        [Description("Copy server timings metrics in the clipboard to display results in comments within the DAX editor.")]
+        public bool ShowCopyMetricsComments
         {
-            get => _showExportMetrics;
+            get => _showCopyMetricsComments;
 
             set
             {
-                _showExportMetrics = value;
+                _showCopyMetricsComments = value;
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(ShowExportMetrics), value, _isInitializing, this);
-                NotifyOfPropertyChange(() => ShowExportMetrics);
+                SettingProvider.SetValue(nameof(ShowCopyMetricsComments), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowCopyMetricsComments);
             }
         }
 
-        //private bool _showExternalTools = false;
-        //[DataMember, DefaultValue(false)]
-        //public bool ShowExternalTools { get => _showExternalTools;
-        //    set {
-        //        _showExternalTools = value;
-        //        _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
-        //        SettingProvider.SetValueAsync(nameof(ShowExternalTools), value, _isInitializing, this);
-        //        NotifyOfPropertyChange(() => ShowExternalTools);
-        //    }
-        //}
-
-        private bool _showExportAllData;
-        [DataMember, DefaultValue(false)]
-        public bool ShowExportAllData { get => _showExportAllData;
-            set {
-                _showExportAllData = value;
-                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(ShowExportAllData), value, _isInitializing, this);
-                NotifyOfPropertyChange(() => ShowExportAllData);
-            }
-        }
 
         private bool _vpaxIncludeTom;
         [DataMember, DefaultValue(true)]

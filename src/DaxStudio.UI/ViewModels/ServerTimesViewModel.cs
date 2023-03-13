@@ -702,6 +702,7 @@ namespace DaxStudio.UI.ViewModels
             , IViewAware
             , IHandle<ThemeChangedEvent>
             , IHandle<CopySEQueryEvent>
+            , IHandle<CopyPasteServerTimingsEvent>
     {
         private bool parallelStorageEngineEventsDetected;
         public bool ParallelStorageEngineEventsDetected
@@ -1749,6 +1750,9 @@ namespace DaxStudio.UI.ViewModels
         }
         #endregion
 
+        public bool IsCopyResultsForCommentsVisible => Options.ShowCopyMetricsComments;
+        public bool IsCopyResultsForCommentsDataVisible => Options.ShowCopyMetricsComments;
+
         public override bool CanCopyResults => CanExport;
         public override bool IsCopyResultsVisible => true;
         public override void CopyResults()
@@ -1760,15 +1764,33 @@ namespace DaxStudio.UI.ViewModels
         {
             CopyResultsData(false);
         }
-        public void CopyResultsData(bool includeHeader)
+        public void CopyResultsForComments()
+        {
+            CopyResultsData(includeHeader:true, formatTextForComment: true);
+        }
+        public void CopyResultsForCommentsData()
+        {
+            CopyResultsData(includeHeader:false, formatTextForComment: true);
+        }
+        public void CopyResultsData(bool includeHeader, bool formatTextForComment=false)
         {
             var dataObject = new DataObject();
             var headers = string.Empty;
-            if (includeHeader) headers = "Query End\tTotal\tFE\tSE\tSE CPU\tSE CPU(parallelism factor)\tSE Queries\tSE Cache\n";
+            if (includeHeader) headers = "Query End\tTotal\tFE\tSE\tSE CPU\tSE Par.\tSE Queries\tSE Cache\n";
             var values = $"{QueryEndDateTime.ToString(Constants.IsoDateFormatPaste)}\t{TotalDuration}\t{FormulaEngineDuration}\t{StorageEngineDuration}\t{StorageEngineCpu}\t{StorageEngineCpuFactor}\t{StorageEngineQueryCount}\t{VertipaqCacheMatches}";
             dataObject.SetData(DataFormats.StringFormat, $"{headers}{values}");
             dataObject.SetData(DataFormats.CommaSeparatedValue, $"{headers.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}\n{values.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}");
+            if (formatTextForComment)
+            {
+                var textHeader = string.Empty;
+                if (includeHeader)
+                {
+                    textHeader = @"--     Total         FE         SE      SE CPU   Par.";
 
+                }
+                var textValues = $"-- {TotalDuration,9:#,0}  {FormulaEngineDuration,9:#,0}  {StorageEngineDuration,9:#,0}  {StorageEngineCpu,10:#,0}  x{StorageEngineCpuFactor,4:0.0}";
+                dataObject.SetData(DataFormats.Text, $"{textHeader}{(string.IsNullOrEmpty(textHeader) ? string.Empty: "\r\n")}{textValues}\r\n");
+            }
             Clipboard.SetDataObject(dataObject);
         }
 
@@ -1885,6 +1907,21 @@ namespace DaxStudio.UI.ViewModels
             CopySEQuery();
             return Task.CompletedTask;
         }
+        public Task HandleAsync(CopyPasteServerTimingsEvent message, CancellationToken cancellationToken)
+        {
+            // TODO: We should paste the code in the DAX editor once copied.
+            //       We could also evaluate whether to copy the header or not based on the position in the editor and the presence of the header...
+            if (message.IncludeHeader)
+            {
+                CopyResultsForComments();
+            }
+            else
+            {
+                CopyResultsForCommentsData();
+            }
+            return Task.CompletedTask;
+        }
+
 
         public Task HandleAsync(ThemeChangedEvent message, CancellationToken cancellationToken)
         {

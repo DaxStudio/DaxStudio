@@ -331,6 +331,7 @@
     <Compile Include="Converters\TimelineMarginConverter.cs" />
     <Compile Include="Enums\CustomTraceOutput.cs" />
     <Compile Include="Enums\SaveAsExtension.cs" />
+    <Compile Include="Events\CopyPasteServerTimings.cs" />
     <Compile Include="Events\CopySEQuery.cs" />
     <Compile Include="Events\PasteDaxFileEvent.cs" />
     <Compile Include="Events\CopyWithHeadersEvent.cs" />
