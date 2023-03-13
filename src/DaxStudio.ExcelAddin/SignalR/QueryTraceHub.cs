@@ -51,6 +51,7 @@ namespace DaxStudio
                             _xlEngine.TraceEvent += ((o, e) => { OnTraceEvent(e); });
                             _xlEngine.TraceCompleted += ((o, e) => { OnTraceCompleted(); });
                             _xlEngine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
+                            _xlEngine.PingTrace += ((o, e) => { Clients.Caller.OnPingTrace(); });
 
                         };
                         f();
@@ -65,6 +66,7 @@ namespace DaxStudio
                         _engine.TraceWarning += ((o, e) => { Clients.Caller.OnTraceWarning(e); });
                         _engine.TraceCompleted += ((o, e) => { OnTraceCompleted(); });
                         _engine.TraceStarted += ((o, e) => { Clients.Caller.OnTraceStarted(); });
+                        _xlEngine.PingTrace += ((o, e) => { Clients.Caller.OnPingTrace(); });
                         Log.Debug("{class} {method} {event} {status}", nameof(QueryTraceHub), "ConstructQueryTraceEngine", "Constructed QueryTraceEngine", (_engine != null));
                     }
 

@@ -7,7 +7,7 @@ using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 using System.Xml;
 using System.Timers;
 using DaxStudio.QueryTrace.Interfaces;
-using Serilog;
+using Serilog; 
 using Caliburn.Micro;
 using System.Globalization;
 using System.Diagnostics.Contracts;
@@ -15,7 +15,7 @@ using ADOTabular.Enums;
 using System.Linq;
 using System.IO;
 using DaxStudio.Common.Enums;
-using Microsoft.AnalysisServices;
+using ADOTabular.Utils;
 
 namespace DaxStudio.QueryTrace
 {
@@ -49,9 +49,6 @@ namespace DaxStudio.QueryTrace
                         {
                             _startingTimer.Stop();
                             _startingTimer.Elapsed -= OnTimerElapsed;
-                            _connection.Close(false);
-                            _connection.Dispose();
-                            _connection = null;
                         }
                     }
 
@@ -89,6 +86,7 @@ namespace DaxStudio.QueryTrace
         public event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
         public event EventHandler TraceCompleted;
         public event EventHandler TraceStarted;
+        public event EventHandler PingTrace;
         public event EventHandler<string> TraceError;
         public event EventHandler<string> TraceWarning;
         #endregion
@@ -100,8 +98,6 @@ namespace DaxStudio.QueryTrace
         private string _connectionString;
         private readonly string _originalConnectionString;
 
-        private ADOTabular.ADOTabularConnection _connection;
-
         private AdomdType _connectionType;
         private readonly string _sessionId;
         
@@ -109,7 +105,7 @@ namespace DaxStudio.QueryTrace
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
         private string _friendlyServerName = string.Empty;
         private readonly string _suffix = string.Empty;
-
+        private string _location = string.Empty;
         
         public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession, string suffix)
         {
@@ -133,6 +129,8 @@ namespace DaxStudio.QueryTrace
             _connectionString = connectionString;
             _connectionString = _connectionString.Replace("MDX Compatibility=1;", ""); // remove MDX Compatibility setting
             _connectionString = _connectionString.Replace("Cell Error Mode=TextValue;", ""); // remove MDX Compatibility setting
+            var vals = ConnectionStringParser.Parse(connectionString);
+            vals.TryGetValue("Location", out _location);
             _connectionType = connectionType;
             _applicationName = applicationName;
         }
@@ -222,8 +220,8 @@ namespace DaxStudio.QueryTrace
 				Log.Debug("{class} {method} {event}", "QueryTraceEngine", "Start", "Connecting to: " + _connectionString);
                 //HACK - wait 1.5 seconds to allow trace to start 
                 //       using the ping method throws a connection was lost error when starting a second trace
-                _connection = new ADOTabular.ADOTabularConnection($"{_originalConnectionString};SessionId={_sessionId}", _connectionType);
-                _connection.Open();
+                //_connection = new ADOTabular.ADOTabularConnection($"{_originalConnectionString};SessionId={_sessionId}", _connectionType);
+                //_connection.Open();
                 _trace = GetTrace();
 	            SetupTrace(_trace, Events);
 
@@ -256,7 +254,7 @@ namespace DaxStudio.QueryTrace
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "OnTimerElapsed", "Ping");
             //HACK - wait 1.5 seconds to allow trace to start 
             //       using the ping method thows a connection was lost error when starting a second trace
-            Execute.OnUIThread(() => _connection.PingTrace());
+            Execute.OnUIThread(() => PingTrace?.Invoke(this,null));
             //Execute.OnUIThread(() => ServerPing());
             // if past timeout then exit and display error
             if ((_utcPingStart - DateTime.UtcNow).Seconds > TraceStartTimeoutSecs)
@@ -268,6 +266,7 @@ namespace DaxStudio.QueryTrace
             }
 
         }
+
 
         private xlAmo.Trace GetTrace()
         {
@@ -315,9 +314,6 @@ namespace DaxStudio.QueryTrace
                 Log.Debug("{class} {method} Pending TraceEvent: {eventClass}","QueryTraceEngineExcel","OnTraceEventInternal", e.EventClass.ToString());
                 StopTimer();
                 _traceStarted = true;
-                _connection.Close(false);
-                _connection.Dispose();
-                _connection = null;
                 Status = QueryTraceStatus.Started;
                 TraceStarted?.Invoke(this, null);
 
@@ -441,9 +437,6 @@ namespace DaxStudio.QueryTrace
                         _trace?.Dispose();
                         _trace = null;
                     }
-                    
-                    _connection?.Dispose();
-                    _connection = null;
                     
                     _server?.Disconnect();
                     _server?.Dispose();

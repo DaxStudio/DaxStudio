@@ -76,7 +76,7 @@ namespace ADOTabular.AdomdClientWrappers
                     int num3 = Marshal.GetLastWin32Error();
                     throw new Win32Exception(num3);
                 }
-                lpFilename = new string(buffer);
+                lpFilename = new string(buffer, 0, (int)result);
             }
             finally
             {

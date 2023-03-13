@@ -19,5 +19,6 @@ namespace DaxStudio.QueryTrace.Interfaces
         void OnTraceStopped();
         void GetStatus(QueryTraceStatus status);
         void UpdateEvents (List<DaxStudioTraceEventClass> events);
+        void OnPingTrace();
     }
 }

@@ -21,6 +21,7 @@ namespace DaxStudio.QueryTrace
         private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
         private readonly string _powerBIFileName = string.Empty;
         private readonly string _suffix = string.Empty;
+        private readonly IConnectionManager _connectionManager;
         public RemoteQueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName, string suffix)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
@@ -30,6 +31,7 @@ namespace DaxStudio.QueryTrace
             _eventsToCapture = events;
             _powerBIFileName = powerBIFileName;
             _suffix = suffix;
+            _connectionManager = connectionManager;
             // ==== DEBUG LOGGING =====
             //var writer = new System.IO.StreamWriter(@"d:\temp\SignalR_ClientLog.txt");
             //writer.AutoFlush = true;
@@ -37,6 +39,7 @@ namespace DaxStudio.QueryTrace
             //hubConnection.TraceWriter = writer;
             
             queryTraceHubProxy.On("OnTraceStarted", OnTraceStarted);
+            queryTraceHubProxy.On("OnPingTrace", OnPingTrace);
             queryTraceHubProxy.On("OnTraceComplete", OnTraceComplete);
             queryTraceHubProxy.On<string>("OnTraceError", (msg) => { OnTraceError(msg); });
             queryTraceHubProxy.On<DaxStudioTraceEventArgs>("OnTraceEvent", (msg) => { OnTraceEvent(msg); });
@@ -47,6 +50,11 @@ namespace DaxStudio.QueryTrace
             queryTraceHubProxy.Invoke("ConstructQueryTraceEngine", connectionManager.Type, connectionManager.SessionId, events, filterForCurrentSession,_powerBIFileName, _suffix).Wait();
             // wire up hub events
 
+        }
+
+        private void OnPingTrace()
+        {
+            _connectionManager.PingTrace();
         }
 
         public event EventHandler TraceCompleted;
