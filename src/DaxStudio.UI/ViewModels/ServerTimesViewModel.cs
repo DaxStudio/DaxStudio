@@ -160,7 +160,6 @@ namespace DaxStudio.UI.ViewModels
             set {
                 if (Options.HighlightXmSqlCallbacks && ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.xmSQL)
                 {
-                    // string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
                     string totalValuesHighlighted = value.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
                     string keywordsHighlighted = totalValuesHighlighted.HighlightXmSqlTokens(HighlightXmSqlToken);
 
@@ -486,6 +485,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
         const string searchXmSqlCallbackEnd = @"[\S\s]*?(?<!\]\])\)\]"; // @"[^\)]*\){1,}(\.[^\)]*\))?]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?)(?=\)\s?\])";
+        const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
         const string searchXmSqlKeywords = searchXmSqlCallbackDax + @"|" + searchXmSqlCallbackStart + searchXmSqlCallbackEnd
                     + @"|\bTESTCALLBACKIDENT\b|\bTESTCALLBACKSUM\b|\bPFCASTCOALESCE\b|\bDATAID2STRING\b|\bSEQUENCEINDEX\b|\bNEXTROWINDEX\b|\bSIMPLEINDEXN\b|\bSIMPLEINDEXV\b|\bDESERIALIZE\b|\bFLUSHCACHES\b|\bSIMPLEINDEX"
                     + @"\b|\bDICTIONARY\b|\bDISCRETIZE\b|\bMANYTOMANY\b|\bNOVERTIPAQ\b|\bPARTITIONS\b|\bPFCOALESCE\b|\bDIMENSION\b|\bHIERARCHY\b|\bMANYTOONE\b|\bNOTIMEOUT\b|\bROWFILTER\b|\bSEPARATOR\b|\bSERIALIZE\b|\bTOKENIZED\b|\bVERTICALC"
@@ -521,6 +521,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlRemoveDoubleSpaces = new Regex(searchXmSqlRemoveDoubleSpaces, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlTotalValues = new Regex(searchXmSqlTotalValues, RegexOptions.Compiled);
+        static Regex xmSqlSquareBracketsWithSpaceRemoval = new Regex(searchXmSqlSquareBracketsWithSpace, RegexOptions.Compiled);
         static Regex xmSqlKeywords = new Regex(searchXmSqlKeywords, RegexOptions.Compiled);
         static Regex xmSqlDotSeparator = new Regex(searchXmSqlDotSeparator, RegexOptions.Compiled);
         static Regex xmSqlParenthesis = new Regex(searchXmSqlParenthesis, RegexOptions.Compiled);
