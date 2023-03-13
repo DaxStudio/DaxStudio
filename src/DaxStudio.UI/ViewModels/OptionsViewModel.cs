@@ -1575,6 +1575,25 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
+
+        private bool _showFEBenchmark;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show the FE Benchmark button")]
+        [Description("Shows the FE Benchmark button in the Advanced ribbon")]
+        public bool ShowFEBenchmark
+        {
+            get => _showFEBenchmark;
+
+            set
+            {
+                _showFEBenchmark = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowFEBenchmark), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowFEBenchmark);
+            }
+
+        }
         #endregion
 
 

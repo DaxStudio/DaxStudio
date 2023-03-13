@@ -1450,7 +1450,7 @@
                     LargeIcon="{DynamicResource fe_benchmarkDrawingImage}"
                     Margin="4,0"
                     SizeDefinition="Large,Middel,Small"
-                    
+                    Visibility="{Binding ShowFEBenchmark, Converter={StaticResource BoolToVisibilityConverter}}"
                     >
                     <Fluent:Button.ToolTip>
                         <Fluent:ScreenTip Title="Server FE Benchmark"

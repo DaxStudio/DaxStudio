@@ -30,6 +30,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ActivateDocumentEvent>
         , IHandle<AllDocumentsClosedEvent>
         , IHandle<ApplicationActivatedEvent>
+        , IHandle<ConnectFailedEvent>
         , IHandle<ConnectionPendingEvent>
         , IHandle<CancelConnectEvent>
         , IHandle<ChangeThemeEvent>
@@ -839,7 +840,19 @@ namespace DaxStudio.UI.ViewModels
             }
            
         }
-        
+        public async Task HandleAsync(ConnectFailedEvent message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                RefreshConnectionDetails(null);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<ConnectFailedEvent>", "Error updating the current connection");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error handling the failed connection attempt\n{ex.Message}"));
+            }
+
+        }
         public bool CanCut { get; set; }
         
         public bool CanCopy { get;set; }
@@ -1177,6 +1190,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ShowSwapDelimiters));
             NotifyOfPropertyChange(nameof(DebugCommasTitle));
             NotifyOfPropertyChange(nameof(SwapDelimitersTitle));
+            NotifyOfPropertyChange(nameof(ShowFEBenchmark));
         }
 
         public async void LaunchSqlProfiler()
@@ -1438,5 +1452,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ThemeImageResource));
             return Task.CompletedTask;
         }
+
+        public bool ShowFEBenchmark => Options.ShowFEBenchmark;
     }
 }
