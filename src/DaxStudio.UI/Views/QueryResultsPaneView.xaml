@@ -183,7 +183,7 @@
                             CanUserSortColumns="True"
                             RowHeaderWidth="10"
                             GridLinesVisibility="All" 
-                            
+
                             >
                                     <!--<i:Interaction.Triggers>
                                         <i:EventTrigger EventName="CopyingRowClipboardContent">
@@ -211,19 +211,22 @@
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>-->
                             <DataGrid.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Command="Copy" Header="Copy" InputGestureText="Ctrl+C">
+                                <ContextMenu >
+                                    <MenuItem Header="Copy" 
+                                              InputGestureText="Ctrl+C"
+                                              cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                              cal:Message.Attach="CopyData($eventArgs)">
                                         <MenuItem.Icon>
                                             <Image Source="{DynamicResource copyDrawingImage}"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
-                                            <MenuItem Header="Copy with Headers" 
-                                                      InputGestureText="Ctrl+Shift+C"
-                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
-                                                      cal:Message.Attach="CopyWithHeaders">
+                                    <MenuItem Header="Copy with Headers" 
+                                                InputGestureText="Ctrl+Shift+C"
+                                                cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                cal:Message.Attach="CopyWithHeaders($eventArgs)">
                                                 
-                                            </MenuItem>
-                                        </ContextMenu>
+                                    </MenuItem>
+                                </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
                         </controls:ClipBorder>

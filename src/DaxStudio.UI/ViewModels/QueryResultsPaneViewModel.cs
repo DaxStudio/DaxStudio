@@ -17,6 +17,8 @@ using UnitComboLib.Unit.Screen;
 using DaxStudio.UI.Utils;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
+using GongSolutions.Wpf.DragDrop.Utilities;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -287,10 +289,49 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool ShouldCopyHeader;
-        public void CopyWithHeaders()
+        public void CopyWithHeaders(RoutedEventArgs args)
         {
             ShouldCopyHeader = true;
-            ApplicationCommands.Copy.Execute(null,null);
+            CheckSelectionAndCopy(args.Source);
+        }
+
+        public void CopyData(RoutedEventArgs args)
+        {
+            ShouldCopyHeader = false;
+            CheckSelectionAndCopy(args.Source);
+        }
+
+        private void CheckSelectionAndCopy(object source)
+        {
+            var selectionSet = false;
+            DataGrid grid = null;
+            if (source == null) return;
+            if (source is MenuItem menu) { 
+                if(menu.Parent is ContextMenu ctxMenu)
+                {
+                    if(ctxMenu.PlacementTarget is DataGrid )
+                    {
+                        grid = (DataGrid)ctxMenu.PlacementTarget;
+                        if (grid.SelectedItems.Count == 0)
+                        {
+                            // if this is a grid and nothing is selected
+                            // then select all cells
+                            grid.SelectAllCells();
+                            grid.Focus();
+                            selectionSet = true;
+                        }
+                    }
+                }
+            }
+
+            ApplicationCommands.Copy.Execute(null, null);
+
+            if (selectionSet)
+            {
+                // if we set the selection as part of the copy command 
+                // then we should clear it
+                grid.SelectedCells.Clear();
+            }
         }
 
         public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)
@@ -438,7 +479,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(CopyWithHeadersEvent message, CancellationToken cancellationToken)
         {
-            if (GridHasFocus) CopyWithHeaders();
+            if (GridHasFocus) CopyWithHeaders(null);
             return Task.CompletedTask;
         }
 
@@ -452,6 +493,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public void GridGotFocus() { GridHasFocus = true; }
-        public void GridLostFocus() { GridHasFocus = false; }
+        public void GridLostFocus() { GridHasFocus = false; }  
     }
 }
