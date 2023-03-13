@@ -160,7 +160,6 @@ namespace DaxStudio.UI.ViewModels
             set {
                 if (Options.HighlightXmSqlCallbacks && ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.xmSQL)
                 {
-                    // string callbackDaxHighlighted = value.HighlightXmSqlDaxCallback(HighlightXmSqlDaxCallback);
                     string totalValuesHighlighted = value.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
                     string keywordsHighlighted = totalValuesHighlighted.HighlightXmSqlTokens(HighlightXmSqlToken);
 
@@ -484,7 +483,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
         const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
-        const string searchXmSqlCallbackEnd = @"[^\)]*\){1,}(\.[^\)]*\))?]";
+        const string searchXmSqlCallbackEnd = @"[\S\s]*?(?<!\]\])\)\]"; // @"[^\)]*\){1,}(\.[^\)]*\))?]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?)(?=\)\s?\])";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
         const string searchXmSqlKeywords = searchXmSqlCallbackDax + @"|" + searchXmSqlCallbackStart + searchXmSqlCallbackEnd
