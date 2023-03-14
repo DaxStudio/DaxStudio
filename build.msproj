@@ -203,7 +203,7 @@
                           var fileHash = md5.ComputeHash(stream);
                           using (TextWriter w = new StreamWriter(OutputFile, false))
                           {
-                              w.WriteLine(string.Join("", dirHash.Select(b => b.ToString("x2"))));
+                              w.WriteLine(string.Join("", fileHash.Select(b => b.ToString("x2"))));
                           }            
                       }
                   }
