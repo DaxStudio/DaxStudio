@@ -107,7 +107,7 @@
       <Version>4.0.212</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.54.1</Version>
+      <Version>19.57.2.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
       <Version>19.54.1</Version>
