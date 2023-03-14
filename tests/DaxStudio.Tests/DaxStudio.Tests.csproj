@@ -185,7 +185,7 @@
       <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.54.1</Version>
+      <Version>19.57.2.4</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.4</Version>
@@ -197,7 +197,7 @@
       <Version>2.3.20</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.2</Version>
+      <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="SharpDevelopCodeCompletion">
       <Version>1.33.2</Version>
