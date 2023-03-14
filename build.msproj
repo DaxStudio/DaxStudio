@@ -192,26 +192,23 @@
             <Using Namespace="System.Linq" />
             <Using Namespace="System.Security.Cryptography" />
             <Code Type="Fragment" Language="cs"><![CDATA[
-                using (var ms = new MemoryStream())
-                using (var md5 = SHA256.Create())
-                {                
-                    foreach (var item in InputFiles)
-                    {
-                        string path = item.ItemSpec;
-                        using (FileStream stream = new FileStream(path, FileMode.Open))
-                        {
-                            var fileHash = md5.ComputeHash(stream);
-                            ms.Write(fileHash, 0, fileHash.Length);
-                        }
-                    }
-                    ms.Flush();
-                    ms.Position = 0;
-                    var dirHash = md5.ComputeHash(ms);
-                    using (TextWriter w = new StreamWriter(OutputFile, false))
-                    {
-                        w.WriteLine(string.Join("", dirHash.Select(b => b.ToString("x2"))));
-                    }
-                }
+                
+              using (var md5 = SHA256.Create())
+              {                
+                  foreach (var item in InputFiles)
+                  {
+                      string path = item.ItemSpec;
+                      using (FileStream stream = new FileStream(path, FileMode.Open))
+                      {
+                          var fileHash = md5.ComputeHash(stream);
+                          using (TextWriter w = new StreamWriter(OutputFile, false))
+                          {
+                              w.WriteLine(string.Join("", dirHash.Select(b => b.ToString("x2"))));
+                          }            
+                      }
+                  }
+              }
+
             ]]></Code>
         </Task>
     </UsingTask>
