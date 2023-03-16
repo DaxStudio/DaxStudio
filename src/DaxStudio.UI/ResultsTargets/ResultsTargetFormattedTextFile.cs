@@ -270,21 +270,20 @@ namespace DaxStudio.UI.Model
             return newName;
         }
 
-        //int localeId = reader.Connection.LocaleIdentifier;
-
         private Dictionary<int,string> GetColumnFormatStrings(AdomdDataReader reader, bool autoFormat, string autoDateFormat)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataTable dtSchema = reader.GetSchemaTable();
             Dictionary<int, string> results = new Dictionary<int, string>(dtSchema.Rows.Count);
             int idx = 0;
-
+            var tmpConn = reader.Connection;
+            var localeId = tmpConn.LocaleIdentifier;
             if (dtSchema != null)
             {
                 foreach (DataRow row in dtSchema.Rows)
                 {
                     string columnName = Convert.ToString(row["ColumnName"]);
-                    string columnDaxName = DaxHelper.GetDaxResultColumnName(columnName, reader.Connection);
+                    string columnDaxName = DaxHelper.GetQuotedColumnName(columnName);
                     string formatString = string.Empty;
                     Type columnType = (Type)row["DataType"];
                     if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
@@ -292,11 +291,13 @@ namespace DaxStudio.UI.Model
                     column.Unique = (bool)row[Constants.IsUnique];
                     column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                     daxCol = null;
-                    reader.Connection.Columns.TryGetValue(columnDaxName, out daxCol);
-
+                    
+                    tmpConn.Columns.TryGetValue(columnName, out daxCol);
+                    if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
                     if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString))
                     {
                         formatString = daxCol.FormatString;
+                        if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                     }
                     else if (autoFormat)
                     {

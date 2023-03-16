@@ -128,6 +128,9 @@ namespace DaxStudio.UI.Extensions
             bool moreResults = true;
             int tableIdx = 1;
             int localeId = reader.Connection.LocaleIdentifier;
+
+            var tmpConn = reader.Connection;
+            
             while (moreResults)
             {
                 DataTable dtSchema = reader.GetSchemaTable();
@@ -139,33 +142,39 @@ namespace DaxStudio.UI.Extensions
                     foreach (DataRow row in dtSchema.Rows)
                     {
                         string columnName = Convert.ToString(row["ColumnName"]);
-                        string columnDaxName = DaxHelper.GetDaxResultColumnName(columnName, reader.Connection);
+                        //string columnDaxName = DaxHelper.GetDaxResultColumnName(columnName, tmpConn);
+                        string columnDaxName = DaxHelper.GetQuotedColumnName(columnName);
                         Type columnType = (Type)row["DataType"];
                         if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
                         DataColumn column = new DataColumn(columnName, columnType); // (Type)(row["DataType"]));
                         column.Unique = (bool)row[Constants.IsUnique];
                         column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                         daxCol = null;
-                        reader.Connection.Columns.TryGetValue(columnDaxName, out daxCol);
+                        tmpConn.Columns.TryGetValue(columnName, out daxCol);
+                        if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
                         if (IsSessionsDmv && columnName == Common.Constants.SessionSpidColumn)
                         {
                             column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
                         }
-                        if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString)) {
+                        if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString))
+                        {
                             column.ExtendedProperties.Add(Constants.FormatString, daxCol.FormatString);
                             if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                         }
-                        else if (autoFormat) {
+                        else if (autoFormat)
+                        {
                             string formatString;
                             switch (column.DataType.Name)
                             {
                                 case "Decimal":
                                 case "Double":
                                 case "Object":
-                                    if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct")) {
+                                    if (column.Caption.Contains(@"%") || column.Caption.Contains("Pct"))
+                                    {
                                         formatString = "0.00%";
                                     }
-                                    else {
+                                    else
+                                    {
                                         formatString = "#,0.00";
                                     }
                                     break;
@@ -174,8 +183,9 @@ namespace DaxStudio.UI.Extensions
                                     break;
                                 case "DateTime":
                                     if (string.IsNullOrWhiteSpace(autoDateFormat)
-                                        || column.Caption.ToLower().Contains(@"time") 
-                                        || column.Caption.ToLower().Contains(@"hour") ) {
+                                        || column.Caption.ToLower().Contains(@"time")
+                                        || column.Caption.ToLower().Contains(@"hour"))
+                                    {
                                         formatString = null;
                                     }
                                     else
@@ -187,7 +197,8 @@ namespace DaxStudio.UI.Extensions
                                     formatString = null;
                                     break;
                             }
-                            if (formatString != null) {
+                            if (formatString != null)
+                            {
                                 column.ExtendedProperties.Add(Constants.FormatString, formatString);
                                 if (localeId != 0) column.ExtendedProperties.Add(Constants.LocaleId, localeId);
                             }
@@ -204,13 +215,13 @@ namespace DaxStudio.UI.Extensions
                     for (int i = 0; i < listCols.Count; i++)
                     {
                         if (reader.IsDataReader(i))
-                            dataRow[((DataColumn)listCols[i])] = reader.GetDataReaderValue(i); 
+                            dataRow[((DataColumn)listCols[i])] = reader.GetDataReaderValue(i);
                         else
                         {
                             //dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
                             dataRow[i] = reader[i] ?? DBNull.Value;
                         }
-                            
+
                     }
                     dt.Rows.Add(dataRow);
                 }
@@ -219,6 +230,8 @@ namespace DaxStudio.UI.Extensions
                 moreResults = reader.NextResult();
                 tableIdx++;
             }
+            
+
             return ds;
 
         }

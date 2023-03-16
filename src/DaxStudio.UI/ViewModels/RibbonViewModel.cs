@@ -893,6 +893,10 @@ namespace DaxStudio.UI.ViewModels
 
         public void RefreshMetadata()
         {
+            if (QueryRunning) {
+                ActiveDocument.OutputWarning("Metadata cannot be refreshed while a query is running");
+                return; 
+            }
             ActiveDocument?.RefreshMetadata();
         }
 

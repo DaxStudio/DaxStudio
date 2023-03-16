@@ -158,5 +158,16 @@ namespace DaxStudio.UI.Utils
             var tableName = table.DaxName;
             return $"{tableName}[{parts[1]}";
         }
+
+        // returns a dax column name without the single quotes around the table name
+        public static string GetQuotedColumnName(string columnName)
+        {
+            var parts = columnName.Split('[');
+            if (parts.Length != 2) return columnName;
+            var tableName = parts[0];
+            if (tableName.StartsWith("'")) return $"{tableName}[{parts[1]}";
+
+            return $"'{tableName}'[{parts[1]}";
+        }
     }
 }
