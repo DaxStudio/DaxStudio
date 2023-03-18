@@ -2492,7 +2492,8 @@ namespace DaxStudio.UI.ViewModels
             if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
             {
                 stvModel.ServerTimingDetails = ServerTimingDetails;
-
+                stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
+                stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
             }
         }
 
