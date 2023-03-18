@@ -22,7 +22,7 @@ namespace DaxStudio.UI.Utils
 
         public static string XmlString(string text)
         {
-            return new XElement("t", text).LastNode.ToString();
+            return new XElement("t", text).LastNode.ToString().Replace("\r", "&#13;").Replace("\n","&#10;");
         }
 
         public static string OdcTempFilePath()
