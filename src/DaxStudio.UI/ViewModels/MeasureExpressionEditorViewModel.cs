@@ -17,6 +17,8 @@ using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
 using DaxStudio.UI.Events;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
     public class MeasureExpressionEditorViewModel:Screen
         ,IViewAware
         ,IDropTarget
-
+        ,IHandle<UpdateConnectionEvent>
     {
         private  IEventAggregator EventAggregator { get; }
 
@@ -66,12 +68,11 @@ namespace DaxStudio.UI.ViewModels
         public QueryBuilderColumn Column { get => _column;
             internal set {
                 _column = value;
-                NotifyOfPropertyChange(nameof(Tables));
                 MeasureExpression.Text = _column.MeasureExpression??string.Empty;
                 MeasureName = _column.Caption;
                 SelectedTable = _column.SelectedTable;
                 IsModelItem = _column.IsModelItem;
-                
+                NotifyOfPropertyChange(nameof(Tables));
                 NotifyOfPropertyChange(nameof(SelectedTable));
 
             } 
@@ -262,6 +263,12 @@ namespace DaxStudio.UI.ViewModels
         public void DragLeave(IDropInfo dropInfo)
         {
             // do nothing
+        }
+
+        public Task HandleAsync(UpdateConnectionEvent message, CancellationToken cancellationToken)
+        {
+            NotifyOfPropertyChange(nameof(Tables));
+            return Task.CompletedTask;
         }
     }
 }

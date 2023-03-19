@@ -453,10 +453,7 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularTableCollection GetTables()
         {
-            using (var _tempConn = _connection.Clone())
-            {
-                return _tempConn.Database.Models[SelectedModelName].Tables;
-            }            
+            return _connection.Database.Models[SelectedModelName].Tables;
         }
 
         public AdomdType Type => AdomdType.AnalysisServices; // _connection.Type;
