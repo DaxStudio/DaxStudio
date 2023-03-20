@@ -908,7 +908,7 @@ namespace ADOTabular
 
         public ADOTabularConnection Clone()
         {
-            return CloneInternal(this.ConnectionStringWithInitialCatalog,false);
+            return CloneInternal(this.ConnectionStringWithInitialCatalog,false,false);
         }
 
         /// <summary>

@@ -875,6 +875,7 @@ namespace DaxStudio.UI.Model
             return _retry.Execute(() => {
                 using (var tmpConn = _connection.Clone(false))
                 {
+                    tmpConn.Open();
                     var tmpModel = tmpConn.Database.Models[SelectedModel.Name];
                     var tvt = tmpModel.TreeViewTables(options, _eventAggregator, metadataPane);
                     return tvt;
