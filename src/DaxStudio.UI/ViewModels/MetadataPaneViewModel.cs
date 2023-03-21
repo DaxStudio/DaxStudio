@@ -1032,29 +1032,15 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(SelectedDatabaseChangedEvent message, CancellationToken cancellationToken)
         {
-            var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
-            if (selectedDB != null) SelectedDatabase = selectedDB;
-
-            
-            // TODO - should we log a warning here?
-
-            // refresh model list
             try
             {
-                //if (ModelList == null) return;
-                //if (Connection == null) return;
-                //if (Connection?.Database?.Models == null) return;
-
-                //if (ModelList.Count > 0)
-                //{
-                //    SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
-                //}
-                //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);
+                var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
+                if (selectedDB != null) SelectedDatabase = selectedDB;
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message),cancellationToken);
+                Log.Fatal(ex, "{class} {method} Error setting SelectedDatabase: {message}", nameof(MetadataPaneViewModel), "IHandle<SelectedDatabaseChangedEvent>", ex.Message);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error setting SelectedDatabase: " + ex.Message),cancellationToken);
             }
             return Task.CompletedTask;
         }
