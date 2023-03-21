@@ -1644,11 +1644,14 @@ namespace DaxStudio.UI.ViewModels
             ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
             TimelineTotalDuration = m.TimelineTotalDuration;
             AllStorageEngineEvents.Clear();
-            AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
+            if (m.StoreageEngineEvents != null)
+                AllStorageEngineEvents.AddRange(m.StoreageEngineEvents);
+            else
+                AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
             AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 3) {
-                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, String.Empty, se.StartTime)));
+                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
         }
