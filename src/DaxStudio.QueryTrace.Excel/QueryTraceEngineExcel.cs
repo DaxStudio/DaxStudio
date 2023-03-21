@@ -77,7 +77,7 @@ namespace DaxStudio.QueryTrace
         public int TraceStartTimeoutSecs { get; private set; }
         public QueryTraceStatus Status { get; private set; }
 
-        public List<DaxStudioTraceEventClass> Events { get; }
+        public Dictionary<DaxStudioTraceEventClass,List<int>> Events { get; }
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
         public delegate void DaxStudioTraceEventHandler(object sender, DaxStudioTraceEventArgs e);
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -107,7 +107,7 @@ namespace DaxStudio.QueryTrace
         private readonly string _suffix = string.Empty;
         private string _location = string.Empty;
         
-        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, List<DaxStudioTraceEventClass> events, bool filterForCurrentSession, string suffix)
+        public QueryTraceEngineExcel(string connectionString, AdomdType connectionType, string sessionId, string applicationName, Dictionary<DaxStudioTraceEventClass,List<int>> events, bool filterForCurrentSession, string suffix)
         {
             Contract.Requires(connectionString != null, "connectionString must not be null");
 
@@ -134,7 +134,7 @@ namespace DaxStudio.QueryTrace
             _connectionType = connectionType;
             _applicationName = applicationName;
         }
-        private static void SetupTrace(xlAmo.Trace trace, List<DaxStudioTraceEventClass> events)
+        private static void SetupTrace(xlAmo.Trace trace, Dictionary<DaxStudioTraceEventClass,List<int>> events)
         {
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "SetupTrace", "enter");
             trace.Events.Clear();
@@ -145,16 +145,16 @@ namespace DaxStudio.QueryTrace
             trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.QueryEnd));
             
             // catch the events in the ITraceWatcher
-            foreach (DaxStudioTraceEventClass eventClass in events)
+            foreach (var eventClass in events)
             {
                 // PowerPivot in Excel does not have direct query events, so skip it if makes it this far
-                if (eventClass == DaxStudioTraceEventClass.DirectQueryEnd) continue;
+                if (eventClass.Key == DaxStudioTraceEventClass.DirectQueryEnd) continue;
 
-                var amoEventClass = (ExcelAmo.Microsoft.AnalysisServices.TraceEventClass)eventClass;
+                var amoEventClass = (ExcelAmo.Microsoft.AnalysisServices.TraceEventClass)eventClass.Key;
                 if (trace.Events.Find(amoEventClass) != null)
                     continue;
 
-                xlAmo.TraceEvent trcEvent = TraceEventFactoryExcel.CreateTrace(amoEventClass);
+                xlAmo.TraceEvent trcEvent = TraceEventFactoryExcel.CreateTrace(amoEventClass, eventClass.Value);
                 trace.Events.Add(trcEvent);
             }
             trace.Update();

@@ -1,6 +1,8 @@
 ﻿//extern alias ExcelAmo;
 
 using Microsoft.AnalysisServices;
+using System.Collections.Generic;
+using System.Windows.Documents;
 //using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 namespace DaxStudio.QueryTrace
 {
@@ -102,6 +104,16 @@ namespace DaxStudio.QueryTrace
 
             }
 
+            return trc;
+        }
+
+        public static TraceEvent Create(TraceEventClass eventClass, List<int> columns)
+        {
+            var trc = new TraceEvent(eventClass);
+            foreach (var column in columns)
+            {
+                trc.Columns.Add((TraceColumn)column);
+            }
             return trc;
         }
 

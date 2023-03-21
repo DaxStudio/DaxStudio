@@ -34,7 +34,7 @@ namespace DaxStudio.QueryTrace.Interfaces
         void OnTraceError();
         void OnTracedStarted();
         */
-        List<DaxStudioTraceEventClass> Events { get; }
+        Dictionary<DaxStudioTraceEventClass,List<int>> Events { get; }
         QueryTraceStatus Status {get;}
         void Dispose();
     }

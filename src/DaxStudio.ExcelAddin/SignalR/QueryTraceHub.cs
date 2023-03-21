@@ -29,7 +29,7 @@ namespace DaxStudio
         //    ConstructQueryTraceEngine(connectionType, sessionId, eventsToCapture, stubGlobalOptions);
         //}
 
-        public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, List<DaxStudioTraceEventClass> eventsToCapture, bool filterForCurrentSession, string powerBIFileName, string suffix) //, IGlobalOptions globalOptions)
+        public void ConstructQueryTraceEngine(AdomdType connectionType, string sessionId, Dictionary<DaxStudioTraceEventClass,List<int>> eventsToCapture, bool filterForCurrentSession, string powerBIFileName, string suffix) //, IGlobalOptions globalOptions)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace DaxStudio
             Log.Debug("{class} {method} {event}", nameof(QueryTraceHub), "Dispose", "exit");
         }
 
-        public void UpdateEvents(List<DaxStudioTraceEventClass> events)
+        public void UpdateEvent(Dictionary<DaxStudioTraceEventClass,List<int>> events)
         {
             Log.Debug("{class} {method} {event}", nameof(QueryTraceHub), "UpdateEvents", "enter");
             if (_xlEngine != null)
@@ -239,14 +239,14 @@ namespace DaxStudio
                 VoidDelegate f = delegate
                 {
                     _xlEngine.Events.Clear();
-                    _xlEngine.Events.AddRange(events);
+                    _xlEngine.Events.Union(events);
                 };
                 f();
             }
             else
             {
                 _engine.Events.Clear();
-                _engine.Events.AddRange(events);
+                _engine.Events.Union(events);
             }
             Log.Debug("{class} {method} {event}", nameof(QueryTraceHub), "UpdateEvents", "exit");
         }

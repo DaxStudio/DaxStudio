@@ -23,6 +23,7 @@ using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
 using System.Windows;
 using Windows.UI.Core;
+using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -551,7 +552,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!UpdatedMonitoredEvents()) return;
 
                 var monitoredEvents = GetMonitoredEvents();
-                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
+                Dictionary<DaxStudioTraceEventClass,List<int>> validEventsForConnection = (Dictionary<DaxStudioTraceEventClass, List<int>>)supportedEvents.ToDictionary(e => monitoredEvents.Contains(e.Key)).Cast<Dictionary<DaxStudioTraceEventClass,List<int>>>();
 
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {

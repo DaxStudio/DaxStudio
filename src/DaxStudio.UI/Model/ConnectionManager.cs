@@ -26,6 +26,7 @@ using DaxStudio.Controls.DataGridFilter.Querying;
 using DaxStudio.UI.ViewModels;
 using System.Data.Common;
 using System.Data.OleDb;
+using System.Diagnostics;
 
 namespace DaxStudio.UI.Model
 {
@@ -1019,8 +1020,8 @@ namespace DaxStudio.UI.Model
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
         }
         private object _supportedTraceEventClassesLock = new object();
-        private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
-        public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
+        private Dictionary<DaxStudioTraceEventClass,List<int>> _supportedTraceEventClasses;
+        public Dictionary<DaxStudioTraceEventClass,List<int>> SupportedTraceEventClasses
         {
             get
             {
@@ -1032,9 +1033,9 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private HashSet<DaxStudioTraceEventClass> PopulateSupportedTraceEventClasses()
+        private Dictionary<DaxStudioTraceEventClass,List<int>> PopulateSupportedTraceEventClasses()
         {
-            var result = new HashSet<DaxStudioTraceEventClass>();
+            var result = new Dictionary<DaxStudioTraceEventClass,List<int>>();
             using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
             {
                 while (dr.Read())
@@ -1042,10 +1043,19 @@ namespace DaxStudio.UI.Model
                     var xml = dr.GetString(0);
                     XPathDocument xPath = new XPathDocument(new StringReader(xml));
                     var nav = xPath.CreateNavigator();
-                    var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
-                    while (iter.MoveNext())
+                    var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT");
+                    //while (iter.MoveNext())
+                    
+                    foreach (XPathNavigator node in iter)
                     {
-                        result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                        var categoryId = node.SelectSingleNode("ID").ValueAsInt;
+                        var lstColumns = new List<int>();
+                        var cols = node.Select("./EVENTCOLUMNLIST/EVENTCOLUMN/ID"); // node.SelectDescendants("ID","",false);
+                        while( cols.MoveNext())
+                        {
+                            lstColumns.Add(cols.Current.ValueAsInt);
+                        }
+                        result.Add((DaxStudioTraceEventClass)categoryId, lstColumns);
                     }
                 }
             }

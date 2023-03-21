@@ -18,17 +18,16 @@ namespace DaxStudio.QueryTrace
         HubConnection hubConnection;
         IHubProxy queryTraceHubProxy;
         QueryTraceStatus _status = QueryTraceStatus.Stopped;
-        private readonly List<DaxStudioTraceEventClass> _eventsToCapture;
         private readonly string _powerBIFileName = string.Empty;
         private readonly string _suffix = string.Empty;
         private readonly IConnectionManager _connectionManager;
-        public RemoteQueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName, string suffix)
+        public RemoteQueryTraceEngine(IConnectionManager connectionManager, Dictionary<DaxStudioTraceEventClass,List<int>> events, int port, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBIFileName, string suffix)
         {
             Log.Debug("{{class} {method} {message}","RemoteQueryTraceEngine","constructor", "entered");
             // connect to hub
             hubConnection = new HubConnection(string.Format("http://localhost:{0}/",port));
             queryTraceHubProxy = hubConnection.CreateHubProxy("QueryTrace");
-            _eventsToCapture = events;
+            Events = events;
             _powerBIFileName = powerBIFileName;
             _suffix = suffix;
             _connectionManager = connectionManager;
@@ -114,7 +113,7 @@ namespace DaxStudio.QueryTrace
             TraceCompleted?.Invoke(this, null);
         }
 
-        public List<DaxStudioTraceEventClass> Events => _eventsToCapture;
+        public Dictionary<DaxStudioTraceEventClass, List<int>> Events { get; }
 
 
         public event EventHandler TraceStarted;
@@ -133,7 +132,8 @@ namespace DaxStudio.QueryTrace
 
         public void Update()
         {
-            queryTraceHubProxy.Invoke("UpdateEvents", _eventsToCapture).Wait();
+            // TODO - can we pass through the whole dictionary via the hub??
+            queryTraceHubProxy.Invoke("UpdateEvents",Events).Wait();
             queryTraceHubProxy.Invoke("Update");
         }
 

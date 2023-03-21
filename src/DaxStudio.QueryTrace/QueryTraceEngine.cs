@@ -89,7 +89,7 @@ namespace DaxStudio.QueryTrace
 
         public QueryTraceStatus Status { get; private set; }
 
-        public List<DaxStudioTraceEventClass> Events { get; }
+        public Dictionary<DaxStudioTraceEventClass,List<int>> Events { get; }
 
         public event EventHandler<DaxStudioTraceEventArgs> TraceEvent;
         public event EventHandler TraceCompleted;
@@ -115,7 +115,7 @@ namespace DaxStudio.QueryTrace
         private readonly string _suffix = string.Empty;
         private bool _isInternalQuery;
 
-        public QueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
+        public QueryTraceEngine(IConnectionManager connectionManager, Dictionary<DaxStudioTraceEventClass,List<int>> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
         {
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionManager.ConnectionString);
             _globalOptions = globalOptions;
@@ -138,7 +138,7 @@ namespace DaxStudio.QueryTrace
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
         }
 
-        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, List<DaxStudioTraceEventClass> events, IGlobalOptionsBase globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
+        public QueryTraceEngine(string connectionString, AdomdType connectionType, string sessionId, string applicationName, string databaseName, Dictionary<DaxStudioTraceEventClass,List<int>> events, IGlobalOptionsBase globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
         {
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionString);
             _globalOptions = globalOptions;
@@ -174,7 +174,7 @@ namespace DaxStudio.QueryTrace
             return connStrBuilder.ToString();
 
         }
-        private void SetupTraceEvents(Trace trace, List<DaxStudioTraceEventClass> events)
+        private void SetupTraceEvents(Trace trace, Dictionary<DaxStudioTraceEventClass,List<int>> events)
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering"); 
             trace.Events.Clear();
@@ -185,13 +185,13 @@ namespace DaxStudio.QueryTrace
             trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
             
             // catch the events in the ITraceWatcher
-            foreach (DaxStudioTraceEventClass eventClass in events)
+            foreach (var eventClass in events)
             {
-                TraceEventClass amoEventClass = (TraceEventClass)eventClass;
+                TraceEventClass amoEventClass = (TraceEventClass)eventClass.Key;
                 if (trace.Events.Find(amoEventClass) != null)
                     continue;
 
-                var trcEvent = TraceEventFactory.Create(amoEventClass);
+                var trcEvent = TraceEventFactory.Create(amoEventClass, eventClass.Value);
                 trace.Events.Add(trcEvent);
             }
             trace.Update(UpdateOptions.Default, UpdateMode.CreateOrReplace);
