@@ -1045,30 +1045,35 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
 
-
-            Databases.IsNotifying = false;
-            Task.Run(()=> Databases = _metadataProvider.GetDatabases().ToBindableCollection());
-            Databases.IsNotifying = true;
-            NotifyOfPropertyChange(nameof(Databases));
-                
-
-            var ml = _metadataProvider.GetModels();
-            //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
-            if (Dispatcher.CurrentDispatcher.CheckAccess())
+            try
             {
-                Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => ModelList = ml));
+                Databases.IsNotifying = false;
+                await Task.Run(async () => Databases = _metadataProvider.GetDatabases().ToBindableCollection());
+                Databases.IsNotifying = true;
+                NotifyOfPropertyChange(nameof(Databases));
+
+                var ml = _metadataProvider.GetModels();
+                if (Dispatcher.CurrentDispatcher.CheckAccess())
+                {
+                    Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => ModelList = ml));
+                }
+                else
+                {
+                    ModelList = ml;
+                }
+
+                NotifyOfPropertyChange(() => CanSelectDatabase);
+                NotifyOfPropertyChange(() => CanSelectModel);
             }
-            else
+            catch (Exception ex)
             {
-                ModelList = ml;
+                Log.Fatal(ex, "{class} {method} Error while changing the connection: {message}", nameof(MetadataPaneViewModel), "IHandle<ConnectionChangedEvent>", ex.Message);
+                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error while changing the connection: " + ex.Message), cancellationToken);
             }
 
-            NotifyOfPropertyChange(() => CanSelectDatabase);
-            NotifyOfPropertyChange(() => CanSelectModel);
-            return Task.CompletedTask;
         }
 
         public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)
