@@ -7,7 +7,7 @@ using System.Windows.Documents;
 
 namespace DaxStudio.QueryTrace
 {
-    public class DaxStudioTraceEventArgs
+    public partial class DaxStudioTraceEventArgs
     {
         private string _eventClassName;
         private string _eventSubclassName;
@@ -346,7 +346,7 @@ namespace DaxStudio.QueryTrace
         public string ObjectReference { get; set; }
         public long ProgressTotal { get; set; }
         public string ActivityId { get; set; }
-        public string RequestId { get; private set; }
+        public string RequestId { get; set; }
 
         public DateTime CurrentTime { get; set; }
         public long IntegerData { get; set; }

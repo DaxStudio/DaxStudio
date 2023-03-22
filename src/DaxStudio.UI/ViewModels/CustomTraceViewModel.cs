@@ -150,6 +150,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CustomTraceViewModel), nameof(ProcessSingleEvent), ex.Message);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while processing trace events:\n{ex.Message}"));
             }
+            RefreshToolbarButtons();
         }
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
@@ -172,9 +173,7 @@ namespace DaxStudio.UI.ViewModels
 
 
             NotifyOfPropertyChange(() => TraceEvents);
-            NotifyOfPropertyChange(() => CanClearAll);
-            NotifyOfPropertyChange(() => CanCopyAll);
-            NotifyOfPropertyChange(() => CanExport);
+            RefreshToolbarButtons() ;
         }
 
 
@@ -213,9 +212,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _traceEvents.Clear();
             NotifyOfPropertyChange(nameof(TraceEvents));
-            NotifyOfPropertyChange(nameof(CanClearAll));
-            NotifyOfPropertyChange(nameof(CanCopyAll));
-            NotifyOfPropertyChange(nameof(CanExport));
+            RefreshToolbarButtons();
         }
 
 
@@ -280,6 +277,13 @@ namespace DaxStudio.UI.ViewModels
         public void TextDoubleClick()
         {
             TextDoubleClick(SelectedQuery);
+        }
+
+        public void RefreshToolbarButtons()
+        {
+            NotifyOfPropertyChange(nameof(CanClearAll));
+            NotifyOfPropertyChange(nameof(CanCopyAll));
+            NotifyOfPropertyChange(nameof(CanExport));
         }
 
 #region ISaveState methods

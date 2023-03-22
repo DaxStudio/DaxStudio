@@ -16,6 +16,7 @@ using System.Linq;
 using System.IO;
 using DaxStudio.Common.Enums;
 using ADOTabular.Utils;
+using DaxStudio.QueryTrace.Excel;
 
 namespace DaxStudio.QueryTrace
 {
@@ -138,11 +139,7 @@ namespace DaxStudio.QueryTrace
         {
             Log.Debug("{class} {method} {event}", "QueryTraceEngineExcel", "SetupTrace", "enter");
             trace.Events.Clear();
-            // Add CommandBegin & DiscoverBegin so we can catch the heartbeat events
-            trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.DiscoverBegin)); 
-            trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.CommandBegin));
-            // Add QueryEnd so we know when to stop the trace
-            trace.Events.Add(TraceEventFactoryExcel.CreateTrace(xlAmo.TraceEventClass.QueryEnd));
+
             
             // catch the events in the ITraceWatcher
             foreach (var eventClass in events)
@@ -325,8 +322,9 @@ namespace DaxStudio.QueryTrace
                 if (e.EventClass == xlAmo.TraceEventClass.DiscoverBegin ) return;
 
                 Log.Debug("{class} {method} TraceEvent: {eventClass}", "QueryTraceEngineExcel", "OnTraceEventInternal", e.EventClass.ToString());
-                OnTraceEvent(CreateTraceEventArg(e, _friendlyServerName));
-                _capturedEvents.Add( CreateTraceEventArg(e, _friendlyServerName));
+                var newEvent = DaxStudioTraceEventArgsFactory.Create(e, _friendlyServerName, Events[(DaxStudioTraceEventClass)e.EventClass]);
+                OnTraceEvent(newEvent);
+                _capturedEvents.Add( newEvent);
                 if (e.EventClass == xlAmo.TraceEventClass.QueryEnd || e.EventClass == xlAmo.TraceEventClass.Error)
                 {
                     // Raise an event with the captured events
