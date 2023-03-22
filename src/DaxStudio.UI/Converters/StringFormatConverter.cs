@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ADOTabular;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -18,22 +19,27 @@ namespace DaxStudio.UI.Converters
             object val = null;
             if (values[0] != null)
             {
-                switch ((string)values[2]) //DataTypeName
+                switch ((string)values[2].ToString().ToLower()) //DataTypeName
                 {
-                    case "DateTime":
+                    case "datetime":
                         DateTime.TryParse((string)values[0],out DateTime outVal );
                         return string.Format(string.Format("{{0:{0}}}", (string)values[1]), outVal);
                         
-                    case "String":
+                    case "string":
                         val = (string)values[0];
                         break;
-                    case "Int64":
+                    case "int":
+                    case "int16":
+                    case "int32":
+                    case "int64":
                         val = long.TryParse((string)values[0],out long longVal);
-                        return string.Format(string.Format("{{0:{0}}}", (string)values[1]), longVal);
-                        
-                    case "Decimal":
+                        return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), longVal): Common.Constants.Err;
+                    case "decimal":
                         val = decimal.TryParse((string)values[0], out Decimal decVal);
-                        return string.Format(string.Format("{{0:{0}}}", (string)values[1]), decVal);
+                        return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), decVal): Common.Constants.Err;
+                    case "double":
+                        val = double.TryParse((string)values[0], out double dblVal);
+                        return (bool)val?string.Format(string.Format("{{0:{0}}}", (string)values[1]), dblVal): Common.Constants.Err;
                 }
             }
             return string.Format(string.Format("{{0:{0}}}",(string)values[1]), val);
