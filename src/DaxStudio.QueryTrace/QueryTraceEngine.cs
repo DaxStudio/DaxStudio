@@ -178,12 +178,7 @@ namespace DaxStudio.QueryTrace
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering"); 
             trace.Events.Clear();
-            // Add CommandBegine & DiscoverBegin so we can catch the heartbeat events
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin)); 
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
-            // Add QueryEnd so we know when to stop the trace
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
-            
+
             // catch the events in the ITraceWatcher
             foreach (var eventClass in events)
             {
@@ -474,7 +469,7 @@ namespace DaxStudio.QueryTrace
                     }
 
 
-                    OnTraceEvent(new DaxStudioTraceEventArgs(e, _powerBiFileName));
+                    OnTraceEvent(new DaxStudioTraceEventArgs(e, _powerBiFileName, Events[(DaxStudioTraceEventClass)e.EventClass]));
 
                 }
             }

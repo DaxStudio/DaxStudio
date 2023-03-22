@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Model
             CpuTime = traceEvent.CpuTime;
             Duration = traceEvent.Duration;
             DatabaseName = traceEvent.DatabaseFriendlyName;
-            RequestID = traceEvent.RequestID;
+            RequestID = traceEvent.RequestId;
             RequestParameters = traceEvent.RequestParameters;
             RequestProperties = traceEvent.RequestProperties;
             ObjectName = traceEvent.ObjectName;

@@ -92,7 +92,7 @@ namespace DaxStudio.UI.ViewModels
                         Query = traceEvent.TextData,
                         Duration = traceEvent.Duration,
                         DatabaseName = traceEvent.DatabaseFriendlyName,
-                        RequestID = traceEvent.RequestID,
+                        RequestID = traceEvent.RequestId,
                         RequestParameters = traceEvent.RequestParameters,
                         RequestProperties = traceEvent.RequestProperties,
                         ActivityID = traceEvent.ActivityId
@@ -106,16 +106,16 @@ namespace DaxStudio.UI.ViewModels
                             if (newEvent.Query == Constants.RefreshSessionQuery) return;
 
                             // look for any cached rewrite events
-                            if (traceEvent.RequestID != null && _rewriteEventCache.ContainsKey(traceEvent.RequestID))
+                            if (traceEvent.RequestId != null && _rewriteEventCache.ContainsKey(traceEvent.RequestId))
                             {
-                                var summary = _rewriteEventCache[traceEvent.RequestID];
+                                var summary = _rewriteEventCache[traceEvent.RequestId];
                                 newEvent.AggregationMatchCount = summary.MatchCount;
                                 newEvent.AggregationMissCount = summary.MissCount;
-                                _rewriteEventCache.Remove(traceEvent.RequestID);
+                                _rewriteEventCache.Remove(traceEvent.RequestId);
                             }
 
                             // check if we have a queryBegin event cached
-                            _queryBeginCache.TryGetValue(traceEvent.RequestID ?? "", out var beginEvent);
+                            _queryBeginCache.TryGetValue(traceEvent.RequestId ?? "", out var beginEvent);
                             if (beginEvent != null)
                             {
 
@@ -130,7 +130,7 @@ namespace DaxStudio.UI.ViewModels
                                 //var effectiveUser = beginEvent.ParseEffectiveUsername();
                                 //if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
 
-                                _queryBeginCache.Remove(traceEvent.RequestID);
+                                _queryBeginCache.Remove(traceEvent.RequestId);
 
                                 // copy end event properties to the begin event
                                 beginEvent.QueryEvent.Duration = newEvent.Duration;
@@ -154,17 +154,17 @@ namespace DaxStudio.UI.ViewModels
                             break;
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             // cache rewrite events
-                            var rewriteSummary = new AggregateRewriteSummary(traceEvent.RequestID, traceEvent.TextData);
-                            if (_rewriteEventCache.ContainsKey(traceEvent.RequestID))
+                            var rewriteSummary = new AggregateRewriteSummary(traceEvent.RequestId, traceEvent.TextData);
+                            if (_rewriteEventCache.ContainsKey(traceEvent.RequestId))
                             {
-                                var summary = _rewriteEventCache[key: traceEvent.RequestID];
+                                var summary = _rewriteEventCache[key: traceEvent.RequestId];
                                 summary.MatchCount += rewriteSummary.MatchCount;
                                 summary.MissCount += rewriteSummary.MissCount;
-                                _rewriteEventCache[key: traceEvent.RequestID] = summary;
+                                _rewriteEventCache[key: traceEvent.RequestId] = summary;
                             }
                             else
                             {
-                                _rewriteEventCache.Add(traceEvent.RequestID, rewriteSummary);
+                                _rewriteEventCache.Add(traceEvent.RequestId, rewriteSummary);
                             }
 
                             break;
@@ -173,13 +173,13 @@ namespace DaxStudio.UI.ViewModels
 
                             // if the requestID is null we are running against PowerPivot which does
                             // not seem to expose the RequestID property
-                            if (traceEvent.RequestID == null) return;
+                            if (traceEvent.RequestId == null) return;
 
                             // if this is a session refresh query then skip it
                             if (newEvent.Query == Constants.RefreshSessionQuery) return;
 
                             // cache rewrite events
-                            if (_queryBeginCache.ContainsKey(traceEvent.RequestID))
+                            if (_queryBeginCache.ContainsKey(traceEvent.RequestId))
                             {
                                 // TODO - this should not happen
                                 // we should not get 2 begin events for the same request
@@ -189,14 +189,14 @@ namespace DaxStudio.UI.ViewModels
                             {
                         var newBeginEvent = new QueryBeginEvent()
                         {
-                            RequestID = traceEvent.RequestID,
+                            RequestID = traceEvent.RequestId,
                             Query = traceEvent.TextData,
                             RequestProperties = traceEvent.RequestProperties,
                             RequestParameters = traceEvent.RequestParameters,
                             ActivityID = traceEvent.ActivityId,
                             QueryEvent = newEvent
                                 };
-                                _queryBeginCache.Add(traceEvent.RequestID, newBeginEvent);
+                                _queryBeginCache.Add(traceEvent.RequestId, newBeginEvent);
 
                                 // Add the parameters XML after the query text
                                 if (newEvent.RequestParameters != null)

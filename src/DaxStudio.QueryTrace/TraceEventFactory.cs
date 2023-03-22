@@ -2,12 +2,42 @@
 
 using Microsoft.AnalysisServices;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Documents;
 //using xlAmo = ExcelAmo.Microsoft.AnalysisServices;
 namespace DaxStudio.QueryTrace
 {
+
+
     public  static partial class TraceEventFactory
     {
+
+        public static List<TraceColumn> RequiredColumns = new List<TraceColumn>(){
+            TraceColumn.EventClass,
+            TraceColumn.EventSubclass,
+            TraceColumn.TextData,
+            TraceColumn.CurrentTime,
+            TraceColumn.Spid,
+            TraceColumn.SessionID,
+            TraceColumn.ActivityID,
+            TraceColumn.RequestID,
+            TraceColumn.DatabaseName,
+            TraceColumn.StartTime,
+            TraceColumn.NTUserName,
+            TraceColumn.ApplicationName,
+            TraceColumn.ObjectPath,
+            TraceColumn.ObjectName,
+            TraceColumn.ObjectReference,
+//            trc.Columns.Add(TraceColumn.IntegerData);
+            TraceColumn.RequestParameters,
+            TraceColumn.RequestProperties,
+            TraceColumn.Duration,
+            TraceColumn.CpuTime,
+            TraceColumn.EndTime,
+            TraceColumn.Error,
+
+        };
+
         public static TraceEvent Create(TraceEventClass eventClass)
         {
             var trc = new TraceEvent(eventClass);
@@ -110,7 +140,8 @@ namespace DaxStudio.QueryTrace
         public static TraceEvent Create(TraceEventClass eventClass, List<int> columns)
         {
             var trc = new TraceEvent(eventClass);
-            foreach (var column in columns)
+            var columnsToRecord = columns.Where(c => RequiredColumns.Contains((TraceColumn)c));
+            foreach (var column in columnsToRecord)
             {
                 trc.Columns.Add((TraceColumn)column);
             }

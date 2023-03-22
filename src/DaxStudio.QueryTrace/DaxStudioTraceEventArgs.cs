@@ -1,7 +1,9 @@
 ﻿using DaxStudio.Common.Enums;
 using Microsoft.AnalysisServices;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Documents;
 
 namespace DaxStudio.QueryTrace
 {
@@ -11,7 +13,69 @@ namespace DaxStudio.QueryTrace
         private string _eventSubclassName;
         private DaxStudioTraceEventClass _eventClass = DaxStudioTraceEventClass.NotAvailable;
         private DaxStudioTraceEventSubclass _eventSubclass = DaxStudioTraceEventSubclass.NotAvailable;
-        
+
+        public static Dictionary<TraceColumn, Action<DaxStudioTraceEventArgs, TraceEventArgs>> ColumnMap = new Dictionary<TraceColumn, Action<DaxStudioTraceEventArgs, TraceEventArgs>>()
+        {
+            { TraceColumn.StartTime, (e, a) => {
+                    string s = a[TraceColumn.StartTime] ?? a[TraceColumn.CurrentTime] ?? string.Empty;
+                    DateTime.TryParse(s, CultureInfo.CurrentUICulture, DateTimeStyles.AssumeUniversal, out var startTime);
+                    e.StartTime = startTime;
+                } 
+            },
+
+
+            //{ TraceColumn.EventClass, (e,a ) => {e.EventClassName = a.EventClass.ToString(); } },
+            { TraceColumn.EventSubclass, (e,a ) => {e.EventSubclassName =  a.EventSubclass.ToString(); } },
+            { TraceColumn.TextData, (e,a) => { e.TextData = a.TextData; } },
+            { TraceColumn.RequestID, (e,a) => {e.RequestId = a[TraceColumn.RequestID]; } },
+            { TraceColumn.DatabaseName, (e,a) => {e.DatabaseName= a.DatabaseName; } },
+            //{ TraceColumn.DatabaseFriendlyName, (e,a) => {e.DatabaseFriendlyName = a[TraceColumn.RequestID]; } },
+            { TraceColumn.ActivityID, (e,a) => {e.ActivityId = a[TraceColumn.ActivityID]; } },
+            { TraceColumn.SessionID, (e,a) => {e.SessionId = a.SessionID; } },
+            { TraceColumn.CurrentTime, (e,a) => {e.CurrentTime = a.CurrentTime; } },
+            { TraceColumn.RequestProperties, (e,a) => {e.RequestProperties = a.RequestProperties; } },
+            { TraceColumn.RequestParameters, (e,a) => {e.RequestParameters = a.RequestParameters; } },
+            { TraceColumn.NTUserName, (e,a) => {e.NTUserName = a.NTUserName; } },
+            { TraceColumn.Duration, (e,a) => {e.Duration = a.Duration; } },
+            { TraceColumn.CpuTime, (e,a) => {e.CpuTime = a.CpuTime; } },
+            { TraceColumn.EndTime, (e,a) => {e.EndTime = a.EndTime; } },
+            { TraceColumn.Spid, (e,a) => {e.SPID = a.Spid; } },
+            { TraceColumn.ObjectID, (e,a) => {e.ObjectId = a.ObjectID; } },
+            { TraceColumn.ObjectName, (e,a) => {e.ObjectName = a.ObjectName; } },
+            { TraceColumn.ObjectPath, (e,a) => {e.ObjectPath = a.ObjectPath; } },
+            { TraceColumn.ObjectReference, (e,a) => {e.ObjectReference = a.ObjectReference; } },
+            { TraceColumn.IntegerData, (e,a) => { try {e.IntegerData = a.IntegerData; } catch { } } },
+            { TraceColumn.ProgressTotal, (e,a) => { try {e.ProgressTotal = a.ProgressTotal; } catch { } } },
+        };
+
+        public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e, string powerBiFileName, List<int> eventColumns)
+        {
+            StartTime = DateTime.Now;
+            EventClassName = e.EventClass.ToString();
+            DatabaseName = e.DatabaseName;
+            
+            ActivityId = e[TraceColumn.ActivityID];
+            RequestId = e[TraceColumn.RequestID];
+            SessionId = e.SessionID;
+            CurrentTime = e.CurrentTime;
+
+            foreach (var col in eventColumns)
+            {
+                if( ColumnMap.TryGetValue((TraceColumn)col,out var mappingFunc)){
+
+                    try
+                    {
+                        mappingFunc(this, e);
+                    }
+                    catch {
+                        // skip over any failed mappings
+                    }
+                }
+            }
+            DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName) ? powerBiFileName : DatabaseName;
+
+        }
+
         public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e, string powerBiFileName)
         {
             StartTime = DateTime.Now;
@@ -21,7 +85,7 @@ namespace DaxStudio.QueryTrace
             Enum.TryParse<DaxStudioTraceEventSubclass>(EventSubclassName, out _eventSubclass);
 
             TextData = e.TextData;
-            RequestID = e[TraceColumn.RequestID];
+            //RequestID = e[TraceColumn.RequestID];
             DatabaseName = e.DatabaseName;
             DatabaseFriendlyName = !string.IsNullOrEmpty(powerBiFileName)? powerBiFileName : DatabaseName;
             ActivityId = e[TraceColumn.ActivityID];
@@ -272,7 +336,7 @@ namespace DaxStudio.QueryTrace
 
         public string DatabaseFriendlyName { get; set; }
         // ReSharper disable once InconsistentNaming
-        public string RequestID { get; set; }
+        //public string RequestID { get; set; }
         public string RequestProperties { get; set; }
         public string RequestParameters { get; set; }
 

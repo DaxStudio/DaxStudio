@@ -18,6 +18,7 @@ using DaxStudio.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using AvalonDock.Controls;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -450,7 +451,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (document is DocumentViewModel doc)
                 {
-                    await ActivateItemAsync(doc);
+                    await Dispatcher.CurrentDispatcher.InvokeAsync(async () => await ActivateItemAsync(doc));
+                    
                     //ActiveDocument = doc;
                 }
             }

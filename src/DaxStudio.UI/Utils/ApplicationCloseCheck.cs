@@ -4,6 +4,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using System;
 using System.ComponentModel.Composition;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.Utils {
     public class ApplicationCloseCheck : IResult {
@@ -23,6 +24,7 @@ namespace DaxStudio.UI.Utils {
         public void Execute(CoroutineExecutionContext context) {
             try
             {
+
                 var documentWorkspace = screen.Parent as IDocumentWorkspace;
                 if (documentWorkspace != null)
                     documentWorkspace.ActivateAsync(screen).ContinueWith((precedent) => { 

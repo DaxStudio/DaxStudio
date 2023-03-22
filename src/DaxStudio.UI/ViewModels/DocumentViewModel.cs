@@ -3266,11 +3266,13 @@ namespace DaxStudio.UI.ViewModels
 
         private void ShutDownTraces()
         {
-            // TODO: stop all trace watchers
-            foreach (var tw in TraceWatchers)
-            {
-                if (tw.IsChecked) tw.StopTrace();
-            }
+            Dispatcher.CurrentDispatcher.Invoke(() => { 
+                // stop any running trace watchers
+                foreach (var tw in TraceWatchers)
+                {
+                    if (tw.IsChecked) tw.StopTrace();
+                }
+            });
         }
 
         protected virtual bool DoCloseCheck()

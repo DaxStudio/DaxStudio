@@ -552,7 +552,21 @@ namespace DaxStudio.UI.ViewModels
                 if (!UpdatedMonitoredEvents()) return;
 
                 var monitoredEvents = GetMonitoredEvents();
-                Dictionary<DaxStudioTraceEventClass,List<int>> validEventsForConnection = (Dictionary<DaxStudioTraceEventClass, List<int>>)supportedEvents.ToDictionary(e => monitoredEvents.Contains(e.Key)).Cast<Dictionary<DaxStudioTraceEventClass,List<int>>>();
+
+                // add DiscoverBegin for the heartbeat pings
+                if (!monitoredEvents.Contains(DaxStudioTraceEventClass.DiscoverBegin))
+                {
+                    monitoredEvents.Add(DaxStudioTraceEventClass.DiscoverBegin);
+                }
+
+                Dictionary<DaxStudioTraceEventClass, List<int>> validEventsForConnection = new Dictionary<DaxStudioTraceEventClass, List<int>>();
+                foreach (var evt in monitoredEvents)
+                {
+                    if (supportedEvents.TryGetValue(evt, out var cols))
+                    { 
+                        validEventsForConnection.Add(evt, cols);
+                    }
+                }
 
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
