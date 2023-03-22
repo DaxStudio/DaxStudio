@@ -1336,23 +1336,13 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 Document.Text = value;
-                //if (!Dispatcher.CurrentDispatcher.CheckAccess())
-                //{
-                //    Dispatcher.CurrentDispatcher.Invoke(() =>
-                //    {
-                //        SetQueryTextToEditor(value);
-
-                //    });
-                //}
-                //else
-                //    SetQueryTextToEditor(value);
             }
             get
             {
                 string qry = string.Empty;
-                if (!Dispatcher.CurrentDispatcher.CheckAccess())
+                if (!Application.Current.Dispatcher.CheckAccess())
                 {
-                    Dispatcher.CurrentDispatcher.Invoke(() =>
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
                         qry = GetQueryTextFromEditor();
 
@@ -3757,7 +3747,7 @@ namespace DaxStudio.UI.ViewModels
                            exMsg = ex.InnerException.Message;
                        }
                        Log.Error("{Class} {Event} {Exception}", "DocumentViewModel", "FormatQuery", ex.Message);
-                       Dispatcher.CurrentDispatcher.Invoke(() =>
+                       Application.Current.Dispatcher.Invoke(() =>
                        {
                            OutputError(string.Format("DaxFormatter.com Error: {0}", exMsg));
                        });
@@ -3899,11 +3889,6 @@ namespace DaxStudio.UI.ViewModels
                         if (e != null && _isFocused)
                         {
                             e.Focus();
-                            //Dispatcher.CurrentDispatcher.BeginInvoke(
-                            //    new System.Action(delegate () { e.Focus(); })
-                            //    , DispatcherPriority.Background
-                            //    , null
-                            //);
                         }
                     }
                 }

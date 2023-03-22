@@ -1056,9 +1056,10 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(Databases));
 
                 var ml = _metadataProvider.GetModels();
-                if (Dispatcher.CurrentDispatcher.CheckAccess())
+                
+                if (Application.Current.Dispatcher.CheckAccess())
                 {
-                    Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => ModelList = ml));
+                    Application.Current.Dispatcher.Invoke(new System.Action(() => ModelList = ml));
                 }
                 else
                 {
