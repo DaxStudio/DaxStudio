@@ -40,6 +40,9 @@ namespace DaxStudio.UI.Converters
                     case "double":
                         val = double.TryParse((string)values[0], out double dblVal);
                         return (bool)val?string.Format(string.Format("{{0:{0}}}", (string)values[1]), dblVal): Common.Constants.Err;
+                    case "boolean":
+                        val = bool.TryParse((string)values[0], out bool boolVal);
+                        return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), boolVal) : Common.Constants.Err;
                 }
             }
             return string.Format(string.Format("{{0:{0}}}",(string)values[1]), val);
