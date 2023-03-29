@@ -2164,7 +2164,23 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
+        private bool _exportServerTimingDetailsToFolder = false;
+        [Category("Preview")]
+        [DisplayName("Export Server Timing details to folder")]
+        [Description("Exports the query text from the server timing details to a folder with one file per storage event")]
+        [DataMember, DefaultValue(false)]
+        public bool ExportServerTimingDetailsToFolder
+        {
+            get => _exportServerTimingDetailsToFolder;
+            set
+            {
+                _exportServerTimingDetailsToFolder = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ExportServerTimingDetailsToFolder), value, _isInitializing, this);
+                NotifyOfPropertyChange();
 
+            }
+        }
 
         #region Export Function Methods
 
