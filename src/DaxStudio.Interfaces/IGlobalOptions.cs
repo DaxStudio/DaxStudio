@@ -164,5 +164,6 @@ namespace DaxStudio.Interfaces
         //bool ShowQueryPlanNextLine { get; set; }
         //bool ShowQueryPlanLineLevel { get; set; }
         StorageEventTimelineStyle StorageEventHeatmapStyle { get; set; }
+        bool ExportServerTimingDetailsToFolder { get; set; }
     }
 }
