@@ -566,14 +566,14 @@ namespace DaxStudio.UI.ViewModels
                                     {
                                         _sqlTableName = $"[{schemaName}].[{table.Caption}]";
                                         _sqlBatchRows = batchRows;
-                                        
+
                                         // if this is the first batch ensure the table exists
                                         if (batchRows == 0)
                                             EnsureSQLTableExists(conn, _sqlTableName, reader, truncateTables);
 
                                         // if truncate tables is false we assume that this is a second run and that
                                         // the table already exists with the correct structure.
-                                        
+
                                         using (var transaction = conn.BeginTransaction())
                                         {
 
@@ -622,7 +622,7 @@ namespace DaxStudio.UI.ViewModels
                                 break;
                             }
 
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1?"":"s", _sqlTableName)));
+                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", _sqlTableName)));
                             _currentTable.Status = ExportStatus.Done;
                         }
                         catch (TaskCanceledException)
@@ -630,6 +630,17 @@ namespace DaxStudio.UI.ViewModels
                             _currentTable.Status = ExportStatus.Error;
                             Log.Warning(Constants.LogMessageTemplate, nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), $"Export Operation Cancelled for table: {table.Caption}");
                             await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Cancelled Export data to SQL Server Table: {table.Caption}"));
+                        }
+                        catch (InvalidOperationException ex2)
+                        {
+                            // we get this exception if the SQL connection is closed
+                            _currentTable.Status = ExportStatus.Error;
+                            var innerEx = ex2.GetLeafException();
+                            Log.Error(innerEx, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), innerEx.Message);
+                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {innerEx.Message}"));
+                            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                            MarkWaitingTablesAsSkipped();
+                            break;
                         }
                         catch (Exception ex)
                         {

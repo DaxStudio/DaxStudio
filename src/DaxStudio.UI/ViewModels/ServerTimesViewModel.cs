@@ -1808,12 +1808,10 @@ namespace DaxStudio.UI.ViewModels
             if (Options.ExportServerTimingDetailsToFolder)
             {
 
-                var dialog2 = new System.Windows.Forms.FolderBrowserDialog();
-                dialog2.Description = "A file per storage event will be created in the selected folder.";
-                //dialog.Filter = "JSON file (*.json)|*.json";
-                //dialog2.Title = "Export Trace xmSQL files";
+                var dialog = new System.Windows.Forms.FolderBrowserDialog();
+                dialog.Description = "A file per storage event will be created in the selected folder.";
 
-                if (dialog2.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportxmSqlFiles(dialog2.SelectedPath);
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportxmSqlFiles(dialog.SelectedPath);
             }
             else
             {
