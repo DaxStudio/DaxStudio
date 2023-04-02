@@ -870,12 +870,26 @@ namespace DaxStudio.UI.Model
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)
         {
             return _retry.Execute(() => {
-                using (var tmpConn = _connection.Clone(false))
-                {
-                    var tmpModel = tmpConn.Database.Models[SelectedModel.Name];
-                    var tvt = tmpModel.TreeViewTables(options, _eventAggregator, metadataPane);
-                    return tvt;
+
+                ADOTabularModel tmpModel; 
+                if (_connection.ServerMode == "Offline")
+                { 
+                    // if we are in offline mode there is no need to clone the connection
+                    tmpModel = _connection.Database.Models[SelectedModel.Name];
                 }
+                else
+                {
+                    // in online mode we clone the connection to try and avoid
+                    // XmlReader in use errors
+                    using (var tmpConn = _connection.Clone(false))
+                    {
+                        tmpConn.Open();
+                        tmpModel = tmpConn.Database.Models[SelectedModel.Name];
+                    }
+                }
+
+                var tvt = tmpModel.TreeViewTables(options, _eventAggregator, metadataPane);
+                return tvt;
             });
         }
 

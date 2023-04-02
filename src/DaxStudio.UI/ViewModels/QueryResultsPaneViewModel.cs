@@ -479,7 +479,10 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(CopyWithHeadersEvent message, CancellationToken cancellationToken)
         {
-            if (GridHasFocus) CopyWithHeaders(null);
+            if (GridHasFocus) {
+                ShouldCopyHeader = true;
+                ApplicationCommands.Copy.Execute(null, null);
+            }
             return Task.CompletedTask;
         }
 

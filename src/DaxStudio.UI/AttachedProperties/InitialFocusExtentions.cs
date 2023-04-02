@@ -68,7 +68,7 @@ namespace DaxStudio.UI.AttachedProperties
                 if (textBox == null) return;
                 if (SetProperty)
                 {
-                    Dispatcher.CurrentDispatcher.Invoke(() =>
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
                         Task.Delay(500);
                         textBox.Focus();

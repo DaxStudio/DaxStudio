@@ -1032,57 +1032,49 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(SelectedDatabaseChangedEvent message, CancellationToken cancellationToken)
         {
-            var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
-            if (selectedDB != null) SelectedDatabase = selectedDB;
-
-            
-            // TODO - should we log a warning here?
-
-            // refresh model list
             try
             {
-                //if (ModelList == null) return;
-                //if (Connection == null) return;
-                //if (Connection?.Database?.Models == null) return;
-
-                //if (ModelList.Count > 0)
-                //{
-                //    SelectedModel = ModelList.First(m => m.Name == Connection.Database.Models.BaseModel.Name);
-                //}
-                //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "OnPropertyChanged:ModelList.Count", Connection.Database.Models.Count);
+                var selectedDB = DatabasesView.FirstOrDefault(db => db.Name == message.SelectedDatabase);
+                if (selectedDB != null) SelectedDatabase = selectedDB;
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "{class} {method} Error refreshing model list on connection change: {message}", "MetadataPaneViewModel", "OnPropertyChange", ex.Message);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error refreshing model list: " + ex.Message),cancellationToken);
+                Log.Fatal(ex, "{class} {method} Error setting SelectedDatabase: {message}", nameof(MetadataPaneViewModel), "IHandle<SelectedDatabaseChangedEvent>", ex.Message);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error setting SelectedDatabase: " + ex.Message),cancellationToken);
             }
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
 
+            try
+            {
+                Databases.IsNotifying = false;
+                await Task.Run(async () => Databases = _metadataProvider.GetDatabases().ToBindableCollection());
+                Databases.IsNotifying = true;
+                NotifyOfPropertyChange(nameof(Databases));
 
-            Databases.IsNotifying = false;
-            Task.Run(()=> Databases = _metadataProvider.GetDatabases().ToBindableCollection());
-            Databases.IsNotifying = true;
-            NotifyOfPropertyChange(nameof(Databases));
+                var ml = _metadataProvider.GetModels();
                 
+                if (Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.Invoke(new System.Action(() => ModelList = ml));
+                }
+                else
+                {
+                    ModelList = ml;
+                }
 
-            var ml = _metadataProvider.GetModels();
-            //Log.Debug("{Class} {Event} {Value}", "MetadataPaneViewModel", "ConnectionChanged (Database)", Connection.Database.Name);
-            if (Dispatcher.CurrentDispatcher.CheckAccess())
-            {
-                Dispatcher.CurrentDispatcher.Invoke(new System.Action(() => ModelList = ml));
+                NotifyOfPropertyChange(() => CanSelectDatabase);
+                NotifyOfPropertyChange(() => CanSelectModel);
             }
-            else
+            catch (Exception ex)
             {
-                ModelList = ml;
+                Log.Fatal(ex, "{class} {method} Error while changing the connection: {message}", nameof(MetadataPaneViewModel), "IHandle<ConnectionChangedEvent>", ex.Message);
+                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error while changing the connection: " + ex.Message), cancellationToken);
             }
 
-            NotifyOfPropertyChange(() => CanSelectDatabase);
-            NotifyOfPropertyChange(() => CanSelectModel);
-            return Task.CompletedTask;
         }
 
         public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)

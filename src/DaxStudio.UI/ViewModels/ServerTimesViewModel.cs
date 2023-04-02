@@ -40,6 +40,7 @@ using System.Web;
 using DaxStudio.UI.Controls;
 using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1644,11 +1645,14 @@ namespace DaxStudio.UI.ViewModels
             ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
             TimelineTotalDuration = m.TimelineTotalDuration;
             AllStorageEngineEvents.Clear();
-            AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
+            if (m.StoreageEngineEvents != null)
+                AllStorageEngineEvents.AddRange(m.StoreageEngineEvents);
+            else
+                AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
             AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 3) {
-                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, String.Empty, se.StartTime)));
+                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
         }
@@ -1797,6 +1801,45 @@ namespace DaxStudio.UI.ViewModels
         public override void ExportTraceDetails(string filePath)
         {
             File.WriteAllText(filePath, GetJson());
+        }
+
+        public void ExportDetails()
+        {
+            if (Options.ExportServerTimingDetailsToFolder)
+            {
+
+                var dialog2 = new System.Windows.Forms.FolderBrowserDialog();
+                dialog2.Description = "A file per storage event will be created in the selected folder.";
+                //dialog.Filter = "JSON file (*.json)|*.json";
+                //dialog2.Title = "Export Trace xmSQL files";
+
+                if (dialog2.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportxmSqlFiles(dialog2.SelectedPath);
+            }
+            else
+            {
+                Export();
+            }
+        }
+
+        public void ExportxmSqlFiles(string folderPath)
+        {
+
+            foreach (var evt in StorageEngineEvents)
+            {
+                if (evt == null) continue;
+                if (evt is TraceStorageEngineEvent tse)
+                {
+                    var fileName = $"{tse.RowNumber:0000}_{tse.StartTime:yyyyMMddThhmmss-ffff}_{tse.Subclass}.{tse.ClassSubclass.QueryLanguage.ToString().ToLower()}";
+                    var filePath = Path.Combine(folderPath, fileName);
+                    File.WriteAllText(filePath, StripHighlighCodes(tse.QueryRichText));
+                }
+            }
+        }
+
+        private Regex regexStripHighlightCodes = new Regex("\\|~\\w~\\|", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        private string StripHighlighCodes(string queryRichText)
+        {
+            return regexStripHighlightCodes.Replace(queryRichText, string.Empty);
         }
 
         public bool CanShowTraceDiagnostics => AllStorageEngineEvents.Count > 0;
