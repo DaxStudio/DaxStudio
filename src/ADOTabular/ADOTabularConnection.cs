@@ -24,6 +24,7 @@ namespace ADOTabular
         private AdomdConnection _adomdConn;
         private string _currentDatabase;
         private readonly Regex _LocaleIdRegex = new Regex("Locale Identifier\\s*=\\s*(\\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly object connectionLock = new object();
 
         public ADOTabularConnection(string connectionString, AdomdType connectionType)
             : this(connectionString, connectionType, ADOTabularMetadataDiscovery.Csdl)
@@ -73,9 +74,11 @@ namespace ADOTabular
                 
                 try
                 {
-                    if (_adomdConn == null) { 
-                        var db2 = Visitor.Visit(this);
-                        return db2;
+                    if (_adomdConn == null) {
+                        lock (connectionLock) { 
+                            var db2 = Visitor.Visit(this);
+                            return db2;
+                        }
                     }
 
                     if (_adomdConn.State != ConnectionState.Open)
@@ -285,7 +288,10 @@ namespace ADOTabular
                 {
                     if (_adomdConn != null || Database !=null)
                     {
-                    _adoTabDatabaseColl = new ADOTabularDatabaseCollection(this);
+                        lock (connectionLock)
+                        {
+                            _adoTabDatabaseColl = new ADOTabularDatabaseCollection(this);
+                        }
                     }
                     else
                     {
