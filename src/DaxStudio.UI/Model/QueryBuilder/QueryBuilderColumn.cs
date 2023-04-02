@@ -64,7 +64,7 @@ namespace DaxStudio.UI.Model
         public Type SystemType => TabularObject?.SystemType;
         public string ImageResource => TabularObject?.ImageResource?? "new_measure_smallDrawingImage";
         public DataType DataType => TabularObject?.DataType??DataType.Unknown;
-        public string TableName => TabularObject?.TableName??SelectedTable.DaxName;
+        public string TableName => TabularObject?.TableName??SelectedTable?.DaxName;
         public MetadataImages MetadataImage => TabularObject?.MetadataImage?? MetadataImages.Measure;
 
         private string _overridenMeasureExpression = string.Empty;

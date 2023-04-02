@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace DaxStudio.Tests
     {
         private static DataSet keywordDataSet;
         private static DataSet measureDataSetEmpty;
-        private static IADOTabularConnection connection;
+        //private static IADOTabularConnection connection;
         private static ADOTabularDatabase mockDatabase;
         private static DataSet dmvDataSet;
         private static DataSet functionDataSet;
@@ -88,14 +89,9 @@ namespace DaxStudio.Tests
             );
 
         }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        [TestInitialize()]
-        public void MyTestInitialize()
+        
+        
+        public IADOTabularConnection MockConnection(string csdlFile)
         {
             var mockConn = new Mock<IADOTabularConnection>();
             var columnCollection = new Dictionary<string, ADOTabularColumn>();
@@ -137,7 +133,22 @@ namespace DaxStudio.Tests
             mockConn.SetupGet(x => x.AllFunctions).Returns(new List<string>());
             mockConn.SetupGet(x => x.DynamicManagementViews).Returns(new ADOTabularDynamicManagementViewCollection(mockConn.Object));
             mockConn.SetupGet(x => x.IsAdminConnection).Returns(true);
-            connection = mockConn.Object;
+
+            var csdlString = File.ReadAllText(csdlFile);
+            var csdlDataSet = new DataSet();
+            var csdlDataTable = new DataTable();
+            csdlDataTable.Columns.Add("metadata", typeof(string));
+            csdlDataTable.Rows.Add(csdlString);
+            csdlDataSet.Tables.Add(csdlDataTable);
+            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_CSDL_METADATA", It.IsAny<AdomdRestrictionCollection>())).Returns(csdlDataSet);
+
+            var emptyDataset = new DataSet();
+            var emptyDataTable = new DataTable();
+            emptyDataset.Tables.Add(emptyDataTable);
+            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", It.IsAny<AdomdRestrictionCollection>())).Returns(emptyDataset);
+
+
+            return mockConn.Object;
         }
 
 
@@ -169,16 +180,11 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestPowerBITomModel_CSDL_2_0()
         {
-            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
-
-            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            var connection = MockConnection(@"..\..\data\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\powerbi-csdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
-
-            v.GenerateTablesFromXmlReader(tabs, xr);
             
             Assert.IsNotNull(m.TOMModel);
             Assert.AreEqual(13, m.TOMModel.Tables.Count,"Table Counts are equal");
@@ -192,16 +198,11 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestPowerBITomModel_CSDL_2_5()
         {
-            //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
-
-            //IADOTabularConnection c = new Mock<IADOTabularConnection>().Object;
+            var connection = MockConnection(@"..\..\data\csdl_2_5.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl_2_5.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
-
-            v.GenerateTablesFromXmlReader(tabs, xr);
 
             Assert.IsNotNull(m.TOMModel);
             Assert.AreEqual(tabs.Count, m.TOMModel.Tables.Count, "Table Counts are equal");
