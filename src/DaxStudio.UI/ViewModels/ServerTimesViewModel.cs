@@ -1651,7 +1651,7 @@ namespace DaxStudio.UI.ViewModels
                 AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
             AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
             // update timeline total Duration if this is an older file format
-            if (m.FileFormatVersion <= 3) {
+            if (m.FileFormatVersion <= 4) {
                 AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
@@ -1707,8 +1707,11 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TextGridColumnSpan);
                     NotifyOfPropertyChange(() => TextColumnWidth);
                     break;
-                default:
-                    UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
+                case "ShowScan":
+                case "ShowBatch":
+                case "ShowCache":
+                case "ShowInternal":
+                    NotifyOfPropertyChange(nameof(StorageEngineEvents));
                     break;
             }
         }
