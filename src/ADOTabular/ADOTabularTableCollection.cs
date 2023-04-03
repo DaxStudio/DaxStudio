@@ -13,13 +13,12 @@ namespace ADOTabular
         
         private readonly IADOTabularConnection _adoTabConn;
         private SortedDictionary<string, ADOTabularTable> _tables;
-        private readonly object mutex = new object();
 
         public ADOTabularTableCollection(IADOTabularConnection adoTabConn, ADOTabularModel model)
         {
             _adoTabConn = adoTabConn;
             Model = model;
-
+            _adoTabConn.Visitor.Visit(this);
         }
 
         private SortedDictionary<string,ADOTabularTable> InternalTableCollection
@@ -28,12 +27,9 @@ namespace ADOTabular
             {
                 if (_tables == null)
                 {
-                    lock (mutex)
+                    if (_tables == null)
                     {
-                        if (_tables == null)
-                        {
-                            _adoTabConn.Visitor.Visit(this);
-                        }
+                        _adoTabConn.Visitor.Visit(this);
                     }
                 }
                 return _tables;

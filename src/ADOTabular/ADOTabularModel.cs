@@ -8,6 +8,7 @@ namespace ADOTabular
     {
         private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularTableCollection _tableColl;
+        private readonly object tableLock = new object();
         //public ADOTabularModel(IADOTabularConnection adoTabConn, DataRow dr)
         //{
         //    _adoTabConn = adoTabConn;
@@ -45,7 +46,10 @@ namespace ADOTabular
         public ADOTabularTableCollection Tables
         {
             get {
-                _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this);
+                lock (tableLock)
+                {
+                    _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this);
+                }
                 return _tableColl;
             }
         }

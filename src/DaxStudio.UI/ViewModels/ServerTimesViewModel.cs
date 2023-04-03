@@ -1811,11 +1811,10 @@ namespace DaxStudio.UI.ViewModels
             if (Options.ExportServerTimingDetailsToFolder)
             {
 
-                var dialog2 = new System.Windows.Forms.FolderBrowserDialog();
-                //dialog.Filter = "JSON file (*.json)|*.json";
-                //dialog2.Title = "Export Trace xmSQL files";
+                var dialog = new System.Windows.Forms.FolderBrowserDialog();
+                dialog.Description = "A file per storage event will be created in the selected folder.";
 
-                if (dialog2.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportxmSqlFiles(dialog2.SelectedPath);
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportxmSqlFiles(dialog.SelectedPath);
             }
             else
             {
@@ -1831,7 +1830,7 @@ namespace DaxStudio.UI.ViewModels
                 if (evt == null) continue;
                 if (evt is TraceStorageEngineEvent tse)
                 {
-                    var fileName = $"{tse.RowNumber:0000}_{tse.StartTime:yyyyMMddThhmmss-ffff}_{tse.Subclass}.{tse.ClassSubclass.QueryLanguage}";
+                    var fileName = $"{tse.RowNumber:0000}_{tse.StartTime:yyyyMMddThhmmss-ffff}_{tse.Subclass}.{tse.ClassSubclass.QueryLanguage.ToString().ToLower()}";
                     var filePath = Path.Combine(folderPath, fileName);
                     File.WriteAllText(filePath, StripHighlighCodes(tse.QueryRichText));
                 }
