@@ -22,6 +22,7 @@
         public const string LocaleId = "LocaleId";
         public const string IsUnique = "IsUnique";
         public const string AllowDbNull = "AllowDBNull";
+        public const string Err = "<Error>";
 
         public const string StatusBarTimerFormat = "mm\\:ss\\.f";
 

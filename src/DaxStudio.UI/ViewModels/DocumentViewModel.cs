@@ -1336,23 +1336,13 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 Document.Text = value;
-                //if (!Dispatcher.CurrentDispatcher.CheckAccess())
-                //{
-                //    Dispatcher.CurrentDispatcher.Invoke(() =>
-                //    {
-                //        SetQueryTextToEditor(value);
-
-                //    });
-                //}
-                //else
-                //    SetQueryTextToEditor(value);
             }
             get
             {
                 string qry = string.Empty;
-                if (!Dispatcher.CurrentDispatcher.CheckAccess())
+                if (!Application.Current.Dispatcher.CheckAccess())
                 {
-                    Dispatcher.CurrentDispatcher.Invoke(() =>
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
                         qry = GetQueryTextFromEditor();
 
@@ -2388,67 +2378,44 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        //RRomano: Should this be on DaxEditor?
-
         const string MODELMEASURES_BEGIN = "---- MODEL MEASURES BEGIN ----";
         const string MODELMEASURES_END = "---- MODEL MEASURES END ----";
-        // private Regex defineMeasureRegex = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=EVALUATE|\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        
         private readonly Regex defineMeasureRegex_ModelMeasures = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=" + MODELMEASURES_END + @")", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex defineMeasureRegex_DefineOnly = new Regex(@"(?<=DEFINE([\s\t])*?)(\w(.|\n)*?)(?=\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
-            var editor = GetEditor();
-            var currentText = editor.Text;
-
-            // if the default separator is not the default Comma style
-            // then we should switch the separators to the SemiColon style
-            if (Options.DefaultSeparator == DelimiterType.SemiColon)
+            try
             {
-                var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
-                measureExpression = dsm.ProcessString(measureExpression);
-            }
+                var editor = GetEditor();
+                var currentText = editor.Text;
 
-            // We include a section ---- MODEL MEASURES ----
-            // where we include all the measures
-            // the section ends with ---- END MODEL MEASURES ----
-            // so we append the measures at the end of that section
-            var measureDeclaration = $"MEASURE {measureName} = {measureExpression}";
-
-            // Try to find the DEFINE statements
-            // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
-            if (defineMeasureRegex_ModelMeasures.IsMatch(currentText))
-            {
-                currentText = defineMeasureRegex_ModelMeasures.Replace(currentText, m =>
+                // if the default separator is not the default Comma style
+                // then we should switch the separators to the SemiColon style
+                if (Options.DefaultSeparator == DelimiterType.SemiColon)
                 {
-                    var measuresText = new StringBuilder(m.Groups[1].Value);
+                    var dsm = new DelimiterStateMachine(DelimiterType.SemiColon);
+                    measureExpression = dsm.ProcessString(measureExpression);
+                }
 
-                    measuresText.AppendLine(measureDeclaration);
+                // We include a section ---- MODEL MEASURES ----
+                // where we include all the measures
+                // the section ends with ---- END MODEL MEASURES ----
+                // so we append the measures at the end of that section
+                var measureDeclaration = $"MEASURE {measureName} = {measureExpression}";
 
-                    return measuresText.ToString();
-                });
-                editor.Document.BeginUpdate();
-                editor.Document.Text = currentText;
-                editor.Document.EndUpdate();
-
-                editor.Focus();
-            }
-            else
-            {
-                var newSection = new StringBuilder();
-                newSection.AppendLine();
-                newSection.AppendLine(MODELMEASURES_BEGIN);
-                newSection.AppendLine(measureDeclaration);
-                newSection.AppendLine(MODELMEASURES_END);
-                newSection.AppendLine();
-
-                if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
+                // Try to find the DEFINE statements
+                // If found then add the measure inside the DEFINE statement, if not then just paste the measure expression
+                if (defineMeasureRegex_ModelMeasures.IsMatch(currentText))
                 {
-                    currentText = defineMeasureRegex_DefineOnly.Replace(currentText, m =>
+                    currentText = defineMeasureRegex_ModelMeasures.Replace(currentText, m =>
                     {
-                        newSection.Append(m.Groups[0].Value);
-                        return newSection.ToString();
+                        var measuresText = new StringBuilder(m.Groups[1].Value);
 
+                        measuresText.AppendLine(measureDeclaration);
+
+                        return measuresText.ToString();
                     });
                     editor.Document.BeginUpdate();
                     editor.Document.Text = currentText;
@@ -2458,9 +2425,38 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
-                    measureDeclaration = $"DEFINE {newSection}";
-                    InsertTextAtSelection(measureDeclaration, false, false);
+                    var newSection = new StringBuilder();
+                    newSection.AppendLine();
+                    newSection.AppendLine(MODELMEASURES_BEGIN);
+                    newSection.AppendLine(measureDeclaration);
+                    newSection.AppendLine(MODELMEASURES_END);
+                    newSection.AppendLine();
+
+                    if (defineMeasureRegex_DefineOnly.IsMatch(currentText))
+                    {
+                        currentText = defineMeasureRegex_DefineOnly.Replace(currentText, m =>
+                        {
+                            newSection.Append(m.Groups[0].Value);
+                            return newSection.ToString();
+
+                        });
+                        editor.Document.BeginUpdate();
+                        editor.Document.Text = currentText;
+                        editor.Document.EndUpdate();
+
+                        editor.Focus();
+                    }
+                    else
+                    {
+                        measureDeclaration = $"DEFINE {newSection}";
+                        InsertTextAtSelection(measureDeclaration, false, false);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasureOnEditor), e.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "The following error occurred while trying to define the measure\n" + e.Message));
             }
         }
 
@@ -3759,7 +3755,7 @@ namespace DaxStudio.UI.ViewModels
                            exMsg = ex.InnerException.Message;
                        }
                        Log.Error("{Class} {Event} {Exception}", "DocumentViewModel", "FormatQuery", ex.Message);
-                       Dispatcher.CurrentDispatcher.Invoke(() =>
+                       Application.Current.Dispatcher.Invoke(() =>
                        {
                            OutputError(string.Format("DaxFormatter.com Error: {0}", exMsg));
                        });
@@ -3901,11 +3897,6 @@ namespace DaxStudio.UI.ViewModels
                         if (e != null && _isFocused)
                         {
                             e.Focus();
-                            //Dispatcher.CurrentDispatcher.BeginInvoke(
-                            //    new System.Action(delegate () { e.Focus(); })
-                            //    , DispatcherPriority.Background
-                            //    , null
-                            //);
                         }
                     }
                 }

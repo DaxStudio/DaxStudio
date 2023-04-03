@@ -1,14 +1,10 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
 using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
-using Serilog;
 using DaxStudio.UI.Extensions;
-using System.Data;
-using System.Collections;
 using System.Text;
 using DaxStudio.Common;
 using System.IO;
@@ -123,7 +119,7 @@ namespace DaxStudio.UI.Model
                 });
 
             // copy output to clipboard
-            System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => {
+            Application.Current.Dispatcher.Invoke(() => {
                 ClipboardManager.SetText(sb.ToString());
             }, System.Windows.Threading.DispatcherPriority.Normal);
         }

@@ -14,6 +14,9 @@ namespace DaxStudio.UI.Model
         public long FormulaEngineDuration {get;set;}
         public double FormulaEngineDurationPercentage { get; set; }
         public BindableCollection<TraceStorageEngineEvent> StorageEngineEvents { get; set; }
+
+        // we need the collection with the typo in the name for backward compatibility
+        public BindableCollection<TraceStorageEngineEvent> StoreageEngineEvents { get; set; } 
         public long StorageEngineCpu { get; set; }
         public long TotalDuration { get; set; }
         public long StorageEngineQueryCount { get; set; }

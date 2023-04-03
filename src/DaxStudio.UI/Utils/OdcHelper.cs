@@ -85,7 +85,7 @@ xmlns=""http://www.w3.org/TR/REC-html40"">
   xmlns:odc=""urn:schemas-microsoft-com:office:odc""
   xmlns=""http://www.w3.org/TR/REC-html40"">
   <odc:Connection odc:Type=""OLEDB"">
-   <odc:ConnectionString>Provider=MSOLAP;Integrated Security=SSPI;Persist Security Info=True;{0};Update Isolation Level=2;</odc:ConnectionString>
+   <odc:ConnectionString>Provider=MSOLAP;Persist Security Info=True;{0};Update Isolation Level=2;</odc:ConnectionString>
    <odc:CommandType>{1}</odc:CommandType>
    <odc:CommandText>{2}</odc:CommandText>
   </odc:Connection>
