@@ -778,7 +778,7 @@ namespace DaxStudio.UI.Model
 
         public void SetSelectedDatabase(IDatabaseReference database)
         {
-            if (database.Name == SelectedDatabase.Name) return;
+            if (SelectedDatabase != null && database.Name == SelectedDatabase.Name) return;
 
             var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
             _retry.Execute(ctx =>

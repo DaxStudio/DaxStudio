@@ -13,6 +13,8 @@ using ADOTabular.Extensions;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using System.Threading;
+using Microsoft.Identity.Client;
+using System.Diagnostics;
 
 namespace ADOTabular
 {
@@ -135,7 +137,14 @@ namespace ADOTabular
             ChangeDatabase(_adomdConn.Database);
             CacheKeywords();
             CacheFunctionGroups();
-            UpdateServerProperties();
+            try
+            {
+                UpdateServerProperties();
+            }
+            catch 
+            {
+                Debug.WriteLine("Unable to update server properties");
+            }
             // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
         }
 
@@ -174,6 +183,12 @@ namespace ADOTabular
             if (_adomdConn.Database != database)
             {
                 _adomdConn.ChangeDatabase(database);
+            }
+
+            if(string.IsNullOrEmpty(database) && this.Databases.Count > 0)
+            {
+                _currentDatabase = Databases[0];
+                _adomdConn.ChangeDatabase(_currentDatabase);
             }
 
             ConnectionChanged?.Invoke(this, new EventArgs());

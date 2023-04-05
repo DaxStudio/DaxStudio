@@ -2079,7 +2079,7 @@ namespace DaxStudio.UI.ViewModels
                     , parameters
                     , DateTime.Now
                     , Connection.ServerNameForHistory
-                    , Connection.SelectedDatabase.Caption
+                    , Connection?.SelectedDatabase?.Caption??"<unknown>"
                     , FileName) { Status = QueryStatus.Running };
             }
             catch (Exception ex)
