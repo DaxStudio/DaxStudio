@@ -217,6 +217,13 @@ namespace DaxStudio.UI.ViewModels
         private void CalculateBenchmarkSummary()
         {
             var dt = BenchmarkDataSet.Tables["Details"];
+            if (dt == null) {
+                var msg = "Unable to calculate the benchmark summary as the details table is empty";
+                Log.Error(Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(CalculateBenchmarkSummary), msg);
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                return; 
+            }
+
             string[] statistics = { "Average", "StdDev", "Min", "Max" };
             var newDt2 = from d in dt.AsEnumerable()
                          from stat in statistics
