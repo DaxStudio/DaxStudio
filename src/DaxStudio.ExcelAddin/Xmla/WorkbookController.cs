@@ -180,5 +180,11 @@ namespace DaxStudio.ExcelAddin.Xmla
             }
         }
 
+        [HttpGet]
+        [Route("Status")]
+        public IHttpActionResult GetStatus() {     
+            return Ok(); 
+        }
+
     }
 }

@@ -1124,6 +1124,10 @@ namespace DaxStudio.UI.ViewModels
                     // if there was an error we bail out here
                     return;
                 }
+                finally
+                {
+                    MetadataPane.IsBusy = false;
+                }
             }
             if (Connection.Databases.Count == 0) {
                 var msg = $"No Databases were found when connecting to {Connection.ServerName} ({Connection.ServerType})"
@@ -3056,7 +3060,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-
+                            MetadataPane.IsBusy = true;
                             if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
                             await SetupConnectionAsync(message);
@@ -3093,6 +3097,10 @@ namespace DaxStudio.UI.ViewModels
 
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"), cancellationToken);
                 Log.Error(ex?.InnerException ?? ex, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
+            }
+            finally
+            {
+                MetadataPane.IsBusy = false;
             }
         }
 
@@ -3850,15 +3858,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Starting Refresh");
 
                 Connection.Refresh();
-                MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
+                MetadataPane.RefreshDatabases();
                 Databases = MetadataPane.Databases;
-                //MetadataPane.ModelList = Connection.Database.Models;
                 MetadataPane.RefreshMetadata();
-
-                //this.MetadataPane.RefreshMetadata();
-                //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
                 OutputMessage("Metadata Refreshed");
-
             }
             catch (Exception ex)
             {

@@ -655,31 +655,33 @@ namespace ADOTabular
 
         private string GetServerMode()
         {
-            
-            var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
-                                                 new AdomdRestrictionCollection
-                                                     {
-                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
-                                                     },true);
-            string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
-            
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
+            try
             {
-                if (rdr.NameTable != null)
+                var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
+                                                     new AdomdRestrictionCollection
+                                                         {
+                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
+                                                         }, true);
+                string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
+
+                using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
                 {
-                    var eSvrMode = rdr.NameTable.Add("ServerMode");
-
-                    while (rdr.Read())
+                    if (rdr.NameTable != null)
                     {
-                        if (rdr.NodeType == XmlNodeType.Element
-                            && rdr.LocalName == eSvrMode)
-                        {
-                            return rdr.ReadElementContentAsString();
-                        }
+                        var eSvrMode = rdr.NameTable.Add("ServerMode");
 
+                        while (rdr.Read())
+                        {
+                            if (rdr.NodeType == XmlNodeType.Element
+                                && rdr.LocalName == eSvrMode)
+                            {
+                                return rdr.ReadElementContentAsString();
+                            }
+
+                        }
                     }
                 }
-            }
+            } catch { }
             return "Unknown";
         }
 
