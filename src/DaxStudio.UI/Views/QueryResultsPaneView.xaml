@@ -226,7 +226,11 @@
                                                 cal:Message.Attach="CopyWithHeaders($eventArgs)">
                                                 
                                     </MenuItem>
-                                </ContextMenu>
+                                            <Separator/>
+                                            <MenuItem Header="Clear Results"
+                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                                cal:Message.Attach="Clear()"/>
+                                        </ContextMenu>
                             </DataGrid.ContextMenu>
                         </DataGrid>
                         </controls:ClipBorder>

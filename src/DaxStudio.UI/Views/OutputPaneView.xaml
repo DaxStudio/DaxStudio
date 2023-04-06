@@ -82,6 +82,13 @@
                 extenders:ListViewExtenders.AutoScrollToEnd="True"
                       ItemContainerStyle="{StaticResource alternatingRows}"
                 Focusable="False" >
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem 
+                            Header="Clear Log"
+                            cal:Message.Attach="Clear()" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
             <ListView.View>
                 <GridView>
                     <!-- Icon -->

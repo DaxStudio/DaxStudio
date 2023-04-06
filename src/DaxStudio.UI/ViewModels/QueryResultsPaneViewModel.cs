@@ -87,7 +87,7 @@ namespace DaxStudio.UI.ViewModels
         private int _selectedTabIndex = -1;
         public int SelectedTableIndex { get { return _selectedTabIndex; }
             set { _selectedTabIndex = value;
-                if (_document != null && value >= 0 ) _document.RowCount = ResultsDataSet.Tables[value].Rows.Count;
+                if (_document != null && value >= 0 && ResultsDataSet != null && ResultsDataSet.Tables.Count > 0 ) _document.RowCount = ResultsDataSet.Tables[value].Rows.Count;
                 NotifyOfPropertyChange(() => SelectedTableIndex);
             }
         }
@@ -497,5 +497,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void GridGotFocus() { GridHasFocus = true; }
         public void GridLostFocus() { GridHasFocus = false; }  
+
+        public void Clear()
+        {
+            ResultsDataSet.Tables.Clear();
+            ShowResultsTable = false;
+            ResultsMessage = "Results Cleared";
+        }
     }
 }
