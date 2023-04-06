@@ -3858,15 +3858,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Starting Refresh");
 
                 Connection.Refresh();
-                MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
+                MetadataPane.RefreshDatabases();
                 Databases = MetadataPane.Databases;
-                //MetadataPane.ModelList = Connection.Database.Models;
                 MetadataPane.RefreshMetadata();
-
-                //this.MetadataPane.RefreshMetadata();
-                //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
                 OutputMessage("Metadata Refreshed");
-
             }
             catch (Exception ex)
             {
