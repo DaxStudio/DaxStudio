@@ -83,7 +83,7 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "blockallinternetaccess"; Description: "[NOT RECOMMENDED] Blocks all features requiring internet access including version checks, dax formatting and crash reporting. This setting requires a re-install to change."; GroupDescription: "Privacy"; Flags: unchecked; Check: IsAdmin
+Name: "blockallinternetaccess"; Description: "[NOT RECOMMENDED] Blocks all features requiring internet access including version checks, DAX formatting and crash reporting. This setting requires a re-install to change."; GroupDescription: "Privacy"; Flags: unchecked; Check: IsAdmin
 ;Name: "pbiintegration"; Description: "Add to Power BI External Tools"; GroupDescription: "Power BI Desktop Integration"; Check: IsAdmin;
 
 [Files]
