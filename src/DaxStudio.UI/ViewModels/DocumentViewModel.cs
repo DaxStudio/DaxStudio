@@ -98,6 +98,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
+        , IHandle<PasteServerTimingsEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -389,6 +390,35 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // Special handling of server timings metrics
+                #region PastServerTimingsMetrics
+                string serverTimingsMetrics = e.DataObject.GetData(DataFormats.Text, true) as string;
+                if (!string.IsNullOrEmpty(serverTimingsMetrics))
+                {
+                    if (serverTimingsMetrics.StartsWith(PasteServerTimingsEvent.SERVERTIMINGS_HEADER)) 
+                    {
+                        var editor = GetEditor();
+                        var currentLine = editor.DocumentGetLineByOffset(editor.CaretOffset);
+                        // Current line must be empty
+                        if (currentLine != null && currentLine.Length == 0)
+                        {
+                            var previousLine = currentLine.PreviousLine;
+                            if (previousLine.Length >= 2)
+                            {
+                                if (editor.DocumentGetText( previousLine.Offset, 2 ) == @"--")
+                                {
+                                    // Remove the header from the clipboard
+                                    serverTimingsMetrics = serverTimingsMetrics.Replace($"{PasteServerTimingsEvent.SERVERTIMINGS_HEADER}\r\n", "" );
+                                    e.DataObject = new DataObject(serverTimingsMetrics);
+                                }
+                            }
+                        }
+                        return;
+                    }
+                }
+                #endregion PastServerTimingsMetrics
+
+
                 // this check strips out unicode non-breaking spaces and replaces them
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
@@ -3423,6 +3453,12 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Paste), ex.Message);
                 OutputError($"The following error occurred while pasting: {ex.Message}");
             }
+        }
+
+        public Task HandleAsync(PasteServerTimingsEvent message, CancellationToken cancellationToken)
+        {
+            GetEditor().Paste();
+            return Task.CompletedTask;
         }
 
         public void SetResultsMessage(string message, OutputTarget icon)

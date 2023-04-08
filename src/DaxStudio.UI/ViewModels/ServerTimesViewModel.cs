@@ -41,6 +41,7 @@ using DaxStudio.UI.Controls;
 using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using ICSharpCode.AvalonEdit.Document;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1770,34 +1771,32 @@ namespace DaxStudio.UI.ViewModels
         {
             CopyResultsData(false);
         }
-        public void CopyResultsForComments()
+        public string CopyResultsForComments()
         {
-            CopyResultsData(includeHeader:true, formatTextForComment: true);
+            return CopyResultsData(includeHeader:true, formatTextForComment: true);
         }
-        public void CopyResultsForCommentsData()
+        public string CopyResultsForCommentsData()
         {
-            CopyResultsData(includeHeader:false, formatTextForComment: true);
+            return CopyResultsData(includeHeader:false, formatTextForComment: true);
         }
-        public void CopyResultsData(bool includeHeader, bool formatTextForComment=false)
+        public string CopyResultsData(bool includeHeader, bool formatTextForComment=false)
         {
             var dataObject = new DataObject();
             var headers = string.Empty;
             if (includeHeader) headers = "Query End\tTotal\tFE\tSE\tSE CPU\tSE Par.\tSE Queries\tSE Cache\n";
             var values = $"{QueryEndDateTime.ToString(Constants.IsoDateFormatPaste)}\t{TotalDuration}\t{FormulaEngineDuration}\t{StorageEngineDuration}\t{StorageEngineCpu}\t{StorageEngineCpuFactor}\t{StorageEngineQueryCount}\t{VertipaqCacheMatches}";
-            dataObject.SetData(DataFormats.StringFormat, $"{headers}{values}");
+            string result = $"{headers}{values}";
+            dataObject.SetData(DataFormats.StringFormat, result);
             dataObject.SetData(DataFormats.CommaSeparatedValue, $"{headers.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}\n{values.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}");
             if (formatTextForComment)
             {
-                var textHeader = string.Empty;
-                if (includeHeader)
-                {
-                    textHeader = @"--     Total         FE         SE      SE CPU   Par.";
-
-                }
+                var textHeader = includeHeader ? PasteServerTimingsEvent.SERVERTIMINGS_HEADER : string.Empty;
                 var textValues = $"-- {TotalDuration,9:#,0}  {FormulaEngineDuration,9:#,0}  {StorageEngineDuration,9:#,0}  {StorageEngineCpu,10:#,0}  x{StorageEngineCpuFactor,4:0.0}";
-                dataObject.SetData(DataFormats.Text, $"{textHeader}{(string.IsNullOrEmpty(textHeader) ? string.Empty: "\r\n")}{textValues}\r\n");
+                result = $"{textHeader}{(string.IsNullOrEmpty(textHeader) ? string.Empty : "\r\n")}{textValues}\r\n";
+                dataObject.SetData(DataFormats.Text, result);
             }
             Clipboard.SetDataObject(dataObject);
+            return result;
         }
 
         public override bool CanExport => AllStorageEngineEvents.Count > 0;
@@ -1952,16 +1951,16 @@ namespace DaxStudio.UI.ViewModels
         }
         public Task HandleAsync(CopyPasteServerTimingsEvent message, CancellationToken cancellationToken)
         {
-            // TODO: We should paste the code in the DAX editor once copied.
-            //       We could also evaluate whether to copy the header or not based on the position in the editor and the presence of the header...
+            string textResult;
             if (message.IncludeHeader)
             {
-                CopyResultsForComments();
+                textResult = CopyResultsForComments();
             }
             else
             {
-                CopyResultsForCommentsData();
+                textResult = CopyResultsForCommentsData();
             }
+            _eventAggregator.PublishOnUIThreadAsync(new PasteServerTimingsEvent(message.IncludeHeader, textResult));
             return Task.CompletedTask;
         }
 

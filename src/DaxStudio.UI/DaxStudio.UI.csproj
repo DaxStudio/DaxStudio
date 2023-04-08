@@ -339,6 +339,7 @@
     <Compile Include="Events\EditorHotkeyEvent.cs" />
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />
     <Compile Include="Events\NoQueryTextEvent.cs" />
+    <Compile Include="Events\PasteServerTimings.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\SetRunStyleEvent.cs" />
