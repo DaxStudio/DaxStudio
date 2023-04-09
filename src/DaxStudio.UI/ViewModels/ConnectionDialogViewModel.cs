@@ -524,7 +524,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 if (ServerModeSelected)
                 {
-                    SettingProvider.SaveServerMRUList(DataSource, RecentServers);
+                    SettingProvider.SaveServerMRUList(DataSource);
                     serverType =
                         HasUriProtocolScheme(DataSource, "asazure") ? ServerType.AzureAnalysisServices :
                         HasUriProtocolScheme(DataSource, "pbidedicated") ? ServerType.PowerBIService :
@@ -918,6 +918,27 @@ namespace DaxStudio.UI.ViewModels
         {
             var trimmedName = datasource.Trim().TrimStart('"').TrimEnd('"');
             return trimmedName;
+        }
+
+        private RelayCommand _deleteCommand;
+        public ICommand DeleteServerCommand
+        {
+            get
+            {
+                if (_deleteCommand == null)
+                {
+                    _deleteCommand = new RelayCommand(param => DeleteItem(param));
+                }
+                return _deleteCommand;
+            }
+
+
+        }
+
+        private void DeleteItem(object param)
+        {
+            Options.RecentServers.Remove(param.ToString());
+            SettingProvider.SaveServerMRUList(null);
         }
     } 
      

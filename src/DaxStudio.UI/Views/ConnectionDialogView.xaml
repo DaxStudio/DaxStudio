@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+    xmlns:vw="clr-namespace:DaxStudio.UI.Views"
     xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:local="clr-namespace:DaxStudio.UI.Resources"
@@ -211,6 +212,29 @@
                         </VisualBrush.Visual>
                     </VisualBrush>
                 </ComboBox.Resources>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                        
+                            <TextBlock Text="{Binding .}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                            <Button Content="X" Grid.Column="1" 
+                                    Command="{Binding DataContext.DeleteServerCommand,RelativeSource={RelativeSource AncestorType=vw:ConnectionDialogView}}"
+                                    CommandParameter="{Binding .}"
+                                    ToolTip="Delete this server from the list">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <Image Source="{DynamicResource closeDrawingImage}"/>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                
                 <!--<ComboBox.Style>
                                     <Style TargetType="{x:Type ComboBox}">
                                         <Style.Triggers>

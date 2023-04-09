@@ -461,7 +461,6 @@ namespace DaxStudio.UI.ViewModels
 
         #region Busy Overlay
         private int _isBusyCnt;
-        private bool _isBusy;
         public bool IsBusy
         {
             get => _isBusyCnt != 0;
@@ -1064,7 +1063,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 Databases.IsNotifying = false;
-                await Task.Run(async () => Databases = _metadataProvider.GetDatabases().ToBindableCollection());
+                Databases = _metadataProvider.GetDatabases().ToBindableCollection();
                 Databases.IsNotifying = true;
                 NotifyOfPropertyChange(nameof(Databases));
 

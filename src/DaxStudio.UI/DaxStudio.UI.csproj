@@ -601,6 +601,7 @@
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
     <Compile Include="Utils\SendKeys.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />

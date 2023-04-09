@@ -11,10 +11,10 @@ namespace DaxStudio.UI.Interfaces
     public interface ISettingProvider
     {
         ObservableCollection<string> GetServerMRUList();
-        void SaveServerMRUList(string currentServer, ObservableCollection<string> servers);
+        void SaveServerMRUList(string currentServer);
 
         ObservableCollection<IDaxFile> GetFileMRUList();
-        void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files);
+        void SaveFileMRUList(IDaxFile file);
 
         T GetValue<T>(string subKey, T defaultValue);
         void SetValue<T>(string subKey, T value,  bool isInitializing, object options, [System.Runtime.CompilerServices.CallerMemberName] string propertyName ="");
