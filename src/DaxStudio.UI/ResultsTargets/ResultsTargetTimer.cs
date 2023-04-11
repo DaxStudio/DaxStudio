@@ -36,7 +36,6 @@ namespace DaxStudio.UI.Model
         {
 
             await Task.Run(() => { 
-                runner.OutputMessage("Query Started");
                 var sw = Stopwatch.StartNew();
 
                 var dq = textProvider.QueryText;
