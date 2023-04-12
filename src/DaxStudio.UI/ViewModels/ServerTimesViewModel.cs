@@ -492,10 +492,10 @@ namespace DaxStudio.UI.ViewModels
                     + @"|\bTESTCALLBACKIDENT\b|\bTESTCALLBACKSUM\b|\bPFCASTCOALESCE\b|\bDATAID2STRING\b|\bSEQUENCEINDEX\b|\bNEXTROWINDEX\b|\bSIMPLEINDEXN\b|\bSIMPLEINDEXV\b|\bDESERIALIZE\b|\bFLUSHCACHES\b|\bSIMPLEINDEX"
                     + @"\b|\bDICTIONARY\b|\bDISCRETIZE\b|\bMANYTOMANY\b|\bNOVERTIPAQ\b|\bPARTITIONS\b|\bPFCOALESCE\b|\bDIMENSION\b|\bHIERARCHY\b|\bMANYTOONE\b|\bNOTIMEOUT\b|\bROWFILTER\b|\bSEPARATOR\b|\bSERIALIZE\b|\bTOKENIZED\b|\bVERTICALC"
                     + @"\b|\bANYTOKEN\b|\bASDATAID\b|\bCOALESCE\b|\bCONTAINS\b|\bENDMATCH\b|\bNVARCHAR\b|\bPFDATAID\b|\bRELATION\b|\bFOREIGN\b|\bGENERAL\b|\bININDEX\b|\bNATURAL\b|\bNOSPLIT\b|\bORDERBY\b|\bPRIMARY\b|\bREDUCED\b|\bREVERSE\b|\bSEGMENT\b|\bSHALLOW\b|\bVARIANT"
-                    + @"\b|\bAPPEND\b|\bBITMAP\b|\bCOLUMN\b|\bCREATE\b|\bDCOUNT\b|\bDEFINE\b|\bPFCAST\b|\bPREFIX\b|\bSELECT\b|\bSTRING\b|\bSUMSQR\b|\bSYSTEM\b|\bCOUNT\b|\bINDEX\b|\bINNER\b|\bNORLE\b|\bOUTER\b|\bPAGED\b|\bRJOIN\b|\bTABLE\b|\bUSING\b|\bVALUE\b|\bVANDR\b|\bWHERE"
-                    + @"\b|\bDC_KIND\b|\bDENSE\b|\bC64"
+                    + @"\b|\bAPPEND\b|\bBITMAP\b|\bCOLUMN\b|\bCREATE\b|\bDCOUNT\b|\bDEFINE\b|\bPFCAST\b|\bPREFIX\b|\bSearch\b|\bSELECT\b|\bSTRING\b|\bSUMSQR\b|\bSYSTEM\b|\bCOUNT\b|\bINDEX\b|\bINNER\b|\bNORLE\b|\bOUTER\b|\bPAGED\b|\bRJOIN\b|\bTABLE\b|\bUSING\b|\bVALUE\b|\bVANDR\b|\bWHERE"
+                    + @"\b|\bDC_KIND\b|\bDENSE\b"
                     + @"\b|\bAUTO\b|\bBLOB\b|\bC123\b|\bCAST\b|\bDESC\b|\bDROP\b|\bDUMP\b|\bEXEC\b|\bFACT\b|\bFROM\b|\bHASH\b|\bIN32\b|\bIN64\b|\bJOIN\b|\bLEFT\b|\bLOAD\b|\bNINB\b|\bNINH\b|\bNULL\b|\bREAL\b|\bROWS\b|\bSIZE\b|\bSKIP\b|\bWITH"
-                    + @"\b|\bAND\b|\bASC\b|\bIN0\b|\bINB\b|\bINH\b|\bINT\b|\bINX\b|\bKEY\b|\bMAX\b|\bMIN\b|\bNIN\b|\bNOT\b|\bSET\b|\bSUM\b|\bTOP\b|\bVAND"
+                    + @"\b|\bAND\b|\bASC\b|\bC64|\bIN0\b|\bINB\b|\bINH\b|\bINT\b|\bINX\b|\bKEY\b|\bMAX\b|\bMIN\b|\bNIN\b|\bNOT\b|\bSET\b|\bSUM\b|\bTOP\b|\bVAND"
                     + @"\b|\bAS\b|\bBY\b|\bIN\b|\bIS\b|\bON\b|\bOR\b|\bPF\b|\bTO\b|\bTW\b|\bUH";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
