@@ -552,8 +552,17 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                // Apply the squar bracket transformation outside of callbacks
-                return match.Value.Replace("[", "'").Replace("]", "'");
+                // Specific case for Search function - we might want to classify it as a more generic cas
+                // if xmSQL will add other similar functions
+                if (match.Value.StartsWith("[Search("))
+                {
+                    return match.Value.Substring(1,match.Value.Length - 2);
+                }
+                else
+                {
+                    // Apply the square bracket transformation outside of callbacks
+                    return match.Value.Replace("[", "'").Replace("]", "'");
+                }
             }
         }
         private static string RemoveSquareBracketsNoSpace(Match match) {
