@@ -21,10 +21,12 @@ namespace DaxStudio.Tests
 
             var te = new Microsoft.AnalysisServices.TraceEventArgs();
             te[Microsoft.AnalysisServices.TraceColumn.EventClass] = ((int)Microsoft.AnalysisServices.TraceEventClass.ProgressReportEnd).ToString();
+            te[Microsoft.AnalysisServices.TraceColumn.EventSubclass] = "59";  // TabularRefresh
             te[Microsoft.AnalysisServices.TraceColumn.TextData] = input;
             te[Microsoft.AnalysisServices.TraceColumn.CurrentTime] = "2023-04-01T11:21:22";
             List<int> columns = new List<int>() {
                 (int)Microsoft.AnalysisServices.TraceColumn.EventClass,
+                (int)Microsoft.AnalysisServices.TraceColumn.EventSubclass,
                 (int)Microsoft.AnalysisServices.TraceColumn.TextData
             };
 
