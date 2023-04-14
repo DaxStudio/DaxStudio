@@ -301,6 +301,7 @@
     <Compile Include="Converters\CappedHeightConverter.cs" />
     <Compile Include="Converters\CircularProgressBar\ArcEndPointConverter.cs" />
     <Compile Include="Converters\CircularProgressBar\ArcSizeConverter.cs" />
+    <Compile Include="Converters\CircularProgressBar\ArcStrockThicknessConverter.cs" />
     <Compile Include="Converters\CircularProgressBar\LocalEx.cs" />
     <Compile Include="Converters\CircularProgressBar\RotateTransformCentreConverter.cs" />
     <Compile Include="Converters\CircularProgressBar\StartPointConverter.cs" />
@@ -339,6 +340,7 @@
     <Compile Include="Events\EditorHotkeyEvent.cs" />
     <Compile Include="Events\LoadQueryBuilderEvent.cs" />
     <Compile Include="Events\NoQueryTextEvent.cs" />
+    <Compile Include="Events\PasteServerTimings.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\SetRunStyleEvent.cs" />
@@ -600,6 +602,7 @@
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
     <Compile Include="Utils\SendKeys.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />

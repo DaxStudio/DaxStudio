@@ -98,6 +98,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<SetFocusEvent>
         , IHandle<ToggleCommentEvent>
+        , IHandle<PasteServerTimingsEvent>
         , IDropTarget
         , IQueryRunner
         , IQueryTextProvider
@@ -389,6 +390,35 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // Special handling of server timings metrics
+                #region PastServerTimingsMetrics
+                string serverTimingsMetrics = e.DataObject.GetData(DataFormats.Text, true) as string;
+                if (!string.IsNullOrEmpty(serverTimingsMetrics))
+                {
+                    if (serverTimingsMetrics.StartsWith(PasteServerTimingsEvent.SERVERTIMINGS_HEADER)) 
+                    {
+                        var editor = GetEditor();
+                        var currentLine = editor.DocumentGetLineByOffset(editor.CaretOffset);
+                        // Current line must be empty
+                        if (currentLine != null && currentLine.Length == 0)
+                        {
+                            var previousLine = currentLine.PreviousLine;
+                            if (previousLine.Length >= 2)
+                            {
+                                if (editor.DocumentGetText( previousLine.Offset, 2 ) == @"--")
+                                {
+                                    // Remove the header from the clipboard
+                                    serverTimingsMetrics = serverTimingsMetrics.Replace($"{PasteServerTimingsEvent.SERVERTIMINGS_HEADER}\r\n", "" );
+                                    e.DataObject = new DataObject(serverTimingsMetrics);
+                                }
+                            }
+                        }
+                        return;
+                    }
+                }
+                #endregion PastServerTimingsMetrics
+
+
                 // this check strips out unicode non-breaking spaces and replaces them
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
@@ -1123,6 +1153,10 @@ namespace DaxStudio.UI.ViewModels
 
                     // if there was an error we bail out here
                     return;
+                }
+                finally
+                {
+                    MetadataPane.IsBusy = false;
                 }
             }
             if (Connection.Databases.Count == 0) {
@@ -2079,7 +2113,7 @@ namespace DaxStudio.UI.ViewModels
                     , parameters
                     , DateTime.Now
                     , Connection.ServerNameForHistory
-                    , Connection.SelectedDatabase.Caption
+                    , Connection?.SelectedDatabase?.Caption??"<unknown>"
                     , FileName) { Status = QueryStatus.Running };
             }
             catch (Exception ex)
@@ -3056,7 +3090,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-
+                            MetadataPane.IsBusy = true;
                             if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
                             await SetupConnectionAsync(message);
@@ -3093,6 +3127,10 @@ namespace DaxStudio.UI.ViewModels
 
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Connecting: {errMsg}"), cancellationToken);
                 Log.Error(ex?.InnerException ?? ex, "{class} {method} {message}", "DocumentViewModel", "Handle(ConnectEvent message)", errMsg);
+            }
+            finally
+            {
+                MetadataPane.IsBusy = false;
             }
         }
 
@@ -3417,6 +3455,12 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Paste), ex.Message);
                 OutputError($"The following error occurred while pasting: {ex.Message}");
             }
+        }
+
+        public Task HandleAsync(PasteServerTimingsEvent message, CancellationToken cancellationToken)
+        {
+            GetEditor().Paste();
+            return Task.CompletedTask;
         }
 
         public void SetResultsMessage(string message, OutputTarget icon)
@@ -3852,15 +3896,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Starting Refresh");
 
                 Connection.Refresh();
-                MetadataPane.RefreshDatabases();// = CopyDatabaseList(this.Connection);
+                MetadataPane.RefreshDatabases();
                 Databases = MetadataPane.Databases;
-                //MetadataPane.ModelList = Connection.Database.Models;
                 MetadataPane.RefreshMetadata();
-
-                //this.MetadataPane.RefreshMetadata();
-                //NotifyOfPropertyChange(() => MetadataPane.SelectedModel);
                 OutputMessage("Metadata Refreshed");
-
             }
             catch (Exception ex)
             {

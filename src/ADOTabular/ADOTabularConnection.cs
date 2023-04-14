@@ -13,6 +13,8 @@ using ADOTabular.Extensions;
 using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using System.Threading;
+using Microsoft.Identity.Client;
+using System.Diagnostics;
 
 namespace ADOTabular
 {
@@ -135,7 +137,14 @@ namespace ADOTabular
             ChangeDatabase(_adomdConn.Database);
             CacheKeywords();
             CacheFunctionGroups();
-            UpdateServerProperties();
+            try
+            {
+                UpdateServerProperties();
+            }
+            catch 
+            {
+                Debug.WriteLine("Unable to update server properties");
+            }
             // We do not cache DaxMetadata intentionally - it is saved manually, there is no need to read them every time
         }
 
@@ -174,6 +183,12 @@ namespace ADOTabular
             if (_adomdConn.Database != database)
             {
                 _adomdConn.ChangeDatabase(database);
+            }
+
+            if(string.IsNullOrEmpty(database) && this.Databases.Count > 0)
+            {
+                _currentDatabase = Databases[0];
+                _adomdConn.ChangeDatabase(_currentDatabase);
             }
 
             ConnectionChanged?.Invoke(this, new EventArgs());
@@ -640,31 +655,33 @@ namespace ADOTabular
 
         private string GetServerMode()
         {
-            
-            var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
-                                                 new AdomdRestrictionCollection
-                                                     {
-                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
-                                                     },true);
-            string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
-            
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
+            try
             {
-                if (rdr.NameTable != null)
+                var ds = _adomdConn.GetSchemaDataSet("DISCOVER_XML_METADATA",
+                                                     new AdomdRestrictionCollection
+                                                         {
+                                                         new AdomdRestriction("ObjectExpansion", "ReferenceOnly")
+                                                         }, true);
+                string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
+
+                using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
                 {
-                    var eSvrMode = rdr.NameTable.Add("ServerMode");
-
-                    while (rdr.Read())
+                    if (rdr.NameTable != null)
                     {
-                        if (rdr.NodeType == XmlNodeType.Element
-                            && rdr.LocalName == eSvrMode)
-                        {
-                            return rdr.ReadElementContentAsString();
-                        }
+                        var eSvrMode = rdr.NameTable.Add("ServerMode");
 
+                        while (rdr.Read())
+                        {
+                            if (rdr.NodeType == XmlNodeType.Element
+                                && rdr.LocalName == eSvrMode)
+                            {
+                                return rdr.ReadElementContentAsString();
+                            }
+
+                        }
                     }
                 }
-            }
+            } catch { }
             return "Unknown";
         }
 

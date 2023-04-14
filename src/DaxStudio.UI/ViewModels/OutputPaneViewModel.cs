@@ -69,6 +69,12 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public void Clear()
+        {
+            Messages.Clear();
+            AddInformation("Log Cleared");
+        }
+
     }
 
 

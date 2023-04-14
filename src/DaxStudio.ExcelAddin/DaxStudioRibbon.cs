@@ -86,7 +86,7 @@ namespace DaxStudio.ExcelAddin
 
         public void BtnTextClick(object sender, RibbonControlEventArgs e)
         {
-            MessageBox.Show("Test Clicked");
+
         }
 
         public void Launch(bool enableLogging)
@@ -128,6 +128,8 @@ namespace DaxStudio.ExcelAddin
             };
             if (enableLogging) psi.Arguments += " -log";
             _client = Process.Start(psi);
+
+            
 
             if (!_client.WaitForInputIdle(Constants.ExcelUIStartupTimeout))
             {
@@ -173,40 +175,50 @@ namespace DaxStudio.ExcelAddin
 
         private void btnTest1_Click(object sender, RibbonControlEventArgs e)
         {
-            const string MSOLAP_PROVIDER = "MSOLAP";
-            const string DATASOURCE = "$Embedded$";
-            string connStr = string.Empty;
+            //const string MSOLAP_PROVIDER = "MSOLAP";
+            //const string DATASOURCE = "$Embedded$";
+            //string connStr = string.Empty;
 
-            var loc = "C:\\temp\\PPvtFromFolder2.xlsx";
+            //var loc = "C:\\temp\\PPvtFromFolder2.xlsx";
 
-            var connStrBase = $"Persist Security Info=True;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;";
-            connStrBase = "Persist Security Info=True;Integrated Security=SSPI;MDX Compatibility=1;Safety Options=2;;Initial Catalog=Microsoft_SQLServer_AnalysisServices";
-            var builder = new OleDbConnectionStringBuilder(connStrBase);
-            builder.Provider = MSOLAP_PROVIDER;
-            builder.DataSource = DATASOURCE;
-            builder.Add("location", loc);
-            builder.Add("server", loc);
-            connStr = builder.ToString();
+            //var connStrBase = $"Persist Security Info=True;MDX Compatibility=1;Safety Options=2;MDX Missing Member Mode=Error;Subqueries=0;Optimize Response=7;";
+            //connStrBase = "Persist Security Info=True;Integrated Security=SSPI;MDX Compatibility=1;Safety Options=2;;Initial Catalog=Microsoft_SQLServer_AnalysisServices";
+            //var builder = new OleDbConnectionStringBuilder(connStrBase);
+            //builder.Provider = MSOLAP_PROVIDER;
+            //builder.DataSource = DATASOURCE;
+            //builder.Add("location", loc);
+            //builder.Add("server", loc);
+            //connStr = builder.ToString();
 
-            Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "About to Load AmoWrapper");
-            AmoWrapper.AmoType amoType = AmoWrapper.AmoType.Excel;
-            using (var svr = new AmoWrapper.AmoServer(amoType))
-            {
-                try
-                {
-                    svr.Connect(connStr);
-                }
-                catch (Exception ex)
-                {
-                    var innerEx = ex;
-                    while (innerEx != null)
-                    {
-                        Debug.WriteLine(innerEx.Message);
-                        innerEx = innerEx.InnerException;
-                    }
-                }
-                MessageBox.Show($"{svr.TableCount} tables found");
-            }
+            //Log.Debug("{class} {method} {message}", "XmlaController", "PostRawBufferManual", "About to Load AmoWrapper");
+            //AmoWrapper.AmoType amoType = AmoWrapper.AmoType.Excel;
+            //using (var svr = new AmoWrapper.AmoServer(amoType))
+            //{
+            //    try
+            //    {
+            //        svr.Connect(connStr);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        var innerEx = ex;
+            //        while (innerEx != null)
+            //        {
+            //            Debug.WriteLine(innerEx.Message);
+            //            innerEx = innerEx.InnerException;
+            //        }
+            //    }
+            //    MessageBox.Show($"{svr.TableCount} tables found");
+            //}
+
+            Log.Debug("{class} {method} {message}", "DaxStudioRibbon", "Launch", "Entering Launch()");
+            // Find free port and start the web host
+            _port = WebHost.Start();
+
+            MessageBox.Show("Test Clicked");
+            var addin = Globals.ThisAddIn;
+            var app = addin.Application;
+            var wb = app.ActiveWorkbook;
+            wb.FollowHyperlink($"https://localhost:3000/launch?port={_port}");
         }
     }
 

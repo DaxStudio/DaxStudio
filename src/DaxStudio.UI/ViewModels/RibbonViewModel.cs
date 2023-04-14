@@ -947,7 +947,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void AddToRecentFiles(string fileName)
         {
-            SettingProvider.SaveFileMRUList(new DaxFile(fileName,false), RecentFiles);
+            SettingProvider.SaveFileMRUList(new DaxFile(fileName,false));
 
             //DaxFile df = (from DaxFile f in RecentFiles
             //              where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
@@ -1048,12 +1048,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void MoveFileToTopOfRecentList(DaxFile file)
         {
-            //// remove the file from it's current position
-            //RecentFiles.Remove(file);
-            //// insert it at the top of the list
-            //RecentFiles.Insert(0, file);
-
-            SettingProvider.SaveFileMRUList(file, this.RecentFiles);
+            SettingProvider.SaveFileMRUList(file);
         }
 
         public bool CanSwapDelimiters => ActiveDocument != null;

@@ -41,6 +41,7 @@ using DaxStudio.UI.Controls;
 using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using ICSharpCode.AvalonEdit.Document;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -491,10 +492,10 @@ namespace DaxStudio.UI.ViewModels
                     + @"|\bTESTCALLBACKIDENT\b|\bTESTCALLBACKSUM\b|\bPFCASTCOALESCE\b|\bDATAID2STRING\b|\bSEQUENCEINDEX\b|\bNEXTROWINDEX\b|\bSIMPLEINDEXN\b|\bSIMPLEINDEXV\b|\bDESERIALIZE\b|\bFLUSHCACHES\b|\bSIMPLEINDEX"
                     + @"\b|\bDICTIONARY\b|\bDISCRETIZE\b|\bMANYTOMANY\b|\bNOVERTIPAQ\b|\bPARTITIONS\b|\bPFCOALESCE\b|\bDIMENSION\b|\bHIERARCHY\b|\bMANYTOONE\b|\bNOTIMEOUT\b|\bROWFILTER\b|\bSEPARATOR\b|\bSERIALIZE\b|\bTOKENIZED\b|\bVERTICALC"
                     + @"\b|\bANYTOKEN\b|\bASDATAID\b|\bCOALESCE\b|\bCONTAINS\b|\bENDMATCH\b|\bNVARCHAR\b|\bPFDATAID\b|\bRELATION\b|\bFOREIGN\b|\bGENERAL\b|\bININDEX\b|\bNATURAL\b|\bNOSPLIT\b|\bORDERBY\b|\bPRIMARY\b|\bREDUCED\b|\bREVERSE\b|\bSEGMENT\b|\bSHALLOW\b|\bVARIANT"
-                    + @"\b|\bAPPEND\b|\bBITMAP\b|\bCOLUMN\b|\bCREATE\b|\bDCOUNT\b|\bDEFINE\b|\bPFCAST\b|\bPREFIX\b|\bSELECT\b|\bSTRING\b|\bSUMSQR\b|\bSYSTEM\b|\bCOUNT\b|\bINDEX\b|\bINNER\b|\bNORLE\b|\bOUTER\b|\bPAGED\b|\bRJOIN\b|\bTABLE\b|\bUSING\b|\bVALUE\b|\bVANDR\b|\bWHERE"
-                    + @"\b|\bDC_KIND\b|\bDENSE\b|\bC64"
+                    + @"\b|\bAPPEND\b|\bBITMAP\b|\bCOLUMN\b|\bCREATE\b|\bDCOUNT\b|\bDEFINE\b|\bPFCAST\b|\bPREFIX\b|\bSearch\b|\bSELECT\b|\bSTRING\b|\bSUMSQR\b|\bSYSTEM\b|\bCOUNT\b|\bINDEX\b|\bINNER\b|\bNORLE\b|\bOUTER\b|\bPAGED\b|\bRJOIN\b|\bTABLE\b|\bUSING\b|\bVALUE\b|\bVANDR\b|\bWHERE"
+                    + @"\b|\bDC_KIND\b|\bDENSE\b"
                     + @"\b|\bAUTO\b|\bBLOB\b|\bC123\b|\bCAST\b|\bDESC\b|\bDROP\b|\bDUMP\b|\bEXEC\b|\bFACT\b|\bFROM\b|\bHASH\b|\bIN32\b|\bIN64\b|\bJOIN\b|\bLEFT\b|\bLOAD\b|\bNINB\b|\bNINH\b|\bNULL\b|\bREAL\b|\bROWS\b|\bSIZE\b|\bSKIP\b|\bWITH"
-                    + @"\b|\bAND\b|\bASC\b|\bIN0\b|\bINB\b|\bINH\b|\bINT\b|\bINX\b|\bKEY\b|\bMAX\b|\bMIN\b|\bNIN\b|\bNOT\b|\bSET\b|\bSUM\b|\bTOP\b|\bVAND"
+                    + @"\b|\bAND\b|\bASC\b|\bC64|\bIN0\b|\bINB\b|\bINH\b|\bINT\b|\bINX\b|\bKEY\b|\bMAX\b|\bMIN\b|\bNIN\b|\bNOT\b|\bSET\b|\bSUM\b|\bTOP\b|\bVAND"
                     + @"\b|\bAS\b|\bBY\b|\bIN\b|\bIS\b|\bON\b|\bOR\b|\bPF\b|\bTO\b|\bTW\b|\bUH";
         const string searchXmSqlDotSeparator = @"\.\[";
         const string searchXmSqlParenthesis = @"\ *[\(\)]\ *";
@@ -551,8 +552,17 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                // Apply the squar bracket transformation outside of callbacks
-                return match.Value.Replace("[", "'").Replace("]", "'");
+                // Specific case for Search function - we might want to classify it as a more generic cas
+                // if xmSQL will add other similar functions
+                if (match.Value.StartsWith("[Search("))
+                {
+                    return match.Value.Substring(1,match.Value.Length - 2);
+                }
+                else
+                {
+                    // Apply the square bracket transformation outside of callbacks
+                    return match.Value.Replace("[", "'").Replace("]", "'");
+                }
             }
         }
         private static string RemoveSquareBracketsNoSpace(Match match) {
@@ -1651,7 +1661,7 @@ namespace DaxStudio.UI.ViewModels
                 AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
             AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
             // update timeline total Duration if this is an older file format
-            if (m.FileFormatVersion <= 3) {
+            if (m.FileFormatVersion <= 4) {
                 AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
@@ -1707,8 +1717,11 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(() => TextGridColumnSpan);
                     NotifyOfPropertyChange(() => TextColumnWidth);
                     break;
-                default:
-                    UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
+                case "ShowScan":
+                case "ShowBatch":
+                case "ShowCache":
+                case "ShowInternal":
+                    NotifyOfPropertyChange(nameof(StorageEngineEvents));
                     break;
             }
         }
@@ -1767,34 +1780,32 @@ namespace DaxStudio.UI.ViewModels
         {
             CopyResultsData(false);
         }
-        public void CopyResultsForComments()
+        public string CopyResultsForComments()
         {
-            CopyResultsData(includeHeader:true, formatTextForComment: true);
+            return CopyResultsData(includeHeader:true, formatTextForComment: true);
         }
-        public void CopyResultsForCommentsData()
+        public string CopyResultsForCommentsData()
         {
-            CopyResultsData(includeHeader:false, formatTextForComment: true);
+            return CopyResultsData(includeHeader:false, formatTextForComment: true);
         }
-        public void CopyResultsData(bool includeHeader, bool formatTextForComment=false)
+        public string CopyResultsData(bool includeHeader, bool formatTextForComment=false)
         {
             var dataObject = new DataObject();
             var headers = string.Empty;
             if (includeHeader) headers = "Query End\tTotal\tFE\tSE\tSE CPU\tSE Par.\tSE Queries\tSE Cache\n";
             var values = $"{QueryEndDateTime.ToString(Constants.IsoDateFormatPaste)}\t{TotalDuration}\t{FormulaEngineDuration}\t{StorageEngineDuration}\t{StorageEngineCpu}\t{StorageEngineCpuFactor}\t{StorageEngineQueryCount}\t{VertipaqCacheMatches}";
-            dataObject.SetData(DataFormats.StringFormat, $"{headers}{values}");
+            string result = $"{headers}{values}";
+            dataObject.SetData(DataFormats.StringFormat, result);
             dataObject.SetData(DataFormats.CommaSeparatedValue, $"{headers.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}\n{values.Replace("\t", CultureInfo.CurrentCulture.TextInfo.ListSeparator)}");
             if (formatTextForComment)
             {
-                var textHeader = string.Empty;
-                if (includeHeader)
-                {
-                    textHeader = @"--     Total         FE         SE      SE CPU   Par.";
-
-                }
+                var textHeader = includeHeader ? PasteServerTimingsEvent.SERVERTIMINGS_HEADER : string.Empty;
                 var textValues = $"-- {TotalDuration,9:#,0}  {FormulaEngineDuration,9:#,0}  {StorageEngineDuration,9:#,0}  {StorageEngineCpu,10:#,0}  x{StorageEngineCpuFactor,4:0.0}";
-                dataObject.SetData(DataFormats.Text, $"{textHeader}{(string.IsNullOrEmpty(textHeader) ? string.Empty: "\r\n")}{textValues}\r\n");
+                result = $"{textHeader}{(string.IsNullOrEmpty(textHeader) ? string.Empty : "\r\n")}{textValues}\r\n";
+                dataObject.SetData(DataFormats.Text, result);
             }
             Clipboard.SetDataObject(dataObject);
+            return result;
         }
 
         public override bool CanExport => AllStorageEngineEvents.Count > 0;
@@ -1949,16 +1960,16 @@ namespace DaxStudio.UI.ViewModels
         }
         public Task HandleAsync(CopyPasteServerTimingsEvent message, CancellationToken cancellationToken)
         {
-            // TODO: We should paste the code in the DAX editor once copied.
-            //       We could also evaluate whether to copy the header or not based on the position in the editor and the presence of the header...
+            string textResult;
             if (message.IncludeHeader)
             {
-                CopyResultsForComments();
+                textResult = CopyResultsForComments();
             }
             else
             {
-                CopyResultsForCommentsData();
+                textResult = CopyResultsForCommentsData();
             }
+            _eventAggregator.PublishOnUIThreadAsync(new PasteServerTimingsEvent(message.IncludeHeader, textResult));
             return Task.CompletedTask;
         }
 

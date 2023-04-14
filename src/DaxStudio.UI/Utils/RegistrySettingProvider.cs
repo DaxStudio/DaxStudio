@@ -29,35 +29,39 @@ namespace DaxStudio.UI.Utils
         public bool IsRunningPortable => false;
         public string SettingsFile => string.Empty;
 
+        public IGlobalOptions Options { get; private set; }
+
         public ObservableCollection<string> GetServerMRUList()
         {
             return GetMRUListFromRegistry("Server");
         }
 
-        public void SaveServerMRUList(string currentServer, ObservableCollection<string> servers)
+        public void SaveServerMRUList(string currentServer)
         {
-            var existingIdx = servers.IndexOf(currentServer);
-
-            // server is already first in the list
-            if (existingIdx == 0) return; // do nothing
-
-            if (existingIdx > 0)
+            if (!string.IsNullOrEmpty(currentServer))
             {
-                // server exists, make it first in the list
-                servers.Move(existingIdx, 0);
-            }
-            else
-            {
-                // server does not exist in list, so insert it as the first item
-                servers.Insert(0, currentServer);
-                while (servers.Count > Constants.MaxMruSize)
+                var existingIdx = Options.RecentServers.IndexOf(currentServer);
+
+                // server is already first in the list
+                if (existingIdx == 0) return; // do nothing
+
+                if (existingIdx > 0)
                 {
-                    servers.RemoveAt(servers.Count - 1);
+                    // server exists, make it first in the list
+                    Options.RecentServers.Move(existingIdx, 0);
+                }
+                else
+                {
+                    // server does not exist in list, so insert it as the first item
+                    Options.RecentServers.Insert(0, currentServer);
+                    while (Options.RecentServers.Count > Constants.MaxMruSize)
+                    {
+                        Options.RecentServers.RemoveAt(Options.RecentServers.Count - 1);
+                    }
                 }
             }
 
-
-            SaveListToRegistry("Server", currentServer, servers);
+            SaveListToRegistry("Server", currentServer, Options.RecentServers);
         }
 
         public ObservableCollection<IDaxFile> GetFileMRUList()
@@ -70,31 +74,31 @@ namespace DaxStudio.UI.Utils
             return lst;
         }
 
-        public void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files)
+        public void SaveFileMRUList(IDaxFile file)
         {
-            var existingItem = files.FirstOrDefault(f => f.FullPath.Equals(file.FullPath, StringComparison.CurrentCultureIgnoreCase));
+            var existingItem = Options.RecentFiles.FirstOrDefault(f => f.FullPath.Equals(file.FullPath, StringComparison.CurrentCultureIgnoreCase));
             // file does not exist in list so add it as the first item
             if (existingItem == null)
             {
-                files.Insert(0, file);
-                while (files.Count > Constants.MaxRecentFiles)
+                Options.RecentFiles.Insert(0, file);
+                while (Options.RecentFiles.Count > Constants.MaxRecentFiles)
                 {
-                    files.RemoveAt(files.Count - 1);
+                    Options.RecentFiles.RemoveAt(Options.RecentFiles.Count - 1);
                 }
-                SaveListToRegistry("File", file, files);
+                SaveListToRegistry("File", file, Options.RecentFiles);
                 return;
             }
 
-            var existingIndex = files.IndexOf(existingItem);
+            var existingIndex = Options.RecentFiles.IndexOf(existingItem);
             // file is already first in the list so do nothing
             if (existingIndex == 0) return;
 
             // otherwise move the file to first in the list
-            files.Move(existingIndex, 0);
+            Options.RecentFiles.Move(existingIndex, 0);
 
 
 
-            SaveListToRegistry("File", file, files);
+            SaveListToRegistry("File", file, Options.RecentFiles);
         }
 
 
@@ -259,7 +263,7 @@ namespace DaxStudio.UI.Utils
         /// <param name="options"></param>
         public void Initialize(IGlobalOptions options)
         {
-
+            Options = options;
             var invariantCulture = CultureInfo.InvariantCulture;
             foreach (PropertyDescriptor prop in TypeDescriptor.GetProperties(options))
             {

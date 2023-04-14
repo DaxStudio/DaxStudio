@@ -22,6 +22,7 @@ using DaxStudio.UI.Interfaces;
 using Humanizer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 using System.Threading;
+using AsyncAwaitBestPractices;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -370,11 +371,21 @@ namespace DaxStudio.UI.ViewModels
                     _selectedDatabase = value;
                     if (_selectedDatabase == null) return;
                     NotifyOfPropertyChange(nameof(SelectedDatabase));
-                    _metadataProvider.SetSelectedDatabase(_selectedDatabase);
-                    NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
-                    NotifyOfPropertyChange(nameof(SelectedDatabaseDurationSinceUpdate));
-                    NotifyOfPropertyChange(nameof(SelectedDatabaseLastUpdateLocalTime));
-                    ModelList = _metadataProvider.GetModels();
+                    Task.Run(() => {
+                        IsBusy = true;
+                        _metadataProvider.SetSelectedDatabase(_selectedDatabase);
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseDurationSinceUpdate));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseLastUpdateLocalTime));
+                        ModelList = _metadataProvider.GetModels();
+                        IsBusy = false;
+                    }).SafeFireAndForget(onException: ex =>
+                    {
+                        Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedDatabase), "error setting Selected Database");
+                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error setting selected database: {ex.Message}"));
+                        IsBusy = false;
+                    });
+
                 }
                 
 
@@ -449,15 +460,16 @@ namespace DaxStudio.UI.ViewModels
         public IObservableCollection<DatabaseReference> DatabasesView { get; } = new BindableCollection<DatabaseReference>();
 
         #region Busy Overlay
-        private bool _isBusy;
+        private int _isBusyCnt;
         public bool IsBusy
         {
-            get => _isBusy;
+            get => _isBusyCnt != 0;
             set
             {
-                if (_isBusy == value) return;
-                _isBusy = value;
-                NotifyOfPropertyChange(() => IsBusy);
+                if (value) Interlocked.Increment(ref _isBusyCnt);
+                else Interlocked.Decrement(ref _isBusyCnt);
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(IsBusy), $"Cnt: {_isBusyCnt}");
+                NotifyOfPropertyChange();
             }
         }
         public string BusyMessage => "Loading";
@@ -1051,7 +1063,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 Databases.IsNotifying = false;
-                await Task.Run(async () => Databases = _metadataProvider.GetDatabases().ToBindableCollection());
+                Databases = _metadataProvider.GetDatabases().ToBindableCollection();
                 Databases.IsNotifying = true;
                 NotifyOfPropertyChange(nameof(Databases));
 
@@ -1079,7 +1091,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)
         {
-            IsBusy = true;
+            //IsBusy = true;
             NotifyOfPropertyChange(nameof(Databases));
             return Task.CompletedTask;
         }
@@ -1087,7 +1099,7 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ConnectFailedEvent message, CancellationToken cancellationToken)
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "Handle<ConnectionFailedEvent>", "Setting IsBusy = false");
-            IsBusy = false;
+            //IsBusy = false;
             return Task.CompletedTask;
         }
 

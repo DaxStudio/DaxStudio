@@ -157,7 +157,8 @@ namespace DaxStudio.UI.ViewModels
         {
             get => _showReplace;
             set { _showReplace = value;
-                NotifyOfPropertyChange(() => ShowReplace);
+                NotifyOfPropertyChange(nameof(ShowReplace));
+                NotifyOfPropertyChange(nameof(TextToReplace));
             }
         }
         public void ToggleReplace()

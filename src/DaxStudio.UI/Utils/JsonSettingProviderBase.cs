@@ -148,7 +148,7 @@ namespace DaxStudio.UI.Utils
             return GetValue("IsFileLoggingEnabled",false);
         }
 
-        public void SaveFileMRUList(IDaxFile file, ObservableCollection<IDaxFile> files)
+        public void SaveFileMRUList(IDaxFile file)
         {
             var existingItem = Options.RecentFiles.FirstOrDefault(f => f.FullPath.Equals(file.FullPath, StringComparison.CurrentCultureIgnoreCase));
             // file does not exist in list so add it as the first item
@@ -173,28 +173,30 @@ namespace DaxStudio.UI.Utils
             SaveSettingsFile();
         }
 
-        public void SaveServerMRUList(string currentServer, ObservableCollection<string> servers)
+        public void SaveServerMRUList(string currentServer)
         {
             var existingIdx = Options.RecentServers.IndexOf(currentServer);
 
-            // server is already first in the list
-            if (existingIdx == 0) return; // do nothing
-                    
-            if (existingIdx > 0)
+            if (!string.IsNullOrEmpty(currentServer))
             {
-                // server exists, make it first in the list
-                Options.RecentServers.Move(existingIdx, 0);
-            }
-            else
-            { 
-                // server does not exist in list, so insert it as the first item
-                Options.RecentServers.Insert(0, currentServer);
-                while (Options.RecentServers.Count > comm.Constants.MaxMruSize)
+                // server is already first in the list
+                if (existingIdx == 0) return; // do nothing
+
+                if (existingIdx > 0)
                 {
-                    Options.RecentServers.RemoveAt(Options.RecentServers.Count - 1);
+                    // server exists, make it first in the list
+                    Options.RecentServers.Move(existingIdx, 0);
+                }
+                else
+                {
+                    // server does not exist in list, so insert it as the first item
+                    Options.RecentServers.Insert(0, currentServer);
+                    while (Options.RecentServers.Count > comm.Constants.MaxMruSize)
+                    {
+                        Options.RecentServers.RemoveAt(Options.RecentServers.Count - 1);
+                    }
                 }
             }
-
             SaveSettingsFile();
         }
 
