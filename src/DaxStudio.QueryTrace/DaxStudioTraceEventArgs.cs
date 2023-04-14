@@ -3,7 +3,9 @@ using Microsoft.AnalysisServices;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Windows.Documents;
+using Group = System.Text.RegularExpressions.Group;
 
 namespace DaxStudio.QueryTrace
 {
@@ -13,6 +15,7 @@ namespace DaxStudio.QueryTrace
         private string _eventSubclassName;
         private DaxStudioTraceEventClass _eventClass = DaxStudioTraceEventClass.NotAvailable;
         private DaxStudioTraceEventSubclass _eventSubclass = DaxStudioTraceEventSubclass.NotAvailable;
+        private static Regex textDataRegex = new Regex("(?:TableTMID=')(?<TableID>\\d+)(?:')|(?:PartitionTMID=')(?<PartitionID>\\d+)(?:')|(?:MashupCPUTime:\\s+)(?<MashupCPUTime>\\d+)(?:\\s+ms)|(?:MashupPeakMemory:\\s+)(?<MashupPeakMemory>\\d+)(?:\\s+KB)");
 
         public static Dictionary<TraceColumn, Action<DaxStudioTraceEventArgs, TraceEventArgs>> ColumnMap = new Dictionary<TraceColumn, Action<DaxStudioTraceEventArgs, TraceEventArgs>>()
         {
@@ -26,7 +29,7 @@ namespace DaxStudio.QueryTrace
 
             //{ TraceColumn.EventClass, (e,a ) => {e.EventClassName = a.EventClass.ToString(); } },
             { TraceColumn.EventSubclass, (e,a ) => {e.EventSubclassName =  a.EventSubclass.ToString(); } },
-            { TraceColumn.TextData, (e,a) => { e.TextData = a.TextData; } },
+            { TraceColumn.TextData, (e,a) => { ProcessTextData( e, a); } },
             { TraceColumn.RequestID, (e,a) => {e.RequestId = a[TraceColumn.RequestID]; } },
             { TraceColumn.DatabaseName, (e,a) => {e.DatabaseName= a.DatabaseName; } },
             //{ TraceColumn.DatabaseFriendlyName, (e,a) => {e.DatabaseFriendlyName = a[TraceColumn.RequestID]; } },
@@ -46,6 +49,15 @@ namespace DaxStudio.QueryTrace
             { TraceColumn.ObjectReference, (e,a) => {e.ObjectReference = a.ObjectReference; } },
             { TraceColumn.IntegerData, (e,a) => { try {e.IntegerData = a.IntegerData; } catch { } } },
             { TraceColumn.ProgressTotal, (e,a) => { try {e.ProgressTotal = a.ProgressTotal; } catch { } } },
+        };
+
+        public static Dictionary<string, Action<DaxStudioTraceEventArgs, string>> TextDataMap = new Dictionary<string, Action<DaxStudioTraceEventArgs, string>>()
+        {
+            {"TableID", (args, v) => { int.TryParse(v, out var l); args.TableID = l; } },
+            {"PartitionID", (args,v) => { int.TryParse(v, out var l); args.PartitionID = l; } },
+            {"MashupCPUTime",(args,v)=> { long.TryParse(v, out var l); args.MashupCPUTimeMs = l; } },
+            {"MashupPeakMemory",(args,v)=> { long.TryParse(v, out var l); args.MashupPeakMemoryKb = l; } }
+
         };
 
         public DaxStudioTraceEventArgs(Microsoft.AnalysisServices.TraceEventArgs e, string powerBiFileName, List<int> eventColumns)
@@ -153,6 +165,36 @@ namespace DaxStudio.QueryTrace
         public string SessionId { get; set; }
         public string ObjectType { get; set; }
         public string ObjectId { get; set; }
+
+        public int TableID { get; set; }
+        public int PartitionID { get; set; }
+        public long MashupCPUTimeMs { get; set; }
+        public long MashupPeakMemoryKb { get; set; }
+
+        private static void ProcessTextData(DaxStudioTraceEventArgs dsArgs, TraceEventArgs amoArgs)
+        {
+            dsArgs.TextData = amoArgs.TextData;
+
+            if (amoArgs.EventClass != TraceEventClass.ProgressReportEnd) return;
+
+            // try parsing extra information out of the TextData for ProgressReportEnd Events
+            var result = textDataRegex.Matches(amoArgs.TextData);
+
+            foreach (Match match in result)
+            {
+                for (int i = 1; i < match.Groups.Count; i++)
+                {
+                    Group grp = match.Groups[i];
+                    if (grp.Success)
+                    {
+                        //System.Diagnostics.Debug.WriteLine(grp + " : " + grp.Value);
+                        TextDataMap[grp.Name].Invoke(dsArgs,grp.Value);
+                    }
+                }
+
+            }
+
+        }
 
     }
 }

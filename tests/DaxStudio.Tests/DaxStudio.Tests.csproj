@@ -116,6 +116,7 @@
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="TomTests.cs" />
     <Compile Include="TraceEventTests.cs" />
+    <Compile Include="TraceProcessing.cs" />
     <Compile Include="TreeViewDisplayFolderTests.cs" />
     <Compile Include="QueryBuilderTests.cs" />
     <Compile Include="ServerNameConverterTests.cs" />
@@ -185,7 +186,7 @@
       <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.57.2.4</Version>
+      <Version>19.61.1.4</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.4</Version>

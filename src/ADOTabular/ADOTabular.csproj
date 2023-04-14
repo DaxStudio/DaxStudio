@@ -194,10 +194,10 @@
       <Version>1.2.12</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.57.2.4</Version>
+      <Version>19.61.1.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.57.2.4</Version>
+      <Version>19.61.1.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>7.0.1</Version>
