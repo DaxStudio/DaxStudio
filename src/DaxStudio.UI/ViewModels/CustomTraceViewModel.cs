@@ -220,12 +220,12 @@ namespace DaxStudio.UI.ViewModels
 
         public override void OnReset()
         {
-            //IsBusy = false;
+            IsBusy = false;
             Events.Clear();
             ProcessResults();
         }
 
-        public new bool IsBusy => false;
+       //public new bool IsBusy => false;
 
         public TraceEvent SelectedQuery { get; set; }
 
@@ -286,7 +286,9 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanExport));
         }
 
-#region ISaveState methods
+        public override bool WaitForQueryEnd => false;
+
+        #region ISaveState methods
         void ISaveState.Save(string filename)
         {
             string json = GetJson();

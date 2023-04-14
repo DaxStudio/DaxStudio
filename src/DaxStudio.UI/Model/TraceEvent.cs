@@ -32,6 +32,8 @@ namespace DaxStudio.UI.Model
             SessionId = traceEvent.SessionId;
             IntegerData = traceEvent.IntegerData;
             CurrentTime = traceEvent.CurrentTime;
+            MashupCPUTimeMs = traceEvent.MashupCPUTimeMs;
+            MashupPeakMemoryKb = traceEvent.MashupPeakMemoryKb;
         }
 
         public long CpuTime { get; set; }
@@ -56,6 +58,8 @@ namespace DaxStudio.UI.Model
         public DaxStudioTraceEventSubclass EventSubClass { get; set; }
 
         public DateTime CurrentTime { get; set; }
+        public long MashupCPUTimeMs { get; set; }
+        public long MashupPeakMemoryKb { get; set; }
         public string SessionId { get; set; }
         public long IntegerData { get; set; }
     }

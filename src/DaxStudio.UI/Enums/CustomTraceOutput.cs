@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Enums
         Grid,
         [Description("File")]
         File,
-        [Description("File + Grid")]
+        [Description("File + Grid preview")]
         FileAndGrid
     }
 }

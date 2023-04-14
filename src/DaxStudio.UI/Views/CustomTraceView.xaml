@@ -315,6 +315,8 @@
         <StackPanel Orientation="Horizontal" Grid.Row="3" >
             <Label Margin="8">Events:</Label>
             <TextBlock Margin="8" x:Name="EventCount" MinWidth="50" Foreground="{DynamicResource Theme.Brush.Default.Fore}" Text="{Binding EventCount, StringFormat={}{0:N0}}"/>
+            <Label Margin="8">Template:</Label>
+            <TextBlock x:Name="Template" Foreground="{DynamicResource Theme.Brush.Default.Fore}" Margin="8"/>
             <Label Margin="8">File:</Label>
             <TextBlock x:Name="OutputFile" Foreground="{DynamicResource Theme.Brush.Default.Fore}" Margin="8"/>
         </StackPanel>
@@ -323,11 +325,13 @@
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         
         <!-- Busy overlay -->
-        <!--<Border 
-                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="4" 
-            Grid.ColumnSpan="5"
-            Style="{StaticResource BusyPanel}" d:IsHidden="True">
+        <Border 
+            x:Name="BusyPanel"
+            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+            Grid.RowSpan="4" 
+            Grid.Row="1"
+            Style="{StaticResource BusyPanel}" 
+            >
 
             <Grid>
 
@@ -340,13 +344,11 @@
                                     
                                     Height="60"
                                     Width="60" />
-
-                    
                     
                         <TextBlock x:Name="BusyMessage"/>
                     
                 </StackPanel>
             </Grid>
-        </Border>-->
+        </Border>
     </Grid>
 </controls:ZoomableUserControl>

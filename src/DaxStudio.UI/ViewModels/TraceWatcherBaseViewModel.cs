@@ -2,7 +2,6 @@
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-using Microsoft.AnalysisServices;
 using Serilog;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
@@ -11,7 +10,6 @@ using System.Timers;
 using DaxStudio.UI.Utils;
 using System;
 using System.Linq;
-using System.Windows.Media;
 using DaxStudio.UI.Extensions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,9 +19,6 @@ using DaxStudio.Common.Enums;
 using DaxStudio.Common;
 using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
-using System.Windows;
-using Windows.UI.Core;
-using DaxStudio.Common.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -492,6 +487,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(QueryCompleted), isCancelled);
             _queryHistoryEvent = queryHistoryEvent;
             ErrorMessage = errorMessage;
+            if (!WaitForQueryEnd) return;
             if (isCancelled) return;
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
 
@@ -641,7 +637,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{Class} {Event} {@TraceStartedEventArgs}", GetSubclassName(), nameof(TracerOnTraceStarted), e);
 
             Execute.OnUIThread(() => {
-                Document.OutputMessage("Query Trace Started");
+                Document.OutputMessage($"{Title} started");
                 this.IsEnabled = true;
                 _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Started));
             });
@@ -750,5 +746,7 @@ namespace DaxStudio.UI.ViewModels
         /// and possible cancel the startup of a trace watcher
         /// </summary>
         public virtual bool ShouldStartTrace() {   return true;  }
+
+        public virtual bool WaitForQueryEnd => true;
     }
 }

@@ -175,7 +175,7 @@ namespace DaxStudio.QueryTrace
         {
             dsArgs.TextData = amoArgs.TextData;
 
-            if (amoArgs.EventClass != TraceEventClass.ProgressReportEnd) return;
+            if (amoArgs.EventClass != TraceEventClass.ProgressReportEnd || amoArgs.EventSubclass != TraceEventSubclass.TabularRefresh) return;
 
             // try parsing extra information out of the TextData for ProgressReportEnd Events
             var result = textDataRegex.Matches(amoArgs.TextData);
