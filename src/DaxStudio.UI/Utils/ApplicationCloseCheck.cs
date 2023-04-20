@@ -25,12 +25,9 @@ namespace DaxStudio.UI.Utils {
             {
                 var documentWorkspace = screen.Parent as IDocumentWorkspace;
                 if (documentWorkspace != null)
-                    documentWorkspace.ActivateAsync(screen).ContinueWith((precedent) => { 
-                        if (precedent.IsFaulted)
-                        {
-                            Log.Error(precedent.Exception, Constants.LogMessageTemplate, nameof(ApplicationCloseCheck), nameof(Execute), "Error activating screen before closing");
-                        }
-                    });
+                {
+                    documentWorkspace.Activate(screen);
+                }
             }
             catch (Exception ex) {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ApplicationCloseCheck), nameof(Execute), $"Error in close check\n{ex.Message}");

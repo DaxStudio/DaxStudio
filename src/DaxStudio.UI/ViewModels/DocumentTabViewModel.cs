@@ -443,21 +443,22 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public async Task ActivateAsync(object document)
+        public void Activate(object document)
         {
-            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ActivateAsync), "Starting");
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(Activate), "Starting");
             try
             {
                 if (document is DocumentViewModel doc)
                 {
-                    await ActivateItemAsync(doc);
+                    ActivateItemAsync(doc).Wait();
                     //ActiveDocument = doc;
                 }
             }
-            catch (Exception ex) {
-                Log.Error(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ActivateAsync), $"Error Activating document: {ex.Message}");
+            catch (Exception ex)
+            {
+                Log.Error(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(Activate), $"Error Activating document: {ex.Message}");
             }
-            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ActivateAsync), "Finished");
+            Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(Activate), "Finished");
         }
 
         public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)
