@@ -173,6 +173,8 @@
                           CanUserSortColumns="True" 
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          EnableRowVirtualization="True"
                           CanUserReorderColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
@@ -190,6 +192,11 @@
                         </DataGrid.ColumnHeaderStyle>
                         <DataGrid.GroupStyle>
                             <GroupStyle>
+                                <GroupStyle.Panel>
+                                    <ItemsPanelTemplate>
+                                        <DataGridRowsPresenter/>
+                                    </ItemsPanelTemplate>
+                                </GroupStyle.Panel>
                                 <GroupStyle.ContainerStyle>
                                     <Style TargetType="{x:Type GroupItem}">
                                         <Setter Property="Template">
