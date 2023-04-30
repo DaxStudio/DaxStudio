@@ -255,7 +255,7 @@
                                     Width="16"
                                     Height="16"
                                     Foreground="{DynamicResource Theme.Brush.Accent}"
-                                    Background="{DynamicResource Theme.Brush.Alternate.Back}"
+                                    Background="Transparent"
                                     Visibility="{Binding Content.IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                                 <Border 

@@ -17,35 +17,42 @@ namespace DaxStudio.UI.Converters
             if ((string)values[0] == string.Empty) return string.Empty;
             if (values[1] == DependencyProperty.UnsetValue) return values[0].ToString();
             object val = null;
-            if (values[0] != null)
+            try
             {
-                switch ((string)values[2].ToString().ToLower()) //DataTypeName
+                if (values[0] != null)
                 {
-                    case "datetime":
-                        DateTime.TryParse((string)values[0],out DateTime outVal );
-                        return string.Format(string.Format("{{0:{0}}}", (string)values[1]), outVal);
-                        
-                    case "string":
-                        val = (string)values[0];
-                        break;
-                    case "int":
-                    case "int16":
-                    case "int32":
-                    case "int64":
-                        val = long.TryParse((string)values[0],out long longVal);
-                        return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), longVal): Common.Constants.Err;
-                    case "decimal":
-                        val = decimal.TryParse((string)values[0], out Decimal decVal);
-                        return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), decVal): Common.Constants.Err;
-                    case "double":
-                        val = double.TryParse((string)values[0], out double dblVal);
-                        return (bool)val?string.Format(string.Format("{{0:{0}}}", (string)values[1]), dblVal): Common.Constants.Err;
-                    case "boolean":
-                        val = bool.TryParse((string)values[0], out bool boolVal);
-                        return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), boolVal) : Common.Constants.Err;
+                    switch ((string)values[2].ToString().ToLower()) //DataTypeName
+                    {
+                        case "datetime":
+                            DateTime.TryParse((string)values[0], out DateTime outVal);
+                            return string.Format(string.Format("{{0:{0}}}", (string)values[1]), outVal);
+
+                        case "string":
+                            val = (string)values[0];
+                            break;
+                        case "int":
+                        case "int16":
+                        case "int32":
+                        case "int64":
+                            val = long.TryParse((string)values[0], out long longVal);
+                            return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), longVal) : Common.Constants.Err;
+                        case "decimal":
+                            val = decimal.TryParse((string)values[0], out Decimal decVal);
+                            return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), decVal) : Common.Constants.Err;
+                        case "double":
+                            val = double.TryParse((string)values[0], out double dblVal);
+                            return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), dblVal) : Common.Constants.Err;
+                        case "boolean":
+                            val = bool.TryParse((string)values[0], out bool boolVal);
+                            return (bool)val ? string.Format(string.Format("{{0:{0}}}", (string)values[1]), boolVal) : Common.Constants.Err;
+                    }
                 }
             }
-            return string.Format(string.Format("{{0:{0}}}",(string)values[1]), val);
+            catch {
+                // swallow any exceptions
+            }
+            // if all else fails return the unformatted value
+            return values[0].ToString();
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {

@@ -46,11 +46,29 @@
                     </Trigger>-->
 
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        <Setter Property="Foreground" Value="Transparent" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
 
+            <Style x:Key="DeleteButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border Background="{TemplateBinding Background}" Padding="2" >
+                                <Image Source="{DynamicResource closeDrawingImage}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource Fluent.Ribbon.Brushes.Button.MouseOver.Background}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            
 
             <ResourceDictionary.MergedDictionaries>
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
@@ -224,12 +242,16 @@
                             <Button Content="X" Grid.Column="1" 
                                     Command="{Binding DataContext.DeleteServerCommand,RelativeSource={RelativeSource AncestorType=vw:ConnectionDialogView}}"
                                     CommandParameter="{Binding .}"
+                                    Style="{StaticResource DeleteButtonStyle}"
                                     ToolTip="Delete this server from the list">
-                                <Button.Template>
+                                <!--<Button.Template>
                                     <ControlTemplate>
+                                        <Border x:Name="imgBorder">
                                         <Image Source="{DynamicResource closeDrawingImage}"/>
+                                        </Border>
                                     </ControlTemplate>
-                                </Button.Template>
+                                </Button.Template>-->
+
                             </Button>
                         </Grid>
                     </DataTemplate>
