@@ -23,6 +23,10 @@ using Microsoft.AspNet.SignalR.Client;
 using System.Windows;
 using System.Windows.Forms;
 using ADOTabular;
+using Mono.Cecil.Cil;
+using System.Globalization;
+using System.Text;
+using DaxStudio.UI.Views;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -33,6 +37,7 @@ namespace DaxStudio.UI.ViewModels
     public class VertiPaqAnalyzerViewModel : ToolWindowBase
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<UpdateGlobalOptions>
+        , IHandle<VpaViewExpandedEvent>
         , IViewAware
         , ISaveState
     {
@@ -103,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
                     // Skip the special column "RowNumber-GUID" that is not relevant for the analysis
                     const string ROWNUMBER_COLUMNNAME = "RowNumber-";
 
-                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table, _globalOptions )).SelectMany(t => t.Columns.Where(c => !c.ColumnName.StartsWith(ROWNUMBER_COLUMNNAME)));
+                    var cols = ViewModel.Tables.Select(t => new VpaTableViewModel(t, this, VpaSort.Table, _globalOptions, _eventAggregator )).SelectMany(t => t.Columns.Where(c => !c.ColumnName.StartsWith(ROWNUMBER_COLUMNNAME)));
                     _groupedColumns = CollectionViewSource.GetDefaultView(cols);
                     _groupedColumns.GroupDescriptions.Add(new TableGroupDescription("Table"));
                     // sort by TableSize then by TotalSize
@@ -124,7 +129,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_groupedRelationships == null && ViewModel != null)
                 {
-                    var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this, VpaSort.Relationship, _globalOptions)).SelectMany(t => t.RelationshipsFrom);
+                    var rels = ViewModel.TablesWithFromRelationships.Select(t => new VpaTableViewModel(t, this, VpaSort.Relationship, _globalOptions, _eventAggregator)).SelectMany(t => t.RelationshipsFrom);
                     _groupedRelationships = CollectionViewSource.GetDefaultView(rels);
                     _groupedRelationships.GroupDescriptions.Add(new RelationshipGroupDescription("Table"));
                     _groupedRelationships.SortDescriptions.Add(new SortDescription("UsedSize", ListSortDirection.Descending));
@@ -142,7 +147,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var partitions = from t in ViewModel.Tables
                                      from p in t.Partitions
-                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this, VpaSort.Partition, _globalOptions), this, _globalOptions);
+                                     select new VpaPartitionViewModel(p, new VpaTableViewModel(t, this, VpaSort.Partition, _globalOptions, _eventAggregator), this, _globalOptions);
 
                     _groupedPartitions = CollectionViewSource.GetDefaultView(partitions);
                     _groupedPartitions.GroupDescriptions.Add(new PartitionGroupDescription("Table"));
@@ -441,6 +446,60 @@ namespace DaxStudio.UI.ViewModels
                 
                 File.WriteAllText(saveAsDlg.FileName, JsonSerializer.SerializeDatabase(Database, opts));
             }
+        }
+
+        public void ExportMeasures()
+        {
+            var filename = "measures.csv";
+            var saveAsDlg = new SaveFileDialog()
+            {
+                FileName = filename,
+                DefaultExt = "bim",
+                Title = "Save .bim file",
+                Filter = "Model BIM file (*.bim)|*.bim"
+            };
+            if (saveAsDlg.ShowDialog() != DialogResult.OK) return;
+
+            var csvFilePath = saveAsDlg.FileName;
+            var encoding = Encoding.UTF8;
+            var textWriter = new StreamWriter(csvFilePath, false, encoding);
+            // configure csv delimiter and culture
+            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = "," };
+            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
+            {
+                // write header row
+                csvWriter.WriteField( "TableName");
+                csvWriter.WriteField("MeasureName");
+                csvWriter.WriteField("Expression");
+                csvWriter.NextRecord();
+
+                // write out measures
+                foreach (var t in ViewModel.Model.Tables)
+                {
+                    foreach (var m in t.Measures)
+                    {
+                        csvWriter.WriteField(m.Table.TableName);
+                        csvWriter.WriteField(m.MeasureName);
+                        csvWriter.WriteField(m.MeasureExpression.Expression);
+                        csvWriter.NextRecord();
+                    }
+                }
+            }
+        }
+
+        private bool _updateDone = false;
+        public Task HandleAsync(VpaViewExpandedEvent message, CancellationToken cancellationToken)
+        {
+            if (_updateDone) return Task.CompletedTask;
+            var vw = GetView() as VertiPaqAnalyzerView;
+            if (vw == null) return Task.CompletedTask;
+            // HACK: force the first column to be 1 pixel wider on the 
+            //       first time it is expanded to prevent the alignment glitch
+            var firstCol = vw.grdTables.ColumnFromDisplayIndex(0);
+            firstCol.Width = new System.Windows.Controls.DataGridLength(firstCol.Width.Value + 1);
+            _updateDone = true;
+            vw.grdTables.UpdateLayout();
+            return Task.CompletedTask;
         }
 
         public bool ColumnsShowTwoColumns => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.TwoColumns;

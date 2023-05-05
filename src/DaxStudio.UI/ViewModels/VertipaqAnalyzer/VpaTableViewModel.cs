@@ -3,6 +3,8 @@ using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
 using DaxStudio.Interfaces;
+using Caliburn.Micro;
+using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -19,9 +21,11 @@ namespace DaxStudio.UI.ViewModels
         private readonly VertiPaqAnalyzerViewModel _parentViewModel;
         private readonly VpaSort _sort;
         private IGlobalOptions _options;
-        public VpaTableViewModel(VpaTable table, VertiPaqAnalyzerViewModel parentViewModel, VpaSort sort, IGlobalOptions options)
+        private IEventAggregator _eventAggregator;
+        public VpaTableViewModel(VpaTable table, VertiPaqAnalyzerViewModel parentViewModel, VpaSort sort, IGlobalOptions options, IEventAggregator eventAggregator)
         {
             _options = options;
+            _eventAggregator = eventAggregator;
             _table = table;
             _parentViewModel = parentViewModel;
             Columns = _table.Columns.Select(c => new VpaColumnViewModel(c, this, options));
@@ -180,8 +184,11 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
-
-        public bool IsExpanded { get; set; }
+        private bool _isExpanded = false;
+        public bool IsExpanded { get => _isExpanded;
+            set { _isExpanded = value;
+                _eventAggregator.PublishOnUIThreadAsync(new VpaViewExpandedEvent());
+            } }
         public long RelationshipMaxToCardinality { get; }
 
     }

@@ -347,6 +347,7 @@
     <Compile Include="Events\ThemeChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
     <Compile Include="Events\ViewMetricsCompleteEvent.cs" />
+    <Compile Include="Events\VpaViewExpandedEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />

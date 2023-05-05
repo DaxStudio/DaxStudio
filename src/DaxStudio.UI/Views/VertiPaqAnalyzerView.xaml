@@ -173,8 +173,7 @@
                           CanUserSortColumns="True" 
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.IsContainerVirtualizable="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling"
-                          EnableRowVirtualization="True"
+            x:Name="grdTables"
                           CanUserReorderColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
@@ -184,7 +183,7 @@
                                 <Setter Property="ContentTemplate">
                                     <Setter.Value>
                                         <DataTemplate>
-                                            <TextBlock TextWrapping="Wrap" Text="{Binding}"></TextBlock>
+                                            <TextBlock TextWrapping="Wrap" Text="{Binding}" />
                                         </DataTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -204,12 +203,15 @@
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
                                                     <Expander IsExpanded="{Binding Name.IsExpanded}" Style="{StaticResource ArrowGroupExpander}">
                                                         <Expander.Header>
-                                                            <StackPanel Orientation="Horizontal" >
-                                                                <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colColumn, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
-                                                                <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRows}" Style="{StaticResource NumBlockBoldStyle}"/>
-<!--  Remove column Total Size
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Name.TableName}"  Style="{StaticResource TextBlockBoldStyle}"
+                                                                           Width="{Binding ActualWidth, ElementName=colColumn, Converter={StaticResource MinusConverter}, ConverterParameter=16}"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                                <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRows}" Style="{StaticResource NumBlockBoldStyle}" />
+                                                               
+                                                                <!--  Remove column Total Size
                                                                 <TextBlock Text="{Binding Name.TableSize, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colTableSize}" Style="{StaticResource NumBlockBoldStyle}"/>
--->
+                                                                -->
                                                                 <TextBlock Text="{Binding Name.TableSize, StringFormat=N0}" x:Name="hdrColumns" Style="{StaticResource NumBlockBoldStyle}" TextTrimming="CharacterEllipsis" Width="{Binding ActualWidth, ElementName=colColumns}"/>
                                                                 <TextBlock Text="{Binding Name.DataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colData}"/>
                                                                 <TextBlock Text="{Binding Name.DictionarySize,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colDictionary}" />
@@ -231,8 +233,7 @@
                                                                 <TextBlock Text="{Binding Name.SegmentsResident,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsResidentNumber}" />
                                                                 <TextBlock Text="{Binding Name.SegmentsAverageTemperature,StringFormat=N2}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsAverageTemperature}" />
                                                                 <TextBlock Text="{Binding Name.SegmentsLastAccessed,StringFormat='{}{0:yy.MM.dd HH:mm:ss}'}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colSegmentsLastAccessed}" />
-
-                                                            </StackPanel>
+                                                                </StackPanel>
 
                                                         </Expander.Header>
 
@@ -1223,7 +1224,9 @@
                             <Menu DockPanel.Dock="Right">
                                 <MenuItem Header="...">
                                     <MenuItem Header="Export .bim file" cal:Message.Attach="[Event Click]=[ExportBimFile()]"/>
+                                    <MenuItem Header="Export Measures" cal:Message.Attach="[Event Click]=[ExportMeasures()]"/>
                                 </MenuItem>
+                                
                             </Menu>
                             <TextBlock Text="{Binding SummaryViewModel.ModelName}" Grid.Column="1" Grid.ColumnSpan="6" 
                                        DockPanel.Dock="Left"
