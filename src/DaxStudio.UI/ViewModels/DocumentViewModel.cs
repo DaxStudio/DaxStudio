@@ -2411,7 +2411,7 @@ namespace DaxStudio.UI.ViewModels
             DefineMeasureOnEditor(message.MeasureName, message.MeasureExpression);
             if (!string.IsNullOrEmpty(message.FormatStringExpression))
             {
-                DefineMeasureOnEditor(message.MeasureFormatStringName, message.FormatStringExpression);
+                DefineMeasureOnEditor(message.MeasureFormatStringName, ReplaceSelectedMeasure(message.FormatStringExpression, message.MeasureName));
             }
             return Task.CompletedTask;
         }
@@ -2419,8 +2419,14 @@ namespace DaxStudio.UI.ViewModels
         const string MODELMEASURES_BEGIN = "---- MODEL MEASURES BEGIN ----";
         const string MODELMEASURES_END = "---- MODEL MEASURES END ----";
         
-        private readonly Regex defineMeasureRegex_ModelMeasures = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=" + MODELMEASURES_END + @")", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private readonly Regex defineMeasureRegex_DefineOnly = new Regex(@"(?<=DEFINE([\s\t])*?)(\w(.|\n)*?)(?=\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex defineMeasureRegex_ModelMeasures = new Regex(@"(?<=DEFINE)((.|\n)*?)(?=" + MODELMEASURES_END + @")", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex defineMeasureRegex_DefineOnly = new Regex(@"(?<=DEFINE([\s\t])*?)(\w(.|\n)*?)(?=\z)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex replaceSelectedMeasure = new Regex(@"SELECTEDMEASURE\s*\(\s*\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        static string ReplaceSelectedMeasure( string expression, string replaceMeasureName )
+        {
+            return replaceSelectedMeasure.Replace( expression, $"/* SELECTEDMEASURE() --> */{replaceMeasureName}/* <-| */");
+        }
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
         {
