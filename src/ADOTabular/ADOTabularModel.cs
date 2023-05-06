@@ -32,6 +32,7 @@ namespace ADOTabular
             Relationships = new List<ADOTabularRelationship>();
             TOMModel = new Model(){Name = name};
             MeasureExpressions = new Dictionary<string, string>();
+            MeasureFormatStringExpressions = new Dictionary<string, string>();
         }
         public ADOTabularDatabase Database { get; }
         public string BaseModelName { get; private set; }
@@ -82,6 +83,7 @@ namespace ADOTabular
         
         public double CSDLVersion { get; set; }
 
-        public Dictionary<string,string> MeasureExpressions { get; } 
+        public Dictionary<string, string> MeasureExpressions { get; }
+        public Dictionary<string, string> MeasureFormatStringExpressions { get; }
     }
 }

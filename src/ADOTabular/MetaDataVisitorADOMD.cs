@@ -159,6 +159,7 @@ namespace ADOTabular
                         , dr["DESCRIPTION"].ToString()
                         , bool.Parse(dr["MEASURE_IS_VISIBLE"].ToString())
                         , dr["EXPRESSION"].ToString()
+                        , null
                         )
                         );
             }
@@ -189,8 +190,35 @@ namespace ADOTabular
             // then get all the measures for the current table
             DataTable dtMeasures = conn.GetSchemaDataSet("TMSCHEMA_MEASURES", resCollMeasures).Tables[0];
 
+            // Add format string definitions if available
+            DataTable dtFormatStringDefinitions = null;
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS"))
+            {
+                // TMSCHEMA_FORMAT_STRING_DEFINITIONS only gets DatabaseName as restriction
+                dtFormatStringDefinitions = conn.GetSchemaDataSet("TMSCHEMA_FORMAT_STRING_DEFINITIONS", new AdomdRestrictionCollection
+                {
+                    {"DatabaseName", conn.Database.Name}
+                }).Tables[0];
+            }
+
             foreach (DataRow dr in dtMeasures.Rows)
             {
+                string formatStringExpression = null;
+
+                // Add format string if available
+                if (dtFormatStringDefinitions != null)
+                {
+                    ulong? id = dr["FormatStringDefinitionID"] as ulong?;
+                    if (id.HasValue && id > 0)
+                    {
+                        var formatStrings = dtFormatStringDefinitions.Select($"ID = {id}");
+                        if (formatStrings.Length > 0)
+                        {
+                            formatStringExpression = formatStrings[0]["Expression"].ToString();
+                        }
+                    }
+                }
+
                 ret.Add(dr["Name"].ToString()
                     , new ADOTabularMeasure(measures.Table
                         , dr["Name"].ToString()
@@ -199,6 +227,7 @@ namespace ADOTabular
                         , dr["Description"].ToString()
                         , !bool.Parse(dr["IsHidden"].ToString())
                         , dr["Expression"].ToString()
+                        , formatStringExpression
                         )
                         );
             }

@@ -8,7 +8,7 @@ namespace ADOTabular
     {
 
         public ADOTabularMeasure(ADOTabularTable table, string internalReference, string name, string caption, string description,
-                                bool isVisible, string expression)
+                                bool isVisible, string expression, string formatStringExpression)
         {
             Table = table;
             InternalReference = internalReference;
@@ -17,6 +17,7 @@ namespace ADOTabular
             Description = description;
             IsVisible = isVisible;
             Expression = expression;
+            FormatStringExpression = formatStringExpression;
         }
 
         public string InternalReference { get; private set; }
@@ -40,6 +41,16 @@ namespace ADOTabular
                     : $"[{Name.Replace("]", "]]")}]";
             }
         }
+        public virtual string FormatStringDaxName
+        {
+            get
+            {
+                // for measures we exclude the table name
+                return ObjectType == ADOTabularObjectType.Column
+                    ? $"{Table.DaxName}[_{Name.Replace("]", "]]")} FormatString]"
+                    : $"[_{Name.Replace("]", "]]")} FormatString]";
+            }
+        }
 
         public string Description { get; set; }
 
@@ -50,6 +61,8 @@ namespace ADOTabular
         public string DataTypeName { get { return DataType==null?"n/a":DataType.ToString().Replace("System.", ""); } }
 
         public string Expression { get; set; }
+
+        public string FormatStringExpression { get; set; }
 
         public static MetadataImages MetadataImage => MetadataImages.Measure;
 

@@ -630,7 +630,7 @@ namespace DaxStudio.UI.ViewModels
                 var dependentMeasures = FindDependentMeasures(column.Name);
                 foreach (var measure in dependentMeasures)
                 {
-                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression, null, null));
                 }
             }
             catch (Exception ex)
@@ -651,7 +651,7 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var measure in measures)
                 {
-                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression));
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression, measure.FormatStringDaxName, measure.FormatStringExpression));
                 }
             }
             catch (Exception ex)
@@ -698,7 +698,7 @@ namespace DaxStudio.UI.ViewModels
                 string measureName = string.Format("'{0}'[{1}]", item.Caption, "DumpFilters" + (allTables ? "" : " " + item.Caption));
                 string measureExpression = _metadataProvider.DefineFilterDumpMeasureExpression(item.Caption, allTables);
 
-                EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureName, measureExpression));
+                EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureName, measureExpression, null, null));
             }
             catch (Exception ex)
             {
@@ -713,7 +713,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (item == null) return;
 
-                ADOTabularColumn column; string measureExpression = null, measureName = null;
+                ADOTabularColumn column; string measureExpression = null, measureName = null, measureFormatStringName = null, formatStringExpression = null;
 
                 if (item.Column is ADOTabularKpiComponent)
                 {
@@ -743,12 +743,14 @@ namespace DaxStudio.UI.ViewModels
                 if (string.IsNullOrEmpty(measureName))
                 {
                     measureName = string.Format("{0}{1}", column.Table.DaxName, column.DaxName);
+                    measureFormatStringName = string.Format("{0}{1}", column.Table.DaxName, column.DaxFormatStringName);
                 }
 
                 if (expandMeasure)
                 {
                     try
                     {
+                        // We intentionally do not expand format strings of dependent measures
                         measureExpression = ExpandDependentMeasure(column);
                     }
                     catch (InvalidOperationException ex)
@@ -765,9 +767,10 @@ namespace DaxStudio.UI.ViewModels
                 if (string.IsNullOrEmpty(measureExpression))
                 {
                     measureExpression = column.MeasureExpression;
+                    formatStringExpression = column.FormatStringExpression;
                 }
 
-                EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureName, measureExpression));
+                EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureName, measureExpression, measureFormatStringName, formatStringExpression));
             }
             catch (Exception ex)
             {

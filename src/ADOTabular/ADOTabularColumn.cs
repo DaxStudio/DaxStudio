@@ -49,13 +49,24 @@ namespace ADOTabular
         public string Name { get; private set; }
         public string Contents { get; private set; }
 
-        public virtual string DaxName {
+        public virtual string DaxName
+        {
             get
             {
                 // for measures we exclude the table name
-                return ObjectType == ADOTabularObjectType.Column  
-                    ? $"{Table.DaxName}[{Name.Replace("]","]]")}]"
+                return ObjectType == ADOTabularObjectType.Column
+                    ? $"{Table.DaxName}[{Name.Replace("]", "]]")}]"
                     : $"[{Name.Replace("]", "]]")}]";
+            }
+        }
+        public virtual string DaxFormatStringName
+        {
+            get
+            {
+                // for measures we exclude the table name
+                return ObjectType == ADOTabularObjectType.Column
+                    ? $"{Table.DaxName}[_{Name.Replace("]", "]]")} FormatString]"
+                    : $"[_{Name.Replace("]", "]]")} FormatString]";
             }
         }
 
@@ -106,6 +117,7 @@ namespace ADOTabular
         }
 
         //RRomano: Is it worth it to create the ADOTabularMeasure or reuse this in the ADOTabularColumn?
+        // --> marcorus: we should complete the compatibility with VPAX import, not sure it works in all the cases
         public string MeasureExpression
         {
             get
@@ -125,6 +137,33 @@ namespace ADOTabular
 
                 //return measure?.Expression;
                 var expression = this.Table.Model.MeasureExpressions[this.Name];
+                return expression;
+            }
+        }
+
+        public string FormatStringExpression
+        {
+            get
+            {
+                if ((MetadataImage != MetadataImages.Measure)
+                    && (MetadataImage != MetadataImages.HiddenMeasure)
+                    && (MetadataImage != MetadataImages.Kpi)
+                    )
+                {
+                    return null;
+                }
+
+                // Return the measure expression from the table measures dictionary 
+                // (the measures are loaded and cached on the use of the Table.Measures property)
+
+                //var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
+
+                //return measure?.Expression;
+                string expression =
+                    this.Table.Model.MeasureFormatStringExpressions.Any(fs => fs.Key == this.Name)
+                        ? this.Table.Model.MeasureFormatStringExpressions[this.Name]
+                        : null;
+
                 return expression;
             }
         }

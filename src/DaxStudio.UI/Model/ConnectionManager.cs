@@ -26,6 +26,7 @@ using DaxStudio.Controls.DataGridFilter.Querying;
 using DaxStudio.UI.ViewModels;
 using System.Data.Common;
 using System.Data.OleDb;
+using System.Windows.Forms.VisualStyles;
 
 namespace DaxStudio.UI.Model
 {
@@ -783,12 +784,20 @@ namespace DaxStudio.UI.Model
 
         public List<ADOTabularMeasure> FindDependentMeasures(string measureName)
         {
+            if (!IsConnected)
+            {
+                // We do not support offline analysis of dependent measures
+                // By using VPAX we could implement it by using the old algorithm with search/replace
+                // but it would be better to wait for a tokenizer before implementing it
+                throw new ApplicationException("Connection required to execute FindDependentMeasures");
+            }
+
             // New algorithm using DEPENDENCY view
             // 
             // TODO we could pass a query or a string as a parameter,
             // so that if the entire query is used as a parameter we generate all the measures
             var modelMeasures = GetAllMeasures();
-
+            
             var dependentMeasures = new List<ADOTabularMeasure>();
 
             Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();

@@ -70,6 +70,7 @@ namespace ADOTabular
 
                 }
                 var expressionDict = t.Model.MeasureExpressions;
+                var formatStringExpressionsDict = t.Model.MeasureFormatStringExpressions;
                 foreach (var m in table.Measures)
                 {
                     //TODO - do we need code to identify KPI columns
@@ -107,6 +108,10 @@ namespace ADOTabular
                         // TODO - add display folder handling
                         ProcessDisplayFolders(t, m, measure);
                         expressionDict.Add(m.MeasureName.Name, m.MeasureExpression.Expression);
+                        if (!string.IsNullOrEmpty(m.FormatStringExpression.Expression))
+                        {
+                            formatStringExpressionsDict.Add(m.MeasureName.Name, m.FormatStringExpression.Expression);
+                        }
                         t.Columns.Add(measure);
                     }
 
@@ -176,7 +181,7 @@ namespace ADOTabular
             foreach (var m in t.Measures)
             {
                 //TODO - do we need code to identify KPI columns
-                var measure = new ADOTabularMeasure(measures.Table, m.MeasureName.Name, m.MeasureName.Name, m.MeasureName.Name, m.Description.Note, !m.IsHidden, m.MeasureExpression.Expression);
+                var measure = new ADOTabularMeasure(measures.Table, m.MeasureName.Name, m.MeasureName.Name, m.MeasureName.Name, m.Description.Note, !m.IsHidden, m.MeasureExpression.Expression, m.FormatStringExpression.Expression ); 
                 ret.Add(measure.Name, measure);
             }
             return ret;

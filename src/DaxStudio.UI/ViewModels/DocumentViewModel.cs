@@ -2409,6 +2409,10 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(DefineMeasureOnEditor message, CancellationToken cancellationToken)
         {
             DefineMeasureOnEditor(message.MeasureName, message.MeasureExpression);
+            if (!string.IsNullOrEmpty(message.FormatStringExpression))
+            {
+                DefineMeasureOnEditor(message.MeasureFormatStringName, message.FormatStringExpression);
+            }
             return Task.CompletedTask;
         }
 

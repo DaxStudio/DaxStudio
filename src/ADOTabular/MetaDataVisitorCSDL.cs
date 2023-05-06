@@ -79,18 +79,20 @@ namespace ADOTabular
                 // TODO get measure definitions asynch
                 var measureDict = model.MeasureExpressions;
                 measureDict.Clear();
-                GetMeasuresFromDmv(measureDict, conn);
+                var formatStringsDict = model.MeasureFormatStringExpressions;
+                formatStringsDict.Clear();
+                GetMeasuresFromDmv(measureDict, formatStringsDict, conn);
             });
         }
 
 
 
-        internal static void GetMeasuresFromDmv(Dictionary<string,string> measureExpressions,  IADOTabularConnection conn)
+        internal static void GetMeasuresFromDmv(Dictionary<string,string> measureExpressions, Dictionary<string, string> measureFormatStringsExpressions, IADOTabularConnection conn)
         {
             // need to check if the DMV collection has the TMSCHEMA_MEASURES view, 
             // and if this is a connection with admin rights
             // and if it is not a PowerPivot model (as they seem to throw an error about the model needing to be in the "new" tabular mode)
-            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection && !conn.IsTestingRls && !conn.IsPowerPivot) GetTmSchemaMeasures(measureExpressions, conn);
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_MEASURES") && conn.IsAdminConnection && !conn.IsTestingRls && !conn.IsPowerPivot) GetTmSchemaMeasures(measureExpressions, measureFormatStringsExpressions, conn);
             else GetMdSchemaMeasures(measureExpressions, conn);
         }
 
@@ -121,7 +123,7 @@ namespace ADOTabular
             
         }
 
-        private static void GetTmSchemaMeasures(Dictionary<string, string> measureExpressions, IADOTabularConnection conn)
+        private static void GetTmSchemaMeasures(Dictionary<string, string> measureExpressions, Dictionary<string, string> measureFormatStringsExpressions, IADOTabularConnection conn)
         {
 
             var resCollMeasures = new AdomdRestrictionCollection
@@ -134,20 +136,41 @@ namespace ADOTabular
             // then get all the measures for the current table
             DataTable dtMeasures = conn.GetSchemaDataSet("TMSCHEMA_MEASURES", resCollMeasures).Tables[0];
 
+            // Add format string definitions if available
+            DataTable dtFormatStringDefinitions = null;
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS"))
+            {
+                dtFormatStringDefinitions = conn.GetSchemaDataSet("TMSCHEMA_FORMAT_STRING_DEFINITIONS", resCollMeasures).Tables[0];
+            }
+
             foreach (DataRow dr in dtMeasures.Rows)
             {
-                measureExpressions.Add(dr["Name"].ToString()
-                                    , dr["Expression"].ToString()      
-                                    );
+                measureExpressions.Add(
+                    dr["Name"].ToString(),
+                    dr["Expression"].ToString()
+                );
+
+                // Add format string if available
+                if (dtFormatStringDefinitions != null)
+                {
+                    ulong? id = dr["FormatStringDefinitionID"] as ulong?;
+                    if (id.HasValue && id > 0)
+                    {
+                        var formatStrings = dtFormatStringDefinitions.Select($"ID = {id}");
+                        if (formatStrings.Length > 0)
+                        {
+                            measureFormatStringsExpressions.Add(
+                                dr["Name"].ToString(),
+                                formatStrings[0]["Expression"].ToString()
+                            );
+                        }
+                    }
+                }
             }
+
+
+
         }
-
-
-
-
-
-
-
 
         private void GetHierarchiesFromDmv()
         {
@@ -645,7 +668,7 @@ namespace ADOTabular
                 
                 if (!tab.Measures.ContainsKey(invalidKpi.Name))
                 {
-                    var newMeasure = new ADOTabularMeasure(tab, invalidKpi.InternalReference, invalidKpi.Name, invalidKpi.Caption, invalidKpi.Description, invalidKpi.IsVisible, invalidKpi.MeasureExpression);
+                    var newMeasure = new ADOTabularMeasure(tab, invalidKpi.InternalReference, invalidKpi.Name, invalidKpi.Caption, invalidKpi.Description, invalidKpi.IsVisible, invalidKpi.MeasureExpression, null);
                     tab.Measures.Add(newMeasure);
                 }
             }
