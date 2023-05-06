@@ -2425,7 +2425,7 @@ namespace DaxStudio.UI.ViewModels
 
         static string ReplaceSelectedMeasure( string expression, string replaceMeasureName )
         {
-            return replaceSelectedMeasure.Replace( expression, $"/* SELECTEDMEASURE() --> */{replaceMeasureName}/* <-| */");
+            return replaceSelectedMeasure.Replace( expression, $"/* SELECTEDMEASURE() --> */ {replaceMeasureName} /* <-| */");
         }
 
         private void DefineMeasureOnEditor(string measureName, string measureExpression)
