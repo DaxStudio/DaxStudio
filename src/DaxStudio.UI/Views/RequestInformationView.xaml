@@ -88,16 +88,21 @@
         <!--<CheckBox x:Name="Unrestricted2" Content="Unrestricted" Grid.Row="0" />
         <Label Grid.Row="0" Grid.Column="1" Content="Can see all data" Foreground="DarkGray" VerticalAlignment="Top" Padding="5 0"/>-->
         <Label Content="Activity ID" 
-                Grid.Row="0"/>
+                Grid.Row="0"
+               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
         <Label Content="Start Datetime" 
-                Grid.Row="1"/>
+                Grid.Row="1"
+               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
         <Label Content="Command Text" 
-                Grid.Row="2"/>
+                Grid.Row="2"
+               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
         <Label Content="Parameters"  Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}"
-                Grid.Row="3"/>
+                Grid.Row="3"
+               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-            <TextBlock x:Name="ActivityID"/>
+            <TextBlock x:Name="ActivityID"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
             <Button x:Name="CopyActivityID" Style="{StaticResource CopyButton}"
                     cal:Message.Attach="[Event Click] = [Action Copy(ActivityID)]"
                     ToolTip="Copy ActivityID to clipboard">
@@ -105,7 +110,8 @@
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
-            <TextBlock x:Name="StartDatetimeFormatted"/>
+            <TextBlock x:Name="StartDatetimeFormatted"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
             <Button x:Name="CopyStartDatetime" Style="{StaticResource CopyButton}"
                     cal:Message.Attach="[Event Click] = [Action Copy(StartDatetimeFormatted)]"
                     ToolTip="Copy StartDateTime to clipboard">
@@ -113,7 +119,7 @@
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
-            <TextBlock x:Name="CommandText" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="120" />
+            <TextBlock x:Name="CommandText" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="120" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
             <Button x:Name="CopyCommandText" Style="{StaticResource CopyButton}"
                     cal:Message.Attach="[Event Click] = [Action Copy(CommandText)]"
                     VerticalAlignment="Top"
