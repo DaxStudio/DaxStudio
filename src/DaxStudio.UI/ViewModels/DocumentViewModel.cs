@@ -55,6 +55,7 @@ using Constants = DaxStudio.Common.Constants;
 using Timer = System.Timers.Timer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 using System.Linq.Dynamic;
+using DaxStudio.Controls.PropertyGrid;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -2921,42 +2922,29 @@ namespace DaxStudio.UI.ViewModels
             // we can only load trace watchers if we are connected to a server
             //if (!this.IsConnected) return;
 
-            foreach (var tw in ToolWindows)
+            foreach (ISaveState tw in ToolWindows.Where(w => w is ISaveState && !(w is ITraceWatcher)))
             {
-                var loader = tw as ISaveState;
-                if (loader == null) continue;
-
-                loader.Load(FileName);
+                tw.Load(FileName);
             }
 
-            foreach (var tw in TraceWatchers)
+            foreach (ISaveState tw in TraceWatchers.Where(w => w is ISaveState))
             {
-                var loader = tw as ISaveState;
-                if (loader == null) continue;
-
-                loader.Load(FileName);
+                tw.Load(FileName);
             }
         }
 
         private void LoadState(Package package)
         {
             if (!_isLoadingFile) return;
-            _isLoadingFile = true;
 
-            foreach (var tw in ToolWindows)
+            foreach (ISaveState tw in ToolWindows.Where(w => w is ISaveState && !(w is ITraceWatcher)))
             {
-                var loader = tw as ISaveState;
-                if (loader == null) continue;
-
-                loader.LoadPackage(package);
+                tw.LoadPackage(package);
             }
 
-            foreach (var tw in TraceWatchers)
+            foreach (ISaveState tw in TraceWatchers.Where(w => w is ISaveState))
             {
-                var loader = tw as ISaveState;
-                if (loader == null) continue;
-
-                loader.LoadPackage(package);
+                tw.LoadPackage(package);
             }
 
             // check for embedded vpax file
@@ -2967,7 +2955,7 @@ namespace DaxStudio.UI.ViewModels
                 ToolWindows.Add(vpaView);
                 vpaView.LoadPackage(package);
             }
-            _isLoadingFile = false;
+
         }
 
 
@@ -2987,20 +2975,32 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 }
 
-                _isLoadingFile = true;
-               
-                if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                try
                 {
+                    _isLoadingFile = true;
 
-                    using (var package = LoadPackageFile())
+                    if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                     {
-                        LoadState(package);
+
+                        using (var package = LoadPackageFile())
+                        {
+                            LoadState(package);
+                        }
+                    }
+                    else
+                    {
+                        LoadSingleFile();
+                        LoadState();
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    LoadSingleFile();
-                    LoadState();
+                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error loading file"));
+                }
+                finally
+                {
+                    _isLoadingFile = false;
                 }
             }
             else
@@ -3017,69 +3017,46 @@ namespace DaxStudio.UI.ViewModels
         private Package LoadPackageFile()
         {
             Package package = null;
-            try
+            
+            var editor = GetEditor();
+
+            package = Package.Open(FileName);
+
+            Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
+            if (!package.PartExists(uriTom)) return package;
+
+            var part = package.GetPart(uriTom);
+            using (TextReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
             {
-                var editor = GetEditor();
-
-                package = Package.Open(FileName);
-
-                Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
-                if (!package.PartExists(uriTom)) return package;
-
-                var part = package.GetPart(uriTom);
-                using (TextReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
+                // put contents in edit window
+                editor.Dispatcher.Invoke(() =>
                 {
-                    // put contents in edit window
-                    editor.Dispatcher.Invoke(() =>
-                    {
-                        editor.Document.BeginUpdate();
-                        editor.Document.Text = tr.ReadToEnd();
-                        editor.Document.EndUpdate();
-                    });
-                    tr.Close();
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = tr.ReadToEnd();
+                    editor.Document.EndUpdate();
+                });
+                tr.Close();
 
-                }
-
-                return package;
-
-            }
-            catch (Exception ex)
-            {
-                // todo - need to test what happens if we enter this catch block
-                //        
-                _isLoadingFile = false;
-                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "LoadFile", ex.Message);
-                OutputError($"Error opening file: {ex.Message}");
             }
 
             return package;
+            
         }
 
         private void LoadSingleFile()
         {
-            try
+            using (TextReader tr = new StreamReader(FileName, true))
             {
-                using (TextReader tr = new StreamReader(FileName, true))
+                var editor = GetEditor();
+                // put contents in edit window
+                editor.Dispatcher.Invoke(() =>
                 {
-                    var editor = GetEditor();
-                    // put contents in edit window
-                    editor.Dispatcher.Invoke(() =>
-                    {
-                        editor.Document.BeginUpdate();
-                        editor.Document.Text = tr.ReadToEnd();
-                        editor.Document.EndUpdate();
-                    });
-                    tr.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                // todo - need to test what happens if we enter this catch block
-                //        
-                _isLoadingFile = false;
-                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "LoadFile", ex.Message);
-                OutputError($"Error opening file: {ex.Message}");
-            }
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = tr.ReadToEnd();
+                    editor.Document.EndUpdate();
+                });
+                tr.Close();
+            }   
         }
 
         public new string DisplayName
@@ -4079,7 +4056,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ShowTraceWindowEvent message, CancellationToken cancellationToken)
         {
-            ToolWindows.Add(message.TraceWatcher);
+            if (!ToolWindows.Contains(message.TraceWatcher)) ToolWindows.Add(message.TraceWatcher);
             return Task.CompletedTask;
         }
 
