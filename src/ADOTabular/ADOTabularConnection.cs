@@ -191,11 +191,11 @@ namespace ADOTabular
                 _adomdConn.ChangeDatabase(_currentDatabase);
             }
 
-            ConnectionChanged?.Invoke(this, new EventArgs());
-
             _spid = 0; // reset the spid to 0 so that it will get re-evaluated
                        // the PowerBI xmla endpoint sets the permissions to call DISCOVER_SESSIONS on a per data set basis
                        // depending on whether the user has admin access to the given data set
+
+            ConnectionChanged?.Invoke(this, new EventArgs());
 
         }
 
@@ -328,8 +328,8 @@ namespace ADOTabular
 
         public DataSet GetSchemaDataSet(string dataSet)
         {
-            if (_adomdConn.State != ConnectionState.Open) _adomdConn.Open();
-            return _adomdConn.GetSchemaDataSet(dataSet, null,true);
+            if (_adomdConn?.State != ConnectionState.Open && _adomdConn != null) _adomdConn.Open();
+            return _adomdConn?.GetSchemaDataSet(dataSet, null,true);
         }
 
 

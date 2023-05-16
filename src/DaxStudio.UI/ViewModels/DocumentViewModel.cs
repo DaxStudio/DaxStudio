@@ -1553,13 +1553,22 @@ namespace DaxStudio.UI.ViewModels
         public void CommentSelection()
         {
             var editor = GetEditor();
-            if (editor.Dispatcher.CheckAccess())
+            if (editor == null) return;
+            try
             {
-                editor.CommentSelectedLines();
+                if (editor.Dispatcher.CheckAccess())
+                {
+                    editor.CommentSelectedLines();
+                }
+                else
+                {
+                    editor.Dispatcher.Invoke(() => editor.CommentSelectedLines());
+                }
             }
-            else
+            catch (Exception ex)
             {
-                editor.Dispatcher.Invoke(() => editor.CommentSelectedLines());
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CommentSelection), "Error commenting selection");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "There was an error commenting the selection"));
             }
         }
 
@@ -1579,13 +1588,22 @@ namespace DaxStudio.UI.ViewModels
         public void UnCommentSelection()
         {
             var editor = GetEditor();
-            if (editor.Dispatcher.CheckAccess())
+            if (editor == null) return;
+            try
             {
-                editor.UncommentSelectedLines();
+                if (editor.Dispatcher.CheckAccess())
+                {
+                    editor.UncommentSelectedLines();
+                }
+                else
+                {
+                    editor.Dispatcher.Invoke(() => editor.UncommentSelectedLines());
+                }
             }
-            else
+            catch (Exception ex)
             {
-                editor.Dispatcher.Invoke(() => editor.UncommentSelectedLines());
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UnCommentSelection), "Error uncommenting selection");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "There was an error uncommenting the selection"));
             }
         }
 
@@ -3398,7 +3416,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private int _spid = -1;
-        public int Spid { get => _spid;
+        public int Spid { get => Connection.SPID;//  _spid;
             private set {
                 _spid = value;
                 NotifyOfPropertyChange(nameof(Spid));

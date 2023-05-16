@@ -21,6 +21,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<ConnectionClosedEvent>
         , IHandle<ActivateDocumentEvent>
+        , IHandle<DatabaseChangedEvent>
     {
         
         [ImportingConstructor]
@@ -226,6 +227,11 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        
+        public Task HandleAsync(DatabaseChangedEvent message, CancellationToken cancellationToken)
+        {
+            Spid = ActiveDocument.Spid.ToString();
+            NotifyOfPropertyChange(nameof(Spid));
+            return Task.CompletedTask;
+        }
     }
 }

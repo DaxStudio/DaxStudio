@@ -506,5 +506,12 @@ namespace DaxStudio.UI.ViewModels
         public bool ColumnsShowDashedTableColumn => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.TableDashColumn;
         public bool ColumnsShowDaxColumnName => this._globalOptions.VpaTableColumnDisplay == DaxStudio.Interfaces.Enums.VpaTableColumnDisplay.DaxNameFormat;
 
+        public void GenerateRIVioationQuery(object args)
+        {
+            var rel = args as VpaRelationshipViewModel;
+            if (rel == null) return;
+            System.Diagnostics.Debug.WriteLine(rel.RiViolationQuery);
+            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(rel.RiViolationQuery));
+        }
     }
 }

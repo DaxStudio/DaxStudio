@@ -138,7 +138,9 @@ namespace ADOTabular
 
             // Add format string definitions if available
             DataTable dtFormatStringDefinitions = null;
-            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS"))
+            int.TryParse(conn.Database.CompatibilityLevel, out int iCompatLevel);
+            // FormatString definitions are only available in compat level 1470 or above
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS") && iCompatLevel >= 1470)
             {
                 dtFormatStringDefinitions = conn.GetSchemaDataSet("TMSCHEMA_FORMAT_STRING_DEFINITIONS", resCollMeasures).Tables[0];
             }
@@ -151,7 +153,7 @@ namespace ADOTabular
                 );
 
                 // Add format string if available
-                if (dtFormatStringDefinitions != null)
+                if (dtFormatStringDefinitions != null  && dtFormatStringDefinitions.Rows.Count > 0)
                 {
                     ulong? id = dr["FormatStringDefinitionID"] as ulong?;
                     if (id.HasValue && id > 0)

@@ -1,19 +1,4 @@
-﻿using System.ComponentModel.Composition;
-using Caliburn.Micro;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
-using System.Windows.Data;
-using System;
-using System.ComponentModel;
-using Serilog;
-using System.Windows.Input;
-using DaxStudio.Interfaces;
-using Dax.ViewModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Globalization;
-using System.Windows.Navigation;
+﻿using Dax.ViewModel;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -34,5 +19,15 @@ namespace DaxStudio.UI.ViewModels
         public long InvalidRows => _rel.InvalidRows;
         public string SampleReferentialIntegrityViolations => _rel.SampleReferentialIntegrityViolations;
         public double OneToManyRatio => _rel.OneToManyRatio;
+
+        public string RiViolationQuery => $@"// Values in: {_rel.FromColumnName} missing in: {_rel.ToColumnName} 
+EVALUATE 
+CALCULATETABLE ( 
+    DISTINCT ( {_rel.FromColumnName} ), 
+    ISBLANK( {_rel.ToColumnName} ),
+    USERELATIONSHIP( {_rel.FromColumnName}, {_rel.ToColumnName} )
+)";
+
+
     }
 }

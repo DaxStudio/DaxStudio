@@ -192,7 +192,9 @@ namespace ADOTabular
 
             // Add format string definitions if available
             DataTable dtFormatStringDefinitions = null;
-            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS"))
+            int.TryParse(conn.Database.CompatibilityLevel, out int iCompatLevel);
+            // FormatString definitions are only available in compat level 1470 or above
+            if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS") && iCompatLevel >= 1470)
             {
                 // TMSCHEMA_FORMAT_STRING_DEFINITIONS only gets DatabaseName as restriction
                 dtFormatStringDefinitions = conn.GetSchemaDataSet("TMSCHEMA_FORMAT_STRING_DEFINITIONS", new AdomdRestrictionCollection

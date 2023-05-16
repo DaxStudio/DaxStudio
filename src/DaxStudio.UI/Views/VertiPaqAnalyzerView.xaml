@@ -75,6 +75,28 @@
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
+
+            <controls:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            
+            <ContextMenu x:Key="RiViolationsMenu">
+                <MenuItem Header="Generate Query for all RI Violations"
+                          cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                          cal:Message.Attach="GenerateRIVioationQuery($dataContext)"
+                          />
+            </ContextMenu>
+            
+            <Style x:Key="RiViolationStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+                <Setter Property="ContextMenu"
+                        Value="{StaticResource RiViolationsMenu}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding MissingKeys}"
+                                 Value="0">
+                        <Setter Property="ContextMenu"
+                                Value="{x:Null}"/>
+                    </DataTrigger>
+                        
+                </Style.Triggers>
+            </Style>
             <Style x:Key="NumCell" >
                 
                 <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
@@ -134,7 +156,8 @@
             <controls:BindingProxy x:Key="ColumnsShowDashedTableColumn" Data="{Binding ColumnsShowDashedTableColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
             <controls:BindingProxy x:Key="ColumnsShowDaxColumnName" Data="{Binding ColumnsShowDaxColumnName, Converter={StaticResource BoolToCollapsedConverter}}"/>
             <controls:BindingProxy x:Key="ColumnsShowTwoColumns" Data="{Binding ColumnsShowTwoColumns, Converter={StaticResource BoolToCollapsedConverter}}"/>
-            
+
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
@@ -822,6 +845,7 @@
                     SnapsToDevicePixels="True">
                     <DataGrid ItemsSource="{Binding GroupedRelationships, UpdateSourceTrigger=PropertyChanged}" 
                           ClipboardCopyMode="IncludeHeader"
+                              SelectionUnit="CellOrRowHeader"
                           AutoGenerateColumns="False" 
                           RowHeaderWidth="0" 
                           HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
@@ -834,6 +858,7 @@
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           cal:Message.Attach="[Event Sorting] = [Action OnRelationshipSorting($eventArgs)]">
+
                         <DataGrid.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>
@@ -967,7 +992,7 @@
                             <DataGridTextColumn Binding="{Binding SampleReferentialIntegrityViolations}" 
                                                 x:Name="colSampleViolations" 
                                                 Header="Sample Violations"
-                                                ElementStyle="{StaticResource TextBlockStyle}">
+                                                ElementStyle="{StaticResource RiViolationStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader"  BasedOn="{StaticResource LeftHeader}">
                                         <Setter Property="Tag" Value="{Binding DataContext.Tooltips.SampleViolations, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>

@@ -183,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.2.0.78</Version>
+      <Version>6.3.0.90</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>7.0.1</Version>

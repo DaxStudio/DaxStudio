@@ -447,7 +447,7 @@ namespace DaxStudio.UI.Model
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
 
-        public int SPID { get { return _connection.SPID; } }
+        public int SPID { get { return _connection?.SPID??0; } }
         public string ShortFileName => _connection.ShortFileName;
 
         public  bool ShouldAutoRefreshMetadata( IGlobalOptions options)

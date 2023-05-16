@@ -1372,7 +1372,7 @@
       <Version>6.0.6</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">
-      <Version>6.2.0.78</Version>
+      <Version>6.3.0.90</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>4.0.212</Version>
@@ -1381,16 +1381,16 @@
       <Version>30.0.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.2.13</Version>
+      <Version>1.2.15</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.2.13</Version>
+      <Version>1.2.15</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.2.13</Version>
+      <Version>1.2.15</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.2.13</Version>
+      <Version>1.2.15</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.0</Version>

@@ -42,6 +42,7 @@ using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using ICSharpCode.AvalonEdit.Document;
+using System.Linq.Expressions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1875,42 +1876,49 @@ namespace DaxStudio.UI.ViewModels
                 // TODO we should provide a visual notification that copy did not work because of missing selection
                 return;
             }
-            
-            var view = GetView() as ServerTimesView;
-            var details = view.EventDetails;
-            var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox ;
-                
-            // Remove initial SET DC_KIND line
-            TextPointer secondLine = rt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward).GetLineStartPosition(1);
-            string firstLineContent = (secondLine != null) ? new TextRange(rt.Document.ContentStart, secondLine).Text : null;
-
-            TextPointer startSelection = (firstLineContent != null) && firstLineContent.StartsWith("SET DC_KIND", StringComparison.InvariantCulture)
-                ? secondLine
-                : rt.Document.ContentStart;
-
-            // Remove last empty lines and Estimated size
-            TextPointer endSelection;
-            TextPointer lastLine = null;
-            string lastLineContent;
-            int index = 0;
-            do
+            try
             {
-                endSelection = lastLine ?? rt.Document.ContentEnd;
-                lastLine = rt.Document.ContentEnd.GetNextInsertionPosition(LogicalDirection.Backward).GetLineStartPosition(--index);
-                lastLineContent = (lastLine != null) ? new TextRange(lastLine, endSelection).Text : null;
-            } while (lastLineContent != null
-                        && (lastLineContent.StartsWith("Estimated", StringComparison.InvariantCulture) || lastLineContent == "\r\n"));
-            Console.WriteLine(lastLineContent);
+                var view = GetView() as ServerTimesView;
+                var details = view.EventDetails;
+                var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox;
 
-            // Remove the last CRLF from selection
-            if (lastLineContent.EndsWith("\r\n", StringComparison.InvariantCulture))
-            {
-                endSelection = endSelection.GetPositionAtOffset(-2) ?? endSelection;
+                // Remove initial SET DC_KIND line
+                TextPointer secondLine = rt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward).GetLineStartPosition(1);
+                string firstLineContent = (secondLine != null) ? new TextRange(rt.Document.ContentStart, secondLine).Text : null;
+
+                TextPointer startSelection = (firstLineContent != null) && firstLineContent.StartsWith("SET DC_KIND", StringComparison.InvariantCulture)
+                    ? secondLine
+                    : rt.Document.ContentStart;
+
+                // Remove last empty lines and Estimated size
+                TextPointer endSelection;
+                TextPointer lastLine = null;
+                string lastLineContent;
+                int index = 0;
+                do
+                {
+                    endSelection = lastLine ?? rt.Document.ContentEnd;
+                    lastLine = rt.Document.ContentEnd.GetNextInsertionPosition(LogicalDirection.Backward).GetLineStartPosition(--index);
+                    lastLineContent = (lastLine != null) ? new TextRange(lastLine, endSelection).Text : null;
+                } while (lastLineContent != null
+                            && (lastLineContent.StartsWith("Estimated", StringComparison.InvariantCulture) || lastLineContent == "\r\n"));
+                Console.WriteLine(lastLineContent);
+
+                // Remove the last CRLF from selection
+                if (lastLineContent.EndsWith("\r\n", StringComparison.InvariantCulture))
+                {
+                    endSelection = endSelection.GetPositionAtOffset(-2) ?? endSelection;
+                }
+
+                rt.Selection.Select(startSelection, endSelection);
+                rt.Copy();
+                rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
             }
-                
-            rt.Selection.Select(startSelection, endSelection);
-            rt.Copy();
-            rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel), nameof(CopySEQuery), "Error copying SE Query text");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error copying SE query text\n{ex.Message}"));
+            }
             return;
         }
 
