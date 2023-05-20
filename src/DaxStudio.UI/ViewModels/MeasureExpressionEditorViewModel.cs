@@ -69,6 +69,7 @@ namespace DaxStudio.UI.ViewModels
             internal set {
                 _column = value;
                 MeasureExpression.Text = _column.MeasureExpression??string.Empty;
+                NotifyOfPropertyChange(nameof(IsMeasureExpressionBlank));
                 MeasureName = _column.Caption;
                 SelectedTable = _column.SelectedTable;
                 IsModelItem = _column.IsModelItem;
@@ -270,5 +271,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(Tables));
             return Task.CompletedTask;
         }
+
+        public bool IsMeasureExpressionBlank => string.IsNullOrEmpty( MeasureExpression.Text );
     }
 }

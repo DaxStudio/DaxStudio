@@ -17,7 +17,7 @@
         <ResourceDictionary>
             <conv:BoolNotConverter x:Key="BoolNotConverter"/>
             <conv:TableImageConverter x:Key="TableImageConverter"/>
-
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -40,6 +40,10 @@
                 <ColumnDefinition Width="Auto" MinWidth="150"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
             <ComboBox x:Name="Tables"
                       ItemsSource="{Binding Tables, Mode=OneWay}"
                       SelectedItem="{Binding SelectedTable}"
@@ -57,6 +61,17 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <TextBox x:Name="MeasureName" Margin="2" Grid.Column="1" IsEnabled="{Binding IsModelItem, Converter={StaticResource BoolNotConverter}}" />
+                    <controls:ClipBorder Grid.Row="1" Padding="4" Margin="2,6" Grid.ColumnSpan="2" CornerRadius="4" 
+                                         BorderBrush="{DynamicResource Theme.Brush.InfoBar.Border}" 
+                                         Background="{DynamicResource Theme.Brush.InfoBar.Back}" 
+                                         Visibility="{Binding IsMeasureExpressionBlank, Converter={StaticResource BoolToCollapsedConverter}}"
+                                         BorderThickness="2">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource warningDrawingImage}" Margin="0 0 8 0 " />
+                            <TextBlock Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}">The Measure Expressions is blank. This can happen if uou do not have admin rights to the data model. <Hyperlink NavigateUri="https://daxstudio.org/learn-more/blank-measure-expressions" ap:HyperlinkExtensions.IsExternal="true">Learn more</Hyperlink></TextBlock>
+                        </StackPanel>
+
+                    </controls:ClipBorder>
         </Grid>
                         <!--EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

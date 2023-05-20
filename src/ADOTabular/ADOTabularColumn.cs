@@ -136,7 +136,7 @@ namespace ADOTabular
                 //var measure = this.Table.Measures.SingleOrDefault(s => s.Name.Equals(this.Name, StringComparison.OrdinalIgnoreCase));                
 
                 //return measure?.Expression;
-                var expression = this.Table.Model.MeasureExpressions[this.Name];
+                this.Table.Model.MeasureExpressions.TryGetValue(this.Name, out var expression);
                 return expression;
             }
         }
