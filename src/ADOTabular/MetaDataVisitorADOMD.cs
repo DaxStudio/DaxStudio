@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Interfaces;
-
 
 namespace ADOTabular
 {
@@ -189,7 +189,9 @@ namespace ADOTabular
 
             // then get all the measures for the current table
             DataTable dtMeasures = conn.GetSchemaDataSet("TMSCHEMA_MEASURES", resCollMeasures).Tables[0];
-
+            const string COLUMNNAME_FormatStringDefinitionID = "FormatStringDefinitionID";
+            bool hasFormatStringId = dtMeasures.Columns.Contains(COLUMNNAME_FormatStringDefinitionID);
+            
             // Add format string definitions if available
             DataTable dtFormatStringDefinitions = null;
             int.TryParse(conn.Database.CompatibilityLevel, out int iCompatLevel);
@@ -208,9 +210,9 @@ namespace ADOTabular
                 string formatStringExpression = null;
 
                 // Add format string if available
-                if (dtFormatStringDefinitions != null)
+                if (dtFormatStringDefinitions != null && hasFormatStringId)
                 {
-                    ulong? id = dr["FormatStringDefinitionID"] as ulong?;
+                    ulong? id = dr[COLUMNNAME_FormatStringDefinitionID] as ulong?;
                     if (id.HasValue && id > 0)
                     {
                         var formatStrings = dtFormatStringDefinitions.Select($"ID = {id}");
