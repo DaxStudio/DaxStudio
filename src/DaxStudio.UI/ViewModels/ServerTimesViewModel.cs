@@ -486,7 +486,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
         const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
-        const string searchXmSqlCallbackEnd = @"[\S\s]*?(?<!\]\])\)\]"; // @"[^\)]*\){1,}(\.[^\)]*\))?]";
+        const string searchXmSqlCallbackEnd = @"[\S\s]*?(?<!\]\])\)\]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?\))(?=\s?\]\s?\()";
         const string searchXmSqlSquareBracketsWithSpace = searchXmSqlCallbackStart + searchXmSqlCallbackEnd + @"|(?<![\.0-9a-zA-Z'])\[([^\[])*\]";
         const string searchXmSqlKeywords = searchXmSqlCallbackDax + @"|" + searchXmSqlCallbackStart + searchXmSqlCallbackEnd
