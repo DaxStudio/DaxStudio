@@ -3,17 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using System.Data;
 using Caliburn.Micro;
 using Newtonsoft.Json;
 using DaxStudio.UI.Events;
 using Serilog;
-using System.IO;
 using System.Diagnostics.Contracts;
 using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Utils;
 using ADOTabular.Enums;
 using DaxStudio.UI.Interfaces;
 using System.Threading;
@@ -24,8 +20,8 @@ namespace DaxStudio.UI.Model
         : IDaxStudioProxy
         , IHandle<ActivateDocumentEvent>
     {
-        private readonly int _port;
-        private readonly Uri _baseUri;
+        private int _port;
+        private Uri _baseUri;
         private readonly IEventAggregator _eventAggregator;
         private ViewModels.DocumentViewModel _activeDocument;
         public ProxyPowerPivot(IEventAggregator eventAggregator, int port)
@@ -48,22 +44,14 @@ namespace DaxStudio.UI.Model
 
         public bool IsExcel
         {
-            get { return true; }
+            get { return _port > 0; }
         }
 
-        public bool SupportsQueryTable
-        {
-            get { return true; }
-        }
-
-        public bool SupportsStaticTable
-        {
-            get { return true; }
-        }
 
         public bool HasPowerPivotModel(int TimeoutSecs)
         {
-            
+            if (!IsExcel) { return false; }
+
             Log.Verbose("{class} {method} {event}", "Model.ProxyPowerPivot", "HasPowerPivotModel:Get", "Start");
             var hasModel = false;
             var doc = _activeDocument;
@@ -104,15 +92,13 @@ namespace DaxStudio.UI.Model
             
         }
 
-        public void EnsurePowerPivotDataIsLoaded()
-        {
-            throw new NotImplementedException();
-        }
 
         public string WorkbookName
         {
             get
             {
+                if (!IsExcel) { return string.Empty; }
+
                 var doc = _activeDocument;
                 using (var client = GetHttpClient())
                 {
@@ -145,6 +131,8 @@ namespace DaxStudio.UI.Model
         {
             get
             {
+                if(!IsExcel) { return Enumerable.Empty<string>(); }
+
                 var doc = _activeDocument;
                 try
                 {
@@ -177,7 +165,6 @@ namespace DaxStudio.UI.Model
             {
                 
                 try { 
-                    //await client.PostAsJsonAsync<IStaticQueryResult>( "workbook/staticqueryresult", new StaticQueryResult(sheetName,results) as IStaticQueryResult).ConfigureAwait(false);
 
                     var response = await client.PostStreamAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results) as IStaticQueryResult).ConfigureAwait(false);
                     if (!response.IsSuccessStatusCode)
@@ -188,22 +175,10 @@ namespace DaxStudio.UI.Model
                     }
 
 
-                    //await client.PostAsync("workbook/staticqueryresult", new StaticQueryResult(sheetName, results), new JsonMediaTypeFormatter
-                    //        {
-                    //            SerializerSettings = new JsonSerializerSettings
-                    //            {s
-                    //                Converters = new List<JsonConverter>
-                    //                    {
-                    //                        //list of your converters
-                    //                        new JsonDataTableConverter()
-                    //                    }
-                    //            }
-                    //        });
-
                 }
                 catch (Exception ex)
                 {
-                    //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ProxyPowerPivot), nameof(OutputStaticResultAsync), "Error outputting static results");
                     doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
@@ -217,11 +192,9 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    //var resp = await client.PostAsJsonAsync<ILinkedQueryResult>("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery,sheetName,connectionString) as ILinkedQueryResult).ConfigureAwait(false);
                     var resp = await client.PostStreamAsync("workbook/linkedqueryresult", new LinkedQueryResult(daxQuery, sheetName, connectionString) as ILinkedQueryResult).ConfigureAwait(false);
                     if (resp.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        //var str = resp.Content.ReadAsAsync<string>().Result;
                         var str = JsonConvert.DeserializeObject<string>(resp.Content.ReadAsStringAsync().Result);
                         var msg = (string)Newtonsoft.Json.Linq.JObject.Parse(str)["Message"];
                         
@@ -230,7 +203,7 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("Error sending results to Excel ({0})",ex.Message)));
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ProxyPowerPivot), nameof(OutputLinkedResultAsync), "Error outputting linked results");
                     doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
@@ -243,7 +216,12 @@ namespace DaxStudio.UI.Model
             return new ADOTabular.ADOTabularConnection(connstr, AdomdType.AnalysisServices);
         }
 
-        public int Port { get { return _port; } }
+        public int Port { get { return _port; }  
+            set { 
+                _port = value;
+                _baseUri = new Uri($"http://localhost:{_port}/");
+            } 
+        }
         public void Dispose()
         {
             // Do Nothing

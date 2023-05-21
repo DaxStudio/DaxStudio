@@ -20,13 +20,13 @@ namespace DaxStudio.Standalone
             _app = app;
             Port = _app.Args().Port;
 
-            if (Port > 0)
-            {
+            //if (Port > 0)
+            //{
                 Proxy = new DaxStudio.UI.Model.ProxyPowerPivot(eventAggregator, Port);
-            } else
-            {
-                Proxy = new DaxStudio.UI.Model.ProxyStandalone();
-            }
+            //} else
+            //{
+            //    Proxy = new DaxStudio.UI.Model.ProxyStandalone();
+            //}
         }
 
         public bool IsExcel => Proxy.IsExcel;

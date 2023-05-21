@@ -1230,6 +1230,7 @@ namespace DaxStudio.UI.ViewModels
 
                 await Execute.OnUIThreadAsync(async () =>
                 {
+                    IsConnectionDialogOpen = true;
                     var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
 
                     await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
@@ -1257,6 +1258,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
+                IsConnectionDialogOpen = false;
                 if (!msg.IsDisposed)
                 {
                     msg.Dispose(); // turn off the status bar message
@@ -4744,6 +4746,7 @@ namespace DaxStudio.UI.ViewModels
             //} 
         }
         public bool IsLoadingLayout { get; private set; }
+        public bool IsConnectionDialogOpen { get; internal set; }
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {

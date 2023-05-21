@@ -10,21 +10,14 @@ namespace DaxStudio.UI.Interfaces
     public interface IDaxStudioProxy : IDisposable
     {
         bool IsExcel { get; } 
-        bool SupportsQueryTable { get; }
-        bool SupportsStaticTable { get; }
         bool HasPowerPivotModel(int TimeoutSecs);
-        //bool HasPowerPivotData();
-        void EnsurePowerPivotDataIsLoaded();
-        //string BuildPowerPivotConnection();
+
         String WorkbookName { get;  }
-        IEnumerable<string> Worksheets { get; }
-        
-       // void DaxQueryTable(string WorksheetName, ADOTabularConnection connection, string daxQuery);
-       // void DaxQueryStaticResult(string WorksheetName, ADOTabularConnection connection, string daxQuery);
+        IEnumerable<string> Worksheets { get; }      
         
         Task OutputStaticResultAsync(DataTable results, string sheetName);
         Task OutputLinkedResultAsync(string daxQuery, string sheetName, string connectionString);
-        int Port { get; }
+        int Port { get; set; }
         ADOTabularConnection GetPowerPivotConnection(string applicationName, string additionalsettings);
     }
 }

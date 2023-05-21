@@ -19,11 +19,13 @@ using System.Windows.Input;
 using System.Linq.Expressions;
 using DaxStudio.Controls.PropertyGrid;
 using System.Threading;
+using DaxStudio.UI.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
     class ConnectionDialogViewModel : Screen
         , IHandle<ApplicationActivatedEvent>
+        , IHandle<RefreshConnectionDialogEvent>
     {
 
         private readonly IEventAggregator _eventAggregator;
@@ -939,6 +941,23 @@ namespace DaxStudio.UI.ViewModels
         {
             Options.RecentServers.Remove(param.ToString());
             SettingProvider.SaveServerMRUList(null);
+        }
+
+        public Task HandleAsync(RefreshConnectionDialogEvent message, CancellationToken cancellationToken)
+        {
+            PowerPivotEnabled = Host.Proxy.IsExcel;
+            using (new StatusBarMessage(_activeDocument, "Checking for PowerPivot Model"))
+            {
+                HasPowerPivotModel = Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout);
+                if (HasPowerPivotModel) {
+                    ServerModeSelected = false;
+                    PowerPivotModeSelected = true;
+                }
+            }
+            WorkbookName = Host.Proxy.WorkbookName;
+            NotifyOfPropertyChange(nameof(WorkbookName));
+
+            return Task.CompletedTask;
         }
     } 
      

@@ -665,6 +665,8 @@ namespace DaxStudio.UI.ViewModels
                 var app = Application.Current;
                 app.ReadCommandLineArgs(rawmessage);
 
+                _host.Proxy.Port = app.Args().Port;
+
                 if (!string.IsNullOrEmpty(app.Args().FileName))
                 {
                     _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));

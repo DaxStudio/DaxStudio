@@ -108,6 +108,17 @@ namespace DaxStudio.ExcelAddin
                 }
             }
 
+            // find a daxstudio.exe process
+            // send a wm_copydata message
+            Process[] processes = Process.GetProcessesByName("daxstudio");
+            if (processes.Length > 0)
+            {
+                WMHelper.SendCopyDataMessage(processes[0].MainWindowHandle, new string[] {$"-port",_port.ToString()});
+                NativeMethods.SetForegroundWindow(processes[0].MainWindowHandle);
+                return;
+            }
+
+
             var path = "";
             // look for daxstudio.exe in the same folder as daxstudio.dll
             path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");

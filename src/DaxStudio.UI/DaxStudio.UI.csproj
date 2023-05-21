@@ -342,6 +342,7 @@
     <Compile Include="Events\NoQueryTextEvent.cs" />
     <Compile Include="Events\PasteServerTimings.cs" />
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
+    <Compile Include="Events\RefreshConnectionDialogEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
     <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ThemeChangedEvent.cs" />
@@ -545,7 +546,6 @@
     <Compile Include="Model\LinkedQueryResult.cs" />
     <Compile Include="Model\NotifyIcon.cs" />
     <Compile Include="Model\ProxyPowerPivot.cs" />
-    <Compile Include="Model\ProxyStandalone.cs" />
     <Compile Include="Model\QueryPlanModel.cs" />
     <Compile Include="Interfaces\IToolWindow.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />

@@ -459,7 +459,7 @@ namespace DaxStudio.UI.ViewModels
         public IResultsTarget SelectedTarget {
             get { return _selectedTarget ?? AvailableResultsTargets.Where(x => x.IsDefault).First<IResultsTarget>(); }
             set { _selectedTarget = value;
-                Log.Verbose("{class} {property} {value}", "RibbonViewModel", "SelectedTarget:Set", value.Name);
+                Log.Verbose("{class} {property} {value}", "RibbonViewModel", "SelectedTarget:Set", value?.Name??"<null>");
                 if (_selectedTarget is IActivateResults)
                     ActiveDocument?.ActivateResults();
                 NotifyOfPropertyChange(()=>SelectedTarget);
