@@ -52,7 +52,7 @@ namespace DaxStudio.UI.Converters
                 // swallow any exceptions
             }
             // if all else fails return the unformatted value
-            return values[0].ToString();
+            return values[0]?.ToString()??string.Empty;
         }
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
