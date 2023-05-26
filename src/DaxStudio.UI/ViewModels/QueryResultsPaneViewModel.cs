@@ -312,7 +312,7 @@ namespace DaxStudio.UI.ViewModels
                     if(ctxMenu.PlacementTarget is DataGrid )
                     {
                         grid = (DataGrid)ctxMenu.PlacementTarget;
-                        if (grid.SelectedItems.Count == 0)
+                        if (grid.SelectedCells.Count == 0)
                         {
                             // if this is a grid and nothing is selected
                             // then select all cells
