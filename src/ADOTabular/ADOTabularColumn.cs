@@ -288,8 +288,8 @@ namespace ADOTabular
         {
 
             if (connection == null || connection.ServerType == Enums.ServerType.Offline) return new List<string>() { "<Not Connected>" };
-
-            string qryTemplate = GetSampleDataQueryTemplate(connection.AllFunctions.Contains("TOPNSKIP"), GroupBy.Count > 0);
+            
+            string qryTemplate = GetSampleDataQueryTemplate( GroupBy.Count > 0 );
             var groupByCols = string.Join(",", GroupBy.Select(gb => gb.DaxName));
             var qry = string.Format(CultureInfo.InvariantCulture, qryTemplate, sampleSize * 2, DaxName, groupByCols);
 
@@ -303,22 +303,12 @@ namespace ADOTabular
             return _tmp.Distinct().Take(sampleSize).ToList();
         }
 
-        private static string GetSampleDataQueryTemplate(bool canUseTopnSkip, bool hasGroupBy)
+        private static string GetSampleDataQueryTemplate( bool hasGroupBy)
         {
-            
-            if (canUseTopnSkip && !hasGroupBy)
-                return $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}), 1) ORDER BY {{1}}";
-
-            if (!canUseTopnSkip && !hasGroupBy)
-                return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";
-
-            if (canUseTopnSkip && hasGroupBy)
-                return $"{Constants.InternalQueryHeader}\nEVALUATE TOPNSKIP({{0}}, 0, ALL({{1}}, {{2}})) order by {{1}}";                    
-    
-            if ( !canUseTopnSkip && hasGroupBy)
+            if (hasGroupBy)
                 return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}},{{2}}), 1) ORDER BY {{1}}";
-
-            return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";
+        
+            return $"{Constants.InternalQueryHeader}\nEVALUATE SAMPLE({{0}}, ALL({{1}}), 1) ORDER BY {{1}}";    
         }
 
         // used for relationship links
