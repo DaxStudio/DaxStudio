@@ -332,6 +332,7 @@ namespace DaxStudio.UI.ViewModels
             if (!IsPaused && IsChecked)
             {
                 BusyMessage = "Query Running...";
+                ErrorMessage = string.Empty;
                 IsBusy = true;
                 Reset();
             }
@@ -491,7 +492,10 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(QueryCompleted), isCancelled);
             _queryHistoryEvent = queryHistoryEvent;
             ErrorMessage = errorMessage;
-            if (isCancelled) return;
+            if (isCancelled) {
+                IsBusy = false;
+                return; 
+            }
             if (queryHistoryEvent.QueryText.Length == 0) return; // query text should only be empty for clear cache queries
 
             // Check if the Events collection does not already contain a QueryEnd event
