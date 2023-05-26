@@ -164,6 +164,7 @@
     <EmbeddedResource Include="Local\Strings.es-ES.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.es-ES.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Local\Strings.fr-FR.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -188,6 +189,7 @@
     <EmbeddedResource Include="Local\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Local\Strings.ru-RU.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

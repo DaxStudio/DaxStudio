@@ -376,9 +376,9 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
         {
-            if (this.ActiveDocument?.IsConnectionDialogOpen??false)
+            if (ActiveDocument?.IsConnectionDialogOpen??false)
             {
-                _eventAggregator.PublishOnUIThreadAsync(new RefreshConnectionDialogEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new RefreshConnectionDialogEvent());
                 return;
             }
             await NewQueryDocumentAsync("", message.ActiveDocument);

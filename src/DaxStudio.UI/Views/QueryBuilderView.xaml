@@ -74,13 +74,13 @@
                                 <ControlTemplate>
                                     <Grid >
                                         <Border Background="{DynamicResource Theme.Brush.Content.Back}">
-                                            <Grid>
+                                            <!--<Grid>-->
                                             <Image Source="{DynamicResource querybuilder_dragDrawingImage}" Margin="20" MaxWidth="140"/>
-                                                <TextBlock Margin="-30 25 0 0" 
+                                                <!--<TextBlock Margin="-30 25 0 0" 
                                                            Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
                                                            VerticalAlignment="Center" 
                                                            HorizontalAlignment="Center" FontSize="9">Drag or use <Hyperlink>Hotkeys</Hyperlink></TextBlock>
-                                            </Grid>
+                                            </Grid>-->
                                             <Border.ToolTip>
                                                 <ctrl:ClipBorder>
                                                     <Grid Margin="8">
