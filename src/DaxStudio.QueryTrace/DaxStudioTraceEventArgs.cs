@@ -224,7 +224,7 @@ namespace DaxStudio.QueryTrace
             EventClassName = eventClass;
             EventSubclassName = eventSubclass;
             NTUserName = "n/a";
-            DatabaseName = "<PowerPivot>";
+            DatabaseName = "<Power Pivot>";
             DatabaseFriendlyName = xlsxFile;
             StartTime = startTime;
         }

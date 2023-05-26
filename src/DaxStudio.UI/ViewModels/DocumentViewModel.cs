@@ -1217,8 +1217,8 @@ namespace DaxStudio.UI.ViewModels
 
             if (TryConnectToCommandLineServer()) return;
 
-            var msg = NewStatusBarMessage("Checking for PowerPivot model...");
-            Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a PowerPivot connection");
+            var msg = NewStatusBarMessage("Checking for Power Pivot model...");
+            Log.Debug("{class} {method} {Event} ", "DocumentViewModel", "ChangeConnection", "starting async call to check for a Power Pivot connection");
             bool hasPowerPivotModel = false;
             await Task.Run(() => hasPowerPivotModel = Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout));
 
@@ -3214,7 +3214,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (Connection.IsPowerPivot)
                     {
-                        ServerName = "<PowerPivot>";
+                        ServerName = "<Power Pivot>";
                         ServerVersion = Connection.ServerVersion;
                     }
                     else

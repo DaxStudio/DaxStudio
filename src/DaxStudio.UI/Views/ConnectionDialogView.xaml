@@ -283,7 +283,7 @@
                                  Grid.Column="0" 
                                  Grid.Row="2"
                                  GroupName="ConnectionType"  IsEnabled="{Binding HasPowerPivotModel}">
-                <Label Margin="5 0">PowerPivot Model</Label>
+                <Label Margin="5 0">Power Pivot Model</Label>
             </RadioButton>
 
             <TextBlock    Text="{Binding WorkbookName, Converter={StaticResource WorkbookNameConverter}}"  
@@ -300,7 +300,7 @@
                 <TextBlock Margin="40 0"
                                Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
                                Visibility="{Binding HasPowerPivotModel, Converter={StaticResource BoolToNotHiddenConverter}}"
-                               TextWrapping="Wrap">Launch DAX Studio from an Excel file containing a PowerPivot model to enable this option.</TextBlock>
+                               TextWrapping="Wrap">Launch DAX Studio from an Excel file containing a Power Pivot model to enable this option.</TextBlock>
                 <!--<TextBlock Margin="40 0"
                            Visibility="{Binding HasPowerPivotModel , Converter={StaticResource BoolToNotCollapsedConverter}}"
                            Foreground="{DynamicResource Theme.Brush.Accent2}"

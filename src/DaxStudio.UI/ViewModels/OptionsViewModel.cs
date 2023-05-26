@@ -718,7 +718,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [Category("Timeouts")]
-        [DisplayName("PowerPivot model detection timeout (sec)")]
+        [DisplayName("Power Pivot model detection timeout (sec)")]
         [Description("This is the number of seconds DAX Studio will wait for a response from Excel while trying to determine if the active workbook has a data model")]
         [DataMember, DefaultValue(30)]
         [MinValue(0)]
