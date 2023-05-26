@@ -87,6 +87,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<RunStyleChangedEvent>
         , IHandle<SelectionChangeCaseEvent>
         , IHandle<SendTextToEditor>
+        , IHandle<SendTabularObjectToEditor>
         , IHandle<EditorHotkeyEvent>
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
@@ -4877,6 +4878,21 @@ namespace DaxStudio.UI.ViewModels
                 QueryBuilder.IsVisible = true;
                 QueryBuilder.CopyContent(sourceDocument.QueryBuilder);
             }
+        }
+
+        public async Task HandleAsync(SendTabularObjectToEditor message, CancellationToken cancellationToken)
+        {
+            if (message.TabularObject.ObjectType == ADOTabularObjectType.DMV 
+                || message.TabularObject.ObjectType == ADOTabularObjectType.Function
+                || !QueryBuilder.IsVisible)
+            {
+                // send text to editor
+                await HandleAsync(new SendTextToEditor(message.TabularObject.DaxName), CancellationToken.None);
+                return;
+            }
+
+            await _eventAggregator.PublishOnUIThreadAsync(new SendTabularObjectToQueryBuilderEvent(message.TabularObject, QueryBuilderItemType.Column));
+            return;
         }
     }
 }

@@ -344,6 +344,8 @@
     <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
     <Compile Include="Events\RefreshConnectionDialogEvent.cs" />
     <Compile Include="Events\RunStyleChangedEvent.cs" />
+    <Compile Include="Events\SendTabularObjectToQueryBuilderEvent.cs" />
+    <Compile Include="Events\SendTabularObjectToEditor.cs" />
     <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ThemeChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
@@ -372,7 +374,7 @@
     <Compile Include="Events\ReconnectEvent.cs" />
     <Compile Include="Events\RefreshTablesEvent.cs" />
     <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
-    <Compile Include="Events\SendColumnToEditorEvent.cs" />
+    <Compile Include="Events\SendColumnToQueryBuilderEvent.cs" />
     <Compile Include="Events\SetFocusEvent.cs" />
     <Compile Include="Events\ShowMeasureExpressionEditor.cs" />
     <Compile Include="Events\TablesRefreshedEvent.cs" />

@@ -38,8 +38,7 @@ namespace DaxStudio.UI.ViewModels
             if (item != null)
             {
                 e.Handled = true;
-                var txt = item.DaxName;
-                EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(txt));
+                EventAggregator.PublishOnUIThreadAsync(new SendTabularObjectToEditor(item));
             }
         }
 

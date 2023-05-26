@@ -934,6 +934,24 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _sendMetadataToQueryBuilderIfOpen;
+        [Category("Metadata Pane")]
+        [Subcategory("Double-Click")]
+        [DisplayName("Send Metadata to Query Builder")]
+        [Description("On double click, objects from the metadata pane will be sent to the Query Builder if it is open. If the Query Builder is closed they will be sent to the edit pane.")]
+        [DataMember, DefaultValue(true)]
+        public bool SendMetadataToQueryBuilderIfOpen
+        {
+            get => _sendMetadataToQueryBuilderIfOpen;
+            set
+            {
+                _sendMetadataToQueryBuilderIfOpen = value;
+                SettingProvider.SetValue(nameof(SendMetadataToQueryBuilderIfOpen), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            }
+        }
+
         private bool _canPublishDaxFunctions = true;
         [JsonIgnore]
         public bool CanPublishDaxFunctions

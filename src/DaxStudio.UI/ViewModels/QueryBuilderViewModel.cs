@@ -41,7 +41,7 @@ namespace DaxStudio.UI.ViewModels
         ,IHandle<QueryBuilderUpdateEvent>
         ,IHandle<RunStyleChangedEvent>
         ,IHandle<SendColumnToQueryBuilderEvent>
-        
+        ,IHandle<SendTabularObjectToQueryBuilderEvent>
         ,IDisposable
         ,ISaveState
         ,INotifyPropertyChanged
@@ -399,6 +399,15 @@ namespace DaxStudio.UI.ViewModels
                     break;
             }
             return Task.CompletedTask;
+        }
+
+        public async Task HandleAsync(SendTabularObjectToQueryBuilderEvent message, CancellationToken cancellationToken)
+        {
+            if (message.TabularObject is TreeViewColumn col)
+            {
+                await HandleAsync(new SendColumnToQueryBuilderEvent(col, message.ItemType), cancellationToken);
+            }
+            return;
         }
 
         private void AddColumnToColumns(ITreeviewColumn column)

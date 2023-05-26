@@ -74,8 +74,14 @@
                                 <ControlTemplate>
                                     <Grid >
                                         <Border Background="{DynamicResource Theme.Brush.Content.Back}">
-                                        <Image Source="{DynamicResource querybuilder_dragDrawingImage}" Margin="20" MaxWidth="140">
-                                            <Image.ToolTip>
+                                            <Grid>
+                                            <Image Source="{DynamicResource querybuilder_dragDrawingImage}" Margin="20" MaxWidth="140"/>
+                                                <TextBlock Margin="-30 25 0 0" 
+                                                           Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" FontSize="9">Drag or use <Hyperlink>Hotkeys</Hyperlink></TextBlock>
+                                            </Grid>
+                                            <Border.ToolTip>
                                                 <ctrl:ClipBorder>
                                                     <Grid Margin="8">
                                                         <Grid.ColumnDefinitions>
@@ -98,7 +104,7 @@
                                                             Margin="0 4"
                                                             Text="When an item is selected in the metadata pane you can use the following keys to add that item to the query builder" />
                                                         <ctrl:ClipBorder Grid.Row="2" Style="{StaticResource HotKeyBorder}" >
-                                                        <TextBlock Text="C" 
+                                                            <TextBlock Text="C" 
                                                                    Style="{StaticResource HotKey}"
                                                                    />
                                                         </ctrl:ClipBorder>
@@ -108,7 +114,7 @@
                                                             Style="{StaticResource HotKeyDesc}"
                                                             Text="Add to Columns / Measures" />
 
-                                                            <ctrl:ClipBorder Grid.Row="3" Style="{StaticResource HotKeyBorder}">
+                                                        <ctrl:ClipBorder Grid.Row="3" Style="{StaticResource HotKeyBorder}">
                                                             <TextBlock Text="F" 
                                                                    Style="{StaticResource HotKey}"
                                                                    />
@@ -119,8 +125,8 @@
                                                             Style="{StaticResource HotKeyDesc}"
                                                             Text="Add to Filters" />
 
-                                                            <ctrl:ClipBorder Grid.Row="4" Style="{StaticResource HotKeyBorder}">
-                                                        <TextBlock Text="B" 
+                                                        <ctrl:ClipBorder Grid.Row="4" Style="{StaticResource HotKeyBorder}">
+                                                            <TextBlock Text="B" 
                                                                    Style="{StaticResource HotKey}"/>
                                                         </ctrl:ClipBorder>
                                                         <TextBlock 
@@ -130,9 +136,8 @@
                                                             Text="Add to both Filters and Columns / Measures" />
                                                     </Grid>
                                                 </ctrl:ClipBorder>
-                                            </Image.ToolTip>
-                                        </Image>
-                                        <!--<StackPanel Orientation="Vertical">
+                                            </Border.ToolTip>
+                                            <!--<StackPanel Orientation="Vertical">
                                             <TextBlock 
                                                TextWrapping="Wrap" 
                                                Padding="5 10 5 0"

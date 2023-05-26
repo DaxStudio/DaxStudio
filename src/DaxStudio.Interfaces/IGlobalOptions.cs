@@ -130,6 +130,7 @@ namespace DaxStudio.Interfaces
         bool ReplaceXmSqlTableNames { get; set; }
         bool FormatXmSql { get; set; }
         bool FormatDirectQuerySql { get; set; }
+        bool SendMetadataToQueryBuilderIfOpen { get; set; }
 
         #region Methods
 
