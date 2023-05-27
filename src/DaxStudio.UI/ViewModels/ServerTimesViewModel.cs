@@ -555,7 +555,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // Specific case for Search function - we might want to classify it as a more generic cas
                 // if xmSQL will add other similar functions
-                if (match.Value.StartsWith("[Search("))
+                if (match.Value.StartsWith("[Search(", false, CultureInfo.InvariantCulture))
                 {
                     return match.Value.Substring(1,match.Value.Length - 2);
                 }
@@ -1839,7 +1839,7 @@ namespace DaxStudio.UI.ViewModels
                 if (evt == null) continue;
                 if (evt is TraceStorageEngineEvent tse)
                 {
-                    var fileName = $"{tse.RowNumber:0000}_{tse.StartTime:yyyyMMddThhmmss-ffff}_{tse.Subclass}.{tse.ClassSubclass.QueryLanguage.ToString().ToLower()}";
+                    var fileName = $"{tse.RowNumber:0000}_{tse.StartTime:yyyyMMddThhmmss-ffff}_{tse.Subclass}.{tse.ClassSubclass.QueryLanguage.ToString().ToLower(System.Globalization.CultureInfo.InvariantCulture)}";
                     var filePath = Path.Combine(folderPath, fileName);
                     File.WriteAllText(filePath, StripHighlighCodes(tse.QueryRichText));
                 }
@@ -1977,7 +1977,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 textResult = CopyResultsForCommentsData();
             }
-            _eventAggregator.PublishOnUIThreadAsync(new PasteServerTimingsEvent(message.IncludeHeader, textResult));
+            _eventAggregator.PublishOnUIThreadAsync(new PasteServerTimingsEvent(message.IncludeHeader, textResult), cancellationToken);
             return Task.CompletedTask;
         }
 

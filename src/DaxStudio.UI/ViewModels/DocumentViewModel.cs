@@ -397,7 +397,7 @@ namespace DaxStudio.UI.ViewModels
                 string serverTimingsMetrics = e.DataObject.GetData(DataFormats.Text, true) as string;
                 if (!string.IsNullOrEmpty(serverTimingsMetrics))
                 {
-                    if (serverTimingsMetrics.StartsWith(PasteServerTimingsEvent.SERVERTIMINGS_HEADER)) 
+                    if (serverTimingsMetrics.StartsWith(PasteServerTimingsEvent.SERVERTIMINGS_HEADER,false,System.Globalization.CultureInfo.InvariantCulture)) 
                     {
                         var editor = GetEditor();
                         var currentLine = editor.DocumentGetLineByOffset(editor.CaretOffset);
@@ -1519,7 +1519,7 @@ namespace DaxStudio.UI.ViewModels
         private void SelectedTextToUpperInternal(DAXEditorControl.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
-            editor.SelectedText = editor.SelectedText.ToUpper();
+            editor.SelectedText = editor.SelectedText.ToUpper(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void SelectionToUpper()
@@ -1538,7 +1538,7 @@ namespace DaxStudio.UI.ViewModels
         private void SelectedTextToLowerInternal(DAXEditorControl.DAXEditor editor)
         {
             if (editor.SelectionLength == 0) return;
-            editor.SelectedText = editor.SelectedText.ToLower();
+            editor.SelectedText = editor.SelectedText.ToLower(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void SelectionToLower()
@@ -2811,7 +2811,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
         private void ExportDaxFunctions(string path) {
-            string extension = Path.GetExtension(path).ToLower();
+            string extension = Path.GetExtension(path).ToLower(System.Globalization.CultureInfo.InvariantCulture);
             bool compression = (extension == ".zip");
             ExportDaxFunctions(path, compression);
         }
@@ -4117,13 +4117,13 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveable 
         public FileIcons Icon { get {
 
-                return !IsDiskFileName || Path.GetExtension(FileName).ToLower() == ".dax" ? FileIcons.Dax : FileIcons.Other; } }
+                return !IsDiskFileName || Path.GetExtension(FileName).ToLower(System.Globalization.CultureInfo.InvariantCulture) == ".dax" ? FileIcons.Dax : FileIcons.Other; } }
 
         public string ImageResource
         {
             get
             {
-                return !IsDiskFileName || Path.GetExtension(FileName).ToLower() == ".dax" ? "daxDrawingImage" : "fileDrawingImage";
+                return !IsDiskFileName || Path.GetExtension(FileName).ToLower(System.Globalization.CultureInfo.InvariantCulture) == ".dax" ? "daxDrawingImage" : "fileDrawingImage";
             }
         }
 
@@ -4148,7 +4148,7 @@ namespace DaxStudio.UI.ViewModels
         }
         public string ExtensionLabel {
             get {
-                var ext = Path.GetExtension(DisplayName).TrimStart('.').TrimEnd('*').ToUpper();
+                var ext = Path.GetExtension(DisplayName).TrimStart('.').TrimEnd('*').ToUpper(System.Globalization.CultureInfo.InvariantCulture);
                 return ext == "DAX" ? "" : ext;
             }
         }
@@ -4737,7 +4737,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper()} in DAX Guide";
+        public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper(System.Globalization.CultureInfo.InvariantCulture)} in DAX Guide";
 
         //private bool _isViewAsActive = false;
         public bool IsViewAsActive { get => Connection.IsTestingRls;
@@ -4891,7 +4891,7 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            await _eventAggregator.PublishOnUIThreadAsync(new SendTabularObjectToQueryBuilderEvent(message.TabularObject, QueryBuilderItemType.Column));
+            await _eventAggregator.PublishOnUIThreadAsync(new SendTabularObjectToQueryBuilderEvent(message.TabularObject, QueryBuilderItemType.Column),cancellationToken);
             return;
         }
     }
