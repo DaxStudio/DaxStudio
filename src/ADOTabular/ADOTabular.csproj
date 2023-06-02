@@ -188,10 +188,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.2.15</Version>
+      <Version>1.2.16</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.2.15</Version>
+      <Version>1.2.16</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
       <Version>19.64.0</Version>

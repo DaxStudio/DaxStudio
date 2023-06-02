@@ -11,7 +11,7 @@ namespace ADOTabular.AdomdClientWrappers
         private readonly AdomdType _type;
         private Adomd.AdomdConnection _conn;
         
-        private readonly Object rowsetLock = new Object();
+        private readonly object rowsetLock = new object();
         public AdomdConnection(Adomd.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
@@ -148,7 +148,7 @@ namespace ADOTabular.AdomdClientWrappers
             }
 
             // wait 10 seconds before timing out
-            if (Monitor.TryEnter(rowsetLock, new TimeSpan(0,0,10 )))
+            if (Monitor.TryEnter(rowsetLock, new TimeSpan(0,0,30 )))
             {
             
                 try
@@ -161,7 +161,7 @@ namespace ADOTabular.AdomdClientWrappers
                 }
             } else
             {
-                throw new InvalidOperationException("Timeout exceeded attempting to establish internal lock for GetSchemaDataSet");
+                throw new InvalidOperationException($"Timeout exceeded attempting to establish internal lock for GetSchemaDataSet for {schemaName}");
             }
         }
 
