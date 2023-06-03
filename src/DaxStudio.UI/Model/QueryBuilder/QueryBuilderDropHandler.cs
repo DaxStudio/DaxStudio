@@ -29,39 +29,33 @@ namespace DaxStudio.UI.Model
                 dropInfo.Effects = DragDropEffects.None;
                 return;
             }
+            
+            if (!(dropInfo.DragInfo.SourceItem is IADOTabularColumn) 
+                && !(dropInfo.DragInfo.SourceItem is  TreeViewColumn)
+                && !(dropInfo.DragInfo.SourceItem is QueryBuilderColumn)
+                && !(dropInfo.DragInfo.SourceItem is TreeViewTable))
+                {
+                    dropInfo.Effects = DragDropEffects.None;
+                    return;
+                }
+
             IADOTabularColumn adoCol;
             // if we are re-ordering columns sourceItem will be non-null
             adoCol = dropInfo.DragInfo.SourceItem as IADOTabularColumn;
             var treeViewCol = dropInfo.DragInfo.SourceItem as TreeViewColumn;
             var queryBuilderColumn = dropInfo.DragInfo.SourceItem as QueryBuilderColumn;
-            
-            // if we are dragging a column from the metadata pane it will be detected here
-            if (adoCol == null)
-            {
-                if (treeViewCol == null && queryBuilderColumn == null)
-                {
-                    dropInfo.Effects = DragDropEffects.None;
-                    return;
-                }
-                
-                adoCol = treeViewCol?.Column as IADOTabularColumn;
-                if (adoCol == null) adoCol = queryBuilderColumn?.TabularObject;
+            var treeViewTab = dropInfo.DragInfo.SourceItem as TreeViewTable;
 
-            }
+            if (adoCol == null)  adoCol = treeViewCol?.Column as IADOTabularColumn;
+            if (adoCol == null) adoCol = queryBuilderColumn?.TabularObject;
 
-            if (adoCol == null)
-            {
-                // this is an unknown source item so exit here
-                dropInfo.Effects = DragDropEffects.None;
-                return;
-            }
-            
-            var sourceColl = dropInfo.DragInfo.SourceCollection as ObservableCollection<IADOTabularColumn>;
-            
             if (adoCol != null && List != null                        // if we have a valid item and List
-                && ((!List.Contains(adoCol) && treeViewCol != null))|| treeViewCol == null)   // and if we are dragging from the metadata pane and this item is not already in the list
-
-
+                && ((!List.Contains(adoCol) && treeViewCol != null)) || treeViewCol == null)   // and if we are dragging from the metadata pane and this item is not already in the list
+            {
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+            else if (treeViewTab != null) 
             {
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
                 dropInfo.Effects = DragDropEffects.Move;
@@ -92,19 +86,13 @@ namespace DaxStudio.UI.Model
                 case IADOTabularColumn adoCol:
                     col = adoCol;
                     break;
+                case TreeViewTable objTreeViewTable:
+                    AddTableColumns(objTreeViewTable, dropInfo.InsertIndex);
+                    return;
                 default:
                     return;
             }
             
-            //if (col == null & objTreeViewCol != null )
-            //{
-            //    col = objTreeViewCol.Column as IADOTabularColumn;
-            //}
-            //if (col == null && objTreeViewCol == null)
-            //{
-            //    col = dropInfo.DragInfo.Data as IADOTabularColumn;
-            //}
-
             // check if we are moving within list
             if (dropInfo.TargetCollection == dropInfo.DragInfo.SourceCollection)
             {
@@ -126,6 +114,32 @@ namespace DaxStudio.UI.Model
             else
             {
                 List.Insert(dropInfo.InsertIndex, col);
+            }
+        }
+
+        private void AddTableColumns(TreeViewTable objTreeViewTable, int insertIndex)
+        {
+            foreach (TreeViewColumn treeViewCol in objTreeViewTable.Children)
+            {
+                if (treeViewCol.Column is IADOTabularColumn col)
+                {
+                    // don't add the same column twice
+                    if (List.Contains(col)) continue;
+
+                    // don't add hierarchies since this will reference the same column twice
+                    if (col.ObjectType == ADOTabularObjectType.Hierarchy || col.ObjectType == ADOTabularObjectType.UnnaturalHierarchy) continue;
+                    
+                    // Insert new item
+                    if (insertIndex == List.Count)
+                    {
+                        List.Add(col);
+                    }
+                    else
+                    {
+                        List.Insert(insertIndex, col);
+                    }
+                    insertIndex++;
+                }
             }
         }
 
