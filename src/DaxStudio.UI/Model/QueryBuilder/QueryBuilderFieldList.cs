@@ -48,6 +48,23 @@ namespace DaxStudio.UI.Model
                 AddSortByColumn(col);
                 AddGroupByColumns(col);
             }
+
+            if (item.ObjectType == ADOTabularObjectType.Hierarchy || item.ObjectType == ADOTabularObjectType.UnnaturalHierarchy)
+            {
+                var hier = item as ADOTabularHierarchy;
+                if (hier != null)
+                {
+                    // remove any columns currently in the list that are also in the hierarchy
+                    foreach (var level in hier.Levels)
+                    {
+                        var existingCol = Items.FirstOrDefault(i => i.DaxName == level.DaxName);
+                        if (existingCol != null)
+                        {
+                            Items.Remove(existingCol);
+                        }
+                    }
+                }
+            }
             Items.Add(builderItem);
             NotifyOfPropertyChange(nameof(Items));
         }
