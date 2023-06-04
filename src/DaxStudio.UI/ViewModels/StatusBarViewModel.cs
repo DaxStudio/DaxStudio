@@ -3,14 +3,10 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
-using DaxStudio.UI.Utils;
-using Polly;
-using Polly.Retry;
 using Serilog;
 
 namespace DaxStudio.UI.ViewModels
@@ -200,25 +196,14 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
-        //public bool ShowDatabaseID { get => Options.ShowDatabaseIdStatus; }
-
-        //public bool CanCopyDatabaseIDToClipboard { get => !string.IsNullOrWhiteSpace(DatabaseID); }
-        //public void CopyDatabaseIdToClipboard()
-        //{
-        //    try
-        //    {
-        //        System.Windows.Clipboard.SetText(DatabaseID);
-        //        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Database ID: \"{DatabaseID}\" to clipboard"));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log.Error(ex, "{class} {method} {message}", nameof(StatusBarViewModel), nameof(CopyDatabaseIdToClipboard), "Error copying DatabaseID to clipboard: " + ex.Message);
-        //        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error copying DatabaseID to clipboard, please try again"));
-        //    }
-        //}
-
-        public DocumentViewModel ActiveDocument { get; set; }
+        private DocumentViewModel _activeDocument;
+        public DocumentViewModel ActiveDocument { get => _activeDocument;
+            set {
+                _activeDocument = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(Spid));
+            } 
+        }
         public IGlobalOptions Options { get; }
 
         public Task HandleAsync(ConnectionClosedEvent message, CancellationToken cancellationToken)
@@ -229,6 +214,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(DatabaseChangedEvent message, CancellationToken cancellationToken)
         {
+            if (ActiveDocument == null) return Task.CompletedTask;
             Spid = ActiveDocument.Spid.ToString();
             NotifyOfPropertyChange(nameof(Spid));
             return Task.CompletedTask;
