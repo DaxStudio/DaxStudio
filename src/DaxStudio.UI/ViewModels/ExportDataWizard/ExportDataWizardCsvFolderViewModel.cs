@@ -84,7 +84,7 @@ namespace DaxStudio.UI.ViewModels
             // show browse folders
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.RootFolder = Environment.SpecialFolder.MyComputer;
+                dialog.RootFolder = Environment.SpecialFolder.Desktop;
                 System.Windows.Forms.DialogResult result = dialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
