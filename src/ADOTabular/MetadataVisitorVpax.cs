@@ -75,9 +75,9 @@ namespace ADOTabular
                 {
                     //TODO - do we need code to identify KPI columns
                     var measureType = ADOTabularObjectType.Measure;
-                    if (m.KpiTargetExpression.Expression != null
-                     || m.KpiTrendExpression.Expression != null
-                     || m.KpiStatusExpression.Expression != null)
+                    if (m.KpiTargetExpression?.Expression != null
+                     || m.KpiTrendExpression?.Expression != null
+                     || m.KpiStatusExpression?.Expression != null)
                     {
                         var kpiDetails = new KpiDetails()
                         {
