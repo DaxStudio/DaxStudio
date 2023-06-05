@@ -6,11 +6,11 @@ namespace DaxStudio.UI.Model
 {
     public class ServerTimesModel
     {
-        public int FileFormatVersion { get { return 5; } }
+        public int FileFormatVersion { get { return 6; } }
         public string ActivityID { get; set; }
         public long StorageEngineDuration {get;set;}
         public long StorageEngineNetParallelDuration { get; set; }
-        public double  StorageEngineDurationPercentage {get;set;}
+        public double  StorageEngineDurationPercentage { get;set; }
         public long FormulaEngineDuration {get;set;}
         public double FormulaEngineDurationPercentage { get; set; }
         public BindableCollection<TraceStorageEngineEvent> StorageEngineEvents { get; set; }

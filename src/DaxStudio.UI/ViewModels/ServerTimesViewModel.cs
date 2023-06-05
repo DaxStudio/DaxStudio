@@ -59,6 +59,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public string Query { get; set; }
+        public string TextData { get; set; }
 
         private bool IsDaxDirectQuery(string query)
         {
@@ -355,6 +356,7 @@ namespace DaxStudio.UI.ViewModels
             InternalBatchEvent = ev.InternalBatchEvent;
             StartTime = ev.StartTime;
             EndTime = ev.EndTime;
+            TextData = ev.TextData;
             switch (Class)
             {
                 case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
@@ -1614,7 +1616,7 @@ namespace DaxStudio.UI.ViewModels
                 ActivityID = this.ActivityID,
                 TimelineTotalDuration = this.TimelineTotalDuration
             };
-            var json = JsonConvert.SerializeObject(m, Formatting.Indented, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
+            var json = JsonConvert.SerializeObject(m, Formatting.None, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate});
             return json;
         }
 
