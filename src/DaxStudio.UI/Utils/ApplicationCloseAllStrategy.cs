@@ -59,12 +59,12 @@ namespace DaxStudio.UI.Utils {
                 {
                     // loop through and cancel closing for any dirty documents
                     closeCanOccur = false; // cancel closing
-                    closeable = new List<IScreen>();
+                    //closeable = new List<IScreen>();
                     return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }
                 else
                 {
-                    await _eventAggregator.PublishOnUIThreadAsync(new StopAutoSaveTimerEvent());
+                    //await _eventAggregator.PublishOnUIThreadAsync(new StopAutoSaveTimerEvent());
                     closeCanOccur = await Evaluate(closeable);
                     return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }
@@ -95,7 +95,14 @@ namespace DaxStudio.UI.Utils {
                 {
                     if (tw.IsChecked) { tw.StopTrace(); }
                 }
+
+                if (doc is DocumentViewModel docModel)
+                {
+                    docModel.DeleteAutoSave();
+                }
             }
+            
+            
 
             return finalResult;
         }

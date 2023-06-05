@@ -248,14 +248,12 @@ namespace DaxStudio.UI.ViewModels
 
         public IQueryHistoryEvent CurrentQueryInfo => _currentQueryDetails;
 
+        
 
         public override async Task TryCloseAsync(bool? dialogResult = null)
         {
-            foreach (var tw in TraceWatchers)
-            {
-                if (tw.IsChecked) tw.StopTrace();
-            }
             await base.TryCloseAsync(dialogResult);
+            
         }
 
         public Guid AutoSaveId { get; set; } = Guid.NewGuid();
@@ -854,7 +852,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        protected void UnsubscribeAll()
+        internal void UnsubscribeAll()
         {
             _isSubscribed = false;
 
@@ -872,6 +870,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 _eventAggregator.Unsubscribe(tw);
             }
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel),nameof(UnsubscribeAll), $"Unsubscribed from events for: {DisplayName} ({AutoSaveId})");
         }
 
         protected void SubscribeAll()
@@ -899,12 +898,15 @@ namespace DaxStudio.UI.ViewModels
                     _eventAggregator.SubscribeOnPublishedThread(tw);
                 }
             }
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SubscribeAll), $"Subscribed to all events for: {DisplayName} ({AutoSaveId})");
         }
 
         internal void CloseIntellisenseWindows()
         {
             IntellisenseProvider?.CloseCompletionWindow();
         }
+
+        
 
         protected override async Task OnActivateAsync(CancellationToken cancellationToken)
         {
@@ -949,6 +951,12 @@ namespace DaxStudio.UI.ViewModels
                     Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "OnActivate", ex);
                 }
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent(), cancellationToken);
+
+                //if (State == DocumentState.RecoveryPending)
+                //{
+                //    State = DocumentState.Loaded;
+                //    await _eventAggregator.PublishOnUIThreadAsync(new RecoverNextAutoSaveFileEvent());
+                //}
             }
             catch (Exception ex)
             {
@@ -956,7 +964,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
-                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Finished for: {DisplayName}");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Finished for: {DisplayName} ({AutoSaveId})");
             }
 
         }
@@ -1492,6 +1500,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var editor = GetEditor();
             string txt = "";
+            if (editor == null) { return txt; }
             if (editor.Dispatcher.CheckAccess())
             {
                 txt = GetQueryTextFromEditorInternal(editor);
@@ -2563,7 +2572,7 @@ namespace DaxStudio.UI.ViewModels
         internal string AutoSaveFileName => Path.Combine(ApplicationPaths.AutoSavePath, $"{AutoSaveId}.dax");
 
         // writes the file out to a temp folder in case of crashes or unplanned restarts
-        internal async Task AutoSave()
+        internal async Task AutoSaveAsync()
         {
 
             var fileName = AutoSaveFileName;
@@ -2592,6 +2601,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                if (!File.Exists(AutoSaveFileName)) return;
                 File.Delete(AutoSaveFileName);
                 // trigger an autosave of the workspace to remove this file from the index
                 _eventAggregator.PublishOnUIThreadAsync(new AutoSaveEvent());
@@ -3302,7 +3312,7 @@ namespace DaxStudio.UI.ViewModels
         public IResult GetShutdownTask()
         {
             ShutDownTraces();
-
+            DeleteAutoSave();
             return IsDirty ? new ApplicationCloseCheck(this, DoCloseCheck) : null;
         }
 

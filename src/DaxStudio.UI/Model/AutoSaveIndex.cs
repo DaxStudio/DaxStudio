@@ -53,6 +53,14 @@ namespace DaxStudio.UI.Model
             });
         }
 
+        public void Remove(DocumentViewModel document)
+        {
+            var existingEntry = Files.Find(f => f.AutoSaveId == document.AutoSaveId);
+            if (existingEntry != null) return;
+
+            Files.Remove(existingEntry);
+        }
+
         internal static AutoSaveIndex Create()
         {
             return new AutoSaveIndex(CurrentVersion);

@@ -14,6 +14,7 @@ namespace DaxStudio.UI.Interfaces
         Dictionary<int, AutoSaveIndex> LoadAutoSaveMasterIndex();
         Task Save(DocumentTabViewModel tabs);
         void RemoveAll();
+        void Remove(DocumentViewModel Doc);
 
     }
 }

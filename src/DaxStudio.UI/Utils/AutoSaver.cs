@@ -65,6 +65,15 @@ namespace DaxStudio.UI.Utils
             return index;
         }
 
+        public void Remove(DocumentViewModel doc)
+        {
+            var index = GetCurrentAutoSaveIndex();
+            if (index != null)
+            {
+                index.Remove(doc);
+            }
+        }
+
         public async Task Save(DocumentTabViewModel tabs)
         {
             Contract.Requires(tabs != null, "The tabs parameter must not be null");
@@ -73,8 +82,9 @@ namespace DaxStudio.UI.Utils
                 // exit here if no tabs are open
                 if (tabs.Items.Count == 0) return;
 
-
                 var index = GetCurrentAutoSaveIndex();
+
+                index.Files.Clear();
 
                 foreach (DocumentViewModel tab in tabs.Items)
                 {
@@ -83,9 +93,10 @@ namespace DaxStudio.UI.Utils
                     // don't autosave if the document has not changed since last save
                     // or if IsDirty is false meaning that the file has been manually saved
                     if (tab.IsDirty && tab.LastAutoSaveUtcTime < tab.LastModifiedUtcTime)
-                        await tab.AutoSave().ConfigureAwait(false);
+                        await tab.AutoSaveAsync().ConfigureAwait(false);
                     
                 }
+
                 SaveIndex(index);
             } 
             catch (Exception ex)
@@ -109,9 +120,13 @@ namespace DaxStudio.UI.Utils
         // called on a clean shutdown, removes all autosave files
         public void RemoveAll()
         {
+            var index = GetCurrentAutoSaveIndex();
+
+            foreach( var f in index.Files)
+
             try {
                 // delete autosaveindex
-                SharingViolations.Wrap(() => File.Delete(AutoSaveIndexFile(GetCurrentAutoSaveIndex())));
+                SharingViolations.Wrap(() => File.Delete(AutoSaveIndexFile(index)));
             }
             catch (Exception ex)
             {

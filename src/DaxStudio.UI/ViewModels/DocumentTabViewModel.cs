@@ -18,6 +18,7 @@ using DaxStudio.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using AvalonDock.Controls;
+using System.Text.RegularExpressions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -42,6 +43,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IDaxStudioHost _host;
         private readonly RibbonViewModel Ribbon;
         private readonly Application _app;
+        private static Regex generatedNameRegEx = new Regex(@"(?<=Query)(\d+)(?=\.)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         //private readonly Func<DocumentViewModel> _documentFactory;
         private readonly Func<IWindowManager, IEventAggregator, DocumentViewModel> _documentFactory;
@@ -245,7 +247,7 @@ namespace DaxStudio.UI.ViewModels
                     newDoc.FileName = file.OriginalFileName;
                     newDoc.AutoSaveId = file.AutoSaveId;
                     newDoc.State = DocumentState.RecoveryPending;
-
+                    await DeactivateItemAsync(ActiveItem,false);
                     await ActivateItemAsync(newDoc);
                     //ActiveDocument = newDoc;
                     newDoc.IsDirty = true;
@@ -298,8 +300,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Requesting new document from document factory");
                 var newDoc = _documentFactory(_windowManager, _eventAggregator);
-                newDoc.DisplayName = $"Query{_documentCount}.dax";
+                _documentCount = GetMaxDocNumber();
                 _documentCount++;
+                newDoc.DisplayName = $"Query{_documentCount}.dax";
+                
                 //newDoc.Parent = this;
                 //newDoc.ConductWith(this);
 
@@ -332,6 +336,20 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening new document\n{ex.Message}"));
             }
 
+        }
+
+        private int GetMaxDocNumber()
+        {
+            int maxDocNumber = 0;
+            foreach (DocumentViewModel doc in Items)
+            {
+                if (doc.IsDiskFileName) continue; // if this is previously saved file then skip it
+                var m = generatedNameRegEx.Matches(doc.DisplayName);
+                if (m.Count == 0) continue; // if we did not find any digits after the word query then skip this file
+                var docNum = int.Parse(m[0].Value);
+                if (docNum > maxDocNumber) maxDocNumber = docNum;
+            }
+            return maxDocNumber;
         }
 
         private async Task ConnectToServerAsync()
@@ -435,6 +453,12 @@ namespace DaxStudio.UI.ViewModels
                     Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
                     //ActiveDocument = null;
                     await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+                }
+
+                // remove this document from the autosave index
+                if (doc is DocumentViewModel docModel)
+                {
+                    AutoSaver.Remove(docModel);
                 }
             }
             catch (Exception ex)
@@ -553,8 +577,14 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(RecoverNextAutoSaveFileEvent message, CancellationToken cancellationToken)
         {
-            
-            var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i=>i.ShouldRecover).SelectMany(index => index.Files).Where(x => x.ShouldOpen).FirstOrDefault();
+
+            await RecoverNextAutoSaveFileAsync();
+
+        }
+
+        private async Task RecoverNextAutoSaveFileAsync()
+        {
+            var fileToOpen = _autoSaveRecoveryIndex.Values.Where(i => i.ShouldRecover).SelectMany(index => index.Files).Where(x => x.ShouldOpen).FirstOrDefault();
 
             if (fileToOpen != null)
             {
@@ -570,14 +600,25 @@ namespace DaxStudio.UI.ViewModels
                 // if no files have been opened open a new blank document
                 if (Items.Count == 0) await OpenNewBlankDocumentAsync(null);
 
+                // Only the last tab should be active.
+                // make sure all items except the last tab are not subscribed to the EventAggregator
+                if (Items.Count > 1)
+                {
+                    for (var i = 0 ; i < Items.Count-1;i++)
+                    {
+                        (Items[i] as DocumentViewModel)?.UnsubscribeAll();
+                    }
+                }
+
                 AutoSaver.CleanUpRecoveredFiles();
 
                 // Now that any files have been recovered start the auto save timer
                 await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
-                
+
             }
-            
         }
+
+        
 
         public async Task DuplicateTab(object tab)
         {
@@ -591,5 +632,6 @@ namespace DaxStudio.UI.ViewModels
             // todo get tab.Model to get at DocumentViewModel
             System.Diagnostics.Debug.WriteLine("duplicate tab");
         }
+
     }
 }
