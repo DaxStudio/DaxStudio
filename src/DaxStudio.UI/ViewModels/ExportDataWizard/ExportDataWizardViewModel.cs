@@ -746,14 +746,17 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var colName = row.Field<string>("ColumnName");
 
-                    var regEx = Regex.Match(colName, @".+\[(.+)\]");
+                    var regEx = Regex.Match(colName, @"[^\[]+\[(.+)\]");
 
                     if (regEx.Success)
                     {
                         colName = regEx.Groups[1].Value;
                     }
 
-                    var fixedName = colName.Replace('|', '_');
+                    var fixedName = colName
+                                    .Replace('|', '_')
+                                    .Replace("]","]]");
+                    
                     var sqlType = ConvertDotNetToSQLType(row);
 
                     strColumns.AppendLine($",[{fixedName}] {sqlType} NULL");
