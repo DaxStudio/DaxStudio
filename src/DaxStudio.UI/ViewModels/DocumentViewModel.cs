@@ -1791,7 +1791,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
         }
 
-        private void CancelQuery()
+        internal void CancelQuery()
         {
             try
             {
@@ -3962,7 +3962,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedWorksheet = message.Worksheet;
             return Task.CompletedTask;
         }
-        public IResultsTarget SelectedTarget { get; private set; }
+        public IResultsTarget SelectedTarget { get; internal set; }
         public Task HandleAsync(QueryResultsPaneMessageEvent message, CancellationToken cancellationToken)
         {
             SelectedTarget = message.Target;

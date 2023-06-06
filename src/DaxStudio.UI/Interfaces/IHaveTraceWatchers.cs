@@ -2,7 +2,7 @@
 
 namespace DaxStudio.UI.Interfaces
 {
-    interface IHaveTraceWatchers
+    public interface IHaveTraceWatchers
     {
         BindableCollection<ITraceWatcher> TraceWatchers { get; }
     }
