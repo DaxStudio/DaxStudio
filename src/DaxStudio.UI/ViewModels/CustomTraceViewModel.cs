@@ -59,7 +59,7 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        private void SetTraceOutput(CustomTraceOutput selectedTraceOutput)
+        public void SetTraceOutput(CustomTraceOutput selectedTraceOutput)
         {
             switch (selectedTraceOutput)
             {
@@ -85,7 +85,7 @@ namespace DaxStudio.UI.ViewModels
         public bool IsFileOutput { get; private set; }
         public bool IsGridOutput { get; private set; }      
 
-        private CustomTraceTemplate Template { get; set; }
+        public CustomTraceTemplate Template { get; set; }
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
