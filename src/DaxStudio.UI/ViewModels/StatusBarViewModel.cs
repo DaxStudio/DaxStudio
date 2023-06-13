@@ -66,7 +66,7 @@ namespace DaxStudio.UI.ViewModels
         { 
             get { return (_spid == "" || _spid== "0" )?"-":_spid; } 
             set { _spid = value;
-                  NotifyOfPropertyChange(()=>Spid);
+                  NotifyOfPropertyChange();
                 }
         }
 
@@ -215,8 +215,15 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(DatabaseChangedEvent message, CancellationToken cancellationToken)
         {
             if (ActiveDocument == null) return Task.CompletedTask;
-            Spid = ActiveDocument.Spid.ToString();
-            NotifyOfPropertyChange(nameof(Spid));
+            try
+            {
+                Spid = ActiveDocument.Spid.ToString();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(StatusBarViewModel), "HandleAsync<DatabaseChangedEvent>", "Error setting Spid");
+                Spid = "0";
+            }
             return Task.CompletedTask;
         }
     }
