@@ -253,7 +253,13 @@ namespace DaxStudio.UI.ViewModels
                         string definition = GetParentColumnDefinition(node, node.Parent.Children);
                         if (definition != null)
                         {
-                            aliases.Add(node.TextValue, definition);
+                            // If the node already exists, there is a difference in the alias but the column name is the same.
+                            // The alias c?? should correspond to the column position in model metadata - we should evaluate a safer way to identify
+                            // the original column name in the data source
+                            if (!aliases.ContainsKey(node.TextValue))
+                            {
+                                aliases.Add(node.TextValue, definition);
+                            }
                         }
                     }
                     
@@ -324,6 +330,7 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
+#pragma warning disable CS8321 // Local function is declared but never used
             string GetParentTableDefinition(Node node, IEnumerable<Node> listNodes)
             {
                 var step1 = listNodes.TakeWhile(n => n != node);
@@ -345,6 +352,7 @@ namespace DaxStudio.UI.ViewModels
                     return null;
                 }
             }
+#pragma warning restore CS8321 // Local function is declared but never used
         }
 
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
