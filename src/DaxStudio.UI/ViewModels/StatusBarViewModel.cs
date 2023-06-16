@@ -221,9 +221,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Missing constant
-                // Log.Error(ex, Constants.LogMessageTemplate, nameof(StatusBarViewModel), "HandleAsync<DatabaseChangedEvent>", "Error setting Spid");
-                Log.Error(ex, "Missing constant", nameof(StatusBarViewModel), "HandleAsync<DatabaseChangedEvent>", "Error setting Spid");
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(StatusBarViewModel), "HandleAsync<DatabaseChangedEvent>", "Error setting Spid");
                 Spid = "0";
             }
             return Task.CompletedTask;
