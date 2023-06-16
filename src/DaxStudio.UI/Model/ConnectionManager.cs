@@ -359,6 +359,10 @@ namespace DaxStudio.UI.Model
                 {
                     _connection.FileName = value;
                 }
+                if (_dmvConnection != null)
+                {
+                    _dmvConnection.FileName = value;
+                }
             }
         }
 
@@ -423,7 +427,11 @@ namespace DaxStudio.UI.Model
         public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT ?? false;
         public bool IsPowerPivot {
             get => _connection?.IsPowerPivot ?? false;
-            set => _connection.IsPowerPivot = value;
+            set
+            {
+                _connection.IsPowerPivot = value;
+                _dmvConnection.IsPowerPivot = value;
+            }
         }
 
         public void Open()
@@ -892,6 +900,7 @@ namespace DaxStudio.UI.Model
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
             _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
             _dmvConnection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
+
             ServerType = message.ServerType;
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
