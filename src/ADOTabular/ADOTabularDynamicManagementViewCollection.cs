@@ -8,6 +8,7 @@ namespace ADOTabular
     public class ADOTabularDynamicManagementViewCollection : IEnumerable<ADOTabularDynamicManagementView>
     {
         private DataSet _dsDmvs;
+        private object _dmvLock = new object();
         private readonly IADOTabularConnection _adoTabConn;
         public ADOTabularDynamicManagementViewCollection(IADOTabularConnection adoTabConn)
         {
@@ -17,19 +18,23 @@ namespace ADOTabular
 
         private DataTable GetDmvTable()
         {
-            if (_dsDmvs == null)
+            // Prevent 2 threads from trying to refresh the DMV collection
+            lock (_dmvLock)
             {
-                try
+                if (_dsDmvs == null)
                 {
-                    // TODO - on error should we return an empty dataset?
-                    _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
-                }
-                catch 
-                {
-                    return new DataTable("Emtpy");
+                    try
+                    {
+                        // TODO - on error should we return an empty dataset?
+                        _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
+                        _dsDmvs.Tables[0].DefaultView.Sort = "SchemaName";
+                    }
+                    catch
+                    {
+                        return new DataTable("Emtpy");
+                    }
                 }
             }
-            _dsDmvs.Tables[0].DefaultView.Sort = "SchemaName";
             return _dsDmvs.Tables[0].DefaultView.ToTable();
         }
 
