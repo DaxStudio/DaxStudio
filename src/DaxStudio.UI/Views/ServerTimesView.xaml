@@ -118,8 +118,9 @@
                                         <Image Source="{DynamicResource copyDrawingImage}"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <Separator/>
                                 <MenuItem Command="SelectAll"></MenuItem>
+                            <Separator/>
+                            <MenuItem Header="_Raw Query" IsCheckable="True" IsChecked="{Binding ShowRawQuery}" ToolTip="Toggle query format and beautifier"></MenuItem>
                             </ContextMenu>
                         </ctrl:BindableRichTextBox.ContextMenu>
                     </ctrl:BindableRichTextBox>

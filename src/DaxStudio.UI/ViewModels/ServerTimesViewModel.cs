@@ -47,7 +47,7 @@ using System.Linq.Expressions;
 namespace DaxStudio.UI.ViewModels
 {
 
-    public class TraceStorageEngineEvent {
+    public class TraceStorageEngineEvent : PropertyChangedBase {
         [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventClass Class;
         [JsonConverter(typeof(StringEnumConverter))]
@@ -58,8 +58,20 @@ namespace DaxStudio.UI.ViewModels
                 return new DaxStudioTraceEventClassSubclass { Class = this.Class, Subclass = this.Subclass, QueryLanguage = this.GetQueryLanguage() };
             }
         }
+
+        public bool ShowRawQuery { 
+            get { return _showRawQuery; } 
+            set { 
+                _showRawQuery = value; 
+                NotifyOfPropertyChange(() => ShowRawQuery);
+                // Update also Query to reflect the change in Raw visualization
+                NotifyOfPropertyChange(() => QueryRichText);
+            }
+        }
+        private bool _showRawQuery = false; // do not show raw query by default
+
         public string Query { get; set; }
-        public string TextData { get; set; }
+        public virtual string TextData { get; set; }
 
         private bool IsDaxDirectQuery(string query)
         {
@@ -184,7 +196,8 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            get => _queryRichText;
+            get => ShowRawQuery ? TextData : _queryRichText; 
+
         }
 
         private IGlobalOptions _options;
@@ -468,7 +481,7 @@ namespace DaxStudio.UI.ViewModels
         public string MatchingResult { get; set; }
         public string Mapping { get; set; }
         private string _textData;
-        public string TextData { get { return _textData; } set {
+        public override string TextData { get { return _textData; } set {
                 _textData = value;
                 if (_textData == null) return;
                 JObject rewriteResult = JObject.Parse(_textData);
