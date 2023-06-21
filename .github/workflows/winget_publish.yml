@@ -1,0 +1,23 @@
+name: Submit DAX Studio release to Windows Package Manager Community Repository 
+
+on:
+  release:
+    types: [published]
+
+env:
+  packageFileName: DaxStudio_\d+_\d+_\d+_setup\.exe
+  packageId: DaxStudio.DaxStudio
+
+jobs:
+
+  winget:
+    name: Publish winget package
+    runs-on: windows-latest
+    steps:
+      - name: Submit package to Windows Package Manager Community Repository
+        run: |
+          iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
+          $installerUrl = $github.release.assets | Where-Object -Property name -match ${env:packageFileName} | Select -ExpandProperty browser_download_url -First 1
+          $release_version = $github.release.tag_name -replace "v", ""
+          .\wingetcreate.exe update ${env:packageId} -s -v $release_version -u "$installerUrl|x64|machine" "$installerUrl|x64|user" -t ${{ secrets.WINGET_TOKEN }}
