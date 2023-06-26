@@ -686,13 +686,17 @@ namespace DaxStudio.UI.ViewModels
                 await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
                 await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
             }
+            finally
+            {
+                Document.QueryStopWatch.Stop();
+            }
         }
 
         private void MarkWaitingTablesAsSkipped()
         {
             foreach (var tbl in Tables)
             {
-                if (tbl.Status == ExportStatus.Ready)
+                if (tbl.Status == ExportStatus.Ready || tbl.Status != ExportStatus.Exporting)
                 {
                     tbl.Status = ExportStatus.Cancelled;
                 }

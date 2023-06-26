@@ -541,6 +541,7 @@
                    CanCustomizeQuickAccessToolBar="False"
                    CanCustomizeQuickAccessToolBarItems="False"
                    IsQuickAccessToolBarMenuDropDownVisible="False"
+                   IsKeyTipHandlingEnabled="True"
                    CanMinimize="True"
                    CanUseSimplified="True"
          >    
