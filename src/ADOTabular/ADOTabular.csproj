@@ -188,19 +188,19 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.2.16</Version>
+      <Version>1.2.18</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.2.16</Version>
+      <Version>1.2.18</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.64.0</Version>
+      <Version>19.65.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.64.0</Version>
+      <Version>19.65.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>7.0.1</Version>
+      <Version>7.0.3</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
