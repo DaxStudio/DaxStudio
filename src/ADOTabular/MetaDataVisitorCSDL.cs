@@ -64,8 +64,12 @@ namespace ADOTabular
             */
 
             // get hierarchy structure
-            GetHierarchiesFromDmv();
-
+            if (!_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0")
+                || (_conn.IsPowerPivot && !_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.2830.0")))
+            {
+                // only call MDSCHEMA_HIERARCHIES for very old server versions
+                GetHierarchiesFromDmv();
+            }
             using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
             GenerateTablesFromXmlReader(tables, rdr);
 
