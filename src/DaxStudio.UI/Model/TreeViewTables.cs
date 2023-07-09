@@ -22,7 +22,8 @@ namespace DaxStudio.UI.Model
         public static List<IFilterableTreeViewItem> TreeViewTables(this ADOTabularModel model, IGlobalOptions options, IEventAggregator eventAggregator , IMetadataPane metadataPane)
         {
             var lst = new List<IFilterableTreeViewItem>();
-            foreach (var t in model.Tables)
+            var sortedTables = model.Tables.OrderBy(t => t.Caption);
+            foreach (var t in sortedTables)
             {
                 if (t.Private && !metadataPane.ShowHiddenObjects) continue; // skip Private tables
                 if (t.ShowAsVariationsOnly && !metadataPane.ShowHiddenObjects) continue; // skip Variation tables
@@ -109,7 +110,8 @@ namespace DaxStudio.UI.Model
 
             if (folder != null)
             {
-                foreach (var folderItem in folder.FolderItems)
+                var sortedFolderItems = folder.FolderItems.OrderBy(fi => fi.Name);
+                foreach (var folderItem in sortedFolderItems)
                 {
                     isVisible = false;
 
