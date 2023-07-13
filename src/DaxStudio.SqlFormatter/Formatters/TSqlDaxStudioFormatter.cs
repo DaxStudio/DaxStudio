@@ -378,6 +378,7 @@ namespace PoorMansTSqlFormatterLib.Formatters
                         state.IncrementIndent();
                     state.AddOutputContent(FormatOperator("("), SqlHtmlConstants.CLASS_OPERATOR);
                     TSqlStandardFormattingState innerState = new TSqlStandardFormattingState(state);
+                    innerState.Inline = state.Inline;
 
                     // Apply Inline if there are UNION ALL conditions inside
                     if (contentElement.Children.Any(ch1 => ch1.Name == SqlStructureConstants.ENAME_SET_OPERATOR_CLAUSE
