@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -165,7 +166,12 @@ namespace PoorMansTSqlFormatterLib.Formatters
 
                 case SqlStructureConstants.ENAME_SQL_CLAUSE:
                     state.UnIndentInitialBreak = true;
+                    bool currentInline = state.Inline;
+                    state.Inline = state.Inline 
+                            || contentElement.Children.Any(ch1 => ch1.Name == SqlStructureConstants.ENAME_SET_OPERATOR_CLAUSE 
+                                                                || ch1.Children.Any( ch2 => ch2.Name == SqlStructureConstants.ENAME_SET_OPERATOR_CLAUSE) );
                     ProcessSqlNodeList(contentElement.Children, state.IncrementIndent());
+                    state.Inline = currentInline;
                     state.DecrementIndent();
                     if (Options.NewClauseLineBreaks > 0)
                         state.BreakExpected = true;
@@ -178,7 +184,7 @@ namespace PoorMansTSqlFormatterLib.Formatters
                     // we want to keep the rows more dense so we remove breaks and we should also put the statements
                     // before and after in a single line for readability
                     state.DecrementIndent();
-                    // state.WhiteSpace_BreakToNextLine(); //this is the one already recommended by the start of the clause
+                    state.WhiteSpace_BreakToNextLine(true); //this is the one already recommended by the start of the clause
                     // state.WhiteSpace_BreakToNextLine(); //this is the one we additionally want to apply
                     ProcessSqlNodeList(contentElement.Children, state.IncrementIndent());
                     state.BreakExpected = false;
@@ -372,6 +378,14 @@ namespace PoorMansTSqlFormatterLib.Formatters
                         state.IncrementIndent();
                     state.AddOutputContent(FormatOperator("("), SqlHtmlConstants.CLASS_OPERATOR);
                     TSqlStandardFormattingState innerState = new TSqlStandardFormattingState(state);
+
+                    // Apply Inline if there are UNION ALL conditions inside
+                    if (contentElement.Children.Any(ch1 => ch1.Name == SqlStructureConstants.ENAME_SET_OPERATOR_CLAUSE
+                                                                || ch1.Children.Any(ch2 => ch2.Name == SqlStructureConstants.ENAME_SET_OPERATOR_CLAUSE))) {
+                        innerState.Inline = true;
+                        innerState.BreakExpected = false;
+                    }
+
                     ProcessSqlNodeList(contentElement.Children, innerState);
                     //if there was a linebreak in the parens content, or if it wanted one to follow, then put linebreaks before and after.
                     if (innerState.BreakExpected || innerState.OutputContainsLineBreak)
@@ -794,7 +808,7 @@ namespace PoorMansTSqlFormatterLib.Formatters
 
         private void WhiteSpace_SeparateWords(TSqlStandardFormattingState state)
         {
-            if (state.BreakExpected || state.AdditionalBreaksExpected > 0)
+            if (!state.Inline && (state.BreakExpected || state.AdditionalBreaksExpected > 0)) 
             {
                 bool wasUnIndent = state.UnIndentInitialBreak;
                 if (wasUnIndent) state.DecrementIndent();
@@ -880,6 +894,8 @@ namespace PoorMansTSqlFormatterLib.Formatters
             public int CurrentLineLength { get; private set; }
             public bool CurrentLineHasContent { get; private set; }
 
+            public bool Inline { get; set; }
+
             public SpecialRegionType? SpecialRegionActive { get; set; }
             public Node RegionStartNode { get; set; }
 
@@ -912,10 +928,16 @@ namespace PoorMansTSqlFormatterLib.Formatters
 
             public override void AddOutputLineBreak()
             {
+                AddOutputLineBreak(false);
+            }
+
+            public void AddOutputLineBreak(bool ignoreInline)
+            {
 #if DEBUG
                 //hints for debugging line-width issues:
                 //_outBuilder.Append(" (" + CurrentLineLength.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")");
 #endif
+                if (!ignoreInline && Inline) return;
 
                 //if linebreaks are added directly in the content (eg in comments or strings), they 
                 // won't be accounted for here - that's ok.
@@ -941,9 +963,11 @@ namespace PoorMansTSqlFormatterLib.Formatters
                 }
             }
 
-            internal void WhiteSpace_BreakToNextLine()
+            internal void WhiteSpace_BreakToNextLine(bool ignoreInline = false)
             {
-                AddOutputLineBreak();
+                if (!ignoreInline && Inline) return;
+
+                AddOutputLineBreak(ignoreInline);
                 Indent(IndentLevel);
                 BreakExpected = false;
                 SourceBreakPending = false;

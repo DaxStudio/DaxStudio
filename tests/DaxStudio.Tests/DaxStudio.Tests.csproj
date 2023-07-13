@@ -113,6 +113,7 @@
     <Compile Include="DaxDefineMeasureTests.cs" />
     <Compile Include="DelimiterTranslatorTests.cs" />
     <Compile Include="QueryPlanTests.cs" />
+    <Compile Include="SqlFormatterTest.cs" />
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="TomTests.cs" />
     <Compile Include="TraceEventTests.cs" />
@@ -151,6 +152,10 @@
     <ProjectReference Include="..\..\src\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
       <Project>{A7912ABB-E3AD-45C4-A8A7-183828DB300E}</Project>
       <Name>DaxStudio.QueryTrace</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj">
+      <Project>{EFE78597-D6F1-45F3-9CC5-A01A2D957BFA}</Project>
+      <Name>DaxStudio.SqlFormatter</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\DaxStudio.Standalone\DaxStudio.Standalone.csproj">
       <Project>{f92e0bfc-f721-4a08-a4fa-77dc019b14f6}</Project>
