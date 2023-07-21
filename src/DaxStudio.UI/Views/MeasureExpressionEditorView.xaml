@@ -68,7 +68,7 @@
                                          BorderThickness="2">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="{DynamicResource warningDrawingImage}" Margin="0 0 8 0 " />
-                            <TextBlock Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}">The Measure Expressions is blank. This can happen if uou do not have admin rights to the data model. <Hyperlink NavigateUri="https://daxstudio.org/learn-more/blank-measure-expressions" ap:HyperlinkExtensions.IsExternal="true">Learn more</Hyperlink></TextBlock>
+                            <TextBlock Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}">The Measure Expressions is blank. This can happen if you do not have admin rights to the data model. <Hyperlink NavigateUri="https://daxstudio.org/learn-more/blank-measure-expressions" ap:HyperlinkExtensions.IsExternal="true">Learn more</Hyperlink></TextBlock>
                         </StackPanel>
 
                     </controls:ClipBorder>
