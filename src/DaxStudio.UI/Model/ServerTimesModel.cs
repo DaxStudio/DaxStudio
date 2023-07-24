@@ -25,6 +25,7 @@ namespace DaxStudio.UI.Model
         public long TotalCpuDuration { get; set; }
         public DateTime QueryEndDateTime { get; set; }
         public bool ParallelStorageEngineEventsDetected { get; set; }
+        public bool ShowStorageEngineNetParallelDuration { get; set; }
         public DateTime QueryStartDateTime { get; set; }
         public string Parameters { get; set; }
         public string CommandText { get; set; }

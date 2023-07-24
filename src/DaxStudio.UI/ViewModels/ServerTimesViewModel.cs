@@ -740,7 +740,8 @@ namespace DaxStudio.UI.ViewModels
     {
         private bool parallelStorageEngineEventsDetected;
         public bool ParallelStorageEngineEventsDetected
-        { get => parallelStorageEngineEventsDetected; 
+        { 
+            get => parallelStorageEngineEventsDetected; 
             set { 
                 parallelStorageEngineEventsDetected = value;
                 NotifyOfPropertyChange(nameof(ParallelStorageEngineEventsDetected));
@@ -816,6 +817,8 @@ namespace DaxStudio.UI.ViewModels
         public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
         public bool ShowTotalDirectQueryDuration => Options.ShowTotalDirectQueryDuration;
+
+        public bool ShowStorageEngineNetParallelDuration => Options.ShowStorageEngineNetParallelDuration;
 
         public override string TraceStatusText
         {

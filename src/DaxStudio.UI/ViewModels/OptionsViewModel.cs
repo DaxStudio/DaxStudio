@@ -1612,6 +1612,25 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
+
+        private bool _showStorageEngineNetParallelDuration;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show SE parallel calculation (debug)")]
+        [Description("Show the Net Parallel Duration calculation for storage engine (SE) in Server Timings (for debug purposes).")]
+        public bool ShowStorageEngineNetParallelDuration
+        {
+            get => _showStorageEngineNetParallelDuration;
+
+            set
+            {
+                _showStorageEngineNetParallelDuration = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowStorageEngineNetParallelDuration), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowStorageEngineNetParallelDuration);
+            }
+
+        }
         #endregion
 
 

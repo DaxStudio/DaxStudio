@@ -482,7 +482,7 @@
                        Text="{Binding StorageEngineNetParallelDuration, StringFormat='(#,0 ms)'}"
                        Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        ToolTip="{Binding SENetParallelTooltip}"
-                       Visibility="{Binding ParallelStorageEngineEventsDetected, Converter={StaticResource BoolToCollapsedConverter}}"        
+                       Visibility="{Binding ShowStorageEngineNetParallelDuration, Converter={StaticResource BoolToCollapsedConverter}}"        
                                />
                         </StackPanel>
 
