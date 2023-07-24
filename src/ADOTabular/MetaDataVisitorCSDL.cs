@@ -157,7 +157,7 @@ namespace ADOTabular
                 );
 
                 // Add format string if available
-                if (dtFormatStringDefinitions != null  && dtFormatStringDefinitions.Rows.Count > 0)
+                if (dtFormatStringDefinitions != null  && dtFormatStringDefinitions.Rows.Count > 0 && dr.Table.Columns["FormatStringDefinitionID"] != null)
                 {
                     ulong? id = dr["FormatStringDefinitionID"] as ulong?;
                     if (id.HasValue && id > 0)
