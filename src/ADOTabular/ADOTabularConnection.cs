@@ -883,7 +883,7 @@ namespace ADOTabular
         public bool IsPowerBIXmla { get => this.Properties["Data Source"].IsPowerBIService(); }
         public string ShortFileName { get; private set; }
 
-        public bool IsAdminConnection => SPID != -1 || HasRlsParameters() || IsPowerBIXmla;
+        public bool IsAdminConnection => SPID != -1 || HasRlsParameters();
 
         public bool IsTestingRls => HasRlsParameters();
 

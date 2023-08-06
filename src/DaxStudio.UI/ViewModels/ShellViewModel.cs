@@ -675,7 +675,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
                 }
-
+                Application.Current.MainWindow.Activate();
                 handled = true;
             }
             return IntPtr.Zero;

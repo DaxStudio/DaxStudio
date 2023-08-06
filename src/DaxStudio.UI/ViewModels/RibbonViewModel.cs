@@ -34,6 +34,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectionPendingEvent>
         , IHandle<CancelConnectEvent>
         , IHandle<ChangeThemeEvent>
+        , IHandle<DatabaseChangedEvent>
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<FileOpenedEvent>
         , IHandle<FileSavedEvent>
@@ -423,6 +424,12 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                NotifyOfPropertyChange(() => CanRunQuery);
+                NotifyOfPropertyChange(() => CanClearCache);
+                NotifyOfPropertyChange(() => CanClearCacheAuto);
+                NotifyOfPropertyChange(() => CanRefreshMetadata);
+                NotifyOfPropertyChange(() => CanConnect);
+                UpdateTraceWatchers();
                 Log.Debug("{Class} {Event} {ServerName}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName);                
             }
             catch (Exception ex)
@@ -433,11 +440,6 @@ namespace DaxStudio.UI.ViewModels
             finally
             {
                 _isConnecting = false;
-                NotifyOfPropertyChange(() => CanRunQuery);
-                NotifyOfPropertyChange(() => CanClearCache);
-                NotifyOfPropertyChange(() => CanClearCacheAuto);
-                NotifyOfPropertyChange(() => CanRefreshMetadata);
-                NotifyOfPropertyChange(() => CanConnect);
             }
         }
         
@@ -1449,6 +1451,20 @@ namespace DaxStudio.UI.ViewModels
         {
             Theme = message.Theme;
             NotifyOfPropertyChange(nameof(ThemeImageResource));
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(DatabaseChangedEvent message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                RefreshConnectionDetails(ActiveDocument.Connection);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "IHandle<DatabaseChangedEvent>", "error handling event");
+                ActiveDocument.OutputError(ex.Message);
+            }
             return Task.CompletedTask;
         }
 

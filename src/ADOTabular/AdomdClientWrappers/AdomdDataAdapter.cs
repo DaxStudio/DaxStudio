@@ -22,7 +22,7 @@ namespace ADOTabular.AdomdClientWrappers
             
                 _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter
                 {
-                    SelectCommand = (Microsoft.AnalysisServices.AdomdClient.AdomdCommand)command.UnderlyingCommand
+                    SelectCommand = (Microsoft.AnalysisServices.AdomdClient.AdomdCommand)command.InternalCommand
                 };
             
             

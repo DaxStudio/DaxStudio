@@ -97,7 +97,7 @@ namespace ADOTabular.AdomdClientWrappers
             _command.Execute();
         }
 
-        internal object UnderlyingCommand
+        internal object InternalCommand
         {
             get
             {

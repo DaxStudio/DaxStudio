@@ -29,7 +29,7 @@ namespace ADOTabular
         public ADOTabularDatabase Visit(ADOTabularConnection conn)
         {
             var model = _daxModel;
-            db = new ADOTabularDatabase(_conn, model.ModelName.Name, model.ModelName.Name, model.LastUpdate, model.CompatibilityLevel.ToString(), string.Empty);
+            db = new ADOTabularDatabase(_conn, model.ModelName?.Name??"<Unknown>", model.ModelName?.Name??"<Unknown>", model.LastUpdate, model.CompatibilityLevel.ToString(), string.Empty);
             db.LastUpdate = model.LastDataRefresh;
             return db;
         }
@@ -38,12 +38,12 @@ namespace ADOTabular
         {
             var ret = new SortedDictionary<string, ADOTabularModel>();
             var model = _daxModel;
-            
-            ret.Add(model.ModelName.Name,
+            var modelName = model.ModelName?.Name ?? "<Unknown>";
+            ret.Add(modelName,
                 new ADOTabularModel(_conn
                 ,db
-                , model.ModelName.Name
-                , model.ModelName.Name
+                , modelName
+                , modelName
                 , string.Empty
                 , String.Empty
                 ));
