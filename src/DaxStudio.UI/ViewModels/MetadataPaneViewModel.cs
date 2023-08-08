@@ -797,7 +797,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (item != null)
                 {
-                    var criteria = $"WHERE [REFERENCED_OBJECT] = '{item.Name}'";
+                    var criteria = $"WHERE [REFERENCED_OBJECT] = '{item.Name.Replace("'","''")}'";
 
                     // if the current item is a column we should also include the table name
                     if ( item.IsColumn)
@@ -832,7 +832,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (item != null)
                 {
-                    var txt = item.Name;
+                    var txt = item.Name.Replace("'","''");
                     var thisItem =
                         "SELECT " + Environment.NewLine +
                         " [OBJECT_TYPE] AS [Object Type], " + Environment.NewLine +
