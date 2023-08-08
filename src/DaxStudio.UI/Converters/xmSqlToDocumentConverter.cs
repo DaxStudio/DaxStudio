@@ -85,6 +85,8 @@ namespace DaxStudio.UI.Converters
         /// <returns>A WPF object.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value == null) return "";
+
             FlowDocument doc = new FlowDocument();
 
             string tabReplacement = new string(' ', 4);

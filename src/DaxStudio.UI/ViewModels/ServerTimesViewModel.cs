@@ -30,24 +30,17 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Dynamic;
 using DaxStudio.Interfaces.Enums;
-using DaxStudio.UI.Converters;
 using System.Windows.Documents;
-using System.Windows.Controls;
 using DaxStudio.UI.Views;
-using DaxStudio.Common.Extensions;
-using Microsoft.AspNet.SignalR.Client;
-using System.Web;
 using DaxStudio.UI.Controls;
 using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-using ICSharpCode.AvalonEdit.Document;
-using System.Linq.Expressions;
 
 namespace DaxStudio.UI.ViewModels
 {
-
-    public class TraceStorageEngineEvent : PropertyChangedBase {
+    // Using SimplePropertyChangedBase as a base as it does not have a [DataContract] attribute
+    // like the default Caliburn.Micro PropertyChangedBase which breaks the deserilization
+    public class TraceStorageEngineEvent : SimplePropertyChangedBase {
         [JsonConverter(typeof(StringEnumConverter))]
         public DaxStudioTraceEventClass Class;
         [JsonConverter(typeof(StringEnumConverter))]
@@ -63,9 +56,9 @@ namespace DaxStudio.UI.ViewModels
             get { return _showRawQuery; } 
             set { 
                 _showRawQuery = value; 
-                NotifyOfPropertyChange(() => ShowRawQuery);
+                NotifyOfPropertyChange(nameof(ShowRawQuery));
                 // Update also Query to reflect the change in Raw visualization
-                NotifyOfPropertyChange(() => QueryRichText);
+                NotifyOfPropertyChange(nameof(QueryRichText));
             }
         }
         private bool _showRawQuery = false; // do not show raw query by default
@@ -1686,7 +1679,7 @@ namespace DaxStudio.UI.ViewModels
                 AllStorageEngineEvents.AddRange(m.StoreageEngineEvents);
             else
                 AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
-            AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText.Contains("|~S~|"));
+            AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText?.Contains("|~S~|")??false);
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 4) {
                 AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));

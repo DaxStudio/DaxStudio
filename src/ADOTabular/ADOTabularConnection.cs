@@ -735,9 +735,15 @@ namespace ADOTabular
                         //var resColl = new AdomdRestrictionCollection {{"SESSION_ID", SessionID}};
                         //var ds = GetSchemaDataSet("DISCOVER_SESSIONS", resColl);
                         var ds = GetSchemaDataSet("DISCOVER_SESSIONS");
-                        foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => string.Equals( dr["SESSION_ID"].ToString(), SessionId, StringComparison.OrdinalIgnoreCase )))
+                        if (ds == null)
                         {
-                            _spid = int.Parse(dr["SESSION_SPID"].ToString(),CultureInfo.InvariantCulture);
+                            _spid = -1;
+                        }
+                        else {
+                            foreach (var dr in ds.Tables[0].Rows.Cast<DataRow>().Where(dr => string.Equals(dr["SESSION_ID"].ToString(), SessionId, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                _spid = int.Parse(dr["SESSION_SPID"].ToString(), CultureInfo.InvariantCulture);
+                            }
                         }
                     }
                     catch (Exception )
