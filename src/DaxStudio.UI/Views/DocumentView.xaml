@@ -43,7 +43,7 @@
             <conv:DataBindingDebugConverter x:Key="DataBindingDebugConverter"/>
             <conv:RightMarginMultiplyConverter x:Key="RightMarginMultiplyConverter"/>
             <conv:StringPercentToDoubleConverter x:Key="StringPercentToDoubleConverter"/>
-
+            <conv:BoolToLeftThicknessConverter x:Key="BoolToLeftThicknessConverter"/>
             <SolidColorBrush x:Key="RecordingBrush" Color="{DynamicResource Theme.Default.Back}" />
 
             <FrameworkElement x:Key="BrushCarrier" x:Name="BrushCarrier" Tag="{StaticResource RecordingBrush}"/>
@@ -712,24 +712,24 @@
                                         Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
                                         Margin="40 10 0 0"
                                         >Enter your DAX query here...</TextBlock>-->
-                                    <ContentControl x:Name="HelpWatermark"
-                                                    cal:View.Model="{Binding HelpWatermark}" 
-                                                    cal:View.ApplyConventions="true"
-                                                    Grid.Row="1"
+                                    <Grid Margin="10" Grid.Row="1"
                                                     Grid.RowSpan="2"
-                                                    Grid.ColumnSpan="2"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Top"
-                                                    Margin="10 10"
-                                                    >
-                                        <ContentControl.LayoutTransform>
-                                            <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 
-                                                            ScaleY="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}">
+                                                    Grid.ColumnSpan="2">
+                                        <ContentControl x:Name="HelpWatermark"
+                                                        cal:View.Model="{Binding HelpWatermark}" 
+                                                        cal:View.ApplyConventions="true"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top"
+                                                        Margin="{Binding UseIndentCodeFolding , Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=18.0}"
+                                                        >
+                                            <ContentControl.LayoutTransform>
+                                                <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 
+                                                                ScaleY="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}">
                                                 
-                                            </ScaleTransform>
-                                        </ContentControl.LayoutTransform>
-                                    </ContentControl>
-
+                                                </ScaleTransform>
+                                            </ContentControl.LayoutTransform>
+                                        </ContentControl>
+                                    </Grid>
                                     <!-- Floats over the main editor control -->
                                     <!-- Background="Gray" Opacity=".7"-->
                                     <Border x:Name="borExpressionBackground" 

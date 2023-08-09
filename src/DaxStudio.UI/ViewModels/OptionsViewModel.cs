@@ -2535,6 +2535,20 @@ namespace DaxStudio.UI.ViewModels
             } 
         }
 
+        private bool  _useIndentCodeFolding;
+        [Category("Preview")]
+        [DisplayName("Use Indent based code folding")]
+        [Description("Allows for sections of code to be collapsed based on indenting")]
+        [DataMember, DefaultValue(false)]
+        public bool UseIndentCodeFolding { get => _useIndentCodeFolding;
+            set {
+                _useIndentCodeFolding = value;
+                SettingProvider.SetValue(nameof(UseIndentCodeFolding), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            } 
+        }
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
         private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;

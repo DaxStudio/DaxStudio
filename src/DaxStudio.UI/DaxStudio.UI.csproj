@@ -292,6 +292,7 @@
     <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
+    <Compile Include="Converters\BoolToLeftThicknessConverter.cs" />
     <Compile Include="Converters\BoolToRightThicknessConverter.cs" />
     <Compile Include="Converters\BoolToThicknessConverter.cs">
       <SubType>Code</SubType>
@@ -477,6 +478,7 @@
     <Compile Include="Model\CustomTraceTemplate.cs" />
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
+    <Compile Include="Model\IndentFoldingStrategy.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />

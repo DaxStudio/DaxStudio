@@ -56,7 +56,6 @@ using Timer = System.Timers.Timer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 using System.Linq.Dynamic;
 using DaxStudio.Controls.PropertyGrid;
-using ICSharpCode.AvalonEdit.Folding;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -846,8 +845,6 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug("{Class} {Event} Close:{Value} Doc:{Document}", "DocumentViewModel", "OnDeactivated (close)", close, DisplayName);
                 await base.OnDeactivateAsync(close, cancellationToken);
                 UnsubscribeAll();
-
-                StopFoldingManager();
             }
             catch (Exception ex)
             {
@@ -930,8 +927,6 @@ namespace DaxStudio.UI.ViewModels
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
 
-                if (Options.UseIndentCodeFolding) StartFoldingManager();
-
                 // exit here if we are not in a state to run a query
                 // means something is using the connection like
                 // either a query is running or a trace is starting
@@ -972,43 +967,6 @@ namespace DaxStudio.UI.ViewModels
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Finished for: {DisplayName} ({AutoSaveId})");
             }
 
-        }
-
-        private void StartFoldingManager()
-        {
-            if (foldingUpdateTimer.IsEnabled) return;
-             
-            foldingUpdateTimer.Interval = TimeSpan.FromSeconds(1);
-            foldingUpdateTimer.Tick += delegate { UpdateFoldings(); };
-            foldingUpdateTimer.Start();
-
-            if (this.GetEditor().Document != null)
-            {
-                if (foldingManager == null)
-                {
-                    foldingStrategy = new Model.IndentFoldingStrategy();
-                    foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
-                }
-            }
-        }
-
-        private void StopFoldingManager()
-        {
-            foldingUpdateTimer.Stop();
-            foldingManager.Clear();
-            FoldingManager.Uninstall(foldingManager);
-            foldingManager = null;
-        }
-
-        DispatcherTimer foldingUpdateTimer = new DispatcherTimer();
-        private Model.IndentFoldingStrategy foldingStrategy;
-        private FoldingManager foldingManager;
-        private void UpdateFoldings()
-        {
-            if (foldingStrategy != null)
-            {
-                foldingStrategy.UpdateFoldings(foldingManager, this.Document);
-            }
         }
 
         public async Task CheckForMetadataUpdatesAsync()
@@ -4635,10 +4593,6 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(WordWrap));
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
-            NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
-            if (Options.UseIndentCodeFolding) StartFoldingManager();
-            else StopFoldingManager();
-            
             UpdateTheme();
             return Task.CompletedTask;
         }
@@ -4950,7 +4904,5 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new SendTabularObjectToQueryBuilderEvent(message.TabularObject, QueryBuilderItemType.Column),cancellationToken);
             return;
         }
-
-        public bool UseIndentCodeFolding => Options.UseIndentCodeFolding;
     }
 }
