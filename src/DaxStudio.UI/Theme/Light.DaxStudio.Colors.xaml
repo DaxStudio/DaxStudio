@@ -289,4 +289,9 @@
 
     <!-- sets the mouse over color for the "File" menu -->
     <SolidColorBrush x:Key="HighTransparentWhiteBrush" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="true"/>
+
+    <SolidColorBrush x:Key="FoldingMargin.FoldingMarkerBackgroundBrush" Color="{StaticResource Theme.Default.Back}"/>
+    <SolidColorBrush x:Key="FoldingMargin.FoldingMarkerBrush" Color="{StaticResource Theme.Control.Border}"/>
+    <SolidColorBrush x:Key="FoldingMargin.SelectedFoldingMarkerBackgroundBrush" Color="{StaticResource Theme.Default.Back}"/>
+    <SolidColorBrush x:Key="FoldingMargin.SelectedFoldingMarkerBrush" Color="{StaticResource Theme.Control.Border}"/>
 </ResourceDictionary>
