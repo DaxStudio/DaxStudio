@@ -371,6 +371,28 @@ ORDER BY
             Assert.AreEqual(expectedQuery, finalQuery);
 
         }
+
+        [TestMethod]
+        public void TestQueryWithSquareBracketString() {
+            string testQuery = @"EVALUATE
+VAR parameter = @test
+VAR bracket = ""]""
+RETURN bracket
+";
+
+            var qi = new QueryInfo(testQuery, new Mocks.MockEventAggregator());
+
+            //var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
+            //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
+            var finalQuery = qi.QueryWithMergedParameters;
+
+            Assert.AreEqual(true, qi.NeedsParameterValues);
+            Assert.AreEqual(1,qi.Parameters.Count);
+            Assert.AreEqual("test", qi.Parameters["test"].Name);
+
+        }
+
+    
     }
 }
 
