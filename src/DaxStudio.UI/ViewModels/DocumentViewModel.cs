@@ -976,13 +976,13 @@ namespace DaxStudio.UI.ViewModels
 
         private void StartFoldingManager()
         {
-            if (foldingUpdateTimer.IsEnabled) return;
+            if (foldingUpdateTimer.IsEnabled && foldingManager != null) return;
              
-            foldingUpdateTimer.Interval = TimeSpan.FromSeconds(1);
+            foldingUpdateTimer.Interval = TimeSpan.FromMilliseconds(500);
             foldingUpdateTimer.Tick += delegate { UpdateFoldings(); };
             foldingUpdateTimer.Start();
 
-            if (this.GetEditor().Document != null)
+            if (this.GetEditor() != null)
             {
                 if (foldingManager == null)
                 {
@@ -994,8 +994,9 @@ namespace DaxStudio.UI.ViewModels
 
         private void StopFoldingManager()
         {
+            if (foldingManager == null) return;
             foldingUpdateTimer.Stop();
-            foldingManager.Clear();
+            foldingManager?.Clear();
             FoldingManager.Uninstall(foldingManager);
             foldingManager = null;
         }
@@ -1005,8 +1006,14 @@ namespace DaxStudio.UI.ViewModels
         private FoldingManager foldingManager;
         private void UpdateFoldings()
         {
-            if (foldingStrategy != null)
+            if (foldingManager == null)
             {
+                foldingStrategy = new Model.IndentFoldingStrategy();
+                foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
+            }
+
+            if (foldingStrategy != null)
+            {    
                 foldingStrategy.UpdateFoldings(foldingManager, this.Document);
             }
         }

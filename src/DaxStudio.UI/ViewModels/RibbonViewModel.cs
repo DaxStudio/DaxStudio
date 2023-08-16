@@ -1458,12 +1458,12 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                RefreshConnectionDetails(ActiveDocument.Connection);
+                RefreshConnectionDetails(ActiveDocument?.Connection);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "IHandle<DatabaseChangedEvent>", "error handling event");
-                ActiveDocument.OutputError(ex.Message);
+                ActiveDocument?.OutputError(ex.Message);
             }
             return Task.CompletedTask;
         }
