@@ -1006,15 +1006,23 @@ namespace DaxStudio.UI.ViewModels
         private FoldingManager foldingManager;
         private void UpdateFoldings()
         {
-            if (foldingManager == null)
+            try
             {
-                foldingStrategy = new Model.IndentFoldingStrategy();
-                foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
-            }
+                if (foldingManager == null)
+                {
+                    foldingStrategy = new Model.IndentFoldingStrategy();
+                    foldingManager = FoldingManager.Install(this.GetEditor().TextArea);
+                }
 
-            if (foldingStrategy != null)
-            {    
-                foldingStrategy.UpdateFoldings(foldingManager, this.Document);
+                if (foldingStrategy != null)
+                {
+                    foldingStrategy.UpdateFoldings(foldingManager, this.Document);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("{Class} {Method} {Exception}", "DocumentViewModel", "UpdateFoldings", ex);
+                OutputError($"Error Updating Foldings - {ex.Message}");
             }
         }
 
