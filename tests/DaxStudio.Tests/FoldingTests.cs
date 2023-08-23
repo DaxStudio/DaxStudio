@@ -72,5 +72,90 @@ namespace DaxStudio.Tests
             Assert.AreEqual(58, foldingArray[2].EndOffset);
         }
 
+        [TestMethod]
+        public void TestCrashingMeasure()
+        {
+            var qry = @"    MEASURE '1-Calculate WAC'[FinalWac] =
+        CALCULATE (
+            SUMX (
+                ADDCOLUMNS (
+                    SUMMARIZE ( 'Qty By Period 1', 'Qty By Period 1'[InventoryNoFK] ),
+                    // ""Total"", CALCULATE ( IF ( [Component1Wac] = 0, [ItemWac], [Component1Wac] ) )
+                    ""Total"", VAR _Component1Wac = [Component1Wac] RETURN IF ( _Component1Wac = 0, [ItemWac], _Component1Wac )
+                ),
+                IF ( [LastQty] <> 0, [Total], 0 )
+            )
+        )
+";
+            var doc = new ICSharpCode.AvalonEdit.Document.TextDocument(qry);
+            var foldingStrategy = new IndentFoldingStrategy();
+            var foldings = foldingStrategy.CreateNewFoldings(doc);
+
+            Assert.AreEqual(5, foldings.Count());
+            var prevStart = 0;
+            var foldCnt = 0; ;
+            foreach ( var folding in foldings)
+            {
+
+                if (folding.StartOffset >= prevStart)
+                {
+                    prevStart = folding.StartOffset;
+                    foldCnt++;
+                    continue;
+                }
+                Assert.Fail($"Folding {foldCnt} has a start of {prevStart} which is less than the current fold start of {folding.StartOffset}");
+            }
+
+            var foldingArray = foldings.ToArray();
+
+        }
+
+        [TestMethod]
+        public void TestMeasureWithBlankLines()
+        {
+            var qry = @"    MEASURE '1-Calculate WAC'[FinalWac] =
+
+        CALCULATE (
+
+            SUMX (
+
+                ADDCOLUMNS (
+
+                    SUMMARIZE ( 'Qty By Period 1', 'Qty By Period 1'[InventoryNoFK] ),
+
+                    // ""Total"", CALCULATE ( IF ( [Component1Wac] = 0, [ItemWac], [Component1Wac] ) )
+
+                    ""Total"", VAR _Component1Wac = [Component1Wac] RETURN IF ( _Component1Wac = 0, [ItemWac], _Component1Wac )
+
+                ),
+
+                IF ( [LastQty] <> 0, [Total], 0 )
+
+            )
+
+        )
+";
+            var doc = new ICSharpCode.AvalonEdit.Document.TextDocument(qry);
+            var foldingStrategy = new IndentFoldingStrategy();
+            var foldings = foldingStrategy.CreateNewFoldings(doc);
+
+            Assert.AreEqual(5, foldings.Count());
+            var prevStart = 0;
+            var foldCnt = 0; ;
+            foreach (var folding in foldings)
+            {
+
+                if (folding.StartOffset >= prevStart)
+                {
+                    prevStart = folding.StartOffset;
+                    foldCnt++;
+                    continue;
+                }
+                Assert.Fail($"Folding {foldCnt} has a start of {prevStart} which is less than the current fold start of {folding.StartOffset}");
+            }
+
+            var foldingArray = foldings.ToArray();
+
+        }
     }
 }
