@@ -58,9 +58,9 @@ namespace DaxStudio.UI.Model
         /// </summary>
         public IEnumerable<NewFolding> CreateNewFoldings(TextDocument document)
         {
-            if (prevVersion != null && document.Version.CompareAge(prevVersion) == 0) return newFoldings;
+            //if (prevVersion != null && document.Version.CompareAge(prevVersion) == 0) return newFoldings;
             
-            prevVersion = document.Version;
+            //prevVersion = document.Version;
 
             newFoldings = new List<NewFolding>();
 
@@ -87,9 +87,10 @@ namespace DaxStudio.UI.Model
 
                 if (lineIndent > lastIndentOffset)
                 {
-                    startOffsets.Push(new Indent( line.Offset - (line.Offset> line.DelimiterLength ?line.DelimiterLength:0), lineIndent));                    
+                    startOffsets.Push(new Indent( line.EndOffset - (line.EndOffset> line.DelimiterLength ?line.DelimiterLength:0), lineIndent));                    
                 }
                 else if (lineIndent < lastIndentOffset 
+                    && !isWhitespaceLine
                     && startOffsets.Count > 0 )
                 {
                     var startOffset = startOffsets.Pop();
