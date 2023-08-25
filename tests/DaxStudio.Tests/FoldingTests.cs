@@ -56,7 +56,7 @@ namespace DaxStudio.Tests
                     + "  444444" + Environment.NewLine
                     + " 5555555" + Environment.NewLine
                     + "  666666" + Environment.NewLine
-                    +"777777777" + Environment.NewLine;
+                    + "77777777" + Environment.NewLine;
 
             var doc = new ICSharpCode.AvalonEdit.Document.TextDocument(qry);
             var foldingStrategy = new IndentFoldingStrategy();
@@ -64,12 +64,12 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(3, foldings.Count());
             var foldingArray = foldings.ToArray();
-            Assert.AreEqual(8, foldingArray[0].StartOffset);
-            Assert.AreEqual(58, foldingArray[0].EndOffset);
-            Assert.AreEqual(18, foldingArray[1].StartOffset);
-            Assert.AreEqual(38, foldingArray[1].EndOffset);
-            Assert.AreEqual(48, foldingArray[2].StartOffset);
-            Assert.AreEqual(58, foldingArray[2].EndOffset);
+            Assert.AreEqual(8, foldingArray[0].StartOffset, "Start of first fold");
+            Assert.AreEqual(58, foldingArray[0].EndOffset, "End of first fold");
+            Assert.AreEqual(18, foldingArray[1].StartOffset, "Start of second fold");
+            Assert.AreEqual(38, foldingArray[1].EndOffset, "End of second fold");
+            Assert.AreEqual(48, foldingArray[2].StartOffset, "Start of third fold");
+            Assert.AreEqual(58, foldingArray[2].EndOffset, "End of third fold");
         }
 
         [TestMethod]

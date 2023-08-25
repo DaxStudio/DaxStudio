@@ -87,7 +87,7 @@ namespace DaxStudio.UI.Model
 
                 if (lineIndent > lastIndentOffset)
                 {
-                    startOffsets.Push(new Indent( line.EndOffset - (line.EndOffset> line.DelimiterLength ?line.DelimiterLength:0), lineIndent));                    
+                    startOffsets.Push(new Indent( line.Offset - (line.Offset> line.DelimiterLength ?line.DelimiterLength:0), lineIndent));                    
                 }
                 else if (lineIndent < lastIndentOffset 
                     && !isWhitespaceLine
