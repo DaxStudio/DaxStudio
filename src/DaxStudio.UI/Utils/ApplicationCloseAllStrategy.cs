@@ -59,7 +59,7 @@ namespace DaxStudio.UI.Utils {
                 {
                     // loop through and cancel closing for any dirty documents
                     closeCanOccur = false; // cancel closing
-                    //closeable = new List<IScreen>();
+                    closeable = new List<IScreen>(); //send an empty list of documents that can be closed
                     return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }
                 else
