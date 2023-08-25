@@ -13,6 +13,7 @@ namespace DaxStudio.UI.Model
         public string VisualName { get; set; }
         public string QueryText { get; set; }
         public long RowCount { get; set; }
+        public bool? Error { get; set; }
         public DateTime QueryStartTime { get; set; }
         public DateTime? QueryEndTime { get; set; }
         public DateTime RenderStartTime { get; set; }

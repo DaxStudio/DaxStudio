@@ -88,7 +88,10 @@ namespace DaxStudio.UI.ViewModels
 
                             case "Execute DAX Query":
                                 perfLine.QueryText = o2["metrics"]["QueryText"].Value<string>();
-                                perfLine.RowCount = o2["metrics"]["RowCount"].Value<long>();
+                                var rowCnt = o2["metrics"]["RowCount"];
+                                var err = o2["metrics"]["Error"];
+                                perfLine.RowCount = rowCnt?.Value<long>()??0;
+                                perfLine.Error = err?.Value<bool>();
                                 perfLine.QueryStartTime = o2["start"].Value<DateTime>().ToLocalTime();
                                 perfLine.QueryEndTime = o2["end"]?.Value<DateTime>().ToLocalTime();
 
