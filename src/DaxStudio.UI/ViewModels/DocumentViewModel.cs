@@ -4296,7 +4296,7 @@ namespace DaxStudio.UI.ViewModels
 
 
                     // run Vertipaq Analyzer Async
-
+                    var modelName = GetSelectedModelName();
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     Dax.Metadata.Model model = null;
                     await Task.Run(() => {
@@ -4332,7 +4332,7 @@ namespace DaxStudio.UI.ViewModels
                         }
                     });
                     viewModel = new VpaModel(model);
-                    var modelName = GetSelectedModelName();
+                    
                     viewModel.Model.ModelName = new Dax.Metadata.DaxName(modelName);
 
                     // update view model
