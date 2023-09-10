@@ -140,9 +140,14 @@ namespace DaxStudio.UI.Model
             return Items.IndexOf(item);
         }
 
+        public void EditNewMeasure(QueryBuilderColumn measure)
+        {
+            EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(measure, true));
+        }
+
         public void EditMeasure(QueryBuilderColumn measure)
         {
-            EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(measure));
+            EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(measure, false));
         }
 
         public void ChangeSortDirection(QueryBuilderColumn column)

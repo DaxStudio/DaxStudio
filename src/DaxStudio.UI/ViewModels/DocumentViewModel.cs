@@ -4692,6 +4692,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 MeasureExpressionEditor.Column = message.Column;
                 ShowMeasureExpressionEditor = true;
+                MeasureExpressionEditor.IsNewMeasure = message.IsNewMeasure;
                 QueryBuilder.IsEnabled = false;
             }
             catch (Exception ex)

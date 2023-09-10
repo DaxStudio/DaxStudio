@@ -328,7 +328,7 @@ namespace DaxStudio.UI.ViewModels
             //newMeasure.IsModelItem = false;
             SelectedColumn = newMeasure;
             SelectedIndex = Columns.Count - 1;
-            Columns.EditMeasure(newMeasure);
+            Columns.EditNewMeasure(newMeasure);
             IsEnabled = false;
             //EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(newMeasure));
             SetRunStyle();

@@ -272,6 +272,15 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        public bool IsMeasureExpressionBlank => string.IsNullOrEmpty( MeasureExpression.Text );
+        public bool IsMeasureExpressionBlank => string.IsNullOrEmpty( MeasureExpression.Text ) && !IsNewMeasure;
+
+        bool _isNewMeasure = false;
+        public bool IsNewMeasure { get => _isNewMeasure;
+            internal set { 
+            _isNewMeasure = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(IsMeasureExpressionBlank));
+            } 
+        }
     }
 }
