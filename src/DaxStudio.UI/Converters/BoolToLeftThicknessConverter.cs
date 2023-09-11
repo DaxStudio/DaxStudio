@@ -13,7 +13,7 @@ namespace DaxStudio.UI.Converters
             {
                 if ((bool)value)
                 {
-                    var left = System.Convert.ToDouble(parameter);
+                    var left = System.Convert.ToDouble(parameter, CultureInfo.InvariantCulture);
                     return new Thickness(left, 0, 0, 0);
                 }
                 return new Thickness(0.0);
