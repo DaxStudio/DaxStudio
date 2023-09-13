@@ -1361,7 +1361,7 @@ namespace DaxStudio.UI.ViewModels
             return false;
         }
 
-        public bool IsConnected => Connection.IsConnected;
+        public bool IsConnected => Connection?.IsConnected??false;
 
         public bool IsQueryRunning
         {
