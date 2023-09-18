@@ -392,6 +392,35 @@ RETURN bracket
 
         }
 
+        [TestMethod]
+        public void TestQueryWithDatesBetween()
+        {
+            var testQuery = @"/* Query Builder */
+EVALUATE
+SUMMARIZECOLLNNS(
+Transactions [Index] ,
+Transactions [document_date] ,
+Transactions [document—no] ,
+Transactions [Descri pti on] ,
+KEEPFILTERS( TREATAS( {@cust}, Customers [customer_lookup] ) )
+KEEPFILTERS( FILTER( ALL( Dates[Date] ) , Dates[Date] >= VALUE(@Start_Date) && Dates[Date] <= (@End_Date) )),
+""Amount"" , [Amount] 
+)";
+
+            var qi = new QueryInfo(testQuery, new Mocks.MockEventAggregator());
+
+            //var dict = DaxHelper.ParseParams(testAmbiguousParam, new Mocks.MockEventAggregator());
+            //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
+            var finalQuery = qi.QueryWithMergedParameters;
+
+            Assert.AreEqual(true, qi.NeedsParameterValues);
+            Assert.AreEqual(3, qi.Parameters.Count);
+            Assert.AreEqual("cust", qi.Parameters["cust"].Name);
+            Assert.AreEqual("Start_Date", qi.Parameters["Start_Date"].Name);
+            Assert.AreEqual("End_Date", qi.Parameters["End_Date"].Name);
+
+        }
+
     
     }
 }
