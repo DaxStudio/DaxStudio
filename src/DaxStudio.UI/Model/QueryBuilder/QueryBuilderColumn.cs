@@ -50,7 +50,7 @@ namespace DaxStudio.UI.Model
             IsModelItem = isModelItem;
         }
 
-        public QueryBuilderColumn(string caption, ADOTabularTable table, IEventAggregator eventAggregator)
+        public QueryBuilderColumn(string caption, IADOTabularObject table, IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
             _caption = caption;

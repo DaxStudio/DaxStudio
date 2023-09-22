@@ -533,7 +533,7 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(DuplicateMeasureEvent message, CancellationToken cancellationToken)
         {
             Log.Information(Common.Constants.LogMessageTemplate,nameof(QueryBuilderViewModel), "Handle<DuplicateMeasureEvent>", $"Duplicating Measure: {message.Measure.Caption}");
-            var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (ADOTabularTable)message.Measure.SelectedTable, EventAggregator)
+            var meas = new QueryBuilderColumn($"{message.Measure.Caption} - Copy", (IADOTabularObject)message.Measure.SelectedTable, EventAggregator)
                 { MeasureExpression = message.Measure.MeasureExpression };
             Columns.Add(meas);
             return Task.CompletedTask;
