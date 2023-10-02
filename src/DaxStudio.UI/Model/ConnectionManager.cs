@@ -908,7 +908,7 @@ namespace DaxStudio.UI.Model
             // open the DMV connection
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "Start open DMV connection");
             if (_dmvConnection.State != ConnectionState.Open) _dmvConnection.Open();
-            _connection = _dmvConnection.Clone();
+            //_connection = _dmvConnection.Clone();
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "End open DMV connection");
             
             // Open the main query connection
