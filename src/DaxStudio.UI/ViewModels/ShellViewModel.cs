@@ -379,13 +379,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 newVersionText = $"Version {message.NewVersion.ToString(3)} is available for download.\nClick here to go to the download page";
                 Log.Debug("{class} {method} {message}", "ShellViewModel", "Handle<NewVersionEvent>", newVersionText);
+                _notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), "Handle<NewVersionEvent>",ex.Message);
 
             }
-            _notifyIcon.Notify(newVersionText, message.DownloadUrl.ToString());
             return Task.CompletedTask;
         }
 
