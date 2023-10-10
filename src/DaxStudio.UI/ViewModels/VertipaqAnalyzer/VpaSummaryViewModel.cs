@@ -23,7 +23,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ParentViewModel = parent;
             TableCount = parent.ViewModel.Tables.Count();
-            ColumnCount = parent.ViewModel.Columns.Count();
+            ColumnCount = parent.ViewModel.Columns.Where(c => !c.IsRowNumber).Count();
             CompatibilityLevel = parent.ViewModel.Model.CompatibilityLevel;
             TotalSize = parent.ViewModel.Tables.Sum(t => t.TableSize);
             DataSource = parent.ViewModel.Model.ServerName?.Name ?? "<Unknown>";
