@@ -1025,10 +1025,10 @@ namespace DaxStudio.UI.Model
              */
             if (string.IsNullOrEmpty(userName) && string.IsNullOrEmpty(roles)) throw new ArgumentException("You must specify either a Username or Roles to activate the ViewAs functionality");
 
-            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
+            var builder = new OleDbConnectionStringBuilder(this.ConnectionString);
 
             // set catalog
-            if (!builder.ContainsKey("Initial Catalog")) builder["Initial Catalog"] = this.DatabaseName;
+            builder["Initial Catalog"] = this.DatabaseName;
             var catalogElement = $"<RestrictCatalog>{this.DatabaseName}</RestrictCatalog>";
 
             string userElement = string.Empty;
@@ -1090,7 +1090,7 @@ namespace DaxStudio.UI.Model
 
         public void StopViewAs(List<ITraceWatcher> activeTraces)
         {
-            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(this.ConnectionString);
+            var builder = new OleDbConnectionStringBuilder(this.ConnectionString);
             builder.Remove("Authentication Scheme");
             builder.Remove("Ext Auth Info");
             builder.Remove("Roles");
