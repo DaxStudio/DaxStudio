@@ -920,8 +920,8 @@ namespace DaxStudio.UI.ViewModels
         {
             Debug.WriteLine("Setting focus to Tables");
             FocusManager.SetFocus(this, nameof(Tables));
-            var firstItem = Tables.FirstOrDefault(t => t.IsMatch);
-            firstItem.IsSelected = true;
+            var firstItem = Tables?.FirstOrDefault(t => t.IsMatch);
+            if (firstItem != null) firstItem.IsSelected = true;
         }
 
         public IFilterableTreeViewItem SelectedTreeViewItem
