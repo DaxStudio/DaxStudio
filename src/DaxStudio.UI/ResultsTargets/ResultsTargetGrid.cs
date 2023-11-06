@@ -54,7 +54,12 @@ namespace DaxStudio.UI.Model
                 {
                     long durationMs = 0;
                     int queryCnt = 1;
-                    
+
+                    // Clear any existing results
+                    runner.ResultsDataSet = new DataSet();
+                    runner.SetResultsMessage("Waiting for query results", OutputTarget.Grid);
+                    runner.RowCount = 0;
+
                     var sw = Stopwatch.StartNew();
 
                     var dq = textProvider.QueryText;

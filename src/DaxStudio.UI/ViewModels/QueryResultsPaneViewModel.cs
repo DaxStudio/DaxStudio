@@ -80,6 +80,7 @@ namespace DaxStudio.UI.ViewModels
                 _resultsDataSet = value;
                 ShowResultsTable = true;
                 NotifyOfPropertyChange(() => Tables);
+                ShowResultsTable = _resultsDataSet.Tables.Count > 0;
                 SelectedTableIndex = 0;
                 NotifyOfPropertyChange(() => SelectedTableIndex);
             }
