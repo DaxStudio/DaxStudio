@@ -56,14 +56,13 @@
             <DataTemplate x:Key="RunStyleTemplate" >
                 <!--<Button Click="RunStyles_Click" >
                     <Button.Template>
-                        <ControlTemplate>-->
-                            <Border
+                        <ControlTemplate>
+                HorizontalAlignment="Left"
+                -->
+                <Border
                 BorderThickness="4"
                 BorderBrush="Transparent" 
-                ToolTip="{Binding Tooltip}"
-                IsEnabled="{Binding IsEnabled}"
-                HorizontalAlignment="Left"
-                                
+                IsEnabled="{Binding IsEnabled}"                               
                 >
                     <Grid Margin="2">
                         <Grid.ColumnDefinitions>
@@ -83,6 +82,9 @@
                         />
 
                     </Grid>
+                    <Border.ToolTip>
+                        <Fluent:ScreenTip Text="{Binding Tooltip}" Title="{Binding Name}"/>
+                    </Border.ToolTip>
                 </Border>
                         <!--</ControlTemplate>
                     </Button.Template>
@@ -878,6 +880,7 @@
                         ItemsSource="{Binding RunStyles}"
                         SelectedItem="{Binding SelectedRunStyle}"
                         ItemTemplate="{DynamicResource RunStyleTemplate}"
+                        
                         Fluent:GalleryItem.Click="RunStyles_Click"
                         >
                         
