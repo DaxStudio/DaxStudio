@@ -49,5 +49,10 @@ namespace ADOTabular
 
             _functions.Add(tabularFunc.Caption, tabularFunc);
         }
+
+        public bool ContainsKey(string key)
+        {
+            return _functions.ContainsKey(key);
+        }
     }
 }

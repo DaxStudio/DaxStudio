@@ -37,8 +37,11 @@ namespace ADOTabular
             if (!_funcGroups.ContainsKey(groupName))
                 _funcGroups.Add(groupName, new ADOTabularFunctionGroup(groupName,_connection));
             ADOTabularFunctionGroup grp = _funcGroups[groupName];
-            grp.Functions.Add(fun);
-            _funcDict.Add(fun.Caption, fun);
+            if (grp == null && !grp.Functions.ContainsKey(functionName))
+            {
+                grp.Functions.Add(fun);
+                _funcDict.Add(fun.Caption, fun);
+            }
         }
 
         public void AddFunction(DataRow functionDataRow)
