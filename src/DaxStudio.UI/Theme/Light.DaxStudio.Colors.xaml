@@ -272,7 +272,8 @@
     <SolidColorBrush x:Key="DialogBorder" Color="{StaticResource Theme.Dialog.Border}" options:Freeze="true"/>
     <SolidColorBrush x:Key="BaseBrush" Color="{StaticResource WhiteColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="ToolTipBackground" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
-    <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="ListViewItemBackgroundHover" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor40}" options:Freeze="true"/>
 
     <SolidColorBrush x:Key="DataGridCellBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
     <SolidColorBrush x:Key="DataGridCellBorderBrushSelected" Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" options:Freeze="True" />

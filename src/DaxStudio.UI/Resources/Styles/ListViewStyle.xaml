@@ -29,7 +29,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundPointerOver}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundHover}" />
                             <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource ListViewItemForegroundPointerOver}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
@@ -41,7 +41,7 @@
                                 <Condition Property="IsSelected" Value="True" />
                                 <Condition Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundSelectedPointerOver}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ListViewItemBackgroundSelectedHover}" />
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="Opacity" Value="{DynamicResource ListViewItemDisabledThemeOpacity}" />
