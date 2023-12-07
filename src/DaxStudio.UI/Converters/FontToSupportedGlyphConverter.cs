@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DaxStudio.Common;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
@@ -19,14 +21,20 @@ namespace DaxStudio.UI.Converters
             var returnList = new List<FontFamily>();
             foreach (FontFamily font in list)
             {
-                //Instantiate a TypeFace object with the font settings you want to use
-                Typeface ltypFace = new Typeface(font, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
-
-                //Try to create a GlyphTypeface object from the TypeFace object
-                GlyphTypeface lglyphTypeFace;
-                if (ltypFace.TryGetGlyphTypeface(out lglyphTypeFace))
+                try
                 {
-                    returnList.Add(font);
+                    //Instantiate a TypeFace object with the font settings you want to use
+                    Typeface ltypFace = new Typeface(font, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+
+                    //Try to create a GlyphTypeface object from the TypeFace object
+                    GlyphTypeface lglyphTypeFace;
+                    if (ltypFace.TryGetGlyphTypeface(out lglyphTypeFace))
+                    {
+                        returnList.Add(font);
+                    }
+                }
+                catch (Exception ex) { 
+                    Log.Error(ex,Constants.LogMessageTemplate, nameof(FontToSupportedGlyphConverter), nameof(Convert),"Error converting font name to glyph") ; 
                 }
             }
 
