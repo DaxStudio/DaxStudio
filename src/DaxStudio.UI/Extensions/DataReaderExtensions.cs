@@ -1,5 +1,6 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using System;
 using System.Collections.Generic;
@@ -121,7 +122,7 @@ namespace DaxStudio.UI.Extensions
 
 
 
-        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv, string autoDateFormat)
+        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv, string autoDateFormat, ConnectionManager connection)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();
@@ -150,7 +151,8 @@ namespace DaxStudio.UI.Extensions
                         column.Unique = (bool)row[Constants.IsUnique];
                         column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                         daxCol = null;
-                        tmpConn.Columns.TryGetValue(columnName, out daxCol);
+                        connection.Columns.TryGetValue(columnName, out daxCol);
+                        //tmpConn.Columns.TryGetValue(columnName, out daxCol);
                         if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
                         if (IsSessionsDmv && columnName == Common.Constants.SessionSpidColumn)
                         {
@@ -366,14 +368,15 @@ namespace DaxStudio.UI.Extensions
                                     case decimal decimalValue:
                                         csvWriter.WriteField(decimalValue.ToString(formatStrings[iCol]));
                                         break;
+                                    case double doubleValue:
+                                        csvWriter.WriteField(doubleValue.ToString(formatStrings[iCol]));
+                                        break;
                                     case DateTime dateTimeValue:
                                         csvWriter.WriteField(dateTimeValue.ToString(formatStrings[iCol]));
                                         break;
-
                                     default:
                                         csvWriter.WriteField(fieldValue);
                                         break;
-
                                 }
                                 
                             else

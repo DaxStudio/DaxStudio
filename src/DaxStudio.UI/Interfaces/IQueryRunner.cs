@@ -1,5 +1,6 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Model;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -44,5 +45,6 @@ namespace DaxStudio.UI.Interfaces
 
         IGlobalOptions Options { get; }
         //ADOTabular.ADOTabularConnection Connection { get; }
+        ConnectionManager Connection { get; }
     }
 }

@@ -72,7 +72,7 @@ namespace DaxStudio.UI.Model
                         if (dataReader != null)
                         {
                             Log.Verbose("Start Processing Grid DataReader (Elapsed: {elapsed})" , sw.ElapsedMilliseconds);
-                            runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat, isSessionsDmv, autoDateFormat);
+                            runner.ResultsDataSet = dataReader.ConvertToDataSet(autoFormat, isSessionsDmv, autoDateFormat, runner.Connection);
                             Log.Verbose("End Processing Grid DataReader (Elapsed: {elapsed})", sw.ElapsedMilliseconds);
 
                             sw.Stop();

@@ -145,7 +145,7 @@ namespace DaxStudio.UI.Model
                 var outputFilename = fileName;
                 int iRowCnt = 0;
                 if (iFileCnt > 1) outputFilename = AddFileCntSuffix(fileName, iFileCnt);
-                var formatStrings = GetColumnFormatStrings(reader, autoFormat, autoDateFormat);
+                var formatStrings = GetColumnFormatStrings(reader, runner, autoFormat, autoDateFormat);
                 using (var textWriter = new System.IO.StreamWriter(outputFilename, false, enc))
                 {
                     iRowCnt = reader.WriteToStreamWithFormatting(textWriter, sep, shouldQuoteStrings, formatStrings, statusProgress);
@@ -193,7 +193,7 @@ namespace DaxStudio.UI.Model
                     string autoDateFormat = runner.Options.DefaultDateAutoFormat;
 
                     //var schemaTable = reader.GetSchemaTable();
-                    var formatStrings = GetColumnFormatStrings(reader, autoFormat, autoDateFormat);
+                    var formatStrings = GetColumnFormatStrings(reader, runner, autoFormat, autoDateFormat);
 
                     jsonWriter.WriteStartObject();
                     jsonWriter.WritePropertyName("rows");
@@ -270,7 +270,7 @@ namespace DaxStudio.UI.Model
             return newName;
         }
 
-        private Dictionary<int,string> GetColumnFormatStrings(AdomdDataReader reader, bool autoFormat, string autoDateFormat)
+        private Dictionary<int,string> GetColumnFormatStrings(AdomdDataReader reader, IQueryRunner runner, bool autoFormat, string autoDateFormat)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataTable dtSchema = reader.GetSchemaTable();
@@ -292,7 +292,7 @@ namespace DaxStudio.UI.Model
                     column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                     daxCol = null;
                     
-                    tmpConn.Columns.TryGetValue(columnName, out daxCol);
+                    runner.Connection.Columns.TryGetValue(columnName, out daxCol);
                     if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
                     if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString))
                     {
