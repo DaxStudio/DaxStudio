@@ -154,7 +154,7 @@ namespace DaxStudio.UI.Extensions
                         connection.Columns.TryGetValue(columnName, out daxCol);
                         //tmpConn.Columns.TryGetValue(columnName, out daxCol);
                         if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
-                        if (IsSessionsDmv && columnName == Common.Constants.SessionSpidColumn)
+                        if (IsSessionsDmv && columnName == Constants.SessionSpidColumn)
                         {
                             column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
                         }

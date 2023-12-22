@@ -27,6 +27,8 @@ using DaxStudio.UI.ViewModels;
 using System.Data.Common;
 using System.Data.OleDb;
 using System.Windows.Forms.VisualStyles;
+using Microsoft.AnalysisServices;
+using System.Xml;
 
 namespace DaxStudio.UI.Model
 {
@@ -895,6 +897,8 @@ namespace DaxStudio.UI.Model
             _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
         }
 
+        public Dictionary<string, ADOTabularColumn> Columns => _dmvConnection?.Columns;
+
         private void OpenOnlineConnection(ConnectEvent message, Guid uniqueId)
         {
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
@@ -943,7 +947,7 @@ namespace DaxStudio.UI.Model
                         IsConnecting = false;
                         _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
                     });
-                });
+                }, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -1134,17 +1138,22 @@ namespace DaxStudio.UI.Model
                 while (dr.Read())
                 {
                     var xml = dr.GetString(0);
-                    XPathDocument xPath = new XPathDocument(new StringReader(xml));
-                    var nav = xPath.CreateNavigator();
-                    var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
-                    while (iter.MoveNext())
+                    using (var sr = new StringReader(xml))
+                    using (var xr = new XmlTextReader(new StringReader(xml)))
                     {
-                        result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                        XPathDocument xPath = new XPathDocument(xr);
+                        var nav = xPath.CreateNavigator();
+                        var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
+                        while (iter.MoveNext())
+                        {
+                            result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                        }
                     }
                 }
             }
             return result;
         }
+
 
         public async Task ProcessDatabaseAsync(string refreshType)
         {
@@ -1168,7 +1177,40 @@ namespace DaxStudio.UI.Model
 </Process>
 ";
 
-            await Task.Run(() => _dmvConnection.ExecuteNonQuery(refreshCommand));
+            refreshCommand = $@"<Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+  <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>{_dmvConnection.Database.Id}</DatabaseID>
+    <Model>
+      <xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:sql=""urn:schemas-microsoft-com:xml-sql"">
+        <xs:element>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type=""row""/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:complexType name=""row"">
+          <xs:sequence>
+            <xs:element name=""RefreshType"" type=""xs:long"" sql:field=""RefreshType"" minOccurs=""0""/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:schema>
+      <row xmlns=""urn:schemas-microsoft-com:xml-analysis:rowset"">
+        <RefreshType>3</RefreshType>
+      </row>
+    </Model>
+  </Refresh>
+  <SequencePoint xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>aafa360c-734a-471d-b2b3-ba56dfe88121</DatabaseID>
+  </SequencePoint>
+</Batch>";
+            var server = new Server();
+            var db = server.Databases[_dmvConnection.Database.Id];
+            db.Model.RequestRefresh(Microsoft.AnalysisServices.Tabular.RefreshType.Full);
+            db.Model.SaveChanges();
+            server.Disconnect();
+
+//            await Task.Run(() => _dmvConnection.ExecuteNonQuery(refreshCommand));
         }
 
         public async Task ProcessTableAsync(string tableName)

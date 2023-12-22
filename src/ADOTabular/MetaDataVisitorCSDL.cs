@@ -898,7 +898,7 @@ namespace ADOTabular
                                 col.GroupByRefs.AddRange(groupBy);
                                 tables.Model.AddRole(col);
                                 tab.Columns.Add(col);
-                                _conn.Columns.Add(col.DaxName, col);
+                                _conn.Columns.Add(col.DaxName.TrimStart('\'').Replace("'[","["), col);
                             }
                             else
                             {
