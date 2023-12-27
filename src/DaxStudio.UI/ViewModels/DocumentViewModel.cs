@@ -1591,6 +1591,7 @@ namespace DaxStudio.UI.ViewModels
         private void SelectionToUpper()
         {
             var editor = GetEditor();
+            if (editor == null) return;
             if (editor.Dispatcher.CheckAccess())
             {
                 SelectedTextToUpperInternal(editor);
@@ -1610,6 +1611,7 @@ namespace DaxStudio.UI.ViewModels
         private void SelectionToLower()
         {
             var editor = GetEditor();
+            if (editor == null) return;
             if (editor.Dispatcher.CheckAccess())
             {
                 SelectedTextToLowerInternal(editor);
@@ -3532,7 +3534,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(PasteServerTimingsEvent message, CancellationToken cancellationToken)
         {
-            GetEditor().Paste();
+            GetEditor()?.Paste();
             return Task.CompletedTask;
         }
 
