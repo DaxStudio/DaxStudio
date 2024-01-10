@@ -12,26 +12,26 @@ namespace ADOTabular
     {
         
         private readonly IADOTabularConnection _adoTabConn;
-        private SortedDictionary<string, ADOTabularTable> _tables;
+        private SortedDictionary<string, ADOTabularTable> _tables = new SortedDictionary<string, ADOTabularTable>();
 
         public ADOTabularTableCollection(IADOTabularConnection adoTabConn, ADOTabularModel model)
         {
             _adoTabConn = adoTabConn;
             Model = model;
-        //    _adoTabConn.Visitor.Visit(this);
+            _adoTabConn.Visitor.Visit(this);
         }
 
         private SortedDictionary<string,ADOTabularTable> InternalTableCollection
         {
             get
             {
-                if (_tables == null)
-                {
-                    if (_tables == null)
-                    {
-                        _adoTabConn.Visitor.Visit(this);
-                    }
-                }
+                //if (_tables == null)
+                //{
+                //    if (_tables == null)
+                //    {
+                //        _adoTabConn.Visitor.Visit(this);
+                //    }
+                //}
                 return _tables;
             }
         }
@@ -49,10 +49,10 @@ namespace ADOTabular
         public void Add(ADOTabularTable table)
         {
             if (table == null) return;
-            if (_tables == null)
-            {
-                _tables ??= new SortedDictionary<string, ADOTabularTable>();
-            }
+            //if (_tables == null)
+            //{
+            //    _tables ??= new SortedDictionary<string, ADOTabularTable>();
+            //}
             _tables.Add(table.Name, table);
 
             Model.TOMModel.Tables.Add(new Table(){Name = table.Name, Description = table.Description, DataCategory = table.DataCategory});
@@ -108,7 +108,6 @@ namespace ADOTabular
             return GetEnumerator();
         }
 
-        public bool IsCached { get { return _tables != null; } }
     }
 }
 

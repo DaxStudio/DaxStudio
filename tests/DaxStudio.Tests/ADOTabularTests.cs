@@ -351,10 +351,11 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection(@"..\..\data\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
+            conn.Visitor = v;
             ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
-            var tabs = new ADOTabularTableCollection(conn, m);
-
+            //var tabs = new ADOTabularTableCollection(conn, m);
+            Assert.AreEqual(13, m.Tables.Count);
             Assert.AreEqual("en-US", db.Culture);
             
         }
@@ -365,10 +366,11 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection(@"..\..\data\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
+            conn.Visitor = v;
             ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
-            var tabs = new ADOTabularTableCollection(conn, m);
-
+            //var tabs = new ADOTabularTableCollection(conn, m);
+            Assert.AreEqual (13, m.Tables.Count);
             Assert.AreEqual(true, m.Capabilities.DAXFunctions.SubstituteWithIndex);
             Assert.AreEqual(true, m.Capabilities.DAXFunctions.SummarizeColumns);
             Assert.AreEqual(true, m.Capabilities.DAXFunctions.TreatAs);

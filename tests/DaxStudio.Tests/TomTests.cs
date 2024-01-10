@@ -182,10 +182,11 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection(@"..\..\data\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
+            connection.Visitor = v;
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(connection, m);
-            
+
             Assert.IsNotNull(m.TOMModel);
             Assert.AreEqual(13, m.TOMModel.Tables.Count,"Table Counts are equal");
             Assert.AreEqual(tabs["ProductCategory"].Columns.Count , m.TOMModel.Tables["ProductCategory"].Columns.Count,"ProductCategory column counts are equal");
