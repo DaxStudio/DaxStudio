@@ -337,7 +337,18 @@
                 <Grid>
                     <Border Name="PART_ButtonBorder" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
                         <StackPanel Name="stackPanel" KeyboardNavigation.TabNavigation="Local" Orientation="Vertical">
-                            <Fluent:ToggleButton x:Name="PART_Button" Width="Auto" Height="Auto" Margin="0 0 0 0" CanAddToQuickAccessToolBar="{TemplateBinding CanAddButtonToQuickAccessToolBar}" Command="{TemplateBinding Command}" CommandParameter="{TemplateBinding CommandParameter}" CommandTarget="{TemplateBinding CommandTarget}" GroupName="{Binding GroupName, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Header="{TemplateBinding Header}" Icon="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsDefinitive="{TemplateBinding IsDefinitive}" IsEnabled="{Binding IsButtonEnabled, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" LargeIcon="{Binding LargeIcon, RelativeSource={RelativeSource TemplatedParent}}" Size="{TemplateBinding Size}" Style="{DynamicResource InnerButtonStyle}" ToolTip="{TemplateBinding ToolTip}" />
+                            <Fluent:ToggleButton x:Name="PART_Button" Width="Auto" Height="Auto" Margin="0 0 0 0" CanAddToQuickAccessToolBar="{TemplateBinding CanAddButtonToQuickAccessToolBar}" 
+                                                 Command="{TemplateBinding Command}" CommandParameter="{TemplateBinding CommandParameter}" 
+                                                 CommandTarget="{TemplateBinding CommandTarget}" 
+                                                 GroupName="{Binding GroupName, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                                 Header="{TemplateBinding Header}" 
+                                                 Icon="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" 
+                                                 IsChecked="{Binding IsChecked, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                                 IsDefinitive="{TemplateBinding IsDefinitive}" 
+                                                 IsEnabled="{Binding IsButtonEnabled, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" LargeIcon="{Binding LargeIcon, RelativeSource={RelativeSource TemplatedParent}}" 
+                                                 Size="{TemplateBinding Size}" 
+                                                 Style="{DynamicResource InnerButtonStyle}" 
+                                                 ToolTip="{TemplateBinding ToolTip}" />
                             <Border Name="downBorder" Margin="0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0">
                                 <Grid>
                                     <Fluent:TwoLineLabel x:Name="controlLabel" Margin="2 1 2 2" HorizontalAlignment="Center" VerticalAlignment="Center" HasGlyph="{TemplateBinding HasTriangle}" Text="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" />
@@ -1463,6 +1474,24 @@
                             />
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
+                <Fluent:Button
+                        Name="RunQueryDiagnostics"
+                        Header="Capture Diagnostics"
+                        IsEnabled="{Binding CanRunQuery}"
+                        KeyTip="B"
+                        cal:Message.Attach="[Event Click] = [Action CaptureDiagnostics()]"
+                        Icon="{DynamicResource capture_diagnosticsDrawingImage}"
+                        LargeIcon="{DynamicResource capture_diagnosticsDrawingImage}"
+                        Margin="4,0"
+                        SizeDefinition="Large,Middel,Small"
+                        >
+                                        <Fluent:Button.ToolTip>
+                                        <Fluent:ScreenTip Title="Capture Diagnostics"
+                                              Text="Runs the given query and automatically captures Server Timings, Query Plan and model metrics"
+                                              DisableReason="You must have admin rights against the data source in order to create the Timings trace to capture the detailed timing information"
+                                />
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="External Tools">
                 <Fluent:Button Name="LaunchSqlProfiler"
@@ -1593,23 +1622,7 @@
 
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Testing">
-                <Fluent:Button
-                    Name="RunQueryDiagnostics"
-                    Header="Capture Diagnostics"
-                    KeyTip="B"
-                    cal:Message.Attach="[Event Click] = [Action CaptureDiagnostics()]"
-                    Icon="{DynamicResource capture_diagnosticsDrawingImage}"
-                    LargeIcon="{DynamicResource capture_diagnosticsDrawingImage}"
-                    Margin="4,0"
-                    SizeDefinition="Large,Middel,Small"
-                    >
-                    <Fluent:Button.ToolTip>
-                        <Fluent:ScreenTip Title="Capture Diagnostics"
-                                          Text="Runs the given query and automatically captures Server Timings, Query Plan and model metrics"
-                                          DisableReason="You must have admin rights against the data source in order to create the Timings trace to capture the detailed timing information"
-                            />
-                    </Fluent:Button.ToolTip>
-                </Fluent:Button>
+                
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           

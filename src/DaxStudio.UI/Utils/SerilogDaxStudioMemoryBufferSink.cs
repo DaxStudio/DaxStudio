@@ -72,8 +72,8 @@ namespace DaxStudio.UI.Utils
             IFormatProvider formatProvider = null
             , int eventLimit = 50)
         {
-            if (sinkConfiguration == null) throw new ArgumentNullException("sinkConfiguration");
-            if (outputTemplate == null) throw new ArgumentNullException("outputTemplate");
+            if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
+            if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
             var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
             return sinkConfiguration.Sink(new SerilogMemoryBufferSink(formatter, eventLimit), restrictedToMinimumLevel);
         }

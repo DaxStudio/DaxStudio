@@ -23,6 +23,10 @@ using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
 using System.Windows;
 using Serilog;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Linq.Dynamic;
+using SharpCompress;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -30,17 +34,22 @@ namespace DaxStudio.UI.ViewModels
     class AllServerQueriesViewModel
         : TraceWatcherBaseViewModel, 
         ISaveState, 
-        IViewAware 
+        IViewAware,
+        IHandle<ConnectionChangedEvent>
         
     {
         private readonly Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
         private readonly Dictionary<string, QueryBeginEvent> _queryBeginCache = new Dictionary<string, QueryBeginEvent>();
-
+        private readonly RibbonViewModel Ribbon;
 
         [ImportingConstructor]
-        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
+        public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager, RibbonViewModel ribbon) : base(eventAggregator, globalOptions,windowManager)
         {
             _queryEvents = new BindableCollection<QueryEvent>();
+            queryEventsView = CollectionViewSource.GetDefaultView(QueryEvents);
+            Ribbon = ribbon;
+            CanCaptureDiagnostics = Ribbon?.ActiveDocument?.IsConnected??false;
+            this.ViewAttached += AllServerQueriesViewModel_ViewAttached;
             QueryTypes = new ObservableCollection<string>
             {
                 "DAX",
@@ -49,6 +58,18 @@ namespace DaxStudio.UI.ViewModels
                 "SQL",
                 "Xmla" // Intentionally lowercase to reduce width
             };
+        }
+
+        private readonly ICollectionView queryEventsView;
+
+        public ICollectionView QueryEventsView
+        {
+            get { return queryEventsView; }
+        }
+
+        private void AllServerQueriesViewModel_ViewAttached(object sender, ViewAttachedEventArgs e)
+        {
+            CanCaptureDiagnostics = Ribbon?.ActiveDocument?.IsConnected ?? false;
         }
 
         public ObservableCollection<string> QueryTypes { get; set; }
@@ -450,6 +471,35 @@ namespace DaxStudio.UI.ViewModels
                 { "AllowsTransparency",true}
 
             });
+        }
+
+        private bool _canCaptureDiagnostics;
+        public bool CanCaptureDiagnostics
+        {
+            get => _canCaptureDiagnostics;
+            set
+            {
+                _canCaptureDiagnostics = value;
+                NotifyOfPropertyChange();
+            }
+        }
+        public async Task CaptureDiagnostics()
+        {
+            // Get the list of events with any user filters applied
+            var list = this.QueryEventsView.Cast<QueryEvent>().ToList();
+            // only profile DAX/MDX queries (so exclude DMX and errors)
+            var daxQueries = list.Where(qe => qe.QueryType == "DAX" || qe.QueryType == "MDX").Cast<IQueryTextProvider>();
+
+            var capdiagDialog = new CaptureDiagnosticsViewModel(Ribbon, _globalOptions, _eventAggregator, daxQueries);
+            _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
+            await _windowManager.ShowDialogBoxAsync(capdiagDialog);
+            _eventAggregator.Unsubscribe(capdiagDialog);
+        }
+
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
+        {
+            CanCaptureDiagnostics = message.Document.Connection.IsConnected;
+            return Task.CompletedTask;
         }
 
         #endregion

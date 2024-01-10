@@ -1,15 +1,11 @@
 ﻿using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace DAXEditorControl
 {
-    class WordHighlighTransformer : DocumentColorizingTransformer
+    sealed class WordHighlighTransformer : DocumentColorizingTransformer
     {
         private HighlightDelegate _highlightFunc;
         private Brush _highlightColour;

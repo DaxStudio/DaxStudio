@@ -1,27 +1,41 @@
-﻿using Caliburn.Micro;
+﻿using AsyncAwaitBestPractices;
+using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
-using DaxStudio.UI.ResultsTargets;
+using Microsoft.Win32;
+using Mono.Cecil.Cil;
+using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
+    public struct TimingRecord
+    {
+        public string QueryName { get; set; }
+        public long TotalDurationMs { get; set; }
+        public long FEDurationMs { get; set; }
+        public long SEDurationMs { get; set; }  
+        public long SEQueries { get; set; }
+        public long CPUDuration { get; set; }
+    }
 
     public class CaptureDiagnosticsViewModel:Screen,
         IHandle<ViewMetricsCompleteEvent>,
         IHandle<TraceChangedEvent>,
         IHandle<QueryTraceCompletedEvent>,
         IHandle<QueryFinishedEvent>,
-        IHandle<NoQueryTextEvent>
+        IHandle<NoQueryTextEvent>,
+        IHandle<DocumentActivatedEvent>
     {
 
         public enum OperationStatus
@@ -37,16 +51,61 @@ namespace DaxStudio.UI.ViewModels
             Ribbon = ribbon;
             Options = options;
             EventAggregator = eventAggregator;
-            
-            // capture TraceWatcher checked status
-            _serverTimingsTrace = Ribbon.TraceWatchers.First(tw => tw.GetType() == typeof(ServerTimesViewModel));
-            _serverTimingsChecked = _serverTimingsTrace?.IsChecked ?? false;
-            _queryPlanTrace = Ribbon.TraceWatchers.First(tw => tw.GetType() == typeof(QueryPlanTraceViewModel));
-            _queryPlanChecked = _queryPlanTrace?.IsChecked ?? false;
-            
-            // start capturing
-            Run();
+
+            SelectedQuerySource = new CaptureDiagnosticsSource("Current Document", new List<IQueryTextProvider>() { this.Ribbon.ActiveDocument });
+
+            // save the current results target
+            _selectedResultsTarget = Ribbon.SelectedTarget;
+
+            // Check if we have a query to run
+            if(Ribbon.ActiveDocument.EditorText.Trim().Length > 0 
+            || (Ribbon.ActiveDocument.QueryBuilder.IsVisible && Ribbon.ActiveDocument.QueryBuilder.Columns.Count > 0))
+            {
+                // start capturing
+              RunAsync().SafeFireAndForget(onException: ex =>
+              {
+                  Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "ctor", "error running diagnostic capture");
+                  EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error starting diagnostic capture: {ex.Message}"));
+              });
+            }
+            else
+            {
+                Log.Warning(DaxStudio.Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No QueryText found");
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No query text found to execute"));
+                Close();
+            }
+
         }
+
+        public CaptureDiagnosticsViewModel(RibbonViewModel ribbon, IGlobalOptions options, IEventAggregator eventAggregator, IEnumerable<IQueryTextProvider> querySource )
+        {
+            Ribbon = ribbon;
+            Options = options;
+            EventAggregator = eventAggregator;
+
+            SelectedQuerySource = new CaptureDiagnosticsSource("Performance Data", querySource);
+
+            // save the current results target
+            _selectedResultsTarget = Ribbon.SelectedTarget;
+
+            if (SelectedQuerySource.Queries.Any())
+            {
+                // start capturing
+                RunAsync().SafeFireAndForget(onException: ex =>
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "ctor", "error running diagnostic capture");
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error starting diagnostic capture: {ex.Message}"));
+                });
+
+            }
+            else
+            {
+                Log.Warning(DaxStudio.Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No Queries found to execute");
+                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No queries found to execute"));
+                Close();
+            }
+        }
+
 
         private const string TickImage = "successDrawingImage";
         private const string CrossImage = "failDrawingImage";
@@ -59,7 +118,10 @@ namespace DaxStudio.UI.ViewModels
         private bool _isServerTimingsStarting;
         private bool _isQueryPlanStarting;
         private bool _isQueryRunning;
-        private bool _isSaveAsRunning; 
+        private bool _isSaveAsRunning;
+        private bool _captureComplete;
+        private DocumentViewModel _newDocument;
+        private List<TimingRecord> _timingRecords = new List<TimingRecord>();
 
         public bool IsMetricsRunning { get => _isMetricsRunning;
             set { 
@@ -67,6 +129,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => IsMetricsRunning);
             } 
         }
+        public bool IsServerTimingsStopped { get; set; }
+        public bool IsQueryPlanStopped { get; set; }
         public bool IsServerTimingsStarting { get => _isServerTimingsStarting;
             set { 
                 _isServerTimingsStarting = value;
@@ -170,16 +234,35 @@ namespace DaxStudio.UI.ViewModels
 
         private ITraceWatcher _serverTimingsTrace;
         private ITraceWatcher _queryPlanTrace;
+        private bool hasNewDocument;
         #endregion
 
 
-        public void Run()
+        public async Task RunAsync()
         {
-            IsMetricsRunning = true;
-            CaptureMetrics();        
+            
+            if (SelectedQuerySource.Queries.Count() == 1 && SelectedQuerySource.Name == "Active Document")
+            {
+                // Use the current document
+                _newDocument = Ribbon.ActiveDocument;
+                await CaptureMetricsAsync();
+
+                // capture TraceWatcher checked status
+                _serverTimingsTrace = _newDocument.TraceWatchers.First(tw => tw.GetType() == typeof(ServerTimesViewModel));
+                _serverTimingsChecked = _serverTimingsTrace?.IsChecked ?? false;
+                _queryPlanTrace = _newDocument.TraceWatchers.First(tw => tw.GetType() == typeof(QueryPlanTraceViewModel));
+                _queryPlanChecked = _queryPlanTrace?.IsChecked ?? false;
+            }
+            else
+            {
+                // Clone the current window
+                hasNewDocument = true;
+                Ribbon.NewQueryWithCurrentConnection(copyContent: true);
+            }
         }
 
-        private bool _canClose = false;
+
+        private bool _canClose;
         public bool CanClose { get => _canClose; set { 
                 _canClose = value;
                 NotifyOfPropertyChange();
@@ -209,13 +292,14 @@ namespace DaxStudio.UI.ViewModels
             ResetState();
         }
 
-        public void CaptureMetrics()
+        public async Task CaptureMetricsAsync()
         {
+            IsMetricsRunning = true;
             // store the current setting and turn on the capturing of TOM
             _includeTOM = Options.VpaxIncludeTom;
             Options.VpaxIncludeTom = true;
 
-            Ribbon.ViewAnalysisData();
+            await _newDocument.ViewAnalysisDataAsync();
         }
 
         private void StartTraces()
@@ -246,7 +330,7 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
             bool _tracesStarted;
             bool _tracesWaiting;
@@ -282,9 +366,22 @@ namespace DaxStudio.UI.ViewModels
                             ServerTimingsStatus = OperationStatus.Failed;
                         }
                         break;
+                    case QueryTrace.Interfaces.QueryTraceStatus.Stopped:
+
+                        if (message.Sender is QueryPlanTraceViewModel)
+                        {
+                            IsQueryPlanStopped = true;
+                            
+                        }
+                        if (message.Sender is ServerTimesViewModel)
+                        {
+                            IsServerTimingsStopped = true;
+                            
+                        }
+                        break;
                     default:
                         // ignore any other status change events
-                        return Task.CompletedTask;
+                        return;
                 }
                 _tracesStarted = QueryPlanStatus == OperationStatus.Succeeded 
                                 && ServerTimingsStatus == OperationStatus.Succeeded ;
@@ -292,7 +389,7 @@ namespace DaxStudio.UI.ViewModels
                                 || ServerTimingsStatus == OperationStatus.Waiting;
 
             }
-            if (_tracesStarted)
+            if (_tracesStarted && !_captureComplete)
             {
                 RunQuery();
             }
@@ -300,16 +397,28 @@ namespace DaxStudio.UI.ViewModels
             {
                 SkipQuery();
             }
-
-            return Task.CompletedTask;
+            if (hasNewDocument && _captureComplete && IsServerTimingsStopped && IsQueryPlanStopped)
+            {
+                _newDocument.IsDirty = false;
+                await _newDocument.TryCloseAsync(); 
+                hasNewDocument = false;
+            }
+            
         }
 
         private void RunQuery()
         {
             IsQueryRunning = true;
-            _selectedResultsTarget = Ribbon.SelectedTarget;
-            Ribbon.SelectedTarget = Ribbon.ResultsTargets.FirstOrDefault(rt => rt is ResultsTargetTimer);
-            Ribbon.RunQuery();
+            
+
+            var runQueryEvent = new RunQueryEvent(Ribbon.ResultsTargets.FirstOrDefault(rt => rt is ResultsTargetTimer));
+            runQueryEvent.QueryProvider = SelectedQuerySource.Queries.ElementAt(CurrentQueryNumber -1);
+
+            // if this document is dedicated to capturing the diagnostics update it with the current query.
+            if (hasNewDocument) _newDocument.EditorText = runQueryEvent.QueryProvider.QueryText;
+
+            EventAggregator.PublishOnUIThreadAsync(runQueryEvent);
+
         }
 
         public void SkipQuery()
@@ -319,31 +428,147 @@ namespace DaxStudio.UI.ViewModels
             OverallStatus = "Failed to capture full diagnostics check the log window for errors";
             CanClose = true;
         }
-        public Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
         {
-            if (message.Trace is ServerTimesViewModel && message.Trace.HasEvents) _serverTimingsComplete = true;
-            if (message.Trace is QueryPlanTraceViewModel && message.Trace.HasEvents) _queryPlanComplete = true;
-            if (_serverTimingsComplete && _queryPlanComplete) SaveAndExit();
-            return Task.CompletedTask;
+            var trace = message.Trace as IHaveData;
+            if (trace == null) { return ; }
+            if (trace is ServerTimesViewModel serverTimings && trace.HasData) {
+                _serverTimingsComplete = true;
+                _timingRecords.Add(new TimingRecord()
+                {
+                    QueryName = $"Query{CurrentQueryNumber}",
+                    TotalDurationMs = serverTimings.TotalDuration,
+                    FEDurationMs = serverTimings.FormulaEngineDuration,
+                    SEDurationMs = serverTimings.StorageEngineDuration,
+                    SEQueries = serverTimings.StorageEngineQueryCount
+                });
+
+            }
+            if (trace is QueryPlanTraceViewModel  && trace.HasData) _queryPlanComplete = true;
+            if (_serverTimingsComplete && _queryPlanComplete)
+            {
+                if (TotalQueries > 1) { await SaveTempFileAsync(); }
+                
+                if (CurrentQueryNumber < TotalQueries) {
+                    _serverTimingsComplete = false;
+                    _queryPlanComplete = false;
+                    CurrentQueryNumber++;
+                    RunQuery();
+                }
+            };
+            if (_serverTimingsComplete && _queryPlanComplete && CurrentQueryNumber >= TotalQueries) await SaveAndExitAsync();
+            return;
         }
 
-        public void SaveAndExit()
+        string _tempFolder;
+        private async Task SaveTempFileAsync()
+        {
+            if (_tempFolder == null) {
+                
+                _tempFolder = GetTemporaryDirectory();
+                System.Diagnostics.Debug.WriteLine($"Saving to {_tempFolder}");
+                var vpa = _newDocument.ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
+                if (vpa != null)
+                {
+                    await vpa.ExportAnalysisDataAsync(Path.Combine(_tempFolder, "Model.vpax"));
+                    _newDocument.ToolWindows.Remove(vpa);
+                }
+            }
+
+            _newDocument.FileName = Path.Combine(_tempFolder, $"Query{CurrentQueryNumber}.daxx");
+            _newDocument.IsDiskFileName = true;
+            _newDocument.Save(); 
+        }
+
+        public string GetTemporaryDirectory()
+        {
+            string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+            if (Directory.Exists(tempDirectory))
+            {
+                return GetTemporaryDirectory();
+            }
+            else
+            {
+                Directory.CreateDirectory(tempDirectory);
+                return tempDirectory;
+            }
+        }
+
+        public Task SaveAndExitAsync()
         {
             IsQueryRunning = false;
             QueryStatus = OperationStatus.Succeeded;
             IsSaveAsRunning = true;
-            if(_queryPlanTrace != null) _queryPlanTrace.IsChecked = false;
-            if(_serverTimingsTrace != null) _serverTimingsTrace.IsChecked =false;
-            Ribbon.SaveAsDaxx();
+            
+            if (TotalQueries == 1)
+                Ribbon.SaveAsDaxx();
+            else
+                SaveZip();
             IsSaveAsRunning = false;
             SaveAsStatus = OperationStatus.Succeeded;
             CanClose = true;
             CanCancel = false;
+            _captureComplete = true;
+            if (_queryPlanTrace != null) _queryPlanTrace.IsChecked = false;
+            if (_serverTimingsTrace != null) _serverTimingsTrace.IsChecked = false;
             ResetState();
+            return Task.CompletedTask;
+        }
+
+        private void SaveZip()
+        {
+            // Configure save file dialog box
+            var dlg = new SaveFileDialog
+            {
+                FileName = "Results",
+                FilterIndex = 0,
+                Filter = "Zip file |*.zip"
+            };
+
+            // Show save file dialog box
+            var result = dlg.ShowDialog();
+
+            // Process save file dialog box results 
+            if (result == true)
+            {
+                WriteSummaryCsv();
+                // delete target file if it already exists?
+                if (File.Exists(dlg.FileName) ) { File.Delete(dlg.FileName); }
+                // save the temporary folder to a zip file
+                ZipFile.CreateFromDirectory(_tempFolder, dlg.FileName);
+                Directory.Delete(_tempFolder, true);
+            }
+            
+        }
+
+        private void WriteSummaryCsv()
+        {
+            var csvFilePath = Path.Combine(_tempFolder, "Summary.csv");
+            var encoding = Encoding.UTF8;
+            StreamWriter textWriter = null;
+            try
+            {
+                textWriter = new StreamWriter(csvFilePath, false, encoding);
+                // configure csv delimiter and culture
+                var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { HasHeaderRecord = true };
+                
+                using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
+                {
+                    csvWriter.WriteHeader<TimingRecord>();
+                    csvWriter.NextRecord();
+                    csvWriter.WriteRecords(_timingRecords);
+                    csvWriter.Flush();
+                }
+            }
+            catch (Exception ex) {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), nameof(WriteSummaryCsv), "Error writing summary.csv");
+            }
         }
 
         public Task HandleAsync(NoQueryTextEvent message, CancellationToken cancellationToken)
         {
+            ResetState();
             _ = TryCloseAsync();
             return Task.CompletedTask;
         }
@@ -365,6 +590,8 @@ namespace DaxStudio.UI.ViewModels
 
         private void ResetState()
         {
+            if (hasNewDocument) return;
+            // only reset the state if we are using the active document to capture diagnostics
             if (_serverTimingsTrace != null) _serverTimingsTrace.IsChecked = _serverTimingsChecked;
             if (_queryPlanTrace != null) _queryPlanTrace.IsChecked = _queryPlanChecked;
             if (_selectedResultsTarget != null) Ribbon.SelectedTarget = _selectedResultsTarget;
@@ -389,5 +616,50 @@ namespace DaxStudio.UI.ViewModels
             }
             return Task.CompletedTask;
         }
+
+        public async Task HandleAsync(DocumentActivatedEvent message, CancellationToken cancellationToken)
+        {
+            if (_captureComplete) return;
+            // if a new window has been opened use that to capture the VPAX metrics
+            if (message.Document.IsConnected)
+            {
+                _newDocument = message.Document;
+                
+                // capture TraceWatcher checked status
+                _serverTimingsTrace = _newDocument.TraceWatchers.First(tw => tw.GetType() == typeof(ServerTimesViewModel));
+                _serverTimingsChecked = _serverTimingsTrace?.IsChecked ?? false;
+                _queryPlanTrace = _newDocument.TraceWatchers.First(tw => tw.GetType() == typeof(QueryPlanTraceViewModel));
+                _queryPlanChecked = _queryPlanTrace?.IsChecked ?? false;
+
+                await CaptureMetricsAsync();
+            }
+
+        }
+
+        private CaptureDiagnosticsSource _selectedQuerySource;
+        public CaptureDiagnosticsSource SelectedQuerySource { get => _selectedQuerySource; 
+            set { 
+                _selectedQuerySource = value; 
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(TotalQueries));
+                NotifyOfPropertyChange(nameof(ShowQueryProgress));
+            } 
+        }
+        public int TotalQueries => SelectedQuerySource?.Queries?.Count()??0;
+        private int _currentQueryNumber = 1;
+        public int CurrentQueryNumber { get => _currentQueryNumber;
+            private set {
+                _currentQueryNumber = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(ProgressPercentage));
+            } 
+        }
+        public bool ShowQueryProgress => TotalQueries > 1;
+        public override Task TryCloseAsync(bool? dialogResult = null)
+        {
+            return base.TryCloseAsync(dialogResult);
+        }
+
+        public double ProgressPercentage =>  ((double)CurrentQueryNumber / (double)TotalQueries) *100;
     }
 }

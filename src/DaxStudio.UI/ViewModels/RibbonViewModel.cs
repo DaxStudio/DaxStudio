@@ -151,10 +151,10 @@ namespace DaxStudio.UI.ViewModels
 
         //public string NewQueryTitle => $"New ({Options.HotkeyNewDocument})";
 
-        public void NewQueryWithCurrentConnection()
+        public void NewQueryWithCurrentConnection(bool copyContent = false)
         {
             if (ActiveDocument == null) return;
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument)).ContinueWith((precedent) => { 
+            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent)).ContinueWith((precedent) => { 
                 if (precedent.IsFaulted)
                 {
                     var msg = "Error opening new document with current connection";
@@ -524,6 +524,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => TraceWatchers);
             NotifyOfPropertyChange(() => ServerTimingsChecked);
             NotifyOfPropertyChange(() => ServerTimingDetails);
+
+            _eventAggregator.PublishOnUIThreadAsync(new DocumentActivatedEvent(message.Document));
             return Task.CompletedTask;
         }
 
@@ -1342,7 +1344,8 @@ namespace DaxStudio.UI.ViewModels
                     if (perfDataWindow == null)
                     {
                         // todo - get viewmodel from IoC container
-                        perfDataWindow = new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
+                        perfDataWindow = IoC.Get<PowerBIPerformanceDataViewModel>(); // new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
+                        _eventAggregator.SubscribeOnPublishedThread(perfDataWindow);
                         this.ActiveDocument.ToolWindows.Add(perfDataWindow);
                     } 
                     else

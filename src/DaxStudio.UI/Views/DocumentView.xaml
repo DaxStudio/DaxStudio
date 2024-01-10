@@ -19,6 +19,7 @@
     xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
     xmlns:res="clr-namespace:DaxStudio.UI.Resources"
     xmlns:fm="clr-namespace:ICSharpCode.AvalonEdit.Folding;assembly=ICSharpCode.AvalonEdit"
+    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
     x:Class="DaxStudio.UI.Views.DocumentView" 
     mc:Ignorable="d" 
     d:DesignWidth="500" 
@@ -49,7 +50,7 @@
 
             <FrameworkElement x:Key="BrushCarrier" x:Name="BrushCarrier" Tag="{StaticResource RecordingBrush}"/>
 
-            <Storyboard x:Key="Pulse" RepeatBehavior="Forever">
+            <Storyboard x:Key="Pulse" RepeatBehavior="Forever" options:Freeze="true">
                 <!--<ColorAnimation Duration="0:0:0.5"
                                                         To="Red"
                                                         AutoReverse="True"

@@ -20,8 +20,8 @@
     
     <SolidColorBrush x:Key="DaxStudioBrush" Color="{StaticResource DaxStudioBlue}" options:Freeze="true"/>
     <!--<SolidColorBrush x:Key="FEBrush" Color="#FFFFBC5E"/>-->
-    <SolidColorBrush x:Key="WarningBarBackgroundBrush" Color="{StaticResource WarningBarBackgroundColor}" />
-    <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
+    <SolidColorBrush x:Key="WarningBarBackgroundBrush" Color="{StaticResource WarningBarBackgroundColor}"  options:Freeze="true"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}"  options:Freeze="true"/>
 
 
 

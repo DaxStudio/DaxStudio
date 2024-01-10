@@ -18,34 +18,52 @@ using System;
 using System.Windows.Media;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using System.Threading.Tasks;
+using DaxStudio.UI.Extensions;
+using System.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
-
+    [Export]
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     class PowerBIPerformanceDataViewModel: ToolWindowBase,
         IViewAware ,
-        IDataGridWindow
+        IDataGridWindow,
+        IHandle<ConnectionChangedEvent>
         
     {
         private Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
-        private IGlobalOptions _globalOptions;
+        private IGlobalOptions Options { get; }
         private IEventAggregator _eventAggregator;
+        private IWindowManager _windowManager;
+        private RibbonViewModel Ribbon { get; }
 
         [ImportingConstructor]
-        public PowerBIPerformanceDataViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions) : base()
+        public PowerBIPerformanceDataViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager, RibbonViewModel ribbon) : base()
         {
             PerformanceData = new BindableCollection<PowerBIPerformanceData>();
-            _globalOptions = globalOptions;
+            performanceDataView = CollectionViewSource.GetDefaultView(PerformanceData);
+            Options = globalOptions;
             _eventAggregator = eventAggregator;
-            
+            _windowManager = windowManager;
+            Ribbon = ribbon;
+            CanCaptureDiagnostics = Ribbon.ActiveDocument.IsConnected;
         }
 
         public override bool CanHide => true;
         //public new bool CanHide => true;
         public override string ContentId => "pbi-performance-data";
 
-        public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; } 
-       
+        public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; }
+
+        private readonly ICollectionView performanceDataView;
+
+        public ICollectionView PerformanceDataView
+        {
+            get { return performanceDataView; }
+        }
+
+
 
         // IToolWindow interface
         public override string Title => "PBI Performance";
@@ -128,7 +146,7 @@ namespace DaxStudio.UI.ViewModels
                             PerformanceData.Add(line);
                         }
                     }
-
+                    CanCaptureDiagnostics = Ribbon?.ActiveDocument?.Connection?.IsConnected ?? false;
                     _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
                 }
                 catch (Exception ex)
@@ -153,7 +171,7 @@ namespace DaxStudio.UI.ViewModels
         public void CopyAll()
         {
             //We need to get the default view as that is where any filtering is done
-            ICollectionView view = CollectionViewSource.GetDefaultView(PerformanceData);
+            ICollectionView view = CollectionViewSource.GetDefaultView(PerformanceDataView);
             int sequence = 1;
             var sb = new StringBuilder();
             foreach (var itm in view)
@@ -213,5 +231,35 @@ namespace DaxStudio.UI.ViewModels
         private bool _showFilters;
         public bool ShowFilters { get { return _showFilters; } set { if (value != _showFilters) { _showFilters = value; NotifyOfPropertyChange(() => ShowFilters); } } }
 
+        private bool _canCaptureDiagnostics;
+        public bool CanCaptureDiagnostics { 
+            get => _canCaptureDiagnostics; 
+            set { 
+                _canCaptureDiagnostics = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+        public async Task CaptureDiagnostics()
+        {
+            // get the list of queries with any user filters applied
+            var list = this.PerformanceDataView.Cast<IQueryTextProvider>();
+
+            var capdiagDialog = new CaptureDiagnosticsViewModel(Ribbon, Options, _eventAggregator, list);
+            _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
+            await _windowManager.ShowDialogBoxAsync(capdiagDialog);
+            _eventAggregator.Unsubscribe(capdiagDialog);
+        }
+
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
+        {
+            CanCaptureDiagnostics = message.Document.Connection.IsConnected;
+            return Task.CompletedTask;
+        }
+
+        public override Task TryCloseAsync(bool? dialogResult = null)
+        {
+            _eventAggregator.Unsubscribe(this);
+            return base.TryCloseAsync(dialogResult);
+        }
     }
 }

@@ -11,7 +11,7 @@
              d:DesignWidth="300"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <val:BindingProxy x:Key="proxy" Data="{Binding}"/>
+        <val:BindingProxy x:Key="proxy" Data="{Binding}" />
         <Style TargetType="TextBox">
 
             <Setter Property="Template">

@@ -17,6 +17,7 @@
              xmlns:res="clr-namespace:DaxStudio.UI.Resources"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              Background="{DynamicResource Theme.Brush.MenuBar.Back}"
              mc:Ignorable="d" 
              d:DesignHeight="1008" d:DesignWidth="1400">
@@ -35,8 +36,8 @@
 
             <ElasticEase x:Key="easeSlideIn" EasingMode="EaseInOut" Oscillations="2" Springiness="15"/>
             <SineEase x:Key="easeSlideOut" EasingMode="EaseInOut"/>
-            
-            <Storyboard x:Key="FadeIn">
+
+            <Storyboard x:Key="FadeIn" options:Freeze="true">
                 <DoubleAnimation Storyboard.TargetProperty="Opacity" 
                                      EasingFunction="{StaticResource ResourceKey=easeSlideIn}"
                                      From="0.0"
@@ -47,7 +48,7 @@
                 </ObjectAnimationUsingKeyFrames>
             </Storyboard>
 
-            <Storyboard x:Key="FadeOut">
+            <Storyboard x:Key="FadeOut"  options:Freeze="true">
                 <DoubleAnimation Storyboard.TargetProperty="Opacity" 
                          EasingFunction="{StaticResource ResourceKey=easeSlideOut}" 
                          To="0.0" 

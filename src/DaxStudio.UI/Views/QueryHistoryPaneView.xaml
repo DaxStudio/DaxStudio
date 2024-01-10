@@ -10,6 +10,7 @@
                               xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                               xmlns:clr="clr-namespace:System;assembly=mscorlib"
                               xmlns:markup="clr-namespace:DaxStudio.UI.MarkupExtensions"
+                              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="700">
     <UserControl.Resources>
@@ -34,6 +35,10 @@
         <!--<Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>-->
+
+        <Style x:Key="ColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {ComponentResourceKey 
+		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                                ResourceId=DataGridHeaderFilterControlStyle}}"/>
 
         <Style x:Key="ColumnHeaderRightAlign" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}" >
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
@@ -162,11 +167,11 @@
                 <Border Margin="0" Padding="0" 
                               cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryHistoryDoubleClick($datacontext)]">
                     <TextBlock x:Name="QueryText"
-                        Text="{Binding Path=QueryText,Mode=OneWay}"  
+                        Text="{Binding Path=QueryText,Mode=OneTime}"  
                         VerticalAlignment="Top" 
                         HorizontalAlignment="Left"   
                         TextTrimming="CharacterEllipsis"
-                        ToolTip="{Binding QueryText}"
+                        ToolTip="{Binding QueryText, Mode=OneTime}"
                                Padding="6 0 6 0">
                     </TextBlock>
                     
@@ -246,7 +251,7 @@
                                         <MenuItem Header="Hello"/>
                                     </ContextMenu>
                                 </Border.ContextMenu>
-                                <TextBlock Text="{Binding Path=StartTime,Mode=OneWay, StringFormat=\{0:g\}}"  
+                                <TextBlock Text="{Binding Path=StartTime,Mode=OneTime, StringFormat=\{0:g\}}"  
                                            VerticalAlignment="Top" 
                                            HorizontalAlignment="Left"
                                            Padding="6 0 6 0"
@@ -428,7 +433,7 @@
                 
                 <DataGridTemplateColumn Header="Query" Width="*" 
                                         ClipboardContentBinding="{Binding QueryText}"
-                                        CellTemplate="{StaticResource QueryTextCell}" />
+                                        CellTemplate="{StaticResource QueryTextCell}"/>
             </DataGrid.Columns>
         </controls:DataGridNoContextMenu>
         </controls:ClipBorder>

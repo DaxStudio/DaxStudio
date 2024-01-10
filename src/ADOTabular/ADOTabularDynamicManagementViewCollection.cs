@@ -25,12 +25,12 @@ namespace ADOTabular
                 {
                     try
                     {
-                        // TODO - on error should we return an empty dataset?
                         _dsDmvs = _adoTabConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS");
                         _dsDmvs.Tables[0].DefaultView.Sort = "SchemaName";
                     }
                     catch
                     {
+                        // on error return an empty dataset
                         return new DataTable("Emtpy");
                     }
                 }

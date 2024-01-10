@@ -75,7 +75,6 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectEvent>
         , IHandle<ChangeThemeEvent>
         , IHandle<CloseTraceWindowEvent>
-        , IHandle<CopyConnectionEvent>
         , IHandle<DefineMeasureOnEditor>
         , IHandle<ExportDaxFunctionsEvent>
         , IHandle<LoadFileEvent>
@@ -860,18 +859,23 @@ namespace DaxStudio.UI.ViewModels
             _isSubscribed = false;
 
             _eventAggregator.Unsubscribe(this);
-            _eventAggregator.Unsubscribe(QueryResultsPane);
-            _eventAggregator.Unsubscribe(MetadataPane);
-            _eventAggregator.Unsubscribe(DmvPane);
-            _eventAggregator.Unsubscribe(FunctionPane);
+            //_eventAggregator.Unsubscribe(QueryResultsPane);
+            //_eventAggregator.Unsubscribe(MetadataPane);
+            //_eventAggregator.Unsubscribe(DmvPane);
+            //_eventAggregator.Unsubscribe(FunctionPane);
             _eventAggregator.Unsubscribe(Connection);
             _eventAggregator.Unsubscribe(IntellisenseProvider);
             _eventAggregator.Unsubscribe(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.Unsubscribe(HelpWatermark);
-            _eventAggregator.Unsubscribe(QueryBuilder);
+            //_eventAggregator.Unsubscribe(QueryBuilder);
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
+            }
+            foreach (var w in this.ToolWindows)
+            {
+                if (w is QueryHistoryPaneViewModel) { continue; }
+                _eventAggregator.Unsubscribe(w);
             }
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel),nameof(UnsubscribeAll), $"Unsubscribed from events for: {DisplayName} ({AutoSaveId})");
         }
@@ -884,15 +888,15 @@ namespace DaxStudio.UI.ViewModels
                 return;
 
             _eventAggregator.SubscribeOnPublishedThread(this);
-            _eventAggregator.SubscribeOnPublishedThread(QueryResultsPane);
-            _eventAggregator.SubscribeOnPublishedThread(MetadataPane);
-            _eventAggregator.SubscribeOnPublishedThread(DmvPane);
-            _eventAggregator.SubscribeOnPublishedThread(FunctionPane);
+            //_eventAggregator.SubscribeOnPublishedThread(QueryResultsPane);
+            //_eventAggregator.SubscribeOnPublishedThread(MetadataPane);
+            //_eventAggregator.SubscribeOnPublishedThread(DmvPane);
+            //_eventAggregator.SubscribeOnPublishedThread(FunctionPane);
             _eventAggregator.SubscribeOnPublishedThread(Connection);
             _eventAggregator.SubscribeOnPublishedThread(IntellisenseProvider);
             _eventAggregator.SubscribeOnPublishedThread(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.SubscribeOnPublishedThread(HelpWatermark);
-            _eventAggregator.SubscribeOnPublishedThread(QueryBuilder);
+            //_eventAggregator.SubscribeOnPublishedThread(QueryBuilder);
             //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
             if (TraceWatchers != null)
             {
@@ -900,6 +904,11 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _eventAggregator.SubscribeOnPublishedThread(tw);
                 }
+            }
+            foreach (var w in this.ToolWindows)
+            {
+                if (w is QueryHistoryPaneViewModel) { continue; }
+                _eventAggregator.SubscribeOnPublishedThread(w);
             }
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SubscribeAll), $"Subscribed to all events for: {DisplayName} ({AutoSaveId})");
         }
@@ -1138,8 +1147,7 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        public ConnectionManager Connection { get; }  
-
+        public ConnectionManager Connection { get; }
 
         private async Task UpdateConnectionsAsync(ConnectEvent message)
         {
@@ -1980,7 +1988,7 @@ namespace DaxStudio.UI.ViewModels
 
                     // if there is no query text in the editor and the QueryProvider is not the Query Builder check to 
                     // see if the query builder is active and try and use that to get the Query text.
-                    if (EditorText.Trim().Length == 0 && !(message.QueryProvider is QueryBuilderViewModel) && !(message.QueryProvider is BenchmarkServerFEViewModel.BenchmarkFEQuery))
+                    if (EditorText.Trim().Length == 0 && message.QueryProvider.QueryText.Length ==0 )
                     {
                         if (ShowQueryBuilder && QueryBuilder.Columns.Count > 0)
                         {
@@ -3615,7 +3623,7 @@ namespace DaxStudio.UI.ViewModels
         public string TextToHighlight {
             get {
                 var editor = GetEditor();
-                return editor.SelectedText;
+                return editor?.SelectedText??string.Empty;
             }
         }
 
@@ -4247,7 +4255,7 @@ namespace DaxStudio.UI.ViewModels
             Stopwatch sw = new Stopwatch();
             if (!IsConnected)
             {
-                OutputError("The active query window is not connected to a data source. You need to be connected to a data source in order to use the export functions option");
+                OutputError("The active query window is not connected to a data source. You need to be connected to a data source in order to use the View Metrics option");
                 ActivateOutput();
                 return;
             }
@@ -4636,12 +4644,6 @@ namespace DaxStudio.UI.ViewModels
             }
 
             IntellisenseProvider?.CloseCompletionWindow();
-        }
-
-        public Task HandleAsync(CopyConnectionEvent message, CancellationToken cancellationToken)
-        {
-            _sourceDocument = message.SourceDocument;
-            return Task.CompletedTask;
         }
 
         public Task HandleAsync(UpdateGlobalOptions message, CancellationToken cancellationToken)

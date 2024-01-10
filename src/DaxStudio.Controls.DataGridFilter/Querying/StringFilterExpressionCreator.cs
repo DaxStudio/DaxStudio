@@ -6,7 +6,7 @@ using DaxStudio.Controls.DataGridFilter.Support;
 
 namespace DaxStudio.Controls.DataGridFilter.Querying
 {
-    internal class StringFilterExpressionCreator
+    internal sealed class StringFilterExpressionCreator
     {
         const string WildcardAnyString = "%";
 

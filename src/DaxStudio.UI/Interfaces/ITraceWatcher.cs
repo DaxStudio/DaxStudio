@@ -37,7 +37,7 @@ namespace DaxStudio.UI.Interfaces
         string KeyTip { get; }
         Task StopTraceAsync();
         void StopTrace();
-        bool HasEvents { get; }
+
     }
 
 }

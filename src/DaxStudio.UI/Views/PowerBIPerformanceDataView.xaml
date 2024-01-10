@@ -23,6 +23,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
@@ -54,11 +55,11 @@
                     <Border Margin="0" Padding="0" 
                                   cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick($datacontext)]">
                         <TextBlock x:Name="QueryText"
-                            Text="{Binding Path=QueryText, Mode=OneWay,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
+                            Text="{Binding Path=QueryText, Mode=OneTime,Converter={StaticResource StringWhitespaceRemovalConverter}}"  
                             VerticalAlignment="Center" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
-                            ToolTip="{Binding QueryText}">
+                            ToolTip="{Binding QueryText, Mode=OneTime}">
                         </TextBlock>
 
                     </Border>
@@ -70,6 +71,29 @@
             </Style>
 
             <Style TargetType="{x:Type controls:DataGridCustomCopy}" BasedOn="{StaticResource DefaultDataGridStyle}"/>
+
+            <Style TargetType="{x:Type DataGridColumnHeader}" x:Key="DataGridHeaderRightAlign" >
+                <Setter Property="TextBlock.HorizontalAlignment" Value="Right" />
+            </Style>
+
+            <Style x:Key="RightHeader" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {ComponentResourceKey 
+		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                                ResourceId=DataGridHeaderFilterControlStyle}}">
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            </Style>
+
+            <Style x:Key="ColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {ComponentResourceKey 
+		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                                ResourceId=DataGridHeaderFilterControlStyle}}">
+
+                <!--<Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>-->
+                <!--<Setter Property="Panel.Background" Value="Lime"/>-->
+            </Style>
+
+            <Style TargetType="DataGridCellsPanel">
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
+            </Style>
+            
 
         </ResourceDictionary>
     </UserControl.Resources>
@@ -89,14 +113,42 @@
 <!-- Toolbar -->
             <controls:ClipBorder
                 CornerRadius="4"
-                BorderThickness="1"
+                
                 Margin="0 0 0 12"
-                Background="{DynamicResource Theme.Brush.Content.Back}"
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
-                <Grid>
-                    <Button x:Name="Export" >Export</Button>
-                    <ToggleButton x:Name="ShowFilters" HorizontalAlignment="Right">Filter</ToggleButton>
-                </Grid>
+                <DockPanel LastChildFill="False">
+                    <!--<Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action Export]">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource save_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Export</TextBlock>
+                        </StackPanel>
+                    </Button>-->
+
+                    <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}" x:Name="CaptureDiagnostics">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource toolbar_capture_diagnosticsDrawingImage}" 
+                                    Margin="4 0 4 0"/>
+                            <TextBlock>Capture Diagnostics</TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                    
+                    
+                    <ToggleButton x:Name="ShowFilters" DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource filter_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                            <TextBlock>Filter</TextBlock>
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <Button  DockPanel.Dock="Right"
+                         Command="{Binding Path=(filter:DataGridExtensions.ClearFilterCommand),ElementName=PerformanceData}"
+                         Style="{StaticResource TraceButton}">Clear Filters</Button>
+                </DockPanel>
             </controls:ClipBorder>
 
             <controls:ClipBorder
@@ -106,13 +158,12 @@
                 Background="{DynamicResource Theme.Brush.Content.Back}"
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
                 <controls:DataGridCustomCopy x:Name="PerformanceData" 
-                    
+
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="True"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}"
                                              
-                    ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		            ResourceId=DataGridHeaderFilterControlStyle}}"
+                    ColumnHeaderStyle="{StaticResource ColumnHeaderStyle}"
                     AlternationCount="2"
                     AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                     Background="{DynamicResource Theme.Brush.Content.Back}"
@@ -130,7 +181,7 @@
                     ScrollViewer.CanContentScroll="True"
                     VerticalScrollBarVisibility="Auto"
                     FrozenColumnCount="1"
-                    GridLinesVisibility="Horizontal" 
+                    GridLinesVisibility="All" 
                     BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
@@ -139,9 +190,9 @@
 
             <DataGrid.Resources>
 
-                        <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
-                            <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
-                        </Style>
+                <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
+                    <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
+                </Style>
                 
                 <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
                     <Setter Property="Template">
@@ -154,7 +205,7 @@
                                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                                             >
                                             <Grid>
-                                                <DataGridColumnHeader x:Name="PART_FillerColumnHeader" IsHitTestVisible="False"/>
+                                                <DataGridColumnHeader x:Name="PART_FilterColumnHeader" IsHitTestVisible="False"/>
                                                 <ItemsPresenter />
                                             </Grid>
                                         </controls:ClipBorder>
@@ -165,8 +216,8 @@
 
                 <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
-                    <Setter Property="MinHeight" Value="20"/>
-                </Style>
+                            <Setter Property="MinHeight" Value="20"/>
+                        </Style>
                 <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
                     <Setter Property="HorizontalAlignment" Value="Right" />
                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -213,30 +264,30 @@
                     Header="#" 
                     IsReadOnly="True" 
                     Width="28" 
-                    Binding="{Binding Sequence}"
+                    Binding="{Binding Sequence, Mode=OneTime}"
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True" 
                     />
                 
                 <DataGridTextColumn 
                     Header="Visual" 
                     IsReadOnly="True" 
-                    Width="75" 
-                    Binding="{Binding VisualName}"
+                    Width="90" 
+                    Binding="{Binding VisualName, Mode=OneTime}"
                     filter:DataGridColumnExtensions.IsContainsTextSearch="True"
                     />
                 
                 <DataGridTextColumn 
                     Header="QueryStart" 
                     IsReadOnly="True" 
-                    Width="70" 
-                    Binding="{Binding QueryStartTime, StringFormat='hh:mm:ss'}"  
+                    Width="80" 
+                    Binding="{Binding QueryStartTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
                     filter:DataGridColumnExtensions.CustomBindingPath="QueryStartTime"/>
                 <DataGridTextColumn 
                     Header="QueryEnd" 
                     IsReadOnly="True" 
-                    Width="70" 
-                    Binding="{Binding QueryEndTime, StringFormat='hh:mm:ss'}"  
+                    Width="80" 
+                    Binding="{Binding QueryEndTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
                     filter:DataGridColumnExtensions.CustomBindingPath="QueryEndTime"/>
                 <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
@@ -247,24 +298,32 @@
                                         ItemsSource="{StaticResource QueryTypes}"
                                         SelectedItemBinding="{Binding QueryType}">
                 </DataGridComboBoxColumn>-->
-                <DataGridTextColumn Header="Rows" Width="40" 
+                        <DataGridTextColumn  Width="90" 
+                                    Header="Rows"
                                     IsReadOnly="True"
-                                    Binding="{Binding RowCount, StringFormat='#,0'}"
+                                             
+                                    HeaderStyle="{StaticResource RightHeader}"
                                     ElementStyle="{StaticResource AlignRight}"
-                                    filter:DataGridColumnExtensions.CustomBindingPath="RowCount"/>
+                                    Binding="{Binding RowCount, StringFormat='#,0',Mode=OneTime}"                                    
+                                    filter:DataGridColumnExtensions.CustomBindingPath="RowCount">
+                            
+                        </DataGridTextColumn>
 
-                <DataGridTextColumn Header="Query Ms" IsReadOnly="True" Width="68" 
-                                    Binding="{Binding QueryDuration, StringFormat='#,0'}" 
+                        <DataGridTextColumn Header="Query Ms" IsReadOnly="True" Width="90" 
+                                    Binding="{Binding QueryDuration, StringFormat='#,0 ms', Mode=OneTime}" 
+                                    HeaderStyle="{StaticResource RightHeader}"
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="QueryDuration"
                                     />
-                <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="74" 
-                                    Binding="{Binding RenderDuration, StringFormat='#,0'}" 
+                <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="90" 
+                                    Binding="{Binding RenderDuration, StringFormat='#,0 ms',Mode=OneTime}" 
+                                    HeaderStyle="{StaticResource RightHeader}"
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="RenderDuration"
                                     />
-                <DataGridTextColumn Header="Total Ms" IsReadOnly="True" Width="60" 
-                                    Binding="{Binding TotalDuration, StringFormat='#,0'}" 
+                <DataGridTextColumn Header="Total Ms" IsReadOnly="True" Width="90" 
+                                    Binding="{Binding TotalDuration, StringFormat='#,0 ms',Mode=OneTime}" 
+                                    HeaderStyle="{StaticResource RightHeader}"
                                     ElementStyle="{StaticResource AlignRight}"
                                     filter:DataGridColumnExtensions.CustomBindingPath="TotalDuration"
                                     />
@@ -272,7 +331,7 @@
                 <DataGridTemplateColumn Header="Query" Width="*" CellTemplate="{StaticResource QueryTextCell}" 
                                         filter:DataGridColumnExtensions.CustomBindingPath="QueryText"
                                         filter:DataGridColumnExtensions.IsContainsTextSearch="True"
-                                        ClipboardContentBinding="{Binding QueryTextQuoted}"
+                                        ClipboardContentBinding="{Binding QueryTextQuoted, Mode=OneTime}"
                                         />
 
             </DataGrid.Columns>

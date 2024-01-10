@@ -136,7 +136,8 @@ namespace DaxStudio.UI.ViewModels
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, 
         ISaveState,
-        ITraceDiagnostics
+        ITraceDiagnostics,
+        IHaveData
     {
         [ImportingConstructor]
         public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) 
@@ -464,6 +465,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool CanShowTraceDiagnostics => CanExport;
+
+        public bool HasData => LogicalQueryPlanRows?.Count > 0 || PhysicalQueryPlanRows?.Count > 0;
+
         public async void ShowTraceDiagnostics()
         {
             var traceDiagnosticsViewModel = new RequestInformationViewModel(this);

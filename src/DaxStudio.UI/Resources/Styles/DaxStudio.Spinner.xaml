@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:circularProgressBar="clr-namespace:DaxStudio.UI.Converters.CircularProgressBar"
-                    xmlns:converters="clr-namespace:DaxStudio.UI.Converters">
+                    xmlns:converters="clr-namespace:DaxStudio.UI.Converters"
+                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
   <circularProgressBar:StartPointConverter x:Key="StartPointConverter" />
   <circularProgressBar:ArcSizeConverter x:Key="ArcSizeConverter" />
   <circularProgressBar:ArcStrokeThicknessConverter x:Key="ArcStrokeThicknessConverter" />
@@ -25,10 +26,10 @@
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type ProgressBar}">
           <ControlTemplate.Resources>
-            <Storyboard x:Key="IsIndeterminateStoryboard" TargetName="RotateTransform" TargetProperty="Angle" RepeatBehavior="Forever">
+                        <Storyboard x:Key="IsIndeterminateStoryboard" TargetName="RotateTransform" TargetProperty="Angle" RepeatBehavior="Forever"  options:Freeze="true">
               <DoubleAnimation From="0" To="359" Duration="0:0:2" />
             </Storyboard>
-            <Storyboard x:Key="IsFullyIndeterminateStoryboard">
+                        <Storyboard x:Key="IsFullyIndeterminateStoryboard" options:Freeze="true">
               <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FullyIndeterminateGridScaleTransform"
                                              Storyboard.TargetProperty="ScaleX"
                                              RepeatBehavior="Forever">
@@ -43,7 +44,7 @@
                                From="00" To="359" Duration="0:0:1.25" >
               </DoubleAnimation>
             </Storyboard>
-            <Storyboard x:Key="IsFullyIndeterminateStoryboard2">
+                        <Storyboard x:Key="IsFullyIndeterminateStoryboard2" options:Freeze="true">
               <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FullyIndeterminateGridScaleTransform"
                                              Storyboard.TargetProperty="ScaleX"
                                              RepeatBehavior="Forever">

@@ -215,12 +215,12 @@ namespace DaxStudio.UI.ViewModels
             await NewQueryDocumentAsync(fileName, null);
         }
 
-        public async Task NewQueryDocumentAsync( string fileName, DocumentViewModel sourceDocument)
+        public async Task NewQueryDocumentAsync( string fileName, DocumentViewModel sourceDocument, bool copyContent = false)
         {
             try
             {
                 // 1 Open BlankDocument
-                if (string.IsNullOrEmpty(fileName)) await OpenNewBlankDocumentAsync(sourceDocument);
+                if (string.IsNullOrEmpty(fileName)) await OpenNewBlankDocumentAsync(sourceDocument, copyContent);
                 // 2 Open Document in current window (if it's an empty document)
                 else if (ActiveDocument != null && !ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
                 // 3 Open Document in a new window if current window has content
@@ -323,7 +323,6 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
-                    //await _eventAggregator.PublishOnUIThreadAsync(new CopyConnectionEvent(sourceDocument));
                     await ActiveDocument.CopyConnectionAsync(sourceDocument);
                     if (copyContent) ActiveDocument.CopyContent(sourceDocument);
                 }
@@ -399,7 +398,7 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new RefreshConnectionDialogEvent());
                 return;
             }
-            await NewQueryDocumentAsync("", message.ActiveDocument);
+            await NewQueryDocumentAsync("", message.ActiveDocument, message.CopyContent);
         }
 
         public async Task HandleAsync(OpenFileEvent message, CancellationToken cancellationToken)

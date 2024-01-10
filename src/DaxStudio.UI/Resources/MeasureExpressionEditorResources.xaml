@@ -1,12 +1,13 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
 
     <ElasticEase x:Key="easeSlideIn" EasingMode="EaseInOut" Oscillations="2" Springiness="15"/>
     <SineEase x:Key="easeSlideOut" EasingMode="EaseInOut"/>
 
     
     <!-- Storyboards -->
-    <Storyboard x:Key="SlideIn">
+    <Storyboard x:Key="SlideIn" options:Freeze="true">
         <DoubleAnimation Storyboard.TargetProperty="(Tag)" 
                                      EasingFunction="{StaticResource ResourceKey=easeSlideIn}"
                                      From="1.0"
@@ -14,14 +15,14 @@
                                      Duration="0:0:1.0"/>
     </Storyboard>
 
-    <Storyboard x:Key="SlideOut">
+    <Storyboard x:Key="SlideOut" options:Freeze="true">
         <DoubleAnimation Storyboard.TargetProperty="(Tag)" 
                          EasingFunction="{StaticResource ResourceKey=easeSlideOut}" 
                          To="1.0" 
                          Duration="0:0:0.2"/>
     </Storyboard>
 
-    <Storyboard x:Key="FadeIn">
+    <Storyboard x:Key="FadeIn" options:Freeze="true">
         <DoubleAnimation Storyboard.TargetProperty="Opacity" 
                                      EasingFunction="{StaticResource ResourceKey=easeSlideIn}"
                                      From="0.0"
@@ -32,7 +33,7 @@
         </ObjectAnimationUsingKeyFrames>
     </Storyboard>
 
-    <Storyboard x:Key="FadeOut">
+    <Storyboard x:Key="FadeOut" options:Freeze="true">
         <DoubleAnimation Storyboard.TargetProperty="Opacity" 
                          EasingFunction="{StaticResource ResourceKey=easeSlideOut}" 
                          To="0.0" 

@@ -1,15 +1,17 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
+using Microsoft.AnalysisServices.AdomdClient;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace DaxStudio.UI.Model
 {
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class QueryEvent: PropertyChangedBase, ITraceDiagnostics
+    public class QueryEvent: PropertyChangedBase, ITraceDiagnostics, IQueryTextProvider
     {
         
         private long _duration;
@@ -106,5 +108,15 @@ namespace DaxStudio.UI.Model
                 // do nothing
             } 
         }
+
+        #region IQueryTextProvider
+        string IQueryTextProvider.EditorText => this.Query;
+
+        string IQueryTextProvider.QueryText => this.Query;
+
+        List<AdomdParameter> IQueryTextProvider.ParameterCollection { get; } = new List<AdomdParameter>();
+
+        QueryInfo IQueryTextProvider.QueryInfo { get; set; }
+        #endregion
     }
 }

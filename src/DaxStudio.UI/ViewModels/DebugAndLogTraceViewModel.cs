@@ -35,14 +35,11 @@ namespace DaxStudio.UI.ViewModels
 
     {
 
-        private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
         public DebugAndLogTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
         {
             _debugEvents = new BindableCollection<DebugEvent>();
-            _globalOptions = globalOptions;
-
         }
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()

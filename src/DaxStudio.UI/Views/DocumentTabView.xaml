@@ -26,7 +26,7 @@
             <local:BoolToHiddenConverter x:Key="BoolToHiddenConverter"/>
             <local:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter"/>
             <avalonDockConverters:ActivateCommandLayoutItemFromLayoutModelConverter x:Key="ActivateCommandLayoutItemFromLayoutModelConverter" />
-            <ui:BindingProxy x:Key="Proxy"  Value="{Binding}"/>
+            <ui:BindingProxy x:Key="Proxy"  Value="{Binding}" />
             <Style x:Key="MyCustomDocumentPaneControlStyle" 
                    TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
                 <!--BasedOn="{StaticResource AvalonDockThemeVs2013DocumentPaneControlStyle}">-->

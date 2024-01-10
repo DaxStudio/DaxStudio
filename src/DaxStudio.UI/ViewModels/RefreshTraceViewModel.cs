@@ -35,13 +35,10 @@ namespace DaxStudio.UI.ViewModels
 
     {
 
-        private readonly IGlobalOptions _globalOptions;
-
         [ImportingConstructor]
         public RefreshTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
         {
             _refreshEvents = new BindableCollection<TraceEvent>();
-            _globalOptions = globalOptions;
             Commands = new Dictionary<string, RefreshCommand>();
 
         }

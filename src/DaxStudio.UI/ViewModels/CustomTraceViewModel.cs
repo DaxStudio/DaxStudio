@@ -31,13 +31,11 @@ namespace DaxStudio.UI.ViewModels
     {
         private const int maxEvents = 8;
         private const string NoFile = "<N/A>";
-        private readonly IGlobalOptions _globalOptions;
 
         [ImportingConstructor]
         public CustomTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
         {
             _traceEvents = new BindableCollection<TraceEvent>();
-            _globalOptions = globalOptions;
         }
 
         public override bool ShouldStartTrace()
@@ -395,7 +393,7 @@ namespace DaxStudio.UI.ViewModels
         // TODO - change to custom trace image
         public override string ImageResource => "custom_traceDrawingImage";
         
-        private int _eventCount = 0;
+        private int _eventCount;
         public int EventCount { 
             get => _eventCount; 
             private set { 

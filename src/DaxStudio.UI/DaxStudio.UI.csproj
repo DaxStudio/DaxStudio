@@ -194,6 +194,9 @@
     <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <CodeAnalysisRuleSet>..\DSCodeAnalysis.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility">
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -204,6 +207,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
@@ -335,6 +339,7 @@
     <Compile Include="Enums\SaveAsExtension.cs" />
     <Compile Include="Events\CopyPasteServerTimings.cs" />
     <Compile Include="Events\CopySEQuery.cs" />
+    <Compile Include="Events\DocumentActivatedEvent.cs" />
     <Compile Include="Events\PasteDaxFileEvent.cs" />
     <Compile Include="Events\CopyWithHeadersEvent.cs" />
     <Compile Include="Events\DuplicateMeasureEvent.cs" />
@@ -357,9 +362,11 @@
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="Interfaces\ICancellable.cs" />
+    <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
+    <Compile Include="Interfaces\ITraceWatcherData.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderColumnDataTypeConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
@@ -435,7 +442,6 @@
     <Compile Include="Events\AutoSaveEvent.cs" />
     <Compile Include="Events\AutoSaveRecoveryEvent.cs" />
     <Compile Include="Events\ChangeThemeEvent.cs" />
-    <Compile Include="Events\CopyConnectionEvent.cs" />
     <Compile Include="Events\DockManagerLoadLayout.cs" />
     <Compile Include="Events\DockManagerSaveLayout.cs" />
     <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
@@ -473,6 +479,7 @@
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\CaptureDiagnosticsSource.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model\CustomTraceTemplate.cs" />
@@ -627,7 +634,6 @@
     <Compile Include="Events\RunQueryEvent.cs" />
     <Compile Include="Events\SaveDocumentEvent.cs" />
     <Compile Include="Events\SendTextToEditor.cs" />
-    <Compile Include="Events\UpdateConnectionEvent.cs" />
     <Compile Include="Interfaces\IResultsTarget.cs" />
     <Compile Include="Utils\Intellisense\DaxCompletionData.cs" />
     <Compile Include="Utils\DaxHelper.cs" />
@@ -833,6 +839,10 @@
     </Compile>
     <Compile Include="Views\CustomTraceView.xaml.cs">
       <DependentUpon>CustomTraceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\RefreshProgressViewModel.cs" />
+    <Compile Include="Views\RefreshProgressView.xaml.cs">
+      <DependentUpon>RefreshProgressView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RefreshTraceView.xaml.cs">
       <DependentUpon>RefreshTraceView.xaml</DependentUpon>
@@ -1066,6 +1076,10 @@
     <Page Include="Views\CustomTraceView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RefreshProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RefreshTraceView.xaml">
       <SubType>Designer</SubType>

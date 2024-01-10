@@ -40,8 +40,8 @@ namespace DaxStudio.UI.ViewModels
         private ConcurrentQueue<DaxStudioTraceEventArgs> _events;
         protected readonly IEventAggregator _eventAggregator;
         private IQueryHistoryEvent _queryHistoryEvent;
-        private readonly IGlobalOptions _globalOptions;
-        private readonly IWindowManager _windowManager;
+        protected readonly IGlobalOptions _globalOptions;
+        protected readonly IWindowManager _windowManager;
         private IQueryTrace _tracer;
 
         protected IGlobalOptions GlobalOptions { get => _globalOptions; }
@@ -732,7 +732,7 @@ namespace DaxStudio.UI.ViewModels
         #endregion
         protected IWindowManager WindowManager => _windowManager;
 
-        public bool HasEvents => (Events?.Count ?? 0) > 0;
+        //public bool HasEvents => (Events?.Count ?? 0) > 0;
 
         /// <summary>
         /// This method gives sub classes the opportunity to do work

@@ -18,7 +18,7 @@ namespace ADOTabular
         {
             _adoTabConn = adoTabConn;
             Model = model;
-            _adoTabConn.Visitor.Visit(this);
+        //    _adoTabConn.Visitor.Visit(this);
         }
 
         private SortedDictionary<string,ADOTabularTable> InternalTableCollection

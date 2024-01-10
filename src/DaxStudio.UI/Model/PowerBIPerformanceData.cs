@@ -1,8 +1,12 @@
-﻿using System;
+﻿using DaxStudio.UI.Interfaces;
+using Microsoft.AnalysisServices.AdomdClient;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace DaxStudio.UI.Model
 {
-    public class PowerBIPerformanceData
+    public class PowerBIPerformanceData : IQueryTextProvider
     {
         public int Sequence { get; set; }
         public string Id { get; set; }
@@ -45,5 +49,16 @@ namespace DaxStudio.UI.Model
             } 
         }
 
+        #region IQueryTextProvider 
+
+        string IQueryTextProvider.EditorText => this.QueryText;
+
+        string IQueryTextProvider.QueryText => this.QueryText;
+
+        List<AdomdParameter> IQueryTextProvider.ParameterCollection { get; } = new List<AdomdParameter>();
+
+        QueryInfo IQueryTextProvider.QueryInfo { get ; set; }
+
+        #endregion
     }
 }

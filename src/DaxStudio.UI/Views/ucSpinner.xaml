@@ -3,12 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              mc:Ignorable="d" 
              d:DesignHeight="20" d:DesignWidth="20">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <SolidColorBrush x:Key="SpinnerColorBrush" Color="Black"></SolidColorBrush>
-        <Storyboard x:Key="Rotation">
+        <Storyboard x:Key="Rotation" options:Freeze="true">
 
             <DoubleAnimation Storyboard.TargetName="rotateTransform"
                        Storyboard.TargetProperty="Angle"

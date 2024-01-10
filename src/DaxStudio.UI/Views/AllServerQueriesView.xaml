@@ -43,8 +43,6 @@
             </col:ArrayList>
 
             <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
-                <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
@@ -55,8 +53,6 @@
             </Style>
 
             <Style x:Key="AggregateRewriteTooltipStyle" TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
-                <!--<Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>-->
                 <Setter Property="OverridesDefaultStyle" Value="false"/>
                 <Setter Property="Background" Value="{DynamicResource Theme.Brush.Tooltip.Back}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Tooltip.Border}"/>
@@ -137,11 +133,14 @@
                 <Setter Property="Padding" Value="2,0,2,0"/>
             </Style>
 
-            <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
-                <Setter Property="Background" Value="Red"/>
-                <Setter Property="Foreground" Value="Green"/>
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-            </Style>-->
+            <Style TargetType="{x:Type controls:DataGridCustomCopy}" BasedOn="{StaticResource DefaultDataGridStyle}"/>
+
+            <Style x:Key="RightHeader" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {ComponentResourceKey 
+		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                                ResourceId=DataGridHeaderFilterControlStyle}}">
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            </Style>
+            
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -217,13 +216,19 @@
                     </StackPanel>
                 </Button>
                 <!--<Rectangle DockPanel.Dock="Right"/>-->
-
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}" x:Name="CaptureDiagnostics">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource toolbar_capture_diagnosticsDrawingImage}" 
+                                    Margin="4 0 4 0"/>
+                        <TextBlock>Capture Diagnostics</TextBlock>
+                    </StackPanel>
+                </Button>
 
 
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ShowFilters}"
                               ToolTip="Show Filter Controls">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource right_layout_toolbarDrawingImage}"
+                        <Image Source="{DynamicResource filter_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Filters</TextBlock>
                     </StackPanel>
@@ -238,24 +243,23 @@
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
         <!--                     -->
-        <controls:ClipBorder
-            Grid.Row="2"
-            >
-        <controls:DataGridNoContextMenu x:Name="QueryEvents" 
+        <controls:ClipBorder Grid.Row="2">
+        <!--<controls:DataGridNoContextMenu x:Name="QueryEvents" -->
+            <controls:DataGridCustomCopy x:Name="QueryEvents" 
                     Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                         
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowFilters}" 
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		                                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
-		                                ResourceId=DataGridHeaderFilterControlStyle}}"
+		                               TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                               ResourceId=DataGridHeaderFilterControlStyle}}"
                     VirtualizingPanel.IsVirtualizing="True"
                     SelectedItem="{Binding SelectedQuery}" 
                     cal:Message.Attach="[Event MouseDoubleClick] = [Action QueryDoubleClick()]"
                     HorizontalAlignment="Stretch" 
                     Background="{DynamicResource Theme.Brush.Content.Back}"  
-                                        RowBackground="{DynamicResource Theme.Brush.Content.Back}"
+                    RowBackground="{DynamicResource Theme.Brush.Content.Back}"
                     AlternationCount="2"
                     AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                     AutoGenerateColumns="False"
@@ -273,69 +277,64 @@
                     BorderThickness="1,0,0,0" 
                     BorderBrush="{x:Null}"
                     IsReadOnly="True"
-                                        Padding="2"
-                                        Style="{StaticResource DefaultDataGridStyle}"
+                    Padding="2"                        
                     >
-            <!--<DataGrid.Style>
-                <Style BasedOn="{StaticResource MahApps.Styles.DataGrid}" TargetType="{x:Type controls:DataGridNoContextMenu}">
-                    <Setter Property="AlternatingRowBackground" Value="{DynamicResource MahApps.Brushes.Gray8}" />
-                </Style>
-            </DataGrid.Style>-->
-            
-            <DataGrid.Resources>
-                <!--<Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
-                    <Setter Property="Background" Value="Red"/>
-                    <Setter Property="Foreground" Value="Green"/>
-                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                </Style>-->
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
-                    <Setter Property="HorizontalAlignment" Value="Right" />
-                    <Setter Property="Margin" Value="5,2"/>
-                </Style>
-            </DataGrid.Resources>
-            <!--<DataGrid.ColumnHeaderStyle>
-                <Style TargetType="{x:Type DataGridColumnHeader}">
-                    <Setter Property="FontWeight"
-                  Value="SemiBold" />
-                </Style>
-            </DataGrid.ColumnHeaderStyle>-->
-            
-            <!--<DataGrid.CellStyle>
-                <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Padding" Value="5,0,5,0"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                    --><!--Background="{TemplateBinding Background}"--><!--
-                                    <Border Padding="{TemplateBinding Padding}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                
 
-                                        SnapsToDevicePixels="True">
-                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.CellStyle>-->
-            <DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource QueryTypeStyle}">
-                    <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
-                </Style>
-            </DataGrid.RowStyle>
-            <DataGrid.Columns>
-                <!--<DataGridTextColumn Header="StartTime" IsReadOnly="True" Width="65" Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  />-->
-                <!--  -->
-                <DataGridTemplateColumn CellStyle="{StaticResource ImageCell}" Width="15"
+                <DataGrid.Resources>
+
+                    <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
+                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
+                    </Style>
+
+                    <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                                    <controls:ClipBorder
+                                            CornerRadius="4"
+                                            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                                            >
+                                        <Grid>
+                                            <DataGridColumnHeader x:Name="PART_FilterColumnHeader" IsHitTestVisible="False"/>
+                                            <ItemsPresenter />
+                                        </Grid>
+                                    </controls:ClipBorder>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="MinHeight" Value="20"/>
+                        <Setter Property="TextBlock.Foreground" Value="Red"/>
+                    </Style>
+
+                    <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
+                        <Setter Property="HorizontalAlignment" Value="Right" />
+                        <Setter Property="Margin" Value="5,2"/>
+                    </Style>
+                </DataGrid.Resources>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource QueryTypeStyle}">
+                        <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
+                    </Style>
+                </DataGrid.RowStyle>
+                
+                <DataGrid.Columns>
+                
+                    <DataGridTemplateColumn CellStyle="{StaticResource ImageCell}" Width="15"
                                         filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True">
-                    
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Image ap:ImageBindingHelper.SourceResourceKey="{Binding AggregationStatusImage}" Width="10" />
-                                <Rectangle Fill="Transparent" >
+
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Image ap:ImageBindingHelper.SourceResourceKey="{Binding AggregationStatusImage}" Width="10" />
+                                    <Rectangle Fill="Transparent" >
                                         <Rectangle.ToolTip>
                                             <ToolTip 
                                                 DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
@@ -343,63 +342,43 @@
                                         </Rectangle.ToolTip>
                                     </Rectangle>
 
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn 
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn 
                     Header="StartTime" 
                     
                     IsReadOnly="True" 
-                    Width="65" 
+                    Width="75" 
                     Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True" />
-                
-                <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
+
+                    <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
                                         Binding="{Binding QueryType}" />-->
 
-                <DataGridComboBoxColumn Header="Type" Width="40" 
+                    <DataGridComboBoxColumn Header="Type" Width="50" 
                                         filter:DataGridColumnExtensions.CustomBindingPath="QueryType"
                                         ItemsSource="{StaticResource QueryTypes}"
                                         SelectedItemBinding="{Binding QueryType}"
                                         />
 
-                    <!--                                     Binding="{Binding Duration, StringFormat='#,0'}" 
-                                    ElementStyle="{StaticResource AlignRight}"-->
-                    <DataGridTemplateColumn Header="Duration" IsReadOnly="True" Width="60" 
 
-                                    
-                                    >
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border Margin="0" Padding="0">
-                                    <TextBlock x:Name="Duration" 
-                                               Text="{Binding Path=Duration, Mode=OneWay, Converter={StaticResource LongToFormattedMsConverter}}" 
-                                        Margin="5,2"
-                                        VerticalAlignment="Center" 
-                                        HorizontalAlignment="Right"    />
-                                    <!--<TextBlock Text="{Binding Path=Duration, Mode=OneWay}" TextAlignment="Right"
-                                               Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToNotCollapsedConverter}}"/>
+                    <DataGridTextColumn  Width="90" 
+                                    Header="Duration"
+                                    HeaderStyle="{StaticResource RightHeader}"
+                                    IsReadOnly="True"
+                                    Binding="{Binding Duration, StringFormat='#,0ms'}"                                    
+                                    filter:DataGridColumnExtensions.CustomBindingPath="Duration">
+                        <!--<DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" >
+                                <Setter Property="TextBlock.HorizontalAlignment" Value="Right"/>
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>-->
+                </DataGridTextColumn>
 
-
-                                    <ProgressBar 
-                                    x:Name="spinner"
-                                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
-                                    Grid.Column="0"
-                                    IsIndeterminate="True"
-                                    Width="16"
-                                    Height="16"
-                                        HorizontalAlignment="Right"
-                                    Foreground="{DynamicResource Theme.Brush.Accent}"
-                                    Background="{DynamicResource Theme.Brush.Alternate.Back}"
-                                    Visibility="{Binding IsQueryRunning, Converter={StaticResource BoolToVisibilityConverter}}"/>-->
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                        
-                    </DataGridTemplateColumn>
-
-                    <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="70" MinWidth="70"
+                <DataGridTemplateColumn Header="User" IsReadOnly="True" Width="85" MinWidth="70"
                                         filter:DataGridColumnExtensions.CustomBindingPath="Username"
                                         filter:DataGridColumnExtensions.IsContainsTextSearch="True">
                     <!--filter:DataGridColumnExtensions.BindingPath="Username">-->
@@ -419,7 +398,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="70" MinWidth="70"
+                <DataGridTemplateColumn Header="Database" IsReadOnly="True" Width="90" MinWidth="70"
                                         filter:DataGridColumnExtensions.CustomBindingPath="DatabaseName"
                                         filter:DataGridColumnExtensions.IsContainsTextSearch="True">
                     <DataGridTemplateColumn.CellTemplate>
@@ -461,7 +440,7 @@
                 </DataGridTextColumn>
 -->
             </DataGrid.Columns>
-        </controls:DataGridNoContextMenu>
+        </controls:DataGridCustomCopy>
         </controls:ClipBorder>
         
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>

@@ -1,14 +1,23 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using DaxStudio.Interfaces;
 using Newtonsoft.Json;
 
 namespace DaxStudio.UI.Events
 {
-    public class QueryHistoryEvent:IQueryHistoryEvent
+    public class QueryHistoryEvent:IQueryHistoryEvent, INotifyPropertyChanged
     {
         private double _lineHeight = 18;
         private double _padding = 3;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         [JsonConstructor]
         public QueryHistoryEvent( string queryText
@@ -25,7 +34,7 @@ namespace DaxStudio.UI.Events
         {
             QueryText = queryText.Trim();
             Parameters = parameters;
-            QueryTextLines = queryText.Split('\n').Count();
+            QueryTextLines = queryText.Split('\n').Length;
             StartTime = startTime;
             ClientDurationMs = clientDurationMs;
             ServerDurationMs = serverDurationMs;
@@ -61,16 +70,43 @@ namespace DaxStudio.UI.Events
         public string Parameters { get; }
         public string QueryText { get; private set; }
         public DateTime StartTime { get; private set; }
-        public long ClientDurationMs { get; set; }
-        public long ServerDurationMs { get;  set; }
-        public long SEDurationMs { get;  set; }
-        public long FEDurationMs { get;  set; }
+        private long _clientDurationMs;
+        public long ClientDurationMs { get => _clientDurationMs;
+            set { 
+                _clientDurationMs = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private long _serverDurationMs;
+        public long ServerDurationMs { get => _serverDurationMs;
+            set { _serverDurationMs = value;
+                NotifyPropertyChanged();
+            } 
+        }
+        private long _seDurationMs;
+        public long SEDurationMs { get => _seDurationMs;
+            set { _seDurationMs = value;
+                NotifyPropertyChanged() ;
+            } 
+        }
+        private long _feDurationMs;
+        public long FEDurationMs { get => _feDurationMs;
+            set { 
+                _feDurationMs = value;
+                NotifyPropertyChanged() ;
+            } 
+        }
         public string ServerName { get; private set; }
         public string DatabaseName { get; private set; }
         public string FileName { get; private set; }
         public string RowCount { get; set; }
         [JsonIgnore]
-        public QueryStatus Status { get; set; }
+        private QueryStatus _status = QueryStatus.Running;
+        public QueryStatus Status { get => _status;
+            set { _status = value;
+                NotifyPropertyChanged();
+            } 
+        }
         [JsonIgnore]
         public double QueryTextLines { get; private set; }
 

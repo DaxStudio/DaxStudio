@@ -27,7 +27,7 @@ namespace DaxStudio.UI.ViewModels
     public class MeasureExpressionEditorViewModel:Screen
         ,IViewAware
         ,IDropTarget
-        ,IHandle<UpdateConnectionEvent>
+        ,IHandle<ConnectionChangedEvent>
     {
         private  IEventAggregator EventAggregator { get; }
 
@@ -266,7 +266,7 @@ namespace DaxStudio.UI.ViewModels
             // do nothing
         }
 
-        public Task HandleAsync(UpdateConnectionEvent message, CancellationToken cancellationToken)
+        public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(nameof(Tables));
             return Task.CompletedTask;

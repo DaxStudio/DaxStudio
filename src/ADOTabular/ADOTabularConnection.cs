@@ -242,17 +242,6 @@ namespace ADOTabular
                 var connstr = _connectionString;
                 if (string.IsNullOrEmpty(connstr)) return connstr;
 
-                // TODO - do we need to set the initial catalog here??
-                /* 
-                if (!connstr.Contains("Initial Catalog") && Database != null)
-                {
-                    connstr = 
-                        string.Format(
-                            connstr.EndsWith(";")
-                                ? "{0}Initial Catalog={1}"
-                                : "{0};Initial Catalog={1}", connstr, Database.Name);
-                }
-                 */ 
                 if (connstr.IndexOf("Show Hidden Cubes", StringComparison.OrdinalIgnoreCase) == -1 && ShowHiddenObjects)
                 {
                     connstr =

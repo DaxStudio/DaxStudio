@@ -45,7 +45,7 @@ namespace DaxStudio.Controls.PropertyGrid
         public double MaxValue { get; set; }
         public int CompareTo(PropertyBindingBase other)
         {
-            if (SortOrder == other.SortOrder) return string.Compare(DisplayName, other.DisplayName);
+            if (SortOrder == other.SortOrder) return string.Compare(DisplayName, other.DisplayName, StringComparison.Ordinal);
             if (SortOrder > other.SortOrder) return 1;
             return -1;
         }

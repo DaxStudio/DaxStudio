@@ -63,14 +63,26 @@
             TextWrapping="Wrap"
             Margin="0 0 0 16"
             Foreground="{DynamicResource Theme.Brush.Default.Fore}"        
-            Grid.Row="1" Grid.ColumnSpan="3"/>
+            Grid.Row="0" Grid.ColumnSpan="3"/>
 
+        <!--<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <Label Content="Source:" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="0 0 8 0" />
+            <ComboBox Grid.Row="1" Grid.Column="2" x:Name="QuerySources" SelectedValue="SelectedQuerySource" DisplayMemberPath="Name" />
+        </StackPanel>-->
         <Label Content="Capture Model Metrics" Grid.Column="2"  Grid.Row="2" Margin="10,0,0,0"  VerticalAlignment="Center"/>
         <Label Content="Start Server Timings trace" Grid.Column="2" Grid.Row="3" Margin="10,0,0,0" VerticalAlignment="Center" />
         <Label Content="Start Query Plan trace" Grid.Column="2" Grid.Row="4" Margin="10,0,0,0" VerticalAlignment="Center" />
         <Label Content="Run Query" Grid.Column="2" Grid.Row="5" Margin="10,0,0,0" VerticalAlignment="Center" />
-        <Label Content="Save as .daxx file" Grid.Column="2" Grid.Row="6" Margin="10,0,0,0" VerticalAlignment="Center" />
-        <Label Content="{Binding OverallStatus}" Grid.Column="2" Grid.Row="7" Margin="10 0 0 0" VerticalAlignment="Center"/>
+        <StackPanel Orientation="Vertical" Grid.Column="2" Grid.Row="6" Margin="10,0,0,0" Visibility="{Binding ShowQueryProgress, Converter={StaticResource BoolToCollapsedConverter}}">
+            <StackPanel Orientation="Horizontal" >
+                <Label Content="{Binding CurrentQueryNumber}"/>
+                <Label Content=" of " />
+                <Label Content="{Binding TotalQueries}"/>
+            </StackPanel>
+            <ProgressBar  Height="8" Value="{Binding ProgressPercentage, Mode=OneWay}" Margin="4"/>
+        </StackPanel>
+        <Label Content="Save as .daxx file" Grid.Column="2" Grid.Row="7" Margin="10,0,0,0" VerticalAlignment="Center" />
+        <Label Content="{Binding OverallStatus}" Grid.Column="2" Grid.Row="8" Margin="10 0 0 0" VerticalAlignment="Center"/>
         
         <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
                      Visibility="{Binding IsMetricsRunning, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -96,7 +108,7 @@
                      Visibility="{Binding IsSaveAsRunning, Converter={StaticResource BoolToVisibilityConverter}}"
                      Margin="2"
                      Grid.Column="1"
-                     Grid.Row="6"/>
+                     Grid.Row="7"/>
 
         <Image Visibility="{Binding IsMetricsRunning, Converter={StaticResource BoolToNotHiddenConverter}}"
                attachedproperties:ImageBindingHelper.SourceResourceKey="{Binding MetricsStatusImage}"
@@ -122,9 +134,10 @@
                attachedproperties:ImageBindingHelper.SourceResourceKey="{Binding SaveAsStatusImage}"
                Style="{StaticResource StatusImageStyle}"
                Grid.Column="1"
-               Grid.Row="6"/>
+               Grid.Row="7"/>
 
         <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="0 16 0 0" >
+            <!--<Button x:Name="Run" IsDefault="True"  Content="Run" Margin="3" Padding="3" MinWidth="55" Style="{DynamicResource AccentButtonStyle}"/>-->
             <Button x:Name="Close" IsDefault="True"  Content="Close" Margin="3" Padding="3" MinWidth="55" Style="{DynamicResource AccentButtonStyle}"/>
             <Button x:Name="Cancel" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
         </StackPanel>

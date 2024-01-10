@@ -730,6 +730,7 @@ namespace DaxStudio.UI.ViewModels
             , IHandle<ThemeChangedEvent>
             , IHandle<CopySEQueryEvent>
             , IHandle<CopyPasteServerTimingsEvent>
+            , IHaveData
     {
         private bool parallelStorageEngineEventsDetected;
         public bool ParallelStorageEngineEventsDetected
@@ -2060,7 +2061,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        
-         
+        public bool HasData => TotalDuration > 0 || StorageEngineEvents?.Count > 0;
     }
 }
