@@ -2,6 +2,7 @@
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Tests.Helpers;
+using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices;

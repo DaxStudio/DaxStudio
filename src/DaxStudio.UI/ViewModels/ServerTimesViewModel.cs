@@ -211,156 +211,6 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public long? DisplayDuration => Convert.ToInt64((EndTime - StartTime).TotalMilliseconds);
 
-        // SQL Formatter for DirectQuery
-        private static ISqlTokenizer _tokenizer = new PoorMansTSqlFormatterLib.Tokenizers.TSqlStandardTokenizer();
-        private static ISqlTokenParser _parser = new PoorMansTSqlFormatterLib.Parsers.TSqlStandardParser();
-        private static ISqlTreeFormatter _formatter = new PoorMansTSqlFormatterLib.Formatters.TSqlDaxStudioFormatter(new PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatterOptions
-        {
-            BreakBeforeJoin = true,
-            BreakJoinOnSections = false,
-            ExpandBetweenConditions = true,
-            ExpandBooleanExpressions = true,
-            ExpandCaseStatements = true,
-            ExpandCommaLists = true,
-            ExpandInLists = true,
-            HTMLColoring = false,
-            IndentString = "\t", // 4 spaces to get a good indentation on tooltips
-            KeywordStandardization = true,
-            MaxLineWidth = 160,
-            NewClauseLineBreaks = 1,
-            NewStatementLineBreaks = 1,
-            SpaceAfterExpandedComma = true,
-            SpacesPerTab = 4,
-            TrailingCommas = true,
-            UppercaseKeywords = true
-        });
-
-        static Regex searchColumnNames = new Regex(@"c\d+", RegexOptions.Compiled);
-        static Regex searchTableNames = new Regex(@"t\d+", RegexOptions.Compiled);
-        /// <summary>
-        /// Rename column aliases created by DirectQuery SQL by using meaningful column names
-        /// </summary>
-        /// <param name="node">Root node of the tree to scan</param>
-        /// <returns>Node with replaced structure</returns>
-        private Node RenameSqlColumnAliases(Node node)
-        {
-            Dictionary<string, string> aliases = new Dictionary<string, string>();
-
-            ScanNode(node);
-            ReplaceAliases(node);
-            return node;
-
-            void ScanNode( Node node )
-            {
-                if (node.Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
-                        && !string.IsNullOrEmpty(node?.TextValue)) {
-                    if (searchColumnNames.Match(node.TextValue).Value == node.TextValue) {
-                        // Check if parent has AS definition and store it if found
-                        string definition = GetParentColumnDefinition(node, node.Parent.Children);
-                        if (definition != null)
-                        {
-                            // If the node already exists, there is a difference in the alias but the column name is the same.
-                            // The alias c?? should correspond to the column position in model metadata - we should evaluate a safer way to identify
-                            // the original column name in the data source
-                            if (!aliases.ContainsKey(node.TextValue))
-                            {
-                                aliases.Add(node.TextValue, definition);
-                            }
-                        }
-                    }
-                    
-                    // The table alias cannot be resolved without a refactor of the tree that removes
-                    // the internal $Table references and searches for the table aliases in the 
-                    // node tree after it has been rebuilt and simplified
-
-                    //else if (searchTableNames.Match(node.TextValue).Value == node.TextValue)
-                    //{
-                    //    // Check if parent has AS definition and store it if found
-                    //    string definition = GetParentTableDefinition(node, node.Parent.Children);
-                    //    if (definition != null)
-                    //    {
-                    //        aliases.Add(node.TextValue, definition);
-                    //    }
-                    //}
-                }
-                ScanNodeList(node.Children);
-            }
-
-            void ScanNodeList(IEnumerable<Node> listNodes)
-            {
-                foreach (Node contentElement in listNodes)
-                {
-                    ScanNode(contentElement);
-                }
-            }
-
-            void ReplaceAliases(Node node)
-            {
-                if (node.Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
-                    && !string.IsNullOrEmpty(node?.TextValue)
-                    && (aliases.TryGetValue(node.TextValue, out string description))
-                    )
-                    {
-                        node.TextValue = description;
-                    }
-                ReplaceNodeList(node.Children);
-            }
-
-            void ReplaceNodeList(IEnumerable<Node> listNodes)
-            {
-                foreach (Node contentElement in listNodes)
-                {
-                    ReplaceAliases(contentElement);
-                }
-            }
-
-            string GetParentColumnDefinition( Node node, IEnumerable<Node> listNodes )
-            {
-                var step1 = listNodes.TakeWhile(n => n != node);
-                var lastAs = step1.LastOrDefault(n => n.Name == SqlStructureConstants.ENAME_OTHERKEYWORD && n.TextValue.ToUpperInvariant() == "AS");
-                var step2 = step1.TakeWhile(n => n != lastAs);
-                var step3 = step2.Where(n => n.Name != SqlStructureConstants.ENAME_WHITESPACE);
-                var step4 = step3.ToArray();
-                var previousNodes = step4;
-                if (previousNodes.Length >= 3
-                    && previousNodes[previousNodes.Length - 3].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
-                    && previousNodes[previousNodes.Length - 2].Name == SqlStructureConstants.ENAME_PERIOD
-                    && previousNodes[previousNodes.Length - 1].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
-                    )
-                {
-                    return $"{previousNodes[previousNodes.Length - 3].TextValue}_{previousNodes[previousNodes.Length - 1].TextValue}";
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-#pragma warning disable CS8321 // Local function is declared but never used
-            string GetParentTableDefinition(Node node, IEnumerable<Node> listNodes)
-            {
-                var step1 = listNodes.TakeWhile(n => n != node);
-                var lastAs = step1.LastOrDefault(n => n.Name == SqlStructureConstants.ENAME_OTHERKEYWORD && n.TextValue.ToUpperInvariant() == "AS");
-                var step2 = step1.TakeWhile(n => n != lastAs);
-                var step3 = step2.Where(n => n.Name != SqlStructureConstants.ENAME_WHITESPACE);
-                var step4 = step3.ToArray();
-                var previousNodes = step4;
-                if (previousNodes.Length >= 3
-                    && previousNodes[previousNodes.Length - 3].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
-                    && previousNodes[previousNodes.Length - 2].Name == SqlStructureConstants.ENAME_PERIOD
-                    && previousNodes[previousNodes.Length - 1].Name == SqlStructureConstants.ENAME_BRACKET_QUOTED_NAME
-                    )
-                {
-                    return $"{previousNodes[previousNodes.Length - 3].TextValue}_{previousNodes[previousNodes.Length - 1].TextValue}";
-                }
-                else
-                {
-                    return null;
-                }
-            }
-#pragma warning restore CS8321 // Local function is declared but never used
-        }
-
         public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
         {
             Options = options;
@@ -383,11 +233,7 @@ namespace DaxStudio.UI.ViewModels
                     // Replace base queries with table alias (optional?)
                     if (!IsDaxDirectQuery(ev.TextData) && Options.FormatDirectQuerySql)
                     {
-                        var tokenizedSql = _tokenizer.TokenizeSQL(ev.TextData);
-                        var parsedSql = _parser.ParseSQL(tokenizedSql);
-                        var renamedSql = RenameSqlColumnAliases(parsedSql);
-                        string text = _formatter.FormatSQLTree(renamedSql);
-                        Query = text;
+                        Query = SqlFormatter.FormatSql(ev.TextData);
                     }
                     else
                     {
@@ -458,6 +304,8 @@ namespace DaxStudio.UI.ViewModels
                 HighlightQuery = false;
             }
         }
+
+
         public TraceStorageEngineEvent() { }
     }
 
@@ -466,7 +314,8 @@ namespace DaxStudio.UI.ViewModels
 
         public RewriteTraceEngineEvent() { }
 
-        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables) : base(ev, rowNumber, options, remapColumns, remapTables) {
+        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables) 
+            : base(ev, rowNumber, options, remapColumns, remapTables) {
             TextData = ev.TextData;
         }
         
@@ -732,6 +581,9 @@ namespace DaxStudio.UI.ViewModels
             , IHandle<CopyPasteServerTimingsEvent>
             , IHaveData
     {
+
+        
+
         private bool parallelStorageEngineEventsDetected;
         public bool ParallelStorageEngineEventsDetected
         { 
@@ -759,7 +611,6 @@ namespace DaxStudio.UI.ViewModels
             // Use global option as a default but doesn't change it at runtime
             StorageEventTimelineStyle = options.StorageEventHeatmapStyle;
             ServerTimingDetails = serverTimingDetails;
-
             this.ViewAttached += ServerTimesViewModel_ViewAttached;
         }
 
@@ -1548,8 +1399,17 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _selectedEvent = value;
+                IsSEQuery = !(_selectedEvent is RewriteTraceEngineEvent);
                 NotifyOfPropertyChange(() => SelectedEvent);
             }
+        }
+
+        private bool _isSEQuery;
+        public bool IsSEQuery { get => _isSEQuery;
+            set { 
+                _isSEQuery = value;
+                NotifyOfPropertyChange();
+            } 
         }
 
         // IToolWindow interface
@@ -1680,13 +1540,18 @@ namespace DaxStudio.UI.ViewModels
                 AllStorageEngineEvents.AddRange(m.StoreageEngineEvents);
             else
                 AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
-            AllStorageEngineEvents.Apply(se => se.HighlightQuery = se.QueryRichText?.Contains("|~S~|")??false);
+
+            AllStorageEngineEvents.Apply(se => { 
+                se.HighlightQuery = se.QueryRichText?.Contains("|~S~|") ?? false;
+                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData); }
+            });
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 4) {
                 AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
         }
+
 
         #endregion
 
@@ -1901,6 +1766,14 @@ namespace DaxStudio.UI.ViewModels
                 var view = GetView() as ServerTimesView;
                 var details = view.EventDetails;
                 var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox;
+
+                if (rt == null)
+                {
+                    // if we don't have a rich text control in the current view then 
+                    // just grab the TextData
+                    Clipboard.SetText(SelectedEvent.TextData);
+                    return;
+                }
 
                 // Remove initial SET DC_KIND line
                 TextPointer secondLine = rt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward).GetLineStartPosition(1);
