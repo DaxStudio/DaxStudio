@@ -47,6 +47,7 @@ namespace DaxStudio.UI.JsonConverters
             // based on the $type, instantiate and return a new object
             switch (eventClass)
             {
+                case "AggregateTableRewriteQuery":
                 case "131":
                     return new RewriteTraceEngineEvent();
                 
