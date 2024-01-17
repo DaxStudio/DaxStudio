@@ -2767,19 +2767,21 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public async void PublishDaxFunctions() {
-            if (!IsConnected)
-            {
-                MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the publish functions option", "Publish DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            Stopwatch publishStopWatch = new Stopwatch();
-            publishStopWatch.Start();
-
-            // Ping server to see whether the version is already there
-            string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
             string metadataFilename = Path.GetTempFileName();
             try {
+                if (!IsConnected)
+                {
+                    MessageBoxEx.Show("The active query window is not connected to a data source. You need to be connected to a data source in order to use the publish functions option", "Publish DAX Functions", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                Stopwatch publishStopWatch = new Stopwatch();
+                publishStopWatch.Start();
+
+                // Ping server to see whether the version is already there
+                string ssasVersion = DaxMetadataInfo.Version.SSAS_VERSION;
+                
+            
                 Options.CanPublishDaxFunctions = false;
                 using (var client = GetHttpClient()) {
                     client.Timeout = new TimeSpan(0, 0, 60); // set 30 second timeout
