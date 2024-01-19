@@ -1807,4 +1807,18 @@
         <GeometryDrawing Brush="#FF29A9FF" Geometry="{StaticResource toolbar_capture_diagnosticsGeometry}" />
     </DrawingGroup>
     <DrawingImage x:Key="toolbar_capture_diagnosticsDrawingImage" Drawing="{StaticResource toolbar_capture_diagnosticsDrawingGroup}" />
+
+    <Geometry x:Key="ZoomGeometry1">F0 M16,16z M0,0z M7.07394,1.597654A5.8847205,5.7922467,0,0,0,1.1894531,7.3893117A5.8847205,5.7922467,0,0,0,7.07394,13.181854A5.8847205,5.7922467,0,0,0,10.829544,11.84865C10.849064,11.87542,10.870514,11.90066,10.894964,11.92468L13.444673,14.430185C13.670125,14.651688,14.016671,14.655645,14.221786,14.438985L14.285446,14.371795C14.49056,14.155175,14.473766,13.802924,14.248316,13.581421L11.698606,11.075917C11.682326,11.059927,11.665656,11.045437,11.648216,11.031707A5.8847205,5.7922467,0,0,0,12.958427,7.3893099A5.8847205,5.7922467,0,0,0,7.07394,1.5976522z M7.090738,2.2872424A5.178554,5.097177,0,0,1,12.268839,7.3840071A5.178554,5.097177,0,0,1,7.0907375,12.480772A5.178554,5.097177,0,0,1,1.9117526,7.3840071A5.178554,5.097177,0,0,1,7.0907375,2.2872424z M6.7035075,5.0942204L6.7035075,7.028604 4.7868055,7.028604 4.7868055,7.9869552 6.7035075,7.9869552 6.7035075,9.9204546 7.6618582,9.9204546 7.6618582,7.9869552 9.6130396,7.9869552 9.6130396,7.028604 7.6618582,7.028604 7.6618582,5.0942204z</Geometry>
+    <Geometry x:Key="ZoomGeometry2">F0 M16,16z M0,0z M13.296875,8.9882812L13.296875,13.482422 8.765625,13.482422 8.765625,15.339844 13.296875,15.339844 13.296875,19.835938 15.154297,19.835938 15.154297,15.339844 19.611328,15.339844 19.611328,13.482422 15.154297,13.482422 15.154297,8.9882812z</Geometry>
+    <DrawingGroup x:Key="ZoomDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <DrawingGroup Opacity="1">
+            <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource ZoomGeometry1}" />
+            <GeometryDrawing Geometry="{StaticResource ZoomGeometry2}">
+                <GeometryDrawing.Brush>
+                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0" />
+                </GeometryDrawing.Brush>
+            </GeometryDrawing>
+        </DrawingGroup>
+    </DrawingGroup>
+    <DrawingImage x:Key="ZoomDrawingImage" Drawing="{StaticResource ZoomDrawingGroup}" />
 </ResourceDictionary>

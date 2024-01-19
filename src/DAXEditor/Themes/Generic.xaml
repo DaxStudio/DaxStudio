@@ -181,29 +181,30 @@
                                                         
                                                     </ComboBox>
 -->
+                                            <StackPanel Orientation="Horizontal"           
+                                                        Grid.Row="1"                                                               
+                                                        Grid.Column="1"
+                                                        Margin="-50 -4 0 0">
+                                                <Image Source="{DynamicResource ZoomDrawingImage}" Width="16" Margin="8,2,8 ,0"  ToolTip="Text Zoom"/>
                                                 <unit:UnitCombobox DataContext="{Binding SizeUnitLabel}"
-                                                                   Grid.Row="1"                                                               
-                                                                   Grid.Column="1"
-                                                                   Margin="-50 -4 0 0 "
-                                                          FontSize="12"
-                                                       ItemsSource="{Binding SelectedItem.DefaultValues, Mode=OneTime}"
+                                                       FontSize="12"
+                                                       ItemsSource="{Binding SelectedItem.DefaultValues, Mode=OneTime, StringFormat='0%'}"
                                                        ToolTip="{Binding ValueTip}"
                                                        HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                                       
                                                        Padding="0"
                                                        BorderThickness="1"
                                                        BorderBrush="Transparent"
                                                        IsEditable="True"
                                                        >
                                                     <unit:UnitCombobox.Text>
-                                                        <Binding Path="StringValue" Mode="TwoWay" ValidatesOnDataErrors="True"/>
+                                                        <Binding Path="Value" Mode="TwoWay" ValidatesOnDataErrors="True" StringFormat="0 '%'"/>
                                                     </unit:UnitCombobox.Text>
                                                     <unit:UnitCombobox.Style>
                                                         <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="{x:Type unit:UnitCombobox}"/>
                                                     </unit:UnitCombobox.Style>
                                                 </unit:UnitCombobox>
-
-                                                <ScrollBar Name="PART_HorizontalScrollBar"
+                                            </StackPanel>
+                                            <ScrollBar Name="PART_HorizontalScrollBar"
                                                        Orientation="Horizontal"
                                                        Grid.Column="0"
                                                        Grid.Row="1"

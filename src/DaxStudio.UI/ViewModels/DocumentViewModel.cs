@@ -4120,7 +4120,7 @@ namespace DaxStudio.UI.ViewModels
 
         public DaxMetadata DaxMetadataInfo => Connection?.DaxMetadataInfo;
 
-        public DaxColumnsRemap DaxColumnsRemapInfo => Connection?.IsConnected ?? false ? (Connection?.DaxColumnsRemapInfo) : null;
+        //public DaxColumnsRemap DaxColumnsRemapInfo => Connection?.IsConnected ?? false ? (Connection?.DaxColumnsRemapInfo) : null;
 
         public Task HandleAsync(ExportDaxFunctionsEvent exportFunctions, CancellationToken cancellationToken)
         {
