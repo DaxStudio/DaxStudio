@@ -409,9 +409,12 @@ namespace DaxStudio.UI.ViewModels
         private void RunQuery()
         {
             IsQueryRunning = true;
-            
 
-            var runQueryEvent = new RunQueryEvent(Ribbon.ResultsTargets.FirstOrDefault(rt => rt is ResultsTargetTimer));
+            // set the run style to run and clear the cache
+            var runStyle = new RunStyle("Run", RunStyleIcons.RunOnly, string.Empty);
+            runStyle.ClearCache = true;
+
+            var runQueryEvent = new RunQueryEvent(Ribbon.ResultsTargets.FirstOrDefault(rt => rt is ResultsTargetTimer), runStyle );
             runQueryEvent.QueryProvider = SelectedQuerySource.Queries.ElementAt(CurrentQueryNumber -1);
 
             // if this document is dedicated to capturing the diagnostics update it with the current query.
