@@ -19,9 +19,9 @@ namespace DaxStudio.UI.Views
     /// <summary>
     /// Interaction logic for RefreshTraceView.xaml
     /// </summary>
-    public partial class DebugAndLogTraceView : ZoomableUserControl
+    public partial class EvaluateAndLogTraceView : ZoomableUserControl
     {
-        public DebugAndLogTraceView()
+        public EvaluateAndLogTraceView()
         {
             InitializeComponent();
         }

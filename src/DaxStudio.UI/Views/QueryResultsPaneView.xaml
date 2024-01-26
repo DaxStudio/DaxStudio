@@ -183,7 +183,6 @@
                             CanUserSortColumns="True"
                             RowHeaderWidth="10"
                             GridLinesVisibility="All" 
-
                             >
                                     <!--<i:Interaction.Triggers>
                                         <i:EventTrigger EventName="CopyingRowClipboardContent">

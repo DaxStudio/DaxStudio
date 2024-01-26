@@ -739,7 +739,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual("Column2", dt.Columns[2].ColumnName);
             Assert.AreEqual("Column3", dt.Columns[3].ColumnName);
             Assert.AreEqual("Column`4", dt.Columns[4].ColumnName,"spaces must be replaced with backticks");
-            Assert.AreEqual("Column\\,`5", dt.Columns[5].ColumnName, "commas must be escaped with backslashes");
+            Assert.AreEqual("Column``5", dt.Columns[5].ColumnName, "commas must be replaced with tilde"); //HACK as sort expressions crash the app if column name has commas
             Assert.AreEqual("[Measures] (test)", dt.Columns[6].Caption,"Caption must not include opening and closing square braces");
         }
 

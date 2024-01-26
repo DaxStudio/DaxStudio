@@ -566,7 +566,7 @@
                 <Fluent:ToggleButton Header="{Binding Title}" 
                                      IsChecked="{Binding IsChecked, Mode=TwoWay}" 
                                      ap:FluentRibbonAttachedProperties.KeyTip="{Binding KeyTip}"
-                                     SizeDefinition="Large,Large,Middle" 
+                                     SizeDefinition="{Binding SizeDefinition}" 
                                      ClickMode="Press" Width="Auto" 
                                      ap:ImageBindingHelper.ToggleIconResourceKey="{Binding ImageResource}"
                                      

@@ -128,7 +128,7 @@
           </DrawingGroup>
       </DrawingGroup>
   </DrawingGroup>
-  <DrawingImage x:Key="evaluate_log_DrawingImage" Drawing="{StaticResource evaluate_log_DrawingGroup}" />
+  <DrawingImage x:Key="evaluate_logDrawingImage" Drawing="{StaticResource evaluate_log_DrawingGroup}" />
   <Geometry x:Key="clear_toolbarGeometry">F1 M16,16z M0,0z M14.2,6.25A1.09,1.09,0,0,0,13.86,5.43L10.57,2.14A1.09,1.09,0,0,0,9.75,1.8A1.2,1.2,0,0,0,9.3,1.89A1.05,1.05,0,0,0,8.93,2.14L2.14,8.93A1.05,1.05,0,0,0,1.89,9.3A1.17,1.17,0,0,0,1.89,10.2A1.05,1.05,0,0,0,2.14,10.57L5.43,13.86A1.05,1.05,0,0,0,5.8,14.11A1.12,1.12,0,0,0,6.24,14.2L11.49,14.2A0.4,0.4,0,0,0,11.76,14.09A0.38,0.38,0,0,0,11.88,13.81A0.37,0.37,0,0,0,11.76,13.54A0.36,0.36,0,0,0,11.49,13.43L7.49,13.43 13.84,7.07A1.05,1.05,0,0,0,14.09,6.7A1.2,1.2,0,0,0,14.2,6.25z M6.52,13.32A0.39,0.39,0,0,1,6.25,13.43A0.4,0.4,0,0,1,6,13.32L2.68,10A0.5,0.5,0,0,1,2.6,9.9A0.4,0.4,0,0,1,2.6,9.75A0.37,0.37,0,0,1,2.71,9.48L4,8.17 7.83,12z M13.31,6.52L8.38,11.46 4.54,7.62 9.48,2.69A0.36,0.36,0,0,1,10.02,2.69L13.31,6A0.36,0.36,0,0,1,13.31,6.54z</Geometry>
   <DrawingGroup x:Key="clear_toolbarDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
     <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource clear_toolbarGeometry}" />

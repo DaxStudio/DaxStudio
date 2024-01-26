@@ -114,21 +114,6 @@ namespace DaxStudio.UI.ViewModels
             System.Diagnostics.Debug.WriteLine("in OnListViewItemPreviewMouseRightButtonDown");
         }
 
-        private void ResultsAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
-        {
-            
-            if ((e.PropertyName.Contains(".")
-                || e.PropertyName.Contains("/")
-                || e.PropertyName.Contains("(")
-                || e.PropertyName.Contains(")")
-                || e.PropertyName.Contains("[")
-                || e.PropertyName.Contains("]")
-                ) && e.Column is DataGridBoundColumn)
-            {
-                DataGridBoundColumn dataGridBoundColumn = e.Column as DataGridBoundColumn;
-                dataGridBoundColumn.Binding = new Binding("[" + e.PropertyName + "]");
-            }
-        }
 
         private bool _showResultsTable;
         public bool ShowResultsTable

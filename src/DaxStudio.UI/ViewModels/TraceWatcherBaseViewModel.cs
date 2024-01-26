@@ -23,6 +23,7 @@ using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
 using System.Windows;
 using Windows.UI.Core;
+using Fluent;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -486,6 +487,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public abstract string ImageResource { get; }
+
+        public virtual RibbonControlSizeDefinition SizeDefinition { get; } = new RibbonControlSizeDefinition() { Large = RibbonControlSize.Large, Middle = RibbonControlSize.Large, Small = RibbonControlSize.Middle};
 
         public void QueryCompleted(bool isCancelled, IQueryHistoryEvent queryHistoryEvent, string errorMessage)
         {

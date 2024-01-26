@@ -402,6 +402,7 @@
     <Compile Include="Interfaces\IZoomable.cs" />
     <Compile Include="JsonConverters\InterfaceContractResolver.cs" />
     <Compile Include="JsonConverters\SecureStringConverter.cs" />
+    <Compile Include="JsonConverters\SingleOrArrayConverter.cs" />
     <Compile Include="MarkupExtensions\ConverterBindableParameter.cs" />
     <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
@@ -483,6 +484,7 @@
     <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model\CustomTraceTemplate.cs" />
+    <Compile Include="Model\DaxEvalAndLogData.cs" />
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\IndentFoldingStrategy.cs" />
@@ -691,7 +693,7 @@
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
-    <Compile Include="ViewModels\DebugAndLogTraceViewModel.cs" />
+    <Compile Include="ViewModels\EvaluateAndLogTraceViewModel.cs" />
     <Compile Include="ViewModels\CustomTraceViewModel.cs" />
     <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
     <Compile Include="ViewModels\SaveDialogViewModel.cs" />
@@ -835,8 +837,8 @@
     <Compile Include="Views\QueryResultsPaneView.xaml.cs">
       <DependentUpon>QueryResultsPaneView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DebugAndLogTraceView.xaml.cs">
-      <DependentUpon>DebugAndLogTraceView.xaml</DependentUpon>
+    <Compile Include="Views\EvaluateAndLogTraceView.xaml.cs">
+      <DependentUpon>EvaluateAndLogTraceView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CustomTraceView.xaml.cs">
       <DependentUpon>CustomTraceView.xaml</DependentUpon>
@@ -1070,7 +1072,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DebugAndLogTraceView.xaml">
+    <Page Include="Views\EvaluateAndLogTraceView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -1464,6 +1466,9 @@
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>
+    </PackageReference>
+    <PackageReference Include="System.Text.Json">
+      <Version>8.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

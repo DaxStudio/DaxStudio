@@ -99,8 +99,6 @@ namespace DaxStudio.UI.Extensions
                     NewName = name.EscapeColumnName(),
                 };
                 newColumnNames.Add(dc);
-                //col.Caption = (removeCaption) ? "" : name;
-                //col.ColumnName = name.Replace(' ', '_');
             }
             // check for duplicate names
 
@@ -123,8 +121,6 @@ namespace DaxStudio.UI.Extensions
 
                 if (!c.UseOriginalName)
                 {
-                    //    var dc = dataTable.Columns[c.OriginalName];
-                    //    dc.Caption = c.NewCaption;
                     dc.ColumnName = c.NewName;
                 }
             }
@@ -137,13 +133,10 @@ namespace DaxStudio.UI.Extensions
             {
                 switch (c)
                 {
-                    case' ': result.Append('`'); break;
-                    case ',': result.Append("\\,"); break;
-                    case '(': result.Append("\\(");break;
-                    case ')': result.Append("\\)"); break;
-                    //case ']': result.Append("\\]"); break;
-                    case '=': result.Append("\\="); break;
-                    case '}': result.Append("\\}"); break;
+                    // HACK: commas in column names throw exceptions if we try to sort using them https://github.com/dotnet/runtime/issues/85367
+                    //       so we are swapping them for tilde characters
+                    case ',':  
+                    case ' ': result.Append('`'); break;
                     default: result.Append(c); break;
                 }
             }

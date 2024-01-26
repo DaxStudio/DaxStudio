@@ -267,6 +267,9 @@
     
     <SolidColorBrush x:Key="DataGridCellBackgroundSelected" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
     <SolidColorBrush x:Key="DataGridCellBorderBrushSelected" Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackground" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True"/>
+    <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackground" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor60}" options:Freeze="True"/>
+    <SolidColorBrush x:Key="DataGridRowSelectedBackground" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True"/>
 
     <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="{StaticResource Fluent.Ribbon.Colors.AccentColor20}" options:Freeze="True" />
     <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{StaticResource Fluent.Ribbon.Colors.HighlightColor}" options:Freeze="True" />

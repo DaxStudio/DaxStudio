@@ -1,8 +1,10 @@
 ﻿using DaxStudio.Common;
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,10 +40,20 @@ namespace DaxStudio.UI.Converters
                     var hdrTemplate = new DataTemplate();
                     var contentPresenter = new FrameworkElementFactory(typeof(Border));
                     contentPresenter.SetValue(ContentPresenter.RecognizesAccessKeyProperty,false);
-                    var txtBlock = new FrameworkElementFactory(typeof(TextBlock));
+                    var txtBlock = new FrameworkElementFactory(typeof(TextBlock), "HeaderText") ;
                     
                     txtBlock.SetValue(TextBlock.TextProperty, item.Caption);
                     txtBlock.SetValue(TextBlock.TextWrappingProperty, TextWrapping.WrapWithOverflow);
+                    
+                    // if there is 1 extended property add it to the tag for the text box
+                    if (item.ExtendedProperties.Count == 1)
+                    {
+                        foreach (DictionaryEntry prop in item.ExtendedProperties)
+                        {
+                            txtBlock.SetValue(TextBlock.TagProperty, prop.Value);
+                        }
+                    }
+                    
                     if (item.DataType != typeof(string)) txtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
                     
                     contentPresenter.AppendChild(txtBlock);
@@ -133,8 +145,39 @@ namespace DaxStudio.UI.Converters
         // escapes special characters from the WPF binding path (eg. ^.][ )
         private string FixBindingPath(string columnName)
         {
-            var bindingPath = bindingPathRegex.Replace(columnName, "^$0");
-            return "[" + bindingPath + "]";
+            var sb = new StringBuilder();
+            char escape = '^';
+            sb.Append('[');
+            foreach(char c in columnName.ToCharArray())
+            {
+                switch (c)
+                {
+                    case '&':
+                        sb.Append(c);
+                        sb.Append(c);
+                        break;
+                    case '>':
+                        sb.Append(c);
+                        sb.Append(c);
+                        break;
+                    case '=':
+                    case ',':
+                    case '}':
+                    case ']':
+                    case '[':
+                    case '.':
+                    case '\\': 
+                        sb.Append(escape);
+                        sb.Append(c);
+                        break;
+                    
+                    default: sb.Append(c); break;
+                }
+            }
+            sb.Append(']');
+            return sb.ToString();
+            //var bindingPath = bindingPathRegex.Replace(columnName, "^$0");
+            //return "[" + bindingPath + "]";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

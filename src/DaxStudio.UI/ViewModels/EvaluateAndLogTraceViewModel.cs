@@ -24,11 +24,16 @@ using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.UI.Extensions;
+using DaxStudio.UI.JsonConverters;
+using ControlzEx.Standard;
+using Newtonsoft.Json.Linq;
+using System.Windows.Navigation;
+using Fluent;
 
 namespace DaxStudio.UI.ViewModels
 {
 
-    public class DebugAndLogTraceViewModel
+    public class EvaluateAndLogTraceViewModel
         : TraceWatcherBaseViewModel,
         ISaveState,
         IViewAware
@@ -37,9 +42,9 @@ namespace DaxStudio.UI.ViewModels
 
 
         [ImportingConstructor]
-        public DebugAndLogTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
+        public EvaluateAndLogTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
         {
-            _debugEvents = new BindableCollection<DebugEvent>();
+            _debugEvents = new BindableCollection<EvaluateAndLogEvent>();
         }
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
@@ -59,7 +64,7 @@ namespace DaxStudio.UI.ViewModels
             if (traceEvent == null) return;
             if (traceEvent.EventClass != DaxStudioTraceEventClass.DAXEvaluationLog) return;
             base.ProcessSingleEvent(traceEvent);
-            var newEvent = new DebugEvent()
+            var newEvent = new EvaluateAndLogEvent()
             {
 
                 StartTime = traceEvent.StartTime,
@@ -122,11 +127,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private readonly BindableCollection<DebugEvent> _debugEvents;
+        private readonly BindableCollection<EvaluateAndLogEvent> _debugEvents;
 
         public override bool CanHide => true;
         public override string ContentId => "debug-log-trace";
-        public IObservableCollection<DebugEvent> DebugEvents => _debugEvents;
+        public IObservableCollection<EvaluateAndLogEvent> DebugEvents => _debugEvents;
 
 
         public string DefaultQueryFilter => "cat";
@@ -177,7 +182,13 @@ namespace DaxStudio.UI.ViewModels
 
         public new bool IsBusy => false;
 
-        public TraceEvent SelectedQuery { get; set; }
+        private EvaluateAndLogEvent _selectedEvent;
+        public EvaluateAndLogEvent SelectedEvent { get =>_selectedEvent; 
+            set { 
+                _selectedEvent = value; 
+                NotifyOfPropertyChange(); 
+            } 
+        }
 
         public override bool IsCopyAllVisible => true;
         public override bool IsFilterVisible => true;
@@ -217,7 +228,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override void ClearFilters()
         {
-            var vw = GetView() as Views.DebugAndLogTraceView;
+            var vw = GetView() as Views.EvaluateAndLogTraceView;
             if (vw == null) return;
             var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.DebugEvents);
             controller.ClearFilter();
@@ -225,10 +236,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void TextDoubleClick()
         {
-            TextDoubleClick(SelectedQuery);
+            TextDoubleClick(SelectedEvent);
         }
 
-#region ISaveState methods
+        //public override RibbonControlSizeDefinition SizeDefinition { get; } = new RibbonControlSizeDefinition() { Large = RibbonControlSize.Middle, Middle = RibbonControlSize.Middle, Small = RibbonControlSize.Middle };
+
+        #region ISaveState methods
         void ISaveState.Save(string filename)
         {
             string json = GetJson();
@@ -252,7 +265,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadJson(string data)
         {
-            List<DebugEvent> re = JsonConvert.DeserializeObject<List<DebugEvent>>(data);
+            List<EvaluateAndLogEvent> re = JsonConvert.DeserializeObject<List<EvaluateAndLogEvent>>(data);
 
             _debugEvents.Clear();
             _debugEvents.AddRange(re);
@@ -272,7 +285,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadPackage(Package package)
         {
-            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.RefreshTrace, UriKind.Relative));
+            var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.DebugLog, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
             _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
@@ -290,7 +303,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void SetDefaultFilter(string column, string value)
         {
-            var vw = this.GetView() as Views.DebugAndLogTraceView;
+            var vw = this.GetView() as Views.EvaluateAndLogTraceView;
             if (vw == null) return;
             var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.DebugEvents);
             var filters = controller.GetFiltersForColumns();
@@ -313,7 +326,7 @@ namespace DaxStudio.UI.ViewModels
             File.WriteAllText(filePath, GetJson());
         }
 
-        public void TextDoubleClick(TraceEvent refreshEvent)
+        public void TextDoubleClick(EvaluateAndLogEvent refreshEvent)
         {
             if (refreshEvent == null) return; // it the user clicked on an empty query exit here
             _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
@@ -323,16 +336,139 @@ namespace DaxStudio.UI.ViewModels
     }
 
 #region Data Objects
-    public class DebugEvent
+    public class EvaluateAndLogEvent
     {
+        const string columnSource = "ColumnSource";
+        const string shortName = "ShortName";
+
         //TODO
-        public string Text { get; set; }
+        private string _text;
+        public string Text { get => _text; set { _text = value;
+                ParseJson(_text);
+            } 
+        }
         public DateTime StartTime { get; set; }
         public long Duration { get; set; }
         public DaxStudioTraceEventClass EventClass { get; set; }
         public DaxStudioTraceEventSubclass EventSubClass { get; set; }
 
+        #region "Values parsed from Text property
+        public List<string> Inputs { get; set; }
+        public List<string> Outputs { get; set; } = new List<string>() { "Value" };
+        public System.Data.DataTable Table { get; set; } = new System.Data.DataTable("data");
+        public string Expression { get; set; }
+        public string Label { get; set; }
+        public long RowCount {  get; set; }
+        #endregion
 
+        internal void ParseJson(string json)
+        {
+            var item = JsonConvert.DeserializeObject<EvaluateAndLogItem>(json);
+
+            Label = item.Label;
+            Expression = item.Expression;
+            var row1input = item.Data[0].Input;
+            var row1output = item.Data[0].Output;
+            var inputIdx = 0;
+            var outputIdx = 0;
+            bool isScalar = false;
+            foreach (var col in item.Inputs) { 
+                var newCol = Table.Columns.Add(col, row1input[inputIdx].GetType());
+                newCol.ExtendedProperties.Add(columnSource, "Input");
+                inputIdx++;
+            }
+
+            if (item.Outputs != null)
+            {
+                foreach (var col in item.Outputs)
+                {
+                    var newCol = Table.Columns.Add(col, GetOutputColumnType(row1output , outputIdx));
+                    newCol.ExtendedProperties.Add(columnSource, "Output");
+                    //newCol.ExtendedProperties.Add(shortName, );
+                    outputIdx++;
+                }
+            }
+            else
+            {
+                var newCol = Table.Columns.Add("Value", row1output[outputIdx].GetType());
+                newCol.ExtendedProperties.Add(columnSource, "Output");
+                isScalar = true;
+            }
+
+            foreach( var data in item.Data)
+            {
+                if (isScalar) {
+                    int colIdx = 0;
+                    var row = Table.NewRow();
+                    foreach (var input in data.Input)
+                    {
+                        row[colIdx] = input;
+                        colIdx++;
+                    }
+
+
+                        row[colIdx] = data.Output[0];
+                        colIdx++;
+
+                    Table.Rows.Add(row);
+
+                }
+                else
+                {
+                    foreach (JArray output in data.Output)
+                    {
+                        int colIdx = 0;
+                        var row = Table.NewRow();
+                        foreach (var input in data.Input)
+                        {
+                            row[colIdx] = input;
+                            colIdx++;
+                        }
+
+                        for (outputIdx = 0; outputIdx < output.Count; outputIdx++)
+                        {
+
+
+                            row[colIdx] = output[outputIdx];
+                            colIdx++;
+                        }
+                        Table.Rows.Add(row);
+                    }
+                }
+            }
+        }
+
+        private Type GetOutputColumnType(List<object> row1output, int outputIdx)
+        {
+            try
+            {
+                if (row1output[0] is JArray outputArray) return ((JValue)(outputArray[0].Root.ToList()[outputIdx])).Value?.GetType()??typeof(string);
+                return row1output[outputIdx].GetType();
+            }
+            catch {
+                return typeof(string);
+            } 
+        }
+    }
+
+    public class EvaluateAndLogItem
+    {
+        public string Expression { get; set; }
+        public string Label { get; set; }
+        public long RowCount { get; set; }
+        public List<String> Inputs { get; set; }
+        public List<string> Outputs { get; set; }
+        public List<EvaluateAndLogData> Data { get; set; }
+    }
+
+    public class EvaluateAndLogData
+    {
+        [JsonConverter(typeof(SingleOrArrayConverter<object>))]
+        public List<object> Input {  get; set; }
+
+        [JsonConverter(typeof(SingleOrArrayConverter<object>))]
+        public List<object> Output { get; set; }
+        public long RowCount { get; set; }  
     }
 
     public abstract class DebugItem
