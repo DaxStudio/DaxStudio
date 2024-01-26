@@ -192,7 +192,7 @@
       <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.69.6.2</Version>
+      <Version>19.74.2</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.5</Version>
