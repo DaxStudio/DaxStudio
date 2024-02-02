@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 using System.Windows.Data;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -194,7 +195,7 @@ namespace DaxStudio.UI.ViewModels
                 try {
                     var modelCaps = GetModelCapabilities();
                     var firstTableName = GetFirstTableName();
-                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items, AutoGenerate, firstTableName); 
+                    return QueryBuilder.BuildQuery(modelCaps,Columns.Items, Filters.Items, AutoGenerate, firstTableName, DelimiterType.Comma); 
                 }
                 catch (Exception ex)
                 {
@@ -204,6 +205,26 @@ namespace DaxStudio.UI.ViewModels
                 return string.Empty;
             } 
         
+        }
+
+        public string QueryTextWithDefaultDelimiter
+        {
+            get
+            {
+                try
+                {
+                    var modelCaps = GetModelCapabilities();
+                    var firstTableName = GetFirstTableName();
+                    return QueryBuilder.BuildQuery(modelCaps, Columns.Items, Filters.Items, AutoGenerate, firstTableName, Options.DefaultSeparator);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(QueryText), ex.Message);
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
+                }
+                return string.Empty;
+            }
+
         }
 
         private string GetFirstTableName()
@@ -258,7 +279,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void SendTextToEditor()
         {
-            EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(QueryText,false,true));
+            EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(QueryTextWithDefaultDelimiter,false,true));
         }
 
         public void ClearEditor()
