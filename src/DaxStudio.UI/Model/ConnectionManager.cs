@@ -61,7 +61,7 @@ namespace DaxStudio.UI.Model
         private RetryPolicy _dmvRetry;
         private static readonly IEnumerable<string> _keywords;
         private static readonly Regex guidRegex = new Regex("([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})", RegexOptions.Compiled);
-         
+        public event EventHandler AfterReconnect;
 #pragma warning disable CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
         private string processModelTemplate = @"
 <Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
@@ -207,6 +207,9 @@ namespace DaxStudio.UI.Model
                         _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
                         Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                             "RetryPolicy", msg);
+
+                        // trigger any after retry code
+                        if (AfterReconnect != null) { AfterReconnect(this, EventArgs.Empty); }
                     });
 
             _dmvRetry = Policy
@@ -349,6 +352,7 @@ namespace DaxStudio.UI.Model
         {
             return _retry.Execute(() =>
             {
+
                 return _connection.ExecuteReader(query, paramList);
             });
         }

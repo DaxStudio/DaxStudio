@@ -163,6 +163,7 @@ namespace DaxStudio.UI.ViewModels
                 //ImgSourceConverter.ConvertFromInvariantString(
                 //    @"pack://application:,,,/DaxStudio.UI;component/images/Files/File_Dax_x16.png") as ImageSource;
                 Connection = new ConnectionManager(_eventAggregator);
+                Connection.AfterReconnect += Connection_AfterReconnect;
                 IntellisenseProvider = new DaxIntellisenseProvider(this, _eventAggregator, Options);
                 Init(_ribbon);
                 SubscribeAll();
@@ -175,6 +176,42 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void Connection_AfterReconnect(object sender, EventArgs e)
+        {
+            // restart any active traces
+            var activeTraceWatchers = TraceWatchers.Where(tw => tw.IsChecked);
+            foreach (var tw in activeTraceWatchers)
+            {
+                var msg = $"Reconnecting {tw.Title} trace";
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Connection_AfterReconnect), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                tw.IsChecked = false;
+                tw.IsChecked = true;
+            }
+
+            // wait for traces to restart
+            Stopwatch traceStartStopWatch = Stopwatch.StartNew();
+            while (activeTraceWatchers.Any(tw => tw.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started) && traceStartStopWatch.ElapsedMilliseconds < Options.TraceStartupTimeout * 1000)
+            { 
+                Thread.Sleep(200);
+                Log.Verbose($"Waiting for previously active traces to restart");
+            }
+            traceStartStopWatch.Stop();
+
+            // if we have gone past the timeout then notify the user which traces failed to restart
+            if (traceStartStopWatch.ElapsedMilliseconds >= Options.TraceStartupTimeout * 1000)
+            {
+                foreach(var tw in activeTraceWatchers)
+                {
+                    if (tw.TraceStatus != QueryTrace.Interfaces.QueryTraceStatus.Started)
+                    {
+                        var msg = $"The {tw.Title} trace timed out while trying to restart";
+                        Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(Connection_AfterReconnect) , msg);
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    }
+                }
+            }
+        }
 
         public void Init(RibbonViewModel ribbon)
         {
@@ -859,15 +896,10 @@ namespace DaxStudio.UI.ViewModels
             _isSubscribed = false;
 
             _eventAggregator.Unsubscribe(this);
-            //_eventAggregator.Unsubscribe(QueryResultsPane);
-            //_eventAggregator.Unsubscribe(MetadataPane);
-            //_eventAggregator.Unsubscribe(DmvPane);
-            //_eventAggregator.Unsubscribe(FunctionPane);
             _eventAggregator.Unsubscribe(Connection);
             _eventAggregator.Unsubscribe(IntellisenseProvider);
             _eventAggregator.Unsubscribe(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.Unsubscribe(HelpWatermark);
-            //_eventAggregator.Unsubscribe(QueryBuilder);
             foreach (var tw in this.TraceWatchers)
             {
                 _eventAggregator.Unsubscribe(tw);
@@ -888,16 +920,10 @@ namespace DaxStudio.UI.ViewModels
                 return;
 
             _eventAggregator.SubscribeOnPublishedThread(this);
-            //_eventAggregator.SubscribeOnPublishedThread(QueryResultsPane);
-            //_eventAggregator.SubscribeOnPublishedThread(MetadataPane);
-            //_eventAggregator.SubscribeOnPublishedThread(DmvPane);
-            //_eventAggregator.SubscribeOnPublishedThread(FunctionPane);
             _eventAggregator.SubscribeOnPublishedThread(Connection);
             _eventAggregator.SubscribeOnPublishedThread(IntellisenseProvider);
             _eventAggregator.SubscribeOnPublishedThread(MeasureExpressionEditor.IntellisenseProvider);
             _eventAggregator.SubscribeOnPublishedThread(HelpWatermark);
-            //_eventAggregator.SubscribeOnPublishedThread(QueryBuilder);
-            //this.ToolWindows.Apply(tool => _eventAggregator.Subscribe(tool));
             if (TraceWatchers != null)
             {
                 foreach (var tw in TraceWatchers)
