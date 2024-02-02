@@ -1,5 +1,4 @@
-﻿using DAXDebugOutput.AS;
-using DaxStudio.UI.ViewModels;
+﻿using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -184,13 +183,6 @@ namespace DaxStudio.Tests
             Assert.AreEqual(5, evt.Table.Rows.Count);
         }
 
-		[TestMethod,Ignore]
-		public void TestBorrowedCode()
-		{
-			var d3 = new DAXEvalAndLogData(json3);
 
-			Assert.AreEqual(20, d3.Values.Count);
-			Assert.AreEqual(10, d3.Values[0].Count);
-		}
     }
 }
