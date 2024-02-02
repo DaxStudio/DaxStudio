@@ -498,7 +498,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
-            CanCaptureDiagnostics = message.Document.Connection.IsConnected;
+            CanCaptureDiagnostics = message.Document?.Connection?.IsConnected??false;
             return Task.CompletedTask;
         }
 
