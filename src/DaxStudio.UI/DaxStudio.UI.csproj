@@ -482,6 +482,7 @@
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\CaptureDiagnosticsSource.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
+    <Compile Include="Model\ClipboardTextProvider.cs" />
     <Compile Include="Model\ConnectionManager.cs" />
     <Compile Include="Model\CustomTraceTemplate.cs" />
     <Compile Include="Model\HotKey.cs" />

@@ -1384,6 +1384,10 @@ namespace DaxStudio.UI.ViewModels
 
         public async void CaptureDiagnostics()
         {
+            if (ActiveDocument != null)
+            {
+
+            }
             var capdiagDialog = new CaptureDiagnosticsViewModel(this, Options, _eventAggregator);
             _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
             await _windowManager.ShowDialogBoxAsync(capdiagDialog);

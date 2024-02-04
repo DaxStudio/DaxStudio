@@ -4,6 +4,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
+using ICSharpCode.NRefactory.Ast;
 using Microsoft.Win32;
 using Mono.Cecil.Cil;
 using Serilog;
@@ -16,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -52,14 +54,19 @@ namespace DaxStudio.UI.ViewModels
             Options = options;
             EventAggregator = eventAggregator;
 
-            SelectedQuerySource = new CaptureDiagnosticsSource("Current Document", new List<IQueryTextProvider>() { this.Ribbon.ActiveDocument });
+            if (Ribbon.ActiveDocument.EditorText.Any())
+                SelectedQuerySource = new CaptureDiagnosticsSource("Current Document", new List<IQueryTextProvider>() { this.Ribbon.ActiveDocument });
+            else
+                SelectedQuerySource = new CaptureDiagnosticsSource("Clipboard", new List<IQueryTextProvider>() { new ClipboardTextProvider() });
 
             // save the current results target
             _selectedResultsTarget = Ribbon.SelectedTarget;
 
-            // Check if we have a query to run
-            if(Ribbon.ActiveDocument.EditorText.Trim().Length > 0 
-            || (Ribbon.ActiveDocument.QueryBuilder.IsVisible && Ribbon.ActiveDocument.QueryBuilder.Columns.Count > 0))
+            // Check if we have any query text or if the query builder is open and populated
+            if(SelectedQuerySource.Queries.FirstOrDefault().EditorText.Any()
+            || (SelectedQuerySource.Queries.FirstOrDefault().GetType() == typeof(DocumentViewModel) 
+                && Ribbon.ActiveDocument.QueryBuilder.IsVisible 
+                && Ribbon.ActiveDocument.QueryBuilder.Columns.Count > 0))
             {
                 // start capturing
               RunAsync().SafeFireAndForget(onException: ex =>
@@ -70,9 +77,15 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                Log.Warning(DaxStudio.Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No QueryText found");
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No QueryText found");
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No query text found to execute"));
-                Close();
+                MessageBox.Show( "No query text was found to execute","DAX Studio - Capture Diagnostics", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                FailAllOperations();
+                CanClose = true;
+                Execute.OnUIThread(() => {
+                    Close();
+                });
+                
             }
 
         }
@@ -100,12 +113,22 @@ namespace DaxStudio.UI.ViewModels
             }
             else
             {
-                Log.Warning(DaxStudio.Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No Queries found to execute");
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No Queries found to execute");
                 EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No queries found to execute"));
+                FailAllOperations();
+                CanClose = true;
                 Close();
             }
         }
 
+        private void FailAllOperations()
+        {
+            MetricsStatus = OperationStatus.Failed;
+            QueryPlanStatus = OperationStatus.Failed;
+            ServerTimingsStatus = OperationStatus.Failed;
+            QueryStatus = OperationStatus.Failed;
+            SaveAsStatus = OperationStatus.Failed;
+        }
 
         private const string TickImage = "successDrawingImage";
         private const string CrossImage = "failDrawingImage";
