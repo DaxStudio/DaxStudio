@@ -6,7 +6,7 @@
         bool IsAdminConnection { get; }
         bool IsPowerPivot { get; }
         bool IsConnected { get;  }
-        string SelectedDatabaseName { get; }
+        string DatabaseName { get; }
         string ServerName { get; }
     }
 }

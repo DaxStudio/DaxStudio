@@ -76,6 +76,8 @@ namespace ADOTabular
                 
                 try
                 {
+                    // if there is no connection this must be an "offline" connection
+                    // like a vpax file.
                     if (_adomdConn == null) {
                         lock (connectionLock) { 
                             var db2 = Visitor.Visit(this);
@@ -99,14 +101,14 @@ namespace ADOTabular
                     if (string.IsNullOrEmpty(_currentDatabase) && dd.Count == 0)
                     {
                         // return an empty database object if there is no current database or no databases on the server
-                        return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "","");
+                        return new ADOTabularDatabase(this, "", "", DateTime.MinValue, "","", "");
                     }
                     // The Power BI XMLA endpoint does not set a default database, so we have a collection of database, but no current database
                     // in this case we just set the current database to the first in the list
                     if (string.IsNullOrEmpty(_currentDatabase) && dd.Count > 0)
                     {
                         var details = dd.First().Value;
-                        _db = new ADOTabularDatabase(this, details.Name, details.Id, details.LastUpdate, details.CompatibilityLevel, details.Roles);
+                        _db = new ADOTabularDatabase(this, details.Name, details.Id, details.LastUpdate, details.CompatibilityLevel, details.Roles, details.Description);
                         ChangeDatabase(details.Name);
 
                     }
@@ -115,7 +117,7 @@ namespace ADOTabular
                     var db = dd[_currentDatabase];
                     if (_db == null || db.Id != _db.Id) // && db.Name != FileName)
                     {
-                        _db = new ADOTabularDatabase(this, db.Name, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles);
+                        _db = new ADOTabularDatabase(this, db.Name, db.Id, db.LastUpdate, db.CompatibilityLevel, db.Roles, db.Description);
                         _db.Caption = db.Caption;
                     } 
 
@@ -180,10 +182,10 @@ namespace ADOTabular
                 _adomdConn.Open();
             }
             
-            if (_adomdConn.Database != database)
-            {
+            //if (_adomdConn.Database != database)
+            //{
                 _adomdConn.ChangeDatabase(database);
-            }
+            //}
 
             if(string.IsNullOrEmpty(database) && this.Databases.Count > 0)
             {

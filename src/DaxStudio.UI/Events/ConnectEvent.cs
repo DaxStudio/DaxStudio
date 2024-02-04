@@ -11,7 +11,7 @@ namespace DaxStudio.UI.Events
     {
 
 
-        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string applicationName, string fileName, ServerType serverType, bool refreshDatabases) 
+        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string applicationName, string fileName, ServerType serverType, bool refreshDatabases, string databaseName) 
         {
             ConnectionString = connectionString;
             PowerPivotModeSelected = powerPivotModeSelected;
@@ -19,6 +19,7 @@ namespace DaxStudio.UI.Events
             FileName = fileName;
             ServerType = serverType;
             RefreshDatabases = refreshDatabases;
+            DatabaseName = databaseName;
         }
 
         public ConnectEvent(string applicationName, VpaxContent vpaxContent)
@@ -37,8 +38,8 @@ namespace DaxStudio.UI.Events
         public string FileName { get; set; }
         public ServerType ServerType { get; internal set; }
 
-        public string DatabaseName { get; set; }
-        public bool RefreshDatabases { get; set; }
+        public string DatabaseName { get;  }
+        public bool RefreshDatabases { get;  }
         public VpaxContent VpaxContent { get;  }
 
         public List<ITraceWatcher> ActiveTraces { get; set; }

@@ -95,7 +95,8 @@ namespace ADOTabular
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            InternalModelCollection.Clear();
+            //throw new NotImplementedException();
         }
     }
 }

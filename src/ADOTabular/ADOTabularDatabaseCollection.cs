@@ -5,12 +5,13 @@ using System.Collections;
 using System.Xml;
 using System.IO;
 using ADOTabular.AdomdClientWrappers;
+using ADOTabular.Interfaces;
 
 namespace ADOTabular
 {
-    public class DatabaseDetails
+    public class DatabaseDetails: IDatabaseReference
     {
-        public DatabaseDetails(string name, string id, string caption, string lastUpdate, string compatLevel, string roles)
+        public DatabaseDetails(string name, string id, string caption, string lastUpdate, string compatLevel, string roles, string description)
         {
             Name = name;
             Id = id;
@@ -19,18 +20,19 @@ namespace ADOTabular
             LastUpdate = lastUpdatedDate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
-            
+            Description = description;
         }
 
         public DatabaseDetails(DataRow row, string caption)
         {
             Name = row["CATALOG_NAME"].ToString();
-            Id = row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : "";
+            Id = row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : string.Empty;
             Caption = caption?.Length > 0 ? caption : row["CATALOG_NAME"].ToString();
             _ = DateTime.TryParse(row["DATE_MODIFIED"].ToString(), out DateTime lastUpdatedDate);
             LastUpdate = lastUpdatedDate;
-            CompatibilityLevel = row.Table.Columns.Contains("COMPATIBILITY_LEVEL") ? row["COMPATIBILITY_LEVEL"].ToString() : "";
-            Roles = row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : "";
+            CompatibilityLevel = row.Table.Columns.Contains("COMPATIBILITY_LEVEL") ? row["COMPATIBILITY_LEVEL"].ToString() : string.Empty;
+            Roles = row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : string.Empty;
+            Description = row.Table.Columns.Contains("DESCRIPTION") ? row["DESCRIPTION"].ToString() : string.Empty;
         }
 
         public string Name { get; set; }
@@ -39,6 +41,8 @@ namespace ADOTabular
         public string CompatibilityLevel { get; internal set; }
         public string Roles { get; internal set; }
         public string Caption { get; set; }
+
+        public string Description { get; set; }
     }
     public class ADOTabularDatabaseCollection:IEnumerable<DatabaseDetails>
     {
@@ -91,7 +95,7 @@ namespace ADOTabular
             {
                 _databaseDictionary = new Dictionary<string, DatabaseDetails>();
                 var db = _adoTabConn.Database;
-                DatabaseDetails tmpDD = new DatabaseDetails(db.Name, db.Id, db.Caption, string.Empty, db.CompatibilityLevel, string.Empty);
+                DatabaseDetails tmpDD = new DatabaseDetails(db.Name, db.Id, db.Caption, string.Empty, db.CompatibilityLevel, string.Empty, db.Description);
                 _databaseDictionary.Add(db.Name, tmpDD);
                 return _databaseDictionary;
             }
@@ -161,11 +165,12 @@ namespace ADOTabular
             {
                 databaseDictionary.Add(row["CATALOG_NAME"].ToString(), new DatabaseDetails(
                     row["CATALOG_NAME"].ToString(),
-                    row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : "",
+                    row.Table.Columns.Contains("DATABASE_ID") ? row["DATABASE_ID"].ToString() : string.Empty,
                     _adoTabConn.ShortFileName?.Length > 0 ? _adoTabConn.ShortFileName: row["CATALOG_NAME"].ToString(),
                     row["DATE_MODIFIED"].ToString(),
-                    row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString():"",
-                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : ""
+                    row.Table.Columns.Contains("COMPATIBILITY_LEVEL")? row["COMPATIBILITY_LEVEL"].ToString(): string.Empty,
+                    row.Table.Columns.Contains("ROLES") ? row["ROLES"].ToString() : string.Empty,
+                    row.Table.Columns.Contains("DESCRIPTION") ? row["DESCRIPTION"].ToString() : string.Empty
                     )
                     );
                 // TODO - add support for loading Database Description
@@ -194,10 +199,11 @@ namespace ADOTabular
                 if (rdr.NodeType == XmlNodeType.Element
                     && rdr.LocalName == eDatabase)
                 {
-                    string name = "";
-                    string id = "";
-                    string lastUpdate = "";
-                    string compatLevel = "";
+                    string name = string.Empty;
+                    string id = string.Empty;
+                    string lastUpdate = string.Empty;
+                    string compatLevel = string.Empty;
+                    string description = string.Empty;
                     while (!rdr.EOF)
                     {
                         if (rdr.NodeType == XmlNodeType.Element)
@@ -216,6 +222,9 @@ namespace ADOTabular
                                 case "CompatibilityLevel":
                                     compatLevel = rdr.ReadElementContentAsString();
                                     break;
+                                case "Description":
+                                    description = rdr.ReadElementContentAsString();
+                                    break;
                                 default:
                                     rdr.Read();
                                     break;
@@ -228,7 +237,7 @@ namespace ADOTabular
                         if (rdr.NodeType == XmlNodeType.EndElement
                             && rdr.LocalName == eDatabase)
                         {
-                            databaseDictionary.Add(name, new DatabaseDetails( name,  id, caption, lastUpdate,compatLevel,""));       
+                            databaseDictionary.Add(name, new DatabaseDetails( name,  id, caption, lastUpdate,compatLevel,string.Empty, description));       
                         }
 
                         rdr.Read();
@@ -288,7 +297,7 @@ namespace ADOTabular
 
         public void Add(ADOTabularDatabase db)
         {
-            DatabaseDetails dd = new DatabaseDetails(db.Name, db.Id, db.Caption, db.LastUpdate.ToLongDateString(), db.CompatibilityLevel, db.Roles);
+            DatabaseDetails dd = new DatabaseDetails(db.Name, db.Id, db.Caption, db.LastUpdate.ToLongDateString(), db.CompatibilityLevel, db.Roles, db.Description);
             _databaseDictionary = _databaseDictionary ?? new Dictionary<string, DatabaseDetails>();
             _databaseDictionary.Add(dd.Name, dd);
         }

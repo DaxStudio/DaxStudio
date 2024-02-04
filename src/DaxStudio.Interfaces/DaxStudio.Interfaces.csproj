@@ -117,7 +117,6 @@
     <Compile Include="Enums\UITheme.cs" />
     <Compile Include="Enums\VpaTableColumnDisplay.cs" />
     <Compile Include="IActivateResults.cs" />
-    <Compile Include="IDatabaseReference.cs" />
     <Compile Include="IFilterableTreeViewItem.cs" />
     <Compile Include="IFunctionProvider.cs" />
     <Compile Include="IGlobalOptionsBase.cs" />

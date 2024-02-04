@@ -29,6 +29,7 @@ using System.Data.OleDb;
 using System.Windows.Forms.VisualStyles;
 using Microsoft.AnalysisServices;
 using System.Xml;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
@@ -49,8 +50,6 @@ namespace DaxStudio.UI.Model
         , IMetadataProvider
         , IConnection
         , IModelIntellisenseProvider
-        , IHandle<RefreshTablesEvent>
-        , IHandle<SelectedModelChangedEvent>
     {
         public bool IsConnecting { get; private set; }
 
@@ -195,7 +194,7 @@ namespace DaxStudio.UI.Model
                     (exception, timespan, retryCount, context) =>
                     {
                         var contextDb = context.GetDatabaseName();
-                        var currentDb = contextDb ?? SelectedDatabase?.Name ?? string.Empty;
+                        var currentDb = contextDb ?? Database?.Name ?? string.Empty;
                         _connection.Close(true); // force the connection closed and close the session
 
                         _connection = new ADOTabularConnection(_connection.ConnectionString, _connection.Type);
@@ -218,7 +217,7 @@ namespace DaxStudio.UI.Model
                     (exception, timespan, retryCount, context) =>
                     {
                         var contextDb = context.GetDatabaseName();
-                        var currentDb = contextDb ?? SelectedDatabase?.Name ?? string.Empty;
+                        var currentDb = contextDb ?? Database?.Name ?? string.Empty;
                         _dmvConnection.Close(true); // force the connection closed and close the session
 
                         _dmvConnection = new ADOTabularConnection(_dmvConnection.ConnectionString, _dmvConnection.Type);
@@ -396,7 +395,7 @@ namespace DaxStudio.UI.Model
                     bool hasChanged = await Task.Run(() =>
                     {
                         var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
-                        conn.ChangeDatabase(this.SelectedDatabaseName);
+                        conn.ChangeDatabase(this.DatabaseName);
                         if (conn.State != ConnectionState.Open) conn.Open();
                         var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
                         _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
@@ -480,7 +479,6 @@ namespace DaxStudio.UI.Model
         }
 
         private ADOTabularFunctionGroupCollection _functionGroups;
-        private ADOTabularDatabase _selectedDatabase;
         private DateTime _lastSchemaUpdate;
 
         public ADOTabularFunctionGroupCollection FunctionGroups
@@ -506,28 +504,31 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularTableCollection GetTables()
         {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "Start");
             return _dmvRetry.Execute(() =>
             {
-                return _dmvConnection.Database.Models[SelectedModelName].Tables;
+                try
+                {
+                    return _dmvConnection.Database.Models[SelectedModelName].Tables;
+                }
+                catch 
+                {
+                    throw;
+                }
+                finally
+                {
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "End");
+                }
             });
+            
         }
 
         public AdomdType Type => AdomdType.AnalysisServices; // _connection.Type;
 
-        public string SelectedDatabaseName => SelectedDatabase?.Name ?? string.Empty;
+        //public string SelectedDatabaseName => SelectedDatabase?.Name ?? string.Empty;
 
         public string SelectedModelName { get; set; }
 
-
-        public ADOTabularDatabase SelectedDatabase
-        {
-            get => _selectedDatabase;
-            set
-            {
-                _selectedDatabase = value;
-                _lastSchemaUpdate = _selectedDatabase.LastUpdate;
-            }
-        }
 
         public async Task UpdateColumnSampleData(ITreeviewColumn column, int sampleSize) 
         {
@@ -631,9 +632,9 @@ namespace DaxStudio.UI.Model
         }
         public ADOTabularModel SelectedModel { get; set; }
 
-        public void SetSelectedModel(ADOTabularModel model)
+        public async Task SetSelectedModelAsync(ADOTabularModel model)
         {
-
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedModelAsync), "Start");
 
             SelectedModel = model;
             
@@ -650,15 +651,16 @@ namespace DaxStudio.UI.Model
                     }
                     else
                     {
-                        _eventAggregator.PublishOnUIThreadAsync( 
+                        await _eventAggregator.PublishOnUIThreadAsync( 
                             new OutputMessage(MessageType.Error, 
                                 $"DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {_connection.ServerVersion}")
                             );
                     }
                 }
+                // This allows us to move the loading of the table/column metadata onto a background thread
+                await RefreshTablesAsync();
             }
-            // This allows us to move the loading of the table/column metadata onto a background thread
-            _eventAggregator.PublishOnBackgroundThreadAsync(new RefreshTablesEvent()).Wait();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedModelAsync), "End");
         }
 
         public void SetSelectedDatabase(ADOTabularDatabase database)
@@ -667,7 +669,7 @@ namespace DaxStudio.UI.Model
             {
                 if (_connection.State == ConnectionState.Open)
                 {
-                    if (SelectedDatabase != null && database != null && _connection.Database.Name != database.Name) //!Connection.Database.Equals(_selectedDatabase))
+                    if (Database != null && database != null && _connection.Database.Name != database.Name) 
                     {
                         Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", database.Name);
                         _connection.ChangeDatabase(database.Name);
@@ -681,19 +683,40 @@ namespace DaxStudio.UI.Model
                 }
             }
 
-            if (SelectedDatabase != database)
+            if (Database != database)
             {
-                SelectedDatabase = database;
-                if (SelectedDatabase != null)
+                if (Database != null)
                 {
-                    _connection?.ChangeDatabase(SelectedDatabase.Name);
-                    _dmvConnection?.ChangeDatabase(SelectedDatabase.Name);
+                    _connection?.ChangeDatabase(Database.Name);
+                    _dmvConnection?.ChangeDatabase(Database.Name);
                 }
 
                 if (_connection?.Database != null)
                     ModelList = _dmvConnection.Database.Models;
 
                 _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
+            }
+
+        }
+
+        public void SetSelectedDatabase(string databaseName)
+        {
+            if (_connection != null)
+            {
+                if (_connection.State == ConnectionState.Open)
+                {
+                    if (Database != null && !string.IsNullOrEmpty( databaseName) && _connection.Database.Name != databaseName) 
+                    {
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), databaseName);
+                        _connection.ChangeDatabase(databaseName);
+                        _dmvConnection.ChangeDatabase(databaseName);
+                    }
+                    if (_dmvConnection.Database != null)
+                    {
+                        ModelList = _dmvConnection.Database.Models;
+                    }
+                    _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
+                }
             }
 
         }
@@ -846,7 +869,8 @@ namespace DaxStudio.UI.Model
 
         public void SetSelectedDatabase(IDatabaseReference database)
         {
-            if (SelectedDatabase != null && database.Name == SelectedDatabase.Name) return;
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - start");
+            if (Database != null && database.Name == Database.Name) return;
 
             var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
             _retry.Execute(ctx =>
@@ -855,10 +879,11 @@ namespace DaxStudio.UI.Model
                     _dmvConnection?.ChangeDatabase(database.Name);
                     _connection?.ChangeDatabase(database.Name);
                 }
-                SelectedDatabase = _dmvConnection.Database;
+                //Database = _dmvConnection.Database;
                 ModelList = _dmvConnection.Database?.Models;
                 _eventAggregator.PublishOnBackgroundThreadAsync(new DatabaseChangedEvent());
             }, context);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - end" );
         }
 
         internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
@@ -873,7 +898,7 @@ namespace DaxStudio.UI.Model
 
 
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
-            await _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_dmvConnection.Database?.Name));
+            //await _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_dmvConnection.Database?.Name));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
             //await Task.Delay(300);
@@ -897,7 +922,7 @@ namespace DaxStudio.UI.Model
             FileName = message.FileName??String.Empty;
             IsPowerPivot = message.PowerPivotModeSelected;
             Databases.Add(_connection.Database);
-            SelectedDatabase = _connection.Database;
+            //Database = _connection.Database;
             _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
         }
 
@@ -939,10 +964,11 @@ namespace DaxStudio.UI.Model
             return builder.ToString();
         }
 
-        public async Task HandleAsync(RefreshTablesEvent message, CancellationToken cancellationToken)
+        public async Task RefreshTablesAsync()
         {
             try
             {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), "Start");
                 await Task.Factory.StartNew(() =>
                 {
                     _retry.Execute(() =>
@@ -951,14 +977,15 @@ namespace DaxStudio.UI.Model
                         IsConnecting = false;
                         _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
                     });
-                }, cancellationToken);
+                });
             }
             catch (Exception ex)
             {
                 var errMsg = $"Error refreshing table list: {ex.Message}";
-                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), "IHandle<RefreshTablesEvent>", errMsg);
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), errMsg);
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));                
             }
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), "End");
         }
 
         public IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPane, IGlobalOptions options)
@@ -1006,15 +1033,6 @@ namespace DaxStudio.UI.Model
             {
                 table.UpdatingBasicStats = false;
             }
-        }
-
-        public Task HandleAsync(SelectedModelChangedEvent message, CancellationToken cancellationToken)
-        {
-            var model = _dmvConnection?.Database?.Models[message.SelectedModel];
-            SelectedModelName = message.SelectedModel;
-            if (model == null) return Task.CompletedTask;
-            SetSelectedModel(model);
-            return Task.CompletedTask;
         }
 
 
@@ -1078,7 +1096,7 @@ namespace DaxStudio.UI.Model
                 builder["Roles"] = roles;
             }
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, this.DatabaseName);
             connEvent.ActiveTraces = activeTraces;
             await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             
@@ -1104,7 +1122,7 @@ namespace DaxStudio.UI.Model
             builder.Remove("Roles");
             builder.Remove("EffectiveUsername");
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, DatabaseName);
             connEvent.ActiveTraces = activeTraces;
             _eventAggregator.PublishOnUIThreadAsync(connEvent);
 

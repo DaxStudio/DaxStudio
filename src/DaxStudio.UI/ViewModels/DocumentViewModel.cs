@@ -407,8 +407,8 @@ namespace DaxStudio.UI.ViewModels
                 cnn.ApplicationName,
                 cnn.FileName,
                 cnn.ServerType
-                , false)
-            { DatabaseName = cnn.Database.Name });
+                , false
+                , cnn.Database.Name ));
 
             _sourceDocument = null;
         }
@@ -1192,6 +1192,25 @@ namespace DaxStudio.UI.ViewModels
                     await Connection.ConnectAsync(message, this.UniqueID);
                     Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished Connect");
 
+
+                    // show database dialog if there is more than 1 database available
+                    if (Connection.Databases.Count() > 1 && string.IsNullOrEmpty(message.DatabaseName))
+                    {
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Start Showing Database Dialog");
+                        await Application.Current.Dispatcher.InvokeAsync(async () =>
+                        {
+                            var dialog = new DatabaseDialogViewModel(Connection.Databases);
+                            await _windowManager.ShowDialogBoxAsync(dialog);
+                            if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                            {
+                                Connection.SetSelectedDatabase(dialog.SelectedDatabase.Name);
+                                MetadataPane.SelectDatabaeByName(dialog.SelectedDatabase.Name);
+                                await MetadataPane.RefreshTablesAsync();
+                            }
+                        });
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "End Showing Database Dialog");
+                    }
+
                     UpdateViewAsDescription(message.ConnectionString);
 
                     NotifyOfPropertyChange(() => IsAdminConnection);
@@ -1260,11 +1279,11 @@ namespace DaxStudio.UI.ViewModels
                     MetadataPane.IsBusy = false;
                 }
             }
-            if (Connection.Databases.Count == 0) {
+            if (Connection.Databases.Count() == 0) {
                 var msg = $"No Databases were found when connecting to {Connection.ServerName} ({Connection.ServerType})"
                 + (Connection.ServerType == ServerType.PowerBIDesktop ? "\nIf your Power BI File is using a Live Connection please connect directly to the source model instead." : "");
                 OutputWarning(msg);
-                this.MetadataPane.IsBusy = false;
+
             }
             else
             {
@@ -1386,7 +1405,8 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, String.Empty, string.Empty,
                     server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ? ServerType.PowerBIDesktop : ServerType.AnalysisServices,
-                    server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase)
+                    server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase),
+                    _app.Args().Database??string.Empty
                     ));
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 return true;
@@ -2214,7 +2234,7 @@ namespace DaxStudio.UI.ViewModels
                     , parameters
                     , DateTime.Now
                     , Connection.ServerNameForHistory
-                    , Connection.SelectedDatabase.Caption
+                    , Connection.Database.Caption
                     , FileName
                     )
                 { Status = QueryStatus.Running };
@@ -2237,7 +2257,7 @@ namespace DaxStudio.UI.ViewModels
                     , parameters
                     , DateTime.Now
                     , Connection.ServerNameForHistory
-                    , Connection?.SelectedDatabase?.Caption??"<unknown>"
+                    , Connection?.Database?.Caption??"<unknown>"
                     , FileName) { Status = QueryStatus.Running };
             }
             catch (Exception ex)
@@ -2493,7 +2513,7 @@ namespace DaxStudio.UI.ViewModels
             if (!string.IsNullOrEmpty(message.DatabaseName) && Databases != null)
             {
                 if (Databases.Any(db => db.Name == message.DatabaseName))
-                    if (Connection.SelectedDatabaseName != message.DatabaseName)
+                    if (Connection.DatabaseName != message.DatabaseName)
                     {
                         try
                         {
@@ -3203,7 +3223,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-                            MetadataPane.IsBusy = true;
+                            //MetadataPane.IsBusy = true;
                             if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
                             await SetupConnectionAsync(message);
@@ -3243,7 +3263,7 @@ namespace DaxStudio.UI.ViewModels
             }
             finally
             {
-                MetadataPane.IsBusy = false;
+                //MetadataPane.IsBusy = false;
             }
         }
 
@@ -3364,7 +3384,7 @@ namespace DaxStudio.UI.ViewModels
                 _currentQueryDetails = CreateQueryHistoryEvent(string.Empty, string.Empty);
 
                 Connection.ClearCache();
-                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.SelectedDatabaseName));
+                OutputMessage(string.Format("Evaluating Calculation Script for Database: {0}", Connection.DatabaseName));
 
 
                 string refreshQuery;
@@ -3383,7 +3403,7 @@ namespace DaxStudio.UI.ViewModels
 
                 sw.Stop();
                 var duration = sw.ElapsedMilliseconds;
-                OutputMessage(string.Format("Cache Cleared for Database: {0}", Connection.SelectedDatabaseName), duration);
+                OutputMessage(string.Format("Cache Cleared for Database: {0}", Connection.DatabaseName), duration);
 
             }
             catch (Exception ex)
@@ -4341,7 +4361,7 @@ namespace DaxStudio.UI.ViewModels
                         try
                         {
                             model = TomExtractor.GetDaxModel(
-                                Connection.ServerName, Connection.SelectedDatabaseName,
+                                Connection.ServerName, Connection.DatabaseName,
                                 "DaxStudio", version.ToString(),
                                 readStatisticsFromData: readStatisticsFromData,
                                 sampleRows: Options.VpaxSampleReferentialIntegrityViolations,
@@ -4356,7 +4376,7 @@ namespace DaxStudio.UI.ViewModels
                                 OutputWarning($"Error viewing metrics with ReadStatisticsFromData enabled (retry without statistics): {ex.Message}");
 
                                 model = TomExtractor.GetDaxModel(
-                                    Connection.ServerName, Connection.SelectedDatabaseName,
+                                    Connection.ServerName, Connection.DatabaseName,
                                     "DaxStudio", version.ToString(),
                                     readStatisticsFromData: false, // Disable statistics during retry
                                     sampleRows: Options.VpaxSampleReferentialIntegrityViolations,
@@ -4378,7 +4398,7 @@ namespace DaxStudio.UI.ViewModels
 
                     if (Options.VpaxIncludeTom)
                     {
-                        Microsoft.AnalysisServices.Tabular.Database database = TomExtractor.GetDatabase(Connection.ServerName, Connection.SelectedDatabaseName);
+                        Microsoft.AnalysisServices.Tabular.Database database = TomExtractor.GetDatabase(Connection.ServerName, Connection.DatabaseName);
                         vpaView.Database = database;
                     }
                 }
@@ -4413,7 +4433,7 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new SaveFileDialog
             {
-                FileName = Connection.SelectedDatabaseName,
+                FileName = Connection.DatabaseName,
                 DefaultExt = ".vpax",
                 Filter = "Analyzer Data (vpax)|*.vpax"
             };
@@ -4541,7 +4561,7 @@ namespace DaxStudio.UI.ViewModels
 
                     try
                     {
-                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery);
+                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.DatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery);
                     }
                     catch (Exception ex)
                     {
@@ -4552,7 +4572,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.SelectedDatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false); // Disable statistics during retry
+                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.DatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false); // Disable statistics during retry
                         }
                         else
                         {

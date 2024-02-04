@@ -1,0 +1,162 @@
+﻿<ctrl:DaxStudioDialog x:Class="DaxStudio.UI.Views.DatabaseDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:model="clr-namespace:DaxStudio.UI.Model"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+                      xmlns:i2="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
+
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             Caption="Select Database"
+                      Icon="{DynamicResource connectDrawingImage}"
+             Style="{StaticResource DaxStudioDialogStyle}"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+                      Focusable="False"
+             MinWidth="400"
+             MinHeight="450">
+    <ctrl:DaxStudioDialog.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
+
+            <!--<Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+            <Setter Property="Margin" Value="4,2"/>
+                <Setter Property="Padding" Value="8,2"/>
+            </Style>-->
+
+            <DataTemplate  DataType="{x:Type model:AutoSaveIndexEntry}">
+                
+                    <StackPanel Orientation="Horizontal">
+                    <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}" VerticalAlignment="Center" MinWidth="24"/>
+                    <Grid>
+                        <Image  Margin="0,3,10,3" ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Width="32"/>
+                        <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                                        Margin="0,3,10,3" Width="32" Height="32" />-->
+                            <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                        </Grid>
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding DisplayName}" FontSize="18"/>
+                            <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                
+                <!--<StackPanel Orientation="Vertical">
+                                        
+                    <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}"/>
+                    <TextBlock x:Name="DisplayName" Text="{Binding DisplayName}"></TextBlock>
+                    <TextBlock x:Name="OriginalFileName" Text="{Binding OriginalFileName}"></TextBlock>
+                </StackPanel>-->
+            </DataTemplate>
+            
+            <!--<DataTemplate  DataType="{x:Type viewModel:DocumentViewModel}">
+                
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldSave}" VerticalAlignment="Center"></CheckBox>
+                    <Grid>
+                        <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
+                                                    Margin="0,3,10,3" Width="32" Height="32" />
+                        <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
+                    </Grid>
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
+                        <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </DataTemplate>-->
+   
+        </ResourceDictionary>
+    </ctrl:DaxStudioDialog.Resources>
+        
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+
+            <Label Padding="0,0,0,10">Select the database to open:</Label>
+        </StackPanel>
+
+        <TextBox Name="SearchCriteria" 
+         Style="{DynamicResource SearchBoxStyle}"
+        Grid.Row="1"
+                 ap:InitialFocusExtentions.SelectAllAndFocus="True"
+                 TabIndex="0"
+                 Margin="0 0 0 4">
+            <i2:Interaction.Triggers>
+                <trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Escape"/>
+                    </trig:InputBindingTrigger.InputBinding>
+
+                    <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+
+                </trig:InputBindingTrigger>
+                <trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Down"/>
+                    </trig:InputBindingTrigger.InputBinding>
+
+                    <cal:ActionMessage MethodName="SetFocusToDatabases"/>
+
+                </trig:InputBindingTrigger>
+            </i2:Interaction.Triggers>
+        </TextBox>
+        
+
+        <Border Grid.Row="2" 
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                CornerRadius="8"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderThickness="1"
+                MinHeight="50"
+                MaxHeight="200">
+            <ListView x:Name="DatabasesView" Grid.Row="2"
+                      ItemsSource="{Binding DatabasesView}" 
+                      SelectedItem="{Binding SelectedDatabase}"
+                      SelectionMode="Single"
+                      SelectedIndex="{Binding SelectedIndex}"
+                      cal:Message.Attach="[Event MouseDoubleClick] = [Action Ok()]" 
+                      Margin="10,0"
+                      MaxHeight="500"
+                      
+                      
+                      BorderThickness="0.8"
+                      >
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" >
+                            <Image Source="{DynamicResource db_smallDrawingImage}" Width="16" Height="16" Margin="0 2 8 0" VerticalAlignment="Top"/>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" MaxWidth="500" ToolTip="{Binding Name}"/>
+                                        <!--<StackPanel Orientation="Horizontal" Margin="0 0 0 4">
+                                            <TextBlock Text="Updated: " Foreground="Gray" FontStyle="Italic" FontWeight="Light"/>
+                                            <TextBlock Text="{Binding LastUpdate}" Foreground="Gray" FontStyle="Italic" FontWeight="Light"/>
+                                        </StackPanel>-->
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <i:Interaction.Behaviors>
+                    <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
+                </i:Interaction.Behaviors>
+            </ListView>
+        </Border>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0 12 0 0" HorizontalAlignment="Right">
+                <Button x:Name="Ok" IsDefault="True" Style="{DynamicResource AccentButtonStyle}" Margin="0 0 12 0">_Ok</Button>
+                <!--<Button x:Name="Cancel" IsCancel="True" Style="{DynamicResource DefaultButtonStyle}">Cancel</Button>-->
+            </StackPanel>
+        </Grid>
+
+</ctrl:DaxStudioDialog>

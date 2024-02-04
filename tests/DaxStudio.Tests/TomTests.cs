@@ -183,7 +183,7 @@ namespace DaxStudio.Tests
             var connection = MockConnection(@"..\..\data\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             connection.Visitor = v;
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(connection, m);
 
@@ -201,7 +201,7 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection(@"..\..\data\csdl_2_5.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(connection, m);
 

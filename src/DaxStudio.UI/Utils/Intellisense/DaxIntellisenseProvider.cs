@@ -42,7 +42,6 @@ namespace DaxStudio.UI.Utils.Intellisense
         IHandle<MetadataLoadedEvent>, 
         IHandle<DmvsLoadedEvent>,
         IHandle<FunctionsLoadedEvent>,
-        IHandle<SelectedModelChangedEvent>,
         IHandle<ConnectionPendingEvent>
     {
         private IEditor _editor;
@@ -723,12 +722,6 @@ namespace DaxStudio.UI.Utils.Intellisense
             {
                 Model = message.Model;
             }
-            return Task.CompletedTask;
-        }
-
-        public Task HandleAsync(SelectedModelChangedEvent message, CancellationToken cancellationToken)
-        {
-            Model = null;
             return Task.CompletedTask;
         }
 

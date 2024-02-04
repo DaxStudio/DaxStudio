@@ -209,7 +209,7 @@ namespace DaxStudio.Tests
             //ADOTabularConnection c = new ADOTabularConnection(ConnectionString, AdomdType.AnalysisServices);
             var conn = MockConnection(@"..\..\data\multidim_csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*","Test Description");
             ADOTabularModel m = new ADOTabularModel(conn,db, "Test","Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, m);
 

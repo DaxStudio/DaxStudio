@@ -18,10 +18,21 @@ namespace DaxStudio.UI.Utils
 
         public static bool SetFocus(this IViewAware screen, string property)
         {
+            bool focus;
             Contract.Requires(property != null, "Property cannot be null.");
-            if (!(screen.GetView() is UserControl view)) return false;
+            if (!(screen.GetView() is UIElement view)) return false;
             var control = FindChild(view, property);
-            bool focus = control != null && control.Focus();
+            // if control is a listview set focus on the first child
+            if (control is ListView contentControl)
+            {
+                var firstChild = VisualTreeHelper.GetChild(contentControl, 0) as FrameworkElement;
+                focus = firstChild != null && firstChild.Focus();
+            }
+            else
+            {
+                // otherwise set focus on the control itself
+                focus = control != null && control.Focus();
+            }
             return focus;
         }
 

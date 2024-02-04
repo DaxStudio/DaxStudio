@@ -380,7 +380,6 @@
     <Compile Include="Events\DatabaseChangedEvent.cs" />
     <Compile Include="Events\EditorResizeEvent.cs" />
     <Compile Include="Events\ReconnectEvent.cs" />
-    <Compile Include="Events\RefreshTablesEvent.cs" />
     <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
     <Compile Include="Events\SendColumnToQueryBuilderEvent.cs" />
     <Compile Include="Events\SetFocusEvent.cs" />
@@ -530,7 +529,6 @@
     <Compile Include="Events\FunctionsLoadedEvent.cs" />
     <Compile Include="Events\LoadFileEvent.cs" />
     <Compile Include="Events\MetadataLoadedEvent.cs" />
-    <Compile Include="Events\SelectedModelChangedEvent.cs" />
     <Compile Include="Events\NavigateToLocationEvent.cs" />
     <Compile Include="Events\NewVersionEvent.cs" />
     <Compile Include="Events\OpenRecentFileEvent.cs" />
@@ -663,6 +661,7 @@
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
     <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
     <Compile Include="ViewModels\CustomTraceDialogViewModel.cs" />
+    <Compile Include="ViewModels\DatabaseDialogViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
     <Compile Include="Utils\UIHelper.cs" />
@@ -713,6 +712,9 @@
     <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DatabaseDialogView.xaml.cs">
+      <DependentUpon>DatabaseDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\BenchmarkServerFEView.xaml.cs">
       <DependentUpon>BenchmarkServerFEView.xaml</DependentUpon>
@@ -1001,6 +1003,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Light.DaxStudio.Theme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DatabaseDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -371,8 +371,8 @@ namespace DaxStudio.UI.ViewModels
                                                                         string.Empty, 
                                                                         database,
                                                                         server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop: ADOTabular.Enums.ServerType.AnalysisServices,
-                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase)
-                                                                        ));
+                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase),
+                                                                        _app.Args().Database??string.Empty));
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
               
             }

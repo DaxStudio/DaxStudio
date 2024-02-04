@@ -29,7 +29,7 @@ namespace ADOTabular
         public ADOTabularDatabase Visit(ADOTabularConnection conn)
         {
             var model = _daxModel;
-            db = new ADOTabularDatabase(_conn, model.ModelName?.Name??"<Unknown>", model.ModelName?.Name??"<Unknown>", model.LastUpdate, model.CompatibilityLevel.ToString(), string.Empty);
+            db = new ADOTabularDatabase(_conn, model.ModelName?.Name??"<Unknown>", model.ModelName?.Name??"<Unknown>", model.LastUpdate, model.CompatibilityLevel.ToString(), string.Empty, string.Empty);
             db.LastUpdate = model.LastDataRefresh;
             return db;
         }

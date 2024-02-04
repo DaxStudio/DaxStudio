@@ -159,6 +159,7 @@
     <Compile Include="Interfaces\IADOTabularConnection.cs" />
     <Compile Include="Interfaces\IADOTabularObject.cs" />
     <Compile Include="Interfaces\IADOTabularReference.cs" />
+    <Compile Include="Interfaces\IDatabaseReference.cs" />
     <Compile Include="Interfaces\IDAXFunctions.cs" />
     <Compile Include="Interfaces\IDmv.cs" />
     <Compile Include="Interfaces\IModelCapabilities.cs" />

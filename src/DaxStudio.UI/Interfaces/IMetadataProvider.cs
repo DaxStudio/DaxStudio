@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
+using ADOTabular.Interfaces;
 
 namespace DaxStudio.UI.Interfaces
 {
@@ -10,15 +11,15 @@ namespace DaxStudio.UI.Interfaces
         void Refresh();
 
         void SetSelectedDatabase(IDatabaseReference database);
-        void SetSelectedModel(ADOTabularModel model);
+        Task SetSelectedModelAsync(ADOTabularModel model);
 
         string FileName { get; }
         string ShortFileName { get; }
         ADOTabularDatabaseCollection GetDatabases();
         ADOTabularModelCollection GetModels();
         ADOTabularTableCollection GetTables();
-        string SelectedDatabaseName { get; }
-        ADOTabularDatabase SelectedDatabase { get; }
+        string DatabaseName { get; }
+        ADOTabularDatabase Database { get; }
         ADOTabularModel SelectedModel { get; }
         string SelectedModelName { get; }
 

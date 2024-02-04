@@ -8,7 +8,7 @@ namespace ADOTabular
     {
         private ADOTabularModelCollection _modelColl;
 
-        public ADOTabularDatabase(IADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate, string compatLevel, string roles)
+        public ADOTabularDatabase(IADOTabularConnection adoTabConn, string databaseName, string databaseId, DateTime lastUpdate, string compatLevel, string roles, string description)
         {
             Connection = adoTabConn;
             Name = databaseName;
@@ -16,6 +16,7 @@ namespace ADOTabular
             LastUpdate = lastUpdate;
             CompatibilityLevel = compatLevel;
             Roles = roles;
+            Description = description;
         }
 
         public bool HasSchemaChanged()
@@ -89,6 +90,6 @@ namespace ADOTabular
 
         public static MetadataImages MetadataImage => MetadataImages.Database;
 
-
+        public string Description { get; set; } = string.Empty;
     }
 }

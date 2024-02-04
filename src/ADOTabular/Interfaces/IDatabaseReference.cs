@@ -1,4 +1,4 @@
-﻿namespace DaxStudio.Interfaces
+﻿namespace ADOTabular.Interfaces
 {
     public interface IDatabaseReference
     {

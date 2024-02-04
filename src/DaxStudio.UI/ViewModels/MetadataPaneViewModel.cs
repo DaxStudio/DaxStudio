@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Composition;
+﻿using AsyncAwaitBestPractices;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows.Threading;
 using ADOTabular;
@@ -22,7 +23,6 @@ using DaxStudio.UI.Interfaces;
 using Humanizer;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 using System.Threading;
-using AsyncAwaitBestPractices;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -165,16 +165,23 @@ namespace DaxStudio.UI.ViewModels
             get => _selectedModel;
             set
             {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedModel), $"Set Start {value?.Name??"<null>"}");
                 if (_selectedModel != value)
                 {
+                    IsBusy = true;
                     _selectedModel = value;
                     NotifyOfPropertyChange(nameof(SelectedModel));
-                    //EventAggregator.PublishOnBackgroundThread(new SelectedModelChangedEvent( SelectedModelName));
                     
                     // clear table list
                     _treeViewTables = null;
-                    _metadataProvider.SetSelectedModel(SelectedModel);
+
+                    _metadataProvider.SetSelectedModelAsync(SelectedModel).ContinueWith((prev) => {
+                        Log.Verbose(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Clearing IsBusy in continuation");
+                        IsBusy = false; }
+                    ).SafeFireAndForget();
+                    
                 }
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedModel), "Set End");
             }
         }
 
@@ -191,7 +198,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private async Task RefreshTablesAsync()
+        internal async Task RefreshTablesAsync()
         {
             if (SelectedModel == null)
             {
@@ -210,6 +217,7 @@ namespace DaxStudio.UI.ViewModels
                         var sw = new Stopwatch();
                         sw.Start();
                         IsBusy = true;
+                        IsNotifying = false;
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Starting Refresh of Tables ");
                         _treeViewTables = _metadataProvider.GetTreeViewTables(this, _options);
                         sw.Stop();
@@ -225,26 +233,14 @@ namespace DaxStudio.UI.ViewModels
                     {
                         ShowMetadataRefreshPrompt = false;
                         Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Setting IsBusy = false");
-                        IsBusy = false;
-                    }
-                });
 
-                try
-                {
-                    IsNotifying = false;
-                    Tables = _treeViewTables;
-                    await EventAggregator.PublishOnUIThreadAsync(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
-                }
-                catch(Exception ex)
-                {
-                    Log.Error("{class} {method} {error} {stacktrace}", "MetadataPaneViewModel", "RefreshTables.ContinueWith", ex.Message, ex.StackTrace);
-                    await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
-                }
-                finally
-                {
-                    IsNotifying = true;
-                    Refresh(); // force all data bindings to update
-                }
+                        IsNotifying = true;
+                        Refresh(); // force all data bindings to update
+                        IsBusy = false;
+                        await EventAggregator.PublishOnUIThreadAsync(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
+                    }
+
+                });
                 
             }
 
@@ -354,14 +350,14 @@ namespace DaxStudio.UI.ViewModels
             DatabasesView.Refresh();
             //NotifyOfPropertyChange(() => DatabasesView);
             if (SelectedDatabase == null)
-                if (!string.IsNullOrEmpty(_metadataProvider.SelectedDatabaseName))
-                    SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == _metadataProvider.SelectedDatabaseName);
+                if (!string.IsNullOrEmpty(_metadataProvider.DatabaseName))
+                    SelectedDatabase = DatabasesView.FirstOrDefault(x => x.Name == _metadataProvider.DatabaseName);
                 else
                     SelectedDatabase = DatabasesView.FirstOrDefault();
         }
 
-        private DatabaseReference _selectedDatabase;
-        public DatabaseReference SelectedDatabase
+        private IDatabaseReference _selectedDatabase;
+        public IDatabaseReference SelectedDatabase
         {
             get => _selectedDatabase;
             set
@@ -392,7 +388,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public ADOTabularDatabase SelectedDatabaseObject => _metadataProvider.SelectedDatabase;
+        public ADOTabularDatabase SelectedDatabaseObject => _metadataProvider.Database;
 
         public string SelectedDatabaseDurationSinceUpdate {
             get
@@ -1007,6 +1003,12 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        public void SelectDatabaeByName(string databaseName)
+        {
+            var dbRef = Databases.FirstOrDefault(db => db.Name == databaseName);
+            SelectedDatabase = dbRef;
+        }
+
         public async Task ProcessDatabaseDefrag()
         {
             await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Starting Process Defragment"));
@@ -1065,6 +1067,17 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                //SelectedDatabase = null;
+                //SelectedModel = null;
+                //DatabasesView.Clear();
+                //ModelList?.Clear();
+                Tables = Enumerable.Empty<IFilterableTreeViewItem>();
+                NotifyOfPropertyChange(nameof(SelectedDatabase));
+                NotifyOfPropertyChange(nameof(SelectedModel));
+                NotifyOfPropertyChange(nameof(DatabasesView));
+                NotifyOfPropertyChange(nameof(ModelList));
+                NotifyOfPropertyChange(nameof(Tables));
+
                 Databases.IsNotifying = false;
                 Databases = _metadataProvider.GetDatabases().ToBindableCollection();
                 Databases.IsNotifying = true;
@@ -1095,7 +1108,11 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)
         {
             //IsBusy = true;
-            NotifyOfPropertyChange(nameof(Databases));
+            //NotifyOfPropertyChange(nameof(Databases));
+            SelectedDatabase = null;
+            SelectedModel = null;
+            ModelList?.Clear();
+            Databases.Clear();
             return Task.CompletedTask;
         }
 
