@@ -14,9 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.ExcelAddin", "DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj", "{C8769178-B109-4155-ABC2-F4E4587642DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAXEditor", "DAXEditor\DAXEditor.csproj", "{EE4788C1-DCA6-465F-8049-28CEACE6586F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.DAXEditor", "DAXEditor\DaxStudio.DAXEditor.csproj", "{EE4788C1-DCA6-465F-8049-28CEACE6586F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ADOTabular", "ADOTabular\ADOTabular.csproj", "{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.ADOTabular", "ADOTabular\DaxStudio.ADOTabular.csproj", "{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Interfaces", "DaxStudio.Interfaces\DaxStudio.Interfaces.csproj", "{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}"
 EndProject
@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.UI", "DaxStudio.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Tests", "..\tests\DaxStudio.Tests\DaxStudio.Tests.csproj", "{D1ED8FBD-8493-496F-9229-497DD526E1C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitComboLib", "UnitComboLib\UnitComboLib.csproj", "{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.UnitComboLib", "UnitComboLib\DaxStudio.UnitComboLib.csproj", "{C8C325AD-D7AB-4E56-8A6B-7E8B11EB5443}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{0772235B-BEB3-47D4-B186-54A02FAC4990}"
 	ProjectSection(SolutionItems) = preProject
@@ -56,7 +56,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.Controls.Property
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2FA78CD1-8A2D-4285-9DDB-FB4E4B46A7C7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvalonDock.Themes.DaxStudio", "AvalonDock.Themes.DaxStudio\AvalonDock.Themes.DaxStudio.csproj", "{B89D0C1B-90AB-4E59-A657-A95FD84D11F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DaxStudio.AvalonDock.Themes", "AvalonDock.Themes.DaxStudio\DaxStudio.AvalonDock.Themes.csproj", "{B89D0C1B-90AB-4E59-A657-A95FD84D11F1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaxStudio.FileIcons", "DaxStudio.FileIcons\DaxStudio.FileIcons.csproj", "{1193F456-32C3-4F82-9C80-3F178BD5D29A}"
 EndProject

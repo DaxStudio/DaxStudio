@@ -120,7 +120,7 @@ namespace DaxStudio.Tests
             mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false)).Returns(_functionDataSet);
             mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_CUBES", It.IsAny<AdomdRestrictionCollection>())).Returns(_cubesDataSet);
             mockConn.Setup(x => x.ShowHiddenObjects).Returns(true);
-            var mockDb = new Mock<ADOTabularDatabase>(mockConn.Object, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*");
+            var mockDb = new Mock<ADOTabularDatabase>(mockConn.Object, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
             _mockDatabase = mockDb.Object;
             mockConn.SetupGet(x => x.Database).Returns(_mockDatabase);
             mockConn.Setup(x => x.GetSchemaDataSet(

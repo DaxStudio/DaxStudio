@@ -1289,18 +1289,18 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
+    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj">
       <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
-      <Name>ADOTabular</Name>
+      <Name>DaxStudio.ADOTabular</Name>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\AvalonDock.Themes.DaxStudio\AvalonDock.Themes.DaxStudio.csproj">
+    <ProjectReference Include="..\AvalonDock.Themes.DaxStudio\DaxStudio.AvalonDock.Themes.csproj">
       <Project>{b89d0c1b-90ab-4e59-a657-a95fd84d11f1}</Project>
-      <Name>AvalonDock.Themes.DaxStudio</Name>
+      <Name>DaxStudio.AvalonDock.Themes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DAXEditor\DAXEditor.csproj">
+    <ProjectReference Include="..\DAXEditor\DaxStudio.DAXEditor.csproj">
       <Project>{ee4788c1-dca6-465f-8049-28ceace6586f}</Project>
-      <Name>DAXEditor</Name>
+      <Name>DaxStudio.DAXEditor</Name>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
       <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
@@ -1328,9 +1328,9 @@
       <Project>{efe78597-d6f1-45f3-9cc5-a01a2d957bfa}</Project>
       <Name>DaxStudio.SqlFormatter</Name>
     </ProjectReference>
-    <ProjectReference Include="..\UnitComboLib\UnitComboLib.csproj">
+    <ProjectReference Include="..\UnitComboLib\DaxStudio.UnitComboLib.csproj">
       <Project>{c8c325ad-d7ab-4e56-8a6b-7e8b11eb5443}</Project>
-      <Name>UnitComboLib</Name>
+      <Name>DaxStudio.UnitComboLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

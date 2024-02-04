@@ -7,7 +7,7 @@
              xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
              xmlns:avalonDockProperties="clr-namespace:AvalonDock.Properties;assembly=AvalonDock"
              xmlns:avalonDockConverters="clr-namespace:AvalonDock.Converters;assembly=AvalonDock"
-             xmlns:reskeys="clr-namespace:AvalonDock.Themes.DaxStudio.Themes;assembly=AvalonDock.Themes.DaxStudio"
+             xmlns:reskeys="clr-namespace:AvalonDock.Themes.DaxStudio.Themes;assembly=DaxStudio.AvalonDock.Themes"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"

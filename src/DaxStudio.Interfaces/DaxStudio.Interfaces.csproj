@@ -145,9 +145,9 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ADOTabular\ADOTabular.csproj">
+    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj">
       <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
-      <Name>ADOTabular</Name>
+      <Name>DaxStudio.ADOTabular</Name>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
       <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
