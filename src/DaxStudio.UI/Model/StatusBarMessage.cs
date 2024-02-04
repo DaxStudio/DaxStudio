@@ -6,8 +6,8 @@ namespace DaxStudio.UI.Model
 {
     public class StatusBarMessage : IStatusBarMessage
     {
-        private DocumentViewModel _document;
-        public StatusBarMessage(DocumentViewModel document, string message)
+        private IHaveStatusBar _document;
+        public StatusBarMessage(IHaveStatusBar document, string message)
         {
             _document = document;
             _document?.SetStatusBarMessage(message);           

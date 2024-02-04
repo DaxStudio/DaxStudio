@@ -51,7 +51,7 @@ namespace DaxStudio.Common.Extensions
                 .WithDescription("Hides version information");
 
             p.Setup<string>('u', "uri")
-                .Callback(uri => CmdLineArgs.ParseUri(ref app, uri))
+                .Callback(uri => app.Args().ParseUri( uri))
                 .WithDescription("used by the daxstudio:// uri handler");
 
 

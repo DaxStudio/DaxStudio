@@ -7,7 +7,7 @@ using DaxStudio.UI.Interfaces;
 using System.Data;
 using Serilog;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.ResultsTargets
 {
     // This is the target which writes the static results out to
     // a range in Excel
@@ -36,7 +36,7 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
             await Task.Run(async () =>
                 {

@@ -13,6 +13,7 @@ using Serilog;
 using DaxStudio.Interfaces;
 using System.Threading.Tasks;
 using System.Threading;
+using DaxStudio.UI.ResultsTargets;
 
 namespace DaxStudio.UI.ViewModels
 {

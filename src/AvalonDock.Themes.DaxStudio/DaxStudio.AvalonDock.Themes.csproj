@@ -23,6 +23,7 @@
     <StartupObject />
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <BaseOutputPath>..\bin\Debug\</BaseOutputPath>
+    <Configurations>Debug;Release;Cmd Only</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

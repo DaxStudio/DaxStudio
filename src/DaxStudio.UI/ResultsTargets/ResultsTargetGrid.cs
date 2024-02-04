@@ -10,7 +10,7 @@ using DaxStudio.UI.Extensions;
 using System.Data;
 using DaxStudio.Common.Extensions;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.ResultsTargets
 {
     // This is the default target which writes the results out to
     // the built-in grid
@@ -45,7 +45,7 @@ namespace DaxStudio.UI.Model
         #endregion
 
         // This is the core method that handles the output of the results
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
             // Read the AutoFormat option from the options singleton
             bool autoFormat = _options.ResultAutoFormat;

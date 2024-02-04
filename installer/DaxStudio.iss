@@ -37,35 +37,31 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
+ArchitecturesAllowed=x86 x64 arm64
+ArchitecturesInstallIn64BitMode=x64 
+ChangesAssociations=yes
+ChangesEnvironment=yes
+Compression=lzma
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-UseSetupLdr=Yes
-
+DisableDirPage=auto
+DisableProgramGroupPage=auto
+InfoBeforeFile=infobefore.txt
 LicenseFile=..\license.rtf
-
 OutputBaseFilename=DaxStudio_{#myAppMajor}_{#myAppMinor}_{#myAppRevision}_setup
 OutputDir=..\package
-Compression=lzma
+PrivilegesRequiredOverridesAllowed=dialog commandline
+SetupIconFile=DaxStudio.ico
 SolidCompression=yes
+UninstallDisplayIcon={app}\daxstudio.exe
+UseSetupLdr=Yes
 VersionInfoVersion={#MyAppVersion}                                      
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppURL}
-
-SetupIconFile=DaxStudio.ico
 WizardImageFile=WizardImageFile.bmp
 WizardSmallImageFile=WizardSmallImageFile.bmp
 
-PrivilegesRequiredOverridesAllowed=dialog commandline
-ArchitecturesAllowed=x86 x64 arm64
-ArchitecturesInstallIn64BitMode=x64 
-
-DisableDirPage=auto
-DisableProgramGroupPage=auto
-ChangesAssociations=yes
-UninstallDisplayIcon={app}\daxstudio.exe
-
-InfoBeforeFile=infobefore.txt
 
 [Messages]
 ; define wizard title and tray status msg
@@ -84,7 +80,7 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "blockallinternetaccess"; Description: "[NOT RECOMMENDED] Blocks all features requiring internet access including version checks, DAX formatting and crash reporting. This setting requires a re-install to change."; GroupDescription: "Privacy"; Flags: unchecked; Check: IsAdmin
-;Name: "pbiintegration"; Description: "Add to Power BI External Tools"; GroupDescription: "Power BI Desktop Integration"; Check: IsAdmin;
+Name: "modifypath"; Description: "&Add application directory to your environmental path";
 
 [Files]
 Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
@@ -98,6 +94,7 @@ Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsof
 
 ;Standalone configs
 Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
+Source: "..\release\dscmd.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
 ;Excel Addin configs
 Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Core; Check: IsExcel2010Installed
 Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core; Check: Not IsExcel2010Installed
@@ -626,6 +623,77 @@ end;
 
 
 /////////////////////////////////////////////////////////////////////
+// Path functions
+
+const EnvironmentKey = 'Environment';
+
+procedure EnvAddPath(instlPath: string);
+var
+    Paths: string;
+begin
+    { Retrieve current path (use empty string if entry not exists) }
+    if not RegQueryStringValue(HKEY_CURRENT_USER, EnvironmentKey, 'Path', Paths) then
+        Paths := '';
+
+    if Paths = '' then
+        Paths := instlPath + ';'
+    else
+    begin
+        { Skip if string already found in path }
+        if Pos(';' + Uppercase(instlPath) + ';',  ';' + Uppercase(Paths) + ';') > 0 then exit;
+        if Pos(';' + Uppercase(instlPath) + '\;', ';' + Uppercase(Paths) + ';') > 0 then exit;
+
+        { Append App Install Path to the end of the path variable }
+        Log(Format('Right(Paths, 1): [%s]', [Paths[length(Paths)]]));
+        if Paths[length(Paths)] = ';' then
+            Paths := Paths + instlPath + ';'  { don't double up ';' in env(PATH) }
+        else
+            Paths := Paths + ';' + instlPath + ';' ;
+    end;
+
+    { Overwrite (or create if missing) path environment variable }
+    if RegWriteStringValue(HKEY_CURRENT_USER, EnvironmentKey, 'Path', Paths)
+    then Log(Format('The [%s] added to PATH: [%s]', [instlPath, Paths]))
+    else Log(Format('Error while adding the [%s] to PATH: [%s]', [instlPath, Paths]));
+end;
+
+
+procedure EnvRemovePath(instlPath: string);
+var
+    Paths: string;
+    P, Offset, DelimLen: Integer;
+begin
+    { Skip if registry entry not exists }
+    if not RegQueryStringValue(HKEY_CURRENT_USER, EnvironmentKey, 'Path', Paths) then
+        exit;
+
+    { Skip if string not found in path }
+    DelimLen := 1;     { Length(';') }
+    P := Pos(';' + Uppercase(instlPath) + ';', ';' + Uppercase(Paths) + ';');
+    if P = 0 then
+    begin
+        { perhaps instlPath lives in Paths, but terminated by '\;' }
+        DelimLen := 2; { Length('\;') }
+        P := Pos(';' + Uppercase(instlPath) + '\;', ';' + Uppercase(Paths) + ';');
+        if P = 0 then exit;
+    end;
+
+    { Decide where to start string subset in Delete() operation. }
+    if P = 1 then
+        Offset := 0
+    else
+        Offset := 1;
+    { Update path variable }
+    Delete(Paths, P - Offset, Length(instlPath) + DelimLen);
+
+    { Overwrite path environment variable }
+    if RegWriteStringValue(HKEY_CURRENT_USER, EnvironmentKey, 'Path', Paths)
+    then Log(Format('The [%s] removed from PATH: [%s]', [instlPath, Paths]))
+    else Log(Format('Error while removing the [%s] from PATH: [%s]', [instlPath, Paths]));
+end;
+
+
+/////////////////////////////////////////////////////////////////////
 function IsUpgrade(): Boolean;
 begin
   Result := (GetUninstallString() <> '');
@@ -748,6 +816,17 @@ Log('pbitool exeName = ' + exeName );
   exit;
 end;
 
+const
+			ModPathName = 'modifypath';
+
+function ModPathDir(): TArrayOfString;
+		begin
+			setArrayLength(Result, 1);
+			Result[0] := ExpandConstant('{app}');
+		end;
+
+#include "modpath.iss"
+
 /////////////////////////////////////////////////////////////////////
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
@@ -769,11 +848,23 @@ begin
       begin
           Log('Skipping Power BI Desktop External Tools File - Current User install');
       end;
-  
-    Log('Clearing AutoSave Folder'); 
+    
+    if WizardIsTaskSelected(ModPathName) then begin
+      Log('Adding to Path:' + ExpandConstant('{app}'));
+			ModPath();
+    end;
+
+    Log('Clearing AutoSave Folder - ' + ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*')); 
     DelTree(ExpandConstant('{userappdata}\DaxStudio\AutoSaveFiles\*.*'), False,True,False);
 
   end;
+end;
+
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+	if (CurUninstallStep  = usUninstall) then
+			RemoveFromPath();
 end;
 
 

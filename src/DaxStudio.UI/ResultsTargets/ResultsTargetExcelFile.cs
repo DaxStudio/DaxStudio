@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static LargeXlsx.XlsxAlignment;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.ResultsTargets
 {
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetExcelFile : IResultsTarget
@@ -48,87 +48,93 @@ namespace DaxStudio.UI.Model
 
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
         {
-
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
                 DefaultExt = ".xlsx",
                 Filter = "Excel file (*.xlsx)|*.xlsx"
             };
 
-            string fileName = "";
-            long durationMs = 0;
             // Show save file dialog box
             var result = dlg.ShowDialog();
 
             // Process save file dialog box results 
             if (result == true)
             {
-                // Save document 
-                fileName = dlg.FileName;
-                await Task.Run(() =>
+                await OutputResultsAsync(runner, textProvider, dlg.FileName);
+            }
+            else
+            {
+                await Task.CompletedTask;
+            }
+        }
+
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string fileName)
+        {
+
+            long durationMs = 0;
+
+            // Save document 
+            await Task.Run(() =>
+            {
+
+                runner.OutputMessage("Query Started");
+
+                var sw = Stopwatch.StartNew();
+
+                var daxQuery = textProvider.QueryText;
+
+                using (var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection))
+                using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
                 {
 
-                    var sw = Stopwatch.StartNew();
-
-                    var daxQuery = textProvider.QueryText;
-                    
-                    using (var reader = runner.ExecuteDataReaderQuery(daxQuery, textProvider.ParameterCollection))
-                    using (var statusProgress = runner.NewStatusBarMessage("Starting Export"))
+                    if (reader != null)
                     {
+                        int iFileCnt = 1;
 
-                        if (reader != null)
+
+                        runner.OutputMessage("Command Complete, writing output file");
+
+                        bool moreResults = true;
+
+                        using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+                        using (var xlsxWriter = new XlsxWriter(stream))
                         {
-                            int iFileCnt = 1;
-
-
-                            runner.OutputMessage("Command Complete, writing output file");
-
-                            bool moreResults = true;
-
-                            using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
-                            using (var xlsxWriter = new XlsxWriter(stream))
+                            while (moreResults)
                             {
-                                while (moreResults)
-                                {
-                                    // create a worksheet for the current resultset
-                                    xlsxWriter.BeginWorksheet($"Query{iFileCnt}",1);
+                                // create a worksheet for the current resultset
+                                xlsxWriter.BeginWorksheet($"Query{iFileCnt}", 1);
 
-                                    // write out the current resultset
-                                    var iRowCnt = WriteToWorksheet(reader, xlsxWriter, statusProgress, runner);
+                                // write out the current resultset
+                                var iRowCnt = WriteToWorksheet(reader, xlsxWriter, statusProgress, runner);
 
-                                    // setup Excel Autofilters
-                                    xlsxWriter.SetAutoFilter(1, 1, xlsxWriter.CurrentRowNumber, reader.FieldCount);
+                                // setup Excel Autofilters
+                                xlsxWriter.SetAutoFilter(1, 1, xlsxWriter.CurrentRowNumber, reader.FieldCount);
 
-                                    runner.OutputMessage(
-                                            string.Format("Query {2} Completed ({0:N0} row{1} returned)"
-                                                        , iRowCnt
-                                                        , iRowCnt == 1 ? "" : "s", iFileCnt)
-                                            );
+                                runner.OutputMessage(
+                                        string.Format("Query {2} Completed ({0:N0} row{1} returned)"
+                                                    , iRowCnt
+                                                    , iRowCnt == 1 ? "" : "s", iFileCnt)
+                                        );
 
-                                    runner.RowCount = iRowCnt;
+                                runner.RowCount = iRowCnt;
 
-                                    moreResults = reader.NextResult();
+                                moreResults = reader.NextResult();
 
-                                    iFileCnt++;
-                                }
-
+                                iFileCnt++;
                             }
 
-                            sw.Stop();
-                            durationMs = sw.ElapsedMilliseconds;
-
-                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
-                            runner.ActivateOutput();
                         }
-                        
+
+                        sw.Stop();
+                        durationMs = sw.ElapsedMilliseconds;
+
+                        runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                        runner.ActivateOutput();
                     }
 
+                }
 
-                });
-
-            }
-            // else dialog was cancelled so return an empty task.
-            await Task.Run(() => { });
+            });
         }
 
 

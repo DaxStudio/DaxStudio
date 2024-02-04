@@ -62,9 +62,9 @@
     <MyAssemblies>.\Release\bin\DaxStudio.dll</MyAssemblies>
   </PropertyGroup>
 
-  <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb;SignAssemblies">
+  <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb">
     <ItemGroup>
-      <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;" />
+      <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;.\Release\bin\dscmd.exe;.\Release\bin\dscmd.exe.config;" />
     </ItemGroup>
     <Message Text="Moving exe files" Importance="High" />
     <Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release" />
@@ -93,14 +93,25 @@
    <!--  <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
     <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.checker.exe' IgnoreExitCode="true"/>
     <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/> -->
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\bin\daxstudio.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\daxstudio.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\bin\daxstudio.checker.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\dscmd.exe' 
+          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\daxstudio.checker.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
     <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\bin\daxstudio.dll' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 
   </Target>
+  
+ <Target Name="SignDlls" >
+	<ItemGroup>
+		<AllFiles Include=".\Release\bin\DaxStudio.*.dll"/>
+	</ItemGroup>
+	<Message Text="DLLs: @(AllFiles, ' ')" Importance="high" />
+ </Target>
+ 
+  
 
   <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
     <Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
@@ -130,6 +141,7 @@
   </Target>
 
   <Target Name="CreatePortableFile">
+	<Message Text="Creating .portable file" Importance="high"/>
     <Touch Files=".\Release\bin\.portable" AlwaysCreate="True" />
   </Target>
 
@@ -149,7 +161,11 @@
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
-  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies">
+  <Target Name="SignedPortable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies">
+    <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
+  </Target>
+
+  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes">
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
 
@@ -160,7 +176,7 @@
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
   
-  <Target Name="GeneratePortableHash" DependsOnTargets="Portable">
+  <Target Name="GeneratePortableHash" DependsOnTargets="SignedPortable">
     <ItemGroup>
       <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" />
     </ItemGroup>
@@ -174,18 +190,18 @@
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Portable_Hash.txt" />
   </Target>
 
-  <Target Name="UnsignedGenerateInstallerHash" DependsOnTargets="SignedInstaller">
+  <Target Name="UnsignedGenerateInstallerHash" DependsOnTargets="Installer">
     <ItemGroup>
       <FilesToHash Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_setup.exe" />
     </ItemGroup>
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
 
-  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;Portable;GeneratePortableHash;GenerateInstallerHash">
+  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;SignedPortable;GeneratePortableHash;GenerateInstallerHash">
     <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 
-  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash">
+  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash;SignDlls">
     <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 

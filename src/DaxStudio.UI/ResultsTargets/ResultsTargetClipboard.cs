@@ -10,8 +10,9 @@ using DaxStudio.Common;
 using System.IO;
 using DaxStudio.UI.Events;
 using System.Windows;
+using DaxStudio.UI.Model;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.ResultsTargets
 {
     // This is the default target which writes the results out to
     // the built-in grid
@@ -44,7 +45,7 @@ namespace DaxStudio.UI.Model
         #endregion
 
         // This is the core method that handles the output of the results
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
             StringBuilder sb = new StringBuilder();
 

@@ -62,7 +62,7 @@ namespace DaxStudio.UI.ResultsTargets
         }
         #endregion
 
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
             await Task.Run(async () =>
                 {

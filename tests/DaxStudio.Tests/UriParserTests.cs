@@ -34,8 +34,8 @@ namespace DaxStudio.Tests
         {
             var input = "daxstudio:?server=localhost:1234&Database=adventure%20Works%202020";
             mockApp.Properties.Clear();
-            var args = new CmdLineArgs(mockApp);
-            CmdLineArgs.ParseUri(ref mockApp, input);
+            var args = new CmdLineArgs(mockApp.Properties);
+            args.ParseUri( input);
 
             Assert.AreEqual("localhost:1234", args.Server, "Server parsed");
             Assert.AreEqual("adventure Works 2020", args.Database, "Database parsed");
@@ -46,8 +46,8 @@ namespace DaxStudio.Tests
         {
             var input = "daxstudio:?server=powerbi%3a%2f%2fapi.powerbi.com%2fv1.0%2fmyorg%2fdgosbell%2520demo&database=Adv+Wrks+Azure+DQ&query=RVZBTFVBVEUgRGltUmVzZWxsZXI=";
             mockApp.Properties.Clear();
-            var args = new CmdLineArgs(mockApp);
-            CmdLineArgs.ParseUri(ref mockApp, input);
+            var args = new CmdLineArgs(mockApp.Properties);
+            args.ParseUri( input);
 
             Assert.AreEqual("powerbi://api.powerbi.com/v1.0/myorg/dgosbell%20demo", args.Server, "Server parsed");
             Assert.AreEqual("Adv Wrks Azure DQ", args.Database, "Database parsed");

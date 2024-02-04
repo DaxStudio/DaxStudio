@@ -4,7 +4,6 @@ using System.Windows;
 using DaxStudio.UI;
 using Serilog;
 using DaxStudio.UI.Utils;
-using Fclp;
 using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
@@ -23,7 +22,6 @@ using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
 //using Microsoft.Identity.Client;
-
 
 namespace DaxStudio.Standalone
 {
@@ -312,7 +310,7 @@ namespace DaxStudio.Standalone
             Log.Error(ex, "{class} {method} {message}", nameof(EntryPoint), nameof(LogFatalCrash), msg);
             Log.CloseAndFlush();
 
-            if (_options.BlockCrashReporting)
+            if (_options?.BlockCrashReporting??true)
             {
                 Application.Current.Dispatcher.Invoke(()=>{
                     // Show a dialog to let the user know there was a fatal crash
@@ -415,6 +413,14 @@ namespace DaxStudio.Standalone
             }
         }
 
+        private static void ReadCommandLineArgs(this Application app, string[] args)
+        {
+            app.Args().Clear();
+
+            Application.Current.Args().Parse(args);
+            
+        }
+
 
         private static void AddResourceDictionary(this Application app, string src)
         {
@@ -435,8 +441,6 @@ namespace DaxStudio.Standalone
                 _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
             }
         }
-
-        
 
 
     }

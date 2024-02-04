@@ -107,6 +107,7 @@ namespace DaxStudio.UI.ViewModels
         , IHaveShutdownTask
         , ISaveable
         , IGuardClose
+        , IDocumentToExport
 
     {
         // Changed from the original Unicode - if required we could make this an optional setting in future
@@ -2135,7 +2136,7 @@ namespace DaxStudio.UI.ViewModels
 
                         OutputMessage("Query Started");
 
-                        await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider);
+                        await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
 
                         // if the server times trace watcher is not active then just record client timings
                         if (!TraceWatchers.OfType<ServerTimesViewModel>().First().IsChecked && _currentQueryDetails != null)
@@ -3507,7 +3508,7 @@ namespace DaxStudio.UI.ViewModels
             return new StatusBarMessage(this, message);
         }
 
-        internal void SetStatusBarMessage(string message)
+        public void SetStatusBarMessage(string message)
         {
             try
             {
@@ -4872,6 +4873,10 @@ namespace DaxStudio.UI.ViewModels
         }
         public bool IsLoadingLayout { get; private set; }
         public bool IsConnectionDialogOpen { get; internal set; }
+
+        IConnectionManager IDocumentToExport.Connection => (IConnectionManager)Connection;
+
+        IMetadataPane IDocumentToExport.MetadataPane => (IMetadataPane)MetadataPane; 
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {

@@ -24,7 +24,7 @@ namespace DaxStudio.Common
 
         public static CmdLineArgs Args(this System.Windows.Application app)
         {
-            return new CmdLineArgs(app);
+            return new CmdLineArgs(app.Properties);
             //if (_args == null) _args = new CmdLineArgs(app);
             //return _args;
         }

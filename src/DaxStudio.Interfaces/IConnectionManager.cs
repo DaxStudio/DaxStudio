@@ -1,7 +1,10 @@
-﻿using ADOTabular.Enums;
+﻿using ADOTabular;
+using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
 using DaxStudio.Common.Enums;
+using Microsoft.AnalysisServices.AdomdClient;
 using System.Collections.Generic;
+using System.Data;
 
 namespace DaxStudio.Interfaces
 {
@@ -19,5 +22,12 @@ namespace DaxStudio.Interfaces
         DaxColumnsRemap DaxColumnsRemapInfo { get; }
         void Ping();
         void PingTrace();
+        IEnumerable<string> AllFunctions { get; }
+
+        ADOTabularDatabase Database { get; }
+        string SelectedModelName { get; }
+
+        ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string query, List<AdomdParameter> paramList);
+        DataTable ExecuteDaxQueryDataTable(string query);
     }
 }

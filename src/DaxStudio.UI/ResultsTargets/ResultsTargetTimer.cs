@@ -7,7 +7,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using Caliburn.Micro;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.ResultsTargets
 {
     // This Results Target discards the returned dataset
     // this is primarily aimed at scenarios like performance tuning
@@ -32,7 +32,7 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
 
             await Task.Run(() => { 

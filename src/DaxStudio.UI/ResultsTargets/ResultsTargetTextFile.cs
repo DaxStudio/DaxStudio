@@ -1,16 +1,16 @@
 ﻿using DaxStudio.Common;
-using DaxStudio.Interfaces;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using Newtonsoft.Json;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
+using DaxStudio.Interfaces;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.ResultsTargets
 {
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetTextFile : IResultsTarget
@@ -30,9 +30,12 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
-        {
+        //private string Separator = "\t";
+        private Encoding FileEncoding = new UTF8Encoding(false);
+        //private bool ShouldQuoteStrings = true;
 
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string fileName = null)
+        {
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
                 DefaultExt = ".csv",
@@ -40,24 +43,29 @@ namespace DaxStudio.UI.Model
                 FilterIndex = runner.Options.DefaultTextFileType,
             };
 
-            string fileName = "";
-            long durationMs = 0;
             // Show save file dialog box
-            var result = dlg.ShowDialog();
-
-            // Process save file dialog box results 
-            if (result == true)
+            bool? result = false;
+            if (string.IsNullOrEmpty(fileName))
             {
+                result = dlg.ShowDialog();
                 // Remember the file type that was chosen
                 runner.Options.DefaultTextFileType = dlg.FilterIndex;
 
                 // Save document 
                 fileName = dlg.FileName;
+            } else
+            {
+                result = true;
+                
+            }
+            if (result == true)
+            {
+                
                 await Task.Run(() =>
                 {
 
                     var sw = Stopwatch.StartNew();
-
+                    long durationMs = 0;
                     string sep = "\t";
                     bool shouldQuoteStrings = true; //default to quoting all string fields
                     bool toJson = false;

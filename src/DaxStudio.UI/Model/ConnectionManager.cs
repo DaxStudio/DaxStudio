@@ -886,6 +886,13 @@ namespace DaxStudio.UI.Model
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - end" );
         }
 
+        public void Connect(IConnectEvent message)
+        {
+            var id = new Guid();
+            var msg = new ConnectEvent(message.ConnectionString, message.PowerPivotModeSelected, message.ApplicationName, message.PowerPivotModeSelected?message.WorkbookName:message.PowerBIFileName, message.ServerType, message.RefreshDatabases);
+            ConnectAsync(msg, id).Wait();
+        }
+
         internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
         {
             IsConnecting = true;

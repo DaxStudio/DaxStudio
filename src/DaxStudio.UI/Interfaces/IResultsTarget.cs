@@ -10,7 +10,7 @@ namespace DaxStudio.UI.Interfaces
         string Name { get; }
         string Group { get; }
         //void OutputResults(IQueryRunner runner );
-        Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider provider);
+        Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider provider, string filename);
         bool IsDefault { get; }
         bool IsAvailable { get; }
         bool IsEnabled { get; }

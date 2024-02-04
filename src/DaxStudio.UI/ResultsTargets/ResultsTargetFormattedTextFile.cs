@@ -36,7 +36,7 @@ namespace DaxStudio.UI.Model
         public string DisabledReason => "";
         #endregion
 
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
+        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
 
             var dlg = new Microsoft.Win32.SaveFileDialog

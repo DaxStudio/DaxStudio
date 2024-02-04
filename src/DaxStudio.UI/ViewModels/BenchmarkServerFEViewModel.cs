@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.UI.ResultsTargets;
 
 namespace DaxStudio.UI.ViewModels
 {
