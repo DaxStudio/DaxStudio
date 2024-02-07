@@ -44,7 +44,7 @@
             <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}" >
                 <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
                 <Setter Property="Margin" Value="0 0 0 0"/>
-                <Setter Property="Padding" Value="0 3 3 0" />
+                <Setter Property="Padding" Value="2 3 3 0" />
                 <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
             </Style>
             <Style x:Key="TextCenteredBlockStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
@@ -55,7 +55,7 @@
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
             <Style x:Key="TextBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
-                <Setter Property="Padding" Value="0 0 3 0" />
+                <Setter Property="Padding" Value="2 0 3 0" />
                 <Setter Property="FontWeight" Value="Bold"/>
             </Style>
             <Style x:Key="TextCenteredBlockBoldStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockBoldStyle}">
@@ -1038,6 +1038,7 @@
                                                                 <TextBlock Text="{Binding Name.TableName}" Width="{Binding ActualWidth, ElementName=colPartitionName, Converter={StaticResource MinusConverter}, ConverterParameter=16}" Style="{StaticResource TextBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.RowsCount, StringFormat=N0}" Width="{Binding ActualWidth, ElementName=colRowsCount}" Style="{StaticResource NumBlockBoldStyle}"/>
                                                                 <TextBlock Text="{Binding Name.DataSize, StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colDataSize}"/>
+                                                                <TextBlock Text="{Binding Name.StorageMode }" Style="{StaticResource TextBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colStorageMode}" />
                                                                 <TextBlock Text="{Binding Name.PartitionsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartitions}" />
                                                                 <TextBlock Text="{Binding Name.SegmentsNumber,StringFormat=N0}" Style="{StaticResource NumBlockBoldStyle}" Width="{Binding ActualWidth, ElementName=colPartSegments}" />
 
@@ -1132,6 +1133,19 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Binding="{Binding StorageMode}"  
+                                x:Name="colStorageMode" 
+                                Header="Mode" 
+                                ElementStyle="{StaticResource TextBlockStyle}"
+                                >
+                                <!--<DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                        <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Partitions, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>-->
+                            </DataGridTextColumn>
+
 
                             <DataGridTextColumn Binding="{Binding PartitionsNumber, StringFormat=N0}"  
                                                 x:Name="colPartitions" 

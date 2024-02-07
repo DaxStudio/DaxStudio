@@ -63,8 +63,8 @@ namespace DaxStudio.UI.ViewModels
                 {
                     case VpaSort.Table: _parentViewModel.TableSortDirection = value; break;
                     //case VpaSort.Column:  _parentViewModel.ColumnSortDirection = value; break;
-                    case VpaSort.Partition:  _parentViewModel.PartitionSortDirection = value; break;
-                    case VpaSort.Relationship:  _parentViewModel.RelationshipSortDirection = value; break;
+                    case VpaSort.Partition: _parentViewModel.PartitionSortDirection = value; break;
+                    case VpaSort.Relationship: _parentViewModel.RelationshipSortDirection = value; break;
                 }
             }
         }
@@ -97,9 +97,9 @@ namespace DaxStudio.UI.ViewModels
 
         public string TableName => _table.TableName;
         public long TableSize => _table.TableSize;
-        public string ColumnsEncoding => 
-            (_table.HasDualPartitions == true) ? "Dual" : 
-            (_table.HasDirectQueryPartitions == true) ? "DQ" : 
+        public string ColumnsEncoding =>
+            (_table.HasDualPartitions == true) ? "Dual" :
+            (_table.HasDirectQueryPartitions == true) ? "DQ" :
             _table.ColumnsEncoding;
         public string ColumnsTypeName => "-";
         public double PercentageDatabase => _table.PercentageDatabase;
@@ -191,5 +191,28 @@ namespace DaxStudio.UI.ViewModels
             } }
         public long RelationshipMaxToCardinality { get; }
 
+        string _storageMode = string.Empty;
+        public string StorageMode {
+            get
+            {
+                if (!string.IsNullOrEmpty(_storageMode)) return _storageMode;
+                foreach (var p in _table.Partitions)
+                {
+                    if (string.IsNullOrEmpty(_storageMode))
+                    {
+                        _storageMode = p.PartitionMode;
+                        continue;
+                    }
+                    if (p.PartitionMode != _storageMode)
+                    {
+                        _storageMode = "Hybrid";
+                        break;
+                    }
+                }
+                return _storageMode;
+
+            }
+            
+        }
     }
 }

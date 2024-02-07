@@ -64,5 +64,7 @@ namespace DaxStudio.UI.ViewModels
         public double PercentOfTableRows => (Table == null ? 0 : RowsCount / (double)Table.RowsCount); 
         public double PercentOfTableSize => Table == null ? 0 : DataSize / (double)Table.DataSize;
 
+        public string StorageMode => _partition.PartitionMode;
+
     }
 }
