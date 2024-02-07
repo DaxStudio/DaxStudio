@@ -153,5 +153,10 @@ namespace ADOTabular
         {
             return GetEnumerator();
         }
+
+        public bool TryGetValue(string columnName, out ADOTabularColumn column)
+        {
+            return _cols.TryGetValue(columnName, out column);
+        }
     }
 }

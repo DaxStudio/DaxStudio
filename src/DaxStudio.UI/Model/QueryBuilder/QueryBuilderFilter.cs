@@ -30,7 +30,7 @@ namespace DaxStudio.UI.Model
         }
 
         [DataMember]
-        public IADOTabularColumn TabularObject { get; }
+        public IADOTabularColumn TabularObject { get; internal set; }
         [DataMember]
         public IModelCapabilities ModelCapabilities { get; }
         public IEventAggregator EventAggregator { get; }
@@ -113,7 +113,7 @@ namespace DaxStudio.UI.Model
                     if (FilterValueIsParameter) _filterValue = _filterValue.TrimStart('@');
                 }
                 if (_filterValue.IsNullOrEmpty()) FilterValueIsParameter= false;
-                FilterValueValidationMessage = ValidateInput(FilterValue, FilterValueIsParameter);
+                FilterValueValidationMessage = ValidateInput(_filterValue, FilterValueIsParameter);
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValueIsValid));
                 NotifyOfPropertyChange(nameof(FilterValueValidationMessage));

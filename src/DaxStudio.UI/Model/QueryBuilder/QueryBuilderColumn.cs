@@ -56,6 +56,7 @@ namespace DaxStudio.UI.Model
             _caption = caption;
             SelectedTable = table;
             IsModelItem = false;
+            TabularObject = new ADOTabularColumnStub() { Caption = caption, ObjectType = ADOTabularObjectType.Measure, DaxName= $"[{caption}]" };
         }
 
         public string MinValue => TabularObject?.MinValue;

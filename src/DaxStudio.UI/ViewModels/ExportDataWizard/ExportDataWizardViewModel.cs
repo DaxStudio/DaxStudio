@@ -647,16 +647,18 @@ namespace DaxStudio.UI.ViewModels
                         catch (TaskCanceledException)
                         {
                             _currentTable.Status = ExportStatus.Error;
-                            Log.Warning(Constants.LogMessageTemplate, nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), $"Export Operation Cancelled for table: {table.Caption}");
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Cancelled Export data to SQL Server Table: {table.Caption}"));
+                            var msg = $"Export Operation Cancelled for table: {table.Caption}";
+                            Log.Warning(Constants.LogMessageTemplate, nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), msg);
+                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
                         }
                         catch (InvalidOperationException ex2)
                         {
                             // we get this exception if the SQL connection is closed
                             _currentTable.Status = ExportStatus.Error;
                             var innerEx = ex2.GetLeafException();
-                            Log.Error(innerEx, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), innerEx.Message);
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {innerEx.Message}"));
+                            var msg = $"Error exporting data from {_currentTable.DaxName} to SQL Server Table: {innerEx.Message}";
+                            Log.Error(innerEx, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), msg);
+                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
                             await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
                             MarkWaitingTablesAsSkipped();
                             break;
