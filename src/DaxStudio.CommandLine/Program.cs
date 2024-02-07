@@ -117,11 +117,14 @@ namespace DaxStudio.CommandLine
                 .WithExample(new[] { "vpax", "c:\\temp\\export\\model.vpax", "-c", "\"Data Source=localhost\\tabular;Initial Catalog=Adventure Works\"" });
 
 #if DEBUG
-                //                config.Settings.ExceptionHandler = OnException;
+                // Custom Trace
                 config.AddCommand<CustomTraceCommand>("customtrace")
     .WithDescription("Starts a custom trace")
     .WithExample(new[] { "customtrace", "refresh trace", "c:\\temp\\refresh.json", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" })
     .WithExample(new[] { "customtrace", "refresh trace", "c:\\temp\\refresh.json", "-c", "\"Data Source=localhost\\tabular;Initial Catalog=Adventure Works\"" });
+
+
+                // Capture Diagnostics
 #endif
             });
             

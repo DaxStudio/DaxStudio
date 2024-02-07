@@ -104,7 +104,7 @@ namespace DaxStudio.CommandLine.Commands
                     };
                 try {
                     connMgr.Connect(connEvent);
-                    connMgr.SelectedModel = connMgr.SelectedDatabase.Models.BaseModel;
+                    connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
                     connMgr.SelectedModelName = connMgr.SelectedModel.Name;
                     Log.Information($"Connected to Tabular Server: {settings.Server}");
                     var metadataPane = new CmdLineMetadataPane();

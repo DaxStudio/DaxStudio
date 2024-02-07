@@ -126,9 +126,12 @@
     <Compile Include="Enums\UITheme.cs" />
     <Compile Include="Enums\VpaTableColumnDisplay.cs" />
     <Compile Include="IActivateResults.cs" />
+    <Compile Include="IConnectEvent.cs" />
+    <Compile Include="IDocumentToExport.cs" />
     <Compile Include="IFilterableTreeViewItem.cs" />
     <Compile Include="IFunctionProvider.cs" />
     <Compile Include="IGlobalOptionsBase.cs" />
+    <Compile Include="IHaveStatusBar.cs" />
     <Compile Include="IMetadataPane.cs" />
     <Compile Include="IModelIntellisenseProvider.cs" />
     <Compile Include="ITabularConnection.cs" />

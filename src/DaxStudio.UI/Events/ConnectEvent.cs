@@ -41,7 +41,7 @@ namespace DaxStudio.UI.Events
         public ServerType ServerType { get; internal set; }
 
         public string DatabaseName { get;  }
-        public bool RefreshDatabases { get;  }
+        public bool RefreshDatabases { get; }
         public VpaxContent VpaxContent { get;  }
 
         public List<ITraceWatcher> ActiveTraces { get; set; }

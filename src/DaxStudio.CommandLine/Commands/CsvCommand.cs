@@ -6,6 +6,11 @@ using DaxStudio.UI.Interfaces;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.UI.Model;
+using System;
+using System.Security.Cryptography;
+using System.Runtime.Remoting.Messaging;
+using System.Reflection;
+using DaxStudio.CommandLine.Infrastructure;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -45,17 +50,35 @@ namespace DaxStudio.CommandLine.Commands
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            VersionInfo.Output();
             Log.Information("Starting CSV command");
-            if (settings.File != null && settings.Query == null)
+            try
             {
-                settings.Query = System.IO.File.ReadAllText(settings.File);
+                if (settings.File != null && settings.Query == null)
+                {
+                    settings.Query = System.IO.File.ReadAllText(settings.File);
+                }
+                // export to csv
+                var runner = new QueryRunner(settings.Server, settings.Database);
+                var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
+                target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
+                Log.Information("Finished CSV command");
+                return 0;
+            } 
+            catch (AggregateException aex)
+            {
+                foreach (var ex in aex.InnerExceptions)
+                {
+                    Log.Error(ex, "Error: {message}", ex.Message);
+                }
+                return 2;
             }
-            // export to csv
-            var runner = new QueryRunner(settings.Server, settings.Database);
-            var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
-            target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
-            Log.Information("Finished CSV command");
-            return 0;
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error: {message}", ex.Message);
+                return 1;
+            }
         }
     }
+
 }

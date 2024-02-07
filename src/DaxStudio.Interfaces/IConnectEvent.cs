@@ -11,8 +11,8 @@ namespace DaxStudio.Interfaces
         public string PowerBIFileName { get; set; }
         public ServerType ServerType { get;  }
 
-        public string DatabaseName { get; set; }
-        public bool RefreshDatabases { get; set; }
+        public string DatabaseName { get;  }
+        public bool RefreshDatabases { get;  }
 
     }
 }

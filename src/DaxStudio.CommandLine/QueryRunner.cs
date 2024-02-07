@@ -1,6 +1,8 @@
-﻿using DaxStudio.Interfaces;
+﻿using Caliburn.Micro;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
+using DaxStudio.UI.ViewModels;
 using Serilog;
 using System.Data;
 using System.Threading.Tasks;
@@ -9,10 +11,14 @@ namespace DaxStudio.CommandLine
 {
     internal class QueryRunner : IQueryRunner
     {
+        static IEventAggregator EventAggregator { get; set; } = new EventAggregator();
+        private ISettingProvider _settingProvider;
         public QueryRunner(string server, string database)
         {
             // TODO - how to support AzureAD auth??
             ConnectionStringWithInitialCatalog = $"Data Source={server};Initial Catalog={database}";
+            _settingProvider = SettingsProviderFactory.GetSettingProvider();
+            Options = new OptionsViewModel(EventAggregator, _settingProvider);
         }
 
         private string _queryText = string.Empty;
@@ -31,7 +37,7 @@ namespace DaxStudio.CommandLine
 
         public int RowCount { get ; set ; }
 
-        public IGlobalOptions Options => throw new System.NotImplementedException();
+        public IGlobalOptions Options { get; }
 
         public ConnectionManager Connection => throw new System.NotImplementedException();
 

@@ -5,6 +5,7 @@ using Spectre.Console;
 using Caliburn.Micro;
 using DaxStudio.UI.Utils;
 using System.Reflection;
+using DaxStudio.CommandLine.Infrastructure;
 
 
 namespace DaxStudio.CommandLine.Commands
@@ -38,6 +39,7 @@ namespace DaxStudio.CommandLine.Commands
 
         public override int Execute(CommandContext context, Settings settings)
         {
+            VersionInfo.Output();
             AnsiConsole.MarkupLine("Starting VPAX command");
             Log.Information("Starting VPAX command");
             AnsiConsole.Status()

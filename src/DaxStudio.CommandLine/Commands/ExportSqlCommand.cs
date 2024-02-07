@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Extensions;
+using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Serilog;
@@ -56,7 +57,8 @@ namespace DaxStudio.CommandLine.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
-            Log.Information("Starting EXPORTSQL Command");
+            VersionInfo.Output();
+            Log.Information("Starting EXPORT SQL Command");
             var hasError = false;
             AnsiConsole.MarkupLine("Starting [yellow]EXPORTSQL[/] Command...");
 
@@ -83,7 +85,7 @@ namespace DaxStudio.CommandLine.Commands
                             DatabaseName = settings.Database
                         };
                         connMgr.Connect(connEvent);
-                        connMgr.SelectedModel = connMgr.SelectedDatabase.Models.BaseModel;
+                        connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
                         connMgr.SelectedModelName = connMgr.SelectedModel.Name;
                         WriteLogMessage($"Connected to Tabular Server: {settings.Server}");
                         var metadataPane = new CmdLineMetadataPane();

@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Extensions;
+using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Serilog;
@@ -19,9 +20,9 @@ namespace DaxStudio.CommandLine.Commands
         internal class Settings: CommandSettingsFolderBase
         {
 
-            [CommandArgument(0,"[folder]")]
-            [Description("The folder where the csv files will be written")]
-            public string Folder { get; set; }
+            //[CommandArgument(0,"[folder]")]
+            //[Description("The folder where the csv files will be written")]
+            //public string Folder { get; set; }
 
             [CommandOption("-t|--tables <tables>")]
             [Description("A list of tables to be exported, if this option is not specified all the tables in the model are exported")]
@@ -46,6 +47,7 @@ namespace DaxStudio.CommandLine.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
+            VersionInfo.Output();
             Log.Information("Starting [yellow]EXPORT CSV[/] Command");
             var HasError = false;
             //AnsiConsole.MarkupLine("Starting [yellow]EXPORTCSV[/] Command...");
@@ -75,7 +77,7 @@ namespace DaxStudio.CommandLine.Commands
                             PowerBIFileName = ""
                         };
                         connMgr.Connect(connEvent);
-                        connMgr.SelectedModel = connMgr.SelectedDatabase.Models.BaseModel;
+                        connMgr.SelectedModel = connMgr.Database.Models.BaseModel;
                         connMgr.SelectedModelName = connMgr.SelectedModel.Name;
                         Log.Information($"Connected to Tabular Server: {settings.Server}");
                         var metadataPane = new CmdLineMetadataPane();
@@ -105,7 +107,7 @@ namespace DaxStudio.CommandLine.Commands
                             cnt++;
                         }
                         Log.Information($"Exporting {SelectedTables.Count} table{(SelectedTables.Count > 1 ? "s" : "")} to CSV files");
-                        await vm.ExportDataToCsvFilesAsync(settings.Folder, SelectedTables);
+                        await vm.ExportDataToCsvFilesAsync(settings.OutputFolder, SelectedTables);
                         connMgr.Close();
                         Log.Information("{0}", "Done!");
                     }
