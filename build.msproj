@@ -14,6 +14,10 @@
   <ItemGroup>
     <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+	<DllFiles Include=".\Release\bin\DaxStudio.*.dll"/>
+  </ItemGroup>
 
   <PropertyGroup>
     <ReleaseDirectory>.\Release</ReleaseDirectory>
@@ -104,10 +108,8 @@
 
   </Target>
   
- <Target Name="SignDlls" >
-	<ItemGroup>
-		<AllFiles Include=".\Release\bin\DaxStudio.*.dll"/>
-	</ItemGroup>
+ <Target Name="DllsToSign" >
+
 	<Message Text="DLLs: @(AllFiles, ' ')" Importance="high" />
  </Target>
  
