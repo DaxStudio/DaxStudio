@@ -90,7 +90,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showFunctionInsightsOnHover;
         //public event EventHandler OptionsUpdated;
         private bool _isInitializing;
-
+        private bool _showDatabaseDialogOnConnect;
 
         [ImportingConstructor]
         public OptionsViewModel(IEventAggregator eventAggregator, ISettingProvider settingProvider)
@@ -2547,6 +2547,25 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
             } 
+        }
+
+        [Category("Defaults")]
+        [DisplayName("Show Database dialog")]
+        [Description("Show a dialog to select the database when connecting")]
+        [SortOrder(30)]
+        [DataMember]
+        [DefaultValue(true)]
+        public bool ShowDatabaseDialogOnConnect
+        {
+            get => _showDatabaseDialogOnConnect;
+            set
+            {
+                if (_showDatabaseDialogOnConnect == value) return;
+                _showDatabaseDialogOnConnect = value;
+                NotifyOfPropertyChange(() => ShowDatabaseDialogOnConnect);
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowDatabaseDialogOnConnect), value, _isInitializing, this);
+            }
         }
 
         #region IDisposable Support

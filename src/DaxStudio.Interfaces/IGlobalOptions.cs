@@ -82,6 +82,7 @@ namespace DaxStudio.Interfaces
 
         int PowerPivotModelDetectionTimeout { get; set; }
 
+        bool ShowDatabaseDialogOnConnect { get; set; }
 
         #region Hotkeys
 

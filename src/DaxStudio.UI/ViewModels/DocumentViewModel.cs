@@ -108,6 +108,7 @@ namespace DaxStudio.UI.ViewModels
         , ISaveable
         , IGuardClose
         , IDocumentToExport
+        , IHaveStatusBar
 
     {
         // Changed from the original Unicode - if required we could make this an optional setting in future
@@ -1195,7 +1196,7 @@ namespace DaxStudio.UI.ViewModels
 
 
                     // show database dialog if there is more than 1 database available
-                    if (Connection.Databases.Count() > 1 && string.IsNullOrEmpty(message.DatabaseName))
+                    if (Connection.Databases.Count() > 1 && string.IsNullOrEmpty(message.DatabaseName) && Options.ShowDatabaseDialogOnConnect)
                     {
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Start Showing Database Dialog");
                         await Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -4876,7 +4877,7 @@ namespace DaxStudio.UI.ViewModels
 
         IConnectionManager IDocumentToExport.Connection => (IConnectionManager)Connection;
 
-        IMetadataPane IDocumentToExport.MetadataPane => (IMetadataPane)MetadataPane; 
+        IMetadataPane IDocumentToExport.MetadataPane => (IMetadataPane)MetadataPane;
 
         public void OnEditorHover(object source, MouseEventArgs eventArgs)
         {
