@@ -524,6 +524,8 @@ namespace DaxStudio.UI.ViewModels
             }
             this.AutoGenerate = model.AutoGenerate;
             this.IsVisible = true;
+
+            if (IsConnectedToAModelWithTables) RelinkTabularObjects();
         }
 
         public void SavePackage(Package package)
@@ -592,7 +594,24 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             RefreshButtonStates();
+            if (IsConnectedToAModelWithTables) RelinkTabularObjects();
             return Task.CompletedTask;
+        }
+
+        private void RelinkTabularObjects()
+        {
+            foreach (var col in Columns)
+            {
+                if( ! Document.Connection.TryGetColumn(col.TableName, col.Caption, out var obj)) continue;
+                col.TabularObject = obj;
+            }
+
+            foreach(var fil in Filters.Items)
+            {
+                if (!Document.Connection.TryGetColumn(fil.TabularObject.TableName, fil.TabularObject.Caption, out var obj)) continue;
+                fil.TabularObject = obj;
+            }
+
         }
 
         public Task HandleAsync(RunStyleChangedEvent message, CancellationToken cancellationToken)
