@@ -47,7 +47,7 @@ namespace DaxStudio.UI.Utils
             catch (Exception ex)
             {
                 // log the error and continue
-                Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(CreateAutoSaveFolder), $"Error creating autosave folder: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(CreateAutoSaveFolder), $"Error creating autosave folder: {ex.Message}");
             }
         }
 
@@ -101,7 +101,7 @@ namespace DaxStudio.UI.Utils
             } 
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", "AutoSaver", "Save", ex.Message);
+                Log.Error(ex, Constants.LogMessageTemplate, "AutoSaver", "Save", ex.Message);
             }
         }
 
@@ -130,7 +130,7 @@ namespace DaxStudio.UI.Utils
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSaveIndex: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSaveIndex: {ex.Message}");
             }
 
             // delete autosave files
@@ -152,19 +152,27 @@ namespace DaxStudio.UI.Utils
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSave file '{file.FullName}' - {ex.Message}");
+                        Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error deleting AutoSave file '{file.FullName}' - {ex.Message}");
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", nameof(AutoSaver), nameof(RemoveAll), $"Error getting AutoSave file collection: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error getting AutoSave file collection: {ex.Message}");
             }
 
-            // remove entry from master auto save index
-            if (_masterAutoSaveIndex.ContainsKey(CurrentProcessId)) {
-                _masterAutoSaveIndex.Remove(CurrentProcessId);
+            try
+            {
+                // remove entry from master auto save index
+                if (_masterAutoSaveIndex.ContainsKey(CurrentProcessId))
+                {
+                    _masterAutoSaveIndex.Remove(CurrentProcessId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(AutoSaver), nameof(RemoveAll), $"Error removing master index entry: {ex.Message}");
             }
         }
 
@@ -192,7 +200,7 @@ namespace DaxStudio.UI.Utils
             }
             catch (Exception ex)
             {
-                Log.Error(ex,"{class} {method} {message}", "AutoSaver", "CleanUpRecoveredFiles", "Error Removing autosave files that are no longer needed");
+                Log.Error(ex,Constants.LogMessageTemplate, "AutoSaver", "CleanUpRecoveredFiles", "Error Removing autosave files that are no longer needed");
             }
         }
 
@@ -226,7 +234,7 @@ namespace DaxStudio.UI.Utils
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", "AutoSaver", "GetAutoSaveIndex", $"Error loading auto save index: {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, "AutoSaver", "GetAutoSaveIndex", $"Error loading auto save index: {ex.Message}");
                 return _masterAutoSaveIndex;
             }
             return _masterAutoSaveIndex;
@@ -278,7 +286,7 @@ namespace DaxStudio.UI.Utils
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", "AutoSaver", "LoadAutoSaveIndex", $"Error loading auto save index '{indexFile}' : {ex.Message}");
+                Log.Error(ex, Constants.LogMessageTemplate, "AutoSaver", "LoadAutoSaveIndex", $"Error loading auto save index '{indexFile}' : {ex.Message}");
                 return null;
             }
         }
@@ -307,7 +315,7 @@ namespace DaxStudio.UI.Utils
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}", "AutoSaver", "GetAutoSaveText", ex.Message);
+                Log.Error(ex, Constants.LogMessageTemplate, "AutoSaver", "GetAutoSaveText", ex.Message);
                 return "-- <<< ERROR READING AUTOSAVE FILE >>> --";
             }
         }
