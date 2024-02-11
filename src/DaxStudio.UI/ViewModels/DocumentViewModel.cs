@@ -1927,37 +1927,45 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(RunQueryEvent message, CancellationToken cancellationToken)
         {
-            // if we can't run the query then do nothing 
-            // (ribbon button will be disabled, but the following check blocks hotkey requests)
-            if (!CanRunQuery) return;
-
-            // the benchmark run style will pop up it's own dialog
-            switch (message.BenchmarkType)
+            try
             {
-                case RunQueryEvent.BenchmarkTypes.QueryBenchmark:
-                    BenchmarkQuery();
-                    return;
-                case RunQueryEvent.BenchmarkTypes.ServerFEBenchmark:
-                    BenchmarkServerFE();
-                    return;
+                // if we can't run the query then do nothing 
+                // (ribbon button will be disabled, but the following check blocks hotkey requests)
+                if (!CanRunQuery) return;
+
+                // the benchmark run style will pop up it's own dialog
+                switch (message.BenchmarkType)
+                {
+                    case RunQueryEvent.BenchmarkTypes.QueryBenchmark:
+                        BenchmarkQuery();
+                        return;
+                    case RunQueryEvent.BenchmarkTypes.ServerFEBenchmark:
+                        BenchmarkServerFE();
+                        return;
+                }
+
+                NotifyOfPropertyChange(() => CanRunQuery);
+                if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
+
+                IsQueryRunning = true;
+
+                // if the query provider is not set use the current document
+                message.QueryProvider = message.QueryProvider ?? this;
+
+                await RunQueryInternalAsync(message);
+
+                // if the query did not run exit here
+                if (CurrentQueryInfo == null) return;
+
+                int durationSecs = CurrentQueryInfo.ClientDurationMs > int.MaxValue ? int.MaxValue / 1000 : (int)CurrentQueryInfo.ClientDurationMs / 1000;
+                Options.PlayLongOperationSound(durationSecs);
+
             }
-
-            NotifyOfPropertyChange(() => CanRunQuery);
-            if (message.RunStyle.ClearCache) await ClearDatabaseCacheAsync();
-
-            IsQueryRunning = true;
-
-            // if the query provider is not set use the current document
-            message.QueryProvider = message.QueryProvider ?? this;
-
-            await RunQueryInternalAsync(message);
-
-            // if the query did not run exit here
-            if (CurrentQueryInfo == null) return;
-
-            int durationSecs = CurrentQueryInfo.ClientDurationMs > int.MaxValue ? int.MaxValue / 1000 : (int)CurrentQueryInfo.ClientDurationMs / 1000;
-            Options.PlayLongOperationSound(durationSecs);
-
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync<RunQueryEvent>", "Error running query");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
+            }
         }
 
         private void BenchmarkServerFE()
@@ -2370,7 +2378,7 @@ namespace DaxStudio.UI.ViewModels
             if (editor == null)
             {
                 Log.Error("{class} {method} {message}", "DocumentViewModel", "InsertTextAtSelection", "Unable to get a reference to the editor control");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again. If this issue persists please post an issue on th"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again."));
                 return;
             }
             var startOffset = editor.CaretOffset;
