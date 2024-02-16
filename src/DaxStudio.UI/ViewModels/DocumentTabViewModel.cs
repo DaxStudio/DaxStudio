@@ -19,6 +19,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using AvalonDock.Controls;
 using System.Text.RegularExpressions;
+using System.Windows.Threading;
+using System.Windows.Controls;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -445,20 +447,11 @@ namespace DaxStudio.UI.ViewModels
 
                 args.Cancel = true; // cancel the default tab close action as we want to call 
 
-                await doc.TryCloseAsync();     // TryClose and give the document a chance to block the close
+                Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => {await  CloseTabAsync(doc); }), DispatcherPriority.Normal);
 
-                if (this.Items.Count == 0)
-                {
-                    Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
-                    //ActiveDocument = null;
-                    await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
-                }
+                //CloseTabAsync(doc);
 
-                // remove this document from the autosave index
-                if (doc is DocumentViewModel docModel)
-                {
-                    AutoSaver.Remove(docModel);
-                }
+                
             }
             catch (Exception ex)
             {
@@ -468,6 +461,25 @@ namespace DaxStudio.UI.ViewModels
             finally
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Finished");
+            }
+        }
+
+        private async Task CloseTabAsync(IScreen doc)
+        {
+            
+            await doc.TryCloseAsync();     // TryClose and give the document a chance to block the close
+            
+            if (this.Items.Count == 0)
+            {
+                Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
+                //ActiveDocument = null;
+                await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+            }
+
+            // remove this document from the autosave index
+            if (doc is DocumentViewModel docModel)
+            {
+                AutoSaver.Remove(docModel);
             }
         }
 
