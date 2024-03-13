@@ -103,13 +103,12 @@
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\daxstudio.checker.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v @(DllFiles, " ")' 
+    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\bin\DaxStudio.*.dll)' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 
   </Target>
   
  <Target Name="DllsToSign" >
-
 	<Message Text="DLLs: @(DllFiles, ' ')" Importance="high" />
  </Target>
  
@@ -203,8 +202,8 @@
     <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 
-  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash;SignDlls">
-    <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
+  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash">
+    <Message Text="Performing full build of Unsigned Installer and Portable zip" Importance="High" />
   </Target>
 
   <UsingTask TaskName="GenerateHash" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
