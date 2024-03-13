@@ -92,7 +92,7 @@
     <Message Text="Major: $(OutVersion) " Importance="high"/>
   </Target>
 
-  <Target Name="SignAssemblies" DependsOnTargets="Build,MoveExes">
+  <Target Name="SignAssemblies" DependsOnTargets="Build;MoveExes">
     <Message Text="Attempting to sign Assemblies" Importance="high" /> 
    <!--  <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
     <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.checker.exe' IgnoreExitCode="true"/>
