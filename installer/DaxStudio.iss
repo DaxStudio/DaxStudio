@@ -365,7 +365,7 @@ begin
           RegQueryBinaryValue(HKEY_CURRENT_USER, RegKeys[I], Names[J], ResultStr)
           keyName := Lowercase(ConvertToString(ResultStr));
           //MsgBox('List of values:'#13#10#13#10 + S, mbInformation, MB_OK);
-          if Pos( 'daxstudio.vsto', keyName) > 0 then
+          if Pos( 'daxstudio.', keyName) > 0 then
               RegDeleteValue(HKEY_CURRENT_USER, RegKeys[i], Names[J])
         end;
       end else
