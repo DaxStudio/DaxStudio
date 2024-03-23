@@ -5,6 +5,7 @@ using System.Linq;
 using DaxStudio.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -195,12 +196,16 @@ namespace DaxStudio.UI.ViewModels
         public string StorageMode {
             get
             {
+                // if the value is cached return that
                 if (!string.IsNullOrEmpty(_storageMode)) return _storageMode;
+
+                var _modelMode = _parentViewModel.ViewModel.Model.DefaultMode;
                 foreach (var p in _table.Partitions)
                 {
                     if (string.IsNullOrEmpty(_storageMode))
                     {
-                        _storageMode = p.PartitionMode;
+                        _storageMode = p.PartitionMode.ParseStorageMode();
+                        
                         continue;
                     }
                     if (p.PartitionMode != _storageMode)

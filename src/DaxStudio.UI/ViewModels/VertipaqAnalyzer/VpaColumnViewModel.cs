@@ -55,5 +55,7 @@ namespace DaxStudio.UI.ViewModels
         public double PercentOfMaxTotalSize => Table == null ? 0 : TotalSize / (double)Table.ColumnMaxTotalSize;
         public double PercentOfMaxCardinality => Table == null ? 0 : ColumnCardinality / (double)Table.ColumnsMaxCardinality;
         public double PercentOfMaxTotalDBSize => MaxColumnTotalSize == 0 ? 0 : TotalSize / (double)MaxColumnTotalSize;
+
+        public bool IsNotResident => (_col.SegmentsResident ?? 1) == 0;
     }
 }

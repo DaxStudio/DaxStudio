@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using System.Windows.Navigation;
+using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -26,6 +27,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _options = options;
             _partition = partition;
+            StorageMode = _partition.PartitionMode.ParseStorageMode();
             _parentViewModel = parentViewModel;
             Table = table;
         }
@@ -64,7 +66,7 @@ namespace DaxStudio.UI.ViewModels
         public double PercentOfTableRows => (Table == null ? 0 : RowsCount / (double)Table.RowsCount); 
         public double PercentOfTableSize => Table == null ? 0 : DataSize / (double)Table.DataSize;
 
-        public string StorageMode => _partition.PartitionMode;
+        public string StorageMode { get; }
 
     }
 }

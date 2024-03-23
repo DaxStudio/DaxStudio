@@ -80,6 +80,7 @@ namespace ADOTabular
             return _dsDatabases.Tables[0];
         }
 
+
         private IDictionary<string, DatabaseDetails> _databaseDictionary;
 
         public IDictionary<string, DatabaseDetails> GetDatabaseDictionary(int spid)

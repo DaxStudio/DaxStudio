@@ -280,7 +280,14 @@
 
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding ColumnName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding ColumnName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}" />
+                                            <Image Grid.Column="1" Source="{DynamicResource warningDrawingImage}" ToolTip="Column not resident in memory, statistics may not be accurate" Visibility="{Binding IsNotResident, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.HeaderStyle>
@@ -609,16 +616,28 @@
                           cal:Message.Attach="[Event Sorting] = [Action OnColumnSorting($eventArgs)]">
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding TableColumnName}" 
+                            <DataGridTemplateColumn ClipboardContentBinding="{Binding TableColumnName}" 
                                                 Header="Table-Column"
                                                 MinWidth="160"
                                                 Visibility="{Binding Path=Data, Source={StaticResource ColumnsShowDashedTableColumn}}">
-                                <DataGridTextColumn.HeaderStyle>
+                                <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}" >
                                         <Setter Property="Tag" Value="{Binding DataContext.Tooltips.TableColumn, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
-                                </DataGridTextColumn.HeaderStyle>
-                            </DataGridTextColumn>
+                                </DataGridTemplateColumn.HeaderStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding TableColumnName}" Padding="25,3,0,0" Style="{StaticResource TextBlockStyle}" />
+                                        <Image Grid.Column="1" Source="{DynamicResource warningDrawingImage}" ToolTip="Column not resident in memory, statistics may not be accurate" Visibility="{Binding IsNotResident, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                    </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
                             <DataGridTextColumn Binding="{Binding ., Converter={StaticResource VpaColumnDaxNameConverter}}" 
                                                 Header="Table[Column]"
