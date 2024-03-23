@@ -18,7 +18,7 @@ namespace AvalonDock.Themes
 		public override Uri GetResourceUri()
 		{
 			return new Uri(
-				"/AvalonDock.Themes.DaxStudio;component/DarkTheme.xaml",
+				"/DaxStudio.AvalonDock.Themes;component/DarkTheme.xaml",
 				UriKind.Relative);
 		}
 	}

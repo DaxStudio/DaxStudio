@@ -20,9 +20,9 @@
     xmlns:conv="clr-namespace:AvalonDock.Converters"
 	xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=AvalonDock">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/AvalonDock.Themes.DaxStudio;component/OverlayButtons.xaml" />
-        <ResourceDictionary Source="/AvalonDock.Themes.DaxStudio;component/Themes/Menu/MenuItem.xaml" />
-        <ResourceDictionary Source="/AvalonDock.Themes.DaxStudio;component/Themes/Icons/IconGeometry.xaml" />
+        <ResourceDictionary Source="/DaxStudio.AvalonDock.Themes;component/OverlayButtons.xaml" />
+        <ResourceDictionary Source="/DaxStudio.AvalonDock.Themes;component/Themes/Menu/MenuItem.xaml" />
+        <ResourceDictionary Source="/DaxStudio.AvalonDock.Themes;component/Themes/Icons/IconGeometry.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <conv:LayoutAnchorablePaneToAutoHideCommandConverter x:Key="LayoutAnchorablePaneToAutoHideCommandConverter"/>

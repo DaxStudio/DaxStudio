@@ -7,7 +7,7 @@
     xmlns:avalonDockControls="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonDockConverters="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonDockProperties="clr-namespace:AvalonDock.Properties;assembly=AvalonDock"
-    xmlns:reskeys="clr-namespace:AvalonDock.Themes.DaxStudio.Themes;assembly=AvalonDock.Themes.DaxStudio"
+    xmlns:reskeys="clr-namespace:AvalonDock.Themes.DaxStudio.Themes;assembly=DaxStudio.AvalonDock.Themes"
     >
 
     <!-- Colors  -->

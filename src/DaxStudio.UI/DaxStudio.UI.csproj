@@ -203,15 +203,15 @@
     <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|x86'">
-		<DebugSymbols>true</DebugSymbols>
-		<OutputPath>bin\x86\Cmd Only\</OutputPath>
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<DebugType>full</DebugType>
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<LangVersion>8.0</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Cmd Only\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>8.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <CodeAnalysisRuleSet>..\DSCodeAnalysis.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -379,12 +379,13 @@
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
+    <Compile Include="Extensions\StoreageModeExtensions.cs" />
     <Compile Include="Interfaces\ICancellable.cs" />
     <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
-	<Compile Include="Interfaces\ITraceWatcher.cs" />
+    <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="Interfaces\ITraceWatcherData.cs" />
     <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
     <Compile Include="JsonConverters\QueryBuilderColumnDataTypeConverter.cs" />

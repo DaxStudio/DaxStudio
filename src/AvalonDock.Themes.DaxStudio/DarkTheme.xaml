@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceDictionary Source="/AvalonDock.Themes.DaxStudio;component/DarkBrushs.xaml" />
-		<ResourceDictionary Source="/AvalonDock.Themes.DaxStudio;component/Themes/Generic.xaml" />
+		<ResourceDictionary Source="/DaxStudio.AvalonDock.Themes;component/DarkBrushs.xaml" />
+		<ResourceDictionary Source="/DaxStudio.AvalonDock.Themes;component/Themes/Generic.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

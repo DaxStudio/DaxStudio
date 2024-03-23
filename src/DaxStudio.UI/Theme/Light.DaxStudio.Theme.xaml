@@ -8,7 +8,7 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Colors.xaml"/>
         <!--<ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/LightBrushs.xaml"/>-->
-        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/LightTheme.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/LightTheme.xaml" />
         
 
         

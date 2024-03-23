@@ -7,8 +7,8 @@
                     xmlns:local="clr-namespace:DaxStudio.UI.Theme">
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.Colors.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/DarkTheme.xaml"/>
-        <!--<ResourceDictionary Source="pack://application:,,,/AvalonDock.Themes.DaxStudio;component/DarkBrushs.xaml"/>-->
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/DarkTheme.xaml"/>
+        <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/DarkBrushs.xaml"/>-->
 
         
         <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.dark.xaml"/>-->

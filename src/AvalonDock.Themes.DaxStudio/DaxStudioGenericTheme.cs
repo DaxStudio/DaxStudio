@@ -18,7 +18,7 @@ namespace AvalonDock.Themes
 		public override Uri GetResourceUri()
 		{
 			return new Uri(
-				"/AvalonDock.Themes.DaxStudio;component/Themes/Generic.xaml",
+				"/DaxStudio.AvalonDock.Themes;component/Themes/Generic.xaml",
 				UriKind.Relative);
 		}
 	}

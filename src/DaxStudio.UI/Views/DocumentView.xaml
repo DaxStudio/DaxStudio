@@ -8,7 +8,7 @@
     xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
-    xmlns:dax="clr-namespace:DAXEditorControl;assembly=DAXEditor" 
+    xmlns:dax="clr-namespace:DAXEditorControl;assembly=DaxStudio.DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:local="clr-namespace:DaxStudio.UI.Utils"
