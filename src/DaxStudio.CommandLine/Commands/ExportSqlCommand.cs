@@ -80,7 +80,7 @@ namespace DaxStudio.CommandLine.Commands
                         var connMgr = new ConnectionManager(EventAggregator);
                         var connEvent = new ConnectEvent()
                         {
-                            ConnectionString = $"Data Source={settings.Server};Initial Catalog={settings.Database}",
+                            ConnectionString = settings.FullConnectionString,
                             ApplicationName = "DAX Studio Command Line",
                             DatabaseName = settings.Database
                         };

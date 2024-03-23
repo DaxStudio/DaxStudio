@@ -1,12 +1,13 @@
-﻿using Fclp.Internals.Extensions;
+﻿using DaxStudio.CommandLine.Interfaces;
+using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using System;
 using System.ComponentModel;
-using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Commands
 {
-    internal abstract class CommandSettingsBase: CommandSettings
+    internal abstract class CommandSettingsBase : CommandSettings, ISettingsConnection
     {
 
         [CommandOption("-s|--server <server>")]
@@ -26,10 +27,44 @@ namespace DaxStudio.CommandLine.Commands
         public string Password { get; set; }
 
 
-        [CommandArgument(1,"[connectionstring]")]
+        [CommandArgument(1, "[connectionstring]")]
         [CommandOption("-c|--connectionstring <connectionString>")]
         [Description("The connection string for the data source")]
         public string ConnectionString { get; set; }
+
+        public string FullConnectionString { get { 
+                // if the connectionstring property is set use that
+                if (!string.IsNullOrEmpty(ConnectionString)) return ConnectionString;
+                
+                string user = GetPropertyOrEnvironmentVariable(nameof(UserID), UserID, "DSCMD_USER");
+                string pass = GetPropertyOrEnvironmentVariable(nameof(Password), Password, "DSCMD_PASSWORD");
+
+                string userParam = !string.IsNullOrEmpty(user) ? $"User ID={user};":string.Empty;
+                string passParam = !string.IsNullOrEmpty(pass) ? $"Password={pass};" : string.Empty;
+
+                return $"Data Source={Server};Initial Catalog={Database};{userParam}{passParam}";
+
+            } 
+        }
+
+        private string GetPropertyOrEnvironmentVariable(string propertyName, string property, string variableName)
+        {
+            
+            string variable = Environment.GetEnvironmentVariable(variableName);
+            if (!string.IsNullOrEmpty(property))
+            {
+                Log.Information("Using {propertyName} argument", propertyName);
+                // using UserID property
+                return property;
+            }
+            if (!string.IsNullOrEmpty(variable))
+            {
+                Log.Information("Using environment variable {variableName} for {propertyName}", variableName, propertyName);
+                // using Environment user
+                return variable;
+            }
+            return string.Empty;
+        }
 
         public override ValidationResult Validate()
         {
@@ -52,6 +87,8 @@ namespace DaxStudio.CommandLine.Commands
 
             return base.Validate();
         }
+
+
 
     }
 }

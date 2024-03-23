@@ -71,7 +71,7 @@ namespace DaxStudio.CommandLine.Commands
                         
                         var connEvent = new ConnectEvent()
                         {
-                            ConnectionString = $"Data Source={settings.Server};Initial Catalog={settings.Database}",
+                            ConnectionString = settings.FullConnectionString,
                             ApplicationName = "DAX Studio Command Line",
                             DatabaseName = settings.Database,
                             PowerBIFileName = ""

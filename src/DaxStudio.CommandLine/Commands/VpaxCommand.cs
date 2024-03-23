@@ -18,12 +18,15 @@ namespace DaxStudio.CommandLine.Commands
         internal class Settings : CommandSettingsFileBase
         {
 
-            [CommandOption("-i|--includeTom")]
-            [Description("Setting this flag will include a .bim file inside the vpax file (which just contains additional metadata)")]
-            public bool IncludeTom { get; set; }
-            [CommandOption("-r|--readstatsfromdata")]
-            public bool ReadStatsFromData { get; set; }
+            [CommandOption("-t|--exncludeTom")]
+            [Description("Setting this flag will exclude a .bim file inside the vpax file (which just contains additional metadata)")]
+            public bool ExcludeTom { get; set; }
+            [CommandOption("-r|--donotreadstatsfromdata")]
+            [Description("Setting this flag will prevent the standard distinctcount queries that read the statistics from the data model")]
+            public bool DoNotReadStatsFromData { get; set; }
+            
             [CommandOption("-q|--readstatsfromdirectquery")]
+            [Description("Setting this flag will force the execution of distinctcount queries that read the statistics from the data model (which is normally suppressed for Direct Query models)")]
             public bool ReadStatsFromDirectQuery { get; set; }
         }
         
@@ -50,12 +53,9 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     var appVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
 
-                    if (string.IsNullOrEmpty(settings.ConnectionString)) {
-                        ModelAnalyzer.ExportVPAX(settings.Server, settings.Database, settings.OutputFile, settings.IncludeTom, "DAX Studio Command Line", appVersion, settings.ReadStatsFromData, "Model", settings.ReadStatsFromDirectQuery);
-                    }
-                    else {
-                        ModelAnalyzer.ExportVPAX(settings.ConnectionString, settings.OutputFile, settings.IncludeTom, "DAX Studio Command Line", appVersion, settings.ReadStatsFromData, "Model", settings.ReadStatsFromDirectQuery);
-                    }
+                    
+                    ModelAnalyzer.ExportVPAX(settings.FullConnectionString, settings.OutputFile, !settings.ExcludeTom, "DAX Studio Command Line", appVersion, !settings.DoNotReadStatsFromData, "Model", settings.ReadStatsFromDirectQuery);
+                    
                     // Omitted
                     //ctx.Refresh();
                 });

@@ -24,6 +24,7 @@ namespace DaxStudio.CommandLine.Commands
             public string File { get; set; }
 
             [CommandOption("-q|--query <query>")]
+            [Description("A DAX query to be executed")]
             public string Query { get; set; }
 
             //[CommandArgument(0,"[filename]")]
@@ -59,7 +60,7 @@ namespace DaxStudio.CommandLine.Commands
                     settings.Query = System.IO.File.ReadAllText(settings.File);
                 }
                 // export to csv
-                var runner = new QueryRunner(settings.Server, settings.Database);
+                QueryRunner runner = new QueryRunner(settings);
                 var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
                 target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
                 Log.Information("Finished CSV command");

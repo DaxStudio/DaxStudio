@@ -44,7 +44,7 @@ namespace DaxStudio.CommandLine.Commands
             //var ribbon = new UI.ViewModels.RibbonViewModel(host, eventAggregator, windowManager, options, settings);
             //var vm = new DaxStudio.UI.ViewModels.CaptureDiagnosticsViewModel(ribbon, options, eventAggregator);
 
-            var runner = new QueryRunner(settings.Server, settings.Database);
+            var runner = new QueryRunner(settings);
             var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
             target.OutputResultsAsync(runner, settings, settings.Out).Wait();
             Log.Information("Finished CSV command");

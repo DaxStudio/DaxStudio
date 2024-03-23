@@ -23,6 +23,7 @@ namespace DaxStudio.CommandLine.Commands
             public string File { get; set; }
 
             [CommandOption("-q|--query <query>")]
+            [Description("A DAX query to be executed")]
             public string Query { get; set; }
 
             public string EditorText => Query;
@@ -55,7 +56,7 @@ namespace DaxStudio.CommandLine.Commands
             }
             // export to csv
             var host = new CmdLineHost();
-            var runner = new QueryRunner(settings.Server, settings.Database);
+            var runner = new QueryRunner(settings);
             var target = new DaxStudio.UI.ResultsTargets.ResultsTargetExcelFile(host, EventAggregator);
             target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
             

@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
@@ -13,10 +14,11 @@ namespace DaxStudio.CommandLine
     {
         static IEventAggregator EventAggregator { get; set; } = new EventAggregator();
         private ISettingProvider _settingProvider;
-        public QueryRunner(string server, string database)
+
+        public QueryRunner(ISettingsConnection settings)
         {
             // TODO - how to support AzureAD auth??
-            ConnectionStringWithInitialCatalog = $"Data Source={server};Initial Catalog={database}";
+            ConnectionStringWithInitialCatalog = settings.FullConnectionString;
             _settingProvider = SettingsProviderFactory.GetSettingProvider();
             Options = new OptionsViewModel(EventAggregator, _settingProvider);
         }
