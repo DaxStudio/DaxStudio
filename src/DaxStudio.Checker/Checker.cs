@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using DaxStudio.Checker;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -631,9 +632,9 @@ namespace DaxStudio.CheckerApp
                 foreach (var valName in key.GetValueNames())
                 {
                     byte[] val = (byte[])key.GetValue(valName);
-                    var str = System.Text.Encoding.Unicode.GetString(val);
+                    string str = System.Text.Encoding.Unicode.GetString(val);
                     str = str.Substring(6, str.Length - 9); // trim off first 5 and last 4 chars;
-                    if (str.Contains("DaxStudio.vsto"))
+                    if (str.Contains("DaxStudio.", StringComparison.OrdinalIgnoreCase))
                         Output.AppendRange("      FAIL > ").Bold().Color("Red");
                     else
                         Output.AppendRange("      N/A  > ").Bold().Color("Orange");
