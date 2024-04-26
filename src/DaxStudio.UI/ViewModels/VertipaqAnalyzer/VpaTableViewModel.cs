@@ -21,9 +21,9 @@ namespace DaxStudio.UI.ViewModels
         private readonly VpaTable _table;
         private readonly VertiPaqAnalyzerViewModel _parentViewModel;
         private readonly VpaSort _sort;
-        private IGlobalOptions _options;
+        private IVpaOptions _options;
         private IEventAggregator _eventAggregator;
-        public VpaTableViewModel(VpaTable table, VertiPaqAnalyzerViewModel parentViewModel, VpaSort sort, IGlobalOptions options, IEventAggregator eventAggregator)
+        public VpaTableViewModel(VpaTable table, VertiPaqAnalyzerViewModel parentViewModel, VpaSort sort, IVpaOptions options, IEventAggregator eventAggregator)
         {
             _options = options;
             _eventAggregator = eventAggregator;

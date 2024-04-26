@@ -133,6 +133,7 @@ namespace DaxStudio.Controls.PropertyGrid
                     var desc = prop.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute;
                     var minValue = prop.GetCustomAttribute(typeof(MinValueAttribute)) as MinValueAttribute;
                     var maxValue = prop.GetCustomAttribute(typeof(MaxValueAttribute)) as MaxValueAttribute;
+                    var enumDisplay = prop.GetCustomAttribute(typeof(EnumDisplayAttribute)) as EnumDisplayAttribute;
                     var t = prop.GetType();
 
                     //Type[] typeArgs = { prop.PropertyType };
@@ -156,6 +157,7 @@ namespace DaxStudio.Controls.PropertyGrid
                     binding.MinValue = minValue?.MinValue ?? 0;
                     binding.MaxValue = maxValue?.MaxValue ?? 0;
                     binding.PropertyType = prop.PropertyType;
+                    binding.EnumDisplay = enumDisplay?.EnumDisplay ?? EnumDisplayOptions.Description;
                     //var setProp = constructed.GetProperty("SetValue");
                     //setProp.SetValue(o, (Action)((value) => prop.SetValue(newSource,value));
                     //var getProp = o.GetType().GetProperty("GetValue");

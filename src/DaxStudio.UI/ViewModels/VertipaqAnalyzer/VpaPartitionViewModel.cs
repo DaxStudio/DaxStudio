@@ -22,8 +22,8 @@ namespace DaxStudio.UI.ViewModels
     {
         private readonly VpaPartition _partition;
         private readonly VertiPaqAnalyzerViewModel _parentViewModel;
-        private IGlobalOptions _options;
-        public VpaPartitionViewModel(VpaPartition partition, VpaTableViewModel table, VertiPaqAnalyzerViewModel parentViewModel, IGlobalOptions options)
+        private IVpaOptions _options;
+        public VpaPartitionViewModel(VpaPartition partition, VpaTableViewModel table, VertiPaqAnalyzerViewModel parentViewModel, IVpaOptions options)
         {
             _options = options;
             _partition = partition;

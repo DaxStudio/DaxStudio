@@ -7,10 +7,11 @@ using System.Collections.ObjectModel;
 using DaxStudio.Interfaces.Attributes;
 using Serilog.Events;
 using Serilog.Core;
+using Dax.Metadata;
 
 namespace DaxStudio.Interfaces
 {
-    public interface IGlobalOptions: IGlobalOptionsBase
+    public interface IGlobalOptions: IGlobalOptionsBase, IVpaOptions
     {
         bool AutoHideMetadataVerticalScrollbars { get; set; }
         bool AutoRefreshMetadataCloud { get; set; }
@@ -114,10 +115,10 @@ namespace DaxStudio.Interfaces
         // Preview Features
         bool ShowCopyMetricsComments { get; set; }
         bool VpaxIncludeTom { get; set; }
-        bool VpaxReadStatisticsFromData { get; set; }
-        bool VpaxReadStatisticsFromDirectQuery { get; set; }
-        int VpaxSampleReferentialIntegrityViolations { get; set; }
-        bool VpaxAdjustSegmentsMetrics { get; set; }
+        
+        
+        
+        
         bool UseIndentCodeFolding { get; set; }
         bool ShowDebugCommas { get; set; }
         bool ShowXmlaInAllQueries { get; set; }
@@ -168,5 +169,7 @@ namespace DaxStudio.Interfaces
         //bool ShowQueryPlanLineLevel { get; set; }
         StorageEventTimelineStyle StorageEventHeatmapStyle { get; set; }
         bool ExportServerTimingDetailsToFolder { get; set; }
+
+        DirectLakeExtractionMode VpaxDirectLakeExtractionMode { get; set; }
     }
 }

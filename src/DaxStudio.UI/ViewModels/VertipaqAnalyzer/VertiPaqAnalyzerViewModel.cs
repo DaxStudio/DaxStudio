@@ -43,11 +43,11 @@ namespace DaxStudio.UI.ViewModels
     {
 
         private readonly IEventAggregator _eventAggregator;
-        private readonly IGlobalOptions _globalOptions;
+        private readonly IVpaOptions _globalOptions;
 
         //Dax.ViewModel.VpaModel viewModel,
         [ImportingConstructor]
-        public VertiPaqAnalyzerViewModel(IEventAggregator eventAggregator, DocumentViewModel currentDocument, IGlobalOptions options)
+        public VertiPaqAnalyzerViewModel(IEventAggregator eventAggregator, DocumentViewModel currentDocument, IVpaOptions options)
         {
             Log.Debug("{class} {method} {message}", "VertiPaqAnalyzerViewModel", "ctor", "start");
             //this.ViewModel = viewModel;

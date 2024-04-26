@@ -326,6 +326,30 @@
                 </Grid>
             </DataTemplate>
 
+            <DataTemplate x:Key="EnumValueTemplate">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox ItemsSource="{pg:EnumerateBinding Value}" SelectedValue="{Binding Value, Mode=TwoWay}"  Grid.Row="0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock 
+                                    Text="{Binding Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTip="{Binding Converter={StaticResource DescriptionAttributeConverter}, Mode=OneWay}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Grid.ColumnSpan="2" Style="{StaticResource DescriptionStyle }"/>
+                </Grid>
+            </DataTemplate>
+
             <Style TargetType="{x:Type pg:PropertyList}">
                 <Setter Property="ItemContainerStyle">
                     <Setter.Value>

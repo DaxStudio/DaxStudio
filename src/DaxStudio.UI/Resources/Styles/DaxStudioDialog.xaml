@@ -108,4 +108,6 @@
     <Style TargetType="{x:Type view:CaptureDiagnosticsView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:CustomTraceDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
     <Style TargetType="{x:Type view:DatabaseDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:AutoSaveRecoveryDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
+    <Style TargetType="{x:Type view:VertipaqAnalyzerDialogView}" BasedOn="{StaticResource DaxStudioDialogStyle}"/>
 </ResourceDictionary>

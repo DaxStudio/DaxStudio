@@ -87,6 +87,7 @@
     <Compile Include="PropertySortComparer.cs" />
     <Compile Include="PropertyList.cs" />
     <Compile Include="PropertyTemplateSelector.cs" />
+    <Compile Include="Attributes\EnumDisplayAttribute.cs" />
     <Compile Include="TextBlockHighlighter.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,69 @@
+﻿<ctrl:DaxStudioDialog  
+    xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls" x:Class="DaxStudio.UI.Views.VertipaqAnalyzerDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
+             xmlns:res="clr-namespace:DaxStudio.UI.Resources"
+    xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:local="clr-namespace:DaxStudio.UI.Views"
+             mc:Ignorable="d" 
+             Caption="Metric Options"
+    MinWidth="500"
+             Icon="{DynamicResource vertipaq_analyzerDrawingImage}"
+             d:DesignHeight="180" d:DesignWidth="420">
+    <ctrl:DaxStudioDialog.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+            <res:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+    </ctrl:DaxStudioDialog.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ui:ToggleSwitch OffContent="" HorizontalAlignment="Right" OnContent="" Width="40" Margin="8" IsOn="{Binding VpaxReadStatisticsFromData}"/>
+        <Label Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">Read statistics from data</Label>
+
+        <ui:ToggleSwitch OffContent="" HorizontalAlignment="Right" OnContent="" Grid.Row="1" Width="40" Margin="8" IsOn="{Binding VpaxReadStatisticsFromDirectQuery}" IsEnabled="{Binding VpaxReadStatisticsFromData}"/>
+        <Label Grid.Row="1" Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">Read statistics from Direct Query tables</Label>
+
+        <ComboBox Grid.Row="2" Margin="0 8 8 8" 
+                  HorizontalAlignment="Right"
+                  ItemsSource="{pg:EnumerateBinding VpaxDirectLakeExtractionMode}" SelectedValue="{Binding VpaxDirectLakeExtractionMode, Mode=TwoWay}"/>
+        <Label Grid.Row="2" Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">DirectLake Scan Statistics from Data option</Label>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+            <Button x:Name="Ok" Content="Ok" Margin="8" IsDefault="True" MinWidth="60"  Style="{DynamicResource AccentButtonStyle}"/>
+            <Button Content="Cancel" Margin="8" IsCancel="True"/>
+        </StackPanel>
+
+        <Grid Grid.Row="5" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox Margin="0 8 0 8" Content="Do not show this dialog (can be set in Options)" VerticalAlignment="Center" IsChecked="{Binding VpaxDontShowOptionsDialog}" />
+            <TextBlock  Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 8 0 2"><Hyperlink NavigateUri="http://localhost:3000/docs/features/model-metrics/#metric-options-dialog" attachedProperties:HyperlinkExtensions.IsExternal="true">Learn More</Hyperlink></TextBlock>
+        </Grid>
+    </Grid>
+</ctrl:DaxStudioDialog>

@@ -11,14 +11,14 @@ namespace DaxStudio.UI.ViewModels
     public class VpaColumnViewModel
     {
         readonly VpaColumn _col;
-        private IGlobalOptions _options;
+        private IVpaOptions _options;
 
-        public VpaColumnViewModel(VpaColumn col, IGlobalOptions options)
+        public VpaColumnViewModel(VpaColumn col, IVpaOptions options)
         {
             _col = col;
             _options = options;
         }
-        public VpaColumnViewModel(VpaColumn col, VpaTableViewModel table, IGlobalOptions options)
+        public VpaColumnViewModel(VpaColumn col, VpaTableViewModel table, IVpaOptions options)
         {
             _col = col;
             Table = table;

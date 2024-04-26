@@ -26,7 +26,7 @@ namespace DaxStudio.UI.Utils
             //
             // Get Dax.Model object from the SSAS engine
             //
-            Dax.Metadata.Model daxModel = Dax.Metadata.Extractor.TomExtractor.GetDaxModel(model, applicationName, applicationVersion);
+            Dax.Metadata.Model daxModel = Dax.Model.Extractor.TomExtractor.GetDaxModel(model, applicationName, applicationVersion);
 
             //
             // Get TOM model from the SSAS engine
@@ -51,7 +51,7 @@ namespace DaxStudio.UI.Utils
             //
             // Get Dax.Model object from the SSAS engine
             //
-            Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel( serverName, databaseName, applicationName, applicationVersion, 
+            Dax.Metadata.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel( serverName, databaseName, applicationName, applicationVersion, 
                                                                                        readStatisticsFromData: readStatisticsFromData, 
                                                                                        sampleRows: 0,
                                                                                        analyzeDirectQuery: readStatisticsFromDirectQuery);
@@ -59,7 +59,7 @@ namespace DaxStudio.UI.Utils
             //
             // Get TOM model from the SSAS engine
             //
-            Microsoft.AnalysisServices.Tabular.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
+            Microsoft.AnalysisServices.Tabular.Database database = includeTomModel ? Dax.Model.Extractor.TomExtractor.GetDatabase(serverName, databaseName): null;
 
             // 
             // Create VertiPaq Analyzer views
@@ -80,7 +80,7 @@ namespace DaxStudio.UI.Utils
             //
             // Get Dax.Model object from the SSAS engine
             //
-            Dax.Metadata.Model model = Dax.Metadata.Extractor.TomExtractor.GetDaxModel( connectionString, applicationName, applicationVersion,
+            Dax.Metadata.Model model = Dax.Model.Extractor.TomExtractor.GetDaxModel( connectionString, applicationName, applicationVersion,
                                                                                        readStatisticsFromData: readStatisticsFromData,
                                                                                        sampleRows: 0,
                                                                                        analyzeDirectQuery: readStatisticsFromDirectQuery);
@@ -88,7 +88,7 @@ namespace DaxStudio.UI.Utils
             //
             // Get TOM model from the SSAS engine
             //
-            Microsoft.AnalysisServices.Tabular.Database database = includeTomModel ? Dax.Metadata.Extractor.TomExtractor.GetDatabase(connectionString) : null;
+            Microsoft.AnalysisServices.Tabular.Database database = includeTomModel ? Dax.Model.Extractor.TomExtractor.GetDatabase(connectionString) : null;
 
             // 
             // Create VertiPaq Analyzer views

@@ -31,7 +31,7 @@ namespace DaxStudio.Controls.PropertyGrid
         public string Category { get; set; }
         private string _subcategory = string.Empty;
 
-        
+        public EnumDisplayOptions EnumDisplay { get; set; }
 
         public string Subcategory { get => string.IsNullOrEmpty(_subcategory) ? Category : _subcategory; 
             set => _subcategory = value?.Trim()??string.Empty; }

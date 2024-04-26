@@ -148,6 +148,7 @@
     <Compile Include="IThemeManager.cs" />
     <Compile Include="ITreeviewColumn.cs" />
     <Compile Include="IVersionCheck.cs" />
+    <Compile Include="IVpaOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IStaticQueryResult.cs" />
     <Compile Include="IQueryHistoryEvent.cs" />

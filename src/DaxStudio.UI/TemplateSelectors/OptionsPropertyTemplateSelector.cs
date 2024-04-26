@@ -18,10 +18,12 @@ namespace DaxStudio.UI.TemplateSelectors
 
                 var templateDictionary = SetupTemplateDictionary(element);
 
-                
-                if (prop.PropertyType.IsEnum)
+
+                if (prop.PropertyType.IsEnum) {
                     if (prop.DisplayName.EndsWith("Sound")) return element.FindResource("SoundTemplate") as DataTemplate;
-                    else return element.FindResource("EnumTemplate") as DataTemplate;
+                    if (prop.EnumDisplay == EnumDisplayOptions.Value) return element.FindResource("EnumValueTemplate") as DataTemplate;
+                    return element.FindResource("EnumTemplate") as DataTemplate;
+                }
                 if (prop.PropertyType == typeof(bool)) return  element.FindResource("BoolTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(double)) return element.FindResource("DoubleTemplate") as DataTemplate;
                 if (prop.PropertyType == typeof(int)) return element.FindResource("IntegerTemplate") as DataTemplate;
