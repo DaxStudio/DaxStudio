@@ -117,10 +117,10 @@
       <Version>4.0.212</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
-      <Version>19.76.0</Version>
+      <Version>19.79.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
-      <Version>19.76.0</Version>
+      <Version>19.79.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
       <Version>2.4.3</Version>
@@ -140,7 +140,7 @@
       <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.2.1</Version>
+      <Version>8.3.1</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>3.1.1</Version>

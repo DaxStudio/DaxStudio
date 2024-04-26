@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Linq;
 using System.Windows;
 using System.Data;
+using System.Windows.Media;
+
 
 namespace DaxStudio.UI.AttachedProperties
 {
@@ -73,7 +75,18 @@ namespace DaxStudio.UI.AttachedProperties
                                  }
                              }
                          };
+
+                    if (GetResetScrollOnColumnsChangedProperty(d))
+                    {
+                        ScrollViewer scrollViewer = GetVisualChild<ScrollViewer>(myGrid);
+                        if (scrollViewer != null)
+                        {
+                            scrollViewer.ScrollToTop();
+                            scrollViewer.ScrollToLeftEnd();
+                        }
+                    }
                 }
+
             }
         }
         #endregion
@@ -150,6 +163,47 @@ namespace DaxStudio.UI.AttachedProperties
         }
 
         #endregion
+
+
+        #region ResetScrollOnColumnsChanged Property
+        public static bool GetResetScrollOnColumnsChangedProperty(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(ResetScrollOnColumnsChangedProperty);
+        }
+
+        public static void SetResetScrollOnColumnsChangedProperty(DependencyObject obj, bool value)
+        {
+            obj.SetValue(ResetScrollOnColumnsChangedProperty, value);
+        }
+
+        public static readonly DependencyProperty ResetScrollOnColumnsChangedProperty =
+               DependencyProperty.RegisterAttached("ResetScrollOnColumnsChanged",
+               typeof(bool),
+               typeof(DataGridExtension),
+               new UIPropertyMetadata(false));
+
+        #endregion
+
+        private static T GetVisualChild<T>(DependencyObject parent) where T : Visual
+        {
+            T child = default(T);
+
+            int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < numVisuals; i++)
+            {
+                Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
+                child = v as T;
+                if (child == null)
+                {
+                    child = GetVisualChild<T>(v);
+                }
+                if (child != null)
+                {
+                    break;
+                }
+            }
+            return child;
+        }
 
     }
 }

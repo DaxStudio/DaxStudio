@@ -89,13 +89,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ProcessAllEvents()
         {
-            if (_timeout != null)
-            {
-                _timeout.Stop();
-                _timeout.Elapsed -= QueryEndEventTimeout;
-                _timeout.Dispose();
-                _timeout = null;
-            }
+            ResetTimeout();
 
             //foreach (var e in capturedEvents)
             //{
@@ -110,11 +104,24 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent(this));
         }
 
+        private void ResetTimeout()
+        {
+            if (_timeout != null)
+            {
+                _timeout.Stop();
+                _timeout.Elapsed -= QueryEndEventTimeout;
+                _timeout.Dispose();
+                _timeout = null;
+            }
+        }
+
         // This method is called before a trace starts which gives you a chance to 
         // reset any stored state
         public void Reset()
         {
             IsPaused = false;
+            IsBusy = false;
+            BusyMessage = string.Empty;
             Events.Clear();
             OnReset();
         }
@@ -646,10 +653,13 @@ namespace DaxStudio.UI.ViewModels
         private void TracerOnTraceError(object sender, string e)
         {
             Document.OutputError(e);
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+            
             Log.Error(Constants.LogMessageTemplate, GetSubclassName(), nameof(TracerOnTraceError), e);
             // stop the trace if there was an error
             IsRecording = false;
+            IsBusy = false;
+            ResetTimeout();
+            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
         }
 
         public void StopTrace()

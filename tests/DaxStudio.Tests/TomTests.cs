@@ -12,6 +12,7 @@ using DaxStudio.Tests.Utils;
 using Microsoft.AnalysisServices.Tabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Function = DaxStudio.Tests.Utils.Function;
 
 namespace DaxStudio.Tests
 {

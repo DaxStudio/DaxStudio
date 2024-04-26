@@ -47,9 +47,12 @@ namespace ADOTabular
         public ADOTabularTableCollection Tables
         {
             get {
-                lock (tableLock)
+                if (_tableColl == null)
                 {
-                    _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this);
+                    lock (tableLock)
+                    {
+                        _tableColl ??= new ADOTabularTableCollection(_adoTabConn, this);
+                    }
                 }
                 return _tableColl;
             }

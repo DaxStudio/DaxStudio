@@ -959,7 +959,7 @@
                                Icon="{DynamicResource clear_cache_on_runDrawingImage}"
                                LargeIcon="{DynamicResource clear_cache_on_runDrawingImage}"
                                Margin="4,0"
-                               IsEnabled="{Binding CanClearCacheAuto}"
+                               IsEnabled="{Binding CanClearCache}"
                                IsChecked="{Binding ClearCacheAuto}"
                                >
                         <Fluent:ToggleButton.ToolTip>

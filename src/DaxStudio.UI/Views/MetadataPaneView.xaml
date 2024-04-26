@@ -309,7 +309,7 @@
                         </Grid.RowDefinitions>
 
                             
-                        <TextBlock Text="{Binding Path=SelectedDatabaseObject.Caption, Mode=OneTime}" 
+                        <TextBlock Text="{Binding Path=SelectedDatabaseCaption, Mode=OneWay}" 
                                    Margin="4,0" 
                                    FontWeight="Bold" 
                                    FontSize="14"
@@ -330,11 +330,11 @@
                             <TextBlock Text="Compatibility" 
                                    Grid.Row="3"
                                    Style="{StaticResource ToolTipLabel}"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.CompatibilityLevel, Mode=OneWay}" Grid.Row="3" Grid.Column="2"  Style="{StaticResource ToolTipValue}"/>
+                        <TextBlock Text="{Binding SelectedDatabaseCompatibilityLevel, Mode=OneWay}" Grid.Row="3" Grid.Column="2"  Style="{StaticResource ToolTipValue}"/>
                         <TextBlock Text="Culture" 
                                    Grid.Row="4"
                                    Style="{StaticResource ToolTipLabel}"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.Culture, Mode=OneWay}"
+                        <TextBlock Text="{Binding SelectedDatabaseCulture, Mode=OneWay}"
                                    Grid.Column="2" 
                                    Grid.Row="4"
                                    Style="{StaticResource ToolTipValue}"/>
@@ -359,14 +359,14 @@
                         <TextBlock Text="Is Admin" 
                                    Grid.Row="7"
                                    Style="{StaticResource ToolTipLabel}"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.IsAdmin, Mode=OneWay}" 
+                        <TextBlock Text="{Binding SelectedDatabaseIsAdmin, Mode=OneWay}" 
                                    Grid.Row="7" 
                                    Grid.Column="2"
                                    Style="{StaticResource ToolTipValue}"/>
                         <TextBlock Text="Roles" 
                                    Grid.Row="8"
                                    Style="{StaticResource ToolTipLabel}"/>
-                        <TextBlock Text="{Binding SelectedDatabaseObject.Roles, Mode=OneWay}" 
+                        <TextBlock Text="{Binding SelectedDatabaseRoles, Mode=OneWay}" 
                                    Grid.Row="8" 
                                    Grid.Column="2"
                                    Style="{StaticResource ToolTipValue}"/>

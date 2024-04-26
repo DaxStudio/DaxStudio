@@ -12,17 +12,17 @@ namespace DaxStudio.UI.Utils
     {
         public static void PreJitControls()
         {
-            Log.Debug("{class} {method} {message}", "AssemblyLoader", "PreJitControls", "start");
+            Log.Debug("{class} {method} {message}", nameof(AssemblyLoader), nameof(PreJitControls), "start");
             //var thread = new Thread(() => {
                 try
                 {
                     //Xceed.Wpf.DataGrid.DataGridControl c = new Xceed.Wpf.DataGrid.DataGridControl();
                     var view = new DaxStudio.UI.Views.QueryHistoryPaneView();
-                    Log.Debug("{class} {method} {message}", "AssemblyLoader", "PreJitControls", "end");
+                    Log.Debug("{class} {method} {message}", nameof(AssemblyLoader), nameof(PreJitControls), "end");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("{class} {method} {message}", "AssemblyLoader", "PreJitControls", ex.Message);
+                    Log.Error(ex,"{class} {method} {message}", nameof(AssemblyLoader), nameof(PreJitControls), ex.Message);
                 }
             //});
 

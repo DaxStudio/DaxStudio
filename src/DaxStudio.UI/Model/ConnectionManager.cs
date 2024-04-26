@@ -1246,12 +1246,15 @@ namespace DaxStudio.UI.Model
     <DatabaseID>aafa360c-734a-471d-b2b3-ba56dfe88121</DatabaseID>
   </SequencePoint>
 </Batch>";
-            var server = new Server();
-            var db = server.Databases[_dmvConnection.Database.Id];
-            db.Model.RequestRefresh(Microsoft.AnalysisServices.Tabular.RefreshType.Full);
-            db.Model.SaveChanges();
-            server.Disconnect();
 
+            await Task.Run(() =>
+            {
+                var server = new Server();
+                var db = server.Databases[_dmvConnection.Database.Id];
+                db.Model.RequestRefresh(Microsoft.AnalysisServices.Tabular.RefreshType.Full);
+                db.Model.SaveChanges();
+                server.Disconnect();
+            });
 //            await Task.Run(() => _dmvConnection.ExecuteNonQuery(refreshCommand));
         }
 

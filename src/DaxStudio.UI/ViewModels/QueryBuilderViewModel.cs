@@ -315,6 +315,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 try
                 {
+                    if (!Document?.Connection.IsConnected ?? false) return false;
                     return Document?.Connection?.SelectedModel?.Tables.Count > 0;
                 }
                 catch (Exception ex)
@@ -594,7 +595,7 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             RefreshButtonStates();
-            if (IsConnectedToAModelWithTables) RelinkTabularObjects();
+            if (IsConnectedToAModelWithTables && IsVisible) RelinkTabularObjects();
             return Task.CompletedTask;
         }
 

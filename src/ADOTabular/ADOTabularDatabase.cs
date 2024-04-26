@@ -1,4 +1,5 @@
-﻿using ADOTabular.Interfaces;
+﻿using ADOTabular.AdomdClientWrappers;
+using ADOTabular.Interfaces;
 using System;
 using System.Globalization;
 
@@ -56,7 +57,7 @@ namespace ADOTabular
 
         public string CompatibilityLevel { get; }
 
-        public string Roles { get; }
+        public string Roles { get; private set; }
 
         // if the list of roles for the database contains
         public bool IsAdmin { get {
@@ -87,6 +88,26 @@ namespace ADOTabular
         //    this.Models
 
         //}
+
+
+        internal void RefreshRoles()
+        {
+            var resColl = new AdomdRestrictionCollection
+            {
+                { "CATALOG_NAME", Name }
+            };
+            var dsDatabases = Connection.GetSchemaDataSet("DBSCHEMA_CATALOGS", resColl);
+            var databaseTable = dsDatabases.Tables[0];
+            if (databaseTable.Rows.Count > 0)
+            {
+                var roles = databaseTable.Rows[0]["ROLES"].ToString();
+                Roles = roles;
+            }
+            else
+            {
+                Roles = string.Empty;
+            }
+        }
 
         public static MetadataImages MetadataImage => MetadataImages.Database;
 

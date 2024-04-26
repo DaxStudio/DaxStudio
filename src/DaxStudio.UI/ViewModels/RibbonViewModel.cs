@@ -139,11 +139,6 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; private set; }
         public Visibility OutputGroupIsVisible => _host.IsExcel ? Visibility.Visible : Visibility.Collapsed;
 
-        public bool ServerTimingsIsChecked =>
-            // TODO - Check if ServerTiming Trace is checked - Update on check change
-            //return _traceStatus == QueryTraceStatus.Started ? Visibility.Visible : Visibility.Collapsed; 
-            true;
-
         public async Task NewQuery()
         {
             await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
@@ -298,27 +293,29 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool IsTraceChanging() { return _traceStatus == QueryTraceStatus.Starting || _traceStatus == QueryTraceStatus.Stopping || _traceStatus == QueryTraceStatus.Unknown; }
+
         public bool CanRunQuery =>
             !QueryRunning 
             && (ActiveDocument != null && ActiveDocument.IsConnected) 
             && !ActiveDocument.ShowMeasureExpressionEditor
-            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            && !IsTraceChanging();
 
         public bool CanDisplayQueryBuilder =>
             !QueryRunning
             && (ActiveDocument != null && ActiveDocument.IsConnected)
-            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            && !IsTraceChanging();
 
         public bool CanRunBenchmark =>
             !QueryRunning
             && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
-            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            && !IsTraceChanging();
 
 
         public bool CanRunServerFEBenchmark =>
             !QueryRunning
             && (ActiveDocument != null && ActiveDocument.IsConnected && ActiveDocument.IsAdminConnection)
-            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            && !IsTraceChanging();
 
         public void CancelQuery()
         {
@@ -387,7 +384,7 @@ namespace DaxStudio.UI.ViewModels
             ActiveDocument != null 
             && !QueryRunning 
             && !_isConnecting 
-            && (_traceStatus == QueryTraceStatus.Started || _traceStatus == QueryTraceStatus.Stopped);
+            && !IsTraceChanging();
 
         public ShellViewModel Shell { get; set; }
 

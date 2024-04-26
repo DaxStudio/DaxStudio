@@ -14,21 +14,14 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System;
 using System.IO.Packaging;
-using System.Windows.Media;
-using System.Xml;
-using DaxStudio.Interfaces.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Formatting = Newtonsoft.Json.Formatting;
 using Serilog;
 using DaxStudio.Common.Enums;
-using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.JsonConverters;
-using ControlzEx.Standard;
 using Newtonsoft.Json.Linq;
-using System.Windows.Navigation;
-using Fluent;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -374,6 +367,7 @@ namespace DaxStudio.UI.ViewModels
             bool isScalar = false;
             foreach (var col in item.Inputs) { 
                 var newCol = Table.Columns.Add(col, row1input[inputIdx].GetType());
+                newCol.AllowDBNull = true;
                 newCol.ExtendedProperties.Add(columnSource, "Input");
                 inputIdx++;
             }
@@ -383,6 +377,7 @@ namespace DaxStudio.UI.ViewModels
                 foreach (var col in item.Outputs)
                 {
                     var newCol = Table.Columns.Add(col, GetOutputColumnType(row1output , outputIdx));
+                    newCol.AllowDBNull = true;
                     newCol.ExtendedProperties.Add(columnSource, "Output");
                     //newCol.ExtendedProperties.Add(shortName, );
                     outputIdx++;
@@ -391,26 +386,38 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 var newCol = Table.Columns.Add("Value", row1output[outputIdx].GetType());
+                newCol.AllowDBNull = true;
                 newCol.ExtendedProperties.Add(columnSource, "Output");
                 isScalar = true;
             }
 
-            foreach( var data in item.Data)
+            // add standard columns
+            Table.Columns.Add("Table Number", typeof(long));
+            Table.Columns.Add("Row Number", typeof(long));
+            Table.Columns.Add("Row Count", typeof(long));
+
+            long tableNum = 1;
+            long rowNum = 1;
+
+            foreach ( var data in item.Data)
             {
                 if (isScalar) {
                     int colIdx = 0;
                     var row = Table.NewRow();
                     foreach (var input in data.Input)
                     {
-                        row[colIdx] = input;
+                        if (input != null) row[colIdx] = input;
                         colIdx++;
                     }
 
+                    if (data.Output[0] != null) row[colIdx] = data.Output[0];
+                    colIdx++;
 
-                        row[colIdx] = data.Output[0];
-                        colIdx++;
-
+                    row["Table Number"] = tableNum;
+                    row["Row Number"] = rowNum;
+                    row["Row Count"] = data.RowCount;
                     Table.Rows.Add(row);
+                    rowNum++;
 
                 }
                 else
@@ -421,20 +428,27 @@ namespace DaxStudio.UI.ViewModels
                         var row = Table.NewRow();
                         foreach (var input in data.Input)
                         {
-                            row[colIdx] = input;
+                            JToken jt = input as JToken;
+                            if( (jt != null && jt.Type != JTokenType.Null) || input != null) row[colIdx] = input;
                             colIdx++;
                         }
 
                         for (outputIdx = 0; outputIdx < output.Count; outputIdx++)
                         {
 
-
-                            row[colIdx] = output[outputIdx];
+                            if (output[outputIdx].Type != JTokenType.Null) row[colIdx] = output[outputIdx];
                             colIdx++;
                         }
+
+                        row["Table Number"] = tableNum;
+                        row["Row Number"] = rowNum;
+                        row["Row Count"] = data.RowCount;
                         Table.Rows.Add(row);
+                        rowNum++;
                     }
                 }
+                tableNum++;
+                rowNum = 1;
             }
         }
 
@@ -456,7 +470,7 @@ namespace DaxStudio.UI.ViewModels
         public string Expression { get; set; }
         public string Label { get; set; }
         public long RowCount { get; set; }
-        public List<String> Inputs { get; set; }
+        public List<string> Inputs { get; set; }
         public List<string> Outputs { get; set; }
         public List<EvaluateAndLogData> Data { get; set; }
     }

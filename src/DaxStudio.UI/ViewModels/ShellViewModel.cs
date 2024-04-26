@@ -181,7 +181,7 @@ namespace DaxStudio.UI.ViewModels
         public override async Task TryCloseAsync(bool? dialogResult = null)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            Log.Information(Common.Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Attempting application shutdown");
+            Log.Information(Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(TryCloseAsync), "Attempting application shutdown");
             //await base.TryCloseAsync(dialogResult);
             if (dialogResult != false )
             {

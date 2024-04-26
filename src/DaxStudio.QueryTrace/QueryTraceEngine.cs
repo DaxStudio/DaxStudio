@@ -339,7 +339,7 @@ namespace DaxStudio.QueryTrace
 
                 // set default stop time in case trace gets disconnected
                 _trace.StopTime = DateTime.UtcNow.AddHours(24);
-                _trace.Audit = true;
+                //_trace.Audit = true;
             }
             return _trace;
         }

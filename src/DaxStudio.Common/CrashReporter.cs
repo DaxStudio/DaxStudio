@@ -1,5 +1,6 @@
 ﻿using System;
 using CrashReporterDotNET;
+using Serilog;
 
 namespace DaxStudio.Common
 {
@@ -9,6 +10,9 @@ namespace DaxStudio.Common
         
         public static void ReportCrash(Exception exception, string developerMessage)
         {
+            Log.Error(exception, "About to call CrashReporter");
+            Log.CloseAndFlush();
+
             Telemetry.TrackException(exception,developerMessage);
 
             var reportCrash = new ReportCrash("daxstudiocrash@gmail.com")

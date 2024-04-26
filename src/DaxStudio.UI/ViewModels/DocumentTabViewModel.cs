@@ -447,11 +447,13 @@ namespace DaxStudio.UI.ViewModels
 
                 args.Cancel = true; // cancel the default tab close action as we want to call 
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => {await  CloseTabAsync(doc); }), DispatcherPriority.Normal);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
                 //CloseTabAsync(doc);
 
-                
+
             }
             catch (Exception ex)
             {
@@ -477,7 +479,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // remove this document from the autosave index
-            if (doc is DocumentViewModel docModel)
+            if (!Items.Contains(doc) && doc is DocumentViewModel docModel)
             {
                 AutoSaver.Remove(docModel);
             }

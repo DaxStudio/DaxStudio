@@ -474,6 +474,7 @@ ColumnHeaderStyle="{StaticResource ColumnHeaderWithSourceStyle}"
                                             CanUserAddRows="False"
                                             CanUserDeleteRows="False"
                                             ap:DataGridExtension.Columns="{Binding Converter={StaticResource DynamicDataGridConverter }, Path=SelectedEvent.Table.DefaultView}"
+                                            ap:DataGridExtension.ResetScrollOnColumnsChangedProperty="true"
                                             ap:DataGridExtension.HeaderTags="{Binding Path=SelectedEvent.Table}"
                                             ItemsSource="{Binding Path=SelectedEvent.Table.DefaultView}"
                                              >

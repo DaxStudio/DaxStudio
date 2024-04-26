@@ -371,6 +371,11 @@ namespace DaxStudio.UI.ViewModels
                         IsBusy = true;
                         _metadataProvider.SetSelectedDatabase(_selectedDatabase);
                         NotifyOfPropertyChange(nameof(SelectedDatabaseObject));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseCaption));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseDescription));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseCulture));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseIsAdmin));
+                        NotifyOfPropertyChange(nameof(SelectedDatabaseRoles));
                         NotifyOfPropertyChange(nameof(SelectedDatabaseDurationSinceUpdate));
                         NotifyOfPropertyChange(nameof(SelectedDatabaseLastUpdateLocalTime));
                         ModelList = _metadataProvider.GetModels();
@@ -389,6 +394,13 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public ADOTabularDatabase SelectedDatabaseObject => _metadataProvider.Database;
+        public string SelectedDatabaseCaption => _metadataProvider.Database.Caption;
+        public string SelectedDatabaseDescription => _metadataProvider.Database.Description;
+        public string SelectedDatabaseRoles => _metadataProvider.Database.Roles;
+        public string SelectedDatabaseCulture => _metadataProvider.Database.Culture;
+        public string SelectedDatabaseCompatibilityLevel => _metadataProvider.Database.CompatibilityLevel;
+        public bool SelectedDatabaseIsAdmin => _metadataProvider.Database.IsAdmin;
+
 
         public string SelectedDatabaseDurationSinceUpdate {
             get
@@ -1003,7 +1015,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public void SelectDatabaeByName(string databaseName)
+        public void SelectDatabaseByName(string databaseName)
         {
             var dbRef = Databases.FirstOrDefault(db => db.Name == databaseName);
             SelectedDatabase = dbRef;

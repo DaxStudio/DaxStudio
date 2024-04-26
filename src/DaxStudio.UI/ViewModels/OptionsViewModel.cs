@@ -35,6 +35,7 @@ using Humanizer;
 using static LargeXlsx.XlsxAlignment;
 using System.ComponentModel.Composition.Primitives;
 using System.Numerics;
+using Dax.Metadata;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -600,6 +601,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("VertiPaq Analyzer")]
         [DisplayName("Read statistics from data")]
         [Description("Scan the data to retrieve statistics about columns, tables, and relationships. It could be a long operation in large database.")]
+        [SortOrder(20)]
         public bool VpaxReadStatisticsFromData
         {
             get => _vpaxReadStatisticsFromData;
@@ -618,6 +620,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("VertiPaq Analyzer")]
         [DisplayName("Read statistics from DirectQuery tables")]
         [Description("Include DirectQuery tables in statistics collection")]
+        [SortOrder(30)]
         public bool VpaxReadStatisticsFromDirectQuery
         {
             get => _vpaxReadStatisticsFromDirectQuery;
@@ -637,6 +640,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("VertiPaq Analyzer")]
         [DisplayName("Sample Referential Integrity violations")]
         [Description("The number of sample referential integrity violations to display. (these values are NOT stored in the vpax file when you export metrics)")]
+        [SortOrder(50)]
         public int VpaxSampleReferentialIntegrityViolations {
             get => _vpaxSampleReferentialIntegrityViolations;
             set {
@@ -1491,6 +1495,7 @@ namespace DaxStudio.UI.ViewModels
         [Category("VertiPaq Analyzer")]
         [DisplayName("Include TOM")]
         [Description("Include the complete Tabular Object Model(TOM) in the export for VertiPaq Analyzer(VPAX)")]
+        [SortOrder(10)]
         public bool VpaxIncludeTom {
             get => _vpaxIncludeTom;
             set {
@@ -2526,6 +2531,7 @@ namespace DaxStudio.UI.ViewModels
         [DisplayName("Table/Column name display in Columns tab")]
         [Description("Determines how the table and column name are formatted in the View Metrics Columns tab")]
         [DataMember, DefaultValue(VpaTableColumnDisplay.TableDashColumn)]
+        [SortOrder(99)]
         public VpaTableColumnDisplay VpaTableColumnDisplay { get => _vpaTableColumnDisplay;
             set {
                 _vpaTableColumnDisplay = value;
@@ -2533,6 +2539,25 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
             } 
+        }
+
+        private Dax.Metadata.DirectLakeExtractionMode _vpaDirectLakeBehaviour;
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Direct Lake Behaviour")]
+        [Description("Determines what type of statistics scan to perform on Direct Lake tables")]
+        [DataMember, DefaultValue(DirectLakeExtractionMode.ResidentOnly)]
+        [EnumDisplay(EnumDisplayOptions.Value)]
+        [SortOrder(40)]
+        public DirectLakeExtractionMode VpaxDirectLakeExtractionMode
+        {
+            get => _vpaDirectLakeBehaviour;
+            set
+            {
+                _vpaDirectLakeBehaviour = value;
+                SettingProvider.SetValue(nameof(VpaxDirectLakeExtractionMode), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            }
         }
 
         private bool  _useIndentCodeFolding;
@@ -2567,6 +2592,22 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue(nameof(ShowDatabaseDialogOnConnect), value, _isInitializing, this);
             }
         }
+
+        private bool _vpaxDontShowOptionsDialog = false;
+        [DataMember, DefaultValue(false)]
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Do not show options dialog")]
+        [Description("Setting this will use the global default settings and will not show the dialog at run time to override these.")]
+        [SortOrder(60)]
+        public bool VpaxDontShowOptionsDialog { get => _vpaxDontShowOptionsDialog;
+            set {
+                if (_vpaxDontShowOptionsDialog == value) return;
+                _vpaxDontShowOptionsDialog = value;
+                NotifyOfPropertyChange(() => VpaxDontShowOptionsDialog);
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(VpaxDontShowOptionsDialog), value, _isInitializing, this);
+            }
+        } 
 
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
