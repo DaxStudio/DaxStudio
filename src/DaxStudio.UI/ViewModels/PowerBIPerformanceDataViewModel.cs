@@ -21,6 +21,16 @@ using Serilog;
 using System.Threading.Tasks;
 using DaxStudio.UI.Extensions;
 using System.Threading;
+using CsvHelper.Configuration;
+using CsvHelper;
+using System.Globalization;
+using System.Windows.Forms;
+using ADOTabular;
+using LargeXlsx;
+using static LargeXlsx.XlsxAlignment;
+using System.Reflection;
+using DaxStudio.UI.Attribures;
+using CsvHelper.Configuration.Attributes;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -261,5 +271,169 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.Unsubscribe(this);
             return base.TryCloseAsync(dialogResult);
         }
+
+        public void Export()
+        {
+
+            var dialog = new SaveFileDialog();
+            dialog.DefaultExt = ".csv";
+            dialog.Filter = "UTF-8 CSV file|*.csv|custom CSV (set in Options)|*.csv|Excel file (*.xlsx)|*.xlsx";
+            var result = dialog.ShowDialog();
+
+            // exit here if the dialog is cancelled
+            if (result != DialogResult.OK) return;
+
+            var sep = CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
+            var enc = Encoding.UTF8;
+            
+            try
+            {
+                switch (dialog.FilterIndex)
+                {
+                    // UTF8 CSV
+                    case 0:
+                        ExportToCSV(dialog.FileName, sep, enc, true);
+                        break;
+                    // custom CSV
+                    case 1:
+                        ExportToCSV(dialog.FileName, Options.GetCustomCsvDelimiter(), Options.GetCustomCsvEncoding(), Options.CustomCsvQuoteStringFields);
+                        break;
+                    //xlsx
+                    case 3:
+                        ExportToXlsx(dialog.FileName);
+                        break;
+
+                }
+
+            } 
+            catch (Exception ex)
+            { 
+                
+            }
+        }
+
+        private void ExportToCSV(string fileName, string separator, Encoding encoding, bool shouldQuoteStrings)
+        {
+
+            var csvConfig = new CsvConfiguration(CultureInfo.CurrentCulture)
+            {
+                HasHeaderRecord = true,
+                Delimiter = separator,
+                Encoding = encoding
+            };
+            if (shouldQuoteStrings)
+            {
+                csvConfig.ShouldQuote = (field) => { return true; };
+            }
+
+            using (var writer = new StreamWriter(fileName))
+            using (var csvWriter = new CsvWriter(writer, csvConfig))
+            {
+                csvWriter.WriteRecords(PerformanceData);
+            }
+        }
+
+        private void ExportToXlsx(string fileName)
+        {
+
+            using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+            using (var xlsxWriter = new XlsxWriter(stream))
+            {
+                xlsxWriter.BeginWorksheet("PerformanceData");
+                var properties = PerformanceData[0].GetType().GetProperties()
+                    .Where(p => p.GetCustomAttribute(typeof(IgnoreAttribute)) == null)
+                    .OrderBy(p => p.MetadataToken).ToArray();
+                int iMaxCol = properties.Length;
+                int iRowCnt = 0;
+                int colIdx = 0;
+                XlsxStyle[] columnStyles = new XlsxStyle[iMaxCol];
+                var headerStyle = new XlsxStyle(
+                                new XlsxFont("Segoe UI", 9, System.Drawing.Color.White, bold: true),
+                                new XlsxFill(System.Drawing.Color.FromArgb(0, 0x45, 0x86)),
+                                XlsxStyle.Default.Border,
+                                XlsxStyle.Default.NumberFormat,
+                                XlsxAlignment.Default);
+                var wrapStyle = XlsxStyle.Default.With(new XlsxAlignment(vertical: Vertical.Top, wrapText: true));
+                var defaultStyle = XlsxStyle.Default;
+                // Write out Header Row
+                xlsxWriter.SetDefaultStyle(headerStyle).BeginRow();
+                foreach (var prop in properties)
+                {
+                    // write out the column name
+                    xlsxWriter.Write(prop.Name);
+                    columnStyles[colIdx] = defaultStyle;
+                    colIdx++;
+                }
+                xlsxWriter.SetDefaultStyle(defaultStyle);
+
+
+                foreach (var dataRow in PerformanceData)
+                {
+
+                    // check if we have reached the limit of an xlsx file
+                    if (iRowCnt >= 999999)
+                    {
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Results truncated, reached the maximum row limit for an Excel file"));
+                        break;
+                    }
+
+                    // increment row count
+                    iRowCnt++;
+
+                    // start outputting the next row
+                    xlsxWriter.BeginRow();
+                    for (int iCol = 0; iCol < iMaxCol; iCol++)
+                    {
+                        var fieldValue = dataRow.GetType().GetProperty(properties[iCol].Name).GetValue(dataRow);
+                        switch (fieldValue)
+                        {
+                            case int i:
+                                xlsxWriter.Write(i, columnStyles[iCol]);
+                                break;
+                            case double dbl:
+                                xlsxWriter.Write(dbl, columnStyles[iCol]);
+                                break;
+                            case decimal dec:
+                                xlsxWriter.Write(dec, columnStyles[iCol]);
+                                break;
+                            case DateTime dt:
+                                // if this is day 0 for tabular 30 dec 1899 move it to the day 0 for Excel 1 Jan 1900
+                                if ((dt.Year == 1899) && (dt.Month == 12) && (dt.Day == 30)) dt = dt.AddDays(2);
+                                xlsxWriter.Write(dt, columnStyles[iCol]);
+                                break;
+                            case string str:
+                                if (str.Contains("\n") || str.Contains("\r"))
+                                    xlsxWriter.Write(str, wrapStyle);
+                                else
+                                    xlsxWriter.Write(str);
+                                break;
+                            case bool b:
+                                xlsxWriter.Write(b.ToString());   // Writes out TRUE/FALSE
+                                break;
+                            case null:
+                                xlsxWriter.Write();
+                                break;
+                            case long lng:
+
+                                if (lng < int.MaxValue && lng > int.MinValue)
+                                    xlsxWriter.Write(Convert.ToInt32(lng), columnStyles[iCol]);
+                                else                                   // TODO - should we be converting large long values to double??
+                                    xlsxWriter.Write(lng.ToString());  // write numbers outside the size of int as strings
+
+                                break;
+                            default:
+                                xlsxWriter.Write(fieldValue.ToString());
+                                break;
+                        }
+
+                    }
+
+
+
+                }
+            }
+        }
     }
+
+
 }

@@ -1,4 +1,6 @@
-﻿using DaxStudio.UI.Interfaces;
+﻿using CsvHelper.Configuration.Attributes;
+using DaxStudio.UI.Attribures;
+using DaxStudio.UI.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 using System;
 using System.Collections.Generic;
@@ -43,6 +45,7 @@ namespace DaxStudio.UI.Model
 
         // copy/paste from the data grid converts the data to tab delimited format
         // so we replace any embedded tabs with 4 spaces 
+        [Ignore]
         public string QueryTextQuoted { 
             get { 
                 return QueryText.Replace("\t","    ");

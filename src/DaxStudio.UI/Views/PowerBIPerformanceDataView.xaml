@@ -134,9 +134,10 @@
                             <TextBlock>Capture Diagnostics</TextBlock>
                         </StackPanel>
                     </Button>
+                    <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}" x:Name="Export" Content="Export"/>
 
-                    
-                    
+
+
                     <ToggleButton x:Name="ShowFilters" DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="{DynamicResource filter_toolbarDrawingImage}"
