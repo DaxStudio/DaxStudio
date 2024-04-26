@@ -6,6 +6,8 @@
   <PropertyGroup>
     <SignToolExe>"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe"</SignToolExe>
     <MageExe>"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\mage.exe"</MageExe>
+    <ManifestSignToolExe>"C:\Users\dgosbell\source\repos\AzureManifestSignTool\bin\Debug\net8.0-windows10.0.20348.0\AzureManifestSignTool.exe"</ManifestSignToolExe>
+    <!--<ManifestSignToolExe>AzureManifestSignTool</ManifestSignToolExe>-->
     <ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
     <ManifestThumbPrint>FD452A79B4FA48AD217EE83AE4BF60A5461A5885</ManifestThumbPrint>
     <TimeStampUri>http://timestamp.digicert.com</TimeStampUri>
@@ -15,9 +17,7 @@
     <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-	<DllFiles Include=".\Release\bin\DaxStudio.*.dll"/>
-  </ItemGroup>
+
 
   <PropertyGroup>
     <ReleaseDirectory>.\Release</ReleaseDirectory>
@@ -25,7 +25,9 @@
 
   <Target Name="Clean" DependsOnTargets="MakeReleaseFolder">
     <Message Text="Cleaning DaxStudio.Standalone" />
-    <MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />
+    <!--<MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />-->
+    <RemoveDir Directories="$(ReleaseDirectory)" />
+    <MakeDir Directories="$(ReleaseDirectory)" />
   </Target>
 
   <Target Name="DeleteReleaseFolder">
@@ -39,12 +41,14 @@
 
   <Target Name="Build" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Standalone" />
-    <MSBuild Projects=".\src\daxstudio.sln" Targets="Build" Properties="RestorePackages=false" />
+    <MSBuild Projects=".\src\daxstudio.sln" 
+             Targets="Clean;Build" 
+             Properties="RestorePackages=false" />
   </Target>
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Tests" />
-    <MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />
+    <!--<MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />-->
   </Target>
 
   <Target Name="DeletePdb" AfterTargets="Build" DependsOnTargets="Build">
@@ -93,35 +97,35 @@
   </Target>
 
   <Target Name="SignAssemblies" DependsOnTargets="Build;MoveExes">
+    <ItemGroup>
+	    <DllFiles Include=".\Release\bin\DaxStudio.*.dll;.\Release\bin\DaxStudio.dll"/>
+    </ItemGroup>
+
     <Message Text="Attempting to sign Assemblies" Importance="high" /> 
-   <!--  <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.exe' IgnoreExitCode="true"/>
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.checker.exe' IgnoreExitCode="true"/>
-    <Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\Release\bin\daxstudio.dll' IgnoreExitCode="true"/> -->
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\daxstudio.exe' 
+    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\dscmd.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\dscmd.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\daxstudio.checker.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.checker.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\Release\bin\daxstudio.dll' 
+    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -mdop 1 %(DllFiles.Identity)' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 
   </Target>
   
  <Target Name="DllsToSign" >
-	<Message Text="DLLs: @(DllFiles, ' ')" Importance="high" />
+   <ItemGroup>
+	    <DllFiles Include=".\Release\bin\DaxStudio.*.dll"/>
+    </ItemGroup>
+	  <Message Text="DLLs: @(DllFiles, ' ')" Importance="high" />
  </Target>
  
-  
 
-  <Target Name="SignManifest" DependsOnTargets="SignAssemblies">
-    <Message Text="Attempting to sign DaxStudio.dll.manifest file" Importance="high"/>
-    <Exec Command='$(MageExe) -update ".\release\bin\DaxStudio.dll.manifest" -CertHash $(ManifestThumbPrint) -TimeStampUri $(TimeStampUri)' IgnoreExitCode="true"/>
-  </Target>
-
-  <Target Name="SignVsto" DependsOnTargets="SignManifest">
+  <Target Name="SignVsto" DependsOnTargets="SignAssemblies">
     <Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
-    <Exec WorkingDirectory=".\Release\bin" Command='$(MageExe) -update "DaxStudio.vsto" -CertHash $(ManifestThumbPrint) -appmanifest "DaxStudio.dll.manifest" -TimeStampUri $(TimeStampUri)' />
+
+    <Exec WorkingDirectory=".\Release\bin" Command='sign code azure-key-vault DaxStudio.vsto -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -d "DAX Studio Excel Addin" -u https://daxstudio.org' 
+          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
   </Target>
 
 
@@ -135,8 +139,9 @@
 
   <Target Name="SignedInstaller" DependsOnTargets="InstallerWithSignedAssemblies; RetrieveIdentities">
     <Message Text="Attempting to sign installer" Importance="high" />
-    <!--<Exec Command='$(SignToolExe) sign /sha1 $(ManifestThumbPrint) /t $(TimeStampUri) .\package\DaxStudio_$(OutVersion)_setup.exe' IgnoreExitCode="true"/>-->
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -v .\package\DaxStudio_$(OutVersion)_setup.exe' 
+    <Sleep Delay="1000"/>
+
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\package\DaxStudio_$(OutVersion)_setup.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
           <OnError ExecuteTargets="DeleteInstaller" />
   </Target>
@@ -162,13 +167,34 @@
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
-  <Target Name="SignedPortable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies">
+  <Target Name="SignedPortable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies;MoveTestsOut">
+    <Message Text="Creating .zip file" Importance="High" />
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
 
-  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes">
+  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;MoveTestsOut">
+    <Message Text="Creating .zip file" Importance="High" />
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
+
+<Target Name="MoveTestsOut">
+  <ItemGroup>
+      <TestsToMoveOut Include=".\Release\bin\*.Tests.dll;.\Release\bin\*.Tests.dll.config" />
+    </ItemGroup>
+    <MakeDir Directories="./Tests" />
+    <Message Text="Moving Tests Out" Importance="High" />
+    <Move SourceFiles="@(TestsToMoveOut)" DestinationFolder=".\Tests" />
+</Target>
+
+  <Target Name="MoveTestsIn">
+    <ItemGroup>
+      <TestsToMoveIn Include=".\Tests\*.*" />
+    </ItemGroup>
+    
+    <Message Text="Moving Tests In" Importance="High" />
+    <Move SourceFiles="@(TestsToMoveIn)" DestinationFolder=".\Release\bin" />
+  </Target>
+
 
   <Target Name="GenerateInstallerHash" DependsOnTargets="SignedInstaller">
     <ItemGroup>
@@ -198,12 +224,12 @@
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
 
-  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;SignedPortable;GeneratePortableHash;GenerateInstallerHash">
-    <Message Text="Performing full build of Signed Installer and Portable zip" Importance="High" />
+  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;SignedPortable;GeneratePortableHash;GenerateInstallerHash;MoveTestsIn">
+    <Message Text="Performed full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 
-  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash">
-    <Message Text="Performing full build of Unsigned Installer and Portable zip" Importance="High" />
+  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash;DllsToSign;MoveTestsIn">
+    <Message Text="Performed full build of Unsigned Installer and Portable zip" Importance="High" />
   </Target>
 
   <UsingTask TaskName="GenerateHash" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
@@ -237,4 +263,17 @@
         </Task>
     </UsingTask>
 
+  <UsingTask TaskName="Sleep" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <!-- Delay in milliseconds -->
+      <Delay ParameterType="System.Int32" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          System.Threading.Thread.Sleep(this.Delay);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 </Project>

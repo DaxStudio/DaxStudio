@@ -211,7 +211,7 @@ ORDER BY
     'Product'[Colour]";
             var opt = new Mock<IGlobalOptions>();
             opt.SetupGet(o => o.DaxFormatterRequestTimeout).Returns(10);
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt.Object, new MockEventAggregator(), false );
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt.Object, new MockEventAggregator(), false ).ConfigureAwait(false);
             Assert.AreEqual(569, res.FormattedDax.Length, "Query length does not match");
             Assert.AreEqual(formattedQry, res.FormattedDax, "Formatted Query does not match expected format");
             Assert.IsNull(res.errors);
@@ -226,13 +226,13 @@ ORDER BY
             //var mockGlobalOptions = new MockGlobalOptions() { ProxyUseSystem = true };
             var mockEventAggregator = new MockEventAggregator();
             //var webReqFac = new UI.Utils.WebRequestFactory(mockGlobalOptions, mockEventAggregator);
-            var webReqFac = await UI.Utils.WebRequestFactory.CreateAsync(mockGlobalOptions.Object, mockEventAggregator);
+            var webReqFac = await UI.Utils.WebRequestFactory.CreateAsync(mockGlobalOptions.Object, mockEventAggregator).ConfigureAwait(false);
             //var daxFmtProxy = IoC.BuildUp(webReqFac);
             var qry = "EVALUATE FILTER(Customer, Customer[Username] = \"Test\\User\")" ;
             var expectedQry = "EVALUATE\r\nFILTER ( Customer, Customer[Username] = \"Test\\User\" )";
             var opt = new Mock<IGlobalOptions>();
             opt.SetupGet(o => o.DaxFormatterRequestTimeout).Returns(10);
-            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt.Object, new MockEventAggregator(), false);
+            DaxStudio.UI.Model.DaxFormatterResult res = await DaxStudio.UI.Model.DaxFormatterProxy.FormatDaxAsync(qry, null, opt.Object, new MockEventAggregator(), false).ConfigureAwait(false);
             Assert.AreEqual(expectedQry, res.FormattedDax);
         }
     }

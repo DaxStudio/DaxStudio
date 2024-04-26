@@ -3,19 +3,15 @@ using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
-using DaxStudio.QueryTrace;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using System.IO;
-using Newtonsoft.Json;
 using System.Text;
 using DaxStudio.Controls.DataGridFilter;
 using System.Linq;
 using System.ComponentModel;
 using System.Windows.Data;
-using System.Collections.ObjectModel;
 using System;
-using System.Windows.Media;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using System.Threading.Tasks;
@@ -25,11 +21,9 @@ using CsvHelper.Configuration;
 using CsvHelper;
 using System.Globalization;
 using System.Windows.Forms;
-using ADOTabular;
 using LargeXlsx;
 using static LargeXlsx.XlsxAlignment;
 using System.Reflection;
-using DaxStudio.UI.Attribures;
 using CsvHelper.Configuration.Attributes;
 
 namespace DaxStudio.UI.ViewModels
@@ -307,8 +301,9 @@ namespace DaxStudio.UI.ViewModels
 
             } 
             catch (Exception ex)
-            { 
-                
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while trying to export: {ex.Message}"));
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(PowerBIPerformanceDataViewModel), nameof(Export), "Error during export");
             }
         }
 

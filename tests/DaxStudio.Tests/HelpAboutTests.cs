@@ -17,27 +17,31 @@ namespace DaxStudio.Tests
         {
             Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
             var stubVerChk = new VersionCheckMock();
-            var stubHost = new Mocks.MockDaxStudioHost();
-            var mockOptions = new Mock<IGlobalOptions>().Object;
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost, mockOptions  );
-            var ra = hlp.ReferencedAssemblies;
-            Assert.IsTrue(ra.Count >= 32);
+            using (var stubHost = new Mocks.MockDaxStudioHost())
+            {
+                var mockOptions = new Mock<IGlobalOptions>().Object;
+                var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg, stubVerChk, stubHost, mockOptions);
+                var ra = hlp.ReferencedAssemblies;
+                Assert.IsTrue(ra.Count >= 32);
+            }
         }
         [TestMethod]
         public void GetAssemblyList()
         {
             Caliburn.Micro.IEventAggregator stubEventAgg = new Caliburn.Micro.EventAggregator();
             var stubVerChk = new VersionCheckMock();
-            var stubHost = new Mocks.MockDaxStudioHost();
-            var mockOptions = new Mock<IGlobalOptions>().Object;
-            var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg,stubVerChk, stubHost, mockOptions);
-            var ra = hlp.ReferencedAssemblies;
-            foreach (var a in ra)
+            using (var stubHost = new Mocks.MockDaxStudioHost())
             {
-                System.Diagnostics.Debug.WriteLine(a.Key);
-            }
+                var mockOptions = new Mock<IGlobalOptions>().Object;
+                var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg, stubVerChk, stubHost, mockOptions);
+                var ra = hlp.ReferencedAssemblies;
+                foreach (var a in ra)
+                {
+                    System.Diagnostics.Debug.WriteLine(a.Key);
+                }
 
-            Assert.IsTrue( ra["DaxStudio.Interfaces"].Length > 0);
+                Assert.IsTrue(ra["DaxStudio.Interfaces"].Length > 0);
+            }
         }
     }
 

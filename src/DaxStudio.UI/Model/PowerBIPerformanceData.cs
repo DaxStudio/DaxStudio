@@ -1,5 +1,4 @@
 ﻿using CsvHelper.Configuration.Attributes;
-using DaxStudio.UI.Attribures;
 using DaxStudio.UI.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 using System;

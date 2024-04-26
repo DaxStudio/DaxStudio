@@ -11,7 +11,7 @@ namespace DaxStudio.Tests
     [TestClass]
     public class EvaluateAndLogTests
     {
-		public string json = @"
+		string json = @"
 {
 	""expression"": ""AVERAGE(WorldBank[Value])"",
 	""label"": ""Step 1"",

@@ -87,7 +87,7 @@ Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Comp
 Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
 Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
-Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json;*.portable;Microsoft.Excel.*.dll"
+Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json,*.portable,Microsoft.Excel.*.dll,*.Tests.dll"
 
 ; PBI Desktop integration (If installing in ALL USERS mode)
 Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Check: IsAdminInstallMode;                                                                                    
