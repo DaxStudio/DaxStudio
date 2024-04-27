@@ -188,11 +188,14 @@
 
   <Target Name="MoveTestsIn">
     <ItemGroup>
-      <TestsToMoveIn Include=".\Tests\*.*" />
+      <TestsToMoveIn Include=".\Tests\DaxStudio.Tests.*" />
     </ItemGroup>
-    
+    <ItemGroup>
+      <CmdLineTestsToMoveIn Include=".\Tests\DaxStudio.CommandLine.Tests.*" />
+    </ItemGroup>
     <Message Text="Moving Tests In" Importance="High" />
     <Move SourceFiles="@(TestsToMoveIn)" DestinationFolder=".\Release\bin" />
+    <Move SourceFiles="@(CommandLineTestsToMoveIn)" DestinationFolder=".\Release" />
   </Target>
 
 
