@@ -181,21 +181,21 @@
   <ItemGroup>
       <TestsToMoveOut Include=".\Release\bin\*.Tests.dll;.\Release\bin\*.Tests.dll.config" />
     </ItemGroup>
-    <MakeDir Directories="./Tests" />
+    <MakeDir Directories="./Tmp" />
     <Message Text="Moving Tests Out" Importance="High" />
-    <Move SourceFiles="@(TestsToMoveOut)" DestinationFolder=".\Tests" />
+    <Move SourceFiles="@(TestsToMoveOut)" DestinationFolder=".\Tmp" />
 </Target>
 
   <Target Name="MoveTestsIn">
     <ItemGroup>
-      <TestsToMoveIn Include=".\Tests\DaxStudio.Tests.*" />
+      <TestsToMoveIn Include=".\Tmp\DaxStudio.Tests.*" />
     </ItemGroup>
     <ItemGroup>
-      <CmdLineTestsToMoveIn Include=".\Tests\DaxStudio.CommandLine.Tests.*" />
+      <CmdLineTestsToMoveIn Include=".\Tmp\DaxStudio.CommandLine.Tests.*" />
     </ItemGroup>
     <Message Text="Moving Tests In" Importance="High" />
     <Move SourceFiles="@(TestsToMoveIn)" DestinationFolder=".\Release\bin" />
-    <Move SourceFiles="@(CommandLineTestsToMoveIn)" DestinationFolder=".\Release" />
+    <Move SourceFiles="@(CmdLineTestsToMoveIn)" DestinationFolder=".\Release" />
   </Target>
 
 
