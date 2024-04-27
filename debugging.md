@@ -38,3 +38,20 @@ This is the core project that contains all of the User Interface. It uses [Calib
     - `QueryHistoryPaneViewModel`
     - `QueryResultsPaneViewModel`
 1. Once the `DocumentViewModel` has been created it will open and display a `ConnectionDialogViewModel`
+
+
+## Excel Add-in Signing
+
+### updating debug self-signed certificate
+
+```
+$Certificate = new-selfsignedcertificate -subject daxstudio.org -Type CodeSigning -CertStoreLocation cert:\CurrentUser\My -KeyFriendlyName "DAX Studio Excel Addin Debug Cert"
+
+$Pwd = ConvertTo-SecureString -String "<Password>" -Force -AsPlainText 
+
+Export-PfxCertificate -Cert $Certificate -FilePath "c:\temp\DaxStudioSelfSigned.pfx" -Password $Pwd 
+```
+
+### Encrypting the Cert
+
+see https://www.appveyor.com/docs/how-to/secure-files/
