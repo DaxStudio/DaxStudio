@@ -112,7 +112,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"
-Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {app}\bin\DaxStudio.cer"; StatusMsg: "Adding trusted publisher..."; Components: Excel 
+;Filename: "certutil.exe"; Parameters: "-addstore ""TrustedPublisher"" {app}\bin\DaxStudio.cer"; StatusMsg: "Adding trusted publisher..."; Components: Excel 
 ;Filename: "eventcreate"; Parameters: "/ID 1 /L APPLICATION /T INFORMATION  /SO DaxStudio /D ""DaxStudio Installed"""; WorkingDir: "{sys}"; Flags: runascurrentuser runhidden; StatusMsg: "Registering DaxStudio Eventlog Source"; Components: Core
 ;Filename: {code:GetV4NetDir}ngen.exe; Parameters: "install ""{app}\{#MyAppExeName}"""; StatusMsg: Optimizing performance for your system ...; Flags: runhidden; 
 ;Check: CheckFramework;
