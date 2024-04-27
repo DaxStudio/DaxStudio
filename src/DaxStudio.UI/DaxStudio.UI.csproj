@@ -1433,7 +1433,7 @@
       <Version>4.0.212</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>31.0.4</Version>
+      <Version>32.0.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
       <Version>1.5.1</Version>

@@ -18,7 +18,7 @@ namespace DaxStudio.Tests
         [TestInitialize]
         public void Setup()
         {
-            var testFile = @"..\..\data\AdvWorks2.vpax";
+            var testFile = $@"{Constants.TestDataPath}\AdvWorks2.vpax";
             vpaContent = Dax.Vpax.Tools.VpaxTools.ImportVpax(testFile);
             conn = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
             conn.Visitor = new MetadataVisitorVpax(conn,  vpaContent.DaxModel, vpaContent.TomDatabase);

@@ -56,7 +56,7 @@ namespace DaxStudio.Tests.Mocks
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

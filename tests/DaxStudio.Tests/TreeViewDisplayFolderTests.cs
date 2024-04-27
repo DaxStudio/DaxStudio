@@ -75,7 +75,7 @@ namespace DaxStudio.Tests
                     new Cube {CUBE_NAME = "Adventure Works", CUBE_CAPTION="Adventure Works", BASE_CUBE_NAME="", DESCRIPTION="Mock Cube"}
                 })
             );
-            var csdl = string.Join("\n", File.ReadAllLines(@"..\..\data\FoldersCSDL.xml"));
+            var csdl = string.Join("\n", File.ReadAllLines($@"{Constants.TestDataPath}\FoldersCSDL.xml"));
             csdlMetaDataRowset = new DataSet();
             csdlMetaDataRowset.Tables.Add(
                 DmvHelpers.ListToTable(new List<CSDL_METADATA> {

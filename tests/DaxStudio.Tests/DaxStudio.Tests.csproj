@@ -97,6 +97,7 @@
     <Compile Include="BuildTests.cs" />
     <Compile Include="CodeCompletionTests.cs" />
     <Compile Include="ConnectionStringParserTests.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="DaxEditorBracketHighlightTests.cs" />
     <Compile Include="DaxHelperTests.cs" />
     <Compile Include="EntryPointTests.cs" />
@@ -197,6 +198,9 @@
     </PackageReference>
     <PackageReference Include="Humanizer">
       <Version>2.14.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
+      <Version>19.79.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.retail.amd64">
       <Version>19.79.1.1</Version>

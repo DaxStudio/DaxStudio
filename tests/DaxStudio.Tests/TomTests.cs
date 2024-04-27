@@ -181,7 +181,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestPowerBITomModel_CSDL_2_0()
         {
-            var connection = MockConnection(@"..\..\data\powerbi-csdl.xml");
+            var connection = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             connection.Visitor = v;
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
@@ -200,7 +200,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestPowerBITomModel_CSDL_2_5()
         {
-            var connection = MockConnection(@"..\..\data\csdl_2_5.xml");
+            var connection = MockConnection($@"{Constants.TestDataPath}\csdl_2_5.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
