@@ -391,7 +391,7 @@ namespace DaxStudio.UI.ViewModels
             public string ColumnName => "The name of the column";
         }
 
-        internal async Task ExportAnalysisDataAsync(string fileName)
+        internal async Task ExportAnalysisDataAsync(string fileName, string dictionaryPath, string inputDictionaryPath)
         {
             try
             {
@@ -406,7 +406,7 @@ namespace DaxStudio.UI.ViewModels
                 await Task.Run(() =>
                 {
                     Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
-                    ModelAnalyzer.ExportExistingModelToVPAX(fileName, ViewModel.Model, viewVpa, Database);
+                    ModelAnalyzer.ExportExistingModelToVPAX(fileName,dictionaryPath,inputDictionaryPath, ViewModel.Model, viewVpa, Database);
                 });
             }
             catch (Exception ex)

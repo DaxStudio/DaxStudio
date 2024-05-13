@@ -498,7 +498,7 @@ namespace DaxStudio.UI.ViewModels
                 var vpa = _newDocument.ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
                 if (vpa != null)
                 {
-                    await vpa.ExportAnalysisDataAsync(Path.Combine(_tempFolder, "Model.vpax"));
+                    await vpa.ExportAnalysisDataAsync(Path.Combine(_tempFolder, "Model.vpax"), dictionaryPath:string.Empty, inputDictionaryPath:string.Empty);
                     _newDocument.ToolWindows.Remove(vpa);
                 }
             }

@@ -57,6 +57,8 @@ using System.Linq.Dynamic;
 using DaxStudio.Controls.PropertyGrid;
 using ICSharpCode.AvalonEdit.Folding;
 using Dax.Model.Extractor;
+using Dax.Vpax.Obfuscator.Common;
+using Dax.Vpax.Obfuscator;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -2322,6 +2324,7 @@ namespace DaxStudio.UI.ViewModels
         public void OutputError(string error)
         {
             OutputError(error, double.NaN);
+            ActivateOutput();
         }
 
         public void OutputError(string error, double durationMs)
@@ -2340,6 +2343,7 @@ namespace DaxStudio.UI.ViewModels
             else
             {
                 OutputPane?.AddError(error, durationMs);
+                ActivateOutput();
             }
         }
 
@@ -2365,6 +2369,7 @@ namespace DaxStudio.UI.ViewModels
             });
 
             OutputPane?.AddError(error, msgRow, msgCol);
+            ActivateOutput();
         }
 
         #endregion
@@ -3048,7 +3053,8 @@ namespace DaxStudio.UI.ViewModels
             });
 
             // todo - should we be checking for exceptions in this continuation
-            if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+            if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase) 
+                && !FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
             {
                 await ChangeConnectionAsync();
             }
@@ -3114,7 +3120,14 @@ namespace DaxStudio.UI.ViewModels
 
                 if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                 {
-                    ImportAnalysisData(fileName);
+                    ImportAnalysisData(fileName, string.Empty);
+                    return;
+                }
+
+                if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+                {
+                    // try to get default dict file
+                    ImportAnalysisData(fileName, string.Empty);
                     return;
                 }
 
@@ -4465,9 +4478,9 @@ namespace DaxStudio.UI.ViewModels
             // Configure save file dialog box
             var dlg = new SaveFileDialog
             {
-                FileName = Connection.DatabaseName,
+                FileName = Connection.Database?.Caption?? Connection.Database?.Name ?? "Model",
                 DefaultExt = ".vpax",
-                Filter = "Analyzer Data (vpax)|*.vpax|Ofuscated Data (vpax)|*.vpax"
+                Filter = "Analyzer Data|*.vpax|Ofuscated Data|*.ovpax|Ofuscated Data (incremental)|*.ovpax"
 
             };
 
@@ -4477,16 +4490,45 @@ namespace DaxStudio.UI.ViewModels
             // Process save file dialog box results 
             if (result == true)
             {
+                
+                var inputDictionaryPath = string.Empty;
+
+                if (dlg.FilterIndex==3) // incremental ovpax
+                {
+                    var dlg2 = new OpenFileDialog
+                    {
+                        Title = "Select existing dict file",
+                        FileName = Connection.Database?.Caption ?? Connection.Database?.Name ?? "Model",
+                        DefaultExt = ".dict",
+                        Filter = "Ofuscation Dictionary|*.dict"
+
+                    };
+
+                    if (dlg2.ShowDialog()==true)
+                    {
+                        inputDictionaryPath = dlg2.FileName;
+                    }
+                }
+
+
+                
+                var dictionaryPath = dlg.FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase) ?  
+                    Path.Combine(Path.GetDirectoryName(dlg.FileName), Path.GetFileNameWithoutExtension(dlg.FileName) + ".dict") 
+                    : string.Empty;
+
+                // Add a suffix to dictionary path if one already exists
+                dictionaryPath = dictionaryPath.GetNextAvailableFilename();              
+
                 // Save document 
                 try {
                     IsVertipaqAnalyzerRunning = true;
                     if (vm != null)
                     {
-                        await vm.ExportAnalysisDataAsync(dlg.FileName);
+                        await vm.ExportAnalysisDataAsync(dlg.FileName, dictionaryPath, inputDictionaryPath);
                     }
                     else
                     {
-                        await ExportAnalysisDataAsync(dlg.FileName);
+                        await ExportAnalysisDataAsync(dlg.FileName, dictionaryPath, inputDictionaryPath);
                     }
                 }
                 finally
@@ -4505,7 +4547,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Multiselect = false,
                 DefaultExt = ".vpax",
-                Filter = "Analyzer Data (vpax)|*.vpax"
+                Filter = "Analyzer Data|*.vpax|Obfuscated Analyzer Data|*.ovpax"
             };
 
             // Show save file dialog box
@@ -4513,19 +4555,39 @@ namespace DaxStudio.UI.ViewModels
 
             if (result == true)
             {
+                string dictFilePath = string.Empty;
                 var filename = dlg.FileName;
-                ImportAnalysisData(filename);
+
+                if (dlg.FilterIndex == 2) 
+                {
+                    // if this is an ovpax file get the dictionary
+                    dictFilePath = ModelAnalyzer.GetDictPathForOvpax(filename);
+                }
+
+                ImportAnalysisData(filename, dictFilePath);
             }
 
         }
 
-        private async void ImportAnalysisData(string path)
+        private async void ImportAnalysisData(string path, string dictFilePath)
         {
 
             try
             {
+                Dax.Vpax.Tools.VpaxTools.VpaxContent content;
+                using var vpax = new MemoryStream(File.ReadAllBytes(path));
+                {
+                    
+                    if (!string.IsNullOrEmpty(dictFilePath))
+                    {
+                        // if we have a dictionary path use this to deobfuscate the stream
+                        var dictionary = ObfuscationDictionary.ReadFrom(dictFilePath);
+                        var obfuscator = new VpaxObfuscator();
+                        obfuscator.Deobfuscate(vpax, dictionary);
+                    }
 
-                var content = Dax.Vpax.Tools.VpaxTools.ImportVpax(path);
+                    content = Dax.Vpax.Tools.VpaxTools.ImportVpax(vpax);
+                }
                 var database = content.TomDatabase;
                 if (!Connection.IsConnected)
                     await Task.Run(async ()=> {await Connection.ConnectAsync(new ConnectEvent(Connection.ApplicationName, content), UniqueID); });
@@ -4558,11 +4620,11 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        public async Task ExportAnalysisDataAsync(string path)
+        public async Task ExportAnalysisDataAsync(string path, string dictionaryPath, string inputDictionaryPath)
         {
             try
             {
-                await Task.Run(() => ExportAnalysisData(path));
+                await Task.Run(() => ExportAnalysisData(path, dictionaryPath, inputDictionaryPath));
             }
             catch (Exception ex)
             {
@@ -4573,7 +4635,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public void ExportAnalysisData(string path)
+        public void ExportAnalysisData(string path, string dictionaryPath, string inputDictionaryPath)
         {
             using (var _ = new StatusBarMessage(this, "Exporting Model Metrics"))
             {
@@ -4600,7 +4662,7 @@ namespace DaxStudio.UI.ViewModels
 
                     try
                     {
-                        ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.DatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery);
+                        ModelAnalyzer.ExportVPAX(Connection.ConnectionStringWithInitialCatalog, path,dictionaryPath, inputDictionaryPath, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery, dialog.VpaxDirectLakeExtractionMode);
                     }
                     catch (Exception ex)
                     {
@@ -4611,7 +4673,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ServerName, Connection.DatabaseName, path, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false); // Disable statistics during retry
+                            ModelAnalyzer.ExportVPAX(Connection.ConnectionStringWithInitialCatalog , path, dictionaryPath, inputDictionaryPath, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false, Dax.Metadata.DirectLakeExtractionMode.ResidentOnly); // Disable statistics during retry
                         }
                         else
                         {
