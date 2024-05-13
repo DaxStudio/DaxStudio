@@ -43,7 +43,7 @@ namespace DaxStudio.CommandLine.Commands
         {
             if (string.IsNullOrWhiteSpace(settings.Query) && string.IsNullOrWhiteSpace(settings.File))
             { return ValidationResult.Error("You must specify either <query> or <file>"); }
-            return ValidationResult.Success();
+            return base.Validate(context, settings);
         }
 
         public override int Execute(CommandContext context, Settings settings)

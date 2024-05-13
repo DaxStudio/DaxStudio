@@ -91,6 +91,8 @@ namespace DaxStudio.CommandLine
             var app = new CommandApp(registrar);
             app.Configure(config =>
             {
+                config.SetHelpProvider(new CustomHelpProvider(config.Settings));
+
                 config.AddBranch<CommandSettings>("export", export => {
                     export.AddCommand<ExportSqlCommand>("sql")
                         .WithDescription("Exports specified tables to a SQL Server")
