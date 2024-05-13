@@ -22,6 +22,7 @@ using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,7 +33,7 @@ namespace DaxStudio.UI.ViewModels
         IViewAware
 
     {
-
+        const string fileExtension = ".evalAndLogTrace";
 
         [ImportingConstructor]
         public EvaluateAndLogTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions,windowManager)
@@ -50,6 +51,22 @@ namespace DaxStudio.UI.ViewModels
             };
         }
 
+        public bool ShowNotice { get => SelectedEvent?.ShowNotice ?? false; }
+
+        public override void CheckEnabled(IConnection connection, ITraceWatcher active)
+        {
+            base.CheckEnabled(connection, active);
+
+            if (connection.ServerType != ADOTabular.Enums.ServerType.PowerBIDesktop) { 
+                IsEnabled = false;
+            }
+        }
+
+        public override string DisableReason { 
+            get {
+                if (Connection.ServerType != ADOTabular.Enums.ServerType.PowerBIDesktop) return "The EvaluateAndLog Trace is only supported for Power BI Desktop connections";
+                return base.DisableReason; } 
+        }
 
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs traceEvent)
         {
@@ -179,7 +196,8 @@ namespace DaxStudio.UI.ViewModels
         public EvaluateAndLogEvent SelectedEvent { get =>_selectedEvent; 
             set { 
                 _selectedEvent = value; 
-                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(ShowNotice));
             } 
         }
 
@@ -238,7 +256,7 @@ namespace DaxStudio.UI.ViewModels
         void ISaveState.Save(string filename)
         {
             string json = GetJson();
-            File.WriteAllText(filename + ".debugTrace", json);
+            File.WriteAllText(filename + fileExtension, json);
         }
 
         public string GetJson()
@@ -248,7 +266,7 @@ namespace DaxStudio.UI.ViewModels
 
         void ISaveState.Load(string filename)
         {
-            filename = filename + ".debugTrace";
+            filename = filename + fileExtension;
             if (!File.Exists(filename)) return;
 
             _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
@@ -310,6 +328,8 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        
+
         public override bool CanExport => _debugEvents.Count > 0;
 
         public override string ImageResource => "evaluate_logDrawingImage"; 
@@ -336,6 +356,7 @@ namespace DaxStudio.UI.ViewModels
 
         //TODO
         private string _text;
+        [JsonIgnore]
         public string Text { get => _text; set { _text = value;
                 ParseJson(_text);
             } 
@@ -352,6 +373,11 @@ namespace DaxStudio.UI.ViewModels
         public string Expression { get; set; }
         public string Label { get; set; }
         public long RowCount {  get; set; }
+        private string _notification = string.Empty;
+        public string Notice { get;set; }
+
+        [JsonIgnore]
+        public bool ShowNotice { get => !string.IsNullOrWhiteSpace(Notice); }
         #endregion
 
         internal void ParseJson(string json)
@@ -360,6 +386,7 @@ namespace DaxStudio.UI.ViewModels
 
             Label = item.Label;
             Expression = item.Expression;
+            Notice = item.Notice;
             var row1input = item.Data[0].Input;
             var row1output = item.Data[0].Output;
             var inputIdx = 0;
@@ -463,6 +490,8 @@ namespace DaxStudio.UI.ViewModels
                 return typeof(string);
             } 
         }
+
+        
     }
 
     public class EvaluateAndLogItem
@@ -470,6 +499,7 @@ namespace DaxStudio.UI.ViewModels
         public string Expression { get; set; }
         public string Label { get; set; }
         public long RowCount { get; set; }
+        public string Notice { get; set; }
         public List<string> Inputs { get; set; }
         public List<string> Outputs { get; set; }
         public List<EvaluateAndLogData> Data { get; set; }
@@ -539,7 +569,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
     }
-
 
 
 #endregion

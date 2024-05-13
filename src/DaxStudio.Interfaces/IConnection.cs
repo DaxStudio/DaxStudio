@@ -1,4 +1,6 @@
-﻿namespace DaxStudio.Interfaces
+﻿using ADOTabular.Enums;
+
+namespace DaxStudio.Interfaces
 {
     public interface IConnection
     {
@@ -8,5 +10,6 @@
         bool IsConnected { get;  }
         string DatabaseName { get; }
         string ServerName { get; }
+        ServerType ServerType { get; }
     }
 }

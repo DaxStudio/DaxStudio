@@ -279,7 +279,7 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        public void CheckEnabled(IConnection connection, ITraceWatcher active)
+        public virtual void CheckEnabled(IConnection connection, ITraceWatcher active)
         {
             if (connection == null) {
                 IsEnabled = false;
@@ -473,7 +473,7 @@ namespace DaxStudio.UI.ViewModels
 
         public abstract bool FilterForCurrentSession { get; }
         public bool IsAdminConnection { get; private set; }
-        public string DisableReason { get {
+        public virtual string DisableReason { get {
                 if (!IsAdminConnection) return "You must have Admin rights on the server to enable traces";
                 if (IsChecked && IsEnabled) return "Trace is already running";
                 return "You cannot have both session traces and all queries traces enabled at the same time";

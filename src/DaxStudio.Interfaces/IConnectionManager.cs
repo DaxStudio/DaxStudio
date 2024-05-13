@@ -29,5 +29,7 @@ namespace DaxStudio.Interfaces
 
         ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string query, List<AdomdParameter> paramList);
         DataTable ExecuteDaxQueryDataTable(string query);
+
+        ServerType ServerType { get; }
     }
 }

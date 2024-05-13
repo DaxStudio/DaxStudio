@@ -32,6 +32,7 @@
 
             <conv:StringWhitespaceRemovalConverter x:Key="StringWhitespaceRemovalConverter"></conv:StringWhitespaceRemovalConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <conv:DynamicDataGridConverter x:Key="DynamicDataGridConverter" />
 
@@ -444,14 +445,15 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="8"/>
-                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
 
-            
-            <GridSplitter ResizeDirection="Rows" Grid.Row="1" Height="8" Width="Auto" HorizontalAlignment="Stretch"/>
 
-            <controls:ClipBorder
+                <GridSplitter ResizeDirection="Rows" Grid.Row="1" Height="8" Width="Auto" HorizontalAlignment="Stretch"/>
+
+                <controls:ClipBorder
                 CornerRadius="4"
                 BorderThickness="1"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
@@ -534,7 +536,7 @@ ColumnHeaderStyle="{StaticResource ColumnHeaderWithSourceStyle}"
                 <Grid x:Name="DetailGrid">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -542,7 +544,7 @@ ColumnHeaderStyle="{StaticResource ColumnHeaderWithSourceStyle}"
 
                     </Grid.ColumnDefinitions>
 
-                        <Label FontWeight="DemiBold" Margin="8,4">Expression:</Label>
+                        <Label FontWeight="DemiBold" Margin="16 4 8 4">Expression:</Label>
                         <ScrollViewer Grid.Column="1" >
                         <TextBlock 
                                     TextTrimming="CharacterEllipsis"
@@ -552,9 +554,33 @@ ColumnHeaderStyle="{StaticResource ColumnHeaderWithSourceStyle}"
                                    Margin="8,4"/>
                         </ScrollViewer>
 
+                        
                     </Grid>
+                
             </controls:ClipBorder>
-        </Grid>
+                
+                <controls:ClipBorder CornerRadius="4" Grid.Row="3" 
+                                     Background="{DynamicResource Theme.Brush.InfoBar.Back}" 
+                                     BorderBrush="{DynamicResource Theme.Brush.InfoBar.Border}" 
+                                     Margin="0 6 0 0"
+                                     BorderThickness="1" 
+                                     Visibility="{Binding ShowNotice, Converter={StaticResource BoolToCollapsedConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource warningDrawingImage}" Width="16" Margin="8 8 0 8"  />
+                        <Label FontWeight="DemiBold" Margin="8 8 0 4" 
+                               Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"
+                               >Notice:</Label>
+                        <ScrollViewer>
+                            <TextBlock 
+                               Foreground="{DynamicResource Theme.Brush.InfoBar.Fore}"
+                               TextTrimming="CharacterEllipsis"
+                               TextWrapping="WrapWithOverflow"
+                               Text="{Binding Path=SelectedEvent.Notice}" 
+                               Margin="8"/> 
+                        </ScrollViewer>
+                    </StackPanel>
+                </controls:ClipBorder>
+            </Grid>
 
         </Grid>
     
