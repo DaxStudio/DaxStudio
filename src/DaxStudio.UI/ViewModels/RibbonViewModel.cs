@@ -1133,7 +1133,14 @@ namespace DaxStudio.UI.ViewModels
 
         public async void ExportAnalysisData()
         {
-            await ActiveDocument?.ExportAnalysisDataAsync();
+            try
+            {
+                await ActiveDocument?.ExportAnalysisDataAsync();
+            }
+            catch (Exception ex) {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(ExportAnalysisData), "Error while exporting metrics");
+                ActiveDocument?.OutputError(ex.Message);
+            }
         }
 
         public bool CanViewAnalysisData => IsActiveDocumentConnected && !QueryRunning;

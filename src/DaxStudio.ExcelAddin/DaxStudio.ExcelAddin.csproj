@@ -229,20 +229,20 @@
     This section specifies references for the project.
   -->
   <ItemGroup>
-    <Reference Include="Microsoft.AnalysisServices, Version=19.79.1.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.79.1.1\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices, Version=19.80.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.80.0\lib\net45\Microsoft.AnalysisServices.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.79.1.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.79.1.1\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.80.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.80.0\lib\net45\Microsoft.AnalysisServices.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=19.79.1.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.79.1.1\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=19.80.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.80.0\lib\net45\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.79.1.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.79.1.1\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.80.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.80.0\lib\net45\Microsoft.AnalysisServices.Tabular.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=19.79.1.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.79.1.1\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=19.80.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AnalysisServices.retail.amd64.19.80.0\lib\net45\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -265,8 +265,8 @@
       <Aliases>ExcelAmo</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Identity.Client, Version=4.60.3.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Identity.Client.4.60.3\lib\net462\Microsoft.Identity.Client.dll</HintPath>
+    <Reference Include="Microsoft.Identity.Client, Version=4.61.0.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Identity.Client.4.61.0\lib\net462\Microsoft.Identity.Client.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Abstractions, Version=7.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.IdentityModel.Abstractions.7.5.1\lib\net462\Microsoft.IdentityModel.Abstractions.dll</HintPath>
@@ -309,10 +309,10 @@
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="Polly, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Polly.8.3.1\lib\net462\Polly.dll</HintPath>
+      <HintPath>..\..\packages\Polly.8.4.0\lib\net462\Polly.dll</HintPath>
     </Reference>
     <Reference Include="Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Polly.Core.8.3.1\lib\net462\Polly.Core.dll</HintPath>
+      <HintPath>..\..\packages\Polly.Core.8.4.0\lib\net462\Polly.Core.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -327,9 +327,6 @@
     </Reference>
     <Reference Include="Serilog.Sinks.File, Version=5.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Serilog.Sinks.File.5.0.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.PeriodicBatching, Version=3.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.PeriodicBatching.3.1.0\lib\net45\Serilog.Sinks.PeriodicBatching.dll</HintPath>
     </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>

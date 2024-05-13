@@ -378,6 +378,7 @@
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
+    <Compile Include="Extensions\FileExtensions.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="Extensions\StoreageModeExtensions.cs" />
     <Compile Include="Interfaces\ICancellable.cs" />
@@ -1433,7 +1434,7 @@
       <Version>4.0.212</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>32.0.1</Version>
+      <Version>32.0.2</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
       <Version>1.5.1</Version>
@@ -1446,6 +1447,9 @@
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
       <Version>1.5.1</Version>
+    </PackageReference>
+    <PackageReference Include="Dax.Vpax.Obfuscator">
+      <Version>1.0.5</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.1</Version>
@@ -1492,7 +1496,7 @@
       <Version>0.9.6</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.3.1</Version>
+      <Version>8.4.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>3.1.1</Version>
