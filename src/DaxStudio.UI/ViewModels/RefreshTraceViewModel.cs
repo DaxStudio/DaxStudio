@@ -54,7 +54,8 @@ namespace DaxStudio.UI.ViewModels
                   //DaxStudioTraceEventClass.ProgressReportCurrent,
                   DaxStudioTraceEventClass.ProgressReportEnd,
                   DaxStudioTraceEventClass.ProgressReportError,
-                  DaxStudioTraceEventClass.Error
+                  DaxStudioTraceEventClass.Error,
+                  DaxStudioTraceEventClass.ExecutionMetrics
             };
         }
 

@@ -17,6 +17,7 @@ namespace DaxStudio.Interfaces
         bool IsPowerPivot { get; }
         bool IsConnected { get; }
         string SessionId { get; }
+        int SPID { get; }
         HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses { get; }
         AdomdType Type { get; }
         DaxColumnsRemap DaxColumnsRemapInfo { get; }

@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
+             xmlns:primitives="http://schemas.modernwpf.com/2019"   
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"    
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -125,7 +126,18 @@
                         </ctrl:BindableRichTextBox.ContextMenu>
                     </ctrl:BindableRichTextBox>
             </DataTemplate>
-            
+
+            <DataTemplate  DataType="{x:Type vm:ExecutionMetricsTraceEngineEvent}">
+                <StackPanel Orientation="Vertical">
+                    <DataGrid ItemsSource="{Binding Properties}" AutoGenerateColumns="False" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Property" Binding="{Binding Property}"/>
+                            <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate  DataType="{x:Type vm:RewriteTraceEngineEvent}">
                 <StackPanel Margin="5">
                     <TextBlock Margin="0 0 0 5" FontWeight="DemiBold" Padding="3" 
@@ -177,7 +189,9 @@
             </DataTemplate>
 
             <DataTemplate x:Key="TimelineCell">
-                <Grid HorizontalAlignment="Left">
+                <primitives:DataGridCellPresenter>
+                    <primitives:DataGridCellPresenter.Content>
+                <Grid HorizontalAlignment="Left" Visibility="{Binding ShowTimelineForRow, Converter={StaticResource BoolToVisibilityConverter}}">
 
                     <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" >
                         <Image Source="{Binding Path=DataContext.StorageEventHeatmap, RelativeSource={RelativeSource AncestorType=UserControl}}" DockPanel.Dock="Left"
@@ -229,6 +243,8 @@
                         </Border.Style>
                     </Border>
                 </Grid>
+                    </primitives:DataGridCellPresenter.Content>
+                </primitives:DataGridCellPresenter>
             </DataTemplate>
             
         </ResourceDictionary>
@@ -333,10 +349,18 @@
                         
                     </StackPanel>
                 </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowMetrics}"
+                              ToolTip="Show ExecutionMetrics events">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource metrics_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                        <TextBlock>Metrics</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowInternal}"
                               ToolTip="Show Internal events">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                        <Image Source="{DynamicResource internal_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Internal</TextBlock>
                     </StackPanel>
@@ -344,7 +368,7 @@
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowBatch}"
                               ToolTip="Show Batch events">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                        <Image Source="{DynamicResource batch_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Batch</TextBlock>
                     </StackPanel>
@@ -352,7 +376,7 @@
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowCache}"
                               ToolTip="Show Cache events">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                        <Image Source="{DynamicResource cache_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Cache</TextBlock>
                     </StackPanel>
@@ -360,7 +384,7 @@
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowScan}"
                               ToolTip="Show Scan events">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource clear_toolbarDrawingImage}"
+                        <Image Source="{DynamicResource scan_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Scan</TextBlock>
                     </StackPanel>
@@ -661,7 +685,7 @@
                 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                <DataGridTextColumn Header="Subclass" Width="70" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
+                <DataGridTextColumn Header="Subclass" Width="95" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Padding" Value="6 0 6 0"/>

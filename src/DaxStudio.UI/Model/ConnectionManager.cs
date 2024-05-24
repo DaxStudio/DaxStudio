@@ -1114,13 +1114,8 @@ namespace DaxStudio.UI.Model
 
         private bool SupportsActAs()
         {
-            return (this.ServerName.StartsWith("asazure://", StringComparison.InvariantCultureIgnoreCase)
-                || this.ServerName.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
-                || this.ServerName.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
-                || this.ServerName.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase)
-                || this.ServerName.StartsWith("localhost:", StringComparison.InvariantCultureIgnoreCase)
-                );
-
+            // todo - does the SSDT enging also support ActAs or is it just desktop??
+            return this.IsPowerBIorSSDT;
         }
 
         public void StopViewAs(List<ITraceWatcher> activeTraces)

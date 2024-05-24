@@ -78,22 +78,10 @@ namespace DaxStudio.UI.ViewModels
             {
 
                 StartTime = traceEvent.StartTime,
-                //Username = traceEvent.NTUserName,
                 Text = traceEvent.TextData,
-                //CpuDuration = traceEvent.CpuTime,
                 Duration = traceEvent.Duration,
-                //DatabaseName = traceEvent.DatabaseFriendlyName,
-                //RequestID = traceEvent.RequestID,
-                //RequestParameters = traceEvent.RequestParameters,
-                //RequestProperties = traceEvent.RequestProperties,
-                //ObjectName = traceEvent.ObjectName,
-                //ObjectPath = traceEvent.ObjectPath,
-                //ObjectReference = traceEvent.ObjectReference,
                 EventClass = traceEvent.EventClass,
                 EventSubClass = traceEvent.EventSubclass,
-                //ProgressTotal = traceEvent.ProgressTotal,
-                //ActivityID = traceEvent.ActivityId,
-                //SPID = traceEvent.SPID
 
             };
             try
@@ -116,20 +104,6 @@ namespace DaxStudio.UI.ViewModels
         protected override void ProcessResults()
         {
 
-            //if (IsPaused) return; // exit here if we are paused
-
-            if (Events == null) return;
-
-            // todo summarize events
-            while (!Events.IsEmpty)
-            {
-                Events.TryDequeue(out var traceEvent);
-                // todo - produce summary
-            }
-
-            Events.Clear();
-
-
             NotifyOfPropertyChange(() => DebugEvents);
             NotifyOfPropertyChange(() => CanClearAll);
             NotifyOfPropertyChange(() => CanCopyAll);
@@ -148,28 +122,15 @@ namespace DaxStudio.UI.ViewModels
 
         // IToolWindow interface
         public override string Title => "Evaluate & Log";
-        public override string TraceSuffix => "debug-log";
+        public override string TraceSuffix => "eval-and-log";
         public override string KeyTip => "EL";
         public override string ToolTipText => "Runs a server trace to capture the output from the EvaluateAndLog() DAX Function";
         public override int SortOrder => 50;
         public override bool FilterForCurrentSession => true;
-        public override bool IsPreview
-        {
-            get
-            {
-                // only show this in debug builds
-#if DEBUG
-                return false;
-#else
-                return true;
-#endif
-            }
-        }
-        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
-        {
-            return traceEvent.EventClass == DaxStudioTraceEventClass.CommandEnd &&
-                   traceEvent.TextData.Contains("<Refresh ");
-        }
+        public override bool IsPreview => false;
+        
+        protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent) => false;
+        
 
         public override void ClearAll()
         {

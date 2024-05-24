@@ -50,7 +50,9 @@ namespace DaxStudio.UI.JsonConverters
                 case "AggregateTableRewriteQuery":
                 case "131":
                     return new RewriteTraceEngineEvent();
-                
+                case "136":
+                case "ExecutionMetrics":
+                    return new ExecutionMetricsTraceEngineEvent();
                 default:
                     return new TraceStorageEngineEvent();
             }

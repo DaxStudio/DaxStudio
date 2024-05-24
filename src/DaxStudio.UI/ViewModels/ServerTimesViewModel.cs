@@ -35,6 +35,8 @@ using DaxStudio.UI.Views;
 using DaxStudio.UI.Controls;
 using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
+using System.Data;
+using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -223,6 +225,7 @@ namespace DaxStudio.UI.ViewModels
             TextData = ev.TextData;
             switch (Class)
             {
+                case DaxStudioTraceEventClass.ExecutionMetrics:
                 case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                     // the rewrite event does not have a query or storage engine timings
                     break;
@@ -304,11 +307,80 @@ namespace DaxStudio.UI.ViewModels
                 HighlightQuery = false;
             }
         }
-
-
+        [JsonIgnore]
+        public virtual bool ShowTimelineForRow => true;
         public TraceStorageEngineEvent() { }
     }
 
+    
+    public class ExecutionMetricsTraceEngineEvent: TraceStorageEngineEvent {
+        public ExecutionMetricsTraceEngineEvent() { }
+
+        public ExecutionMetricsTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
+            : base(ev, rowNumber, options, remapColumns, remapTables)
+        {
+            TextData = ev.TextData;
+        }
+
+        public override string TextData { get => base.TextData;
+            set { base.TextData = value; 
+                ParseTextData(value);
+                Query = TextData;
+            } 
+        }
+
+        [JsonIgnore]
+        public DataTable Properties { get; set; } 
+
+        private void ParseTextData(string json)
+        {
+            Properties = new DataTable();
+            Properties.Columns.Add("Property", typeof(string));
+            Properties.Columns.Add("Value", typeof(string));
+            //Properties.Columns.Add("FormatString", typeof(string));
+            var data = JObject.Parse(json);
+            foreach (var prop in data.Properties())
+            {
+                var row = Properties.NewRow();
+                row["Property"] = prop.Name;
+                var formatString = GetFormatString(prop.Name);
+                row["Value"] = ParsePropValue(prop.Name, prop.Value.ToString(), formatString);
+                //row["FormatString"] = GetFormatString(prop.Name);
+                Properties.Rows.Add(row);
+
+            }
+        }
+
+        private string GetFormatString(string name)
+        {
+            if (name.EndsWith("Ms") 
+                || name.EndsWith("KB")
+                || name.EndsWith("Rows")) return "N0";
+            return string.Empty;
+        }
+
+        private string ParsePropValue(string name, string value, string formatString)
+        {
+            switch (name)
+            {
+                case "commandType":
+                    return value;
+                case "queryDialect":
+                    int i = -1;
+                    int.TryParse(value, out i);
+                    return  ((QueryEndSubClass)i).ToString();
+                default:
+                    if( int.TryParse(value, out var i2 ))
+                    {  return i2.ToString(formatString); }
+                    if (long.TryParse(value, out var lng))
+                    { return lng.ToString(formatString); }
+                    return value;
+            }
+        }
+
+        public override bool ShowTimelineForRow => false;
+    }
+    
     public class RewriteTraceEngineEvent : TraceStorageEngineEvent
     {
 
@@ -341,6 +413,7 @@ namespace DaxStudio.UI.ViewModels
         public new string Query { get; set; } = "";
         public bool MatchFound { get { return MatchingResult == "matchFound"; } }
 
+        public override bool ShowTimelineForRow => false;
     }
 
     public static class TraceStorageEngineExtensions {
@@ -582,7 +655,7 @@ namespace DaxStudio.UI.ViewModels
             , IHaveData
     {
 
-        
+        private string _queryEndActivityId = string.Empty;
 
         private bool parallelStorageEngineEventsDetected;
         public bool ParallelStorageEngineEventsDetected
@@ -648,6 +721,7 @@ namespace DaxStudio.UI.ViewModels
                 , DaxStudioTraceEventClass.VertiPaqSEQueryEnd
                 , DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
                 , DaxStudioTraceEventClass.AggregateTableRewriteQuery
+                , DaxStudioTraceEventClass.ExecutionMetrics
                 , DaxStudioTraceEventClass.DirectQueryEnd
                 , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd};
@@ -707,11 +781,21 @@ namespace DaxStudio.UI.ViewModels
                     QueryStartDateTime = singleEvent.StartTime;
                     TotalDuration = 0;
                     break;
+                case DaxStudioTraceEventClass.ExecutionMetrics:
+                    // we need to grab the ExecutionMetrics here since it arrives after the QueryEnd event
+                    if (singleEvent.ActivityId == _queryEndActivityId && !string.IsNullOrEmpty(_queryEndActivityId))
+                    {
+                        AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(singleEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                        NotifyOfPropertyChange(nameof(StorageEngineEvents));
+                    }
+                    break;
                 default:
                     // Updates the Total for each following event
                     TotalDuration = (long)(singleEvent.CurrentTime - QueryStartDateTime).TotalMilliseconds;
                     break;
             }
+
+            if (singleEvent.EventClass == DaxStudioTraceEventClass.QueryEnd) { _queryEndActivityId = singleEvent.ActivityId; }
         }
 
         protected struct SortableEvent : IComparable<SortableEvent>
@@ -1033,6 +1117,9 @@ namespace DaxStudio.UI.ViewModels
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             AllStorageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                             break;
+                        case DaxStudioTraceEventClass.ExecutionMetrics:
+                            //AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            break;
                         case DaxStudioTraceEventClass.QueryEnd:
 
                             TotalDuration = traceEvent.Duration;
@@ -1343,11 +1430,14 @@ namespace DaxStudio.UI.ViewModels
                               ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.NotAvailable
                                ) && ServerTimingDetails.ShowScan)
                               ||
                               (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
                               || 
                               (e.ClassSubclass.Class == DaxStudioTraceEventClass.Total)
+                              ||
+                              (e.ClassSubclass.Class == DaxStudioTraceEventClass.ExecutionMetrics && ServerTimingDetails.ShowMetrics)
                           select e;
                 return new BindableCollection<TraceStorageEngineEvent>(fse);
             }
@@ -1399,7 +1489,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _selectedEvent = value;
-                IsSEQuery = !(_selectedEvent is RewriteTraceEngineEvent);
+                IsSEQuery = !(_selectedEvent is RewriteTraceEngineEvent || _selectedEvent is ExecutionMetricsTraceEngineEvent);
                 NotifyOfPropertyChange(() => SelectedEvent);
             }
         }
@@ -1607,6 +1697,7 @@ namespace DaxStudio.UI.ViewModels
                 case "ShowBatch":
                 case "ShowCache":
                 case "ShowInternal":
+                case "ShowMetrics":
                     NotifyOfPropertyChange(nameof(StorageEngineEvents));
                     break;
             }
@@ -1885,8 +1976,11 @@ namespace DaxStudio.UI.ViewModels
         private ImageSource _storageEventHeatmap;
         public ImageSource StorageEventHeatmap { 
             get {
-                if (this.StorageEngineEvents.Count == 0) return new DrawingImage();
+                // if we have a cached image return that
                 if (_storageEventHeatmap != null) return _storageEventHeatmap;
+                // if there are no events return an empty image
+                if (this.StorageEngineEvents.Count == 0) return new DrawingImage();
+
                 var element = (FrameworkElement)this.GetView();
 
                 Brush scanBrush = (Brush)element.FindResource("Theme.Brush.Accent");

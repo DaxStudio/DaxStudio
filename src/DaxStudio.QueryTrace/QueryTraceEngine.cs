@@ -106,6 +106,7 @@ namespace DaxStudio.QueryTrace
         private readonly IConnectionManager _connectionManager;
         private readonly AdomdType _connectionType;
         private string _sessionId;
+        private int _spid;
         private Timer _startingTimer;
         private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
         private readonly IGlobalOptionsBase _globalOptions;
@@ -127,6 +128,7 @@ namespace DaxStudio.QueryTrace
             _connectionManager.Ping();
 
             _sessionId = connectionManager.SessionId;
+            _spid = connectionManager.SPID;
             _connectionType = connectionManager.Type;
             _applicationName = connectionManager.ApplicationName;
             _databaseName = connectionManager.DatabaseName;
@@ -207,18 +209,30 @@ namespace DaxStudio.QueryTrace
             return doc;
         }
 
-        private XmlNode GetSessionIdFilter(string sessionId, string applicationName)
+        private XmlNode GetSessionIdFilter(string sessionId, string applicationName, int spid)
         {
-            string filterTemplate = "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
-                        "<Equal><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>" +
-                        "<Equal><ColumnID>{2}</ColumnID><Value>{3}</Value></Equal>" +
+            string filterTemplate =
+                "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
+                "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
+                        "<Or xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" +
+                          "<Equal><ColumnID>{0}</ColumnID><Value>{1}</Value></Equal>" +
+                          "<Equal><ColumnID>{2}</ColumnID><Value>{3}</Value></Equal>" +
+                        "</Or>" +
+                        "<Equal><ColumnID>{4}</ColumnID><Value>{5}</Value></Equal>" +
+                        "</Or>" +
+                        "<Equal><ColumnID>{6}</ColumnID><Value>{7}</Value></Equal>" +
                         "</Or>";
             var filterXml = string.Format(
                 filterTemplate
                 , (int)TraceColumn.SessionID
                 , sessionId
                 , (int)TraceColumn.ApplicationName
-                , applicationName);
+                , applicationName //.TrimStart('\"').TrimEnd('\"')
+                , (int)TraceColumn.Spid
+                , spid
+                ,(int)TraceColumn.EventClass
+                ,(int)TraceEventClass.ExecutionMetrics
+                );
             var doc = new XmlDocument();
             doc.LoadXml(filterXml);
             return doc;
@@ -333,8 +347,8 @@ namespace DaxStudio.QueryTrace
 
                 // Enable automatic filter only if DirectQuery is not enabled - otherwise, it will filter events in the trace event (slower, use DirectQuery with care!)
                 if ((!_globalOptions.TraceDirectQuery || Version.Parse(_server.Version).Major >= 14 ) && _filterForCurrentSession) {
-                    Log.Verbose("Activate filter {sessionId} - {applicationName}", _sessionId, _applicationName);
-                    _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName);
+                    Log.Verbose("Activate filter {sessionId} - {applicationName} - {spid}", _sessionId, _applicationName, _spid);
+                    _trace.Filter = GetSessionIdFilter(_sessionId, _applicationName, _spid);
                 }
 
                 // set default stop time in case trace gets disconnected

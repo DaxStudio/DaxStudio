@@ -140,6 +140,7 @@ namespace DaxStudio.QueryTrace
                 case TraceEventClass.DAXQueryPlan:
                 case TraceEventClass.JobGraph:
                 case TraceEventClass.DAXEvaluationLog:
+                case TraceEventClass.ExecutionMetrics:
                     // no additional properties captured, the plan is stored in the text field
                     break;
                 case TraceEventClass.Error:

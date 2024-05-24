@@ -11,9 +11,14 @@ namespace DaxStudio.QueryTrace
             var trc = new TraceEvent(eventClass);
             trc.Columns.Add(TraceColumn.EventClass);
             trc.Columns.Add(TraceColumn.TextData);
-            trc.Columns.Add(TraceColumn.CurrentTime);
+            if (eventClass != TraceEventClass.ExecutionMetrics) { 
+                trc.Columns.Add(TraceColumn.CurrentTime);
+            }
             trc.Columns.Add(TraceColumn.Spid);
-            trc.Columns.Add(TraceColumn.SessionID);
+            if (eventClass != TraceEventClass.ExecutionMetrics)
+            {
+                trc.Columns.Add(TraceColumn.SessionID);
+            }
             trc.Columns.Add(TraceColumn.ActivityID);
             trc.Columns.Add(TraceColumn.RequestID);
             trc.Columns.Add(TraceColumn.DatabaseName);
@@ -26,13 +31,15 @@ namespace DaxStudio.QueryTrace
 
             if (eventClass != TraceEventClass.DirectQueryEnd 
                 && eventClass != TraceEventClass.Error
-                && eventClass != TraceEventClass.DAXEvaluationLog) {
+                && eventClass != TraceEventClass.DAXEvaluationLog
+                && eventClass != TraceEventClass.ExecutionMetrics) {
                 // DirectQuery doesn't have subclasses
                 trc.Columns.Add(TraceColumn.EventSubclass);
             }
 
             if (eventClass != TraceEventClass.VertiPaqSEQueryCacheMatch
-                && eventClass != TraceEventClass.JobGraph)
+                && eventClass != TraceEventClass.JobGraph
+                && eventClass != TraceEventClass.ExecutionMetrics)
             {
                 trc.Columns.Add(TraceColumn.StartTime);
             }
@@ -44,7 +51,8 @@ namespace DaxStudio.QueryTrace
                 trc.Columns.Add(TraceColumn.ApplicationName);
             }
 
-            if (eventClass == TraceEventClass.DAXQueryPlan)
+            if (eventClass == TraceEventClass.DAXQueryPlan 
+                || eventClass == TraceEventClass.ExecutionMetrics)
             {
                 trc.Columns.Add(TraceColumn.ApplicationName);
             }

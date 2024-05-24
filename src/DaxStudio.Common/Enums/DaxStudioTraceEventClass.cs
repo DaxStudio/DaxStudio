@@ -74,6 +74,7 @@ namespace DaxStudio.Common.Enums
         DAXQueryPlan = 112,
         AggregateTableRewriteQuery = 131, // Aggregate Table Rewrite Query
         JobGraph = 134,
-        DAXEvaluationLog = 135
+        DAXEvaluationLog = 135,
+        ExecutionMetrics = 136
     }
 }
