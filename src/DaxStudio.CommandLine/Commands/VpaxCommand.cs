@@ -59,7 +59,7 @@ namespace DaxStudio.CommandLine.Commands
 
             public override ValidationResult Validate()
             {
-                if (DictionaryPath == InputDictionaryPath) return ValidationResult.Error("You cannot specify the same name for both the input and output dictionaries");
+                if (DictionaryPath == InputDictionaryPath && !string.IsNullOrEmpty(InputDictionaryPath)) return ValidationResult.Error("You cannot specify the same name for both the input and output dictionaries");
                 return base.Validate();
             }
 

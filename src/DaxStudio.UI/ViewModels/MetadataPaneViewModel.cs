@@ -174,6 +174,7 @@ namespace DaxStudio.UI.ViewModels
                     
                     // clear table list
                     _treeViewTables = null;
+                    NotifyOfPropertyChange(nameof(Tables));
 
                     _metadataProvider.SetSelectedModelAsync(SelectedModel).ContinueWith((prev) => {
                         Log.Verbose(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Clearing IsBusy in continuation");
