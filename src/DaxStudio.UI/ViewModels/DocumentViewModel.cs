@@ -802,6 +802,7 @@ namespace DaxStudio.UI.ViewModels
                 // trace active
                 QueryResultsPane.Activate();
             }
+            NotifyOfPropertyChange(nameof(ElapsedQueryTime));
         }
 
         public void ActivateOutput()
@@ -1756,6 +1757,7 @@ namespace DaxStudio.UI.ViewModels
 
         #region Execute Query
         private Stopwatch _queryStopWatch;
+        private Timer _timer = new Timer(300);
 
         public Stopwatch QueryStopWatch
         {
@@ -1857,7 +1859,7 @@ namespace DaxStudio.UI.ViewModels
             int row = 0;
             int col = 0;
             var editor = GetEditor();
-            Timer _timer = new Timer(300);
+            
             editor.Dispatcher.Invoke(() =>
             {
                 if (editor.SelectionLength > 0)
@@ -1877,10 +1879,7 @@ namespace DaxStudio.UI.ViewModels
                         tw.IsBusy = true;
                     }
                 }
-                _timer.Elapsed += _timer_Elapsed;
-                _timer.Start();
-                _queryStopWatch = new Stopwatch();
-                _queryStopWatch.Start();
+            
                 var dr = c.ExecuteReader(daxQuery, paramList);
 
                 return dr;
@@ -1889,20 +1888,29 @@ namespace DaxStudio.UI.ViewModels
             {
                 throw;
             }
-            finally
-            {
-                _queryStopWatch.Stop();
-                _timer.Stop();
-                _timer.Elapsed -= _timer_Elapsed;
-                _timer.Dispose();
-                NotifyOfPropertyChange(() => ElapsedQueryTime);
-                _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
-                // Can't call query completed here as for a DataReader we still need to stream the results back
-                // we can't marke the query as complete until we've finished processing the DataReader
-                //QueryCompleted();
+            
 
-            }
+        }
 
+        private void StopTimer()
+        {
+            _queryStopWatch.Stop();
+            
+            _timer.Stop();
+            _timer.Elapsed -= _timer_Elapsed;
+
+            NotifyOfPropertyChange(() => ElapsedQueryTime);
+            _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
+            _queryStopWatch.Reset();
+        }
+
+        private void StartTimer()
+        {
+            
+            _timer.Elapsed += _timer_Elapsed;
+            _timer.Start();
+            _queryStopWatch = new Stopwatch();
+            _queryStopWatch.Start();
         }
 
         public string ElapsedQueryTime => (_queryStopWatch?.Elapsed ?? TimeSpan.Zero).ToString(Constants.StatusBarTimerFormat);
@@ -2150,8 +2158,12 @@ namespace DaxStudio.UI.ViewModels
                         else
                             _currentQueryDetails = CreateQueryHistoryEvent(message.QueryProvider.QueryText.Trim(), ParameterHelper.GetParameterXml(message.QueryProvider.QueryInfo));
 
-                        OutputMessage("Query Started");
+                        
 
+                        OutputMessage("Query Started");
+                        
+                        StartTimer();
+                        
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
 
                         // if the server times trace watcher is not active then just record client timings
@@ -2181,7 +2193,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
-                    _queryStopWatch?.Reset();
+                    StopTimer();
                 }
 
             }
