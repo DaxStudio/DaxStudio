@@ -74,7 +74,7 @@
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
             <ListBox x:Name="RoleList" 
                  Background="{DynamicResource Theme.Brush.Default.Back}"
-                 
+                 MaxHeight="400"
                  >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
