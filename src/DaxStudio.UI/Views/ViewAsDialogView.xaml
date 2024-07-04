@@ -75,6 +75,7 @@
             <ListBox x:Name="RoleList" 
                  Background="{DynamicResource Theme.Brush.Default.Back}"
                  MaxHeight="400"
+                     MinHeight="200"
                  >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
