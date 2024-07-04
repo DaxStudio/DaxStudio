@@ -509,7 +509,13 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    return _dmvConnection.Database.Models[SelectedModelName].Tables;
+                    var tables = _dmvConnection.Database.Models[SelectedModelName].Tables;
+                    if (tables.Count == 0)
+                    {
+                        Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "No tables found in model");
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No tables found in model"));
+                    }
+                    return tables;
                 }
                 catch 
                 {
