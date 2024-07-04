@@ -1430,7 +1430,7 @@ namespace DaxStudio.UI.ViewModels
                               ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
-                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.NotAvailable
+                                  && e.Class != DaxStudioTraceEventClass.ExecutionMetrics
                                ) && ServerTimingDetails.ShowScan)
                               ||
                               (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
