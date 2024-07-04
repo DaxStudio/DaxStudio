@@ -1440,7 +1440,7 @@ namespace DaxStudio.UI.ViewModels
 
         public bool IsTraceChanging
         {
-            get => _traceWatchers.Any(tw => tw.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Starting);
+            get => TraceWatchers.Any(tw => tw.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Starting);
 
         }
 
@@ -4138,7 +4138,7 @@ namespace DaxStudio.UI.ViewModels
         public bool ServerTimingsChecked
         {
             get {
-                foreach (var tw in _traceWatchers)
+                foreach (var tw in TraceWatchers)
                 {
                     if (tw is ServerTimesViewModel)
                     {
