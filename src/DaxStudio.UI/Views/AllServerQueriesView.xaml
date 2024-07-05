@@ -225,6 +225,7 @@
                 </Button>
 
 
+
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ShowFilters}"
                               ToolTip="Show Filter Controls">
                     <StackPanel Orientation="Horizontal">
@@ -233,6 +234,16 @@
                         <TextBlock>Filters</TextBlock>
                     </StackPanel>
                 </ToggleButton>
+
+                <Button DockPanel.Dock="Right" Style="{StaticResource TraceButton}"
+                       cal:Message.Attach="[Event Click] = [Action ClearFilters]">
+                    <StackPanel Orientation="Horizontal">
+                        <!--<Image Source="{DynamicResource aboutDrawingImage}"
+                              Width="16" Height="16"
+                              Margin="0 0 4 0"/>-->
+                        <TextBlock>Clear Filters</TextBlock>
+                    </StackPanel>
+                </Button>
             </DockPanel>
         </controls:ClipBorder>
 
