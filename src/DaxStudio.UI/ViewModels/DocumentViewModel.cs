@@ -59,6 +59,7 @@ using ICSharpCode.AvalonEdit.Folding;
 using Dax.Model.Extractor;
 using Dax.Vpax.Obfuscator.Common;
 using Dax.Vpax.Obfuscator;
+using ICSharpCode.NRefactory.Ast;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -4373,10 +4374,14 @@ namespace DaxStudio.UI.ViewModels
                 if (IsVertipaqAnalyzerRunning) return; // if we are already running exit here
 
                 var dialog = new VertipaqAnalyzerDialogViewModel(Options, _eventAggregator);
-                await _windowManager.ShowDialogBoxAsync(dialog);
 
-                // exit here if the dialog has been cancelled
-                if (dialog.Result != System.Windows.Forms.DialogResult.OK) return;
+                if (!Options.VpaxDontShowOptionsDialog)
+                {
+                    await _windowManager.ShowDialogBoxAsync(dialog);
+                    // exit here if the dialog has been cancelled
+                    if (dialog.Result != System.Windows.Forms.DialogResult.OK) return;
+
+                }
 
                 IsVertipaqAnalyzerRunning = true;
                 sw.Start();
@@ -4655,10 +4660,14 @@ namespace DaxStudio.UI.ViewModels
                 {
 
                     var dialog = new VertipaqAnalyzerDialogViewModel(Options, _eventAggregator);
-                    Execute.OnUIThread(() => {
-                        _windowManager.ShowDialogBoxAsync(dialog).Wait();
-                    });
-                    if (dialog.Result != System.Windows.Forms.DialogResult.OK) return;
+                    if (Options.VpaxDontShowOptionsDialog == false)
+                    {
+                        Execute.OnUIThread(() =>
+                        {
+                            _windowManager.ShowDialogBoxAsync(dialog).Wait();
+                        });
+                        if (dialog.Result != System.Windows.Forms.DialogResult.OK) return;
+                    }
 
                     OutputMessage(String.Format("Saving {0}...", path));
                     // get current DAX Studio version

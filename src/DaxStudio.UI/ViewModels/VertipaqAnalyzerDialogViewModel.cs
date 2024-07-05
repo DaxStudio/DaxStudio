@@ -41,8 +41,18 @@ namespace DaxStudio.UI.ViewModels
 
         public async void Ok()
         {
-            // save the setting back to the global options
-            _options.VpaxDontShowOptionsDialog = VpaxDontShowOptionsDialog;
+            
+            if (VpaxDontShowOptionsDialog)
+            {
+                // save the setting back to the global options
+                _options.VpaxReadStatisticsFromData = VpaxReadStatisticsFromData;
+                _options.VpaxReadStatisticsFromDirectQuery = VpaxReadStatisticsFromDirectQuery;
+                _options.VpaxDirectLakeExtractionMode = VpaxDirectLakeExtractionMode;
+                _options.VpaTableColumnDisplay = VpaTableColumnDisplay;
+                _options.VpaxSampleReferentialIntegrityViolations = VpaxSampleReferentialIntegrityViolations;
+                _options.VpaxDontShowOptionsDialog = VpaxDontShowOptionsDialog;
+                await _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+            }
             Result = DialogResult.OK;
             await TryCloseAsync();
         }
