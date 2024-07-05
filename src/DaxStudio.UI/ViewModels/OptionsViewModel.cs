@@ -20,7 +20,6 @@ using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.Interfaces.Enums;
-using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -31,10 +30,7 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using Serilog.Events;
 using System.Text;
-using Humanizer;
-using static LargeXlsx.XlsxAlignment;
 using System.ComponentModel.Composition.Primitives;
-using System.Numerics;
 using Dax.Metadata;
 
 namespace DaxStudio.UI.ViewModels
@@ -1526,7 +1522,8 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _showDebugCommas;
         [DataMember, DefaultValue(true)]
-        [Category("Preview")]
+        [Category("Defaults")]
+        [Subcategory("Defaults")]
         [DisplayName("Show Debug Commas")]
         [Description("Enabling this option moves the \"Swap Delimiters\" button to the Advanced tab")]
         public bool ShowDebugCommas
@@ -1544,8 +1541,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _showXmlaInAllQueries;
-        [DataMember, DefaultValue(false)]
-        [Category("Preview")]
+        [DataMember, DefaultValue(true)]
+        [Category("Trace")]
         [DisplayName("Show XMLA Commands")]
         [Description("Show XMLA commands in the All Queries trace")]
         public bool ShowXmlaInAllQueries
@@ -1595,25 +1592,6 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ShowTotalDirectQueryDuration), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowTotalDirectQueryDuration);
-            }
-
-        }
-
-        private bool _showFEBenchmark;
-        [DataMember, DefaultValue(false)]
-        [Category("Preview")]
-        [DisplayName("Show the FE Benchmark button")]
-        [Description("Shows the FE Benchmark button in the Advanced ribbon")]
-        public bool ShowFEBenchmark
-        {
-            get => _showFEBenchmark;
-
-            set
-            {
-                _showFEBenchmark = value;
-                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
-                SettingProvider.SetValue(nameof(ShowFEBenchmark), value, _isInitializing, this);
-                NotifyOfPropertyChange(() => ShowFEBenchmark);
             }
 
         }

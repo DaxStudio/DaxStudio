@@ -360,7 +360,8 @@ namespace DaxStudio.UI.Utils
             var oldKeys = new string[] { "ShowPreviewQueryBuilder",
                                          "ShowPreviewBenchmark",
                                          "ExcludeHeadersWhenCopyingResults",
-                                         "KeepMetadataSearchOpen" };
+                                         "KeepMetadataSearchOpen",
+                                         "ShowFEBenchmark"};
             RegistryKey regDaxStudio = null;
             try
             {
@@ -375,7 +376,7 @@ namespace DaxStudio.UI.Utils
             {
                 try
                 {
-                    regDaxStudio.DeleteValue(subKey, false);
+                    regDaxStudio.DeleteValue(subKey, throwOnMissingValue:false);
                 }
                 catch (Exception ex)
                 {
