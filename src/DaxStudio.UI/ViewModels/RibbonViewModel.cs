@@ -1197,7 +1197,6 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ShowSwapDelimiters));
             NotifyOfPropertyChange(nameof(DebugCommasTitle));
             NotifyOfPropertyChange(nameof(SwapDelimitersTitle));
-            NotifyOfPropertyChange(nameof(ShowFEBenchmark));
         }
 
         public async void LaunchSqlProfiler()
@@ -1478,7 +1477,5 @@ namespace DaxStudio.UI.ViewModels
             }
             return Task.CompletedTask;
         }
-
-        public bool ShowFEBenchmark => Options.ShowFEBenchmark;
     }
 }

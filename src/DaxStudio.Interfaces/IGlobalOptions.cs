@@ -124,7 +124,6 @@ namespace DaxStudio.Interfaces
         bool ShowXmlaInAllQueries { get; set; }
         bool EnablePasteFileOnExistingWindow { get; set; }
         bool ShowTotalDirectQueryDuration { get; set; }
-        bool ShowFEBenchmark { get; set; }
         bool ShowStorageEngineNetParallelDuration { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
