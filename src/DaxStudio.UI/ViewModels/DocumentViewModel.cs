@@ -3805,24 +3805,38 @@ namespace DaxStudio.UI.ViewModels
             var colOffset = 0;
             var editor = GetEditor();
 
-            if (editor.SelectionLength > 0)
-            {
-                // clear the selection
-                editor.SelectionStart = 0;
-                editor.SelectionLength = 0;
+            if (editor == null) {
+                Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<NavigateToLocationEvent>", "Unable to get a reference to the editor");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Unable to get a reference to the edit pane, please try again"));
+                return Task.CompletedTask;
             }
-            var caret = editor.TextArea.Caret;
-            caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
-            caret.BringCaretToView();
+
+            try
+            {
+
+                if (editor.SelectionLength > 0)
+                {
+                    // clear the selection
+                    editor.SelectionStart = 0;
+                    editor.SelectionLength = 0;
+                }
+                var caret = editor.TextArea.Caret;
+                caret.Location = new TextLocation(message.Row + lineOffset, message.Column + colOffset);
+                caret.BringCaretToView();
 
 
-            editor.Dispatcher.BeginInvoke(new ThreadStart(() =>
-          {
-              editor.Focus();
-              editor.TextArea.Focus();
-              editor.TextArea.TextView.Focus();
-              Keyboard.Focus(editor);
-          }), DispatcherPriority.Input);
+                editor.Dispatcher.BeginInvoke(new ThreadStart(() =>
+              {
+                  editor.Focus();
+                  editor.TextArea.Focus();
+                  editor.TextArea.TextView.Focus();
+                  Keyboard.Focus(editor);
+              }), DispatcherPriority.Input);
+            } catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<NavigateToLocationEvent>",  "Unable to get a reference to the editor" );
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Unable to get a reference to the edit TextArea, please try again"));
+            }
 
             return Task.CompletedTask;
         }
