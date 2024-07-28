@@ -53,8 +53,14 @@ namespace DaxStudio.UI.ResultsTargets
 
                 // Save document 
                 fileName = dlg.FileName;
-            } else
+            } 
+            else
             {
+
+                if (runner.Options.CmdLineTextFileType != DaxStudio.Interfaces.Enums.TextFileType.Unknown )
+                {
+                    dlg.FilterIndex = (int)runner.Options.CmdLineTextFileType;
+                }
                 result = true;
                 
             }

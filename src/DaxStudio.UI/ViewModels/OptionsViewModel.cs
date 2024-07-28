@@ -32,6 +32,7 @@ using Serilog.Events;
 using System.Text;
 using System.ComponentModel.Composition.Primitives;
 using Dax.Metadata;
+using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -2494,11 +2495,26 @@ namespace DaxStudio.UI.ViewModels
 
         // This property is used to remember which file type was chosen last time a text file output was used
         private int _defaultTextFileType = 0;
-        [DataMember, DefaultValue(0)]
+        [DataMember, DefaultValue(1)] // 1 = csv UTF-8
         public int DefaultTextFileType { get => _defaultTextFileType;
             set {
                 _defaultTextFileType = value;
                 SettingProvider.SetValue(nameof(DefaultTextFileType), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+            }
+        }
+
+        // This property is used to remember which file type was chosen last time a text file output was used
+        private TextFileType _cmdLineTextFileType = 0;
+        [DefaultValue(TextFileType.Unknown)] 
+        public TextFileType CmdLineTextFileType
+        {
+            get => _cmdLineTextFileType;
+            set
+            {
+                _cmdLineTextFileType = value;
+                //SettingProvider.SetValue(nameof(DefaultTextFileType), value, _isInitializing, this);
                 NotifyOfPropertyChange();
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
             }

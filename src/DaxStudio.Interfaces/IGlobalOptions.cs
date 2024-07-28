@@ -166,5 +166,6 @@ namespace DaxStudio.Interfaces
         StorageEventTimelineStyle StorageEventHeatmapStyle { get; set; }
         bool ExportServerTimingDetailsToFolder { get; set; }
 
+        TextFileType CmdLineTextFileType { get; set; }
     }
 }

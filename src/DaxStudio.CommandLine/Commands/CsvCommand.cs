@@ -11,6 +11,9 @@ using System.Security.Cryptography;
 using System.Runtime.Remoting.Messaging;
 using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.UI.Enums;
+using System.IO;
+using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -26,6 +29,10 @@ namespace DaxStudio.CommandLine.Commands
             [CommandOption("-q|--query <query>")]
             [Description("A DAX query to be executed")]
             public string Query { get; set; }
+
+            [CommandOption("-t|--fileType")]
+            [Description("Specifies the format of the file")]
+            public TextFileType FileType { get; set; }
 
             //[CommandArgument(0,"[filename]")]
             //[Description("The name of the file for the results")]
@@ -59,9 +66,32 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     settings.Query = System.IO.File.ReadAllText(settings.File);
                 }
-                // export to csv
+
                 QueryRunner runner = new QueryRunner(settings);
                 var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
+
+                if (settings.FileType == TextFileType.Unknown) {
+                    var fi = new FileInfo(settings.OutputFile);
+
+                    switch (fi.Extension.ToLower())
+                    {
+                        case ".csv":
+                            settings.FileType = TextFileType.UTF8CSV;
+                            break;
+                        case ".txt":
+                            settings.FileType = TextFileType.TAB;
+                            break;  
+                        case ".json":
+                            settings.FileType = TextFileType.JSON;
+                            break;
+                        default:
+                            settings.FileType = (TextFileType)runner.Options.DefaultTextFileType; 
+                            break;
+                    }
+                }
+
+                // export to csv
+                runner.Options.CmdLineTextFileType = settings.FileType;
                 target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
                 Log.Information("Finished CSV command");
                 return 0;

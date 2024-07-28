@@ -123,6 +123,7 @@
     <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />
     <Compile Include="Enums\QueryEndSounds.cs" />
     <Compile Include="Enums\StorageEventHeatmapStyle.cs" />
+    <Compile Include="Enums\TextFileType.cs" />
     <Compile Include="Enums\UITheme.cs" />
     <Compile Include="Enums\VpaTableColumnDisplay.cs" />
     <Compile Include="IActivateResults.cs" />
