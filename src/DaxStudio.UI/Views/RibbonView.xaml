@@ -663,7 +663,7 @@
                             ToolTip="Open a New Query with the current connection"
                             Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                             Height="30"
-                            cal:Message.Attach="[Event Click] = [Action NewQueryWithCurrentConnection]">
+                            cal:Message.Attach="[Event Click] = [Action NewQueryWithCurrentConnection(false)]">
 
                         </Fluent:Button>
 
