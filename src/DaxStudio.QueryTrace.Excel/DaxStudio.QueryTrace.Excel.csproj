@@ -116,7 +116,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.0.0</Version>
+      <Version>4.0.1</Version>
     </PackageReference>
     <PackageReference Include="Unofficial.Excel.Amo" Version="11.0.2832.12" Aliases="ExcelAmo">
       <ExcludeAssets>runtime</ExcludeAssets>

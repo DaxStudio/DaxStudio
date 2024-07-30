@@ -459,7 +459,7 @@ namespace DaxStudio.UI.ViewModels
     {
         public string Expression { get; set; }
         public string Label { get; set; }
-        public long RowCount { get; set; }
+        public long RowCount { get; set; } = 1;
         public string Notice { get; set; }
         public List<string> Inputs { get; set; }
         public List<string> Outputs { get; set; }
@@ -473,9 +473,10 @@ namespace DaxStudio.UI.ViewModels
 
         [JsonConverter(typeof(SingleOrArrayConverter<object>))]
         public List<object> Output { get; set; }
-        public long RowCount { get; set; }  
+        public long RowCount { get; set; } = 1;
     }
 
+    /*
     public abstract class DebugItem
     {
         public string Name { get; set; }
@@ -530,7 +531,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
     }
-
+    */
 
 #endregion
 }
