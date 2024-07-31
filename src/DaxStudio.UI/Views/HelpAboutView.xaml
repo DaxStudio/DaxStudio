@@ -105,7 +105,7 @@
             <TabItem Header="Components" Height="32" FontSize="12">
                 <ctrl:ClipBorder CornerRadius="8" BorderBrush="{DynamicResource Theme.Brush.Control.Border}" BorderThickness="1">
                 <DataGrid x:Name="ReferencedAssemblies" 
-		          
+                          IsReadOnly="True"
 		          ClipboardCopyMode="IncludeHeader"
 		          SelectionMode="Single"       
 		          BorderBrush="DarkGray"
