@@ -46,30 +46,30 @@ namespace DaxStudio.UI.ResultsTargets
         public string DisabledReason => "";
         #endregion
 
-        public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider)
-        {
-            var dlg = new Microsoft.Win32.SaveFileDialog
-            {
-                DefaultExt = ".xlsx",
-                Filter = "Excel file (*.xlsx)|*.xlsx"
-            };
-
-            // Show save file dialog box
-            var result = dlg.ShowDialog();
-
-            // Process save file dialog box results 
-            if (result == true)
-            {
-                await OutputResultsAsync(runner, textProvider, dlg.FileName);
-            }
-            else
-            {
-                await Task.CompletedTask;
-            }
-        }
 
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    DefaultExt = ".xlsx",
+                    Filter = "Excel file (*.xlsx)|*.xlsx"
+                };
+
+                // Show save file dialog box
+                var result = dlg.ShowDialog();
+
+                if (result == true)
+                {
+                    fileName = dlg.FileName;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
 
             long durationMs = 0;
 
