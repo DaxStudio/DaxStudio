@@ -785,6 +785,7 @@ namespace DaxStudio.UI.ViewModels
                     // we need to grab the ExecutionMetrics here since it arrives after the QueryEnd event
                     if (singleEvent.ActivityId == _queryEndActivityId && !string.IsNullOrEmpty(_queryEndActivityId))
                     {
+                        _queryEndActivityId = string.Empty;
                         AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(singleEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
                         NotifyOfPropertyChange(nameof(StorageEngineEvents));
                     }
