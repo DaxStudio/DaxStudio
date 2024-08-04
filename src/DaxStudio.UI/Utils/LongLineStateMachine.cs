@@ -73,26 +73,47 @@ namespace DaxStudio.UI.Utils
 
         public LongLineStateMachine(State initial, int maxLineLength) : base(initial) { MaxLineLength = maxLineLength; }
         #endregion
-
+        static List<char> knownWhitespaceChars = new List<char>(){ ' ', '\t','\r','\n' }; 
         public static IEnumerable<char> ProcessOtherText(LongLineStateMachine sm, string input, int pos)
         {
-            switch (input[pos])
+            var currentChar = input[pos];
+            // convert unicode whitespace to spaces
+            if (char.IsWhiteSpace(currentChar) && !knownWhitespaceChars.Contains(currentChar))
             {
+                currentChar = ' ';
+            }
+            switch (currentChar)
+            {
+                // convert "smart quotes" to ascii quotes
+                case '“':
+                case '”':
+                    yield return '"';
+                    yield break;
+                case '‘':
+                case '’':
+                    yield return '\'';
+                    yield break;
                 case ')':
                 case '}':
                 case ' ':
                     if (sm.LinePosition > sm.MaxLineLength)
                     {
                         char nextChar = (pos + 1) < input.Length ? input[pos + 1] : char.MinValue;
-                        yield return input[pos];
+                        yield return currentChar;
                         if (nextChar != '\r' && nextChar != '\n') sm.InsertNewLine();
                         yield break;
                     }
 
-                    yield return input[pos];
+                    yield return currentChar;
                     yield break;
+                case '\t':
+                case '\r':
+                case '\n':
+                    yield return currentChar;
+                    yield break;
+
                 default:
-                    yield return input[pos];
+                    yield return currentChar;
                     yield break;
             }
         }
