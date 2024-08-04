@@ -92,6 +92,7 @@ namespace DaxStudio.UI.Model
         public string Caption { get => TabularObject?.Caption ?? _caption;
             set {
                 _caption = value;
+                if (TabularObject is ADOTabularColumnStub tabObj) { tabObj.Caption = value; }
                 NotifyOfPropertyChange();
             }
         }
