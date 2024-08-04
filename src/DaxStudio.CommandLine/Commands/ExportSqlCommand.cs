@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
 using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.UI.Model;
@@ -26,6 +27,7 @@ namespace DaxStudio.CommandLine.Commands
             [Description("The connection string for the SQL Server destination")]
             public string SqlConnectionString { get; set; }
 
+            [TypeConverter(typeof(StringListTypeConverter))]
             [CommandOption("-t|--tables <tables>")]
             [Description("A list of tables to be exported, if this option is not specified all the tables in the model are exported")]
             public List<string> Tables { get; set; }

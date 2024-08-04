@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
 using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.UI.Model;
@@ -24,6 +25,7 @@ namespace DaxStudio.CommandLine.Commands
             //[Description("The folder where the csv files will be written")]
             //public string Folder { get; set; }
 
+            [TypeConverter(typeof(StringListTypeConverter))]
             [CommandOption("-t|--tables <tables>")]
             [Description("A list of tables to be exported, if this option is not specified all the tables in the model are exported")]
             public List<string> Tables { get; set; }
