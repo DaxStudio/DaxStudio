@@ -7,11 +7,7 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.UI.Model;
 using System;
-using System.Security.Cryptography;
-using System.Runtime.Remoting.Messaging;
-using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
-using DaxStudio.UI.Enums;
 using System.IO;
 using DaxStudio.Interfaces.Enums;
 
@@ -48,9 +44,6 @@ namespace DaxStudio.CommandLine.Commands
 
         public override ValidationResult Validate(CommandContext context, Settings settings)
         {
-
-            if (string.IsNullOrWhiteSpace(settings.Server)) return ValidationResult.Error("You must specify a Server option");
-            if (string.IsNullOrWhiteSpace(settings.Database)) return ValidationResult.Error("You must specify a Database option");
             if (string.IsNullOrWhiteSpace(settings.OutputFile)) return ValidationResult.Error("You must specify an Out option");
             var result = base.Validate(context, settings);
             return result;
