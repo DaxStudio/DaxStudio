@@ -905,11 +905,13 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            if (AllStorageEngineEvents?.Count > 0) return;
+            if (AllStorageEngineEvents?.Count > 0) {
+                Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "results have not been cleared, skipping processing");
+                return; }
             // results have not been cleared so this is probably an end event from some other
             // action like a tooltip populating
 
-            ClearAll();
+            //ClearAll();
 
             int batchScan = 0;
             long batchStorageEngineDuration = 0;
@@ -925,6 +927,7 @@ namespace DaxStudio.UI.ViewModels
                 // exit early if this is an internal query
                 if (IsDaxStudioInternalQuery())
                 {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "DAX Studio internal event detected, clearing any trace data");
                     Events.Clear();
                     return;
                 };
@@ -1183,14 +1186,24 @@ namespace DaxStudio.UI.ViewModels
 
                     _eventAggregator.PublishOnUIThreadAsync(QueryHistoryEvent);
                 }
-                if (eventsProcessed) _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
+
+                // if we have 
+                //if (eventsProcessed || TotalDuration > 0) 
+                //{
+
+                    // send notification to BenchmarkViewModel
+                    Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "Publishing ServerTimings event for other view models to consume");
+                    _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this)); 
+
+                //}
+                //else
+                //{
+                //    Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "No events processed NOT Publishing ServerTimings event for other view models to consume");
+                //}
 
                 Events.Clear();
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
-                //NotifyOfPropertyChange(nameof(CanExport));
-                //NotifyOfPropertyChange(nameof(CanCopyResults));
-                //NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
-                //NotifyOfPropertyChange(nameof(StorageEventHeatmap));
+
                 Refresh(); // update all data bindings
             }
         }
