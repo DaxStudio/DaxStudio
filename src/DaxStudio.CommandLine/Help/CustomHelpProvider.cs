@@ -3,11 +3,10 @@ using Spectre.Console.Cli;
 using Spectre.Console.Rendering;
 using System.Collections.Generic;
 using Spectre.Console;
-using System.Windows;
 using System;
 using System.Reflection;
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.Help
 {
     internal class CustomHelpProvider : HelpProvider
     {

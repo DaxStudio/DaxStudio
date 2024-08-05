@@ -8,6 +8,7 @@ using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.UI.Model;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.CommandLine.UIStubs;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -54,11 +55,20 @@ namespace DaxStudio.CommandLine.Commands
             {
                 settings.Query = System.IO.File.ReadAllText(settings.File);
             }
-            // export to csv
+            // export to xlsx
             var host = new CmdLineHost();
             var runner = new QueryRunner(settings);
             var target = new DaxStudio.UI.ResultsTargets.ResultsTargetExcelFile(host, EventAggregator);
-            target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
+
+            AnsiConsole.Status()
+                .AutoRefresh(true)
+                .Spinner(Spinner.Known.Star)
+                .SpinnerStyle(Style.Parse("green bold"))
+                .Start("Exporting to file...", ctx =>
+                {   
+                    target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
+                });
+       
             
             Log.Information("Finished XLSX command");
             return 0;

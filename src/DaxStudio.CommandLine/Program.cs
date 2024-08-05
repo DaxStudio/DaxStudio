@@ -11,9 +11,10 @@ using DaxStudio.CommandLine.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using DaxStudio.UI.Interfaces;
 using Serilog.Sinks.Spectre;
-using Microsoft.Identity.Client;
 using Serilog.Events;
 using System.Threading.Tasks;
+using DaxStudio.CommandLine.Help;
+using DaxStudio.CommandLine.UIStubs;
 
 namespace DaxStudio.CommandLine
 {

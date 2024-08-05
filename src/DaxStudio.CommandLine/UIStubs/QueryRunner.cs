@@ -8,7 +8,7 @@ using Serilog;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.UIStubs
 {
     internal class QueryRunner : IQueryRunner
     {

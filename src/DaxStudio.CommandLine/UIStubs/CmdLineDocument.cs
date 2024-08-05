@@ -3,7 +3,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using System.Diagnostics;
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.UIStubs
 {
     internal class CmdLineDocument : IDocumentToExport, IDaxDocument
     {

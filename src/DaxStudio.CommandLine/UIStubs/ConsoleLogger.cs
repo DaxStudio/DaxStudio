@@ -4,7 +4,7 @@ using Serilog;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.UIStubs
 {
     internal class ConsoleLogger : IHandle<OutputMessage>
     {

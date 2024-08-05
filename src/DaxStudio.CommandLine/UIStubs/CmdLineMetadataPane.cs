@@ -1,6 +1,6 @@
 ﻿using DaxStudio.Interfaces;
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.UIStubs
 {
     internal class CmdLineMetadataPane : IMetadataPane
     {

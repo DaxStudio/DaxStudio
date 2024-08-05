@@ -8,6 +8,7 @@ using Caliburn.Micro;
 using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
 using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Serilog;

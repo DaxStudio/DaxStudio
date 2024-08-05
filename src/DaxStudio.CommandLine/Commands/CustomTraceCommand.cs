@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;

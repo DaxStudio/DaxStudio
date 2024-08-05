@@ -1,6 +1,4 @@
-﻿using System;
-using DaxStudio.UI.ViewModels;
-using DaxStudio.Interfaces;
+﻿using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.Model
 {
@@ -21,7 +19,7 @@ namespace DaxStudio.UI.Model
 
         public void Update(string message)
         {
-            _document.SetStatusBarMessage(message);
+            _document?.SetStatusBarMessage(message);
         }
 
         public bool IsDisposed

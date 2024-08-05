@@ -1,11 +1,7 @@
 ﻿using DaxStudio.UI.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.UIStubs
 {
     internal class CmdLineHost : IDaxStudioHost
     {

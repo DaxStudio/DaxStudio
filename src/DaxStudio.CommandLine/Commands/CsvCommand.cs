@@ -10,6 +10,8 @@ using System;
 using DaxStudio.CommandLine.Infrastructure;
 using System.IO;
 using DaxStudio.Interfaces.Enums;
+using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -84,8 +86,17 @@ namespace DaxStudio.CommandLine.Commands
                 }
 
                 // export to csv
-                runner.Options.CmdLineTextFileType = settings.FileType;
-                target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
+                AnsiConsole.Status()
+                    .AutoRefresh(true)
+                    .Spinner(Spinner.Known.Star)
+                    .SpinnerStyle(Style.Parse("green bold"))
+                    .Start("Exporting to file...", ctx =>
+                    {
+                        //AnsiConsole.MarkupLine("[green]Done![/]");
+
+                        runner.Options.CmdLineTextFileType = settings.FileType;
+                        target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
+                    });
                 Log.Information("Finished CSV command");
                 return 0;
             } 

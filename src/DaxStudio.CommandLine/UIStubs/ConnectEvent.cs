@@ -2,7 +2,7 @@
 using DaxStudio.Interfaces;
 
 
-namespace DaxStudio.CommandLine
+namespace DaxStudio.CommandLine.UIStubs
 {
     public class ConnectEvent : IConnectEvent
     {

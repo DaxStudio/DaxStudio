@@ -5,6 +5,7 @@ using Spectre.Console.Cli;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.CommandLine.UIStubs;
 
 namespace DaxStudio.CommandLine.Commands
 {
