@@ -11,9 +11,17 @@ namespace DaxStudio.UI.Model
 {
     public class ADOTabularColumnStub: IADOTabularColumn
     {
-        public string Caption { get;  set; }
-        public string DaxName { get;  set; }
-        public string Name { get;  set; }
+        private string _caption = string.Empty;
+        public string Caption { get => _caption;
+            set
+            {
+                _caption = value;
+                DaxName = $"[{_caption.Replace("]", "]]")}]";
+            }
+        }
+        public string DaxName { get; private set; }
+        
+        public string Name => Caption;
         public string Description { get;  set; }
         public bool IsVisible { get;  set; }
         public ADOTabularObjectType ObjectType { get;  set; }

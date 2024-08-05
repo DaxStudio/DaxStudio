@@ -56,7 +56,7 @@ namespace DaxStudio.UI.Model
             _caption = caption;
             SelectedTable = table;
             IsModelItem = false;
-            TabularObject = new ADOTabularColumnStub() { Caption = caption, ObjectType = ADOTabularObjectType.Measure, DaxName= $"[{caption}]" };
+            TabularObject = new ADOTabularColumnStub() { Caption = caption, ObjectType = ADOTabularObjectType.Measure };
         }
 
         public string MinValue => TabularObject?.MinValue;
@@ -92,7 +92,10 @@ namespace DaxStudio.UI.Model
         public string Caption { get => TabularObject?.Caption ?? _caption;
             set {
                 _caption = value;
-                if (TabularObject is ADOTabularColumnStub tabObj) { tabObj.Caption = value; }
+                if (TabularObject is ADOTabularColumnStub tabObj) 
+                { 
+                    tabObj.Caption = value;
+                }
                 NotifyOfPropertyChange();
             }
         }
