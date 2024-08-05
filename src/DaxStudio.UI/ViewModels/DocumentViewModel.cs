@@ -582,16 +582,29 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private string _viewAsDescription = string.Empty;
-        public string ViewAsDescription => _viewAsDescription;
-
-
+        public string ViewAsDescription
+        {
+            get => _viewAsDescription;
+            set { 
+                _viewAsDescription = value;
+                NotifyOfPropertyChange();
+            }
+        }
 
         public void StopViewAs()
         {
-            var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
-            Connection.StopViewAs(activeTraces);
-            _viewAsDescription = "Reconnecting...";
-            NotifyOfPropertyChange(nameof(ViewAsDescription));
+            try
+            {
+                var activeTraces = TraceWatchers.Where<ITraceWatcher>(tw => tw.IsChecked).ToList();
+                ViewAsDescription = "Reconnecting...";
+                Connection.StopViewAs(activeTraces);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(StopViewAs), "Error Stopping ViewAs");
+                OutputError("Error Stopping ViewAs: " + ex.Message);
+
+            }
         }
 
         private void OnDrop(object sender, DragEventArgs e)
