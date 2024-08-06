@@ -14,9 +14,10 @@ namespace DaxStudio.CommandLine.Help
             : base(settings)
         {
         }
-
+#nullable enable
         public override IEnumerable<IRenderable> GetHeader(ICommandModel model, ICommandInfo? command)
         {
+#nullable disable
             Version appVersion = Assembly.GetExecutingAssembly().GetName().Version;
             string version = appVersion.ToString(3);
 
