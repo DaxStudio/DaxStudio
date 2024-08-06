@@ -7,6 +7,7 @@ using Serilog;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -44,7 +45,7 @@ namespace DaxStudio.UI.ViewModels
                 // populate the role collection
                 RoleList = new ObservableCollection<ViewAsRole>();
                 var roles = _connectionManager.GetRoles();
-                foreach (var r in roles) { RoleList.Add(new ViewAsRole(r)); }
+                foreach (var r in roles.OrderBy(r => r)) { RoleList.Add(new ViewAsRole(r)); }
             }
             catch (Exception ex)
             {
