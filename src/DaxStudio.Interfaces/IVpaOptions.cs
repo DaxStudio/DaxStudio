@@ -11,6 +11,7 @@ namespace DaxStudio.Interfaces
         bool VpaxAdjustSegmentsMetrics { get; set; }
         bool VpaxDontShowOptionsDialog { get; set; }
         int VpaxSampleReferentialIntegrityViolations { get; set; }
+        int VpaxStatsColumnBatchSize { get; set; }
         VpaTableColumnDisplay VpaTableColumnDisplay { get; set; }
     }
 }

@@ -20,7 +20,7 @@ namespace DaxStudio.CommandLine.Commands
         internal class Settings : CommandSettingsFileBase
         {
 
-            [CommandOption("-t|--exncludeTom")]
+            [CommandOption("-t|--excludeTom")]
             [Description("Setting this flag will exclude a .bim file inside the vpax file (which just contains additional metadata)")]
             public bool ExcludeTom { get; set; }
             [CommandOption("-r|--donotreadstatsfromdata")]
@@ -63,6 +63,10 @@ namespace DaxStudio.CommandLine.Commands
                 return base.Validate();
             }
 
+            [CommandOption("-b|--StatsColumnBatchSize")]
+            [Description("The number of columns to include in each batch of the column statistics queries")]
+            public int StatsColumnBatchSize { get; set; }
+
         }
         
         public VpaxCommand(IEventAggregator eventAggregator)
@@ -88,11 +92,10 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     var appVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
 
+                    ModelAnalyzer.ExportVPAX(settings.FullConnectionString, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, 
+                        !settings.ExcludeTom, "DAX Studio Command Line", appVersion, !settings.DoNotReadStatsFromData, "Model", 
+                        settings.ReadStatsFromDirectQuery, settings.DirectLakeMode, settings.StatsColumnBatchSize);
                     
-                    ModelAnalyzer.ExportVPAX(settings.FullConnectionString, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, !settings.ExcludeTom, "DAX Studio Command Line", appVersion, !settings.DoNotReadStatsFromData, "Model", settings.ReadStatsFromDirectQuery, settings.DirectLakeMode);
-                    
-                    // Omitted
-                    //ctx.Refresh();
                 });
             AnsiConsole.MarkupLine("[green]Done![/]");
             Log.Information("Finished VPAX Command");

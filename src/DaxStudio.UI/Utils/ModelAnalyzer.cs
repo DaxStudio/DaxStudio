@@ -16,7 +16,7 @@ namespace DaxStudio.UI.Utils
         const string dictExtension = ".dict";
         const string ovpaxExtension = ".ovpax";
 
-        public static void ExportVPAX(string connectionString, string path, string dictionaryPath,string inputDictionaryPath, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData, string modelName, bool readStatisticsFromDirectQuery, DirectLakeExtractionMode directLakeMode)
+        public static void ExportVPAX(string connectionString, string path, string dictionaryPath,string inputDictionaryPath, bool includeTomModel, string applicationName, string applicationVersion, bool readStatisticsFromData, string modelName, bool readStatisticsFromDirectQuery, DirectLakeExtractionMode directLakeMode, int statsColumnBatchSize)
         {
 
             //
@@ -25,7 +25,9 @@ namespace DaxStudio.UI.Utils
             Dax.Metadata.Model daxModel = Dax.Model.Extractor.TomExtractor.GetDaxModel(connectionString, applicationName, applicationVersion,
                                                                                        readStatisticsFromData: readStatisticsFromData,
                                                                                        sampleRows: 0,
-                                                                                       analyzeDirectQuery: readStatisticsFromDirectQuery, analyzeDirectLake: directLakeMode);
+                                                                                       analyzeDirectQuery: readStatisticsFromDirectQuery,
+                                                                                       analyzeDirectLake: directLakeMode,
+                                                                                       statsColumnBatchSize: statsColumnBatchSize);
 
             //
             // Get TOM model from the SSAS engine

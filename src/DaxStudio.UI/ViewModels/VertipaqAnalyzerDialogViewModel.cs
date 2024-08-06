@@ -21,6 +21,7 @@ namespace DaxStudio.UI.ViewModels
             VpaTableColumnDisplay = _options.VpaTableColumnDisplay;
             VpaxSampleReferentialIntegrityViolations = _options.VpaxSampleReferentialIntegrityViolations;
             VpaxDontShowOptionsDialog = _options.VpaxDontShowOptionsDialog;
+            VpaxStatsColumnBatchSize = _options.VpaxStatsColumnBatchSize;
         }
 
         private bool _vpaxReadStatisticsFromData;
@@ -38,7 +39,7 @@ namespace DaxStudio.UI.ViewModels
         public DialogResult Result { get; private set; } = DialogResult.Cancel;
         public bool VpaxAdjustSegmentsMetrics { get; set; }
         public bool VpaxDontShowOptionsDialog { get; set; }
-
+        public int VpaxStatsColumnBatchSize { get; set; }
         public async void Ok()
         {
             
@@ -51,6 +52,7 @@ namespace DaxStudio.UI.ViewModels
                 _options.VpaTableColumnDisplay = VpaTableColumnDisplay;
                 _options.VpaxSampleReferentialIntegrityViolations = VpaxSampleReferentialIntegrityViolations;
                 _options.VpaxDontShowOptionsDialog = VpaxDontShowOptionsDialog;
+                _options.VpaxStatsColumnBatchSize = VpaxStatsColumnBatchSize;
                 await _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
             }
             Result = DialogResult.OK;

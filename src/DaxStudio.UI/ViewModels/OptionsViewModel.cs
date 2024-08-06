@@ -665,6 +665,26 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private int _vpaxColumnBatchSize;
+        [DataMember, DefaultValue(50), MinValue(1), MaxValue(100)]
+        [Category("VertiPaq Analyzer")]
+        [DisplayName("Statistics Column Batch Size")]
+        [Description("The number of columns to include in each batch when doing the statistics queries. This may need to be reduced for Direct Lake models")]
+        [SortOrder(60)]
+        public int VpaxStatsColumnBatchSize
+        {
+            get => _vpaxColumnBatchSize;
+            set
+            {
+                if (_vpaxColumnBatchSize == value) return;
+                _vpaxColumnBatchSize = value;
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(VpaxStatsColumnBatchSize), value, _isInitializing, this);
+            }
+
+        }
+
         [Category("Query History")]
         [DisplayName("Show Trace Timings (SE/FE)")]
         [DataMember, DefaultValue(true)]

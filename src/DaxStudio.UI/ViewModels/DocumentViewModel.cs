@@ -4438,6 +4438,7 @@ namespace DaxStudio.UI.ViewModels
 
                     bool readStatisticsFromData = dialog.VpaxReadStatisticsFromData && (!isLegacySsas);
                     bool readStatisticsFromDirectQuery = dialog.VpaxReadStatisticsFromDirectQuery && (!isLegacySsas);
+                    int statsColumnBatchSize = dialog.VpaxStatsColumnBatchSize;
 
                     VpaModel viewModel = null;
 
@@ -4454,7 +4455,8 @@ namespace DaxStudio.UI.ViewModels
                                 "DaxStudio", version.ToString(),
                                 readStatisticsFromData: readStatisticsFromData,
                                 sampleRows: dialog.VpaxSampleReferentialIntegrityViolations,
-                                analyzeDirectQuery: readStatisticsFromDirectQuery);
+                                analyzeDirectQuery: readStatisticsFromDirectQuery,
+                                statsColumnBatchSize: statsColumnBatchSize);
                         }
                         catch (Exception ex)
                         {
@@ -4707,10 +4709,11 @@ namespace DaxStudio.UI.ViewModels
 
                     bool readStatisticsFromData = dialog.VpaxReadStatisticsFromData && (!isLegacySsas);
                     bool readStatisticsFromDirectQuery = dialog.VpaxReadStatisticsFromDirectQuery && (!isLegacySsas);
+                    int statsColumnBatchSize = dialog.VpaxStatsColumnBatchSize;
 
                     try
                     {
-                        ModelAnalyzer.ExportVPAX(Connection.ConnectionStringWithInitialCatalog, path,dictionaryPath, inputDictionaryPath, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery, dialog.VpaxDirectLakeExtractionMode);
+                        ModelAnalyzer.ExportVPAX(Connection.ConnectionStringWithInitialCatalog, path,dictionaryPath, inputDictionaryPath, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), readStatisticsFromData, modelName, readStatisticsFromDirectQuery, dialog.VpaxDirectLakeExtractionMode , statsColumnBatchSize);
                     }
                     catch (Exception ex)
                     {
@@ -4721,7 +4724,7 @@ namespace DaxStudio.UI.ViewModels
                             var exMsg = ex.GetAllMessages();
                             OutputWarning("Error exporting metrics with ReadStatisticsFromData enabled (retry without statistics): " + exMsg);
 
-                            ModelAnalyzer.ExportVPAX(Connection.ConnectionStringWithInitialCatalog , path, dictionaryPath, inputDictionaryPath, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false, Dax.Metadata.DirectLakeExtractionMode.ResidentOnly); // Disable statistics during retry
+                            ModelAnalyzer.ExportVPAX(Connection.ConnectionStringWithInitialCatalog , path, dictionaryPath, inputDictionaryPath, Options.VpaxIncludeTom, "DaxStudio", ver.ToString(), false, modelName, false, Dax.Metadata.DirectLakeExtractionMode.ResidentOnly, statsColumnBatchSize); // Disable statistics during retry
                         }
                         else
                         {

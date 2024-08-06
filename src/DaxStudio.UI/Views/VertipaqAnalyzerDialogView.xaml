@@ -13,7 +13,7 @@
              Caption="Metric Options"
     MinWidth="500"
              Icon="{DynamicResource vertipaq_analyzerDrawingImage}"
-             d:DesignHeight="180" d:DesignWidth="420">
+             d:DesignHeight="260" d:DesignWidth="420">
     <ctrl:DaxStudioDialog.Resources>
     <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
@@ -51,6 +51,12 @@
                   HorizontalAlignment="Right"
                   ItemsSource="{pg:EnumerateBinding VpaxDirectLakeExtractionMode}" SelectedValue="{Binding VpaxDirectLakeExtractionMode, Mode=TwoWay}"/>
         <Label Grid.Row="2" Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">DirectLake Scan Statistics from Data option</Label>
+
+        <ui:NumberBox Grid.Row="3" Margin="0 8 8 8" 
+                  HorizontalAlignment="Right"
+                      Text="{Binding VpaxStatsColumnBatchSize}"
+                   />
+        <Label Grid.Row="3" Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">Statistics column batch size</Label>
 
         <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Right">
             <Button x:Name="Ok" Content="Ok" Margin="8" IsDefault="True" MinWidth="60"  Style="{DynamicResource AccentButtonStyle}"/>
