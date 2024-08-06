@@ -429,8 +429,9 @@
         
         <!-- Busy overlay -->
         <Border 
-                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="5" Style="{StaticResource BusyPanel}">
+            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+            Grid.Row="1"
+            Grid.RowSpan="4" Style="{StaticResource BusyPanel}">
             <Grid>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >

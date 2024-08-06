@@ -7,16 +7,20 @@
         <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
         <Setter Property="CornerRadius" Value="4"/>
         
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                    <Setter Property="BitmapEffect">
-                        <Setter.Value>
-                            <BlurBitmapEffect Radius="5"/>
-                        </Setter.Value>
-                    </Setter>
-                </DataTrigger>
-            </Style.Triggers>
+            
         
+    </Style>
+
+    <Style x:Key="BusyBlurClipBorder" BasedOn="{StaticResource {x:Type ctrl:ClipBorder}}" TargetType="{x:Type ctrl:ClipBorder}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                <Setter Property="BitmapEffect">
+                    <Setter.Value>
+                        <BlurBitmapEffect Radius="5"/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="TraceButton" BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">

@@ -254,7 +254,7 @@
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
                    Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
         <!--                     -->
-        <controls:ClipBorder Grid.Row="2">
+        <controls:ClipBorder Grid.Row="2" Style="{StaticResource BusyBlurClipBorder}">
         <!--<controls:DataGridNoContextMenu x:Name="QueryEvents" -->
             <controls:DataGridCustomCopy x:Name="QueryEvents" 
                     Foreground="{DynamicResource Theme.Brush.Default.Fore}"
@@ -457,8 +457,9 @@
         <FrameworkElement x:Name="bindingProxy" Visibility="Collapsed"/>
         <!-- Busy overlay -->
         <Border 
-                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
-                Grid.RowSpan="3" 
+            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+            Grid.Row="1"
+            Grid.RowSpan="2" 
             Grid.ColumnSpan="5"
             Style="{StaticResource BusyPanel}" d:IsHidden="True">
 

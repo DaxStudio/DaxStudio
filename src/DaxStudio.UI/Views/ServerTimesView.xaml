@@ -270,7 +270,8 @@
         <ctrl:ClipBorder Grid.ColumnSpan="5"
                 CornerRadius="4"
                 Background="{DynamicResource Theme.Brush.MenuBar.Back}"
-                Margin="0 0 0 8">
+                Margin="0 0 0 8"
+                >
             <DockPanel LastChildFill="False">
                 <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding IsRecording}">
                     <StackPanel Orientation="Horizontal">
@@ -415,7 +416,7 @@
         <!--  -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="2"  Grid.RowSpan="3">
 
-            <ctrl:ClipBorder>
+            <ctrl:ClipBorder Style="{StaticResource BusyBlurClipBorder}">
                 <ctrl:ClipBorder.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy (with Header)" cal:Message.Attach="[Event Click] = [Action CopyResults()]"></MenuItem>
@@ -591,6 +592,7 @@
             Grid.Column="2" 
             Grid.RowSpan ="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.TextGridRowSpan}"
             Grid.ColumnSpan="{Binding TextGridColumnSpan}"
+             Style="{StaticResource BusyBlurClipBorder}"
             >
             
             <DataGrid Name="ListEvents" 
@@ -748,6 +750,7 @@
             Grid.RowSpan="{Binding TextGridRowSpan}"
             Grid.ColumnSpan="{Binding TextGridColumnSpan}"
             Grid.Column="{Binding TextGridColumn}"
+             Style="{StaticResource BusyBlurClipBorder}"
             >
             <ScrollViewer Background="{DynamicResource Theme.Brush.Content.Back}">
                 <ContentControl x:Name="EventDetails" Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
@@ -767,18 +770,7 @@
             Style="{StaticResource BusyPanel}">
                 
             <Grid>
-                <!-- 
-                <Label 
-                        x:Name="ErrorMessage" 
-                        Grid.Column="0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Width="200"
-                        Height="20"
-                        Margin="0 0 10 0"
-                        Grid.Row="0"
-                    />
--->
+                
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <ProgressBar 
                                     x:Name="spinner"
