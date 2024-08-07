@@ -71,6 +71,19 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style TargetType="ToolTip">
+                <Style.Resources>
+                    <Style TargetType="ContentPresenter">
+                        <Style.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                            </Style>
+                        </Style.Resources>
+                    </Style>
+                </Style.Resources>
+                <Setter Property="MaxWidth" Value="500" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -150,14 +163,15 @@
                             </TextBlock.Text>-->
 
                         <!-- powerbi://api.powerbi.com/v1.0/myorg/[your workspace name]  -->
-                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" Text="{Binding Path=ServerName, Converter={StaticResource ServerNameConverter}}" MaxWidth="250" >
+                        <TextBlock x:Name="ServerName" VerticalAlignment="Center" Text="{Binding Path=ServerName, Converter={StaticResource ServerNameConverter}}" MaxWidth="300" >
                             </TextBlock>
                         <StackPanel.ToolTip>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Margin="0,0,5,0">Server:</TextBlock>
-                                <TextBlock Text="{Binding ServerName}" />
-                            </StackPanel>
-                            
+                            <ToolTip MaxWidth="1000">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Margin="0,0,5,0" FontWeight="Bold">Server:</TextBlock>
+                                    <TextBlock Text="{Binding ServerName}" />
+                                </StackPanel>
+                            </ToolTip>
                         </StackPanel.ToolTip>
                     </StackPanel>
 
@@ -170,30 +184,30 @@
                         <Fluent:Button.ToolTip>Copy Server Name to Clipboard</Fluent:Button.ToolTip>
                     </Fluent:Button>
                     
-                    <TextBlock x:Name="ServerVersion" Margin="5,0,0,0" VerticalAlignment="Center"></TextBlock>
+                    <TextBlock x:Name="ServerVersion" Margin="5,0,0,0" VerticalAlignment="Center" ToolTip="Server Version"></TextBlock>
                 </StackPanel>
 
             </Fluent:StatusBarItem>
             
             <Separator Grid.Column="9"/>
-            <Fluent:StatusBarItem Grid.Column="10" Title="SPID">
+            <Fluent:StatusBarItem Grid.Column="10" Title="SPID" ToolTip="Connection SPID">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{DynamicResource id_smallDrawingImage}" Margin="0 0 4 0"></Image>
                 <TextBlock x:Name="Spid" VerticalAlignment="Center">SPID</TextBlock>
                 </StackPanel>
-                <StatusBarItem.ToolTip>
+                <!--<StatusBarItem.ToolTip>
                     <TextBlock>Connection SPID</TextBlock>
-                </StatusBarItem.ToolTip>
+                </StatusBarItem.ToolTip>-->
             </Fluent:StatusBarItem>
             <Separator Grid.Column="11"/>
-            <Fluent:StatusBarItem Grid.Column="12" Title="Rowcount">
+            <Fluent:StatusBarItem Grid.Column="12" Title="Rowcount" ToolTip="Row count">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{DynamicResource tableDrawingImage}" Margin="0 0 4 0"/>
                     <TextBlock x:Name="Rows">0 rows</TextBlock>
                 </StackPanel>
             </Fluent:StatusBarItem>
             <Separator Grid.Column="13"/>
-            <Fluent:StatusBarItem Grid.Column="14" Title="Timer" >
+            <Fluent:StatusBarItem Grid.Column="14" Title="Timer" ToolTip="Elapsed Time" >
                 <TextBlock x:Name="TimerText">0:00:00.00</TextBlock>
             </Fluent:StatusBarItem>
         </Fluent:StatusBar>
