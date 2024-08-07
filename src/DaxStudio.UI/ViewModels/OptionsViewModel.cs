@@ -666,7 +666,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private int _vpaxColumnBatchSize;
-        [DataMember, DefaultValue(50), MinValue(1), MaxValue(100)]
+        [DataMember, DefaultValue(50), MinValue(2), MaxValue(100)]
         [Category("VertiPaq Analyzer")]
         [DisplayName("Statistics Column Batch Size")]
         [Description("The number of columns to include in each batch when doing the statistics queries. This may need to be reduced for Direct Lake models")]

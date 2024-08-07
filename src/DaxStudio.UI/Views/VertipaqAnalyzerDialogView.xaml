@@ -63,7 +63,7 @@
                     IsReadOnly="False" 
                     Grid.Row="3"
                     Margin="0 8 8 8"
-                    MinValue="1" 
+                    MinValue="2" 
                     MaxValue="100" 
                     IsUpdateValueWhenLostFocus="True"
                     MinWidth="60"
