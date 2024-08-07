@@ -1219,15 +1219,26 @@ namespace DaxStudio.UI.ViewModels
                         if (Connection.Databases.Count > 1 && string.IsNullOrEmpty(message.DatabaseName) && Options.ShowDatabaseDialogOnConnect)
                         {
                             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Start Showing Database Dialog");
-                            await Application.Current.Dispatcher.InvokeAsync(async () =>
+                            await Application.Current.Dispatcher.InvokeAsync( async () => 
                             {
-                                var dialog = new DatabaseDialogViewModel(Connection.Databases);
-                                await _windowManager.ShowDialogBoxAsync(dialog);
-                                if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                                try
                                 {
-                                    Connection.SetSelectedDatabase(dialog.SelectedDatabase.Name);
-                                    MetadataPane.SelectDatabaseByName(dialog.SelectedDatabase.Name);
-                                    await MetadataPane.RefreshTablesAsync();
+                                    var dialog = new DatabaseDialogViewModel(Connection.Databases);
+                                    await _windowManager.ShowDialogBoxAsync(dialog);
+                                    if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                                    {
+                                        Connection.SetSelectedDatabase(dialog.SelectedDatabase.Name);
+                                        MetadataPane.SelectDatabaseByName(dialog.SelectedDatabase.Name);
+                                        await MetadataPane.RefreshTablesAsync();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
+                                    var msg = $"The following error occurred while setting the active database: {ex.Message}";
+                                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
+                                    OutputError(msg);
+                                    ActivateOutput();
                                 }
                             });
                             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "End Showing Database Dialog");
