@@ -12,6 +12,7 @@ using System.IO;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.UI.Utils;
+using System.Linq;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -40,7 +41,24 @@ namespace DaxStudio.CommandLine.Commands
 
             public string QueryText => Query;
 
-            public List<AdomdParameter> ParameterCollection => new List<AdomdParameter>();
+            [CommandOption("-m|--parameter <PARAMETER=VALUE>")]
+            public IDictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
+
+            private List<AdomdParameter> _parameters = new List<AdomdParameter>();
+            public List<AdomdParameter> ParameterCollection { get 
+                {
+                    if (_parameters.Count == 0 && Parameters.Count > 0)
+                    {
+                        foreach (var p in Parameters)
+                        {
+                            Log.Information("Setting parameter {name} to {value}", p.Key, p.Value);
+                            // TODO - should we try to parse the value to see if it is an int or double or datetime?
+                            _parameters.Add(new AdomdParameter(p.Key, p.Value));
+                        }
+                    }
+                    return _parameters;
+                } 
+            } 
             public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new System.NotImplementedException(); }
         }
 
@@ -61,6 +79,8 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     settings.Query = System.IO.File.ReadAllText(settings.File);
                 }
+
+                
 
                 QueryRunner runner = new QueryRunner(settings);
                 var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();

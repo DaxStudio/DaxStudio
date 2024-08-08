@@ -30,8 +30,24 @@ namespace DaxStudio.CommandLine.Commands
             public string EditorText => Query;
 
             public string QueryText => Query;
+            [CommandOption("-m|--parameter <PARAMETER=VALUE>")]
+            public IDictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
 
-            public List<AdomdParameter> ParameterCollection => new List<AdomdParameter>();
+            private List<AdomdParameter> _parameters = new List<AdomdParameter>();
+            public List<AdomdParameter> ParameterCollection
+            {
+                get
+                {
+                    if (_parameters.Count == 0 && Parameters.Count > 0)
+                    {
+                        foreach (var p in Parameters)
+                        {
+                            _parameters.Add(new AdomdParameter(p.Key, p.Value));
+                        }
+                    }
+                    return _parameters;
+                }
+            }
             public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new System.NotImplementedException(); }
         }
 
