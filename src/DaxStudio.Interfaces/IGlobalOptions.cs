@@ -115,8 +115,7 @@ namespace DaxStudio.Interfaces
         // Preview Features
         bool ShowCopyMetricsComments { get; set; }
         bool VpaxIncludeTom { get; set; }
-        int VpaxStatsColumnBatchSize { get; set; }
-        
+      
         
         
         bool UseIndentCodeFolding { get; set; }
