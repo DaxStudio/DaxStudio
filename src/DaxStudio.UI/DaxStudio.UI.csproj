@@ -1437,16 +1437,16 @@
       <Version>33.0.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.7.0</Version>
+      <Version>1.7.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.7.0</Version>
+      <Version>1.7.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.7.0</Version>
+      <Version>1.7.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.7.0</Version>
+      <Version>1.7.1</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax.Obfuscator">
       <Version>1.0.5</Version>
