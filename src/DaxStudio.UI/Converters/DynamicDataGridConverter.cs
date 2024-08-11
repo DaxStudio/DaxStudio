@@ -16,12 +16,6 @@ namespace DaxStudio.UI.Converters
     //
     public class DynamicDataGridConverter : IValueConverter
     {
-        static Regex bindingPathRegex;
-        static DynamicDataGridConverter()
-        {
-            // store the static compiled regex so we don't have to instantiate it each time we bind a column
-            bindingPathRegex = new Regex(@"[\^,\]\[\.]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -153,13 +147,7 @@ namespace DaxStudio.UI.Converters
                 switch (c)
                 {
                     case '&':
-                        sb.Append(c);
-                        sb.Append(c);
-                        break;
                     case '>':
-                        sb.Append(c);
-                        sb.Append(c);
-                        break;
                     case '=':
                     case ',':
                     case '}':
@@ -176,8 +164,6 @@ namespace DaxStudio.UI.Converters
             }
             sb.Append(']');
             return sb.ToString();
-            //var bindingPath = bindingPathRegex.Replace(columnName, "^$0");
-            //return "[" + bindingPath + "]";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
