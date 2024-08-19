@@ -883,10 +883,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
-
-        //public string ConnectionString { get { return _connection.ConnectionString; } }
-
         public string ConnectionStringWithInitialCatalog => Connection != null ? Connection.ConnectionStringWithInitialCatalog : string.Empty;
 
         public MetadataPaneViewModel MetadataPane { get; private set; }
@@ -900,9 +896,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Debug("{Class} {Event} Close:{Value} Doc:{Document}", "DocumentViewModel", "OnDeactivated (close)", close, DisplayName);
                 await base.OnDeactivateAsync(close, cancellationToken);
+
                 UnsubscribeAll();
 
                 StopFoldingManager();
+
+                IsClosing = close;
+
             }
             catch (Exception ex)
             {
@@ -1011,11 +1011,6 @@ namespace DaxStudio.UI.ViewModels
                 }
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent(), cancellationToken);
 
-                //if (State == DocumentState.RecoveryPending)
-                //{
-                //    State = DocumentState.Loaded;
-                //    await _eventAggregator.PublishOnUIThreadAsync(new RecoverNextAutoSaveFileEvent());
-                //}
             }
             catch (Exception ex)
             {
@@ -1187,10 +1182,13 @@ namespace DaxStudio.UI.ViewModels
             }
 
             var docTab = Parent as DocumentTabViewModel;
-            docTab.CloseItemAsync(this);
+            docTab?.CloseItemAsync(this);
+            IsClosing = true;
             docTab?.Items.Remove(this);
             return true;
         }
+
+        public bool IsClosing { get; private set; } = false;
 
         public ConnectionManager Connection { get; }
 
@@ -2788,8 +2786,14 @@ namespace DaxStudio.UI.ViewModels
                 SaveAs();
             else
             {
-                if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase)) SavePackageFile();
-                else SaveSingleFiles();
+                if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                {
+                    SavePackageFile();
+                }
+                else
+                {
+                    SaveSingleFiles();
+                }
             }
         }
 
@@ -3072,7 +3076,6 @@ namespace DaxStudio.UI.ViewModels
                 DisplayName = Path.GetFileName(FileName);
                 Save();
             }
-
         }
 
         public bool IsDiskFileName { get; set; }
@@ -3524,7 +3527,16 @@ namespace DaxStudio.UI.ViewModels
             //        "Unsaved Changes", MessageBoxButton.YesNo
             //        );
             // don't close if the file has unsaved changes
-            return !IsDirty;
+            if (IsDirty)
+            {
+                return false;
+            }
+            else
+            {
+                IsClosing = true;
+                return true;
+            }
+            
         }
 
         public Task HandleAsync(SelectionChangeCaseEvent message, CancellationToken cancellationToken)

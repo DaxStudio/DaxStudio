@@ -160,24 +160,25 @@ namespace DaxStudio.UI.ViewModels
         //    }
         //}
 
-        protected override Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
+        protected override async Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
         {
             try
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
                 //ActiveDocument = newItem as DocumentViewModel;
                 var docs = GetChildren();
+                if (docs.Count() == 0 && newItem is DocumentViewModel doc && doc.IsClosing ) { return; }
                 docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
-                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
 
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Finished setting ActiveDocument");
-                return base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
+                await base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Error Changing Active Item");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Setting Active Document\n{ex.Message}"));
-                return Task.CompletedTask;
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Setting Active Document\n{ex.Message}"));
+                
             }
             
         }
@@ -390,7 +391,8 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task ChangeConnectionAsync()
         {
-            await ActiveDocument.ChangeConnectionAsync();
+            if (ActiveDocument == null) return;
+            await ActiveDocument?.ChangeConnectionAsync();
         }
 
         public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)

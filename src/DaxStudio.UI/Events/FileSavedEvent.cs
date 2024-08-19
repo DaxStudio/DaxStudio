@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaxStudio.UI.Events
+﻿namespace DaxStudio.UI.Events
 {
-    public class FileSavedEvent: FileOpenedEvent
+    public class FileSavedEvent
     {
-        public FileSavedEvent(string fileName) : base(fileName) { }
+        public FileSavedEvent(string fileName) {
+            FileName = fileName;
+        }
+
+        public string FileName { get; }
 
     }
 }
