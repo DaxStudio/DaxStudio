@@ -84,7 +84,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <CheckBox Margin="0 8 0 8" Content="Do not show this dialog (can be set in Options)" VerticalAlignment="Center" IsChecked="{Binding VpaxDontShowOptionsDialog}" />
-            <TextBlock  Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 8 0 2"><Hyperlink NavigateUri="http://localhost:3000/docs/features/model-metrics/#metric-options-dialog" attachedProperties:HyperlinkExtensions.IsExternal="true">Learn More</Hyperlink></TextBlock>
+            <TextBlock  Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 8 0 2"><Hyperlink NavigateUri="http://daxstudio.org/docs/features/model-metrics/#metric-options-dialog" attachedProperties:HyperlinkExtensions.IsExternal="true">Learn More</Hyperlink></TextBlock>
         </Grid>
     </Grid>
 </ctrl:DaxStudioDialog>
