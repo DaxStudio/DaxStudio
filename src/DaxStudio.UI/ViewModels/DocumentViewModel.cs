@@ -4479,6 +4479,7 @@ namespace DaxStudio.UI.ViewModels
                                 readStatisticsFromData: readStatisticsFromData,
                                 sampleRows: dialog.VpaxSampleReferentialIntegrityViolations,
                                 analyzeDirectQuery: readStatisticsFromDirectQuery,
+                                analyzeDirectLake: dialog.VpaxDirectLakeExtractionMode,
                                 statsColumnBatchSize: statsColumnBatchSize);
                         }
                         catch (Exception ex)
