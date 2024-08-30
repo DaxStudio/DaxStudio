@@ -157,6 +157,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [Category("Results")]
+        [Subcategory("Grid")]
         [DisplayName("Results Font Family")]
         [DataMember]
         [DefaultValue(DefaultResultsFontFamily)]
@@ -176,6 +177,7 @@ namespace DaxStudio.UI.ViewModels
         public double ResultFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{ResultFontSize}pt");
 
         [Category("Results")]
+        [Subcategory("Grid")]
         [DisplayName("Results Font Size")]
         [DataMember]
         [DefaultValue(DefaultResultsFontSize)]
@@ -997,10 +999,6 @@ namespace DaxStudio.UI.ViewModels
         } 
 
         private bool _excludeHeadersWhenCopyingResults;
-        //[Category("Results")]
-        //[DisplayName("Exclude Headers when Copying Data")]
-        //[Description("Setting this option will just copy the raw data from the results pane")]
-        //[DataMember, DefaultValue(true)]
         public bool ExcludeHeadersWhenCopyingResults
         {
             get => _excludeHeadersWhenCopyingResults;
@@ -1682,6 +1680,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _resultAutoFormat;
         [Category("Results")]
+        [Subcategory("Grid")]
         [SortOrder(10)]
         [DisplayName("Automatic Format Results")]
         [Description("Setting this option will automatically format numbers in the query results pane if a format string is not available for a measure with the same name as the column in the output")]
@@ -1698,6 +1697,7 @@ namespace DaxStudio.UI.ViewModels
                 
         private string _defaultDateAutoFormat;
         [Category("Results")]
+        [Subcategory("Grid")]
         [SortOrder(20)]
         [DisplayName("Default Date Automatic Format")]
         [Description("The automatic format result will use this setting to format dates column, keep it empty to get the default format.")]
@@ -1717,6 +1717,7 @@ namespace DaxStudio.UI.ViewModels
         
         private bool _scaleResultsFontWithEditor = true;
         [Category("Results")]
+        [Subcategory("Grid")]
         [DisplayName("Scale Results Font with Editor")]
         [Description("Setting this option will cause the results font to scale when you change the zoom percentage on the editor")]
         [DataMember, DefaultValue(true)]
@@ -1728,6 +1729,43 @@ namespace DaxStudio.UI.ViewModels
                 SettingProvider.SetValue("ScaleResultsFontWithEditor", value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ScaleResultsFontWithEditor);
             } }
+
+        private bool _xlsxAlwaysWriteCellReferences = true;
+        [Category("Results")]
+        [Subcategory("Excel File")]
+        [DisplayName("Always write cell references")]
+        [Description("Setting this option will produce larger files, but are compatible with more programs")]
+        [DataMember, DefaultValue(true)]
+        public bool XlsxAlwaysWriteCellReferences
+        {
+            get => _xlsxAlwaysWriteCellReferences;
+            set
+            {
+                _xlsxAlwaysWriteCellReferences = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue("XlsxAlwaysWriteCellReferences", value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private bool _xlsxUseZip64 = false;
+        [Category("Results")]
+        [Subcategory("Excel File")]
+        [DisplayName("Use Zip64")]
+        [Description("This option will allow for very creating files larger than 4Gb, but may not be readable by all client applications")]
+        [DataMember, DefaultValue(false)]
+        public bool XlsxUseZip64Compression
+        {
+            get => _xlsxUseZip64;
+            set
+            {
+                _xlsxUseZip64 = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue("XlsxUseZip64Compression", value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
+
 
         private int _codeCompletionWindowWidthIncrease;
         [Category("Editor")]
