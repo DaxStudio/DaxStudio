@@ -478,6 +478,7 @@ namespace DaxStudio.UI.ViewModels
                         case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
                             // remove the direct query code from the text we are pasting in
                             newContent = newContent.Substring(0, sm.CommentPosition);
+                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Direct Query code removed from pasted text"));
                             break;
                         case MultipleQueriesDetectedDialogResult.KeepDirectQuery:
                             break;
