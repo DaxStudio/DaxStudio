@@ -91,10 +91,11 @@ namespace DaxStudio.CommandLine.Commands
                 .Start("Generating VPAX file...", ctx =>
                 {
                     var appVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
+                    var statsColumnBatchSize = settings.StatsColumnBatchSize==0 ? Dax.Model.Extractor.StatExtractor.DefaultColumnBatchSize :settings.StatsColumnBatchSize;
 
                     ModelAnalyzer.ExportVPAX(settings.FullConnectionString, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, 
                         !settings.ExcludeTom, "DAX Studio Command Line", appVersion, !settings.DoNotReadStatsFromData, "Model", 
-                        settings.ReadStatsFromDirectQuery, settings.DirectLakeMode, settings.StatsColumnBatchSize);
+                        settings.ReadStatsFromDirectQuery, settings.DirectLakeMode, statsColumnBatchSize);
                     
                 });
             AnsiConsole.MarkupLine("[green]Done![/]");
