@@ -8,6 +8,7 @@ using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Model;
 using System.Threading.Tasks;
 using System.IO;
 using DaxStudio.Interfaces;
@@ -21,6 +22,7 @@ using System.Configuration;
 using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Shell;
 //using Microsoft.Identity.Client;
 
 namespace DaxStudio.Standalone
@@ -133,6 +135,8 @@ namespace DaxStudio.Standalone
 
             // only used for testing of crash reporting UI
             if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
+
+            JumpListHelper.ConfigureJumpList(App);
 
             if (!App.Args().ShowHelp)
             {

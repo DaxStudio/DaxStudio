@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using System.Drawing;
 using ADOTabular;
 using DaxStudio.Interfaces.Enums;
+using System.Windows.Threading;
+using System.Windows.Shell;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -443,12 +445,13 @@ namespace DaxStudio.UI.ViewModels
         [ImportMany]
         public IEnumerable<IResultsTarget> AvailableResultsTargets {get; set; }
 
-        public IEnumerable<IResultsTarget> ResultsTargets { get {
-            //return  AvailableResultsTargets.OrderBy<IEnumerable<IResultsTarget>,int>(AvailableResultsTargets, x => x.DisplayOrder).Where(x=> x.IsEnabled.ToList<IResultsTarget>();
-            return (from t in AvailableResultsTargets
-                    where t.IsAvailable
-                    select t).OrderBy(x => x.DisplayOrder).AsEnumerable<IResultsTarget>();
-        } }
+        public IEnumerable<IResultsTarget> ResultsTargets { 
+            get {
+                return (from t in AvailableResultsTargets
+                        where t.IsAvailable
+                        select t).OrderBy(x => x.DisplayOrder).AsEnumerable<IResultsTarget>();
+            } 
+        }
 
         private IResultsTarget _selectedTarget;
         private bool QueryRunning => ActiveDocument?.IsQueryRunning??false;
@@ -949,24 +952,26 @@ namespace DaxStudio.UI.ViewModels
         private void AddToRecentFiles(string fileName)
         {
             SettingProvider.SaveFileMRUList(new DaxFile(fileName,false));
+            var existingFile = RecentFiles.FirstOrDefault(f => f.FullPath == fileName);
+            // add to windows JumpList
+            try
+            {
+                JumpListHelper.AddToRecentFilesList(fileName);
+            }
+            catch (Exception ex)
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error adding file to Windows JumpList: {ex.Message}"));
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(AddToRecentFiles), "Error adding file to JumpList");
+            }
 
-            //DaxFile df = (from DaxFile f in RecentFiles
-            //              where f.FullPath.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)
-            //              select f).FirstOrDefault<DaxFile>();
-            //if (df == null)
-            //{
-            //    RecentFiles.Insert(0, new DaxFile(fileName));
-            //}
-            //else
-            //{
-            //    // move the file to the first position in the list     
-            //    RecentFiles.Move(RecentFiles.IndexOf(df), 0);
-            //    //RecentFiles.Remove(df);
-            //    //RecentFiles.Insert(0, df);
-            //}
-
-            //int MAX_RECENT_FILES = 25;
-            //while (RecentFiles.Count() > MAX_RECENT_FILES) { RecentFiles.RemoveAt(RecentFiles.Count() - 1); }
+            if (existingFile != null)
+            {
+                RecentFiles.Move( RecentFiles.IndexOf(existingFile), 0);
+            }
+            else
+            {
+                RecentFiles.Insert(0, new DaxFile(fileName, false));
+            }
         }
 
         public Task HandleAsync(FileOpenedEvent message, CancellationToken cancellationToken)
@@ -1050,6 +1055,7 @@ namespace DaxStudio.UI.ViewModels
         private void MoveFileToTopOfRecentList(DaxFile file)
         {
             SettingProvider.SaveFileMRUList(file);
+            RecentFiles.Move(RecentFiles.IndexOf(file), 0);
         }
 
         public bool CanSwapDelimiters => ActiveDocument != null;

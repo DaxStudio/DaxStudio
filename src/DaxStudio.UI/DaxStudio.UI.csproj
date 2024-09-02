@@ -508,6 +508,7 @@
     <Compile Include="Model\HotKey.cs" />
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\IndentFoldingStrategy.cs" />
+    <Compile Include="Model\JumpListHelper.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />
