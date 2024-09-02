@@ -620,7 +620,10 @@ namespace DaxStudio.UI.ViewModels
             if (IsPaused) return;
 
             Events.Enqueue(e);
-            ProcessSingleEvent(e);
+            Execute.OnUIThread(() =>
+            {
+                ProcessSingleEvent(e);
+            });
 
             if (IsFinalEvent(e)) ProcessAllEvents();
         }
