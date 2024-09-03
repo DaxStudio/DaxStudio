@@ -228,6 +228,8 @@ namespace DaxStudio.UI.ViewModels
                 else if (ActiveDocument != null && !ActiveDocument.IsDiskFileName && !ActiveDocument.IsDirty) OpenFileInActiveDocument(fileName);
                 // 3 Open Document in a new window if current window has content
                 else await OpenFileInNewWindowAsync(fileName);
+
+                if (!string.IsNullOrEmpty(fileName)) JumpListHelper.AddToRecentFilesList(fileName);
             }
             catch (Exception ex)
             {

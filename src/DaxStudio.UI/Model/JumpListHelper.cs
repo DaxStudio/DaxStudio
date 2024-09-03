@@ -12,11 +12,7 @@ namespace DaxStudio.UI.Model
             JumpList jumpList = JumpList.GetJumpList(app);
             if (jumpList == null)
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(JumpListHelper), nameof(ConfigureJumpList), $"Creating new Jumplist");
-                jumpList = new JumpList();
-                jumpList.ShowRecentCategory = true;
-                jumpList.Apply();
-                JumpList.SetJumpList(app, jumpList);
+                jumpList = CreateJumpList();
             }
             jumpList.Apply();
             Log.Debug(Constants.LogMessageTemplate, nameof(JumpListHelper), nameof(ConfigureJumpList), $"Jumplist initialized with {jumpList.JumpItems.Count} item(s)");
@@ -27,16 +23,33 @@ namespace DaxStudio.UI.Model
             var jumpList = JumpList.GetJumpList(Application.Current);
             if (jumpList == null)
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(JumpListHelper), nameof(AddToRecentFilesList), $"Creating new Jumplist");
-                jumpList = new JumpList();
-                jumpList.ShowRecentCategory = true;
-                jumpList.Apply();
-                JumpList.SetJumpList(Application.Current, jumpList);
+                jumpList = CreateJumpList();
             }
-            JumpList.AddToRecentCategory(fileName);
-            //JumpList.AddToRecentCategory(new JumpPath() { CustomCategory = "DAX Studio", Path = fileName });
-            //jumpList.JumpItems.Add(new JumpPath() { Path = fileName });
-            Log.Debug(Constants.LogMessageTemplate, nameof(JumpListHelper), nameof(ConfigureJumpList), $"Added '{fileName}' to Jumplist");
+
+            // This adds a JumpTask to the recent files list using the same format that 
+            // Windows Explorer uses for recent files when double clicking a file
+            var workingDir = System.IO.Path.GetDirectoryName(fileName);
+            var fileNameOnly = System.IO.Path.GetFileName(fileName);
+            JumpTask jt= new JumpTask() { 
+                ApplicationPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName,
+                Arguments = $"-file \"{fileName}\"",
+                Title = fileNameOnly,
+                Description = $"{System.IO.Path.GetFileNameWithoutExtension(fileNameOnly)} ({workingDir})",
+                WorkingDirectory = workingDir
+            };
+            JumpList.AddToRecentCategory(jt);
+            
+            Log.Debug(Constants.LogMessageTemplate, nameof(JumpListHelper), nameof(ConfigureJumpList), $"Added '{fileName}' to Jumplist with {jumpList?.JumpItems?.Count??0} items");
+        }
+
+        private static JumpList CreateJumpList()
+        {
+            Log.Debug(Constants.LogMessageTemplate, nameof(JumpListHelper), nameof(CreateJumpList), $"Creating new Jumplist");
+            JumpList jumpList = new JumpList();
+            jumpList.ShowRecentCategory = true;
+            jumpList.Apply();
+            JumpList.SetJumpList(Application.Current, jumpList);
+            return jumpList;
         }
     }
 }
