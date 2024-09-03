@@ -11,4 +11,6 @@ $server = "localhost\tab19"
 $database = "adventure works"
 $letter = 'm'
 
-&$cmd csv c:\temp\test-$letter.csv -s $server -d $database -q $query -m letter=$letter
+#&$cmd csv c:\temp\test-$letter.csv -s $server -d $database -q $query -m letter=$letter
+
+&$cmd csv c:\temp\myquery.csv -s $server -d $database  -m myColor=Red -m myCategory=Bikes -q "EVALUATE FILTER('product', 'product'[Color]=@myColor && 'product'[Product Category Name]=@myCategory)"

@@ -15,6 +15,9 @@ using Serilog.Events;
 using System.Threading.Tasks;
 using DaxStudio.CommandLine.Help;
 using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.CommandLine.Extensions;
+using Microsoft.Expression.Shapes;
+using Newtonsoft.Json.Linq;
 
 namespace DaxStudio.CommandLine
 {
@@ -38,8 +41,8 @@ namespace DaxStudio.CommandLine
             registrations.AddSingleton<IGlobalOptions, OptionsViewModel>();
             registrations.AddSingleton(typeof(ISettingProvider), settingProvider);
             var registrar = new TypeRegistrar(registrations);
-
-            ConfigureLogging();
+            var verboseLogging = IsVerbose(args);
+            ConfigureLogging(verboseLogging);
             EventAggregator.SubscribeOnPublishedThread(connLogger);
 
             //ParseArgs(args);
@@ -69,7 +72,21 @@ namespace DaxStudio.CommandLine
             
         }
 
-        private static void ConfigureLogging()
+        private static bool IsVerbose(string[] arr)
+        {
+            for (var idx = arr.Length - 1; idx >= 0; idx--)
+            {
+                var item = arr[idx];
+                if (string.Compare(item, "-v", true) == 0 || string.Compare(item, "--verbose", true) == 0)
+                {
+                    StringExtensions.RemoveAt(ref arr, idx, 1);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void ConfigureLogging(bool verboseLogging)
         {
             /*
             var config = new LoggerConfiguration();
@@ -79,11 +96,14 @@ namespace DaxStudio.CommandLine
    
             Log.Logger = _log;
             */
+            var outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}";
+            if (verboseLogging) { outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}"; }
+
             Log.Logger = new LoggerConfiguration()
-                        .WriteTo.Spectre("{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}", restrictedToMinimumLevel: LogEventLevel.Information)
+                        .WriteTo.Spectre(outputTemplate, restrictedToMinimumLevel: LogEventLevel.Information)
                         .MinimumLevel.Information()
                         .CreateLogger();
-
+            
             // Log.Information("Logger Initialized");
         }
 
