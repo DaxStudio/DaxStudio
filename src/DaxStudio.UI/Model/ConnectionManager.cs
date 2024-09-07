@@ -780,15 +780,15 @@ namespace DaxStudio.UI.Model
         {
 
             var model = _dmvConnection.Database.Models.BaseModel;
-            var modelMeasures = (from t in model.Tables
-                                 from m in t.Measures
-                                 select m).ToList();
+
+            var dependentMeasures = FindDependentMeasures(measureName);
+
             var distinctColumns = (from t in model.Tables
                                    from c in t.Columns
                                    where c.ObjectType == ADOTabularObjectType.Column
                                    select c.Name).Distinct().ToList();
 
-            var finalMeasure = modelMeasures.First(m => m.Name == measureName);
+            var finalMeasure = dependentMeasures.First(m => m.Name == measureName);
 
             var resultExpression = finalMeasure.Expression;
 
@@ -797,9 +797,12 @@ namespace DaxStudio.UI.Model
             do
             {
                 foundDependentMeasures = false;
-                foreach (var modelMeasure in modelMeasures)
+                foreach (var modelMeasure in dependentMeasures)
                 {
-                    Regex daxMeasureRegex = new Regex($@"\[{ modelMeasure.Name.Replace("]","]]")}]|'{modelMeasure.Table.DaxName}'\[{modelMeasure.Name.Replace("]", "]]")}]|{modelMeasure.Table.DaxName}\[{modelMeasure.Name.Replace("]", "]]")}]");
+                    var escapedName = Regex.Escape(modelMeasure.Name).Replace("]", "]]");
+                    var escapedTable = Regex.Escape(modelMeasure.Table.DaxName);
+
+                    Regex daxMeasureRegex = new Regex($@"\[{ escapedName}]|'{escapedTable}'\[{escapedName}]|{escapedTable}\[{escapedName}]");
                     bool hasComments = modelMeasure.Expression.Contains(@"--");
                     string newExpression = daxMeasureRegex.Replace(resultExpression, $" CALCULATE ( { modelMeasure.Expression}{(hasComments ? "\r\n" : string.Empty)})");
 
@@ -852,7 +855,7 @@ namespace DaxStudio.UI.Model
                 if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
                 dependentMeasures.Add(measure);
 
-                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='EVALUATE {{ {measure.Expression.Replace("'", "''" )} }}'";
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
 
                 using (var dr = ExecuteReader(dmvDependency, null))
                 {
