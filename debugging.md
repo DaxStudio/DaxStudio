@@ -4,18 +4,22 @@ The DAX Studio solution is broken up into a number of different projects
 
 | **Project** | **Entry Point** | **Description**|
 | --- | --- | --- |
-| ADOTabular | No | This is a wrapper over AdomdClient that gives a tabular abstraction (ie. Models/Tables/Columns) over the top of the  |
-| DaxEditor | No | This is a wrapper project over AvalonEdit which customizes it for DAX Studio |
+| DaxStudio.ADOTabular | No | This is a wrapper over AdomdClient that gives a tabular abstraction (ie. Models/Tables/Columns) over the top of the  |
+| DaxStudio.AvalonDock.Theme | No | Theme support for the AvalonDock component |
 | DaxStudio.Checker | **Yes** | This is a standalone project used for running environment checks on end user PCs. The primary use case for this utility is to help diagnosing issues with users PCs when DAX Studio fails to start. Once DAX Studio is up and running the normal diagnostic logging usually provides more actionable information. |
+| DaxStudio.CommandLine| **Yes**| This is the command-line project that creates dscmd |
 | DaxStudio.Common | No | This contains various classes that are used between both the Excel Addin and Standalone projects |
 | DaxStudio.Controls.DataGridFilter | No | This project contains a custom WPF DataGrid Filter control |
+| DaxStudio.DaxEditor | No | This is a wrapper project over AvalonEdit which customizes it for DAX Studio |
 | DaxStudio.ExcelAddin | **Yes** | This project is the Excel addin used to enable connectivity to PowerPivot models. If you need to debug an issue with PowerPivot you should set this as your startup project in visual studio.  |
+| DaxStudio.FileIcons | No | A resource dll holding the various file icons |
 | DaxStudio.Interfaces | No | This project contains interfaces that are shared by two or more of the other projects |
 | DaxStudio.QueryTrace | No | This project contains the core query tracing engine |
 | DaxStudio.QueryTrace.Excel | No | This project contains the core query tracing engine used by the Excel Addin |
+| DaxStudio.SqlFormatter | No | Holds a fork of the SQL formatter project. Used for formatting xmSQL and T-SQL for direct query scans |
 | DaxStudio.Standalone | **Yes** | This project is the entry point for the standalone .exe version of DAX Studio. If you are debugging issues with anything other than PowerPivot models this project should be set as your startup project in Visual Studio |
 | DaxStudio.UI | No | This project contains all the User Interface objects |
-| UnitComboLib | No | This project contains the custom combo control that contains the zoom percentage control at the bottom of the Query editor |
+| DaxStudio.UnitComboLib | No | This project contains the custom combo control that contains the zoom percentage control at the bottom of the Query editor |
 
 ## DaxStudio.UI
 
