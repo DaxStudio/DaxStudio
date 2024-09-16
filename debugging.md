@@ -1,4 +1,4 @@
-## Debuggin DAX Studio
+## Debugging DAX Studio
 
 The DAX Studio solution is broken up into a number of different projects
 
