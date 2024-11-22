@@ -483,7 +483,10 @@ namespace DaxStudio.ExcelAddin
             //to.ListObject.DisplayName = "DAX query";
             var oleCnn = to.WorkbookConnection.OLEDBConnection;
             oleCnn.CommandType = XlCmdType.xlCmdDAX;
-            string[] qryArray = daxQuery.Split(new char[]{'\r'},StringSplitOptions.RemoveEmptyEntries);
+            //string[] qryArray = daxQuery.Split(new char[]{'\r'},StringSplitOptions.RemoveEmptyEntries);
+            string qryArray = daxQuery.Replace('\r', ' '); 
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ExcelHelper), nameof(DaxQueryTable2013), $"query string: {daxQuery}");
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ExcelHelper), nameof(DaxQueryTable2013), $"query array cnt: {qryArray.Length}");
             oleCnn.CommandText = qryArray;
             oleCnn.Refresh();
             WriteQueryToExcelComment(excelSheet, daxQuery);
