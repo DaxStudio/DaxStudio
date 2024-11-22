@@ -293,7 +293,7 @@ namespace DaxStudio.UI.Model
                     daxCol = null;
                     
                     runner.Connection.Columns.TryGetValue(columnName, out daxCol);
-                    if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
+                    if (daxCol == null) runner.Connection.Columns.TryGetValue(columnDaxName, out daxCol);
                     if (daxCol != null && !string.IsNullOrEmpty(daxCol.FormatString))
                     {
                         formatString = daxCol.FormatString;
