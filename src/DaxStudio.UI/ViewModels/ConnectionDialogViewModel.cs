@@ -945,18 +945,27 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(RefreshConnectionDialogEvent message, CancellationToken cancellationToken)
         {
-            PowerPivotEnabled = Host.Proxy.IsExcel;
-            using (new StatusBarMessage(_activeDocument, "Checking for PowerPivot Model"))
+            try
             {
-                HasPowerPivotModel = Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout);
-                if (HasPowerPivotModel) {
-                    ServerModeSelected = false;
-                    PowerPivotModeSelected = true;
+                PowerPivotEnabled = Host.Proxy.IsExcel;
+                using (new StatusBarMessage(_activeDocument, "Checking for PowerPivot Model"))
+                {
+                    HasPowerPivotModel = Host.Proxy.HasPowerPivotModel(Options.PowerPivotModelDetectionTimeout);
+                    if (HasPowerPivotModel)
+                    {
+                        ServerModeSelected = false;
+                        PowerPivotModeSelected = true;
+                    }
                 }
-            }
-            WorkbookName = Host.Proxy.WorkbookName;
-            NotifyOfPropertyChange(nameof(WorkbookName));
+                WorkbookName = Host.Proxy.WorkbookName;
+                NotifyOfPropertyChange(nameof(WorkbookName));
 
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), "Handle<RefreshConnectionDialogEvent>", ex.Message);
+
+            }
             return Task.CompletedTask;
         }
     } 
