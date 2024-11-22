@@ -32,6 +32,8 @@ namespace DaxStudio.CommandLine.Commands
         [Description("The connection string for the data source")]
         public string ConnectionString { get; set; }
 
+        public string PowerBIFileName { get; set; }
+
         public string FullConnectionString { get { 
                 // if the connectionstring property is set use that
                 if (!string.IsNullOrEmpty(ConnectionString)) return ConnectionString;
@@ -73,8 +75,8 @@ namespace DaxStudio.CommandLine.Commands
                     || !string.IsNullOrWhiteSpace(Database)))
                 { return ValidationResult.Error("You cannot specify a <Server> or <Database> when passing a <ConnectionString>"); }
 
-            if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Server) && string.IsNullOrWhiteSpace(Database))
-                return ValidationResult.Error("You must specify a <database> when using the <server> parameter");
+            if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Server) && string.IsNullOrWhiteSpace(Database) && !Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase))
+                return ValidationResult.Error("You must specify a <database> when using the <server> parameter and not connecting to a .pbix file");
 
             if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Database) && string.IsNullOrWhiteSpace(Server))
                 return ValidationResult.Error("You must specify a <server> when using the <database> parameter");
@@ -88,7 +90,31 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate();
         }
 
+        internal void CheckForDesktopConnection()
+        {
+            if (!Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)) return;
+            Log.Information("Detected Power BI Desktop file");
 
+            PowerBIFileName = Server.Substring(0,Server.Length-5);
+            AnsiConsole.Status()
+                .AutoRefresh(true)
+                .Spinner(Spinner.Known.Star)
+                .SpinnerStyle(Style.Parse("green bold"))
+                .Start("Scanning for running instances of Power BI Desktop...", ctx =>
+                {
+                    var instances = UI.Utils.PowerBIHelper.GetLocalInstances(false);
+                
+                    foreach (var instance in instances)
+                    {
+                        if (instance.Name == PowerBIFileName)
+                        {
+                            Server = $"localhost:{instance.Port}";
+                            Log.Information($"Found running instance of '{PowerBIFileName}' on port: {instance.Port}");
+                            return;
+                        }
+                    }
+                });
+        }
 
     }
 }

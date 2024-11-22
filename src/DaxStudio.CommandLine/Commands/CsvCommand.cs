@@ -60,6 +60,8 @@ namespace DaxStudio.CommandLine.Commands
                 } 
             } 
             public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new System.NotImplementedException(); }
+
+
         }
 
         public override ValidationResult Validate(CommandContext context, Settings settings)
@@ -80,7 +82,7 @@ namespace DaxStudio.CommandLine.Commands
                     settings.Query = System.IO.File.ReadAllText(settings.File);
                 }
 
-                
+                settings.CheckForDesktopConnection();
 
                 QueryRunner runner = new QueryRunner(settings);
                 var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
