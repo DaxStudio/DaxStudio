@@ -133,7 +133,7 @@ namespace DaxStudio.UI.Utils
         public static ImageSource GenerateBitmap(List<TraceStorageEngineEvent> events, double totalWidth, double height, Brush feBrush, Brush scanBrush, Brush batchBrush, Brush internalBrush)
         {
             // Adjust events
-            events = AdjustEvents(events);
+            //events = AdjustEvents(events);
 
             // create a visual and a drawing context
             DrawingVisual drawingVisual = new DrawingVisual();
@@ -144,11 +144,11 @@ namespace DaxStudio.UI.Utils
                 drawingContext.DrawRectangle(feBrush, null, background);
 
                 // draw the SE events
-                DrawEvents(events.Where(e => e.IsBatchEvent), batchBrush);
+                DrawEvents(events.Where(e => e.IsScanEvent && e.IsBatchEvent), batchBrush);
                 // Note: the internalBrush is probably useless as it should be 
                 //       completely overwritten by the following scanBrush
-                DrawEvents(events.Where(e => !e.IsBatchEvent && e.IsInternalEvent), internalBrush);
-                DrawEvents(events.Where(e => !e.IsBatchEvent && !e.IsInternalEvent), scanBrush);
+                DrawEvents(events.Where(e => e.IsScanEvent && !e.IsBatchEvent && e.IsInternalEvent), internalBrush);
+                DrawEvents(events.Where(e => e.IsScanEvent && !e.IsBatchEvent && !e.IsInternalEvent), scanBrush);
 
                 void DrawEvents (IEnumerable<TraceStorageEngineEvent> drawEvents, Brush brush)
                 {

@@ -127,6 +127,18 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        public bool IsScanEvent
+        {
+            get
+            {
+                return this.Class == DaxStudioTraceEventClass.VertiPaqSEQueryBegin
+                    || this.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch
+                    || this.Class == DaxStudioTraceEventClass.VertiPaqSEQueryEnd
+                    || this.Class == DaxStudioTraceEventClass.DirectQueryBegin
+                    || this.Class == DaxStudioTraceEventClass.DirectQueryEnd;
+            }
+        }
+
         public bool IsInternalEvent
         {
             get
