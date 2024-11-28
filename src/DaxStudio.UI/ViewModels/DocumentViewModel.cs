@@ -1082,6 +1082,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (await ShouldAutoRefreshMetadataAsync())
                 {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CheckForMetadataUpdatesAsync), "Auto Refreshing Metadata - Start");
                     OutputMessage("Updated Model Metadata detected");
                     if (Options.ShowMetadataRefreshPrompt)
                     {
@@ -1091,6 +1092,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         RefreshMetadata();
                     }
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CheckForMetadataUpdatesAsync), "Auto Refreshing Metadata - Finish");
                 }
             }
             catch (Exception ex)
@@ -4133,7 +4135,6 @@ namespace DaxStudio.UI.ViewModels
                 MetadataPane.RefreshDatabases();
                 Databases = MetadataPane.Databases;
                 MetadataPane.RefreshMetadata();
-                OutputMessage("Metadata Refreshed");
             }
             catch (Exception ex)
             {
