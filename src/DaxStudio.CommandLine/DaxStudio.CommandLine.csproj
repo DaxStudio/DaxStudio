@@ -105,11 +105,11 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="ViewModel\CmdCustomTraceViewModel.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">
-	  <Link>Properties\CommonAssemblyInfo.cs</Link>
-	</Compile>
-	<Compile Include="..\CommonAssemblyVersion.cs">
-	  <Link>Properties\CommonAssemblyVersion.cs</Link>
-	</Compile>
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -143,7 +143,7 @@
       <Version>8.0.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.0.1</Version>
+      <Version>4.1.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog.Sinks.Spectre">
       <Version>0.5.0</Version>
@@ -155,7 +155,7 @@
       <Version>0.49.1</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
-      <Version>4.5.5</Version>
+      <Version>4.6.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
