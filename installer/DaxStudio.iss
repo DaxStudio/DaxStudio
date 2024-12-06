@@ -513,8 +513,8 @@ else
 
 #ifdef use_dotnetfx471 
     if ShouldInstallDependencies() then begin
-      Log('Checking if .Net 4.7.1 is installed');
-      dotnetfx47(1); // min allowed version is .netfx 4.7.1
+      Log('Checking if .Net 4.7.2 is installed');
+      dotnetfx47(2); // min allowed version is .netfx 4.7.2
     end;
 #endif
 
