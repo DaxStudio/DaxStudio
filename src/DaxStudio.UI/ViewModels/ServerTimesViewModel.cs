@@ -793,6 +793,10 @@ namespace DaxStudio.UI.ViewModels
                     QueryStartDateTime = singleEvent.StartTime;
                     TotalDuration = 0;
                     break;
+                case DaxStudioTraceEventClass.QueryEnd:
+                    _queryEndActivityId = singleEvent.ActivityId;
+                    TotalDuration = (long)(singleEvent.CurrentTime - QueryStartDateTime).TotalMilliseconds;
+                    break;
                 case DaxStudioTraceEventClass.ExecutionMetrics:
                     // we need to grab the ExecutionMetrics here since it arrives after the QueryEnd event
                     if (singleEvent.ActivityId == _queryEndActivityId && !string.IsNullOrEmpty(_queryEndActivityId))
@@ -808,7 +812,6 @@ namespace DaxStudio.UI.ViewModels
                     break;
             }
 
-            if (singleEvent.EventClass == DaxStudioTraceEventClass.QueryEnd) { _queryEndActivityId = singleEvent.ActivityId; }
         }
 
         protected struct SortableEvent : IComparable<SortableEvent>
@@ -959,16 +962,16 @@ namespace DaxStudio.UI.ViewModels
                     if (traceEvent.EndTime == traceEvent.StartTime && traceEvent.Duration > 0)
                     {
                         traceEvent.EndTime = traceEvent.StartTime.AddMilliseconds((double)traceEvent.Duration);
-                        Log.Debug($">> fix EndTime row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Millisecond} EndTime={traceEvent.EndTime.Millisecond} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                        Log.Debug($">> fix EndTime row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Ticks / 10000} EndTime={traceEvent.EndTime.Ticks / 10000} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     else if (traceEvent.EndTime >= traceEvent.StartTime && (traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds > traceEvent.Duration)
                     {
                         traceEvent.Duration = Convert.ToInt64((traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds);
-                        Log.Debug($">> fix Duration row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Millisecond} EndTime={traceEvent.EndTime.Millisecond} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                        Log.Debug($">> fix Duration row Duration={traceEvent.Duration} CalcDuration={(traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     else
                     {
-                        Log.Debug($">> NOT row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Millisecond} EndTime={traceEvent.EndTime.Millisecond} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                        Log.Debug($">> NOT row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Ticks / 10000} EndTime={traceEvent.EndTime.Ticks / 10000} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     // Align NetParallelDuration to Duration
                     traceEvent.NetParallelDuration = traceEvent.Duration;
@@ -1012,8 +1015,8 @@ namespace DaxStudio.UI.ViewModels
                                 if (seLevel == 0)
                                 {
                                     var delta = (e.TimeStamp - currentScanTime).TotalMilliseconds;
-                                    Log.Debug($"FE += {delta}ms QueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond}");
                                     new_FormulaEngineDuration += delta;
+                                    Log.Debug($"FE += {delta}ms QueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond} new_FE={new_FormulaEngineDuration}");
                                     // Placeholder: END FE event
                                 }
                             }
@@ -1027,8 +1030,8 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     var delta = (e.Event.StartTime - currentScanTime).TotalMilliseconds;
                                     // delta = (delta < e.Event.Duration && e.Event.Duration > 0) ? e.Event.Duration : delta;
-                                    Log.Debug($"FE += {delta}ms VertiPaqSEQueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond}");
                                     new_FormulaEngineDuration += delta;
+                                    Log.Debug($"FE += {delta}ms VertiPaqSEQueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond} new_FE={new_FormulaEngineDuration}");                                    
                                     // Placeholder: END FE event
                                 }
                                 seLevel++;
@@ -1737,6 +1740,8 @@ namespace DaxStudio.UI.ViewModels
 
         public override void ClearAll()
         {
+            _queryEndActivityId = string.Empty;
+            AllStorageEngineEvents.Clear();
             FormulaEngineDuration = 0;
             StorageEngineDuration = 0;
             StorageEngineNetParallelDuration = 0;
@@ -1748,7 +1753,7 @@ namespace DaxStudio.UI.ViewModels
             TimelineTotalDuration= 0;
             ParallelStorageEngineEventsDetected = false;
             StorageEventHeatmap = null;
-            AllStorageEngineEvents.Clear();
+            
             NotifyOfPropertyChange(nameof(AllStorageEngineEvents));
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
             NotifyOfPropertyChange(nameof(CanExport));
