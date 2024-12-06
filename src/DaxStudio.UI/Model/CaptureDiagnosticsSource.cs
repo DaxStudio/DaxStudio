@@ -3,15 +3,23 @@ using System.Collections.Generic;
 
 namespace DaxStudio.UI.Model
 {
+    public enum DiagnosticSources
+    {
+        ActiveDocument,
+        AllQueries,
+        Clipboard,
+        PerformanceData
+    }
+
     public class CaptureDiagnosticsSource
     {
-        public CaptureDiagnosticsSource(string name, IEnumerable<IQueryTextProvider> queries)
+        public CaptureDiagnosticsSource(DiagnosticSources source, IEnumerable<IQueryTextProvider> queries)
         {
-            Name = name;
+            Source = source;
             Queries = queries;
         }
 
-        public string Name { get; }
+        public DiagnosticSources Source { get; }
         public IEnumerable<IQueryTextProvider> Queries { get;  }
     }
 }

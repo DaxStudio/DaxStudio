@@ -57,9 +57,9 @@ namespace DaxStudio.UI.ViewModels
             EventAggregator = eventAggregator;
 
             if (Ribbon.ActiveDocument.EditorText.Any())
-                SelectedQuerySource = new CaptureDiagnosticsSource("Current Document", new List<IQueryTextProvider>() { this.Ribbon.ActiveDocument });
+                SelectedQuerySource = new CaptureDiagnosticsSource(DiagnosticSources.ActiveDocument, new List<IQueryTextProvider>() { this.Ribbon.ActiveDocument });
             else
-                SelectedQuerySource = new CaptureDiagnosticsSource("Clipboard", new List<IQueryTextProvider>() { new ClipboardTextProvider() });
+                SelectedQuerySource = new CaptureDiagnosticsSource(DiagnosticSources.Clipboard, new List<IQueryTextProvider>() { new ClipboardTextProvider() });
 
             // save the current results target
             _selectedResultsTarget = Ribbon.SelectedTarget;
@@ -98,7 +98,7 @@ namespace DaxStudio.UI.ViewModels
             Options = options;
             EventAggregator = eventAggregator;
 
-            SelectedQuerySource = new CaptureDiagnosticsSource("Performance Data", querySource);
+            SelectedQuerySource = new CaptureDiagnosticsSource(DiagnosticSources.PerformanceData, querySource);
 
             // save the current results target
             _selectedResultsTarget = Ribbon.SelectedTarget;
@@ -266,7 +266,7 @@ namespace DaxStudio.UI.ViewModels
         public async Task RunAsync()
         {
             
-            if (SelectedQuerySource.Queries.Count() == 1 && SelectedQuerySource.Name == "Active Document")
+            if (SelectedQuerySource.Queries.Count() == 1 && SelectedQuerySource.Source == DiagnosticSources.ActiveDocument)
             {
                 // Use the current document
                 _newDocument = Ribbon.ActiveDocument;
