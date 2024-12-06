@@ -133,7 +133,7 @@ namespace DaxStudio.UI.Utils
         public static ImageSource GenerateBitmap(List<TraceStorageEngineEvent> events, double totalWidth, double height, Brush feBrush, Brush scanBrush, Brush batchBrush, Brush internalBrush)
         {
             // Adjust events
-            //events = AdjustEvents(events);
+            events = AdjustEvents(events);
 
             // create a visual and a drawing context
             DrawingVisual drawingVisual = new DrawingVisual();
