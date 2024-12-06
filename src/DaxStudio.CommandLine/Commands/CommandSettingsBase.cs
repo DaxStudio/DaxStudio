@@ -75,8 +75,12 @@ namespace DaxStudio.CommandLine.Commands
                     || !string.IsNullOrWhiteSpace(Database)))
                 { return ValidationResult.Error("You cannot specify a <Server> or <Database> when passing a <ConnectionString>"); }
 
-            if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Server) && string.IsNullOrWhiteSpace(Database) && !Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase))
-                return ValidationResult.Error("You must specify a <database> when using the <server> parameter and not connecting to a .pbix file");
+            if (string.IsNullOrEmpty(ConnectionString) 
+            && !string.IsNullOrWhiteSpace(Server) 
+            && string.IsNullOrWhiteSpace(Database) 
+            && !(Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)
+                || Server.EndsWith(".pbip", StringComparison.OrdinalIgnoreCase)))
+                return ValidationResult.Error("You must specify a <database> when using the <server> parameter and not connecting to a .pbix/.pbip file");
 
             if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Database) && string.IsNullOrWhiteSpace(Server))
                 return ValidationResult.Error("You must specify a <server> when using the <database> parameter");
@@ -92,7 +96,9 @@ namespace DaxStudio.CommandLine.Commands
 
         internal void CheckForDesktopConnection()
         {
-            if (!Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)) return;
+            if (!(Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)
+                || Server.EndsWith(".pbip", StringComparison.OrdinalIgnoreCase))) return;
+
             Log.Information("Detected Power BI Desktop file");
 
             PowerBIFileName = Server.Substring(0,Server.Length-5);

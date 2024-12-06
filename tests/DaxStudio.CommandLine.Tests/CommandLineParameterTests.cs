@@ -32,7 +32,7 @@ namespace DaxStudio.CommandLine.Tests
 
             var validationResult = settings.Validate();
             Assert.AreEqual(false, validationResult.Successful, validationResult.Message);
-            Assert.AreEqual("You must specify a <database> when using the <server> parameter", validationResult.Message);
+            Assert.AreEqual("You must specify a <database> when using the <server> parameter and not connecting to a .pbix/.pbip file", validationResult.Message);
         }
 
         [TestMethod]
