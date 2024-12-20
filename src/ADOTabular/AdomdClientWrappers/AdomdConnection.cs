@@ -147,7 +147,7 @@ namespace ADOTabular.AdomdClientWrappers
                 _conn.Open();
             }
 
-            // wait 10 seconds before timing out
+            // wait 30 seconds before timing out
             if (Monitor.TryEnter(rowsetLock, new TimeSpan(0,0,30 )))
             {
             
