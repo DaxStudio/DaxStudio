@@ -56,7 +56,6 @@ namespace DaxStudio.UI.Model
         public string TypeName { get => _typeName;
             set {
                 _typeName = value;
-                ValueString = ValueString;
             } 
         }
 
