@@ -224,7 +224,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;
             var items = new ObservableCollection<ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
 
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx));
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSize));
             SizeUnitLabel.PropertyChanged += SizeUnitPropertyChanged;
 
             // Initialize default Tool Windows
@@ -476,10 +476,17 @@ namespace DaxStudio.UI.ViewModels
                     switch (await ShowStripDirectQueryDialog(sm.CommentPosition, sm.Comment, newContent.Length))
                     {
                         case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
+                            e.CancelCommand();
                             // remove the direct query code from the text we are pasting in
                             newContent = newContent.Substring(0, sm.CommentPosition);
                             await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Direct Query code removed from pasted text"));
-                            break;
+                            //var dataObject = new DataObject(newContent);
+                            //e.DataObject = dataObject;
+                            //e.DataObject.SetData("UnicodeText", newContent);
+                            var editor2 = this.GetEditor();
+                            editor2.Document.Insert(editor2.CaretOffset, newContent);
+                            
+                            return;
                         case MultipleQueriesDetectedDialogResult.KeepDirectQuery:
                             break;
                         case MultipleQueriesDetectedDialogResult.Cancel:
@@ -487,10 +494,7 @@ namespace DaxStudio.UI.ViewModels
                             return;
                     }
                 }
-
-                var dataObject = new DataObject(newContent);
-                e.DataObject = dataObject;
-
+                
             }
             catch (Exception ex)
             {
@@ -1516,7 +1520,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     foreach (var p in QueryInfo?.Parameters?.Values)
                     {
-                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value));
+                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value??string.Empty));
                     }
                 }
                 return coll;
@@ -1920,14 +1924,14 @@ namespace DaxStudio.UI.ViewModels
 
         private void StopTimer()
         {
-            _queryStopWatch.Stop();
+            _queryStopWatch?.Stop();
             
             _timer.Stop();
             _timer.Elapsed -= _timer_Elapsed;
 
             NotifyOfPropertyChange(() => ElapsedQueryTime);
             _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
-            _queryStopWatch.Reset();
+            _queryStopWatch?.Reset();
         }
 
         private void StartTimer()
@@ -4237,10 +4241,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new FontFamily(Options.EditorFontFamily);
             }
-            if (editor.FontSize != Options.EditorFontSizePx)
+            if (editor.FontSizeInPoints != Options.EditorFontSize)
             {
-                editor.FontSize = Options.EditorFontSizePx;
-                SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSizePx);
+                editor.FontSizeInPoints = Options.EditorFontSize;
+                SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSize);
                 SizeUnitLabel.StringValue = "100";
             }
 

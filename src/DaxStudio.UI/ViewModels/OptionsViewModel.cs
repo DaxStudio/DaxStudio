@@ -124,9 +124,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [JsonIgnore]
-        public double EditorFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
-
         [Category("Editor")]
         [DisplayName("Editor Font Size")]
         [SortOrder(20)]
@@ -138,7 +135,6 @@ namespace DaxStudio.UI.ViewModels
                 if (Math.Abs(_editorFontSize - value) < Tolerance) return;
                 _editorFontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
-                NotifyOfPropertyChange(() => EditorFontSizePx);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(EditorFontSize), value, _isInitializing, this);
             }

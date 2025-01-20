@@ -89,7 +89,7 @@ namespace DaxStudio.UI.ViewModels
             
             
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSize), 0);
         }
 
         protected override void OnViewLoaded(object view)
@@ -235,10 +235,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new System.Windows.Media.FontFamily(Options.EditorFontFamily);
             }
-            if (editor.FontSize != Options.EditorFontSizePx)
+            if (editor.FontSizeInPoints != Options.EditorFontSize)
             {
-                editor.FontSize = Options.EditorFontSizePx;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSizePx);
+                editor.FontSizeInPoints = Options.EditorFontSize;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSize);
                 this.SizeUnitLabel.StringValue = "100";
             }
 

@@ -36,7 +36,7 @@ namespace DaxStudio.Interfaces
         bool EditorConvertTabsToSpaces { get; set; }
         bool EditorEnableIntellisense { get; set; }
         string EditorFontFamily { get; set; }
-        [JsonIgnore] double EditorFontSizePx { get; }
+        double EditorFontSize { get; set; }
         int EditorIndentationSize { get; set; }
         MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
         bool EditorShowFunctionInsightsOnHover { get; set; }

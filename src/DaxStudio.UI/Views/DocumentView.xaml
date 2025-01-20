@@ -605,7 +605,7 @@
                                                    MinHeight="60"
                                                    LineNumbersForeground="{DynamicResource Theme.Brush.LineNumbers}"
                                                    
-                                                   FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                   FontSizeInPoints="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -725,7 +725,8 @@
                                                         cal:View.ApplyConventions="true"
                                                         HorizontalAlignment="Left"
                                                         VerticalAlignment="Top"
-                                                        Margin="{Binding UseIndentCodeFolding , Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=18.0}"
+                                                        IsHitTestVisible="False"
+                                                        Margin="{Binding UseIndentCodeFolding , Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=24.0}"
                                                         >
                                             <ContentControl.LayoutTransform>
                                                 <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 

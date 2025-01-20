@@ -24,7 +24,7 @@
                     return inputValue;
 
                 case Itemkey.ScreenFontPoints:
-                    return (inputValue * oneHundredPercentFontSize) / 100.0;
+                    return Math.Round((inputValue * oneHundredPercentFontSize) / 100.0,0 );
 
                 default:
                     throw new NotImplementedException(targetUnit.ToString());
