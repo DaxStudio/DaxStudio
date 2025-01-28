@@ -972,6 +972,7 @@ namespace DaxStudio.UI.Model
             ServerType = message.ServerType;
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
+            _supportedTraceEventClasses = null; // clear the cache of supported trace event classes when the connection changes
 
             // open the DMV connection
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "Start open DMV connection");
