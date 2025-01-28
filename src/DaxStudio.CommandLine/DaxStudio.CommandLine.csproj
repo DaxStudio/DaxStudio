@@ -155,7 +155,7 @@
       <Version>0.49.1</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>9.0.0</Version>
+      <Version>9.0.1</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.6.0</Version>

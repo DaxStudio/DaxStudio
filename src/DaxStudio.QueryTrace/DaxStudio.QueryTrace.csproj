@@ -114,7 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro">
-      <Version>4.0.212</Version>
+      <Version>4.0.230</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient.retail.amd64">
       <Version>19.84.1</Version>
@@ -140,7 +140,7 @@
       <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.5.0</Version>
+      <Version>8.5.1</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>4.2.0</Version>
