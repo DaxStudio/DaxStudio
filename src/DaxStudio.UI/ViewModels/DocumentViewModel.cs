@@ -1259,6 +1259,7 @@ namespace DaxStudio.UI.ViewModels
                             // on change of connection we need to disable traces as they will
                             // be pointing to the old connection
                             traceWatcher.IsChecked = false;
+                            traceWatcher.StopTrace();
                             // then we need to check if the new connection can be traced
                             traceWatcher.CheckEnabled(Connection, activeTrace);
                         }
@@ -3298,7 +3299,6 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-                            //MetadataPane.IsBusy = true;
                             if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
                             await SetupConnectionAsync(message);
