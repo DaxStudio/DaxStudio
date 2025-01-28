@@ -149,7 +149,7 @@ namespace DaxStudio.UI.Model
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
 
         public IEnumerable<string> Keywords => _keywords;
-        public string ApplicationName => _connection?.ApplicationName??"DAX Studio";
+        public string ApplicationName => _connection?.ApplicationName ?? "DAX Studio";
 
         public void Cancel()
         {
@@ -240,7 +240,22 @@ namespace DaxStudio.UI.Model
         public ADOTabularDatabase Database => _dmvRetry.Execute(() => {
             return _dmvConnection?.Database;
         });
-        public string DatabaseName => _dmvRetry.Execute(() => _dmvConnection?.Database?.Name ?? string.Empty);
+        public string DatabaseName
+        {
+            get
+            {
+                try
+                {
+                    return _dmvRetry.Execute(() => _dmvConnection?.Database?.Name ?? string.Empty);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(DatabaseName), "Error getting database name");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error getting database name: {ex.Message}"));
+                    return string.Empty;
+                }
+            }
+        }
         public DaxMetadata DaxMetadataInfo {
             get {
                 return _dmvConnection?.DaxMetadataInfo;
@@ -673,7 +688,7 @@ namespace DaxStudio.UI.Model
         {
             if (_connection != null)
             {
-                if (_connection.State == ConnectionState.Open)
+                if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline )
                 {
                     if (Database != null && database != null && _connection.Database.Name != database.Name) 
                     {
@@ -901,16 +916,17 @@ namespace DaxStudio.UI.Model
         {
             var id = new Guid();
             var msg = new ConnectEvent(message.ConnectionString, message.PowerPivotModeSelected, message.ApplicationName, message.PowerPivotModeSelected?message.WorkbookName:message.PowerBIFileName, message.ServerType, message.RefreshDatabases, message.DatabaseName);
-            ConnectAsync(msg, id).Wait();
+            ConnectAsync(msg, id).GetAwaiter().GetResult();
         }
 
         internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
         {
             IsConnecting = true;
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
 
             if (message.ServerType == ServerType.Offline)
-                OpenOfflineConnection(message);
+                await OpenOfflineConnectionAsync(message);
             else
                 OpenOnlineConnection(message, uniqueId);
 
@@ -924,7 +940,7 @@ namespace DaxStudio.UI.Model
 
         }
 
-        private void OpenOfflineConnection(ConnectEvent message)
+        private async Task OpenOfflineConnectionAsync(ConnectEvent message)
         {
 
             var vpaContent = message.VpaxContent; //Dax.Vpax.Tools.VpaxTools.ImportVpax(message.FileName);
@@ -939,9 +955,10 @@ namespace DaxStudio.UI.Model
             ServerType = message.ServerType;
             FileName = message.FileName??String.Empty;
             IsPowerPivot = message.PowerPivotModeSelected;
-            Databases.Add(_connection.Database);
+            //Databases.Add(_connection.Database);
             //Database = _connection.Database;
-            _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+            //SetSelectedDatabase(_dmvConnection.Database);
         }
 
         public Dictionary<string, ADOTabularColumn> Columns => _dmvConnection?.Columns;
@@ -955,7 +972,7 @@ namespace DaxStudio.UI.Model
             ServerType = message.ServerType;
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
-            
+
             // open the DMV connection
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "Start open DMV connection");
             if (_dmvConnection.State != ConnectionState.Open) _dmvConnection.Open();
