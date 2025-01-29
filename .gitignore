@@ -208,3 +208,4 @@ docs/.jekyll-metadata
 src/upgrade-assistant.clef
 src/AnalysisReport.sarif
 /appveyor-tools
+/tests/DaxStudio.CommandLine.Tests/ILLink
