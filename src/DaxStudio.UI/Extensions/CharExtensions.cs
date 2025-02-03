@@ -6,5 +6,12 @@
         {
             return char.IsLetterOrDigit(input) || '_' == input;
         }
+
+        public static bool IsDaxLetter(this char input)
+        {
+            return char.IsLetter(input) || '_' == input;
+        }
+
+
     }
 }
