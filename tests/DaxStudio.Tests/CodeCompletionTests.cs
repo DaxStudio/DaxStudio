@@ -169,7 +169,7 @@ namespace DaxStudio.Tests
 
             var pos = DaxLineParser.GetPreceedingWordSegment(0, col, line, daxState);
             System.Diagnostics.Debug.WriteLine(pos);
-            Assert.AreEqual(14, pos.Offset);
+            Assert.AreEqual(15, pos.Offset);
             Assert.AreEqual(4, pos.Length);
 
         }

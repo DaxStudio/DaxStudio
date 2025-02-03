@@ -170,17 +170,6 @@ namespace DaxStudio.UI.Utils.Intellisense
                         case "'":
                             PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
                             break;
-                        //case "1":
-                        //case "2":
-                        //case "3":
-                        //case "4":
-                        //case "5":
-                        //case "6":
-                        //case "7":
-                        //case "8":
-                        //case "9":
-                        //case "0":
-                        //    return;
 
                         default:
                             switch (_daxState.LineState)
