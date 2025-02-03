@@ -408,18 +408,6 @@ namespace DaxStudio.QueryTrace
             return dsEvent;
         }
 
-        public void Update(string databaseName, string sessionId)
-        {
-            // Note: Excel Query Trace does not use the database name or sessions parameters
-            Update();
-        }
-
-        public void Update()
-        {
-            Stop(false);
-            Start();
-        }
-
 
         private bool disposedValue; // To detect redundant calls
 
