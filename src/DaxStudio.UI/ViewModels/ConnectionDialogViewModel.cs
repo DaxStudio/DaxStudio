@@ -754,7 +754,7 @@ namespace DaxStudio.UI.ViewModels
                         var props = SplitConnectionString(text);
 
                         // update the DataSource property if we found a "Data Source=" in the pasted string
-                        if (props.ContainsKey("Data Source"))
+                        if (props.ContainsKey("Data Source") && text.Contains("Data Source=",StringComparison.OrdinalIgnoreCase))
                         {
                             DataSource = props["Data Source"];
                             e.CancelCommand();
