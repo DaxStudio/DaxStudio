@@ -198,10 +198,10 @@ namespace DaxStudio.QueryTrace
             Log.Verbose(Constants.LogMessageTemplate, nameof(QueryTraceEngine), nameof(SetupTraceEvents), "entering"); 
             trace.Events.Clear();
             // Add CommandBegine & DiscoverBegin so we can catch the heartbeat events
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin)); 
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin));
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.DiscoverBegin, _connectionManager.SupportedTraceEventClasses[DaxStudioTraceEventClass.DiscoverBegin])); 
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.CommandBegin, _connectionManager.SupportedTraceEventClasses[DaxStudioTraceEventClass.CommandBegin]));
             // Add QueryEnd so we know when to stop the trace
-            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd));
+            trace.Events.Add(TraceEventFactory.Create(TraceEventClass.QueryEnd, _connectionManager.SupportedTraceEventClasses[DaxStudioTraceEventClass.QueryEnd]));
             
             // catch the events in the ITraceWatcher
             foreach (DaxStudioTraceEventClass eventClass in events)
@@ -209,10 +209,10 @@ namespace DaxStudio.QueryTrace
                 TraceEventClass amoEventClass = (TraceEventClass)eventClass;
 
                 // if the Events collection already contains this event or if the connection does not support it then do not add it
-                if (trace.Events.Find(amoEventClass) != null || !_connectionManager.SupportedTraceEventClasses.Contains(eventClass))
+                if (trace.Events.Find(amoEventClass) != null || !_connectionManager.SupportedTraceEventClasses.ContainsKey(eventClass))
                     continue;
 
-                var trcEvent = TraceEventFactory.Create(amoEventClass);
+                var trcEvent = TraceEventFactory.Create(amoEventClass, _connectionManager.SupportedTraceEventClasses[eventClass]);
                 trace.Events.Add(trcEvent);
             }
             trace.Update(UpdateOptions.Default, UpdateMode.CreateOrReplace);

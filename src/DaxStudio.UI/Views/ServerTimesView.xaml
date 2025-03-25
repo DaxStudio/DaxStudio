@@ -709,7 +709,7 @@
                     <!--behaviours:GridViewColumnResize.Width="Auto" -->
                     <DataGridTemplateColumn Width="100" Header="Timeline" CellTemplate="{StaticResource TimelineCell}" CellStyle="{StaticResource TimelineCellStyle}" HeaderStyle="{StaticResource DataGridColumnHeaderTimeline}"/>
 
-
+                    <DataGridTextColumn Header="Object" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding ObjectName}" > </DataGridTextColumn>
                     <DataGridTextColumn Header="Query" Width="*"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"  >
                     <DataGridTextColumn.ElementStyle>

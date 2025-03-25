@@ -56,11 +56,13 @@ namespace DaxStudio.QueryTrace
                     CpuTime = e.CpuTime;
                     Duration = e.Duration;
                     NTUserName = e.NTUserName;
+                    ObjectName = e.ObjectName;
                     break;
                 case TraceEventClass.AggregateTableRewriteQuery:
                 case TraceEventClass.VertiPaqSEQueryCacheMatch:
                     StartTime = e.CurrentTime;
                     NTUserName = e.NTUserName;
+                    ObjectName = e.ObjectName;
                     break;
 
                 case TraceEventClass.CommandBegin:

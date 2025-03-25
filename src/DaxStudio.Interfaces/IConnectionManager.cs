@@ -2,6 +2,7 @@
 using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
 using DaxStudio.Common.Enums;
+using Microsoft.AnalysisServices;
 using Microsoft.AnalysisServices.AdomdClient;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +19,7 @@ namespace DaxStudio.Interfaces
         bool IsConnected { get; }
         string SessionId { get; }
         int SPID { get; }
-        HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses { get; }
+        Dictionary<DaxStudioTraceEventClass, HashSet<TraceColumn>> SupportedTraceEventClasses { get; }
         AdomdType Type { get; }
         DaxColumnsRemap DaxColumnsRemapInfo { get; }
         void Ping();

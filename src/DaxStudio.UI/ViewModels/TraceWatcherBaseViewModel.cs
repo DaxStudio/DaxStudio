@@ -567,7 +567,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!UpdatedMonitoredEvents()) return;
 
                 var monitoredEvents = GetMonitoredEvents();
-                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
+                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.ContainsKey(e)).ToList();
 
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {

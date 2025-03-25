@@ -215,7 +215,7 @@ namespace DaxStudio.UI.ViewModels
             }
             private set { _options = value; }
         }
-
+        public string ObjectName { get; set; }
         public long? StartOffsetMs { get; set; }
         public long? TotalQueryDuration { get; set; } = 0;
 
@@ -235,6 +235,7 @@ namespace DaxStudio.UI.ViewModels
             StartTime = ev.StartTime;
             EndTime = ev.EndTime;
             TextData = ev.TextData;
+            ObjectName = ev.ObjectName;
             switch (Class)
             {
                 case DaxStudioTraceEventClass.ExecutionMetrics:

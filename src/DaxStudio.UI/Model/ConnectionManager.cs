@@ -30,6 +30,7 @@ using System.Windows.Forms.VisualStyles;
 using Microsoft.AnalysisServices;
 using System.Xml;
 using ADOTabular.Interfaces;
+using Windows.UI.Xaml.Automation.Provider;
 
 namespace DaxStudio.UI.Model
 {
@@ -1170,8 +1171,8 @@ namespace DaxStudio.UI.Model
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
         }
         private object _supportedTraceEventClassesLock = new object();
-        private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
-        public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
+        private Dictionary<DaxStudioTraceEventClass,HashSet<TraceColumn>> _supportedTraceEventClasses;
+        public Dictionary<DaxStudioTraceEventClass, HashSet<TraceColumn>> SupportedTraceEventClasses
         {
             get
             {
@@ -1183,9 +1184,9 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private HashSet<DaxStudioTraceEventClass> PopulateSupportedTraceEventClasses()
+        private Dictionary<DaxStudioTraceEventClass,HashSet<TraceColumn>> PopulateSupportedTraceEventClasses()
         {
-            var result = new HashSet<DaxStudioTraceEventClass>();
+            var result = new Dictionary<DaxStudioTraceEventClass, HashSet<TraceColumn>>();
             using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
             {
                 while (dr.Read())
@@ -1199,7 +1200,14 @@ namespace DaxStudio.UI.Model
                         var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
                         while (iter.MoveNext())
                         {
-                            result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                            var columns = new HashSet<TraceColumn>();
+                            var iter2 = iter.Current.Select("../EVENTCOLUMNLIST/EVENTCOLUMN/ID");
+                            while (iter2.MoveNext())
+                            {
+                                columns.Add((TraceColumn)iter2.Current.ValueAsInt);
+                            }
+                            
+                            result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt, columns);
                         }
                     }
                 }
