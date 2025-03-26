@@ -9,7 +9,7 @@
 
         public static bool IsDaxLetter(this char input)
         {
-            return char.IsLetter(input) || '_' == input;
+            return char.IsLetter(input) || ('_' == input) || ('$' == input);
         }
 
 
