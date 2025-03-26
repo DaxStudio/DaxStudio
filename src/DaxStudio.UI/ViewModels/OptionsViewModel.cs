@@ -2655,7 +2655,21 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(VpaxDontShowOptionsDialog), value, _isInitializing, this);
             }
-        } 
+        }
+
+        private bool _showObjectNameInServerTimings = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowObjectNameInServerTimings
+        {
+            get => _showObjectNameInServerTimings;
+            set
+            {
+                _showObjectNameInServerTimings = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowObjectNameInServerTimings), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
 
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls

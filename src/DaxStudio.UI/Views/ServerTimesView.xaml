@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:primitives="http://schemas.modernwpf.com/2019"   
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"    
@@ -39,6 +40,8 @@
             <conv:TimelineMarginConverter x:Key="TimelineMarginConverter"/>
             <conv:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter"/>
 
+            <controls:BindingProxy x:Key="ShowObjectName" Data="{Binding ShowObjectName, Converter={StaticResource BoolToCollapsedConverter}}"/>
+            
             <Style x:Key="TimelineCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
                 <Setter Property="ToolTip">
                     <Setter.Value>
@@ -637,6 +640,7 @@
                             <MenuItem Header="Batch" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowBatch}" />
                             <MenuItem Header="Cache" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowCache}" />
                             <MenuItem Header="Internal" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowInternal}" />
+                            <MenuItem Header="Object Name" IsCheckable="True" IsChecked="{Binding ServerTimingDetails.ShowObjectName}" />
                                 <Separator/>
                                 <MenuItem Header="Timeline style">
                                     <MenuItem Header="None" cal:Message.Attach="SetTimelineOnRowsVisibility('NONE')"/>
@@ -688,8 +692,8 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                 <DataGridTextColumn Header="Subclass" Width="95" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="{x:Type TextBlock}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Padding" Value="6 0 6 0"/>
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Style.Triggers>
@@ -698,9 +702,9 @@
                                         <Setter Property="Margin" Value="15 0 0 0"/>
                                     </DataTrigger>
                                 </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="72" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
                     <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
@@ -709,7 +713,9 @@
                     <!--behaviours:GridViewColumnResize.Width="Auto" -->
                     <DataGridTemplateColumn Width="100" Header="Timeline" CellTemplate="{StaticResource TimelineCell}" CellStyle="{StaticResource TimelineCellStyle}" HeaderStyle="{StaticResource DataGridColumnHeaderTimeline}"/>
 
-                    <DataGridTextColumn Header="Object" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding ObjectName}" > </DataGridTextColumn>
+                    <DataGridTextColumn Header="Object" IsReadOnly="True" Visibility="{Binding Path=Data, Source={StaticResource ShowObjectName}}" Binding="{Binding ObjectName}" >
+
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Query" Width="*"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"  >
                     <DataGridTextColumn.ElementStyle>

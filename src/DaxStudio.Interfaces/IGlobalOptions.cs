@@ -168,6 +168,6 @@ namespace DaxStudio.Interfaces
         TextFileType CmdLineTextFileType { get; set; }
         bool XlsxUseZip64Compression { get; set; }
         bool XlsxAlwaysWriteCellReferences { get; set; }
-
+        bool ShowObjectNameInServerTimings { get; set; }
     }
 }
