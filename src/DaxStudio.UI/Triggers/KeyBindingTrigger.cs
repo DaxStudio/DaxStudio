@@ -2,9 +2,9 @@
  {
      using System.Windows;
      using System.Windows.Input;
-     using System.Windows.Interactivity;
+     using Microsoft.Xaml.Behaviors;
 
-     public class KeyTrigger : TriggerBase<UIElement>
+    public class KeyTrigger : TriggerBase<UIElement>
      {
          public static readonly DependencyProperty KeyProperty =
              DependencyProperty.Register("Key", typeof(Key), typeof(KeyTrigger), null);

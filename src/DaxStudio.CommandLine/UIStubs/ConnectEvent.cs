@@ -1,5 +1,7 @@
 ﻿using ADOTabular.Enums;
 using DaxStudio.Interfaces;
+using Microsoft.AnalysisServices.AdomdClient;
+using System;
 
 
 namespace DaxStudio.CommandLine.UIStubs
@@ -16,5 +18,7 @@ namespace DaxStudio.CommandLine.UIStubs
 
         public string DatabaseName { get ; set ; }
         public bool RefreshDatabases { get ; set ; }
+        public AccessToken AccessToken { get; set; }
+        public string FileName { get; set; }
     }
 }

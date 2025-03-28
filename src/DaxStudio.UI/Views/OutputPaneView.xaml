@@ -10,7 +10,7 @@
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
                                
              mc:Ignorable="d" 

@@ -21,6 +21,9 @@ using AvalonDock.Controls;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
 using System.Windows.Controls;
+using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.Common.Extensions;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -371,13 +374,22 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), $"Connecting to Server: {server} Database:{database}");
+                var token = default(AccessToken);
+                if (server.RequiresEntraAuth())
+                {
+                    // prompt for access token
+                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = PbiServiceHelper.SwitchAccount(hwnd, _options).Result;
+                    token = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                }
                 await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
                                                                         false, 
                                                                         string.Empty, 
                                                                         database,
                                                                         server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop: ADOTabular.Enums.ServerType.AnalysisServices,
                                                                         server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase),
-                                                                        _app.Args().Database??string.Empty));
+                                                                        _app.Args().Database??string.Empty
+                                                                        ,token));
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
               
             }

@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Windows.Media;
 using System.Globalization;
 using System.Diagnostics;
-using System.IO;
-using System.Security;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Markup;
-using System.Xml;
 using System.Collections.Generic;
-using ICSharpCode.NRefactory.Parser;
 using System.Linq;
 using Fclp.Internals.Extensions;
-using ICSharpCode.SharpDevelop.Dom;
 using DaxStudio.Controls.PropertyGrid;
-using PoorMansTSqlFormatterLib;
+
 
 namespace DaxStudio.UI.Converters
 {

@@ -12,6 +12,7 @@ using ADOTabular.Enums;
 using ADOTabular.Extensions;
 using Microsoft.AnalysisServices.Tabular;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace ADOTabular
 {
@@ -52,7 +53,9 @@ namespace ADOTabular
             else if (_conn.ServerVersion.VersionGreaterOrEqualTo("11.0.3000.0")
                 || (_conn.IsPowerPivot && _conn.ServerVersion.VersionGreaterOrEqualTo("11.0.2830.0")))
                 resColl.Add(new AdomdRestriction("VERSION", "1.1"));
+            Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), "Visit(ADOTabularTableCollection tables)", "Start DISCOVER_CSDL_METADATA call");
             var ds = _conn.GetSchemaDataSet("DISCOVER_CSDL_METADATA", resColl);
+            Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), "Visit(ADOTabularTableCollection tables)", "End DISCOVER_CSDL_METADATA call");
             string csdl = ds.Tables[0].Rows[0]["Metadata"].ToString();
 
             /*
@@ -71,8 +74,9 @@ namespace ADOTabular
                 GetHierarchiesFromDmv();
             }
             using XmlReader rdr = new XmlTextReader(new StringReader(csdl)) { DtdProcessing = DtdProcessing.Prohibit };
+            
             GenerateTablesFromXmlReader(tables, rdr);
-
+            
             // update the expressions async on a background thread
             PopulateMeasureExpressionsAsync(tables.Model,_conn).Forget();
         }
@@ -80,12 +84,14 @@ namespace ADOTabular
         private async Task PopulateMeasureExpressionsAsync(ADOTabularModel model, IADOTabularConnection conn)
         {
             await Task.Run(() => {
+                Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), nameof(PopulateMeasureExpressionsAsync), "Start PopulateMeasureExpressionsAsync call");
                 // TODO get measure definitions asynch
                 var measureDict = model.MeasureExpressions;
                 measureDict.Clear();
                 var formatStringsDict = model.MeasureFormatStringExpressions;
                 formatStringsDict.Clear();
                 GetMeasuresFromDmv(measureDict, formatStringsDict, conn);
+                Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), nameof(PopulateMeasureExpressionsAsync), "End PopulateMeasureExpressionsAsync call");
             });
         }
 
@@ -206,9 +212,11 @@ namespace ADOTabular
 
         public void GenerateTablesFromXmlReader(ADOTabularTableCollection tabs, XmlReader rdr)
         {
+            Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), nameof(GenerateTablesFromXmlReader), "Start GenerateTablesFromXmlReader call");
             if (tabs == null) throw new ArgumentNullException(nameof(tabs));
             if (rdr == null) throw new ArgumentNullException(nameof(rdr));
 
+            
             // clear out the flat cache of column names
             _conn.Columns.Clear();
 
@@ -262,7 +270,7 @@ namespace ADOTabular
                 if (tabs.Model.CSDLVersion >= 2.5 )
                     UpdateTomRelationships(t);
             }
-
+            Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), nameof(GenerateTablesFromXmlReader), "End GenerateTablesFromXmlReader call");
         }
 
         private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
