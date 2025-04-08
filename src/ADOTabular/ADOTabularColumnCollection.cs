@@ -22,7 +22,10 @@ namespace ADOTabular
         DMV,
         Function,
         Unknown,
-        MeasureFormatString
+        MeasureFormatString,
+        Calendar,
+        TimeUnit,
+        TimeRelatedColumns
     }
 
     public class ADOTabularColumnCollection: IEnumerable<ADOTabularColumn>

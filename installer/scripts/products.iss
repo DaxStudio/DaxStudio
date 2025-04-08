@@ -4,19 +4,19 @@
 DependenciesDir=MyProgramDependencies
 
 en.depdownload_msg=The following applications are required before setup can continue:%n%n%1%nDownload and install now?
-;de.depdownload_msg=Die folgenden Programme werden benötigt bevor das Setup fortfahren kann:%n%n%1%nJetzt downloaden und installieren?
+;de.depdownload_msg=Die folgenden Programme werden benï¿½tigt bevor das Setup fortfahren kann:%n%n%1%nJetzt downloaden und installieren?
 
 en.depdownload_memo_title=Download dependencies
-;de.depdownload_memo_title=Abhängigkeiten downloaden
+;de.depdownload_memo_title=Abhï¿½ngigkeiten downloaden
 
 en.depinstall_memo_title=Install dependencies
-;de.depinstall_memo_title=Abhängigkeiten installieren
+;de.depinstall_memo_title=Abhï¿½ngigkeiten installieren
 
 en.depinstall_title=Installing dependencies
-;de.depinstall_title=Installiere Abhängigkeiten
+;de.depinstall_title=Installiere Abhï¿½ngigkeiten
 
 en.depinstall_description=Please wait while Setup installs dependencies on your computer.
-;de.depinstall_description=Warten Sie bitte während Abhängigkeiten auf Ihrem Computer installiert wird.
+;de.depinstall_description=Warten Sie bitte wï¿½hrend Abhï¿½ngigkeiten auf Ihrem Computer installiert wird.
 
 en.depinstall_status=Installing %1...
 ;de.depinstall_status=Installiere %1...
@@ -25,7 +25,7 @@ en.depinstall_missing=%1 must be installed before setup can continue. Please ins
 ;de.depinstall_missing=%1 muss installiert werden bevor das Setup fortfahren kann. Bitte installieren Sie %1 und starten Sie das Setup erneut.
 
 en.depinstall_error=An error occured while installing the dependencies. Please restart the computer and run the setup again or install the following dependencies manually:%n
-;de.depinstall_error=Ein Fehler ist während der Installation der Abghängigkeiten aufgetreten. Bitte starten Sie den Computer neu und führen Sie das Setup erneut aus oder installieren Sie die folgenden Abhängigkeiten per Hand:%n
+;de.depinstall_error=Ein Fehler ist wï¿½hrend der Installation der Abghï¿½ngigkeiten aufgetreten. Bitte starten Sie den Computer neu und fï¿½hren Sie das Setup erneut aus oder installieren Sie die folgenden Abhï¿½ngigkeiten per Hand:%n
 
 en.isxdl_langfile=
 ;de.isxdl_langfile=german2.ini
@@ -239,17 +239,10 @@ begin
 	Result := Is64BitInstallMode and (ProcessorArchitecture = paX64);
 end;
 
-function IsIA64: boolean;
-begin
-	Result := Is64BitInstallMode and (ProcessorArchitecture = paIA64);
-end;
-
 function GetString(x86, x64, ia64: String): String;
 begin
 	if IsX64() and (x64 <> '') then begin
 		Result := x64;
-	end else if IsIA64() and (ia64 <> '') then begin
-		Result := ia64;
 	end else begin
 		Result := x86;
 	end;
@@ -259,8 +252,6 @@ function GetArchitectureString(): String;
 begin
 	if IsX64() then begin
 		Result := '_x64';
-	end else if IsIA64() then begin
-		Result := '_ia64';
 	end else begin
 		Result := '';
 	end;
