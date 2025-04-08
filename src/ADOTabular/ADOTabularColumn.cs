@@ -186,6 +186,9 @@ namespace ADOTabular
                     case ADOTabularObjectType.KPIStatus:
                         return MetadataImages.Measure;
                     case ADOTabularObjectType.UnnaturalHierarchy:
+
+                    // TODO: use unnatural hierarchy as calendar image for now.
+                    case ADOTabularObjectType.Calendar:
                         return MetadataImages.UnnaturalHierarchy;
                     case ADOTabularObjectType.MeasureFormatString:
                         // TODO - add image for format string
@@ -213,6 +216,9 @@ namespace ADOTabular
                         return "";
                     case MetadataImages.UnnaturalHierarchy:
                     case MetadataImages.Hierarchy:
+
+                    // TODO: use hierarchy image for calendar now.
+                    case MetadataImages.Calendar:
                         return "hierarchyDrawingImage";
                     case MetadataImages.Kpi:
                         return "kpiDrawingImage";

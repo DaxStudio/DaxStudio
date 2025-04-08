@@ -765,6 +765,13 @@ namespace ADOTabular
 
                     }
 
+                    if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "Calendar")
+                    {
+                        ProcessHierarchy(rdr, tab);
+
+                    }
+
                     if (rdr.NodeType == XmlNodeType.Element 
                         && rdr.Name == "bi:EntityType")
                     {
@@ -1313,6 +1320,94 @@ namespace ADOTabular
                 } 
             }
              
+        }
+
+        private void ProcessCalendar(XmlReader rdr, ADOTabularTable table)
+        {
+            ADOTabularCalendar calendar = null;
+            string calendarName = null;
+            bool calendarIsVisible = true;
+
+            while (!(rdr.NodeType == XmlNodeType.EndElement
+                    && rdr.LocalName == "Calendar"))
+            {
+                if (rdr.NodeType == XmlNodeType.Element
+                    && rdr.LocalName == "Calendar")
+                {
+                    while (rdr.MoveToNextAttribute())
+                    {
+                        switch (rdr.LocalName)
+                        {
+                            case "Name":
+                                calendarName = rdr.Value;
+                                break;
+
+                            // TODO: make sure isvisible is set properly for calendar.
+                            case "Hidden":
+                                calendarIsVisible = !bool.Parse(rdr.Value);
+                                break;
+                        }
+                    }
+
+                    calendar = new ADOTabularCalendar(table, calendarName, calendarName, calendarIsVisible, ADOTabularObjectType.Calendar);
+                    table.Columns.Add(hier);
+                    rdr.Read();
+                }
+
+                while (!(rdr.NodeType == XmlNodeType.EndElement
+                    && rdr.LocalName == "Level"))
+                {
+                    if ((rdr.NodeType == XmlNodeType.Element)
+                        && (rdr.LocalName == "Level"))
+                    {
+                        while (rdr.MoveToNextAttribute())
+                        {
+                            switch (rdr.LocalName)
+                            {
+                                case "Name":
+                                    lvlName = rdr.Value;
+                                    break;
+                                case "Caption":
+                                    lvlCaption = rdr.Value;
+                                    break;
+                            }
+                        }
+                    }
+
+                    if ((rdr.NodeType == XmlNodeType.Element)
+                        && (rdr.LocalName == "PropertyRef"))
+                    {
+                        while (rdr.MoveToNextAttribute())
+                        {
+                            switch (rdr.LocalName)
+                            {
+                                case "Name":
+                                    lvlRef = rdr.Value;
+                                    break;
+                            }
+                        }
+                    }
+
+                    rdr.Read();
+                } //End of Level
+
+                lvl = new ADOTabularLevel(table.Columns.GetByPropertyRef(lvlRef))
+                {
+                    LevelName = lvlName,
+                    Caption = lvlCaption
+                };
+                hier.Levels.Add(lvl);
+                lvlName = "";
+                lvlCaption = "";
+                lvlRef = "";
+                while (true)
+                {
+                    if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Level") break;
+                    if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "Hierarchy") break;
+                    rdr.Read();
+                }
+            }
+
         }
 
         private string GetHierarchyStructure(ADOTabularTable table, string hierName, string hierCap)

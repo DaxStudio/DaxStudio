@@ -11,7 +11,10 @@ namespace ADOTabular
     {
         private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularColumnCollection _columnColl;
-        private ADOTabularMeasureCollection _measuresColl;        
+        private ADOTabularMeasureCollection _measuresColl;
+
+        // TODO: confirm type.
+        private List<ADOTabularCalendar> _calendarList;
 
        /* public ADOTabularTable(ADOTabularConnection adoTabConn, DataRow dr, ADOTabularModel model)
         {
