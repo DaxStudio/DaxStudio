@@ -13,9 +13,6 @@ namespace ADOTabular
         private ADOTabularColumnCollection _columnColl;
         private ADOTabularMeasureCollection _measuresColl;
 
-        // TODO: confirm type.
-        private List<ADOTabularCalendar> _calendarList;
-
        /* public ADOTabularTable(ADOTabularConnection adoTabConn, DataRow dr, ADOTabularModel model)
         {
             Caption = dr["DIMENSION_NAME"].ToString();
@@ -39,6 +36,7 @@ namespace ADOTabular
             Private = isPrivate;
             ShowAsVariationsOnly = showAsVariationsOnly;
             Model = model;
+            Calendars = new List<ADOTabularCalendar>();
         }
 
         public string DaxName
@@ -116,7 +114,10 @@ namespace ADOTabular
             get { return IsVisible && !Private && !ShowAsVariationsOnly ? MetadataImages.Table : MetadataImages.HiddenTable; }
         }
 
-        public IList<ADOTabularRelationship> Relationships { get; private set; } 
+        public IList<ADOTabularRelationship> Relationships { get; private set; }
+
+        public IList<ADOTabularCalendar> Calendars { get; private set; }
+
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.Table;
 
         public FolderReferenceType ReferenceType => FolderReferenceType.None;

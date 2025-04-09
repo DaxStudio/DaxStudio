@@ -15,15 +15,20 @@ namespace ADOTabular
             TimeUnits = new List<ADOTabularTimeUnit>();
             TimeRelatedColumns = new List<ADOTabularColumn>();
             Name = name;
-            table = table;
-            isVisible = isVisible;
+            this.table = table;
+            IsVisible = isVisible;
 
+        }
+
+        public void AddTimeUnit(ADOTabularTimeUnit timeUnit)
+        {
+            TimeUnits.Add(timeUnit);
         }
 
         public List<ADOTabularTimeUnit> TimeUnits { get; }
 
         public List<ADOTabularColumn> TimeRelatedColumns { get; }
-        public override string DaxName
+        public string DaxName
         {
             get
             {
@@ -32,5 +37,15 @@ namespace ADOTabular
         }
 
         private ADOTabularTable table;
+
+        public string Caption { get; }
+
+        public string Name { get; }
+        
+        public string Description { get; }
+        
+        public bool IsVisible { get; }
+
+        public ADOTabularObjectType ObjectType => ADOTabularObjectType.Calendar;
     }
 }

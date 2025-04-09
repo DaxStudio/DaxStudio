@@ -25,8 +25,13 @@ namespace ADOTabular
 
         public string Name => Column.Name;
         public string DaxName => Column.DaxName;
+
+        public string Caption { get; }
+
         public ADOTabularObjectType ObjectType => ADOTabularObjectType.TimeUnit;
+
         public bool IsVisible => true;
+
         public string Description => Column.Description;
 
         public Type SystemType => Column.SystemType;

@@ -154,6 +154,9 @@
     <Compile Include="ADOTabularRelationship.cs" />
     <Compile Include="ADOTabularStandardColumn.cs" />
     <Compile Include="ADOTabularTable.cs" />
+    <Compile Include="ADOTabularCalendar.cs" />
+    <Compile Include="ADOTabularTimeUnit.cs" />
+    <Compile Include="ADOTabularTimeUnitEnum.cs" />
     <Compile Include="ADOTabularTableCollection.cs" />
     <Compile Include="ADOTabularVariation.cs" />
     <Compile Include="ADOTabularEnums.cs" />

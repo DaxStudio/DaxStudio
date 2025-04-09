@@ -768,7 +768,7 @@ namespace ADOTabular
                     if (rdr.NodeType == XmlNodeType.Element
                         && rdr.LocalName == "Calendar")
                     {
-                        ProcessHierarchy(rdr, tab);
+                        ProcessCalendar(rdr, tab);
 
                     }
 
@@ -1324,9 +1324,10 @@ namespace ADOTabular
 
         private void ProcessCalendar(XmlReader rdr, ADOTabularTable table)
         {
-            ADOTabularCalendar calendar = null;
+
             string calendarName = null;
             bool calendarIsVisible = true;
+            ADOTabularCalendar calendar = null;
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
                     && rdr.LocalName == "Calendar"))
@@ -1349,28 +1350,33 @@ namespace ADOTabular
                         }
                     }
 
-                    calendar = new ADOTabularCalendar(table, calendarName, calendarName, calendarIsVisible, ADOTabularObjectType.Calendar);
-                    table.Columns.Add(hier);
+                    calendar = new ADOTabularCalendar(table, calendarName, calendarIsVisible);
+                    table.Calendars.Add(calendar);
                     rdr.Read();
                 }
 
+                string timeUnitName = null;
+                string colRefName = null;
                 while (!(rdr.NodeType == XmlNodeType.EndElement
-                    && rdr.LocalName == "Level"))
+                    && rdr.LocalName == "TimeUnit"))
                 {
+                    TimeUnit timeUnitEnum = TimeUnit.Unknown;
                     if ((rdr.NodeType == XmlNodeType.Element)
-                        && (rdr.LocalName == "Level"))
+                        && (rdr.LocalName == "TimeUnit"))
                     {
                         while (rdr.MoveToNextAttribute())
                         {
                             switch (rdr.LocalName)
                             {
                                 case "Name":
-                                    lvlName = rdr.Value;
-                                    break;
-                                case "Caption":
-                                    lvlCaption = rdr.Value;
+                                    timeUnitName = rdr.Value;
                                     break;
                             }
+                        }
+
+                        if (timeUnitName != null)
+                        {
+                            timeUnitEnum = ADOTabularTimeUnitUtil.StringToTimeUnit(timeUnitName);
                         }
                     }
 
@@ -1382,28 +1388,21 @@ namespace ADOTabular
                             switch (rdr.LocalName)
                             {
                                 case "Name":
-                                    lvlRef = rdr.Value;
+                                    colRefName = rdr.Value;
                                     break;
                             }
                         }
                     }
 
                     rdr.Read();
-                } //End of Level
+                } //End of TimeUnit
 
-                lvl = new ADOTabularLevel(table.Columns.GetByPropertyRef(lvlRef))
-                {
-                    LevelName = lvlName,
-                    Caption = lvlCaption
-                };
-                hier.Levels.Add(lvl);
-                lvlName = "";
-                lvlCaption = "";
-                lvlRef = "";
+                var timeUnitInCalendar = new ADOTabularTimeUnit(table.Columns.GetByPropertyRef(colRefName), null, null);
+                calendar.AddTimeUnit(timeUnitInCalendar);
                 while (true)
                 {
-                    if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Level") break;
-                    if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "Hierarchy") break;
+                    if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "TimeUnit") break;
+                    if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "Calendar") break;
                     rdr.Read();
                 }
             }
