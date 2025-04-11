@@ -8,6 +8,8 @@ using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;
 using DaxStudio.CommandLine.Attributes;
+using DaxStudio.Common.Extensions;
+using DaxStudio.CommandLine.Helpers;
 
 
 namespace DaxStudio.CommandLine.Commands
@@ -92,8 +94,15 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     var appVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
                     var statsColumnBatchSize = settings.StatsColumnBatchSize==0 ? Dax.Model.Extractor.StatExtractor.DefaultColumnBatchSize :settings.StatsColumnBatchSize;
+                    var connStr = settings.FullConnectionString;
 
-                    ModelAnalyzer.ExportVPAX(settings.FullConnectionString, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, 
+                    // if requires Entra Auth add the AccessToken to the connection string
+                    if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
+                        var token = AccessTokenHelper.GetAccessToken();
+                        connStr = $"{connStr};Password={token.Token}";
+                    }
+
+                    ModelAnalyzer.ExportVPAX(connStr, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, 
                         !settings.ExcludeTom, "DAX Studio Command Line", appVersion, !settings.DoNotReadStatsFromData, "Model", 
                         settings.ReadStatsFromDirectQuery, settings.DirectLakeMode, statsColumnBatchSize);
                     
