@@ -680,6 +680,7 @@
     <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="ViewModels\BenchmarkServerFEViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
+    <Compile Include="ViewModels\BrowseWorkspacesViewModel.cs" />
     <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
     <Compile Include="ViewModels\CustomTraceDialogViewModel.cs" />
     <Compile Include="ViewModels\DatabaseDialogViewModel.cs" />
@@ -734,6 +735,9 @@
     <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BrowseWorkspacesView.xaml.cs">
+      <DependentUpon>BrowseWorkspacesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DatabaseDialogView.xaml.cs">
       <DependentUpon>DatabaseDialogView.xaml</DependentUpon>
@@ -1028,6 +1032,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Light.DaxStudio.Theme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BrowseWorkspacesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -1495,6 +1503,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
       <Version>4.70.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.PowerBI.Api">
+      <Version>4.22.0</Version>
     </PackageReference>
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.6</Version>

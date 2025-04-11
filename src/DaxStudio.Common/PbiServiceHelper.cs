@@ -4,9 +4,9 @@ using Tom = Microsoft.AnalysisServices;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
 using Microsoft.Identity.Client.Extensions.Msal;
-//using Microsoft.PowerBI.Api;
-//using Microsoft.PowerBI.Api.Models;
-//using Microsoft.Rest;
+using Microsoft.PowerBI.Api;
+using Microsoft.PowerBI.Api.Models;
+using Microsoft.Rest;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -40,28 +40,28 @@ namespace DaxStudio.Common
         private static string scope = "organizations";
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
         private static IEnumerable<string> scopes = new List<string>() { "https://analysis.windows.net/powerbi/api/.default" };
-        //public static async Task<List<Workspace>> GetWorkspacesAsync(AuthenticationResult token)
-        //{
-        //    var workspaces = new List<Workspace>();
-        //    TokenCredentials creds = new TokenCredentials(token.AccessToken, "Bearer");
+        public static async Task<List<Workspace>> GetWorkspacesAsync(AuthenticationResult token)
+        {
+            var workspaces = new List<Workspace>();
+            TokenCredentials creds = new TokenCredentials(token.AccessToken, "Bearer");
 
-        //    using (var client = new PowerBIClient(creds))
-        //    {
-        //        Groups grps;
-        //        grps = await client.Groups.GetGroupsAsync();
+            using (var client = new PowerBIClient(creds))
+            {
+                Groups grps;
+                grps = await client.Groups.GetGroupsAsync();
 
-        //        foreach (var grp in grps.Value)
-        //        {
-        //            workspaces.Add(new Workspace
-        //            {
-        //                Name = grp.Name,
-        //                Id = grp.Id,
-        //                IsOnPremiumCapacity = grp.IsOnDedicatedCapacity
-        //            });
-        //        }
-        //    }
-        //    return workspaces;
-        //}
+                foreach (var grp in grps.Value)
+                {
+                    workspaces.Add(new Workspace
+                    {
+                        Name = grp.Name,
+                        Id = grp.Id,
+                        IsOnPremiumCapacity = grp.IsOnDedicatedCapacity
+                    });
+                }
+            }
+            return workspaces;
+        }
 
         public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options)
         {
@@ -78,7 +78,7 @@ namespace DaxStudio.Common
             }
 
             // try to get the first account from the cache
-            if (firstAccount == null)
+            if (firstAccount == null && string.IsNullOrEmpty(options.LastUsedUPN))
             {
                 firstAccount = accounts.FirstOrDefault();
             }
