@@ -4,6 +4,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
 using System.ComponentModel;
+using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -34,9 +35,7 @@ namespace DaxStudio.CommandLine.Commands
 
         public string PowerBIFileName { get; set; }
 
-        public string FullConnectionString { get { 
-                // if the connectionstring property is set use that
-                if (!string.IsNullOrEmpty(ConnectionString)) return ConnectionString;
+        public string FullConnectionString { get {
                 
                 string user = GetPropertyOrEnvironmentVariable(nameof(UserID), UserID, "DSCMD_USER");
                 string pass = GetPropertyOrEnvironmentVariable(nameof(Password), Password, "DSCMD_PASSWORD");
@@ -44,7 +43,17 @@ namespace DaxStudio.CommandLine.Commands
                 string userParam = !string.IsNullOrEmpty(user) ? $"User ID={user};":string.Empty;
                 string passParam = !string.IsNullOrEmpty(pass) ? $"Password={pass};" : string.Empty;
 
-                return $"Data Source={Server};Initial Catalog={Database};{userParam}{passParam}";
+                // if the connectionstring property is set use that
+                if (string.IsNullOrEmpty(ConnectionString)) 
+                    return $"Data Source={Server};Initial Catalog={Database};{userParam}{passParam}";
+
+                var builder = new OleDbConnectionStringBuilder(ConnectionString);
+                if (!builder.ContainsKey("User ID") && !string.IsNullOrEmpty(user))
+                    builder["User ID"] = user;
+                if (!builder.ContainsKey("Password") && !builder.ContainsKey("Pwd") && !string.IsNullOrEmpty(user))
+                    builder["Password"] = pass;
+
+                return builder.ToString();
 
             } 
         }

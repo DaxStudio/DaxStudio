@@ -1,11 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DaxStudio.CommandLine.Commands;
-using Spectre.Console;
 
 namespace DaxStudio.CommandLine.Tests
 {
@@ -68,6 +62,20 @@ namespace DaxStudio.CommandLine.Tests
             var validationResult = settings.Validate();
             Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
             Assert.IsNull( validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Using_connectionstring_and_user_should_succeed()
+        {
+            var settings = new CsvCommand.Settings();
+            settings.ConnectionString = "data source=localhost";
+            settings.UserID = "testUser";
+            settings.Password = "testPwd";
+
+            var validationResult = settings.Validate();
+            Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
+            Assert.IsNull( validationResult.Message);
+            Assert.AreEqual("Data Source=localhost;User ID=testUser;Password=testPwd",settings.FullConnectionString, "connection strings don't match");
         }
     }
 }
