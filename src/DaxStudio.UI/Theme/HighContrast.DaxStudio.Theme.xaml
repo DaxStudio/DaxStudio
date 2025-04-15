@@ -8,10 +8,10 @@
                     xmlns:sys1="http://schemas.microsoft.com/winfx/2009/xaml">
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/HighContrast.DaxStudio.Colors.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/DarkTheme.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/HighContrastTheme.xaml" />
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.Icons.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/DaxStudio.BaseStyles.xaml"/>
-        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.AvalonEdit.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/HighContrast.AvalonEdit.xaml"/>
     </ResourceDictionary.MergedDictionaries>
     
     <Style TargetType="{x:Type dsi:DaxStudioCompletionWindow}">

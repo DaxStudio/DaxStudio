@@ -312,6 +312,7 @@
     <Compile Include="Converters\BoolToCollapsedConverter.cs" />
     <Compile Include="Converters\BoolToDoubleConverter.cs" />
     <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
+    <Compile Include="Converters\BoolToHighContrastForegroundConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
     <Compile Include="Converters\BoolToLeftThicknessConverter.cs" />
@@ -619,6 +620,7 @@
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
+    <Compile Include="Utils\HighContrastHelper.cs" />
     <Compile Include="Utils\Intellisense\DaxStudioCompletionWindow.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />
     <Compile Include="Utils\LongLineStateMachine.cs" />
@@ -966,6 +968,10 @@
     <Page Include="Resources\Styles\TraceWatcherStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Theme\HighContrast.AvalonEdit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\HighContrast.DaxStudio.Colors.xaml">
       <Generator>MSBuild:Compile</Generator>
