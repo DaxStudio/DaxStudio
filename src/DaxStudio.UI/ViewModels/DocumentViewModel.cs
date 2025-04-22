@@ -2193,7 +2193,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
                         if (message.QueryProvider is ISaveState)

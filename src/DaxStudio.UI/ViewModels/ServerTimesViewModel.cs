@@ -963,16 +963,16 @@ namespace DaxStudio.UI.ViewModels
                     if (traceEvent.EndTime == traceEvent.StartTime && traceEvent.Duration > 0)
                     {
                         traceEvent.EndTime = traceEvent.StartTime.AddMilliseconds((double)traceEvent.Duration);
-                        Log.Debug($">> fix EndTime row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Ticks / 10000} EndTime={traceEvent.EndTime.Ticks / 10000} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                        Log.Verbose($">> fix EndTime row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Ticks / 10000} EndTime={traceEvent.EndTime.Ticks / 10000} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     else if (traceEvent.EndTime >= traceEvent.StartTime && (traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds > traceEvent.Duration)
                     {
                         traceEvent.Duration = Convert.ToInt64((traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds);
-                        Log.Debug($">> fix Duration row Duration={traceEvent.Duration} CalcDuration={(traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                        Log.Verbose($">> fix Duration row Duration={traceEvent.Duration} CalcDuration={(traceEvent.EndTime - traceEvent.StartTime).TotalMilliseconds} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     else
                     {
-                        Log.Debug($">> NOT row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Ticks / 10000} EndTime={traceEvent.EndTime.Ticks / 10000} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                        Log.Verbose($">> NOT row Duration={traceEvent.Duration} StartTime={traceEvent.StartTime.Ticks / 10000} EndTime={traceEvent.EndTime.Ticks / 10000} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                     }
                     // Align NetParallelDuration to Duration
                     traceEvent.NetParallelDuration = traceEvent.Duration;
@@ -997,7 +997,7 @@ namespace DaxStudio.UI.ViewModels
                 DateTime currentScanTime = DateTime.MinValue;
                 foreach (var e in seEvents)
                 {
-                    Log.Debug($"** lev={seLevel} Event {e.Event.EventClass} Time={e.TimeStamp.TimeOfDay}");
+                    Log.Verbose($"** lev={seLevel} Event {e.Event.EventClass} Time={e.TimeStamp.TimeOfDay}");
                     switch (e.Event.EventClass)
                     {
                         case DaxStudioTraceEventClass.QueryEnd:
@@ -1017,14 +1017,14 @@ namespace DaxStudio.UI.ViewModels
                                 {
                                     var delta = (e.TimeStamp - currentScanTime).TotalMilliseconds;
                                     new_FormulaEngineDuration += delta;
-                                    Log.Debug($"FE += {delta}ms QueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond} new_FE={new_FormulaEngineDuration}");
+                                    Log.Verbose($"FE += {delta}ms QueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond} new_FE={new_FormulaEngineDuration}");
                                     // Placeholder: END FE event
                                 }
                             }
                             break;
                         case DaxStudioTraceEventClass.VertiPaqSEQueryEnd:
                         case DaxStudioTraceEventClass.DirectQueryEnd:
-                            Log.Debug($"VertiPaqSEQueryEnd {e.Event.EventSubclassName} StartTime={e.Event.StartTime.Millisecond} EndTime={e.Event.EndTime.Millisecond} Offset={(e.Event.StartTime - currentScanTime).TotalMilliseconds}");
+                            Log.Verbose($"VertiPaqSEQueryEnd {e.Event.EventSubclassName} StartTime={e.Event.StartTime.Millisecond} EndTime={e.Event.EndTime.Millisecond} Offset={(e.Event.StartTime - currentScanTime).TotalMilliseconds}");
                             if (e.IsStart)
                             {
                                 if (seLevel == 0)
@@ -1032,7 +1032,7 @@ namespace DaxStudio.UI.ViewModels
                                     var delta = (e.Event.StartTime - currentScanTime).TotalMilliseconds;
                                     // delta = (delta < e.Event.Duration && e.Event.Duration > 0) ? e.Event.Duration : delta;
                                     new_FormulaEngineDuration += delta;
-                                    Log.Debug($"FE += {delta}ms VertiPaqSEQueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond} new_FE={new_FormulaEngineDuration}");
+                                    Log.Verbose($"FE += {delta}ms VertiPaqSEQueryEnd currentScanTime={currentScanTime.Millisecond} TimeStamp={e.TimeStamp.Millisecond} new_FE={new_FormulaEngineDuration}");
                                     // Placeholder: END FE event
                                 }
                                 seLevel++;
@@ -1076,7 +1076,7 @@ namespace DaxStudio.UI.ViewModels
 
                             break;
                         case DaxStudioTraceEventClass.VertiPaqSEQueryEnd:
-                            Log.Debug($"VertiPaqSEQueryEnd {traceEvent.EventSubclass} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
+                            Log.Verbose($"VertiPaqSEQueryEnd {traceEvent.EventSubclass} Duration={traceEvent.Duration} NetParallelDuration={traceEvent.NetParallelDuration} Cpu={traceEvent.CpuTime}");
                             // At the end of a batch, we compute the cost for the batch and assign the cost to the complete query
                             if (traceEvent.EventSubclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
                             {
@@ -1084,7 +1084,7 @@ namespace DaxStudio.UI.ViewModels
                                 // The value should never be greater than 1. If it happens, we should log it and investigate as possible bug.
                                 System.Diagnostics.Debug.Assert(batchScan == 0, "Nested VertiScan batches detected or missed SE QueryBegin events!");
 
-                                Log.Debug($"FIX EndScan traceEvent.Duration={traceEvent.Duration}ms batchStorageEngineDuration={batchStorageEngineDuration}");
+                                Log.Verbose($"FIX EndScan traceEvent.Duration={traceEvent.Duration}ms batchStorageEngineDuration={batchStorageEngineDuration}");
                                 // Fix 
                                 // Subtract from the batch event the total computed for the scan events within the batch
                                 traceEvent.Duration = Math.Max((long)(traceEvent.Duration - batchStorageEngineDuration), 0);
@@ -1093,7 +1093,7 @@ namespace DaxStudio.UI.ViewModels
 
                                 StorageEngineDuration += traceEvent.Duration;
                                 StorageEngineNetParallelDuration += traceEvent.Duration;
-                                Log.Debug($"StorageEngineDuration)={StorageEngineDuration}");
+                                Log.Verbose($"StorageEngineDuration)={StorageEngineDuration}");
                                 StorageEngineCpu += traceEvent.CpuTime;
                                 // Currently, we do not compute a storage engine query for the batch event - we might uncomment this if we decide to show the Batch event by default
                                 StorageEngineQueryCount++;
@@ -1179,7 +1179,7 @@ namespace DaxStudio.UI.ViewModels
 
                 // New calculation: SE is Query Duration - FE Duration
                 //                  FE Duration is computed as time when there are no SE queries running
-                Log.Debug($"FormulaEngineDuration={FormulaEngineDuration}ms new={new_FormulaEngineDuration}");
+                Log.Verbose($"FormulaEngineDuration={FormulaEngineDuration}ms new={new_FormulaEngineDuration}");
                 FormulaEngineDuration = (long)new_FormulaEngineDuration;
                 TotalDuration = FormulaEngineDuration > TotalDuration ? FormulaEngineDuration : TotalDuration;
                 double computed_Duration = StorageEngineNetParallelDuration + FormulaEngineDuration;
@@ -1744,6 +1744,7 @@ namespace DaxStudio.UI.ViewModels
 
         public override void ClearAll()
         {
+            Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesViewModel), nameof(ClearAll), "Clearing all event data");
             _queryEndActivityId = string.Empty;
             AllStorageEngineEvents.Clear();
             FormulaEngineDuration = 0;
