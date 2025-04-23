@@ -59,7 +59,8 @@ using ICSharpCode.AvalonEdit.Folding;
 using Dax.Model.Extractor;
 using Dax.Vpax.Obfuscator.Common;
 using Dax.Vpax.Obfuscator;
-using ICSharpCode.NRefactory.Ast;
+using DaxStudio.Common.Extensions;
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -413,7 +414,8 @@ namespace DaxStudio.UI.ViewModels
                 cnn.FileName,
                 cnn.ServerType
                 , false
-                , cnn.Database.Name ));
+                , cnn.Database.Name
+                , cnn.AccessToken));
 
             _sourceDocument = null;
         }
@@ -1444,11 +1446,21 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
+
+                var token = default(Adomd.AccessToken);
+                if (server.RequiresEntraAuth())
+                {
+                    // prompt for access token
+                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = PbiServiceHelper.SwitchAccount(hwnd, Options).Result;
+                    token = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                }
+
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, String.Empty, string.Empty,
                     server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ? ServerType.PowerBIDesktop : ServerType.AnalysisServices,
                     server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase),
                     _app.Args().Database??string.Empty
-                    ));
+                    ,token));
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 return true;
             }
@@ -2181,7 +2193,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
                         if (message.QueryProvider is ISaveState)

@@ -1,9 +1,10 @@
-﻿
-
-using ADOTabular.Enums;
+﻿using ADOTabular.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
+using Microsoft.AnalysisServices.AdomdClient;
+using System;
 using System.Collections.Generic;
+using System.Text;
 using static Dax.Vpax.Tools.VpaxTools;
 
 namespace DaxStudio.UI.Events
@@ -12,7 +13,7 @@ namespace DaxStudio.UI.Events
     {
 
 
-        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string applicationName, string fileName, ServerType serverType, bool refreshDatabases, string databaseName) 
+        public ConnectEvent(string connectionString, bool powerPivotModeSelected, string applicationName, string fileName, ServerType serverType, bool refreshDatabases, string databaseName, AccessToken token)
         {
             ConnectionString = connectionString;
             PowerPivotModeSelected = powerPivotModeSelected;
@@ -22,6 +23,7 @@ namespace DaxStudio.UI.Events
             ServerType = serverType;
             RefreshDatabases = refreshDatabases;
             DatabaseName = databaseName;
+            AccessToken = token;
         }
 
         public ConnectEvent(string applicationName, VpaxContent vpaxContent)
@@ -34,18 +36,43 @@ namespace DaxStudio.UI.Events
             VpaxContent = vpaxContent;
         }
 
-        public string ConnectionString{ get; set; }
-        public bool PowerPivotModeSelected { get; set;  }
+        public string ConnectionString { get; set; }
+        public bool PowerPivotModeSelected { get; set; }
         public string ApplicationName { get; set; }
         public string FileName { get; set; }
         public ServerType ServerType { get; internal set; }
 
-        public string DatabaseName { get;  }
+        public string DatabaseName { get; }
         public bool RefreshDatabases { get; }
-        public VpaxContent VpaxContent { get;  }
+        public VpaxContent VpaxContent { get; }
 
         public List<ITraceWatcher> ActiveTraces { get; set; }
         public string WorkbookName { get; set; }
         public string PowerBIFileName { get; set; }
+        public AccessToken AccessToken { get; private set; }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            foreach (var prop in this.GetType().GetProperties())
+            {
+                if (prop.GetValue(this) != null)
+                {
+                    sb.Append(prop.Name);
+                    if (prop.Name == "AccessToken")
+                    {
+                        sb.Append(" = <redacted>");
+                    }
+                    else
+                    {
+                        sb.Append(" = ");
+                        sb.Append(prop.GetValue(this).ToString());
+                    }
+
+                    sb.Append('\n');
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

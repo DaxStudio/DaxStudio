@@ -1,7 +1,7 @@
 ﻿using AvalonDock;
 using DaxStudio.UI.Extensions;
 using System.Windows;
-using System.Windows.Interactivity;
+using Microsoft.Xaml.Behaviors;
 
 namespace DaxStudio.UI.Behaviours
 {

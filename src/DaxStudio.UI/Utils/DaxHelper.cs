@@ -73,6 +73,10 @@ namespace DaxStudio.UI.Utils
                     foundXmlNameSpacedParams = true;
                     string paramTypeName = n["Value"].Attributes["xsi:type"].Value;
                     Type paramType = DaxStudio.Common.XmlTypeMapper.GetSystemType(paramTypeName);
+                    if (paramType == null)
+                    {
+                        throw new ArgumentException($"{paramTypeName} is not a valid xml type declaration");
+                    }
                     object val = Convert.ChangeType(n["Value"].InnerText, paramType);
                     if (!paramDict.ContainsKey(n["Name"].InnerText))
                         paramDict.Add(n["Name"].InnerText, new QueryParameter(n["Name"].InnerText, val, paramTypeName));

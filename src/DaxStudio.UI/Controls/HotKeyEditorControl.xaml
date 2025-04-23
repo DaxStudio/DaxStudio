@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:val="clr-namespace:DaxStudio.UI.Validation"
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              x:Name="UserControl"
              d:DesignHeight="300"
              d:DesignWidth="300"

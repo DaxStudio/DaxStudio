@@ -11,15 +11,16 @@ using DaxStudio.UI.Utils;
 using Serilog;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using DaxStudio.Common.Extensions;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using ADOTabular.Enums;
-using ADOTabular;
 using System.Windows.Input;
-using System.Linq.Expressions;
-using DaxStudio.Controls.PropertyGrid;
+//using DaxStudio.Controls.PropertyGrid;
 using System.Threading;
 using DaxStudio.UI.Model;
+using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -505,7 +506,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                if (ServerModeSelected && DataSource.IsNullOrEmpty()) return false;
+                if (ServerModeSelected && string.IsNullOrEmpty(DataSource)) return false;
                 return true;
             }
         }
@@ -528,10 +529,10 @@ namespace DaxStudio.UI.ViewModels
                 {
                     SettingProvider.SaveServerMRUList(DataSource);
                     serverType =
-                        HasUriProtocolScheme(DataSource, "asazure") ? ServerType.AzureAnalysisServices :
-                        HasUriProtocolScheme(DataSource, "pbidedicated") ? ServerType.PowerBIService :
-                        HasUriProtocolScheme(DataSource, "powerbi") ? ServerType.PowerBIService :
-                        HasUriProtocolScheme(DataSource, "pbiazure") ? ServerType.PowerBIService :
+                        DataSource.HasUriProtocolScheme("asazure") ? ServerType.AzureAnalysisServices :
+                        DataSource.HasUriProtocolScheme("pbidedicated") ? ServerType.PowerBIService :
+                        DataSource.HasUriProtocolScheme("powerbi") ? ServerType.PowerBIService :
+                        DataSource.HasUriProtocolScheme("pbiazure") ? ServerType.PowerBIService :
                         ServerType.AnalysisServices;
                 }
                 if (PowerPivotModeSelected) { serverType = ServerType.PowerPivot; }
@@ -553,7 +554,16 @@ namespace DaxStudio.UI.ViewModels
                 }
                 // we cache this to a local variable in case there are any exceptions thrown while building the ConnectionString
                 connectionString = ConnectionString;
-                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType),PowerPivotModeSelected?WorkbookName:powerBIFileName, serverType, false, string.Empty);
+                
+
+                var token = default(AccessToken);
+                if (serverType == ServerType.AzureAnalysisServices || serverType == ServerType.PowerBIService)
+                {
+                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = await PbiServiceHelper.SwitchAccount(hwnd, Options);
+                    token = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                }
+                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType),PowerPivotModeSelected?WorkbookName:powerBIFileName, serverType, false, string.Empty,token);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
                 await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             }
@@ -571,19 +581,7 @@ namespace DaxStudio.UI.ViewModels
             //    TryClose(true);
             }
 
-            // We could move this function as an utility one - currently, there could be overlap with other similar functions (see ADOTabularConnection.GetConnectionType)
-            bool HasUriProtocolScheme(string url, string scheme)
-            {
-                if (string.IsNullOrEmpty(url))
-                {
-                    return false;
-                }
-                if (url.StartsWith(scheme, StringComparison.InvariantCultureIgnoreCase) && url.Length > scheme.Length + "://".Length)
-                {
-                    return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.InvariantCultureIgnoreCase) == 0;
-                }
-                return false;
-            }
+
         }
 
         public void Cancel()

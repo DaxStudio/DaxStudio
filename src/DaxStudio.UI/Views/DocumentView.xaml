@@ -6,7 +6,7 @@
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
-    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
     xmlns:dax="clr-namespace:DAXEditorControl;assembly=DaxStudio.DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
@@ -686,6 +686,9 @@
                                                     </MenuItem.Icon>
                                                     
                                                 </MenuItem>
+                                                <Separator/>
+                                                <MenuItem x:Name="DefineMeasures" Header="Define Measures" cal:Message.Attach="DefineMeasures()"></MenuItem>
+                                                <MenuItem x:Name="DefineDependentMeasures" Header="Define Dependent Measures" cal:Message.Attach="DefineDependentMeasures()"></MenuItem>
                                                 <Separator/>
                                                 <MenuItem x:Name="LookupDaxGuide" 
                                                           Header="{Binding LookupDaxGuideHeader}"

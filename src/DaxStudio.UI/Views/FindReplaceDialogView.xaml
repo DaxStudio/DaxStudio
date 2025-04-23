@@ -7,7 +7,7 @@
                       xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                       xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                       xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-                      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+                      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
                       xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
                       xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
                       xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"

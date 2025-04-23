@@ -2671,6 +2671,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _lastUsedUPN = string.Empty;
+        [DataMember, DefaultValue("")]
+        public string LastUsedUPN
+        {
+            get => _lastUsedUPN;
+            set
+            {
+                _lastUsedUPN = value;
+                SettingProvider.SetValue(nameof(LastUsedUPN), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
         private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;

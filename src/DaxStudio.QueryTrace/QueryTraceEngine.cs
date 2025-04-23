@@ -16,6 +16,8 @@ using Trace = Microsoft.AnalysisServices.Trace;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common.Extensions;
 using Microsoft.AspNet.SignalR.Client;
+using ADOTabular.Extensions;
+using DaxStudio.Common;
 
 namespace DaxStudio.QueryTrace
 {
@@ -172,7 +174,24 @@ namespace DaxStudio.QueryTrace
             Events = events;
             _filterForCurrentSession = filterForCurrentSession;
             _powerBiFileName = powerBiFileName;
+            ConfigureRetries();
             Log.Verbose("{class} {method} {event}", "QueryTraceEngine", "<Constructor>", "End - event count" + events.Count);
+        }
+
+        private void ConfigureRetries()
+        {
+            _pingRetryPolicy = Policy
+                        .Handle<Exception>()
+                        .WaitAndRetry(
+                            3,
+                            retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt) * 100),
+                            (exception, timeSpan, context) => {
+                                Log.Error(exception, "{class} {method}", "QueryTraceEngine", "OnTimerElapsed");
+                                System.Diagnostics.Debug.WriteLine("Error pinging trace connection: " + exception.Message);
+                                // TODO - should we raise event aggregator 
+                                RaiseWarning("There was an error while pinging the trace - retrying");
+                            }
+                        );
         }
 
         private string AdjustConnectionString(string connectionString)
@@ -360,6 +379,12 @@ namespace DaxStudio.QueryTrace
             if (_trace == null)
             {
                 _server = new Server();
+                // if the document's connection has an access token copy that to the server object for the trace
+                if (_connectionManager.AccessToken.IsNotNull())
+                {
+                    _server.AccessToken = _connectionManager.AccessToken.ToTomAccessToken(); //= new AccessToken(_connectionManager.AccessToken.Token, _connectionManager.AccessToken.ExpirationTime, _connectionManager.AccessToken.UserContext);
+                    _server.OnAccessTokenExpired = OnAccessTokenExpired;
+                }
                 _server.Connect(_connectionString);
             
                 _trace = _server.Traces.Add($"DaxStudio_Session_{_sessionId}_{_suffix}");
@@ -375,6 +400,13 @@ namespace DaxStudio.QueryTrace
                 //_trace.Audit = true;
             }
             return _trace;
+        }
+
+        private AccessToken OnAccessTokenExpired(AccessToken token)
+        {
+            Log.Information("{class} {method} {message}", nameof(QueryTraceEngine), nameof(OnAccessTokenExpired), "Refreshing expired AccessToken");
+            var newToken = PbiServiceHelper.RefreshToken(token);
+            return newToken;
         }
 
         public void OnTraceEvent(DaxStudioTraceEventArgs e)

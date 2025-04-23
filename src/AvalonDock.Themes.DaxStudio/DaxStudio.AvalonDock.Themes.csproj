@@ -4,7 +4,7 @@
 	<TargetFrameworks>net472</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>sn.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>False</SignAssembly>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Version>4.60.0</Version>
     <AssemblyVersion>4.60.0</AssemblyVersion>

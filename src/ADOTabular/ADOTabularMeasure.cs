@@ -22,7 +22,7 @@ namespace ADOTabular
 
         public string InternalReference { get; private set; }
 
-        public ADOTabularObjectType ObjectType { get; internal set; }
+        public ADOTabularObjectType ObjectType { get; internal set; } = ADOTabularObjectType.Measure;
 
         public ADOTabularTable Table { get; private set; }
 

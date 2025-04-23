@@ -1,4 +1,6 @@
 ﻿using ADOTabular.Enums;
+using Microsoft.AnalysisServices.AdomdClient;
+using System;
 
 namespace DaxStudio.Interfaces
 {
@@ -10,9 +12,9 @@ namespace DaxStudio.Interfaces
         public string ApplicationName { get; set; }
         public string PowerBIFileName { get; set; }
         public ServerType ServerType { get;  }
-
         public string DatabaseName { get;  }
         public bool RefreshDatabases { get;  }
-
+        public AccessToken AccessToken { get; }
+        public string FileName { get; }
     }
 }

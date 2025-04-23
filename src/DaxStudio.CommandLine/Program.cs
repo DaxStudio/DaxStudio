@@ -96,7 +96,7 @@ namespace DaxStudio.CommandLine
    
             Log.Logger = _log;
             */
-            var outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}";
+            var outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}";
             if (verboseLogging) { outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}"; }
 
             Log.Logger = new LoggerConfiguration()

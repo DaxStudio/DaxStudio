@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using ICSharpCode.SharpDevelop.Dom;
 using System.Threading;
 
 namespace DaxStudio.UI.Utils

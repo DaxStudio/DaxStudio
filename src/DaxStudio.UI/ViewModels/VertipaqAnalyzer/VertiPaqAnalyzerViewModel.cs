@@ -454,36 +454,44 @@ namespace DaxStudio.UI.ViewModels
             var saveAsDlg = new SaveFileDialog()
             {
                 FileName = filename,
-                DefaultExt = "bim",
-                Title = "Save .bim file",
-                Filter = "Model BIM file (*.bim)|*.bim"
+                DefaultExt = "csv",
+                Title = "Save .csv file",
+                Filter = "CSV file (*.csv)|*.csv"
             };
             if (saveAsDlg.ShowDialog() != DialogResult.OK) return;
 
-            var csvFilePath = saveAsDlg.FileName;
-            var encoding = Encoding.UTF8;
-            var textWriter = new StreamWriter(csvFilePath, false, encoding);
-            // configure csv delimiter and culture
-            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = "," };
-            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
+            try
             {
-                // write header row
-                csvWriter.WriteField( "TableName");
-                csvWriter.WriteField("MeasureName");
-                csvWriter.WriteField("Expression");
-                csvWriter.NextRecord();
-
-                // write out measures
-                foreach (var t in ViewModel.Model.Tables)
+                var csvFilePath = saveAsDlg.FileName;
+                var encoding = Encoding.UTF8;
+                var textWriter = new StreamWriter(csvFilePath, false, encoding);
+                // configure csv delimiter and culture
+                var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = "," };
+                using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
                 {
-                    foreach (var m in t.Measures)
+                    // write header row
+                    csvWriter.WriteField("TableName");
+                    csvWriter.WriteField("MeasureName");
+                    csvWriter.WriteField("Expression");
+                    csvWriter.NextRecord();
+
+                    // write out measures
+                    foreach (var t in ViewModel.Model.Tables)
                     {
-                        csvWriter.WriteField(m.Table.TableName);
-                        csvWriter.WriteField(m.MeasureName);
-                        csvWriter.WriteField(m.MeasureExpression.Expression);
-                        csvWriter.NextRecord();
+                        foreach (var m in t.Measures)
+                        {
+                            csvWriter.WriteField(m.Table.TableName);
+                            csvWriter.WriteField(m.MeasureName);
+                            csvWriter.WriteField(m.MeasureExpression?.Expression ?? string.Empty);
+                            csvWriter.NextRecord();
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportMeasures), "Error exporting measures");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while exporting measures: {ex.Message}"));
             }
         }
 

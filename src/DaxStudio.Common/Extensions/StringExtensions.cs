@@ -69,5 +69,28 @@ namespace DaxStudio.Common.Extensions
             var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
             return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
+
+        // We could move this function as an utility one - currently, there could be overlap with other similar functions (see ADOTabularConnection.GetConnectionType)
+        public static bool HasUriProtocolScheme(this string url, string scheme)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+            if (url.StartsWith(scheme, StringComparison.InvariantCultureIgnoreCase) && url.Length > scheme.Length + "://".Length)
+            {
+                return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.InvariantCultureIgnoreCase) == 0;
+            }
+            return false;
+        }
+
+        public static bool RequiresEntraAuth(this string url)
+        {
+            if (url.HasUriProtocolScheme("powerbi")) return true;
+            if (url.HasUriProtocolScheme("pbidedicated")) return true;
+            if (url.HasUriProtocolScheme("pbiazure")) return true;
+            if (url.HasUriProtocolScheme("asazure")) return true;
+            return false;
+        }
     }
 }
