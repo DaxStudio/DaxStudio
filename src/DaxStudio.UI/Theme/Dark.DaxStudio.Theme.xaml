@@ -8,15 +8,8 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.DaxStudio.Colors.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/DarkTheme.xaml"/>
-        <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.AvalonDock.Themes;component/DarkBrushs.xaml"/>-->
-
-        
-        <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.dark.xaml"/>-->
-        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/icons.dark.extra.xaml"/>
-
+        <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.Icons.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/DaxStudio.BaseStyles.xaml"/>
-        
-
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;component/Theme/Dark.AvalonEdit.xaml"/>
     </ResourceDictionary.MergedDictionaries>
     

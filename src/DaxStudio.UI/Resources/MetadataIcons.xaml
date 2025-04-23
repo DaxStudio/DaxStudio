@@ -3,7 +3,7 @@
                     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                     xmlns:local="clr-namespace:DaxStudio.UI.Resources">
     
-    <conv:ResourceLookupConverter x:Key="MetadataIcons">
+    <!--<conv:ResourceLookupConverter x:Key="MetadataIcons">
         <ResourceDictionary>
             <Image x:Key="Table" Source="{DynamicResource tableDrawingImage}"/>
             <BitmapImage x:Key="HiddenTable" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/HiddenTable.png"/>
@@ -49,6 +49,6 @@
             <BitmapImage x:Key="Dark.Folder" UriSource="pack://application:,,,/DaxStudio.UI;component/images/Metadata/Folder.png"/>
 
         </ResourceDictionary>
-    </conv:ResourceThemeLookupConverter>
+    </conv:ResourceThemeLookupConverter>-->
 
 </ResourceDictionary>

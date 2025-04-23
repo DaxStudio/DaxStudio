@@ -35,11 +35,11 @@ namespace DaxStudio.UI.Theme
             var windowsTheme = ThemeIsLight() ? "Light" : "Dark";
             Enum.TryParse<UITheme>(windowsTheme, out var enumWinTheme);
             Options.AutoTheme = enumWinTheme;
-            var actualTheme = themeName==UITheme.Auto?enumWinTheme: themeName;
+            EffectiveTheme = themeName==UITheme.Auto?enumWinTheme: themeName;
             
             // Set ModernWpf theme
             var theme = ModernWpf.ApplicationTheme.Light;
-            Enum.TryParse(actualTheme.ToString(), false, out theme);
+            Enum.TryParse(EffectiveTheme.ToString(), false, out theme);
 
             // exit here if the new theme is the same as the current theme 
             if (ModernWpf.ThemeManager.Current.ApplicationTheme == theme) return;
@@ -60,19 +60,18 @@ namespace DaxStudio.UI.Theme
             Application.Current.Resources[NumericUpDownLib.Themes.ResourceKeys.ControlAccentColorKey] = accentColor;
             Application.Current.Resources[NumericUpDownLib.Themes.ResourceKeys.ControlAccentBrushKey] = new SolidColorBrush(accentColor);
 
-            //Application.Current.Resources[AvalonDock.Themes.VS2013.Themes.ResourceKeys.DocumentWellTabSelectedInactiveBackground] = accentColor;
-            //Application.Current.Resources[AvalonDock.Themes.Themes.ResourceKeys.DocumentWellTabSelectedInactiveBackground] = accentColor;
         }
 
         public Color AccentColor { 
             get {
-                if (CurrentTheme == UITheme.Dark) return _darkAccent;
-                return _lightAccent;
+                if (EffectiveTheme == UITheme.Light) return _lightAccent;
+                return _darkAccent;
             } 
         
         }
         public IGlobalOptions Options { get; }
         public UITheme CurrentTheme { get; private set; }
+        private UITheme EffectiveTheme { get; set; }
 
         private readonly Application _app;
 
