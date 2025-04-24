@@ -3212,7 +3212,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error loading file"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
                 }
                 finally
                 {
