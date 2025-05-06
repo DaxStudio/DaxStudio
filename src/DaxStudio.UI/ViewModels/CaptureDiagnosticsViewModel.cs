@@ -132,7 +132,6 @@ namespace DaxStudio.UI.ViewModels
 
         private const string TickImage = "successDrawingImage";
         private const string CrossImage = "failDrawingImage";
-        private object traceEventLock = new object();
         #region Properties
         private bool _serverTimingsChecked;
         private bool _queryPlanChecked;
@@ -194,8 +193,7 @@ namespace DaxStudio.UI.ViewModels
         private OperationStatus _querySucceeded;
         private OperationStatus _saveAsSucceeded;
 
-        private bool _serverTimingsComplete;
-        private bool _queryPlanComplete;
+
 
         public OperationStatus MetricsStatus { get => _metricsSucceeded;
             set { 
@@ -321,45 +319,61 @@ namespace DaxStudio.UI.ViewModels
             // store the current setting and turn on the capturing of TOM
             _includeTOM = Options.VpaxIncludeTom;
             Options.VpaxIncludeTom = true;
-
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), nameof(CaptureMetricsAsync), "Starting capture of vpax data");
             await _newDocument.ViewAnalysisDataAsync();
         }
 
-        private void StartTraces()
+        private async Task StartTracesAsync()
         {
             IsServerTimingsStarting = true;
             IsQueryPlanStarting = true;
-
-            EnsureTraceIsStarted(_serverTimingsTrace);
-            EnsureTraceIsStarted(_queryPlanTrace);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), nameof(StartTracesAsync), "Starting QueryPlan and ServerTimings traces");
+            try
+            {
+                await Task.WhenAll(
+                    EnsureTraceIsStartedAsync(_serverTimingsTrace),
+                    EnsureTraceIsStartedAsync(_queryPlanTrace)
+                );
+            }
+            catch (Exception ex)
+            {
+                var errMsg = $"Error starting traces: {ex.Message}";
+                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));
+                Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), nameof(StartTracesAsync), errMsg);
+            }
         }
 
-        private void EnsureTraceIsStarted(ITraceWatcher trace)
+        private async Task EnsureTraceIsStartedAsync(ITraceWatcher trace)
         {
             if (trace == null) return;
 
             if (trace.IsChecked)
-                EventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(trace, QueryTrace.Interfaces.QueryTraceStatus.Started));
+                await EventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(trace, QueryTrace.Interfaces.QueryTraceStatus.Started));
             else
                 trace.IsChecked = true;
         }
 
-        public Task HandleAsync(ViewMetricsCompleteEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(ViewMetricsCompleteEvent message, CancellationToken cancellationToken)
         {
             IsMetricsRunning = false;
             MetricsStatus = OperationStatus.Succeeded;
             Options.VpaxIncludeTom = _includeTOM;  //reset the include TOM setting
-            StartTraces();
-            return Task.CompletedTask;
+            await StartTracesAsync();
+
         }
+
+        private readonly SemaphoreSlim _traceEventLock = new SemaphoreSlim(1, 1);
 
         public async Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
             bool _tracesStarted;
             bool _tracesWaiting;
 
-            lock (traceEventLock)
+            await _traceEventLock.WaitAsync(cancellationToken);
+            try
             {
+                // Critical section
+            
                 switch (message.TraceStatus)
                 {
                     case QueryTrace.Interfaces.QueryTraceStatus.Started:
@@ -412,9 +426,14 @@ namespace DaxStudio.UI.ViewModels
                                 || ServerTimingsStatus == OperationStatus.Waiting;
 
             }
+            finally
+            {
+                _traceEventLock.Release();
+            }
+
             if (_tracesStarted && !_captureComplete)
             {
-                RunQuery();
+                await RunQueryAsync();
             }
             if (!_tracesStarted && !_tracesWaiting)
             {
@@ -429,7 +448,7 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        private void RunQuery()
+        private async Task RunQueryAsync()
         {
             IsQueryRunning = true;
 
@@ -443,7 +462,7 @@ namespace DaxStudio.UI.ViewModels
             // if this document is dedicated to capturing the diagnostics update it with the current query.
             if (hasNewDocument) _newDocument.EditorText = runQueryEvent.QueryProvider.QueryText;
 
-            EventAggregator.PublishOnUIThreadAsync(runQueryEvent);
+            await EventAggregator.PublishOnUIThreadAsync(runQueryEvent);
 
         }
 
@@ -454,10 +473,13 @@ namespace DaxStudio.UI.ViewModels
             OverallStatus = "Failed to capture full diagnostics check the log window for errors";
             CanClose = true;
         }
+        private bool _serverTimingsComplete = false;
+        private bool _queryPlanComplete = false;
         public async Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
         {
             var trace = message.Trace as IHaveData;
-            if (trace == null) { return ; }
+            if (trace == null) { return; }
+
             if (trace is ServerTimesViewModel serverTimings && trace.HasData) {
                 _serverTimingsComplete = true;
                 _timingRecords.Add(new TimingRecord()
@@ -468,9 +490,10 @@ namespace DaxStudio.UI.ViewModels
                     SEDurationMs = serverTimings.StorageEngineDuration,
                     SEQueries = serverTimings.StorageEngineQueryCount
                 });
-
             }
-            if (trace is QueryPlanTraceViewModel  && trace.HasData) _queryPlanComplete = true;
+
+            if (trace is QueryPlanTraceViewModel && trace.HasData) _queryPlanComplete = true;
+
             if (_serverTimingsComplete && _queryPlanComplete)
             {
                 if (TotalQueries > 1) { await SaveTempFileAsync(); }
@@ -479,10 +502,13 @@ namespace DaxStudio.UI.ViewModels
                     _serverTimingsComplete = false;
                     _queryPlanComplete = false;
                     CurrentQueryNumber++;
-                    RunQuery();
+                    await RunQueryAsync();
                 }
             };
-            if (_serverTimingsComplete && _queryPlanComplete && CurrentQueryNumber >= TotalQueries) await SaveAndExitAsync();
+
+            if (_serverTimingsComplete && _queryPlanComplete && CurrentQueryNumber >= TotalQueries) 
+                await SaveAndExitAsync();
+
             return;
         }
 
