@@ -2635,6 +2635,56 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
+        public void DefineMeasures() {
+            string word = string.Empty;
+            try
+            {
+                word = _editor.ContextMenuWord;
+                var measureName = word.Trim('[', ']');
+                if (this.Connection == null) return;
+                if (!this.Connection.IsConnected) return;
+                this.Connection.SelectedModel.MeasureExpressions.TryGetValue(measureName, out var expr);
+                if (expr != null)
+                {
+                    DefineMeasureOnEditor(word, expr);
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error defining the measure '{word}': " + ex.Message;
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+
+            }
+        }
+
+        public void DefineDependentMeasures()
+        {
+            string word = string.Empty;
+            try
+            {
+                word = _editor.ContextMenuWord;
+                var measureName = word.Trim('[', ']');
+                
+                if (this.Connection == null) return;
+                if (!this.Connection.IsConnected) return;
+                var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
+
+                foreach (var measure in dependentMeasures)
+                {
+                    DefineMeasureOnEditor(measure.Name, measure.Expression);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error defining the dependent measures '{word}': " + ex.Message;
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineDependentMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+
+            }
+        }
+
         const string MODELMEASURES_BEGIN = "---- MODEL MEASURES BEGIN ----";
         const string MODELMEASURES_END = "---- MODEL MEASURES END ----";
         
@@ -2712,6 +2762,8 @@ namespace DaxStudio.UI.ViewModels
                     else
                     {
                         measureDeclaration = $"DEFINE {newSection}";
+                        // look for preceeding EVALUATE
+                        MoveSelectionToPreceedingEvaluate();
                         InsertTextAtSelection(measureDeclaration, false, false);
                     }
                 }
@@ -2721,6 +2773,23 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(e, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasureOnEditor), e.Message);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "The following error occurred while trying to define the measure\n" + e.Message));
             }
+        }
+
+        private void MoveSelectionToPreceedingEvaluate()
+        {
+
+            var editor = GetEditor();
+            if (editor == null)
+            {
+                Log.Error("{class} {method} {message}", nameof(DocumentViewModel), nameof(MoveSelectionToPreceedingEvaluate), "Unable to get a reference to the editor control");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again."));
+                return;
+            }
+            var regexLastEvaluate = new Regex("(evaluate)(?!.*(?:evaluate))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var startOffset = editor.CaretOffset;
+            var textToSearch = editor.DocumentGetText(0, startOffset);
+            var match = regexLastEvaluate.Match(textToSearch);
+            
         }
 
         //public void Handle(UpdateConnectionEvent message)
@@ -5046,12 +5115,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public void LookupDaxGuide() {
-            string word = _editor.ContextMenuWord;
-            if (this.Connection == null) return;
-            if (!this.Connection.IsConnected) return;
-            if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+            string word = string.Empty;
+            try
             {
-                System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
+                word = _editor.ContextMenuWord;
+                if (this.Connection == null) return;
+                if (!this.Connection.IsConnected) return;
+                if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error looking up DAX Guide for '{word}': " + ex.Message;
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LookupDaxGuide), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+
             }
         }
 
