@@ -1663,11 +1663,11 @@ namespace DaxStudio.UI.ViewModels
 
             AllStorageEngineEvents.Apply(se => {
                 se.HighlightQuery = se.QueryRichText?.Contains("|~S~|") ?? false;
-                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData); }
+                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData??se.Query); }
             });
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 4) {
-                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.Query, string.Empty, se.StartTime)));
+                AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.TextData ?? se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
         }
