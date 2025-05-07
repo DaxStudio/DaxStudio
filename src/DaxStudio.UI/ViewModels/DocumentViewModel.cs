@@ -2785,11 +2785,14 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again."));
                 return;
             }
-            var regexLastEvaluate = new Regex("(evaluate)(?!.*(?:evaluate))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var regexLastEvaluate = new Regex("(evaluate)(?!.*(?:evaluate))", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
             var startOffset = editor.CaretOffset;
             var textToSearch = editor.DocumentGetText(0, startOffset);
             var match = regexLastEvaluate.Match(textToSearch);
-            
+            if (match?.Captures.Count >= 1)
+            {
+                editor.CaretOffset = match.Captures[0].Index;
+            }
         }
 
         //public void Handle(UpdateConnectionEvent message)
@@ -2919,6 +2922,13 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
             }
+            catch( UnauthorizedAccessException ex)
+            {
+                // this means we don't have write access to the file so trigger a save as
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SavePackageFile), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Access Denied to the File: {FileName}\nPrompting for alternate location"));
+                SaveAs();
+            }
             catch (Exception ex)
             {
                 // catch and report any errors while trying to save
@@ -2953,6 +2963,13 @@ namespace DaxStudio.UI.ViewModels
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // catch and report any errors while trying to save
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SaveSingleFiles), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Access Denied to the File: {FileName}\nPrompting for alternate location"));
+                SaveAs();
             }
             catch (Exception ex)
             {
@@ -3305,7 +3322,7 @@ namespace DaxStudio.UI.ViewModels
             
             var editor = GetEditor();
 
-            package = Package.Open(FileName);
+            package = Package.Open(FileName,FileMode.Open, FileAccess.Read);
 
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
             if (!package.PartExists(uriTom)) return package;
