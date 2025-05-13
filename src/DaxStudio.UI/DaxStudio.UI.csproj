@@ -274,6 +274,7 @@
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
+    <Compile Include="AttachedProperties\ContentControlLineNumberHelper.cs" />
     <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
     <Compile Include="AttachedProperties\VisibilityAnimation.cs" />
     <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
@@ -618,6 +619,7 @@
     <Compile Include="Utils\ClipboardHelper.cs" />
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
+    <Compile Include="Utils\FlowDocumentHelper.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
     <Compile Include="Utils\HighContrastHelper.cs" />

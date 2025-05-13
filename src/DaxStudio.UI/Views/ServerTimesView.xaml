@@ -103,7 +103,14 @@
             <!-- Data Templates -->
         
             <DataTemplate  DataType="{x:Type vm:TraceStorageEngineEvent}">
-                 <ctrl:BindableRichTextBox Padding="5,5,5,5"
+                <DockPanel LastChildFill="True">
+                    <TextBlock Margin="5" MinWidth="15"
+                               FontFamily="Open Sans"
+                               Background="{DynamicResource Theme.Brush.Content.Back}"
+                               Foreground="{DynamicResource Theme.Brush.LineNumbers}"
+                               Text="{Binding ElementName=QueryRichText, Path=(ap:ContentControlLineNumberHelper.BindableLineCount)}"/>
+
+                    <ctrl:BindableRichTextBox Padding="5,5,5,5"
                                              MinWidth="200"
                                              MinHeight="100"
                                              IsReadOnly="True"
@@ -113,7 +120,8 @@
                                              FontFamily="Open Sans"
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                 Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}" >
+                                             Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}"
+                                             ap:ContentControlLineNumberHelper.HasBindableLineCount="True">
                     
                         <ctrl:BindableRichTextBox.ContextMenu>
                             <ContextMenu>
@@ -128,6 +136,7 @@
                             </ContextMenu>
                         </ctrl:BindableRichTextBox.ContextMenu>
                     </ctrl:BindableRichTextBox>
+                </DockPanel>
             </DataTemplate>
 
             <DataTemplate  DataType="{x:Type vm:ExecutionMetricsTraceEngineEvent}">
