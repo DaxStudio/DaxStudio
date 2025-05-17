@@ -128,7 +128,6 @@ namespace DaxStudio.UI.ViewModels
         private string _displayName = "";
         private ILog _logger;
         private readonly RibbonViewModel _ribbon;
-        private readonly Regex _rexQueryError;
         private readonly Guid _uniqueId;
         private IQueryHistoryEvent _currentQueryDetails;
         private DocumentViewModel _sourceDocument;
@@ -158,10 +157,6 @@ namespace DaxStudio.UI.ViewModels
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
                 SettingProvider = settingProvider;
                 ServerTimingDetails = serverTimingDetails;
-                _rexQueryError =
-                    new Regex(
-                        @"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$",
-                        RegexOptions.Compiled | RegexOptions.Multiline);
                 _uniqueId = Guid.NewGuid();
                 Options = options;
                 AutoSaver = autoSaver;
@@ -1096,7 +1091,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-                        RefreshMetadata();
+                        await RefreshMetadataAsync();
                     }
                     Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CheckForMetadataUpdatesAsync), "Auto Refreshing Metadata - Finish");
                 }
@@ -2204,7 +2199,7 @@ namespace DaxStudio.UI.ViewModels
                         
 
                         OutputMessage("Query Started");
-                        
+                        ClearQueryError();
                         StartTimer();
                         
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
@@ -2227,10 +2222,11 @@ namespace DaxStudio.UI.ViewModels
                     //await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
                     var durationMs = _queryStopWatch?.ElapsedMilliseconds??0;
                     ActivateOutput();
-                    OutputError(ex.Message);
-                    OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
+                    OutputQueryError(ex.Message);
+                    OutputError(ex.Message,false);
+                    OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs, false);
                     QueryFailed(ex.Message);
-                                        
+                    ActivateResults();              
                 }
                 finally
                 {
@@ -2378,52 +2374,43 @@ namespace DaxStudio.UI.ViewModels
 
         public void OutputError(string error)
         {
-            OutputError(error, double.NaN);
-            ActivateOutput();
+            OutputError(error, true);
+        }
+        public void OutputError(string error, bool activateOutput)
+        {
+            OutputError(error, double.NaN, activateOutput);
         }
 
         public void OutputError(string error, double durationMs)
         {
+            OutputError(error, durationMs, true);
+        }
+        public void OutputError(string error, double durationMs, bool activateOutput)
+        {
 
             //"Query ( , )"
-            var m = _rexQueryError.Match(error);
-            if (m.Success)
+            var loc = RegexHelper.GetQueryErrorLocation(error);
+            if (loc.Line > 0 || loc.Column > 0)
             {
-#pragma warning disable CA1806 // Do not ignore method results
-                int.TryParse(m.Groups["line"].Value, out var line);
-                int.TryParse(m.Groups["col"].Value, out var col);
-#pragma warning restore CA1806 // Do not ignore method results
-                OutputError(error, line, col);
+                OutputError(error, loc.Line, loc.Column);
             }
             else
             {
                 OutputPane?.AddError(error, durationMs);
-                ActivateOutput();
             }
+            if (activateOutput) ActivateOutput();
         }
 
         public void OutputError(string error, int row, int column)
         {
-            int msgRow = 0;
-            int msgCol = 0;
-            //"Query ( , )"
-            var m = _rexQueryError.Match(error);
-            if (m.Success)
-            {
-#pragma warning disable CA1806 // Do not ignore method results
-                int.TryParse(m.Groups["line"].Value, out msgRow);
-                int.TryParse(m.Groups["col"].Value, out msgCol);
-#pragma warning restore CA1806 // Do not ignore method results
-                msgCol += column > 0 ? column - 1 : 0;
-                msgRow += row > 0 ? row - 1 : 0;
-            }
+
             var editor = GetEditor();
             editor.Dispatcher.Invoke(() =>
             {
-                editor.DisplayErrorMarkings(msgRow, msgCol, 1, error);
+                editor.DisplayErrorMarkings(row, column, 1, error);
             });
 
-            OutputPane?.AddError(error, msgRow, msgCol);
+            OutputPane?.AddError(error, row, column);
             ActivateOutput();
         }
 
@@ -3957,6 +3944,9 @@ namespace DaxStudio.UI.ViewModels
 
                 if (editor.SelectionLength > 0)
                 {
+                    var selectionStart = editor.Document.GetLocation(editor.SelectionStart);
+                    lineOffset = selectionStart.Line;
+                    colOffset = selectionStart.Column;
                     // clear the selection
                     editor.SelectionStart = 0;
                     editor.SelectionLength = 0;
@@ -4227,16 +4217,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        internal void RefreshMetadata()
+        internal async Task RefreshMetadataAsync()
         {
             try
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Starting Refresh");
+                await Task.Run(() =>
+                {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadataAsync), "Starting Refresh");
 
-                Connection.Refresh();
-                MetadataPane.RefreshDatabases();
-                Databases = MetadataPane.Databases;
-                MetadataPane.RefreshMetadata();
+                    Connection.Refresh();
+                    MetadataPane.RefreshDatabases();
+                    Databases = MetadataPane.Databases;
+                    MetadataPane.RefreshMetadata();
+                });
             }
             catch (Exception ex)
             {
@@ -4248,11 +4241,11 @@ namespace DaxStudio.UI.ViewModels
                 }
                 msg = "Error Refreshing Metadata: " + msg;
                 OutputError(msg);
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), msg);
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadataAsync), msg);
             }
             finally
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Finished Refresh");
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadataAsync), "Finished Refresh");
             }
         }
         private bool _isFocused;
@@ -5315,5 +5308,26 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool UseIndentCodeFolding => Options.UseIndentCodeFolding;
+
+        public void OutputQueryError(string errorMessage)
+        {
+            QueryResultsPane.ErrorMessage = errorMessage;
+            var _editor = GetEditor();
+            if (_editor != null)
+            {
+                TextLocation selectionLoc = new TextLocation();
+                if (_editor.SelectionLength > 0)
+                {
+                    selectionLoc = _editor.Document.GetLocation(_editor.SelectionStart);
+                    
+                }
+                QueryResultsPane.SelectionLocation = selectionLoc;
+            }
+        }
+
+        public void ClearQueryError()
+        {
+            QueryResultsPane.ErrorMessage = string.Empty;
+        }
     }
 }

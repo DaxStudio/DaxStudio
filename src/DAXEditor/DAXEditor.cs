@@ -594,6 +594,14 @@ namespace DAXEditorControl
             // remove any previous error markers
             ClearErrorMarkings();
 
+            // if we have an active selection we need to offset the error marking based on the selection
+            TextLocation selectionLocation = new TextLocation();
+            if (SelectionLength > 0)
+            {
+                selectionLocation = Document.GetLocation(SelectionStart);
+                line = line + selectionLocation.Line -1;
+                if (line == 1 && selectionLocation.Column > 1) column = column + selectionLocation.Column -1;
+            }
             if (line >= 1 && line <= this.Document.LineCount)
             {
                 int offset = this.Document.GetOffset(new TextLocation(line, column));

@@ -138,5 +138,15 @@ namespace DaxStudio.CommandLine.UIStubs
         {
             // TODO
         }
+
+        public void OutputQueryError(string errorMessage)
+        {
+            Log.Error(errorMessage);
+        }
+
+        public void ClearQueryError()
+        {
+            // TODO
+        }
     }
 }

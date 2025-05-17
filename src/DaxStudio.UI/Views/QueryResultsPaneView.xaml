@@ -58,7 +58,13 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-            
+
+            <Style TargetType="{x:Type ctrl:ClipBorder}">
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Control.Border}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <!--<Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>-->
+                <Setter Property="CornerRadius" Value="4"/>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -282,7 +288,68 @@
             </StackPanel>
         </Grid>
 
+        <!-- Results Error -->
+        <ctrl:ClipBorder>
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+          Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter }, Path=ShowErrorMessage}" Margin="8">
+           
+                <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid  Margin="0 4 0 8" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Source="{DynamicResource failDrawingImage}"
+                           Width="20" 
+                           Height="20"
+                           Grid.Column="0"/>
+                    <TextBlock Margin="8 0 0 0 " 
+                               Text="The following error occurred:" 
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
+                               Background="{DynamicResource Theme.Brush.Content.Back}"
+                               VerticalAlignment="Center"
+                               Grid.Column="1"/>
+                    <DockPanel Grid.Column="2">
+                        <Button DockPanel.Dock="Left"  
+                                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                Padding="8 4 8 4"
+                                Margin="2 2"
+                                Visibility="{Binding ShowGotoError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                cal:Message.Attach="[Event Click] = [Action GotoError]">            
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{DynamicResource select_arrow_up__2_DrawingImage}"
+                                       Margin="0 0 4 0"/>
+                                <TextBlock>Goto Error</TextBlock>
+                            </StackPanel>
+                        </Button>
 
+                        <Button DockPanel.Dock="Left"  
+                            Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                            Padding="8 4 8 4"
+                            Margin="2 2"
+                            cal:Message.Attach="[Event Click] = [Action CopyError]">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{DynamicResource copy_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>
+                                <TextBlock>Copy</TextBlock>
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
+                </Grid>
+                <ctrl:ClipBorder Grid.Row="1">
+                    <TextBlock 
+                         Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
+                         Padding="8"
+                         Text="{Binding ErrorMessage, Mode=OneWay}"/>
+                </ctrl:ClipBorder>
+
+
+            </Grid>
+        </ctrl:ClipBorder>
         <!-- Busy overlay -->
         <Border 
             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" Style="{StaticResource BusyPanel}">
