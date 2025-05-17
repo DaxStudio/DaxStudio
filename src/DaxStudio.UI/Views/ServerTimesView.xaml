@@ -418,13 +418,19 @@
         </ctrl:ClipBorder>
         
         
-        <TextBlock x:Name="TraceStatusText"
+        <TextBox x:Name="TraceStatusText"
                    Grid.ColumnSpan="5"
                    Grid.Row="1"
-                   Text="{Binding TraceStatusText}"
+                   Text="{Binding TraceStatusText,Mode=OneWay}"
                    Visibility="{Binding TraceStatusText, Converter={StaticResource StringToVisibilityConverter}}" 
                    Background="{DynamicResource WarningBarBackgroundBrush}" 
-                   Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"/>
+                   Foreground="{StaticResource MutedTextBrush}" Padding="5,1,0,1"
+                   IsReadOnly="True"
+                   IsReadOnlyCaretVisible="True"
+                   MaxHeight="85" 
+                   VerticalScrollBarVisibility="Auto"
+
+                   />
         <!--  -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0" Grid.Row="2"  Grid.RowSpan="3">
 

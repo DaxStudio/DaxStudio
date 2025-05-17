@@ -1612,6 +1612,7 @@ namespace DaxStudio.UI.ViewModels
                 CommandText = this.CommandText,
                 ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected,
                 ActivityID = this.ActivityID,
+                ErrorMessage = this.ErrorMessage,
                 TimelineTotalDuration = this.TimelineTotalDuration
             };
             var json = JsonConvert.SerializeObject(m, Formatting.None, new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate });
@@ -1655,6 +1656,8 @@ namespace DaxStudio.UI.ViewModels
             CommandText = m.CommandText;
             ParallelStorageEngineEventsDetected = m.ParallelStorageEngineEventsDetected;
             TimelineTotalDuration = m.TimelineTotalDuration;
+            ErrorMessage = m.ErrorMessage;
+
             AllStorageEngineEvents.Clear();
             if (m.StoreageEngineEvents != null)
                 AllStorageEngineEvents.AddRange(m.StoreageEngineEvents);
