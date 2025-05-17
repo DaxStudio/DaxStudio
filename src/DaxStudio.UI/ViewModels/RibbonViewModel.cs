@@ -895,13 +895,14 @@ namespace DaxStudio.UI.ViewModels
             _activeDocument?.Replace();
         }
 
-        public void RefreshMetadata()
+        // async void called from button click
+        public async void RefreshMetadata()
         {
             if (QueryRunning) {
                 ActiveDocument.OutputWarning("Metadata cannot be refreshed while a query is running");
                 return; 
             }
-            ActiveDocument?.RefreshMetadata();
+            await ActiveDocument?.RefreshMetadataAsync();
         }
 
         public bool CanRefreshMetadata => ActiveDocument != null && ActiveDocument.IsConnected;
