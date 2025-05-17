@@ -409,12 +409,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public ADOTabularDatabase SelectedDatabaseObject => _metadataProvider.Database;
-        public string SelectedDatabaseCaption => _metadataProvider.Database.Caption;
-        public string SelectedDatabaseDescription => _metadataProvider.Database.Description;
-        public string SelectedDatabaseRoles => _metadataProvider.Database.Roles;
-        public string SelectedDatabaseCulture => _metadataProvider.Database.Culture;
-        public string SelectedDatabaseCompatibilityLevel => _metadataProvider.Database.CompatibilityLevel;
-        public bool SelectedDatabaseIsAdmin => _metadataProvider.Database.IsAdmin;
+        public string SelectedDatabaseCaption => _metadataProvider.Database?.Caption??"";
+        public string SelectedDatabaseDescription => _metadataProvider.Database?.Description??"";
+        public string SelectedDatabaseRoles => _metadataProvider.Database?.Roles??"";
+        public string SelectedDatabaseCulture => _metadataProvider.Database?.Culture ?? "";
+        public string SelectedDatabaseCompatibilityLevel => _metadataProvider.Database?.CompatibilityLevel ?? "";
+        public bool SelectedDatabaseIsAdmin => _metadataProvider.Database?.IsAdmin??false;
 
 
         public string SelectedDatabaseDurationSinceUpdate {

@@ -76,12 +76,12 @@
                 <VisualBrush Visual="{Binding ElementName=outerBorder}" />
             </Grid.OpacityMask>-->
             <ListView x:Name="Messages" 
-                HorizontalAlignment="Stretch"  
+                      HorizontalAlignment="Stretch"  
                       AlternationCount="2"
-                behaviours:GridViewColumnResize.Enabled="True"
-                extenders:ListViewExtenders.AutoScrollToEnd="True"
+                      behaviours:GridViewColumnResize.Enabled="True"
+                      extenders:ListViewExtenders.AutoScrollToEnd="True"
                       ItemContainerStyle="{StaticResource alternatingRows}"
-                Focusable="False" >
+                      Focusable="False" >
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem 
