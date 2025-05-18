@@ -341,10 +341,33 @@
                     </DockPanel>
                 </Grid>
                 <ctrl:ClipBorder Grid.Row="1">
-                    <TextBlock 
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <TextBlock 
                          Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
                          Padding="8"
-                         Text="{Binding ErrorMessage, Mode=OneWay}"/>
+                         Text="{Binding ErrorMessage, Mode=OneWay}">
+                            <TextBlock.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy" 
+                                              cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                              cal:Message.Attach="CopyError()">
+                                        <MenuItem.Icon>
+                                            <Image Source="{DynamicResource copyDrawingImage}"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Goto Error" 
+                                              Visibility="{Binding ShowGotoError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                              cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                              cal:Message.Attach="GotoError()">
+                                        <MenuItem.Icon>
+                                            <Image Source="{DynamicResource select_arrow_up__2_DrawingImage}"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </TextBlock.ContextMenu>
+                        </TextBlock>
+                    </ScrollViewer>
                 </ctrl:ClipBorder>
 
 
