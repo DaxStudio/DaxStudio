@@ -140,6 +140,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _isVisible = value;
                     NotifyOfPropertyChange(() => IsVisible);
+                    SelectionActive = false;
                 }
                 catch(Exception ex)
                 {
@@ -211,7 +212,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Editor == null) return;
                 _selectionStart = Editor.SelectionStart;
                 _selectionLength = Editor.SelectionLength;
-                _selectionActive = !_selectionActive;
+                _selectionActive = value;
 
                 NotifyOfPropertyChange(() => SelectionActive);
             }

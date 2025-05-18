@@ -112,13 +112,13 @@
 
         <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Right">
 
-            <Button x:Name="FindNext" Margin="2" Background="Transparent">
+            <Button x:Name="FindNext" Margin="2" Background="Transparent" ToolTip="Find Next">
                 <Image Source="{DynamicResource next_smallDrawingImage}"/>
             </Button>
-            <Button x:Name="FindPrev" Margin="2" Background="Transparent">
+            <Button x:Name="FindPrev" Margin="2" Background="Transparent" ToolTip="Find Previous">
                 <Image Source="{DynamicResource prev_smallDrawingImage}" />
             </Button>
-            <ToggleButton x:Name="SelectionActive" Margin="2" Background="Transparent" MinWidth="30">
+            <ToggleButton x:Name="SelectionActive" Margin="2" Background="Transparent" MinWidth="30" ToolTip="Find / Replace in Selection">
                 <Image Source="{DynamicResource selection_smallDrawingImage}" />
             </ToggleButton>
             <Button x:Name="Close" ToolTip="Close" Margin="5" BorderThickness="0" Background="Transparent" IsCancel="True" IsTabStop="False">
@@ -136,7 +136,7 @@
                  Name="TextToReplace" Grid.Column="1" Grid.Row="1" MinWidth="50" /> 
         
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="1">
-            <Button Margin="2" HorizontalAlignment="Right" Background="Transparent"
+            <Button Margin="2" HorizontalAlignment="Right" Background="Transparent" 
                          ToolTip="Replace" Name="ReplaceText" Visibility="{Binding ShowReplace, Converter={StaticResource BoolToVisibilityConverter }}">
                 <Image Source="{DynamicResource replace_smallDrawingImage}"/>
             </Button>

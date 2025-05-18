@@ -212,6 +212,60 @@ namespace DaxStudio.Tests
                 TextToFind = "'",
                 TextToReplace = "\""
             };
+            vm.FindNext();
+            vm.ReplaceText();
+            vm.ReplaceText();
+            vm.ReplaceText();
+
+            Assert.AreEqual("{\"1\",\"2','3'} ",
+                localEditor.Text,
+                "Replacement Text");
+
+        }
+
+        [TestMethod]
+        public void ReplaceSelectedTextOfDifferentLengthsTest()
+        {
+            var localEditor = new MockEditor("aa bb aa bb aa bb");
+            localEditor.Select(0, 11);
+            var vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                // need to ceatea a new editor for replaces tests as they change the text
+                Editor = localEditor,
+                UseRegex = true,
+                UseWildcards = false,
+                CaseSensitive = false,
+                SelectionActive = true,
+                TextToFind = "bb",
+                TextToReplace = "cccc"
+            };
+
+            vm.ReplaceText();
+            vm.ReplaceText();
+            vm.ReplaceText();
+
+            Assert.AreEqual("aa cccc aa cccc aa bb",
+                localEditor.Text,
+                "Replacement Text");
+
+        }
+
+        [TestMethod]
+        public void ReplaceAllSelectedQuotesTest()
+        {
+            var localEditor = new MockEditor("{'1','2','3'} ");
+            localEditor.Select(0, 8);
+            var vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                // need to ceatea a new editor for replaces tests as they change the text
+                Editor = localEditor,
+                UseRegex = true,
+                UseWildcards = false,
+                CaseSensitive = false,
+                SelectionActive = true,
+                TextToFind = "'",
+                TextToReplace = "\""
+            };
 
             vm.ReplaceAllText();
 
