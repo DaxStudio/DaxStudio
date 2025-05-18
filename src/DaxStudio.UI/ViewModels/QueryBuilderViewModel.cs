@@ -71,7 +71,7 @@ namespace DaxStudio.UI.ViewModels
             set {
                 _autoGenerate = value;
                 NotifyOfPropertyChange();
-                if (!Options.HasShownQueryBuilderAutoGenerateWarning) { 
+                if (_autoGenerate == true && !Options.HasShownQueryBuilderAutoGenerateWarning) { 
                     ShowAutoGenerateWarning();
                     Options.HasShownQueryBuilderAutoGenerateWarning = true;
                 }
