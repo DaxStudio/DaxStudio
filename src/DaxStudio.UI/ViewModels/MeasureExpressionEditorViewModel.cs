@@ -19,6 +19,7 @@ using DaxStudio.UI.Events;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using DAXEditorControl;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -92,13 +93,12 @@ namespace DaxStudio.UI.ViewModels
             SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSize), 0);
         }
 
+        public IEditor Editor { get => _editor; }
+
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
             _editor = GetEditor();
-
-            // TODO - if theme is dark increase brightness of syntax highlights
-            //_editor.ChangeColorBrightness(1.25);
             _editor.SetSyntaxHighlightColorTheme(Options.AutoTheme.ToString());
 
             IntellisenseProvider.Editor = _editor;

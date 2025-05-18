@@ -1887,5 +1887,13 @@
         <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource tableHiddenGeometry}" />
     </DrawingGroup>
     <DrawingImage x:Key="tableHiddenDrawingImage" Drawing="{StaticResource tableHiddenDrawingGroup}" />
-
+    <Geometry x:Key="selection_smallGeometry1">F1 M16,16z M0,0z M2.6361355,8.5740175A0.67,0.36412363,0,0,1,2.1661355,8.4490198A0.66,0.35868895,0,0,1,1.9661355,8.1881551A0.68,0.36955831,0,0,1,2.6361355,7.8240313L13.716136,7.8240313A0.69,0.37499299,0,0,1,14.196136,7.9327251A0.67,0.36412363,0,0,1,14.406137,8.1990245A0.63,0.34238491,0,0,1,14.196136,8.4598892A0.66,0.35868895,0,0,1,13.716136,8.5740175z</Geometry>
+    <Geometry x:Key="selection_smallGeometry2">F1 M16,16z M0,0z M2.6561017,12.205826A0.69000002,0.374993,0,1,1,2.6561017,11.45584L8.5261022,11.45584A0.67,0.36412363,0,0,1,9.0061022,11.564534A0.68,0.36955831,0,0,1,9.0061022,12.108002A0.67,0.36412363,0,0,1,8.5261022,12.216696z</Geometry>
+    <Geometry x:Key="selection_smallGeometry3">F1 M16,16z M0,0z M2.6561017,4.9313394A0.69000002,0.374993,0,1,1,2.6561017,4.1813534L8.5261019,4.1813534A0.67,0.36412363,0,0,1,9.0061019,4.290047A0.68,0.36955831,0,0,1,9.0061019,4.8335151A0.67,0.36412363,0,0,1,8.5261019,4.9422087z</Geometry>
+    <DrawingGroup x:Key="selection_smallDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource IconForegroundBrush}" Geometry="{StaticResource selection_smallGeometry1}" />
+        <GeometryDrawing Brush="{StaticResource IconForegroundBrush}" Geometry="{StaticResource selection_smallGeometry2}" />
+        <GeometryDrawing Brush="{StaticResource IconForegroundBrush}" Geometry="{StaticResource selection_smallGeometry3}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="selection_smallDrawingImage" Drawing="{StaticResource selection_smallDrawingGroup}" />
 </ResourceDictionary>

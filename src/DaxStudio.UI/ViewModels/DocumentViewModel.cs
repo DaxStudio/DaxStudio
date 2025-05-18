@@ -2216,18 +2216,32 @@ namespace DaxStudio.UI.ViewModels
 
                     }
                 }
+                catch (AggregateException aggEx)
+                {
+                    var durationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
+                    var aggExMsg = string.Empty;
+                    foreach (var ex in aggEx.InnerExceptions)
+                    {
+                        Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
+                        aggExMsg = aggExMsg + ex.Message + Environment.NewLine;
+                        OutputError(ex.Message, false);
+                    }
+                    OutputQueryError(aggExMsg);
+                    QueryFailed(aggExMsg);
+                    ActivateResults();
+                }
                 catch (Exception ex)
                 {
+
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
-                    //await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
-                    var durationMs = _queryStopWatch?.ElapsedMilliseconds??0;
-                    //ActivateOutput();
+                    var durationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
                     OutputQueryError(ex.Message);
                     OutputError(ex.Message,false);
-                    OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs, false);
+                    //OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs, false);
                     QueryFailed(ex.Message);
                     ActivateResults();              
                 }
+
                 finally
                 {
                     IsQueryRunning = false;
@@ -3894,6 +3908,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FindReplaceDialog.TextToFind = SelectedText;
             }
+            FindReplaceDialog.Editor = ShowMeasureExpressionEditor ? MeasureExpressionEditor.Editor : Editor;
             FindReplaceDialog.ShowReplace = false;
             FindReplaceDialog.IsVisible = true;
             FindReplaceDialog.ActivateAsync();
@@ -3904,6 +3919,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 FindReplaceDialog.TextToFind = SelectedText;
             }
+
+            FindReplaceDialog.Editor = ShowMeasureExpressionEditor ? MeasureExpressionEditor.Editor : Editor;
             FindReplaceDialog.ShowReplace = true;
             FindReplaceDialog.IsVisible = true;
             FindReplaceDialog.ActivateAsync();
@@ -5329,5 +5346,7 @@ namespace DaxStudio.UI.ViewModels
         {
             QueryResultsPane.ErrorMessage = string.Empty;
         }
+
+        public IEditor Editor { get => _editor; }
     }
 }

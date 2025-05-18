@@ -14,7 +14,7 @@
                       xmlns:res="clr-namespace:DaxStudio.UI.Resources" xmlns:viewmodels="clr-namespace:DaxStudio.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:FindReplaceDialogViewModel}"
                       Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                       mc:Ignorable="d" 
-                      d:DesignWidth="300" 
+                      d:DesignWidth="500" 
                       d:DesignHeight="100"
                       Padding="4"
                       Margin="4"
@@ -118,7 +118,9 @@
             <Button x:Name="FindPrev" Margin="2" Background="Transparent">
                 <Image Source="{DynamicResource prev_smallDrawingImage}" />
             </Button>
-            
+            <ToggleButton x:Name="SelectionActive" Margin="2" Background="Transparent" MinWidth="30">
+                <Image Source="{DynamicResource selection_smallDrawingImage}" />
+            </ToggleButton>
             <Button x:Name="Close" ToolTip="Close" Margin="5" BorderThickness="0" Background="Transparent" IsCancel="True" IsTabStop="False">
                 <Image Source="{DynamicResource closeDrawingImage}" />
             </Button>

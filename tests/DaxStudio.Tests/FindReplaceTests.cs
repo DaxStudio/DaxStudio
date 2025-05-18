@@ -164,10 +164,82 @@ namespace DaxStudio.Tests
                 TextToFind = "sam[^\\s]*",
                 TextToReplace = "hello"
             };
-            //vm.Find();
+
             vm.ReplaceAllText();
 
             Assert.AreEqual("This is some hello text\non 3 different lines\nwith more hello",
+                localEditor.Text,
+                "Replacement Text");
+
+        }
+
+        [TestMethod]
+        public void ReplaceQuotesTest()
+        {
+            var localEditor = new MockEditor("Filter(values(table[column]), table[column] in {'1','2','3'} ");
+            var vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                // need to ceatea a new editor for replaces tests as they change the text
+                Editor = localEditor,
+                UseRegex = true,
+                UseWildcards = false,
+                CaseSensitive = false,
+                TextToFind = "'",
+                TextToReplace = "\""
+            };
+
+            vm.ReplaceAllText();
+
+            Assert.AreEqual("Filter(values(table[column]), table[column] in {\"1\",\"2\",\"3\"} ",
+                localEditor.Text,
+                "Replacement Text");
+
+        }
+
+        [TestMethod]
+        public void ReplaceSelectedQuotesTest()
+        {
+            var localEditor = new MockEditor("{'1','2','3'} ");
+            localEditor.Select(0, 8);
+            var vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                // need to ceatea a new editor for replaces tests as they change the text
+                Editor = localEditor,
+                UseRegex = true,
+                UseWildcards = false,
+                CaseSensitive = false,
+                SelectionActive = true,
+                TextToFind = "'",
+                TextToReplace = "\""
+            };
+
+            vm.ReplaceAllText();
+
+            Assert.AreEqual("{\"1\",\"2\",'3'} ",
+                localEditor.Text,
+                "Replacement Text");
+
+        }
+
+        [TestMethod]
+        public void ReplaceRegexCaptureTest()
+        {
+            var localEditor = new MockEditor("Hi abc123xyz there");
+
+            var vm = new FindReplaceDialogViewModel(mockEventAggregator)
+            {
+                // need to ceatea a new editor for replaces tests as they change the text
+                Editor = localEditor,
+                UseRegex = true,
+                UseWildcards = false,
+                CaseSensitive = false,
+                TextToFind = @"abc(\d+)xyz",
+                TextToReplace = "Output $1"
+            };
+
+            vm.ReplaceAllText();
+
+            Assert.AreEqual("Hi Output 123 there",
                 localEditor.Text,
                 "Replacement Text");
 
