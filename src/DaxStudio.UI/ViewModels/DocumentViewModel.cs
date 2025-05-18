@@ -2221,7 +2221,7 @@ namespace DaxStudio.UI.ViewModels
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
                     //await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
                     var durationMs = _queryStopWatch?.ElapsedMilliseconds??0;
-                    ActivateOutput();
+                    //ActivateOutput();
                     OutputQueryError(ex.Message);
                     OutputError(ex.Message,false);
                     OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs, false);

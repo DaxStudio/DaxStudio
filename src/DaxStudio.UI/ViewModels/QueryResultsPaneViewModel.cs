@@ -524,7 +524,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(ShowGotoError));
             }
         }
-        public bool ShowErrorMessage { get => ErrorLocation.Line > 0 || ErrorLocation.Column > 0; }
+        public bool ShowGotoError { get => ErrorLocation.Line > 0 || ErrorLocation.Column > 0; }
 
         public void GridGotFocus() { GridHasFocus = true; }
         public void GridLostFocus() { GridHasFocus = false; }
@@ -545,7 +545,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public bool ShowGotoError { get => !string.IsNullOrEmpty(ErrorMessage); }
+        public bool ShowErrorMessage { get => !string.IsNullOrEmpty(ErrorMessage); }
         public TextLocation SelectionLocation { get; internal set; }
 
         public void GotoError()
