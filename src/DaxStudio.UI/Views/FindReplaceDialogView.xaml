@@ -100,13 +100,22 @@
                 ToolTip="Toggle to switch between search and replace modes"/>
 
         <TextBox Name="TextToFind" 
+                 Text="{Binding TextToFind, UpdateSourceTrigger=PropertyChanged, Delay=200}"
                  ui:ControlHelper.PlaceholderText="Search"
                  Padding="8 6 120 0"
                  VerticalContentAlignment="Top"
                  MinWidth="150"
                  Margin="3" Grid.Row="0" Grid.Column="1"
-                 cal:Message.Attach="[Key Enter] = [FindNext]"
-                 ap:InitialFocusExtentions.SelectAllAndFocus="{Binding Path=IsVisible}"/>
+                 ap:InitialFocusExtentions.SelectAllAndFocus="{Binding Path=IsVisible}">
+            <i:Interaction.Triggers>
+                <trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Enter"/>
+                    </trig:InputBindingTrigger.InputBinding>
+                    <cal:ActionMessage MethodName="FindNext"/>
+                </trig:InputBindingTrigger>
+            </i:Interaction.Triggers>
+        </TextBox>
 
 
 
