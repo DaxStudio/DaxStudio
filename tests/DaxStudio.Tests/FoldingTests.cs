@@ -157,5 +157,49 @@ namespace DaxStudio.Tests
             var foldingArray = foldings.ToArray();
 
         }
+
+        [TestMethod]
+        public void MeasureFoldingTest()
+        {
+
+            var tabsAndSpaces = 
+                "MEASURE 'BDW_VM VW_SS_ISP_STTUS_COMN_HST_01'[GODWFLAG3_1] = " + Environment.NewLine +
+                "    IF(COUNTROWS(" + Environment.NewLine +
+                "        FILTER(" + Environment.NewLine +
+                "            'BDW_VM VW_SS_ISP_STTUS_COMN_HST_01'," + Environment.NewLine +
+                "\t\t\t(" + Environment.NewLine +
+                "\t\t\t\tRELATED( 'BDW_DS_DB SD_CRCLT_CPNT_BAS'[MPHON_CH_TYPE_ITG_CD]) = \"10003\"" + Environment.NewLine +
+                "\t\t\t\t|| RELATED('BDW_DS_DB SD_CRCLT_CPNT_BAS'[MPHON_SALE_PATH_ITG_CD]) = \"10035\"" + Environment.NewLine +
+                "\t\t\t)" + Environment.NewLine +
+                "\t\t\t&& 'BDW_VM VW_SS_ISP_STTUS_COMN_HST_01'[SALE_CPNT_SBT_ID] <> 1000274156" + Environment.NewLine +
+                "\t\t)" + Environment.NewLine +
+                "    ) > 0,1,0)";
+            var tabsOnly= 
+                "MEASURE 'BDW_VM VW_SS_ISP_STTUS_COMN_HST_01'[GODWFLAG3_1] = " + Environment.NewLine +
+                "\tIF(COUNTROWS(" + Environment.NewLine +
+                "\t\tFILTER(" + Environment.NewLine +
+                "\t\t\t'BDW_VM VW_SS_ISP_STTUS_COMN_HST_01'," + Environment.NewLine +
+                "\t\t\t(" + Environment.NewLine +
+                "\t\t\t\tRELATED( 'BDW_DS_DB SD_CRCLT_CPNT_BAS'[MPHON_CH_TYPE_ITG_CD]) = \"10003\"" + Environment.NewLine +
+                "\t\t\t\t|| RELATED('BDW_DS_DB SD_CRCLT_CPNT_BAS'[MPHON_SALE_PATH_ITG_CD]) = \"10035\"" + Environment.NewLine +
+                "\t\t\t)" + Environment.NewLine +
+                "\t\t\t&& 'BDW_VM VW_SS_ISP_STTUS_COMN_HST_01'[SALE_CPNT_SBT_ID] <> 1000274156" + Environment.NewLine +
+                "\t\t)" + Environment.NewLine +
+                "\t) > 0,1,0)";
+            
+            var docTabsOnly = new ICSharpCode.AvalonEdit.Document.TextDocument(tabsOnly);
+            var docTabsAndSpaces = new ICSharpCode.AvalonEdit.Document.TextDocument(tabsAndSpaces);
+            var foldingStrategy = new IndentFoldingStrategy();
+            var tabsOnlyFoldings = foldingStrategy.CreateNewFoldings(docTabsOnly);
+            var tabsAndSpacesFoldings = foldingStrategy.CreateNewFoldings(docTabsAndSpaces);
+
+            Assert.AreEqual(tabsAndSpacesFoldings.Count(), tabsOnlyFoldings.Count(), "tab and space indenting different");
+
+            foldingStrategy.TabIndent = 1;
+            tabsOnlyFoldings = foldingStrategy.CreateNewFoldings(docTabsOnly);
+            tabsAndSpacesFoldings = foldingStrategy.CreateNewFoldings(docTabsAndSpaces);
+
+            Assert.AreNotEqual(tabsAndSpacesFoldings.Count(), tabsOnlyFoldings.Count(), "tab and space indenting should not be the same when tabs are only 1 wide");
+        }
     }
 }

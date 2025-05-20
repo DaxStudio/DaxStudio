@@ -4364,8 +4364,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.DisableIntellisense();
             }
-
-
+            if (foldingStrategy != null)
+            {
+                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+            }
         }
 
         public QueryHistoryPaneViewModel QueryHistoryPane { get; set; }
@@ -4995,7 +4997,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
             if (Options.UseIndentCodeFolding) StartFoldingManager();
             else StopFoldingManager();
-            
+            if (foldingStrategy != null)
+            {
+                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+            }
             UpdateTheme();
             return Task.CompletedTask;
         }

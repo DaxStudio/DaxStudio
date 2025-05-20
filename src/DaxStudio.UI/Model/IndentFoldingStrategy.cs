@@ -20,6 +20,8 @@ namespace DaxStudio.UI.Model
             
         }
 
+        public int TabIndent { get; set; } = 4; 
+
         public void UpdateFoldings(FoldingManager manager, TextDocument document)
         {
             if (prevVersion != null && document.Version.CompareAge(prevVersion) == 0) return;
@@ -74,7 +76,11 @@ namespace DaxStudio.UI.Model
                 for (int i = line.Offset; i < line.EndOffset; i++)
                 {
                     char c = document.GetCharAt(i);
-                    if (char.IsWhiteSpace(c))
+                    if (c == '\t')
+                    {
+                        lineIndent += TabIndent;
+                    }
+                    else if (char.IsWhiteSpace(c))
                     {
                         lineIndent++;
                     }
