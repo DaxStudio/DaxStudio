@@ -90,6 +90,7 @@ namespace DaxStudio.UI.ViewModels
                 _textToFind = value;
                 NotifyOfPropertyChange(() => TextToFind);
                 NotifyOfPropertyChange(() => CanFind);
+                FindNext(false);
             }
         }
 
@@ -168,7 +169,7 @@ namespace DaxStudio.UI.ViewModels
 
 #region Methods
         
-        public void FindText()
+        public void FindText(bool moveSelection = true)
         {
             try
             {
@@ -177,7 +178,7 @@ namespace DaxStudio.UI.ViewModels
                     SystemSounds.Beep.Play();
                     return;
                 }
-                if (!FindNextInternal())
+                if (!FindNextInternal(moveSelection))
                     SystemSounds.Beep.Play();
             }
             catch (Exception ex)
@@ -189,8 +190,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void FindNext()
         {
+            FindNext(true);
+        }
+        public void FindNext(bool moveSelection = true)
+        {
             SearchUp = false;
-            FindText();
+            FindText(moveSelection);
         }
 
         public void FindPrev()
@@ -272,12 +277,14 @@ namespace DaxStudio.UI.ViewModels
         private int _selectionLength = 0;
         private bool _selectionActive = false;
 
-        private bool FindNextInternal()
+        private bool FindNextInternal(bool moveSelection = true)
         {
             // TODO - if we have a multi-line selection then we only want to search inside that
 
             Regex regex = GetRegEx(TextToFind);
-            int start = regex.Options.HasFlag(RegexOptions.RightToLeft) ? Editor.SelectionStart : Editor.SelectionStart + Editor.SelectionLength;
+            int start = Editor.SelectionStart;
+            if (moveSelection)
+                 start = regex.Options.HasFlag(RegexOptions.RightToLeft) ? Editor.SelectionStart : Editor.SelectionStart + Editor.SelectionLength;
             Match match = regex.Match(Editor.Text, start);
 
             if (!match.Success)  // start again from beginning or end
