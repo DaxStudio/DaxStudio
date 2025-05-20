@@ -90,7 +90,12 @@ namespace DaxStudio.UI.ViewModels
                 _textToFind = value;
                 NotifyOfPropertyChange(() => TextToFind);
                 NotifyOfPropertyChange(() => CanFind);
-                FindNext(false);
+                if (!UseRegex)
+                {
+                    // don't try to search as the user typing if we are using regex
+                    // as the pattern may not be valid yet
+                    FindNext(false); 
+                }
             }
         }
 
