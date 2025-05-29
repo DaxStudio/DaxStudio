@@ -392,9 +392,19 @@ namespace DaxStudio.UI.ViewModels
 
         public void Exit(FrameworkElement view)
         {
-            Fluent.Backstage backstage = GetBackStageParent(view) as Fluent.Backstage;
-            backstage.IsOpen = false;
-            Application.Current.Shutdown();
+            try
+            {
+                Fluent.Backstage backstage = GetBackStageParent(view) as Fluent.Backstage;
+                backstage.IsOpen = false;
+                var window = (Window)Shell.GetView();
+                window?.Close();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(Exit), "Error closing application");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error closing application: {ex.Message}"));
+            }
+
         }
 
         public async void Open(FrameworkElement view)
