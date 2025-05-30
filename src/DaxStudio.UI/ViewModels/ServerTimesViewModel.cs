@@ -674,7 +674,8 @@ namespace DaxStudio.UI.ViewModels
         public bool ParallelStorageEngineEventsDetected
         {
             get => parallelStorageEngineEventsDetected;
-            set {
+            set
+            {
                 parallelStorageEngineEventsDetected = value;
                 NotifyOfPropertyChange(nameof(ParallelStorageEngineEventsDetected));
             }
@@ -921,9 +922,11 @@ namespace DaxStudio.UI.ViewModels
         // This is where you can do any processing of the events before displaying them to the UI
         protected override void ProcessResults()
         {
-            if (AllStorageEngineEvents?.Count > 0) {
+            if (AllStorageEngineEvents?.Count > 0)
+            {
                 Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "results have not been cleared, skipping processing");
-                return; }
+                return;
+            }
             // results have not been cleared so this is probably an end event from some other
             // action like a tooltip populating
 
@@ -946,7 +949,8 @@ namespace DaxStudio.UI.ViewModels
                     Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "DAX Studio internal event detected, clearing any trace data");
                     Events.Clear();
                     return;
-                };
+                }
+                ;
 
                 bool IsEnd(DaxStudioTraceEventClass eventClass)
                 {
@@ -1525,8 +1529,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _isSEQuery;
-        public bool IsSEQuery { get => _isSEQuery;
-            set {
+        public bool IsSEQuery
+        {
+            get => _isSEQuery;
+            set
+            {
                 _isSEQuery = value;
                 NotifyOfPropertyChange();
             }
@@ -1664,12 +1671,14 @@ namespace DaxStudio.UI.ViewModels
             else
                 AllStorageEngineEvents.AddRange(m.StorageEngineEvents);
 
-            AllStorageEngineEvents.Apply(se => {
+            AllStorageEngineEvents.Apply(se =>
+            {
                 se.HighlightQuery = se.QueryRichText?.Contains("|~S~|") ?? false;
-                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData??se.Query); }
+                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData ?? se.Query); }
             });
             // update timeline total Duration if this is an older file format
-            if (m.FileFormatVersion <= 4) {
+            if (m.FileFormatVersion <= 4)
+            {
                 AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.TextData ?? se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
@@ -1870,7 +1879,9 @@ namespace DaxStudio.UI.ViewModels
         public bool CanShowTraceDiagnostics => AllStorageEngineEvents.Count > 0;
 
         private string _activityId = string.Empty;
-        public string ActivityID { get => _activityId;
+        public string ActivityID
+        {
+            get => _activityId;
             set
             {
                 _activityId = value;
@@ -1962,7 +1973,9 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowTimelineOnRows { get => this.StorageEventTimelineStyle != StorageEventTimelineStyle.None; }
 
         private StorageEventTimelineStyle _storageEventTimelineStyle;
-        public StorageEventTimelineStyle StorageEventTimelineStyle { get => _storageEventTimelineStyle;
+        public StorageEventTimelineStyle StorageEventTimelineStyle
+        {
+            get => _storageEventTimelineStyle;
             set
             {
                 _storageEventTimelineStyle = value;
@@ -2013,8 +2026,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private ImageSource _storageEventHeatmap;
-        public ImageSource StorageEventHeatmap {
-            get {
+        public ImageSource StorageEventHeatmap
+        {
+            get
+            {
                 // if we have a cached image return that
                 if (_storageEventHeatmap != null) return _storageEventHeatmap;
                 // if there are no events return an empty image
@@ -2038,19 +2053,24 @@ namespace DaxStudio.UI.ViewModels
 #endif                    
                 return _storageEventHeatmap;
             }
-            set {
+            set
+            {
                 _storageEventHeatmap = value;
                 NotifyOfPropertyChange();
             }
         }
 
-        public double StorageEventHeatmapHeight { get
+        public double StorageEventHeatmapHeight
+        {
+            get
             {
-                switch (this.StorageEventTimelineStyle) {
+                switch (this.StorageEventTimelineStyle)
+                {
                     case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.Thin: return 8.0;
                     case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.FullHeight: return 24.0;
                     default: return 12.0;
-                };
+                }
+                ;
             }
         }
 
@@ -2063,7 +2083,8 @@ namespace DaxStudio.UI.ViewModels
                     case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.Thin: return 6.0;
                     case DaxStudio.Interfaces.Enums.StorageEventTimelineStyle.FullHeight: return 6.0;
                     default: return 6.0;
-                };
+                }
+                ;
             }
         }
 
@@ -2072,9 +2093,28 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowObjectName
         {
             get { return _globalOptions.ShowObjectNameInServerTimings; }
-            set { _globalOptions.ShowObjectNameInServerTimings = value;
+            set
+            {
+                _globalOptions.ShowObjectNameInServerTimings = value;
                 NotifyOfPropertyChange();
             }
+        }
+
+        public TooltipStruct Tooltips { get; } = new TooltipStruct();
+
+        public struct TooltipStruct
+        {
+            public string Line => "This is the order the events occurred in the trace.";
+            public string Subclass => "The subclass of the event, which indicates the type of operation.";
+            public string Duration => "The total duration of the operation in milliseconds.";
+            public string Cpu => "The CPU time consumed by the event in milliseconds.";
+            public string Parallelism => "The parallelism factor indicates how many threads were used to process the event. A value of 1 means single-threaded execution, while higher values indicate multi-threaded execution.";
+            public string Rows => "The number of rows processed by the event. This is typically relevant for scan operations.";
+            public string Kb => "The size of the data processed by the event in kilobytes.";
+            public string Object => "The name of the object associated with the event.";
+            public string Timeline => "The timeline of the event, which shows when it occurred relative to other events in the trace. And shows the pattern of Formula Engine vs Storage Engine operations";
+            public string Query => "The query text associated with the event. This may include xmSQL or SQL queries depending on the event type.";
+
         }
     }
 }

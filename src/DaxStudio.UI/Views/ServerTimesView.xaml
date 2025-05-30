@@ -11,8 +11,8 @@
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
-             xmlns:cal="http://caliburnmicro.com"
-             mc:Ignorable="d" 
+             xmlns:cal="http://caliburnmicro.com" xmlns:Fluent="urn:fluent-ribbon"
+                          mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              cal:View.ApplyConventions="False">
     <UserControl.Resources>
@@ -78,7 +78,7 @@
                 <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Table.Header.Fore}"/>
                 <Setter Property="Background" Value="{DynamicResource Theme.Brush.Table.Header.Back}"/>
                 <Setter Property="FontWeight" Value="DemiBold"/>
-
+                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Timeline, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                 <Setter Property="ContentTemplate" >
                     <Setter.Value>
                         <DataTemplate >
@@ -93,11 +93,33 @@
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
+                <Setter Property="ToolTip">
+                    <Setter.Value>
+                        <Fluent:ScreenTip  DataContext="{Binding PlacementTarget, RelativeSource={RelativeSource self}}" Title="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource self}}" Text="{Binding Path=Tag}"/>
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
                     <Trigger Property="SortDirection" Value="{x:Null}">
                         <Setter Property="Padding" Value="0 0" />
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+
+            <Style x:Key="LeftHeader" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DsDataGridColumnHeaderStyle}">
+                <Setter Property="ToolTip">
+                    <Setter.Value>
+                        <Fluent:ScreenTip  DataContext="{Binding PlacementTarget, RelativeSource={RelativeSource self}}" Title="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource self}}" Text="{Binding Path=Tag}"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="RightHeader" TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource DsDataGridColumnHeaderStyle}">
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                <Setter Property="ToolTip">
+                    <Setter.Value>
+                        <Fluent:ScreenTip  DataContext="{Binding PlacementTarget, RelativeSource={RelativeSource self}}" Title="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource self}}" Text="{Binding Path=Tag}"/>
+                    </Setter.Value>
+                </Setter>
             </Style>
 
             <!-- Data Templates -->
@@ -705,8 +727,19 @@
 
                 
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                <DataGridTextColumn Header="Subclass" Width="95" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
+                    <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.RowNumber, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Subclass" Width="95" IsReadOnly="True" Binding="{Binding ClassSubclass, Converter={StaticResource EventClassSubclass}}" >
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Subclass, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Padding" Value="6 0 6 0"/>
@@ -720,20 +753,62 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Duration" IsReadOnly="True" Width="72" Binding="{Binding Duration, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                    <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                    <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}"  HeaderStyle="{StaticResource DataGridColumnHeaderRight}"/>
-                <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" HeaderStyle="{StaticResource DataGridColumnHeaderRight}" />
+                    <DataGridTextColumn Header="Duration"
+                                        IsReadOnly="True" Width="72" 
+                                        Binding="{Binding Duration, StringFormat='#,0'}" 
+                                        ElementStyle="{StaticResource AlignRight}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Duration, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="CPU" IsReadOnly="True" Width="48" Binding="{Binding CpuTime, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Cpu, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Par." IsReadOnly="True" Width="45" Binding="{Binding CpuFactor, StringFormat='x0.0'}" FontSize="10" ElementStyle="{StaticResource AlignRight}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Parallelism, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Rows" IsReadOnly="True" Width="56" Binding="{Binding EstimatedRows, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" >
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Rows, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="KB" IsReadOnly="True" Width="50" Binding="{Binding EstimatedKBytes, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" >
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Kb, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
                     <!--behaviours:GridViewColumnResize.Width="Auto" -->
                     <DataGridTemplateColumn Width="100" Header="Timeline" CellTemplate="{StaticResource TimelineCell}" CellStyle="{StaticResource TimelineCellStyle}" HeaderStyle="{StaticResource DataGridColumnHeaderTimeline}"/>
 
                     <DataGridTextColumn Header="Object" IsReadOnly="True" Visibility="{Binding Path=Data, Source={StaticResource ShowObjectName}}" Binding="{Binding ObjectName}" >
-
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Object, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Query" Width="*"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"  >
-                    <DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Query, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                                 <Setter Property="Padding" Value="6 2 6 0"/>
                                 <Setter Property="ToolTip" Value="{Binding Query, Converter={StaticResource QueryTabToSpaces}}"/>
