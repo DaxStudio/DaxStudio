@@ -344,6 +344,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
             {
+                ErrorMessage = string.Empty;
                 BusyMessage = "Query Running...";
                 ErrorMessage = string.Empty;
                 IsBusy = true;
@@ -391,6 +392,7 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnBackgroundThreadAsync(new TraceChangingEvent(this,QueryTraceStatus.Starting));
                 try
                 {
+                    ErrorMessage = string.Empty;
                     BusyMessage = "Waiting for Trace to start";
                     IsBusy = true;
                     CreateTracer();
@@ -685,6 +687,7 @@ namespace DaxStudio.UI.ViewModels
                 _tracer?.Stop();
                 _tracer?.Dispose();
                 _tracer = null;
+                ErrorMessage = string.Empty;
                 _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
             }
             catch (Exception ex)
