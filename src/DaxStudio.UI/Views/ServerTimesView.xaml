@@ -730,7 +730,7 @@
                     <DataGridTextColumn Header="Line" Width="48" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}">
                         <DataGridTextColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.RowNumber, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Line, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
@@ -796,7 +796,7 @@
 
                     <DataGridTextColumn Header="Object" IsReadOnly="True" Visibility="{Binding Path=Data, Source={StaticResource ShowObjectName}}" Binding="{Binding ObjectName}" >
                         <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}">
                                 <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Object, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -804,7 +804,7 @@
                     <DataGridTextColumn Header="Query" Width="*"
                                     IsReadOnly="True" Binding="{Binding Query, Converter={StaticResource QuerySingleLine}}"  >
                         <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}">
                                 <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Query, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
