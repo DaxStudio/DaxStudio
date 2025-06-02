@@ -30,7 +30,7 @@ namespace DaxStudio.CommandLine.Commands
             public bool DoNotReadStatsFromData { get; set; }
             
             [CommandOption("-q|--readstatsfromdirectquery")]
-            [Description("Setting this flag will force the execution of distinctcount queries that read the statistics from the data model (which is normally suppressed for Direct Query models)")]
+            [Description("Setting this flag will force the execution of distinctcount queries that read the statistics from the data model (which is normally suppressed for DirectQuery models)")]
             public bool ReadStatsFromDirectQuery { get; set; }
 
             private string _dictionaryPath = string.Empty;

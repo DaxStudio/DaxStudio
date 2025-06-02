@@ -41,7 +41,7 @@
             <StackPanel Grid.Row="0" Orientation="Vertical">
 
                 <TextBlock Padding="10" TextWrapping="Wrap" >The text you are about to paste appears to have come from Power BI Performance Analyzer and contains a <Run FontFamily="Courier New" Foreground="Green" Text="{Binding Comment}"/> comment indicating that this text contains both the top level DAX query plus an underlying query to the 
-                    <Run Foreground="Blue" TextDecorations="Underline">remote storage engine (Direct Query)
+                    <Run Foreground="Blue" TextDecorations="Underline">remote storage engine (DirectQuery)
                         <Run.ToolTip>
                             <ToolTip MaxWidth="300" HasDropShadow="True" Padding="16" >
                                 <Grid>
@@ -50,7 +50,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Image Source="{DynamicResource infoDrawingImage}" Width="24" VerticalAlignment="Top" Margin="0 0 8 0"/>
-                                    <TextBlock Grid.Column="1" TextWrapping="Wrap">Direct Query generates queries sent to the remote storage engine. These queries cannot be executed in DAX Studio using the connection to the local data model; they need a connection to the remote data source. By executing the DAX query in DAX Studio, you would see the same Direct Query queries in the Server Timings pane as SQL subclass type.</TextBlock>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap">DirectQuery generates queries sent to the remote storage engine. These queries cannot be executed in DAX Studio using the connection to the local data model; they need a connection to the remote data source. By executing the DAX query in DAX Studio, you would see the same DirectQuery queries in the Server Timings pane as SQL subclass type.</TextBlock>
                                 </Grid>
                             </ToolTip>
                         </Run.ToolTip></Run>.</TextBlock>
@@ -61,7 +61,7 @@
             
             <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="7,5" HorizontalAlignment="Center">
                 <Button x:Name="RemoveDirectQueryCode" IsDefault="True" FontSize="16" Style="{DynamicResource AccentButtonStyle}" Margin="4">_DAX Query Only</Button>
-                <Button x:Name="KeepDirectQueryCode"  FontSize="16" Style="{DynamicResource DefaultButtonStyle}" Margin="4">_Both DAX and Direct Query</Button>
+                <Button x:Name="KeepDirectQueryCode"  FontSize="16" Style="{DynamicResource DefaultButtonStyle}" Margin="4">_Both DAX and DirectQuery</Button>
                 <Button x:Name="Cancel" IsCancel="True" FontSize="16" Style="{DynamicResource DefaultButtonStyle}" Margin="4">_Cancel</Button>
             </StackPanel>
         <ui:ToggleSwitch  x:Name="RememberChoice" Grid.Row="3" HorizontalAlignment="Center" Margin="10,10,10,20">

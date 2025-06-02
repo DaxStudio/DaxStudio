@@ -476,7 +476,7 @@ namespace DaxStudio.UI.ViewModels
                             e.CancelCommand();
                             // remove the direct query code from the text we are pasting in
                             newContent = newContent.Substring(0, sm.CommentPosition);
-                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Direct Query code removed from pasted text"));
+                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "DirectQuery code removed from pasted text"));
                             //var dataObject = new DataObject(newContent);
                             //e.DataObject = dataObject;
                             //e.DataObject.SetData("UnicodeText", newContent);
@@ -5245,6 +5245,13 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ToggleCommentEvent message, CancellationToken cancellationToken)
         {
             var editor = GetEditor();
+            if (editor == null) {
+                var msg = "Unable to toggle comment - Editor is null";
+                Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync<ToggleCommentEvent>", msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                System.Media.SystemSounds.Beep.Play();
+                return Task.CompletedTask; 
+            }
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
             return Task.CompletedTask;
