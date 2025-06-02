@@ -1449,7 +1449,11 @@
                                Icon="{DynamicResource view_asDrawingImage}"
                                LargeIcon="{DynamicResource view_asDrawingImage}"
                                SizeDefinition="Large,Large,Small">
-
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="View As"
+                                   Text="This enables the testing of security roles by enabling the current query window to run in the context of a selected role."                                
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
             
