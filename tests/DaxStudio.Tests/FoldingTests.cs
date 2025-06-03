@@ -156,6 +156,8 @@ namespace DaxStudio.Tests
 
             var foldingArray = foldings.ToArray();
 
+            Assert.AreEqual(41, foldingArray[0].StartOffset);
+            Assert.AreEqual(548, foldingArray[0].EndOffset);
         }
 
         [TestMethod]
@@ -200,6 +202,45 @@ namespace DaxStudio.Tests
             tabsAndSpacesFoldings = foldingStrategy.CreateNewFoldings(docTabsAndSpaces);
 
             Assert.AreNotEqual(tabsAndSpacesFoldings.Count(), tabsOnlyFoldings.Count(), "tab and space indenting should not be the same when tabs are only 1 wide");
+        }
+
+        [TestMethod]
+        public void FoldingOpenEndedTest()
+        {
+
+            var qry1 = @"11111111
+   22222
+   33333
+  444444
+   55555
+  666666
+   77777
+";
+
+            var qry2 = @" 1111111
+   22222
+   33333
+  444444
+   55555
+  666666
+   77777
+";
+
+            var doc1 = new ICSharpCode.AvalonEdit.Document.TextDocument(qry1);
+            var doc2 = new ICSharpCode.AvalonEdit.Document.TextDocument(qry2);
+            var foldingStrategy = new IndentFoldingStrategy();
+            var foldings1 = foldingStrategy.CreateNewFoldings(doc1);
+            var foldings2 = foldingStrategy.CreateNewFoldings(doc2);
+            var foldingArray1 = foldings1.ToArray();
+            var foldingArray2 = foldings2.ToArray();
+            //Assert.AreEqual(foldings1.Count(), foldings2.Count(), "both folding counts should be the same");
+            
+            Assert.AreEqual(8, foldingArray1[0].StartOffset, "Start of first fold");
+            Assert.AreEqual(70, foldingArray1[0].EndOffset, "End of first fold");
+            Assert.AreEqual(38, foldingArray1[1].StartOffset, "Start of second fold");
+            Assert.AreEqual(48, foldingArray1[1].EndOffset, "End of second fold");
+            Assert.AreEqual(58, foldingArray1[2].StartOffset, "Start of third fold");
+            Assert.AreEqual(70, foldingArray1[2].EndOffset, "End of third fold");
         }
     }
 }
