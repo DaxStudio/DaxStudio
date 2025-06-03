@@ -42,9 +42,9 @@ namespace DaxStudio.UI.ViewModels
                 switch (TotalSize)
                 {
                     case long size when size < 1024: return TotalSize.ToString("N0") + " Bytes";
-                    case long size when size < (Math.Pow(1024, 2)): return (TotalSize / (double)(1024)).ToString("N2") + " KB";
-                    case long size when size < (Math.Pow(1024, 3)): return (TotalSize / (double)(Math.Pow(1024, 2))).ToString("N2") + " MB";
-                    default: return (TotalSize / (double)(Math.Pow(1024, 3))).ToString("N2") + " GB";
+                    case long size when size < (Math.Pow(1024, 2)): return (TotalSize / (double)(1024)).ToString("N2") + " KiB";
+                    case long size when size < (Math.Pow(1024, 3)): return (TotalSize / (double)(Math.Pow(1024, 2))).ToString("N2") + " MiB";
+                    default: return (TotalSize / (double)(Math.Pow(1024, 3))).ToString("N2") + " GiB";
                 }
             }
         }
