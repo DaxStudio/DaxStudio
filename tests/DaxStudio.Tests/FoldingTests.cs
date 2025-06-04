@@ -113,28 +113,28 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestMeasureWithBlankLines()
         {
-            var qry = @"    MEASURE '1-Calculate WAC'[FinalWac] =
-
-        CALCULATE (
-
-            SUMX (
-
-                ADDCOLUMNS (
-
-                    SUMMARIZE ( 'Qty By Period 1', 'Qty By Period 1'[InventoryNoFK] ),
-
-                    // ""Total"", CALCULATE ( IF ( [Component1Wac] = 0, [ItemWac], [Component1Wac] ) )
-
-                    ""Total"", VAR _Component1Wac = [Component1Wac] RETURN IF ( _Component1Wac = 0, [ItemWac], _Component1Wac )
-
-                ),
-
-                IF ( [LastQty] <> 0, [Total], 0 )
-
-            )
-
-        )
-";
+            var qry =   "    MEASURE '1-Calculate WAC'[FinalWac] =" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "        CALCULATE (" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "            SUMX (" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "                ADDCOLUMNS (" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "                    SUMMARIZE ( 'Qty By Period 1', 'Qty By Period 1'[InventoryNoFK] )," + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "                    // \"Total\", CALCULATE ( IF ( [Component1Wac] = 0, [ItemWac], [Component1Wac] ) )" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "                    \"Total\", VAR _Component1Wac = [Component1Wac] RETURN IF ( _Component1Wac = 0, [ItemWac], _Component1Wac )" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "                )," + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "                IF ( [LastQty] <> 0, [Total], 0 )" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "            )" + Environment.NewLine +
+                        "" + Environment.NewLine +
+                        "        )" + Environment.NewLine +
+                        "";
             var doc = new ICSharpCode.AvalonEdit.Document.TextDocument(qry);
             var foldingStrategy = new IndentFoldingStrategy();
             var foldings = foldingStrategy.CreateNewFoldings(doc);
@@ -208,23 +208,23 @@ namespace DaxStudio.Tests
         public void FoldingOpenEndedTest()
         {
 
-            var qry1 = @"11111111
-   22222
-   33333
-  444444
-   55555
-  666666
-   77777
-";
+            var qry1 = @"11111111" + Environment.NewLine +
+                        "   22222" + Environment.NewLine +
+                        "   33333" + Environment.NewLine +
+                        "  444444" + Environment.NewLine +
+                        "   55555" + Environment.NewLine +
+                        "  666666" + Environment.NewLine +
+                        "   77777" + Environment.NewLine +
+                        "";
 
-            var qry2 = @" 1111111
-   22222
-   33333
-  444444
-   55555
-  666666
-   77777
-";
+            var qry2 = @" 1111111" + Environment.NewLine +
+                        "   22222" + Environment.NewLine +
+                        "   33333" + Environment.NewLine +
+                        "  444444" + Environment.NewLine +
+                        "   55555" + Environment.NewLine +
+                        "  666666" + Environment.NewLine +
+                        "   77777" + Environment.NewLine +
+                        "";
 
             var doc1 = new ICSharpCode.AvalonEdit.Document.TextDocument(qry1);
             var doc2 = new ICSharpCode.AvalonEdit.Document.TextDocument(qry2);
