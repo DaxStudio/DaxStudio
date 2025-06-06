@@ -148,8 +148,14 @@ namespace DaxStudio.UI.ViewModels
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
-                string content = e.DataObject.GetData("UnicodeText", true) as string;
-                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+                string content = null;
+
+                (content, _) = ClipboardHelper.GetText(e.DataObject);
+
+                if (content == null) return;
+
+
+                var dataObject = new DataObject(content);
                 e.DataObject = dataObject;
 
             }

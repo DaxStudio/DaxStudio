@@ -1,49 +1,44 @@
-﻿using System.Text;
+﻿using Polly;
+using Serilog;
+using System;
+using System.Windows;
 
 namespace DaxStudio.UI.Utils
 {
     public static class ClipboardHelper
     {
-        const int MaxLineLen = 500;
-
-        public static string FixupString(string input)
+        private static Policy _retryPolicy;
+        static ClipboardHelper()
         {
-            var sb = new StringBuilder();
-            var lineLen = 0;
-            for (var i = 0; i < input.Length; i++)
-            {
-                var c = input[i];
-                lineLen++;
-                // this check strips out unicode non-breaking spaces and replaces them
-                // with a "normal" space. This is helpful when pasting code from other 
-                // sources like web pages or word docs which may have non-breaking
-                // which would normally cause the tabular engine to throw an error
-                if (c == '\u00A0') c = ' ';
-                sb.Append(c);
-
-                // reset the current line length if we hit a newline character
-                if (c == '\n') lineLen = 0;
-
-                // if the current line is greater than the specified max length then
-                // insert a newline character after the next char we find in the switch list below. 
-                // This prevents massive lines being pasted in which can cause the syntax 
-                // highligher to hang. 
-                if (lineLen > MaxLineLen)
-                {
-                    switch (c)
-                    {
-                        case ';':
-                        case ',':
-                        case ')':
-                        case '}':
-                            sb.Append('\n');
-                            lineLen = 0;
-                            break;
-                    }
+            _retryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetry(
+                3,
+                retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt) * 100),
+                (exception, timeSpan, context) => {
+                    Log.Error(exception, "{class} {method}", nameof(ClipboardHelper), nameof(GetText));
+                    System.Diagnostics.Debug.WriteLine("Error getting clipboard text during paste: " + exception.Message);
                 }
-            }
+            ); 
+        }
 
-            return sb.ToString();
+        public static Tuple<string,LongLineStateMachine> GetText(IDataObject dataObject )
+        {
+            string content = null;
+            _retryPolicy.Execute(() =>
+            {
+                if (dataObject.GetDataPresent(DataFormats.UnicodeText))
+                    content = dataObject.GetData(DataFormats.UnicodeText, true) as string;
+                else if (dataObject.GetDataPresent(DataFormats.Text))
+                    content = dataObject.GetData(DataFormats.Text, true) as string;
+                else if (dataObject.GetDataPresent(DataFormats.OemText))
+                    content = dataObject.GetData(DataFormats.OemText, true) as string;
+            });
+
+            var sm = new LongLineStateMachine(Common.Constants.MaxLineLength);
+            var newContent = sm.ProcessString(content);
+
+            return Tuple.Create(newContent, sm );
         }
 
         

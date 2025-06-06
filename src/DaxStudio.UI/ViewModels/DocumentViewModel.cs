@@ -24,7 +24,7 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
-using ADOTabular.Utils;
+//using ADOTabular.Utils;
 using Caliburn.Micro;
 using Dax.ViewModel;
 using DAXEditorControl;
@@ -462,26 +462,27 @@ namespace DaxStudio.UI.ViewModels
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
-                string content = e.DataObject.GetData("UnicodeText", true) as string;
+                string content = null;
+                LongLineStateMachine sm;
+                (content, sm)  = ClipboardHelper.GetText(e.DataObject);
 
                 if (content == null) return;
 
-                var sm = new LongLineStateMachine(Constants.MaxLineLength);
-                var newContent = sm.ProcessString(content);
+                
                 if (sm.QueryCommentFound)
                 {
-                    switch (await ShowStripDirectQueryDialog(sm.CommentPosition, sm.Comment, newContent.Length))
+                    switch (await ShowStripDirectQueryDialog(sm.CommentPosition, sm.Comment, content.Length))
                     {
                         case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
                             e.CancelCommand();
                             // remove the direct query code from the text we are pasting in
-                            newContent = newContent.Substring(0, sm.CommentPosition);
+                            content = content.Substring(0, sm.CommentPosition);
                             await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "DirectQuery code removed from pasted text"));
                             //var dataObject = new DataObject(newContent);
                             //e.DataObject = dataObject;
                             //e.DataObject.SetData("UnicodeText", newContent);
                             var editor2 = this.GetEditor();
-                            editor2.Document.Insert(editor2.CaretOffset, newContent);
+                            editor2.Document.Insert(editor2.CaretOffset, content);
                             
                             return;
                         case MultipleQueriesDetectedDialogResult.KeepDirectQuery:
@@ -3451,7 +3452,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var server = ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
+                var server = ADOTabular.Utils.ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
                 var serverParts = server.Split(':');
                 if (serverParts.Length != 2) {
                     // if there is no colon in the datasource this is not a local engine instance
