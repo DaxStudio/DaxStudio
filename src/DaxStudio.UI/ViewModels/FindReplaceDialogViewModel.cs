@@ -13,6 +13,9 @@ using DaxStudio.Common;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Threading;
+using ICSharpCode.AvalonEdit.Rendering;
+
+
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,7 +28,6 @@ namespace DaxStudio.UI.ViewModels
     public class FindReplaceDialogViewModel : Screen, IViewAware
     {
 
-        // TODO - fix the following sample code to fit MVVM
 
         private static string _textToFind = "";
         private static string _textToReplace = "";
@@ -36,12 +38,14 @@ namespace DaxStudio.UI.ViewModels
         private static bool _useWholeWord;
         private readonly IEventAggregator _eventAggregator;
 
+        private readonly Utils.SelectionBackgroundRenderer selectionBackgroundRenderer;
+
         public FindReplaceDialogViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
             IsVisible = false;
             //this.editor = editor;
-           
+            selectionBackgroundRenderer = new Utils.SelectionBackgroundRenderer();
         }
 
         protected override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -224,6 +228,17 @@ namespace DaxStudio.UI.ViewModels
                 _selectionLength = Editor.SelectionLength;
                 _selectionActive = value;
 
+                if (_selectionActive)
+                {
+                    selectionBackgroundRenderer.StartOffset = _selectionStart;
+                    selectionBackgroundRenderer.Length = _selectionLength;
+                    Editor.TextArea.TextView.BackgroundRenderers.Add(selectionBackgroundRenderer);
+                }
+                else
+                {
+                    Editor.TextArea.TextView.BackgroundRenderers.Remove(selectionBackgroundRenderer);
+                }
+
                 NotifyOfPropertyChange(() => SelectionActive);
             }
         }
@@ -260,7 +275,6 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 Regex regex = GetRegEx(TextToFind, true);
-                int offset = 0;
                 Editor.BeginChange();
                 var initialText = SelectionActive ? Editor.DocumentGetText(_selectionStart, _selectionLength) : Editor.Text;
 

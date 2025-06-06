@@ -16,6 +16,7 @@
     <Color x:Key="Theme.Accent3">#FF1B72AB</Color>
     <Color x:Key="Theme.Icons.Red">#ED1C24</Color>
     <Color x:Key="Theme.Default.Back">#FFFFFF</Color>
+    <Color x:Key="Theme.FindSelection.Back">#dFdFdF</Color>
     <Color x:Key="Theme.Alternate.Back">#F3F2F1</Color>
     <Color x:Key="Theme.Table.Alternate">#F7F7F7</Color>
     <Color x:Key="Theme.Default.Fore">#000000</Color>
@@ -57,6 +58,7 @@
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Muted.Fore" Color="{StaticResource Theme.Muted.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{StaticResource Theme.Default.Back}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.FindSelection.Back" Color="{StaticResource Theme.FindSelection.Back}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Alternate.Back" Color="{StaticResource Theme.Table.Alternate}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Table.Alternate" Color="{StaticResource Theme.Table.Alternate}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{StaticResource Theme.MenuBar.Back}" options:Freeze="true"/>

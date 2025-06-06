@@ -57,6 +57,7 @@
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{x:Static SystemColors.WindowTextColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Muted.Fore" Color="{x:Static SystemColors.GrayTextColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Back" Color="{x:Static SystemColors.WindowColor}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.FindSelection.Back" Color="{StaticResource Theme.Accent1}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Alternate.Back" Color="{x:Static SystemColors.WindowColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Table.Alternate" Color="{x:Static SystemColors.WindowColor}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.MenuBar.Back" Color="{x:Static SystemColors.WindowColor}" options:Freeze="true"/>
