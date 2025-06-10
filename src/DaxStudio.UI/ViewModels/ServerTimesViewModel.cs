@@ -1705,6 +1705,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_serverTimingDetails != null) { _serverTimingDetails.PropertyChanged -= ServerTimingDetails_PropertyChanged; }
                 _serverTimingDetails = value;
+                _serverTimingDetails.ShowObjectName = Options.ShowObjectNameInServerTimings;
                 _serverTimingDetails.PropertyChanged += ServerTimingDetails_PropertyChanged;
                 NotifyOfPropertyChange(() => ServerTimingDetails);
             }

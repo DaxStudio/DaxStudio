@@ -2823,6 +2823,7 @@ namespace DaxStudio.UI.ViewModels
             // synch the ribbon buttons and the server timings pane
             if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
             {
+                ServerTimingDetails.ShowObjectName = Options.ShowObjectNameInServerTimings;
                 stvModel.ServerTimingDetails = ServerTimingDetails;
                 stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
                 stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
