@@ -461,7 +461,17 @@ namespace DaxStudio.UI.ViewModels
             dialog.Filter = "JSON file (*.json)|*.json";
             dialog.Title = "Export Trace Details";
 
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportTraceDetails(dialog.FileName);
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                try
+                {
+                    ExportTraceDetails(dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(Export), "Error Exporting Trace Details");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting Trace Details: {ex.Message}"));
+                }
+            }
         }
 
         public abstract void ExportTraceDetails(string filePath);
