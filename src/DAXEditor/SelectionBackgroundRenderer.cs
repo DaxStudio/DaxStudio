@@ -14,19 +14,27 @@ namespace DAXEditorControl
 
         public void Draw(TextView textView, DrawingContext drawingContext)
         {
-            foreach (var visualLine in textView.VisualLines)
+             DrawImpl(textView, drawingContext);
+
+        }
+
+        private void DrawImpl(TextView textView, DrawingContext drawingContext)
+        {
+
+            var brush = (Brush)System.Windows.Application.Current.FindResource("Theme.Brush.FindSelection.Back");
+            if (brush == null) return; // exit if no brush found
+
+            ICSharpCode.AvalonEdit.Document.TextSegment seg = new ICSharpCode.AvalonEdit.Document.TextSegment();
+            seg.StartOffset = StartOffset;
+            seg.EndOffset = EndOffset;
+
+            var rcArray = BackgroundGeometryBuilder.GetRectsForSegment(textView, seg, true);
+            foreach (var rc in rcArray)
             {
-                if (StartOffset > (visualLine.StartOffset + visualLine.VisualLength)) continue;
-                if (EndOffset < (visualLine.StartOffset + visualLine.VisualLength)) continue;
-
-                var rc = BackgroundGeometryBuilder.GetRectsFromVisualSegment(textView, visualLine, 0, 1000).First();
-
-                var brush = (Brush)System.Windows.Application.Current.FindResource("Theme.Brush.FindSelection.Back");
-                if (brush == null) return;
-
                 drawingContext.DrawRectangle(brush, null,
-                    new System.Windows.Rect(0, rc.Top, textView.ActualWidth, rc.Height));
+                    new System.Windows.Rect(rc.Left, rc.Top, rc.Width, rc.Height));
             }
+
         }
     }
 }
