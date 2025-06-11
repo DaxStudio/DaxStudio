@@ -644,6 +644,7 @@
     <Compile Include="Utils\RegexHelper.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
+    <Compile Include="Utils\SelectionBackgroundRenderer.cs" />
     <Compile Include="Utils\SendKeys.cs" />
     <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
     <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />

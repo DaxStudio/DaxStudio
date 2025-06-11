@@ -186,7 +186,6 @@
     <Compile Include="Utils\ConnectionStringParser.cs" />
     <Compile Include="Utils\MetadataImageHelper.cs" />
     <Compile Include="Utils\TaskExtensions.cs" />
-    <Compile Include="Utils\TupleExtensions.cs" />
     <Compile Include="Utils\XmlReaderExtensions.cs" />
     <Compile Include="VersionComparisonExtension.cs" />
   </ItemGroup>
