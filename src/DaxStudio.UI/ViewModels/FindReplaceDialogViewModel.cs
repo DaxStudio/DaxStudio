@@ -38,14 +38,10 @@ namespace DaxStudio.UI.ViewModels
         private static bool _useWholeWord;
         private readonly IEventAggregator _eventAggregator;
 
-        private readonly Utils.SelectionBackgroundRenderer selectionBackgroundRenderer;
-
         public FindReplaceDialogViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
             IsVisible = false;
-            //this.editor = editor;
-            selectionBackgroundRenderer = new Utils.SelectionBackgroundRenderer();
         }
 
         protected override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -230,13 +226,12 @@ namespace DaxStudio.UI.ViewModels
 
                 if (_selectionActive)
                 {
-                    selectionBackgroundRenderer.StartOffset = _selectionStart;
-                    selectionBackgroundRenderer.Length = _selectionLength;
-                    Editor.TextArea.TextView.BackgroundRenderers.Add(selectionBackgroundRenderer);
+                    Editor.FindSelectionOffset = _selectionStart;
+                    Editor.FindSelectionLength = _selectionLength;
                 }
                 else
                 {
-                    Editor.TextArea.TextView.BackgroundRenderers.Remove(selectionBackgroundRenderer);
+                    Editor.ClearFindSelection();
                 }
 
                 NotifyOfPropertyChange(() => SelectionActive);

@@ -17,10 +17,9 @@ using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
 using System.Text;
 using ICSharpCode.AvalonEdit;
-using System.ComponentModel;
 using System.Windows.Documents;
 using System.Windows.Automation.Peers;
-using DAXEditor;
+
 
 
 namespace DAXEditorControl
@@ -92,6 +91,7 @@ namespace DAXEditorControl
     {
         private readonly BracketRenderer.BracketHighlightRenderer _bracketRenderer;
         private WordHighlighTransformer _wordHighlighter;
+        private SelectionBackgroundRenderer _selectionBackgroundRenderer;
         private readonly TextMarkerService _textMarkerService;
         private ToolTip _toolTip;
         private bool _syntaxErrorDisplayed;
@@ -137,15 +137,19 @@ namespace DAXEditorControl
             // add the stub Intellisense provider
             IntellisenseProvider = new IntellisenseProviderStub();
 
+            _selectionBackgroundRenderer = new SelectionBackgroundRenderer();
+
+            _wordHighlighter = new WordHighlighTransformer(_highlightFunction, HighlightBackgroundBrush);
+
             this.DocumentChanged += DaxEditor_DocumentChanged;
             DataObject.AddPastingHandler(this, OnDataObjectPasting);
             DataObject.AddCopyingHandler(this, OnDataObjectCopying);
-            RegiserKeyBindings();
+            RegisterKeyBindings();
         }
 
         public EventHandler<DataObjectCopyingEventArgs> OnCopying { get; set; }
 
-        private void RegiserKeyBindings()
+        private void RegisterKeyBindings()
         {
             
             //InputBindings.Add(new InputBinding( new HotKeyCommand(MoveLineUp) , new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Shift)));
@@ -365,13 +369,16 @@ namespace DAXEditorControl
                    get { return _highlightFunction; }
                    set {
                        if (_highlightFunction != null)
-                       { 
-                           // remove the old function before adding the new one
-                           this.TextArea.TextView.LineTransformers.Remove(_wordHighlighter); 
+                       {
+                            if (TextArea.TextView.LineTransformers.Contains(_wordHighlighter))
+                            {
+                                // remove the old function before adding the new one
+                                this.TextArea.TextView.LineTransformers.Remove(_wordHighlighter);
+                            }
                        }
                        _highlightFunction = value;
-                        _wordHighlighter = new WordHighlighTransformer(_highlightFunction, HighlightBackgroundBrush);
-                        this.TextArea.TextView.LineTransformers.Add(_wordHighlighter);
+                       _wordHighlighter.HightlightFunction = _highlightFunction;
+                       this.TextArea.TextView.LineTransformers.Add(_wordHighlighter);
                    }
                }
 
@@ -876,6 +883,43 @@ namespace DAXEditorControl
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        public void ClearFindSelection()
+        {
+            FindSelectionOffset = 0;
+            FindSelectionLength = 0;
+            TextArea.TextView.Redraw();
+        }
+
+        private int _findSelectionOffset = 0;
+        public int FindSelectionOffset
+        {
+            get => _findSelectionOffset;
+            set { _findSelectionOffset = value;
+                _selectionBackgroundRenderer.StartOffset = _findSelectionOffset;
+                _wordHighlighter.FindSelectionOffset = _findSelectionOffset;
+            }
+        }
+
+        private int _findSelectionLength = 0;
+        public int FindSelectionLength
+        {
+            get => _findSelectionLength;
+            set { 
+                _findSelectionLength = value;
+                _selectionBackgroundRenderer.Length = _findSelectionLength;
+                _wordHighlighter.FindSelectionLength = _findSelectionLength;
+                if (_findSelectionLength == 0)
+                {
+                    TextArea.TextView.BackgroundRenderers.Remove(_selectionBackgroundRenderer);
+                }
+                else
+                {
+                    TextArea.TextView.BackgroundRenderers.Add(_selectionBackgroundRenderer);
+                }
+            }
+        }
+
     }
 
 

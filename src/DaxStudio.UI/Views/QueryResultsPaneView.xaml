@@ -340,7 +340,7 @@
                         </Button>
                     </DockPanel>
                 </Grid>
-                <ctrl:ClipBorder Grid.Row="1">
+                <ctrl:ClipBorder Grid.Row="1" BorderBrush="{DynamicResource Theme.Brush.Log.Error}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Auto">
                         <TextBlock 

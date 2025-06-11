@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows.Media;
 
-namespace DaxStudio.UI.Utils
+namespace DAXEditorControl
 {
     public class SelectionBackgroundRenderer : IBackgroundRenderer
     {

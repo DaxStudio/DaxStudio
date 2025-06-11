@@ -2229,7 +2229,6 @@ namespace DaxStudio.UI.ViewModels
                     }
                     OutputQueryError(aggExMsg);
                     QueryFailed(aggExMsg);
-                    ActivateResults();
                 }
                 catch (Exception ex)
                 {
@@ -2239,8 +2238,7 @@ namespace DaxStudio.UI.ViewModels
                     OutputQueryError(ex.Message);
                     OutputError(ex.Message,false);
                     //OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs, false);
-                    QueryFailed(ex.Message);
-                    ActivateResults();              
+                    QueryFailed(ex.Message);              
                 }
 
                 finally
@@ -2248,6 +2246,7 @@ namespace DaxStudio.UI.ViewModels
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     StopTimer();
+                    ActivateResults();
                 }
 
             }

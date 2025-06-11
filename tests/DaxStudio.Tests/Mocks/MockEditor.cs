@@ -67,6 +67,9 @@ namespace DaxStudio.Tests.Mocks
         public int CaretOffset { get;set; }
         public bool IsMouseOverCompletionWindow { get => false; set { } }
 
+        public int FindSelectionOffset { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int FindSelectionLength { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public ICSharpCode.AvalonEdit.Document.TextLocation DocumentGetLocation(int offset)
         {
             var lines = _text.Substring(offset).Split('\n');
@@ -111,6 +114,11 @@ namespace DaxStudio.Tests.Mocks
         }
 
         public DocumentLine DocumentGetLineByNumber(int line)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ClearFindSelection()
         {
             throw new NotImplementedException();
         }

@@ -134,6 +134,7 @@
     <Compile Include="IntellisenseProviderStub.cs" />
     <Compile Include="Renderers\TextMarkerService.cs" />
     <Compile Include="Resources\ResourceKeys.cs" />
+    <Compile Include="SelectionBackgroundRenderer.cs" />
     <Compile Include="TextBoxController.cs" />
     <Compile Include="WordHighlighTransformer.cs" />
     <Page Include="Themes\Generic.xaml">
