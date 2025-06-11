@@ -127,7 +127,7 @@
             <Button x:Name="FindPrev" Margin="2" Background="Transparent" ToolTip="Find Previous">
                 <Image Source="{DynamicResource prev_smallDrawingImage}" />
             </Button>
-            <ToggleButton x:Name="SelectionActive" Margin="2" Background="Transparent" MinWidth="30" ToolTip="Find / Replace in Selection">
+            <ToggleButton x:Name="SelectionActive" Margin="2" Background="Transparent" MinWidth="30" ToolTip="Find / Replace in Selection" Style="{DynamicResource DefaultToggleButtonStyle}">
                 <Image Source="{DynamicResource selection_smallDrawingImage}" />
             </ToggleButton>
             <Button x:Name="Close" ToolTip="Close" Margin="5" BorderThickness="0" Background="Transparent" IsCancel="True" IsTabStop="False">
