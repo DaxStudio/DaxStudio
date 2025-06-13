@@ -20,4 +20,4 @@ jobs:
           $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
           $installerUrl = $github.release.assets | Where-Object -Property name -match ${env:packageFileName} | Select -ExpandProperty browser_download_url -First 1
           $release_version = $github.release.tag_name -replace "v", ""
-          .\wingetcreate.exe update ${env:packageId} -s -v $release_version -u "$installerUrl|x64|machine" "$installerUrl|x64|user" -t ${{ secrets.WINGET_TOKEN }}
+          .\wingetcreate.exe update ${env:packageId} -s -v $release_version -u "$installerUrl|x64|machine" "$installerUrl|x64|user" 
