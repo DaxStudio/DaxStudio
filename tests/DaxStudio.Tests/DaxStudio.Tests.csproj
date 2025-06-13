@@ -183,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AvalonEdit">
-      <Version>6.3.0.90</Version>
+      <Version>6.3.1.120</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
       <Version>4.0.230</Version>
@@ -219,10 +219,10 @@
       <Version>1.33.2</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>9.0.3</Version>
+      <Version>9.0.6</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
-      <Version>4.6.2</Version>
+      <Version>4.6.3</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime">
       <Version>4.3.1</Version>

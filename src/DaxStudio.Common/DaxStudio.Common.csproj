@@ -121,10 +121,10 @@
       <Version>1.5.0.20-commands</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.90.0</Version>
+      <Version>19.98.0.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.90.0</Version>
+      <Version>19.98.0.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel">
       <Version>2.23.0</Version>
@@ -135,10 +135,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Broker">
-      <Version>4.70.0</Version>
+      <Version>4.72.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
-      <Version>4.70.0</Version>
+      <Version>4.72.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.PowerBI.Api">
       <Version>4.22.0</Version>
@@ -147,7 +147,7 @@
       <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.2.0</Version>
+      <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
