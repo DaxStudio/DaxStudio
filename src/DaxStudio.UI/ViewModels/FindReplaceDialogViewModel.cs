@@ -240,12 +240,54 @@ namespace DaxStudio.UI.ViewModels
 
         public void ReplaceText()
         {
+            if (UseRegex)
+            {
+                ReplaceTextViaRegex();
+            } else
+            {
+                ReplaceTextDirectly();
+            }
+
+        }
+
+        public void ReplaceTextViaRegex()
+        {
             try
             {
                 Regex regex = GetRegEx(TextToFind);
                 string input = Editor.Text.Substring(Editor.SelectionStart, Editor.SelectionLength);
                 Match match = regex.Match(input);
                 bool replaced = false;
+                var newText = Regex.Replace(input, TextToFind, TextToReplace);
+
+                if (match.Success && match.Index == 0 && match.Length == input.Length)
+                {
+                    Editor.DocumentReplace(Editor.SelectionStart, Editor.SelectionLength, newText);
+                    var delta = TextToReplace.Length - match.Length;
+                    if (SelectionActive) _selectionLength += delta;
+
+                    replaced = true;
+                }
+
+                if (!FindNextInternal() && !replaced)
+                    SystemSounds.Beep.Play();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceTextViaRegex), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
+            }
+        }
+
+        public void ReplaceTextDirectly()
+        {
+            try
+            {
+                Regex regex = GetRegEx(TextToFind);
+                string input = Editor.Text.Substring(Editor.SelectionStart, Editor.SelectionLength);
+                Match match = regex.Match(input);
+                bool replaced = false;
+
                 if (match.Success && match.Index == 0 && match.Length == input.Length)
                 {
                     Editor.DocumentReplace(Editor.SelectionStart, Editor.SelectionLength, TextToReplace);
@@ -260,7 +302,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex,Constants.LogMessageTemplate,"FindReplaceDialogViewModel","ReplaceText",ex.Message);
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceTextDirectly), ex.Message);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
             }
         }
@@ -348,9 +390,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 string pattern = Regex.Escape(textToFind);
                 if (UseWildcards && !UseWholeWord)
-                    pattern = pattern.Replace("\\*", ".*").Replace("\\?", ".");
+                    pattern = pattern.Replace("\\*", ".*?").Replace("\\?", ".");
                 if (UseWildcards && UseWholeWord)
-                    pattern = pattern.Replace("\\*", "[^\\s]*").Replace("\\?", ".");
+                    pattern = pattern.Replace("\\*", "[^\\s]*?").Replace("\\?", ".");
                 if (UseWholeWord)
                     pattern = "\\b" + pattern + "\\b";
                 return new Regex(pattern, options);
