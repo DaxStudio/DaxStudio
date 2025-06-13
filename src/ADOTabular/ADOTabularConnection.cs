@@ -282,6 +282,7 @@ namespace ADOTabular
                 {
                     Properties = SplitConnectionString(_connectionString);
                     ConnectionType = GetConnectionType(ServerName);
+                    IsTestingRls = HasRlsParameters(_connectionString);
                     //_connectionProps = ConnectionStringParser.Parse(_connectionString);
                 }
             }
@@ -928,9 +929,9 @@ namespace ADOTabular
         public bool IsPowerBIXmla { get => this.Properties["Data Source"].IsPowerBIService(); }
         public string ShortFileName { get; private set; }
 
-        public bool IsAdminConnection => SPID != -1 || HasRlsParameters();
+        public bool IsAdminConnection => SPID != -1 || IsTestingRls;
 
-        public bool IsTestingRls => HasRlsParameters();
+        public bool IsTestingRls { get; private set; } = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
@@ -983,9 +984,9 @@ namespace ADOTabular
         /// Checks if the connection string contains any of the RLS testing parameters
         /// </summary>
         /// <returns>bool</returns>
-        public bool HasRlsParameters()
+        public bool HasRlsParameters(string connectionString)
         {
-            var builder = new OleDbConnectionStringBuilder(ConnectionStringWithInitialCatalog);
+            var builder = new OleDbConnectionStringBuilder(connectionString);
             foreach (var param in rlsParameters)
             {
                 if (builder.ContainsKey(param)) return true;

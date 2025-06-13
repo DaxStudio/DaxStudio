@@ -288,7 +288,7 @@ namespace DaxStudio.UI.Model
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
 
-                    if (_dmvConnection.HasRlsParameters())
+                    if (_dmvConnection.IsTestingRls)
                     {
                         newConn = _dmvConnection.CloneWithoutRLS();
                         conn = newConn;
@@ -330,7 +330,7 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    if (_connection.HasRlsParameters())
+                    if (_connection.IsTestingRls)
                     {
                         newConn = _dmvConnection.CloneWithoutRLS();
                         conn = newConn;

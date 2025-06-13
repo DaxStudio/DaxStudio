@@ -5170,13 +5170,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper(System.Globalization.CultureInfo.InvariantCulture)} in DAX Guide";
 
-        //private bool _isViewAsActive = false;
-        public bool IsViewAsActive { get => Connection.IsTestingRls;
-            //private set { 
-            //    _isViewAsActive = value;
-            //    NotifyOfPropertyChange();
-            //} 
-        }
+        public bool IsViewAsActive { get => Connection?.IsTestingRls??false;}
         public bool IsLoadingLayout { get; private set; }
         public bool IsConnectionDialogOpen { get; internal set; }
 
