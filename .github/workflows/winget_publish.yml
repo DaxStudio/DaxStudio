@@ -21,3 +21,5 @@ jobs:
           $installerUrl = $github.release.assets | Where-Object -Property name -match ${env:packageFileName} | Select -ExpandProperty browser_download_url -First 1
           $release_version = $github.release.tag_name -replace "v", ""
           .\wingetcreate.exe update ${env:packageId} -s -v $release_version -u "$installerUrl|x64|machine" "$installerUrl|x64|user" 
+        env: 
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
