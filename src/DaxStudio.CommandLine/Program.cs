@@ -16,8 +16,7 @@ using System.Threading.Tasks;
 using DaxStudio.CommandLine.Help;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.Extensions;
-using Microsoft.Expression.Shapes;
-using Newtonsoft.Json.Linq;
+
 
 namespace DaxStudio.CommandLine
 {
@@ -114,11 +113,13 @@ namespace DaxStudio.CommandLine
             {
                 config.SetHelpProvider(new CustomHelpProvider(config.Settings));
 
-                config.AddBranch<CommandSettings>("export", export => {
+                config.AddBranch<CommandSettings>("export", export =>
+                {
                     export.AddCommand<ExportSqlCommand>("sql")
                         .WithDescription("Exports specified tables to a SQL Server")
                         .WithExample(new[] { "export", "sql", "\"Data Source=localhost\\sql;Initial Catalog=DataDump;Integrated Security=SSPI\"", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" })
-                        .WithExample(new[] { "export", "sql", "\"Data Source=localhost\\sql;Initial Catalog=DataDump;Integrated Security=SSPI\"", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-t", "Product \"Product Category\" \"Reseller Sales\"" });
+                        .WithExample(new[] { "export", "sql", "\"Data Source=localhost\\sql;Initial Catalog=DataDump;Integrated Security=SSPI\"", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-t", "Product \"Product Category\" \"Reseller Sales\"" })
+                        ;
 
                     export.AddCommand<ExportCsvCommand>("csv")
                         .WithDescription("Exports specified tables to csv files in a folder")

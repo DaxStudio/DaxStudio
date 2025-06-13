@@ -52,7 +52,7 @@ namespace DaxStudio.UI.Utils
                 {
                     if (port != -1)
                     {
-                        Log.Warning(Constants.LogMessageTemplate, nameof(PowerBIInstance), "ctor", $"Unable to find ' - Power BI Desktop' in Power BI title '{windowTitle}'");
+                        Log.Verbose(Constants.LogMessageTemplate, nameof(PowerBIInstance), "ctor", $"Unable to find ' - Power BI Desktop' in Power BI title '{windowTitle}'");
                     }
                     Name = windowTitle; 
                 }

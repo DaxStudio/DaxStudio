@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.UI.Model;
 using Caliburn.Micro;
-using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.CommandLine.UIStubs;
 
 namespace DaxStudio.CommandLine.Commands
@@ -65,7 +64,6 @@ namespace DaxStudio.CommandLine.Commands
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            VersionInfo.Output();
             Log.Information("Starting XLSX command");
             if (settings.File != null && settings.Query == null)
             {

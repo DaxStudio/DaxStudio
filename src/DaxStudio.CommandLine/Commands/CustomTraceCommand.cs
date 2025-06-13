@@ -2,7 +2,6 @@
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Serilog;
@@ -12,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,7 +49,7 @@ namespace DaxStudio.CommandLine.Commands
 
         public override ValidationResult Validate(CommandContext context, Settings settings)
         {
-            var mySettings = settings as CustomTraceCommand.Settings;
+
             // Check if this is a known template
             if (!Templates.ContainsKey(settings.TemplateName))
             {

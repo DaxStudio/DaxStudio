@@ -8,7 +8,6 @@ using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;
 using DaxStudio.CommandLine.Attributes;
-using DaxStudio.Common.Extensions;
 using DaxStudio.CommandLine.Helpers;
 
 
@@ -78,7 +77,7 @@ namespace DaxStudio.CommandLine.Commands
 
         public ValidationResult Validate(CommandContext context, CommandSettings settings)
         {
-            return ValidationResult.Success();
+            return base.Validate(context,(Settings)settings);
         }
 
         public override int Execute(CommandContext context, Settings settings)

@@ -1,4 +1,5 @@
-﻿using DaxStudio.CommandLine.Interfaces;
+﻿using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.CommandLine.Interfaces;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -12,7 +13,7 @@ namespace DaxStudio.CommandLine.Commands
     {
 
         [CommandOption("-s|--server <server>")]
-        [Description("The name of the tabular server to connect to")]
+        [Description("The name of the tabular server to connect to. If you use <filename>.pbix or <filename>.pbip the command will look for a running instance of Power BI desktop that has that file open")]
         public string Server { get; set; }
 
         [CommandOption("-d|--database <database>")]
@@ -79,6 +80,8 @@ namespace DaxStudio.CommandLine.Commands
 
         public override ValidationResult Validate()
         {
+            VersionInfo.Output();
+
             if (!string.IsNullOrWhiteSpace(ConnectionString)
                 && (!string.IsNullOrWhiteSpace(Server) 
                     || !string.IsNullOrWhiteSpace(Database)))
@@ -100,15 +103,17 @@ namespace DaxStudio.CommandLine.Commands
             if (!string.IsNullOrWhiteSpace(Password) && string.IsNullOrWhiteSpace(UserID))
             { return ValidationResult.Error("You must specify a <UserID> when passing a <Password>"); }
 
+            CheckForDesktopConnection();
+
             return base.Validate();
         }
 
         internal void CheckForDesktopConnection()
         {
+            if (Server == null) return; // this probably means that --ConnectionString is being used
+
             if (!(Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)
                 || Server.EndsWith(".pbip", StringComparison.OrdinalIgnoreCase))) return;
-
-            Log.Information("Detected Power BI Desktop file");
 
             PowerBIFileName = Server.Substring(0,Server.Length-5);
             AnsiConsole.Status()
