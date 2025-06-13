@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DaxStudio.UI</RootNamespace>
     <AssemblyName>DaxStudio.UI</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -274,6 +274,7 @@
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
     <Compile Include="AttachedProperties\MouseObserver.cs" />
+    <Compile Include="AttachedProperties\ContentControlLineNumberHelper.cs" />
     <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
     <Compile Include="AttachedProperties\VisibilityAnimation.cs" />
     <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
@@ -312,6 +313,7 @@
     <Compile Include="Converters\BoolToCollapsedConverter.cs" />
     <Compile Include="Converters\BoolToDoubleConverter.cs" />
     <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
+    <Compile Include="Converters\BoolToHighContrastForegroundConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
     <Compile Include="Converters\BoolToLeftThicknessConverter.cs" />
@@ -617,8 +619,10 @@
     <Compile Include="Utils\ClipboardHelper.cs" />
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
+    <Compile Include="Utils\FlowDocumentHelper.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
+    <Compile Include="Utils\HighContrastHelper.cs" />
     <Compile Include="Utils\Intellisense\DaxStudioCompletionWindow.cs" />
     <Compile Include="Utils\LineStateMachine.cs" />
     <Compile Include="Utils\LongLineStateMachine.cs" />
@@ -637,6 +641,7 @@
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\RegexHelper.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
     <Compile Include="Utils\SendKeys.cs" />
@@ -680,6 +685,7 @@
     <Compile Include="Validation\HotkeyValidationRule.cs" />
     <Compile Include="ViewModels\BenchmarkServerFEViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
+    <Compile Include="ViewModels\BrowseWorkspacesViewModel.cs" />
     <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
     <Compile Include="ViewModels\CustomTraceDialogViewModel.cs" />
     <Compile Include="ViewModels\DatabaseDialogViewModel.cs" />
@@ -734,6 +740,9 @@
     <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
     <Compile Include="Views\AllServerQueriesView.xaml.cs">
       <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BrowseWorkspacesView.xaml.cs">
+      <DependentUpon>BrowseWorkspacesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DatabaseDialogView.xaml.cs">
       <DependentUpon>DatabaseDialogView.xaml</DependentUpon>
@@ -963,15 +972,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Theme\icons.dark.extra.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\icons.dark.xaml">
+    <Page Include="Theme\HighContrast.AvalonEdit.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\icons.light.xaml">
+    <Page Include="Theme\HighContrast.DaxStudio.Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Dark.Icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\HighContrast.DaxStudio.Theme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme\Light.Icons.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -1028,6 +1045,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Theme\Light.DaxStudio.Theme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\BrowseWorkspacesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -1304,10 +1325,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Theme\icons.light.extra.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Resources\Styles\DaxStudio.FluentRibbonStyles.xaml">
       <Generator>XamlIntelliSenseFileGenerator</Generator>
       <SubType>Designer</SubType>
@@ -1426,31 +1443,31 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncAwaitBestPractices">
-      <Version>8.0.0</Version>
+      <Version>9.0.0</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">
-      <Version>6.3.0.90</Version>
+      <Version>6.3.1.120</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>4.0.212</Version>
+      <Version>4.0.230</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
-      <Version>33.0.1</Version>
+      <Version>33.1.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.7.1</Version>
+      <Version>1.10.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.7.1</Version>
+      <Version>1.10.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.7.1</Version>
+      <Version>1.10.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.7.1</Version>
+      <Version>1.10.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax.Obfuscator">
-      <Version>1.0.5</Version>
+      <Version>1.1.3</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.1</Version>
@@ -1474,16 +1491,16 @@
       <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>1.10.0</Version>
+      <Version>1.12.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>8.0.0</Version>
+      <Version>9.0.6</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>8.0.0</Version>
+      <Version>9.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -1493,14 +1510,20 @@
     <PackageReference Include="Microsoft.Expression.Drawing">
       <Version>3.0.0</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
+      <Version>4.72.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.PowerBI.Api">
+      <Version>4.22.0</Version>
+    </PackageReference>
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.6</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.4.1</Version>
+      <Version>8.6.0</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.0.1</Version>
+      <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>

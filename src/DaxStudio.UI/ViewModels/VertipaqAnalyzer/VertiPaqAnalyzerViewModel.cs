@@ -369,7 +369,8 @@ namespace DaxStudio.UI.ViewModels
             public string RelationshipSize => "The size taken up by relationship structures in bytes";
             public string PercentOfTable => "The space taken up by a column as a percentage of the parent table";
             public string PercentOfDatabase => "The space taken up by a table or column as a percentage of the total size of the database";
-            public string Segments => "The maximum number of segments of any single column";
+            public string TableSegments => "The total number of segments in the table or column";
+            public string ColumnSegments => "The total number of segments in the column";
             public string TotalSegments => "The total number of segments for all columns";
             public string Pageable => "The number of pageable segments";
             public string Resident => "The number of memory resident segments";
@@ -454,36 +455,44 @@ namespace DaxStudio.UI.ViewModels
             var saveAsDlg = new SaveFileDialog()
             {
                 FileName = filename,
-                DefaultExt = "bim",
-                Title = "Save .bim file",
-                Filter = "Model BIM file (*.bim)|*.bim"
+                DefaultExt = "csv",
+                Title = "Save .csv file",
+                Filter = "CSV file (*.csv)|*.csv"
             };
             if (saveAsDlg.ShowDialog() != DialogResult.OK) return;
 
-            var csvFilePath = saveAsDlg.FileName;
-            var encoding = Encoding.UTF8;
-            var textWriter = new StreamWriter(csvFilePath, false, encoding);
-            // configure csv delimiter and culture
-            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = "," };
-            using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
+            try
             {
-                // write header row
-                csvWriter.WriteField( "TableName");
-                csvWriter.WriteField("MeasureName");
-                csvWriter.WriteField("Expression");
-                csvWriter.NextRecord();
-
-                // write out measures
-                foreach (var t in ViewModel.Model.Tables)
+                var csvFilePath = saveAsDlg.FileName;
+                var encoding = Encoding.UTF8;
+                var textWriter = new StreamWriter(csvFilePath, false, encoding);
+                // configure csv delimiter and culture
+                var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture) { Delimiter = "," };
+                using (var csvWriter = new CsvHelper.CsvWriter(textWriter, config))
                 {
-                    foreach (var m in t.Measures)
+                    // write header row
+                    csvWriter.WriteField("TableName");
+                    csvWriter.WriteField("MeasureName");
+                    csvWriter.WriteField("Expression");
+                    csvWriter.NextRecord();
+
+                    // write out measures
+                    foreach (var t in ViewModel.Model.Tables)
                     {
-                        csvWriter.WriteField(m.Table.TableName);
-                        csvWriter.WriteField(m.MeasureName);
-                        csvWriter.WriteField(m.MeasureExpression.Expression);
-                        csvWriter.NextRecord();
+                        foreach (var m in t.Measures)
+                        {
+                            csvWriter.WriteField(m.Table.TableName);
+                            csvWriter.WriteField(m.MeasureName);
+                            csvWriter.WriteField(m.MeasureExpression?.Expression ?? string.Empty);
+                            csvWriter.NextRecord();
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportMeasures), "Error exporting measures");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while exporting measures: {ex.Message}"));
             }
         }
 

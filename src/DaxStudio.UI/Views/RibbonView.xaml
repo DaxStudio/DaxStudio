@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
@@ -711,10 +711,10 @@
                                                   Margin="0 0 0 0" 
                                                   Padding="0 0 25 0"
                                                   MinWidth="400"
-                                                  MaxWidth="600"
+                                                  MaxWidth="700"
                                                   HorizontalAlignment="Left"
                                                   BorderBrush="Transparent" 
-                                                  
+                                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                                   Grid.Row="3"
                                                   HorizontalContentAlignment="Stretch"
                                                   cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, $view)]"
@@ -734,24 +734,42 @@
 
                                             <ListView.ItemTemplate>
                                                 <DataTemplate>
+                                            <Grid MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ListViewItem}}">
                                                 <Border x:Name="lvBorder" 
                                                         Background="Transparent"
                                                         BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                                                         
                                                         Padding="8"
                                                         >
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <Grid>
+
+                                                    <Grid >
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid Grid.Column="0">
                                                                 <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
                                                        Margin="0,3,10,3" Width="32" Height="32" />-->
                                                         <Image  Margin="0,3,10,3" ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Width="32"/>
                                                         <TextBlock Text="{Binding ExtensionLabel}" Foreground="{DynamicResource Theme.Brush.Default.Fore}" FontSize="10" FontWeight="Bold" Margin="6,14,0,0"></TextBlock>
                                                             </Grid>
-                                                            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                                                <TextBlock Text="{Binding FileAndExtension}" FontSize="14" />
-                                                                <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{DynamicResource Theme.Brush.Muted.Fore}"></TextBlock>
-                                                            </StackPanel>
+                                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Grid.Column="1">
+                                                        
+                                                                <TextBlock Text="{Binding FileAndExtension}" 
+                                                                           FontSize="14" />
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Text="{Binding Folder}" 
+                                                                           TextTrimming="CharacterEllipsis" 
+                                                                           FontSize="12" 
+                                                                           MaxWidth="620"
+                                                                           Foreground="{DynamicResource Theme.Brush.Muted.Fore}"/>
+                                                            </Grid>
                                                         </StackPanel>
+                                                
+                                                </Grid>
                                                         <i:Interaction.Triggers>
                                                             <i:EventTrigger EventName="Click" >
                                                                 <cal:Action.Target>
@@ -765,15 +783,13 @@
                                                                 </cal:Action.Target>
                                                             </i:EventTrigger>
                                                         </i:Interaction.Triggers>
-                                                    </Border>
-
-                                                </DataTemplate>
+                                                
+                                            </Border>
+                                            </Grid>
+                                        </DataTemplate>
                                             </ListView.ItemTemplate>
                                                 
                                         </ListView>
-                     
-
-
                                 </Grid>
                             
 
@@ -1433,7 +1449,11 @@
                                Icon="{DynamicResource view_asDrawingImage}"
                                LargeIcon="{DynamicResource view_asDrawingImage}"
                                SizeDefinition="Large,Large,Small">
-
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="View As"
+                                   Text="This enables the testing of security roles by enabling the current query window to run in the context of a selected role."                                
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
             

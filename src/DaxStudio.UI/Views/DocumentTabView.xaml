@@ -8,7 +8,7 @@
              xmlns:avalonDockProperties="clr-namespace:AvalonDock.Properties;assembly=AvalonDock"
              xmlns:avalonDockConverters="clr-namespace:AvalonDock.Converters;assembly=AvalonDock"
              xmlns:reskeys="clr-namespace:AvalonDock.Themes.DaxStudio.Themes;assembly=DaxStudio.AvalonDock.Themes"
-             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:local="clr-namespace:DaxStudio.UI.Converters"
              xmlns:res="clr-namespace:DaxStudio.UI.Resources" 
@@ -27,6 +27,26 @@
             <local:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter"/>
             <avalonDockConverters:ActivateCommandLayoutItemFromLayoutModelConverter x:Key="ActivateCommandLayoutItemFromLayoutModelConverter" />
             <ui:BindingProxy x:Key="Proxy"  Value="{Binding}" />
+
+            <Style x:Key="CloseButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <Style x:Key="MyCustomDocumentPaneControlStyle" 
                    TargetType="{x:Type avalonDockControls:LayoutDocumentPaneControl}">
                 <!--BasedOn="{StaticResource AvalonDockThemeVs2013DocumentPaneControlStyle}">-->
@@ -366,7 +386,7 @@
 									        HorizontalAlignment="Center"
 									        VerticalAlignment="Bottom"
 									        Command="{Binding Path=LayoutItem.CloseCommand, RelativeSource={RelativeSource TemplatedParent}}"
-									        Style="{StaticResource AvalonDockThemeVs2013ButtonStyle}"
+									        Style="{StaticResource CloseButtonStyle}"
 									        ToolTip="{x:Static avalonDockProperties:Resources.Document_Close}"
 									        Visibility="Hidden">
                                             <Path

@@ -22,10 +22,10 @@ const
 procedure dotnetfx47(MinVersion: integer);
 begin
 	if (not netfxinstalled(NetFx47, '') or (netfxspversion(NetFx47, '') < MinVersion)) then
-		AddProduct('dotnetfx471.exe',
+		AddProduct('dotnetfx472.exe',
 			CustomMessage('dotnetfx47_lcid') + '/q /passive /norestart',
-			CustomMessage('dotnetfx471_title'),
-			CustomMessage('dotnetfx471_size'),
-			dotnetfx471_url,
+			CustomMessage('dotnetfx472_title'),
+			CustomMessage('dotnetfx472_size'),
+			dotnetfx472_url,
 			false, false);
 end;

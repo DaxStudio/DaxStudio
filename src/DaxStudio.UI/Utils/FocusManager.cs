@@ -25,7 +25,14 @@ namespace DaxStudio.UI.Utils
             // if control is a listview set focus on the first child
             if (control is ListView contentControl)
             {
+                control.Focus();
                 var firstChild = VisualTreeHelper.GetChild(contentControl, 0) as FrameworkElement;
+                while (firstChild != null && !firstChild.Focusable)
+                {
+                    var nextChild = VisualTreeHelper.GetChild(firstChild, 0) as FrameworkElement;
+                    if (nextChild == null) break;
+                    firstChild = nextChild;
+                }
                 focus = firstChild != null && firstChild.Focus();
             }
             else

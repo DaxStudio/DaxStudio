@@ -6,7 +6,9 @@ namespace DaxStudio.UI.Model
 {
     public class ServerTimesModel
     {
-        public int FileFormatVersion { get { return 6; } }
+        // 7 - added ObjectName
+        // 8 - added ErrorMessage
+        public int FileFormatVersion { get { return 8; } }
         public string ActivityID { get; set; }
         public long StorageEngineDuration {get;set;}
         public long StorageEngineNetParallelDuration { get; set; }
@@ -30,5 +32,6 @@ namespace DaxStudio.UI.Model
         public string Parameters { get; set; }
         public string CommandText { get; set; }
         public long TimelineTotalDuration { get; set; }
+        public string ErrorMessage { get; set; } // added in v8
     }
 }

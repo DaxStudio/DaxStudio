@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
-using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
@@ -55,12 +52,12 @@ namespace DaxStudio.CommandLine.Commands
 
         public ValidationResult Validate(CommandContext context, CommandSettings settings)
         {
-            return ValidationResult.Success();
+            return base.Validate(context, (Settings)settings);
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
-            VersionInfo.Output();
+            
             Log.Information("Starting EXPORT SQL Command");
             var hasError = false;
             AnsiConsole.MarkupLine("Starting [yellow]EXPORTSQL[/] Command...");

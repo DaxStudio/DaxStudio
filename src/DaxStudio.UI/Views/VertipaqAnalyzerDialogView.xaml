@@ -46,7 +46,7 @@
         <Label Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">Read statistics from data</Label>
 
         <ui:ToggleSwitch OffContent="" HorizontalAlignment="Right" OnContent="" Grid.Row="1" Width="40" Margin="8" IsOn="{Binding VpaxReadStatisticsFromDirectQuery}" IsEnabled="{Binding VpaxReadStatisticsFromData}"/>
-        <Label Grid.Row="1" Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">Read statistics from Direct Query tables</Label>
+        <Label Grid.Row="1" Grid.Column="1" Margin="0 8 8 8" VerticalAlignment="Center">Read statistics from DirectQuery tables</Label>
 
         <ComboBox Grid.Row="2" Margin="0 8 8 8" 
                   HorizontalAlignment="Right"

@@ -31,5 +31,8 @@ namespace DAXEditorControl
         //TextDocument Document { get; }
 
         int CaretOffset { get; }
+        int FindSelectionOffset { get; set; }
+        int FindSelectionLength { get; set; }
+        void ClearFindSelection();
     }
 }

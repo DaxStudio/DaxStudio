@@ -35,10 +35,18 @@ namespace DaxStudio.UI.Views
         // goes to the next control in the tab order
         private void OnDataGridPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == Key.Enter  )
+
             {
                 e.Handled = true;
-                SendKeys.Send(Key.Tab);
+                if ((e.KeyboardDevice.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                {
+                    SendKeys.Send(Key.Enter);
+                }
+                else
+                {
+                    SendKeys.Send(Key.Tab);
+                }
             }
         }
 
@@ -56,7 +64,7 @@ namespace DaxStudio.UI.Views
         {
             var row = (DataGridRow)sender;
             row.Loaded -= Row_Loaded;
-            DataGridCell cell = GetCell(ParameterGrid, row, 1);
+            DataGridCell cell = GetCell(ParameterGrid, row, 2);
             TextBox box = cell.FindChild("ValueBox", typeof(TextBox)) as TextBox;
             //if (cell != null) cell.Focus();
             if (box != null) box.Focus();

@@ -73,7 +73,7 @@ namespace DaxStudio.UI.ResultsTargets
                     //  write results to Excel
                     await runner.Host.Proxy.OutputLinkedResultAsync(dq
                         , runner.SelectedWorksheet
-                        , runner.ConnectedToPowerPivot?"":runner.ConnectionStringWithInitialCatalog);
+                        , runner.ConnectedToPowerPivot?string.Empty:runner.ConnectionStringWithInitialCatalog);
 
 
                     sw.Stop();

@@ -1,0 +1,179 @@
+﻿<ctrl:DaxStudioDialog x:Class="DaxStudio.UI.Views.BrowseWorkspacesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:local="clr-namespace:DaxStudio.UI.Resources"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:i2="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
+             xmlns:cal="http://caliburnmicro.com"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             MinHeight="500" MinWidth="800"
+             Caption="Browse Workspaces">
+    <ctrl:DaxStudioDialog.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
+
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ctrl:DaxStudioDialog.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBox 
+            Name="SearchCriteria" 
+            Style="{DynamicResource SearchBoxStyle}"
+            Grid.Row="0"
+            ap:InitialFocusExtentions.SelectAllAndFocus="True"
+            TabIndex="0"
+            MinHeight="35"
+            VerticalContentAlignment="Center"
+            Margin="0 0 0 4">
+            <i2:Interaction.Triggers>
+                <trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Escape"/>
+                    </trig:InputBindingTrigger.InputBinding>
+
+                    <cal:ActionMessage MethodName="ClearSearchCriteria"/>
+
+                </trig:InputBindingTrigger>
+                <trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Down"/>
+                    </trig:InputBindingTrigger.InputBinding>
+
+                    <cal:ActionMessage MethodName="SetFocusToWorkspaces"/>
+
+                </trig:InputBindingTrigger>
+            </i2:Interaction.Triggers>
+        </TextBox>
+
+
+        <Border Grid.Row="1" 
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                CornerRadius="8"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderThickness="1"
+                Margin="0 8"
+                >
+            <ListView x:Name="WorkspacesView" 
+                      ItemsSource="{Binding WorkspacesView}" 
+                      SelectedItem="{Binding SelectedWorkspace}"
+                      cal:Message.Attach="[Event MouseDoubleClick] = [Action Connect()]" 
+                      Height="400">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource workspaceDrawingImage}" Width="16" Height="16" Margin="0 0 8 0"/>
+                            <TextBlock Text="{Binding Name}"/>
+                            <Image Source="{DynamicResource premiumDrawingImage}" Width="12" Height="12" Margin="8 0 8 0" Visibility="{Binding IsOnPremiumCapacity, Converter={StaticResource BoolToVisibilityConverter}}" ToolTip="Premium Workspace"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+
+        <!-- Busy overlay -->
+        <Border Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" 
+                Grid.Row="1"
+                Style="{StaticResource BusyPanel}">
+            <Grid>
+                <ProgressBar
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Style="{StaticResource MaterialDesignCircularProgressBar}" 
+            
+            Height="60"
+            Width="60" />
+
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+
+                <Menu>
+                    <MenuItem BorderBrush="RoyalBlue" BorderThickness="1" MinWidth="150" >
+                        <MenuItem.Header>
+                            
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{DynamicResource userDrawingImage}" Width="32" Height="32" Margin="0 0 8 0"/>
+                                <Grid>
+                                    <TextBlock Text="{Binding AccountName}" VerticalAlignment="Center"/>
+                                    <StackPanel x:Name="Loading" Orientation="Horizontal" Visibility="{Binding IsConnecting, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <ProgressBar
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                            Height="20"
+                                            Width="20" Margin="0 0 8 0"/>
+                                        <TextBlock x:Name="AccountStatus" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                            </StackPanel>
+                        </MenuItem.Header>
+                        <MenuItem.Style>
+                            <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+                                <Setter Property="Border.CornerRadius" Value="8"/>
+                                <!--<Setter Property="Border.Height" Value="40"/>
+                                <Setter Property="Border.Padding" Value="8"/>-->
+                                <!--<Setter Property="ContentPresenter.VerticalAlignment" Value="Stretch"/>-->
+                            </Style>
+                        </MenuItem.Style>
+                        <!--<MenuItem.HeaderTemplate>
+                            <DataTemplate>
+                            <TextBlock Text="{Binding }" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </MenuItem.HeaderTemplate>-->
+                        <MenuItem x:Name="SwitchAccountAsync" Header="Switch User"></MenuItem>
+                    </MenuItem>
+                </Menu>
+             
+                    
+             <!--<Button x:Name="SignOutAsync" Content="Switch User" Margin="8 0 0 0"/>-->
+            </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">
+            
+            <Button Content="Connect" 
+                HorizontalAlignment="Right" 
+                x:Name="Connect" 
+                IsEnabled="{Binding CanConnect}"  
+                Width="70" 
+                IsDefault="True"
+                Style="{DynamicResource AccentButtonStyle}"
+                VerticalAlignment="Bottom" 
+                
+                />
+            <Button Content="Cancel"  
+                HorizontalAlignment="Right" 
+                Margin="8 0 0 0"
+                x:Name="Cancel" 
+                VerticalAlignment="Bottom" 
+                Width="70" 
+                IsCancel="True"
+                />
+        </StackPanel>
+        </Grid>
+    </Grid>
+</ctrl:DaxStudioDialog>

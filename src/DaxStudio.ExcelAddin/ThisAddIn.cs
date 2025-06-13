@@ -6,7 +6,7 @@ using Microsoft.Office.Tools.Ribbon;
 using Serilog;
 using System.IO;
 using DaxStudio.Common;
-using Microsoft.Identity.Client;
+//using Microsoft.Identity.Client;
 using Serilog.Events;
 using DaxStudio.ExcelAddin.Xmla;
 

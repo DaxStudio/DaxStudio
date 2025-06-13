@@ -1,9 +1,11 @@
-﻿using DaxStudio.CommandLine.Interfaces;
+﻿using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.CommandLine.Interfaces;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
 using System.ComponentModel;
+using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -11,7 +13,7 @@ namespace DaxStudio.CommandLine.Commands
     {
 
         [CommandOption("-s|--server <server>")]
-        [Description("The name of the tabular server to connect to")]
+        [Description("The name of the tabular server to connect to. If you use <filename>.pbix or <filename>.pbip the command will look for a running instance of Power BI desktop that has that file open")]
         public string Server { get; set; }
 
         [CommandOption("-d|--database <database>")]
@@ -32,9 +34,9 @@ namespace DaxStudio.CommandLine.Commands
         [Description("The connection string for the data source")]
         public string ConnectionString { get; set; }
 
-        public string FullConnectionString { get { 
-                // if the connectionstring property is set use that
-                if (!string.IsNullOrEmpty(ConnectionString)) return ConnectionString;
+        public string PowerBIFileName { get; set; }
+
+        public string FullConnectionString { get {
                 
                 string user = GetPropertyOrEnvironmentVariable(nameof(UserID), UserID, "DSCMD_USER");
                 string pass = GetPropertyOrEnvironmentVariable(nameof(Password), Password, "DSCMD_PASSWORD");
@@ -42,7 +44,17 @@ namespace DaxStudio.CommandLine.Commands
                 string userParam = !string.IsNullOrEmpty(user) ? $"User ID={user};":string.Empty;
                 string passParam = !string.IsNullOrEmpty(pass) ? $"Password={pass};" : string.Empty;
 
-                return $"Data Source={Server};Initial Catalog={Database};{userParam}{passParam}";
+                // if the connectionstring property is set use that
+                if (string.IsNullOrEmpty(ConnectionString)) 
+                    return $"Data Source={Server};Initial Catalog={Database};{userParam}{passParam}";
+
+                var builder = new OleDbConnectionStringBuilder(ConnectionString);
+                if (!builder.ContainsKey("User ID") && !string.IsNullOrEmpty(user))
+                    builder["User ID"] = user;
+                if (!builder.ContainsKey("Password") && !builder.ContainsKey("Pwd") && !string.IsNullOrEmpty(user))
+                    builder["Password"] = pass;
+
+                return builder.ToString();
 
             } 
         }
@@ -68,13 +80,19 @@ namespace DaxStudio.CommandLine.Commands
 
         public override ValidationResult Validate()
         {
+            VersionInfo.Output();
+
             if (!string.IsNullOrWhiteSpace(ConnectionString)
                 && (!string.IsNullOrWhiteSpace(Server) 
                     || !string.IsNullOrWhiteSpace(Database)))
                 { return ValidationResult.Error("You cannot specify a <Server> or <Database> when passing a <ConnectionString>"); }
 
-            if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Server) && string.IsNullOrWhiteSpace(Database))
-                return ValidationResult.Error("You must specify a <database> when using the <server> parameter");
+            if (string.IsNullOrEmpty(ConnectionString) 
+            && !string.IsNullOrWhiteSpace(Server) 
+            && string.IsNullOrWhiteSpace(Database) 
+            && !(Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)
+                || Server.EndsWith(".pbip", StringComparison.OrdinalIgnoreCase)))
+                return ValidationResult.Error("You must specify a <database> when using the <server> parameter and not connecting to a .pbix/.pbip file");
 
             if (string.IsNullOrEmpty(ConnectionString) && !string.IsNullOrWhiteSpace(Database) && string.IsNullOrWhiteSpace(Server))
                 return ValidationResult.Error("You must specify a <server> when using the <database> parameter");
@@ -85,10 +103,38 @@ namespace DaxStudio.CommandLine.Commands
             if (!string.IsNullOrWhiteSpace(Password) && string.IsNullOrWhiteSpace(UserID))
             { return ValidationResult.Error("You must specify a <UserID> when passing a <Password>"); }
 
+            CheckForDesktopConnection();
+
             return base.Validate();
         }
 
+        internal void CheckForDesktopConnection()
+        {
+            if (Server == null) return; // this probably means that --ConnectionString is being used
 
+            if (!(Server.EndsWith(".pbix", StringComparison.OrdinalIgnoreCase)
+                || Server.EndsWith(".pbip", StringComparison.OrdinalIgnoreCase))) return;
+
+            PowerBIFileName = Server.Substring(0,Server.Length-5);
+            AnsiConsole.Status()
+                .AutoRefresh(true)
+                .Spinner(Spinner.Known.Star)
+                .SpinnerStyle(Style.Parse("green bold"))
+                .Start("Scanning for running instances of Power BI Desktop...", ctx =>
+                {
+                    var instances = UI.Utils.PowerBIHelper.GetLocalInstances(false);
+                
+                    foreach (var instance in instances)
+                    {
+                        if (instance.Name == PowerBIFileName)
+                        {
+                            Server = $"localhost:{instance.Port}";
+                            Log.Information($"Found running instance of '{PowerBIFileName}' on port: {instance.Port}");
+                            return;
+                        }
+                    }
+                });
+        }
 
     }
 }

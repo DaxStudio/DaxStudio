@@ -24,6 +24,7 @@ using System.Collections.Concurrent;
 using System.Windows;
 using Windows.UI.Core;
 using Fluent;
+using Microsoft.PowerBI.Api.Models;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -36,7 +37,11 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<DocumentConnectionUpdateEvent>
         , IHandle<QueryStartedEvent>
         , IHandle<CancelQueryEvent>
-        //, IHandle<QueryTraceCompletedEvent>
+        // declared in ITraceWatcher
+        //, IHandle<UpdateGlobalOptions>
+        //, IHandle<TraceChangedEvent>,
+        //, IHandle<TraceChangingEvent>
+
     {
         private ConcurrentQueue<DaxStudioTraceEventArgs> _events;
         protected readonly IEventAggregator _eventAggregator;
@@ -336,9 +341,10 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
-            Log.Verbose("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
+            Log.Debug("{class} {method} {message}", GetSubclassName(), "Handle<QueryStartedEvent>", "Query Started");
             if (!IsPaused && IsChecked)
             {
+                ErrorMessage = string.Empty;
                 BusyMessage = "Query Running...";
                 ErrorMessage = string.Empty;
                 IsBusy = true;
@@ -386,6 +392,7 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnBackgroundThreadAsync(new TraceChangingEvent(this,QueryTraceStatus.Starting));
                 try
                 {
+                    ErrorMessage = string.Empty;
                     BusyMessage = "Waiting for Trace to start";
                     IsBusy = true;
                     CreateTracer();
@@ -454,7 +461,17 @@ namespace DaxStudio.UI.ViewModels
             dialog.Filter = "JSON file (*.json)|*.json";
             dialog.Title = "Export Trace Details";
 
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) ExportTraceDetails(dialog.FileName);
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                try
+                {
+                    ExportTraceDetails(dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(Export), "Error Exporting Trace Details");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting Trace Details: {ex.Message}"));
+                }
+            }
         }
 
         public abstract void ExportTraceDetails(string filePath);
@@ -567,7 +584,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!UpdatedMonitoredEvents()) return;
 
                 var monitoredEvents = GetMonitoredEvents();
-                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.Contains(e)).ToList();
+                var validEventsForConnection = monitoredEvents.Where(e => supportedEvents.ContainsKey(e)).ToList();
 
                 if (_tracer == null) // && _connection.Type != AdomdType.Excel)
                 {
@@ -680,6 +697,7 @@ namespace DaxStudio.UI.ViewModels
                 _tracer?.Stop();
                 _tracer?.Dispose();
                 _tracer = null;
+                ErrorMessage = string.Empty;
                 _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
             }
             catch (Exception ex)
@@ -725,7 +743,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
-            if(message == null) return Task.CompletedTask;
+            if (message == null) return Task.CompletedTask;
             if (message.Sender != this) return Task.CompletedTask;
             IsBusy = false;
             OnTraceChanged(message);
@@ -734,7 +752,7 @@ namespace DaxStudio.UI.ViewModels
 
         protected virtual void OnTraceChanged(TraceChangedEvent message)
         {
-            
+
         }
 
         public Task HandleAsync(TraceChangingEvent message, CancellationToken cancellationToken)
@@ -747,7 +765,7 @@ namespace DaxStudio.UI.ViewModels
 
         protected virtual void OnTraceChanging(TraceChangingEvent message)
         {
-            
+
         }
 
         public abstract string KeyTip { get; }

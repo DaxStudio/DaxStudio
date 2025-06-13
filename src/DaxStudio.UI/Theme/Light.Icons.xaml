@@ -1,5 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Geometry x:Key="plugin_smallGeometry">F1 M16,16z M0,0z M8.61,14.5A1.85,1.85,0,0,1,7.94,14.38A2,2,0,0,1,7.39,14A1.85,1.85,0,0,1,6.99,13.49A2,2,0,0,1,6.79,12.85L5.16,12.85A1.29,1.29,0,0,1,4.68,12.75A1.16,1.16,0,0,1,4.29,12.49A1.66,1.66,0,0,1,4,12.13A1.27,1.27,0,0,1,3.91,11.66L3.91,9.82 3.91,9.82A1.69,1.69,0,0,1,3.29,9.61A1.8,1.8,0,0,1,2.79,9.2A1.74,1.74,0,0,1,2.45,8.65A1.82,1.82,0,0,1,2.31,8A1.65,1.65,0,0,1,2.44,7.34A1.68,1.68,0,0,1,2.78,6.78A2,2,0,0,1,3.29,6.38A2,2,0,0,1,3.94,6.18L3.94,4.34A1.27,1.27,0,0,1,4,3.87A1.44,1.44,0,0,1,4.27,3.48A1.16,1.16,0,0,1,4.66,3.22A1.19,1.19,0,0,1,5.13,3.13L7.13,3.13A1.71,1.71,0,0,1,7.33,2.49A1.78,1.78,0,0,1,8.33,1.63A1.59,1.59,0,0,1,9,1.5A1.72,1.72,0,0,1,10.23,2A1.68,1.68,0,0,1,10.63,2.51A2,2,0,0,1,10.83,3.16L12.47,3.16A1.27,1.27,0,0,1,12.94,3.25A1.16,1.16,0,0,1,13.33,3.51A1.4,1.4,0,0,1,13.59,3.9A1.1,1.1,0,0,1,13.69,4.37L13.69,7 12.27,7A1.06,1.06,0,0,0,11.87,7.08A1.21,1.21,0,0,0,11.55,7.3A0.91,0.91,0,0,0,11.33,7.63A1,1,0,0,0,11.33,8.41A0.91,0.91,0,0,0,11.55,8.74A1.21,1.21,0,0,0,11.87,8.96A1.06,1.06,0,0,0,12.27,9.04L13.69,9.04 13.69,11.68A1.1,1.1,0,0,1,13.59,12.15A1.4,1.4,0,0,1,13.33,12.54A1.16,1.16,0,0,1,12.94,12.8A1.28,1.28,0,0,1,12.47,12.9L10.42,12.9 10.42,12.9A1.67,1.67,0,0,1,10.22,13.52A2,2,0,0,1,9.81,14.03A1.92,1.92,0,0,1,9.26,14.36A1.82,1.82,0,0,1,8.61,14.5z M9.61,12.06L12.46,12.06A0.4,0.4,0,0,0,12.75,11.94A0.36,0.36,0,0,0,12.86,11.66L12.86,9.83 12.1,9.83A1.56,1.56,0,0,1,11.46,9.66A1.84,1.84,0,0,1,10.92,9.25A1.92,1.92,0,0,1,10.56,8.69A1.83,1.83,0,0,1,10.56,7.31A1.88,1.88,0,0,1,11,6.72A1.92,1.92,0,0,1,11.57,6.33A1.8,1.8,0,0,1,12.27,6.17L12.91,6.17 12.91,4.34A0.41,0.41,0,0,0,12.51,3.94L10,3.94 10,3.33A1.1,1.1,0,0,0,9.92,2.93A1.4,1.4,0,0,0,9.7,2.61A1,1,0,0,0,9.38,2.4A0.86,0.86,0,0,0,9,2.31A0.9,0.9,0,0,0,8.6,2.4A1,1,0,0,0,8.28,2.61A1.4,1.4,0,0,0,8.06,2.93A1.1,1.1,0,0,0,7.98,3.33L7.98,3.94 5.16,3.94A0.4,0.4,0,0,0,4.87,4.06A0.38,0.38,0,0,0,4.75,4.34L4.75,7 4.14,7A0.86,0.86,0,0,0,3.75,7.09A0.8,0.8,0,0,0,3.43,7.31A0.91,0.91,0,0,0,3.21,7.63A0.89,0.89,0,0,0,3.21,8.41A0.91,0.91,0,0,0,3.43,8.73A0.8,0.8,0,0,0,3.75,8.95A0.86,0.86,0,0,0,4.14,9L4.75,9 4.75,11.64A0.38,0.38,0,0,0,4.87,11.92A0.4,0.4,0,0,0,5.16,12.04L7.59,12.04 7.59,12.65A0.93,0.93,0,0,0,7.68,13.05A0.87,0.87,0,0,0,7.9,13.37A0.89,0.89,0,0,0,8.22,13.58A0.89,0.89,0,0,0,9,13.58A0.89,0.89,0,0,0,9.32,13.37A1,1,0,0,0,9.54,13.05A0.92,0.92,0,0,0,9.62,12.65z</Geometry>
+
+    <SolidColorBrush x:Key="MetadataHiddenBrush" SolidColorBrush.Color="#999999" />
+    <SolidColorBrush x:Key="AccentBrush" SolidColorBrush.Color="#228ED6" />
+
+    <Geometry x:Key="plugin_smallGeometry">F1 M16,16z M0,0z M8.61,14.5A1.85,1.85,0,0,1,7.94,14.38A2,2,0,0,1,7.39,14A1.85,1.85,0,0,1,6.99,13.49A2,2,0,0,1,6.79,12.85L5.16,12.85A1.29,1.29,0,0,1,4.68,12.75A1.16,1.16,0,0,1,4.29,12.49A1.66,1.66,0,0,1,4,12.13A1.27,1.27,0,0,1,3.91,11.66L3.91,9.82 3.91,9.82A1.69,1.69,0,0,1,3.29,9.61A1.8,1.8,0,0,1,2.79,9.2A1.74,1.74,0,0,1,2.45,8.65A1.82,1.82,0,0,1,2.31,8A1.65,1.65,0,0,1,2.44,7.34A1.68,1.68,0,0,1,2.78,6.78A2,2,0,0,1,3.29,6.38A2,2,0,0,1,3.94,6.18L3.94,4.34A1.27,1.27,0,0,1,4,3.87A1.44,1.44,0,0,1,4.27,3.48A1.16,1.16,0,0,1,4.66,3.22A1.19,1.19,0,0,1,5.13,3.13L7.13,3.13A1.71,1.71,0,0,1,7.33,2.49A1.78,1.78,0,0,1,8.33,1.63A1.59,1.59,0,0,1,9,1.5A1.72,1.72,0,0,1,10.23,2A1.68,1.68,0,0,1,10.63,2.51A2,2,0,0,1,10.83,3.16L12.47,3.16A1.27,1.27,0,0,1,12.94,3.25A1.16,1.16,0,0,1,13.33,3.51A1.4,1.4,0,0,1,13.59,3.9A1.1,1.1,0,0,1,13.69,4.37L13.69,7 12.27,7A1.06,1.06,0,0,0,11.87,7.08A1.21,1.21,0,0,0,11.55,7.3A0.91,0.91,0,0,0,11.33,7.63A1,1,0,0,0,11.33,8.41A0.91,0.91,0,0,0,11.55,8.74A1.21,1.21,0,0,0,11.87,8.96A1.06,1.06,0,0,0,12.27,9.04L13.69,9.04 13.69,11.68A1.1,1.1,0,0,1,13.59,12.15A1.4,1.4,0,0,1,13.33,12.54A1.16,1.16,0,0,1,12.94,12.8A1.28,1.28,0,0,1,12.47,12.9L10.42,12.9 10.42,12.9A1.67,1.67,0,0,1,10.22,13.52A2,2,0,0,1,9.81,14.03A1.92,1.92,0,0,1,9.26,14.36A1.82,1.82,0,0,1,8.61,14.5z M9.61,12.06L12.46,12.06A0.4,0.4,0,0,0,12.75,11.94A0.36,0.36,0,0,0,12.86,11.66L12.86,9.83 12.1,9.83A1.56,1.56,0,0,1,11.46,9.66A1.84,1.84,0,0,1,10.92,9.25A1.92,1.92,0,0,1,10.56,8.69A1.83,1.83,0,0,1,10.56,7.31A1.88,1.88,0,0,1,11,6.72A1.92,1.92,0,0,1,11.57,6.33A1.8,1.8,0,0,1,12.27,6.17L12.91,6.17 12.91,4.34A0.41,0.41,0,0,0,12.51,3.94L10,3.94 10,3.33A1.1,1.1,0,0,0,9.92,2.93A1.4,1.4,0,0,0,9.7,2.61A1,1,0,0,0,9.38,2.4A0.86,0.86,0,0,0,9,2.31A0.9,0.9,0,0,0,8.6,2.4A1,1,0,0,0,8.28,2.61A1.4,1.4,0,0,0,8.06,2.93A1.1,1.1,0,0,0,7.98,3.33L7.98,3.94 5.16,3.94A0.4,0.4,0,0,0,4.87,4.06A0.38,0.38,0,0,0,4.75,4.34L4.75,7 4.14,7A0.86,0.86,0,0,0,3.75,7.09A0.8,0.8,0,0,0,3.43,7.31A0.91,0.91,0,0,0,3.21,7.63A0.89,0.89,0,0,0,3.21,8.41A0.91,0.91,0,0,0,3.43,8.73A0.8,0.8,0,0,0,3.75,8.95A0.86,0.86,0,0,0,4.14,9L4.75,9 4.75,11.64A0.38,0.38,0,0,0,4.87,11.92A0.4,0.4,0,0,0,5.16,12.04L7.59,12.04 7.59,12.65A0.93,0.93,0,0,0,7.68,13.05A0.87,0.87,0,0,0,7.9,13.37A0.89,0.89,0,0,0,8.22,13.58A0.89,0.89,0,0,0,9,13.58A0.89,0.89,0,0,0,9.32,13.37A1,1,0,0,0,9.54,13.05A0.92,0.92,0,0,0,9.62,12.65z</Geometry>
   <DrawingGroup x:Key="plugin_smallDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
     <GeometryDrawing Brush="#FF000000" Geometry="{StaticResource plugin_smallGeometry}" />
   </DrawingGroup>
@@ -2173,4 +2177,55 @@
         <GeometryDrawing Brush="#FF3A3A38" Geometry="{StaticResource metrics_toolbarGeometry}" />
     </DrawingGroup>
     <DrawingImage x:Key="metrics_toolbarDrawingImage" Drawing="{StaticResource metrics_toolbarDrawingGroup}" />
+
+    <DrawingGroup x:Key="stringHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry1}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry2}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource stringGeometry3}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="stringHiddenDrawingImage" Drawing="{StaticResource stringHiddenDrawingGroup}" />
+    <DrawingGroup x:Key="doubleHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource doubleGeometry1}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource doubleGeometry2}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource doubleGeometry3}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="doubleHiddenDrawingImage" Drawing="{StaticResource doubleHiddenDrawingGroup}" />
+    <DrawingGroup x:Key="datetimeHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry1}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry2}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry3}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry4}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry5}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry6}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource datetimeGeometry7}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="datetimeHiddenDrawingImage" Drawing="{StaticResource datetimeHiddenDrawingGroup}" />
+    <DrawingGroup x:Key="numberHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry1}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry2}" />
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource numberGeometry3}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="numberHiddenDrawingImage" Drawing="{StaticResource numberHiddenDrawingGroup}" />
+    <DrawingGroup x:Key="db_small_accentDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource db_smallGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="db_small_accentDrawingImage" Drawing="{StaticResource db_small_accentDrawingGroup}" />
+    <DrawingGroup x:Key="model_small_accentDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource AccentBrush}" Geometry="{StaticResource model_smallGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="model_small_accentDrawingImage" Drawing="{StaticResource model_small_accentDrawingGroup}" />
+    <Geometry x:Key="tableHiddenGeometry">F1 M16,16z M0,0z M14.4,2.27L14.4,2.27A1.09,1.09,0,0,0,14.13,1.87A1.09,1.09,0,0,0,13.73,1.6A1.12,1.12,0,0,0,13.25,1.5L2.75,1.5A1.12,1.12,0,0,0,2.27,1.6A1.09,1.09,0,0,0,1.87,1.87A1.09,1.09,0,0,0,1.6,2.27A1.12,1.12,0,0,0,1.5,2.75L1.5,13.25A1.12,1.12,0,0,0,1.6,13.73A1.09,1.09,0,0,0,1.87,14.13A1.09,1.09,0,0,0,2.27,14.4A1.12,1.12,0,0,0,2.75,14.5L13.25,14.5A1.12,1.12,0,0,0,13.73,14.4A1.27,1.27,0,0,0,14.4,13.73A1.12,1.12,0,0,0,14.5,13.25L14.5,2.75A1.12,1.12,0,0,0,14.4,2.27z M5.32,13.91L2.75,13.91A0.63,0.63,0,0,1,2.29,13.71A0.63,0.63,0,0,1,2.09,13.25L2.09,10.68 5.32,10.68z M5.32,10.09L2.09,10.09 2.09,5.91 5.32,5.91z M10.09,13.91L5.91,13.91 5.91,10.68 10.09,10.68z M10.09,10.09L5.91,10.09 5.91,5.91 10.09,5.91z M13.91,13.25A0.68,0.68,0,0,1,13.25,13.91L10.68,13.91 10.68,10.68 13.91,10.68z M13.91,10.09L10.68,10.09 10.68,5.91 13.91,5.91z</Geometry>
+    <DrawingGroup x:Key="tableHiddenDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="{StaticResource MetadataHiddenBrush}" Geometry="{StaticResource tableHiddenGeometry}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="tableHiddenDrawingImage" Drawing="{StaticResource tableHiddenDrawingGroup}" />
+    <Geometry x:Key="selection_smallGeometry1">F1 M16,16z M0,0z M2.6361355,8.5740175A0.67,0.36412363,0,0,1,2.1661355,8.4490198A0.66,0.35868895,0,0,1,1.9661355,8.1881551A0.68,0.36955831,0,0,1,2.6361355,7.8240313L13.716136,7.8240313A0.69,0.37499299,0,0,1,14.196136,7.9327251A0.67,0.36412363,0,0,1,14.406137,8.1990245A0.63,0.34238491,0,0,1,14.196136,8.4598892A0.66,0.35868895,0,0,1,13.716136,8.5740175z</Geometry>
+    <Geometry x:Key="selection_smallGeometry2">F1 M16,16z M0,0z M2.6561017,12.205826A0.69000002,0.374993,0,1,1,2.6561017,11.45584L8.5261022,11.45584A0.67,0.36412363,0,0,1,9.0061022,11.564534A0.68,0.36955831,0,0,1,9.0061022,12.108002A0.67,0.36412363,0,0,1,8.5261022,12.216696z</Geometry>
+    <Geometry x:Key="selection_smallGeometry3">F1 M16,16z M0,0z M2.6561017,4.9313394A0.69000002,0.374993,0,1,1,2.6561017,4.1813534L8.5261019,4.1813534A0.67,0.36412363,0,0,1,9.0061019,4.290047A0.68,0.36955831,0,0,1,9.0061019,4.8335151A0.67,0.36412363,0,0,1,8.5261019,4.9422087z</Geometry>
+    <DrawingGroup x:Key="selection_smallDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+        <GeometryDrawing Brush="#FF3A3A38" Geometry="{StaticResource selection_smallGeometry1}" />
+        <GeometryDrawing Brush="#FF3A3A38" Geometry="{StaticResource selection_smallGeometry2}" />
+        <GeometryDrawing Brush="#FF3A3A38" Geometry="{StaticResource selection_smallGeometry3}" />
+    </DrawingGroup>
+    <DrawingImage x:Key="selection_smallDrawingImage" Drawing="{StaticResource selection_smallDrawingGroup}" />
 </ResourceDictionary>

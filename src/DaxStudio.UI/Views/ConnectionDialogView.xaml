@@ -5,7 +5,7 @@
         xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
         xmlns:vw="clr-namespace:DaxStudio.UI.Views"
         xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:DaxStudio.UI.Resources"
         xmlns:cal="http://www.caliburnproject.org"
         xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"

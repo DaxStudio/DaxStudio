@@ -41,11 +41,12 @@ namespace DaxStudio.UI.ViewModels
         private readonly Dictionary<string, AggregateRewriteSummary> _rewriteEventCache = new Dictionary<string, AggregateRewriteSummary>();
         private readonly Dictionary<string, QueryBeginEvent> _queryBeginCache = new Dictionary<string, QueryBeginEvent>();
         private readonly RibbonViewModel Ribbon;
+        private object _syncLock = new object();
 
         [ImportingConstructor]
         public AllServerQueriesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager, RibbonViewModel ribbon) : base(eventAggregator, globalOptions,windowManager)
         {
-            _queryEvents = new BindableCollection<QueryEvent>();
+            BindingOperations.EnableCollectionSynchronization(QueryEvents, _syncLock);
             queryEventsView = CollectionViewSource.GetDefaultView(QueryEvents);
             Ribbon = ribbon;
             CanCaptureDiagnostics = Ribbon?.ActiveDocument?.IsConnected??false;
@@ -161,17 +162,25 @@ namespace DaxStudio.UI.ViewModels
                             }
                             else
                             {
-
-                                QueryEvents.Insert(0, newEvent);
+                                lock (_syncLock)
+                                {
+                                    QueryEvents.Insert(0, newEvent);
+                                }
                             }
                             break;
                         case DaxStudioTraceEventClass.Error:
                             newEvent.QueryType = "ERR";
-                            QueryEvents.Insert(0, newEvent);
+                            lock (_syncLock)
+                            {
+                                QueryEvents.Insert(0, newEvent);
+                            }
                             break;
                         case DaxStudioTraceEventClass.CommandEnd:
                             newEvent.QueryType = "Xmla";
-                            QueryEvents.Insert(0, newEvent);
+                            lock (_syncLock)
+                            {
+                                QueryEvents.Insert(0, newEvent);
+                            }
                             break;
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
                             // cache rewrite events
@@ -229,8 +238,10 @@ namespace DaxStudio.UI.ViewModels
                                 // overwrite the username with the effective user if it's present
                                 var effectiveUser = newEvent.ParseEffectiveUsername();
                                 if (!string.IsNullOrEmpty(effectiveUser)) newEvent.Username = effectiveUser;
-
-                                QueryEvents.Insert(0, newEvent);
+                                lock (_syncLock)
+                                {
+                                    QueryEvents.Insert(0, newEvent);
+                                }
                             }
 
                             break;
@@ -261,21 +272,16 @@ namespace DaxStudio.UI.ViewModels
             return;
         }
         
- 
-        private readonly BindableCollection<QueryEvent> _queryEvents;
-        
         public override bool CanHide { get { return true; } }
         public override string ContentId => "all-queries-trace";
         public override string TraceSuffix => "all";
         public override int SortOrder => 10;
         public IObservableCollection<QueryEvent> QueryEvents 
         {
-            get {
-                return _queryEvents;
-            }
-        }
+            get;
+        } = new BindableCollection<QueryEvent>();
 
-        
+
 
         public string DefaultQueryFilter => "cat";
 
@@ -294,7 +300,10 @@ namespace DaxStudio.UI.ViewModels
 
         public override void ClearAll()
         {
-            QueryEvents.Clear();
+            lock (_syncLock)
+            {
+                QueryEvents.Clear();
+            }
             NotifyOfPropertyChange(() => CanClearAll);
             NotifyOfPropertyChange(() => CanCopyAll);
             NotifyOfPropertyChange(() => CanExport);
@@ -400,9 +409,10 @@ namespace DaxStudio.UI.ViewModels
         public void LoadJson(string data)
         {
             List<QueryEvent> qe = JsonConvert.DeserializeObject<List<QueryEvent>>(data);
-
-            _queryEvents.Clear();
-            _queryEvents.AddRange(qe);
+            lock (_syncLock) { 
+                QueryEvents.Clear();
+                QueryEvents.AddRange(qe);
+            }
             NotifyOfPropertyChange(() => QueryEvents);
         }
 
@@ -450,7 +460,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public override bool CanExport => _queryEvents.Count > 0;
+        public override bool CanExport => QueryEvents.Count > 0;
 
         public override void ExportTraceDetails(string filePath)
         {

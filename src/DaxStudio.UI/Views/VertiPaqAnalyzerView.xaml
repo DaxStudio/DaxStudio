@@ -189,18 +189,29 @@
                 -->
                     <DataGrid ItemsSource="{Binding GroupedColumns, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
-                          AutoGenerateColumns="False" 
-                          RowHeaderWidth="0" 
-                          HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
-                          VerticalGridLinesBrush="Transparent"
-                          CanUserSortColumns="True" 
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.IsContainerVirtualizable="True"
-            x:Name="grdTables"
-                          CanUserReorderColumns="False"
-                          CanUserAddRows="False"
-                          IsReadOnly="True"
-                          cal:Message.Attach="[Event Sorting] = [Action OnTableSorting($eventArgs)]" >
+                              AutoGenerateColumns="False" 
+                              RowHeaderWidth="0" 
+                              HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
+                              VerticalGridLinesBrush="Transparent"
+                              CanUserSortColumns="True" 
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.IsContainerVirtualizable="True"
+                              x:Name="grdTables"
+                              CanUserReorderColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              cal:Message.Attach="[Event Sorting] = [Action OnTableSorting($eventArgs)]" >
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="Copy">
+                                    <MenuItem.Icon>
+                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Command="SelectAll"></MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                                 <Setter Property="ContentTemplate">
@@ -529,7 +540,7 @@
                                                 ElementStyle="{StaticResource NumTextBlockStyle}" >
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="Tag" Value="{Binding DataContext.Tooltips.TableSegments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
@@ -602,19 +613,29 @@
 
                     <DataGrid ItemsSource="{Binding SortedColumns, UpdateSourceTrigger=PropertyChanged}" 
                               ClipboardCopyMode="IncludeHeader"
-                          AutoGenerateColumns="False" 
-                          RowHeaderWidth="0" 
-                          HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
-                          VerticalGridLinesBrush="Transparent"
-                          CanUserSortColumns="True" 
+                              AutoGenerateColumns="False" 
+                              RowHeaderWidth="0" 
+                              HorizontalGridLinesBrush="{DynamicResource Theme.Brush.Control.Border}"
+                              VerticalGridLinesBrush="Transparent"
+                              CanUserSortColumns="True" 
                               HeadersVisibility="Column"
-                          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.IsContainerVirtualizable="True" 
-                          CanUserAddRows="False"
-                          IsReadOnly="True"
-                          cal:Message.Attach="[Event Sorting] = [Action OnColumnSorting($eventArgs)]">
-
+                              VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.IsContainerVirtualizable="True" 
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              cal:Message.Attach="[Event Sorting] = [Action OnColumnSorting($eventArgs)]">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="Copy">
+                                    <MenuItem.Icon>
+                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Command="SelectAll"></MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.Columns>
                             <DataGridTemplateColumn ClipboardContentBinding="{Binding TableColumnName}" 
                                                 Header="Table-Column"
@@ -803,7 +824,7 @@
                                                 ElementStyle="{StaticResource NumTextBlockStyle}">
                                 <DataGridTextColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource RightHeader}">
-                                        <Setter Property="Tag" Value="{Binding DataContext.Tooltips.Segments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        <Setter Property="Tag" Value="{Binding DataContext.Tooltips.ColumnSegments, Mode=OneTime,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                     </Style>
                                 </DataGridTextColumn.HeaderStyle>
                             </DataGridTextColumn>
@@ -877,7 +898,17 @@
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           cal:Message.Attach="[Event Sorting] = [Action OnRelationshipSorting($eventArgs)]">
-
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="Copy">
+                                    <MenuItem.Icon>
+                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Command="SelectAll"></MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>
@@ -1043,6 +1074,17 @@
                               CanUserReorderColumns="False"
                               IsReadOnly="True"
                               cal:Message.Attach="[Event Sorting] = [Action OnPartitionSorting($eventArgs)]">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="Copy">
+                                    <MenuItem.Icon>
+                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Command="SelectAll"></MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>

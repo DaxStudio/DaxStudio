@@ -46,9 +46,8 @@ namespace DaxStudio.UI.Controls
             if (_viewModel == null) return;
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                var factor = 1.0 + Math.Abs(args.Delta / 1200.0);
-                var scale = args.Delta >= 0 ? factor : (1.0 / factor); // choose appropriate scaling factor
-                _viewModel.Scale *= scale;
+                var factor = args.Delta / 1200.0;
+                _viewModel.Scale += factor;
                 args.Handled = true;
             }
 

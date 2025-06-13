@@ -251,24 +251,6 @@ namespace DaxStudio
             Log.Debug("{class} {method} {event}", nameof(QueryTraceHub), "UpdateEvents", "exit");
         }
 
-        public void Update()
-        {
-            Log.Debug("{class} {method} {event}", nameof(QueryTraceHub), "Update", "enter");
-            if (_xlEngine != null)
-            {
-                VoidDelegate f = delegate
-                {
-                    _xlEngine.Update();
-                };
-                f();
-            }
-            else
-            {
-                _engine.Update();
-            }
-            Log.Debug("{class} {method} {event}", nameof(QueryTraceHub), "Update", "exit");
-        }
-
     }
     
 }

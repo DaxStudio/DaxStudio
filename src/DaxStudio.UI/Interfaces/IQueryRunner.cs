@@ -46,5 +46,7 @@ namespace DaxStudio.UI.Interfaces
         IGlobalOptions Options { get; }
         //ADOTabular.ADOTabularConnection Connection { get; }
         ConnectionManager Connection { get; }
+        void OutputQueryError(string errorMessage);
+        void ClearQueryError();
     }
 }

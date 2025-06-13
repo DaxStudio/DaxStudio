@@ -8,6 +8,7 @@ using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;
 using DaxStudio.CommandLine.Attributes;
+using DaxStudio.CommandLine.Helpers;
 
 
 namespace DaxStudio.CommandLine.Commands
@@ -28,7 +29,7 @@ namespace DaxStudio.CommandLine.Commands
             public bool DoNotReadStatsFromData { get; set; }
             
             [CommandOption("-q|--readstatsfromdirectquery")]
-            [Description("Setting this flag will force the execution of distinctcount queries that read the statistics from the data model (which is normally suppressed for Direct Query models)")]
+            [Description("Setting this flag will force the execution of distinctcount queries that read the statistics from the data model (which is normally suppressed for DirectQuery models)")]
             public bool ReadStatsFromDirectQuery { get; set; }
 
             private string _dictionaryPath = string.Empty;
@@ -76,7 +77,7 @@ namespace DaxStudio.CommandLine.Commands
 
         public ValidationResult Validate(CommandContext context, CommandSettings settings)
         {
-            return ValidationResult.Success();
+            return base.Validate(context,(Settings)settings);
         }
 
         public override int Execute(CommandContext context, Settings settings)
@@ -92,8 +93,15 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     var appVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
                     var statsColumnBatchSize = settings.StatsColumnBatchSize==0 ? Dax.Model.Extractor.StatExtractor.DefaultColumnBatchSize :settings.StatsColumnBatchSize;
+                    var connStr = settings.FullConnectionString;
 
-                    ModelAnalyzer.ExportVPAX(settings.FullConnectionString, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, 
+                    // if requires Entra Auth add the AccessToken to the connection string
+                    if (AccessTokenHelper.IsAccessTokenNeeded(connStr)) {
+                        var token = AccessTokenHelper.GetAccessToken();
+                        connStr = $"{connStr};Password={token.Token}";
+                    }
+
+                    ModelAnalyzer.ExportVPAX(connStr, settings.OutputFile,settings.DictionaryPath, settings.InputDictionaryPath, 
                         !settings.ExcludeTom, "DAX Studio Command Line", appVersion, !settings.DoNotReadStatsFromData, "Model", 
                         settings.ReadStatsFromDirectQuery, settings.DirectLakeMode, statsColumnBatchSize);
                     

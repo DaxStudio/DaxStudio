@@ -74,7 +74,7 @@ namespace DaxStudio.UI.Model
                     {
                         var msg = response.Content.ReadAsStringAsync().Result;
                         Log.Error("{class} {method} {message}", "ProxyPowerPivot", "WorkbookName", $"Error checking if Workbook has a PowerPivot model\n {msg}");
-                        doc.OutputError($"Error checking if the active Workbook in Excel has a PowerPivot model\n({msg})");
+                        doc?.OutputError($"Error checking if the active Workbook in Excel has a PowerPivot model\n({msg})");
                     }
                         
                 }
@@ -117,7 +117,7 @@ namespace DaxStudio.UI.Model
                     catch (Exception ex)
                     {
                         Log.Error(ex, "{class} {method} {message}", nameof(ProxyPowerPivot), nameof(WorkbookName), ex.Message);
-                        doc.OutputError(string.Format("Error getting ActiveWorkbook from Excel: {0} ", ex.Message));
+                        doc?.OutputError(string.Format("Error getting ActiveWorkbook from Excel: {0} ", ex.Message));
                     }
 
                     return "<Workbook not found>";
@@ -149,7 +149,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
-                    doc.OutputError(string.Format("Error getting Worksheet list from Excel ({0})", ex.Message));
+                    doc?.OutputError(string.Format("Error getting Worksheet list from Excel ({0})", ex.Message));
                 }
                 
                 return new string[] { };
@@ -169,7 +169,7 @@ namespace DaxStudio.UI.Model
                     if (!response.IsSuccessStatusCode)
                     {
                         var msg = await response.Content.ReadAsStringAsync();
-                        doc.OutputError(string.Format("Error sending results to Excel: ({0})", msg));
+                        doc?.OutputError(string.Format("Error sending results to Excel: ({0})", msg));
 
                     }
 
@@ -178,7 +178,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ProxyPowerPivot), nameof(OutputStaticResultAsync), "Error outputting static results");
-                    doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
+                    doc?.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
             }
@@ -197,13 +197,13 @@ namespace DaxStudio.UI.Model
                         var str = JsonConvert.DeserializeObject<string>(resp.Content.ReadAsStringAsync().Result);
                         var msg = (string)Newtonsoft.Json.Linq.JObject.Parse(str)["Message"];
                         
-                        doc.OutputError(string.Format("Error sending results to Excel ({0})", msg));
+                        doc?.OutputError(string.Format("Error sending results to Excel ({0})", msg));
                     }
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ProxyPowerPivot), nameof(OutputLinkedResultAsync), "Error outputting linked results");
-                    doc.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
+                    doc?.OutputError(string.Format("Error sending results to Excel ({0})", ex.Message));
                 }
 
             }

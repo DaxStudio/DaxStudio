@@ -169,12 +169,12 @@ namespace DaxStudio.UI.ResultsTargets
                 xlsxWriter.Write(colName);
                 var daxColumnName = reader.GetName(colIdx);
                 // cache the column formatstrings as Excel Styles
-                reader.Connection.Columns.TryGetValue(daxColumnName, out daxCol);
+                runner.Connection.Columns.TryGetValue(daxColumnName, out daxCol);
                 // in case the table name is quote, try stripping the quotes and checking for  the column
                 if (daxCol == null && daxColumnName[0] != '\'')
                 {
                     daxColumnName = columnNameRegex.Replace(daxColumnName, "'${table}'${column}");
-                    reader.Connection.Columns.TryGetValue(daxColumnName, out daxCol);
+                    runner.Connection.Columns.TryGetValue(daxColumnName, out daxCol);
                 }
 
 

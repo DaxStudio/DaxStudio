@@ -193,18 +193,26 @@ namespace DaxStudio.UI.Model
         [DataMember]
         public string FilterValue2 { get => _filterValue2;
             set {
-                _filterValue2 = value;
-                
-                _filterValue2 = FilterValue2IsParameter ? (value??string.Empty).Trim() : value??string.Empty;
-                if (_filterValue2.StartsWith("@"))
+                if (ShowFilterValue2)
                 {
-                    //IsNotifying = false;
-                    FilterValue2IsParameter = !FilterValue2IsParameter;
-                    //IsNotifying = true;
-                    if (FilterValue2IsParameter) _filterValue2 = _filterValue2.TrimStart('@');
+                    _filterValue2 = value;
+                    _filterValue2 = FilterValue2IsParameter ? (value ?? string.Empty).Trim() : value ?? string.Empty;
+                    if (_filterValue2.StartsWith("@"))
+                    {
+                        //IsNotifying = false;
+                        FilterValue2IsParameter = !FilterValue2IsParameter;
+                        //IsNotifying = true;
+                        if (FilterValue2IsParameter) _filterValue2 = _filterValue2.TrimStart('@');
+                    }
+                    if (_filterValue2.IsNullOrEmpty()) FilterValue2IsParameter = false;
+                    FilterValue2ValidationMessage = ValidateInput(FilterValue2, FilterValue2IsParameter);
                 }
-                if (_filterValue2.IsNullOrEmpty()) FilterValue2IsParameter = false;
-                FilterValue2ValidationMessage = ValidateInput(FilterValue2, FilterValue2IsParameter);
+                else
+                {
+                    _filterValue2 = null;
+                    FilterValue2ValidationMessage = string.Empty;
+                }
+                
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValue2IsValid));
                 NotifyOfPropertyChange(nameof(FilterValue2ValidationMessage));

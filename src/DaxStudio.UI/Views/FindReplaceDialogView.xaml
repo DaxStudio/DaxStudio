@@ -7,14 +7,14 @@
                       xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                       xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                       xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-                      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+                      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
                       xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
                       xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
                       xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
                       xmlns:res="clr-namespace:DaxStudio.UI.Resources" xmlns:viewmodels="clr-namespace:DaxStudio.UI.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:FindReplaceDialogViewModel}"
                       Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                       mc:Ignorable="d" 
-                      d:DesignWidth="300" 
+                      d:DesignWidth="500" 
                       d:DesignHeight="100"
                       Padding="4"
                       Margin="4"
@@ -100,25 +100,36 @@
                 ToolTip="Toggle to switch between search and replace modes"/>
 
         <TextBox Name="TextToFind" 
+                 Text="{Binding TextToFind, UpdateSourceTrigger=PropertyChanged, Delay=200}"
                  ui:ControlHelper.PlaceholderText="Search"
                  Padding="8 6 120 0"
                  VerticalContentAlignment="Top"
                  MinWidth="150"
                  Margin="3" Grid.Row="0" Grid.Column="1"
-                 cal:Message.Attach="[Key Enter] = [FindNext]"
-                 ap:InitialFocusExtentions.SelectAllAndFocus="{Binding Path=IsVisible}"/>
+                 ap:InitialFocusExtentions.SelectAllAndFocus="{Binding Path=IsVisible}">
+            <i:Interaction.Triggers>
+                <trig:InputBindingTrigger>
+                    <trig:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Enter"/>
+                    </trig:InputBindingTrigger.InputBinding>
+                    <cal:ActionMessage MethodName="FindNext"/>
+                </trig:InputBindingTrigger>
+            </i:Interaction.Triggers>
+        </TextBox>
 
 
 
         <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Right">
 
-            <Button x:Name="FindNext" Margin="2" Background="Transparent">
+            <Button x:Name="FindNext" Margin="2" Background="Transparent" ToolTip="Find Next">
                 <Image Source="{DynamicResource next_smallDrawingImage}"/>
             </Button>
-            <Button x:Name="FindPrev" Margin="2" Background="Transparent">
+            <Button x:Name="FindPrev" Margin="2" Background="Transparent" ToolTip="Find Previous">
                 <Image Source="{DynamicResource prev_smallDrawingImage}" />
             </Button>
-            
+            <ToggleButton x:Name="SelectionActive" Margin="2" Background="Transparent" MinWidth="30" ToolTip="Find / Replace in Selection" Style="{DynamicResource DefaultToggleButtonStyle}">
+                <Image Source="{DynamicResource selection_smallDrawingImage}" />
+            </ToggleButton>
             <Button x:Name="Close" ToolTip="Close" Margin="5" BorderThickness="0" Background="Transparent" IsCancel="True" IsTabStop="False">
                 <Image Source="{DynamicResource closeDrawingImage}" />
             </Button>
@@ -134,7 +145,7 @@
                  Name="TextToReplace" Grid.Column="1" Grid.Row="1" MinWidth="50" /> 
         
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Column="2" Grid.Row="1">
-            <Button Margin="2" HorizontalAlignment="Right" Background="Transparent"
+            <Button Margin="2" HorizontalAlignment="Right" Background="Transparent" 
                          ToolTip="Replace" Name="ReplaceText" Visibility="{Binding ShowReplace, Converter={StaticResource BoolToVisibilityConverter }}">
                 <Image Source="{DynamicResource replace_smallDrawingImage}"/>
             </Button>

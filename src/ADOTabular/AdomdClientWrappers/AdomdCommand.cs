@@ -17,10 +17,6 @@ namespace ADOTabular.AdomdClientWrappers
 
         public AdomdConnection Connection
         {
-            get
-            {
-                return new AdomdConnection(_command.Connection);
-            }
 
             set
             {

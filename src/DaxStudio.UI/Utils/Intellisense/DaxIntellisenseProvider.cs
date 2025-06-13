@@ -186,6 +186,9 @@ namespace DaxStudio.UI.Utils.Intellisense
                                 case LineState.Dmv:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.DMV);
                                     break;
+                                case LineState.Digit: // only table names can start with digits
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables, _daxState);
+                                    break;
                                 default:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.All);
                                     break;

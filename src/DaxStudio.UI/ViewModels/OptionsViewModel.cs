@@ -124,9 +124,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        [JsonIgnore]
-        public double EditorFontSizePx => (double)new FontSizeConverter().ConvertFrom($"{EditorFontSize}pt");
-
         [Category("Editor")]
         [DisplayName("Editor Font Size")]
         [SortOrder(20)]
@@ -138,7 +135,6 @@ namespace DaxStudio.UI.ViewModels
                 if (Math.Abs(_editorFontSize - value) < Tolerance) return;
                 _editorFontSize = value;
                 NotifyOfPropertyChange(() => EditorFontSize);
-                NotifyOfPropertyChange(() => EditorFontSizePx);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(EditorFontSize), value, _isInitializing, this);
             }
@@ -2659,7 +2655,34 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(VpaxDontShowOptionsDialog), value, _isInitializing, this);
             }
-        } 
+        }
+
+        private bool _showObjectNameInServerTimings = false;
+        [DataMember, DefaultValue(false)]
+        public bool ShowObjectNameInServerTimings
+        {
+            get => _showObjectNameInServerTimings;
+            set
+            {
+                _showObjectNameInServerTimings = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowObjectNameInServerTimings), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private string _lastUsedUPN = string.Empty;
+        [DataMember, DefaultValue("")]
+        public string LastUsedUPN
+        {
+            get => _lastUsedUPN;
+            set
+            {
+                _lastUsedUPN = value;
+                SettingProvider.SetValue(nameof(LastUsedUPN), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
 
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls

@@ -10,7 +10,7 @@
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
                                
              mc:Ignorable="d" 
@@ -76,12 +76,12 @@
                 <VisualBrush Visual="{Binding ElementName=outerBorder}" />
             </Grid.OpacityMask>-->
             <ListView x:Name="Messages" 
-                HorizontalAlignment="Stretch"  
+                      HorizontalAlignment="Stretch"  
                       AlternationCount="2"
-                behaviours:GridViewColumnResize.Enabled="True"
-                extenders:ListViewExtenders.AutoScrollToEnd="True"
+                      behaviours:GridViewColumnResize.Enabled="True"
+                      extenders:ListViewExtenders.AutoScrollToEnd="True"
                       ItemContainerStyle="{StaticResource alternatingRows}"
-                Focusable="False" >
+                      Focusable="False" >
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem 

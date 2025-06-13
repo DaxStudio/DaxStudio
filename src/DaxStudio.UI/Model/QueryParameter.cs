@@ -1,6 +1,9 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Common;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Windows.Documents;
 
 namespace DaxStudio.UI.Model
 {
@@ -53,7 +56,6 @@ namespace DaxStudio.UI.Model
         public string TypeName { get => _typeName;
             set {
                 _typeName = value;
-                ValueString = ValueString;
             } 
         }
 
@@ -63,7 +65,23 @@ namespace DaxStudio.UI.Model
                 _valueString = value;
                 try
                 {
-                    Value = Convert.ChangeType(_valueString, DaxStudio.Common.XmlTypeMapper.GetSystemType($"xsd:{TypeName}"));
+                    var valueType = DaxStudio.Common.XmlTypeMapper.GetSystemType($"xsd:{TypeName}");
+                    if (_valueString.Contains("\n"))
+                    {
+                        Type t = typeof(List<>).MakeGenericType(valueType);
+                        IList res = (IList)Activator.CreateInstance(t);
+                        var valueList = _valueString.Split('\n');
+                        foreach (var v in valueList)
+                        {
+                            res.Add(Convert.ChangeType(v, valueType));
+                        }
+                        IsValid = true;
+                        ConversionError = string.Empty;
+                    }
+                    else
+                    {
+                        Value = Convert.ChangeType(_valueString, valueType);
+                    }
                     IsValid = true;
                     ConversionError = string.Empty;
                 }

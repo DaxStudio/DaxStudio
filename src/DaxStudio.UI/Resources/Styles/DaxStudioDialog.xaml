@@ -25,6 +25,11 @@
                 <DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="Black" Opacity="{DynamicResource Theme.DropShadow.Opacity}"/>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=(SystemParameters.HighContrast)}" Value="True">
+                <Setter Property="BorderThickness" Value="2" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <!-- BasedOn="{StaticResource TextBlockDefaultStyle}" -->
@@ -54,6 +59,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
+                                x:Name="innerBorder"
                                 Padding="{TemplateBinding Margin}" DataContext="{RelativeSource AncestorType={x:Type ctrl:DaxStudioDialog}}">
                         <Grid  Height="Auto">
                             <Grid.ColumnDefinitions>
@@ -84,6 +90,11 @@
                         </Grid>
                     </Border>
                 </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=(SystemParameters.HighContrast)}" Value="True">
+                            <Setter TargetName="innerBorder" Property="BorderThickness" Value="2" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

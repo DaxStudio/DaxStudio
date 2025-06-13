@@ -1,11 +1,19 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.Interfaces;
+using DaxStudio.Common;
+using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
+using Microsoft.AnalysisServices.AdomdClient;
 using Serilog;
+using System;
 using System.Data;
+using System.Data.Common;
+using System.Data.OleDb;
 using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.UIStubs
@@ -17,11 +25,17 @@ namespace DaxStudio.CommandLine.UIStubs
 
         public QueryRunner(ISettingsConnection settings)
         {
-            // TODO - how to support AzureAD auth??
+
             ConnectionStringWithInitialCatalog = settings.FullConnectionString;
             _settingProvider = SettingsProviderFactory.GetSettingProvider();
             Options = new OptionsViewModel(EventAggregator, _settingProvider);
+            // this supports interactive Entra Auth if needed
+            if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
+            AccessToken = AccessTokenHelper.GetAccessToken();
+            }
         }
+
+
 
         private string _queryText = string.Empty;
         public string QueryText => _queryText;
@@ -37,11 +51,11 @@ namespace DaxStudio.CommandLine.UIStubs
 
         public bool ConnectedToPowerPivot => false;
 
-        public int RowCount { get ; set ; }
+        public int RowCount { get; set; }
 
         public IGlobalOptions Options { get; }
 
-        public ConnectionManager Connection => throw new System.NotImplementedException();
+        public ConnectionManager Connection { get; private set; }
 
         public void ActivateOutput()
         {
@@ -53,11 +67,20 @@ namespace DaxStudio.CommandLine.UIStubs
             // not applicable for cmdline
         }
 
+        private AccessToken AccessToken { get; set; } 
+
         public global::ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteDataReaderQuery(string daxQuery, System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
             System.Diagnostics.Debug.WriteLine("Execute Data Reader");
-            var cnn = new ADOTabular.ADOTabularConnection(ConnectionStringWithInitialCatalog, ADOTabular.Enums.AdomdType.AnalysisServices);
-            return cnn.ExecuteReader(daxQuery, paramList);
+            Connection = new ConnectionManager(EventAggregator);
+            var msg = new ConnectEvent() { 
+                ConnectionString = ConnectionStringWithInitialCatalog,
+                AccessToken = this.AccessToken
+            };
+            Connection.Connect(msg);
+            
+            //var cnn = new ADOTabular.ADOTabularConnection(ConnectionStringWithInitialCatalog, ADOTabular.Enums.AdomdType.AnalysisServices);
+            return this.Connection.ExecuteReader(daxQuery, paramList);
         }
 
         public Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery)
@@ -112,6 +135,16 @@ namespace DaxStudio.CommandLine.UIStubs
         }
 
         public void QueryFailed(string errorMessage)
+        {
+            // TODO
+        }
+
+        public void OutputQueryError(string errorMessage)
+        {
+            Log.Error(errorMessage);
+        }
+
+        public void ClearQueryError()
         {
             // TODO
         }

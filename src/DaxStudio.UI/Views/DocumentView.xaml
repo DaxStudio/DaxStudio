@@ -6,7 +6,7 @@
     xmlns:desdata="clr-namespace:DaxStudio.UI.ViewModels.DesignData"
     xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
     xmlns:avalonedit="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
-    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
     xmlns:dax="clr-namespace:DAXEditorControl;assembly=DaxStudio.DAXEditor" 
     xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
@@ -605,7 +605,7 @@
                                                    MinHeight="60"
                                                    LineNumbersForeground="{DynamicResource Theme.Brush.LineNumbers}"
                                                    
-                                                   FontSize="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                   FontSizeInPoints="{Binding SizeUnitLabel.ScreenPoints, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                    Document ="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionStart="{Binding SelectionStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorSelectionLength="{Binding SelectionLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -687,6 +687,9 @@
                                                     
                                                 </MenuItem>
                                                 <Separator/>
+                                                <MenuItem x:Name="DefineMeasures" Header="Define Measures" cal:Message.Attach="DefineMeasures()"></MenuItem>
+                                                <MenuItem x:Name="DefineDependentMeasures" Header="Define Dependent Measures" cal:Message.Attach="DefineDependentMeasures()"></MenuItem>
+                                                <Separator/>
                                                 <MenuItem x:Name="LookupDaxGuide" 
                                                           Header="{Binding LookupDaxGuideHeader}"
                                                           cal:Message.Attach="LookupDaxGuide()" 
@@ -725,7 +728,8 @@
                                                         cal:View.ApplyConventions="true"
                                                         HorizontalAlignment="Left"
                                                         VerticalAlignment="Top"
-                                                        Margin="{Binding UseIndentCodeFolding , Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=18.0}"
+                                                        IsHitTestVisible="False"
+                                                        Margin="{Binding UseIndentCodeFolding , Converter={StaticResource BoolToLeftThicknessConverter}, ConverterParameter=24.0}"
                                                         >
                                             <ContentControl.LayoutTransform>
                                                 <ScaleTransform ScaleX="{Binding SizeUnitLabel.StringValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringPercentToDoubleConverter}}" 
@@ -774,7 +778,7 @@
                                     <ContentControl x:Name="FindReplaceDialog" 
                                                 HorizontalAlignment="Right" 
                                                 VerticalAlignment="Top"
-                                                Width="450"
+                                                Width="500"
                                                 Margin="0,12,21,0" 
                                                 Grid.Column="1" Grid.Row="1"
                                                 cal:View.Model="{Binding FindReplaceDialog}" cal:View.ApplyConventions="true"/>

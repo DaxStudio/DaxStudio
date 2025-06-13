@@ -59,7 +59,7 @@ namespace DaxStudio.UI.ViewModels
 
 
         #region Public Methods
-        public void Run()
+        public async Task Run()
         {
             try
             {
@@ -81,12 +81,12 @@ namespace DaxStudio.UI.ViewModels
 
                 // start server timings
                 // once the server timings starts it will trigger the first query
-                StartServerTimings();
+                await StartServerTimingsAsync();
             }
             catch( Exception ex)
             {
                 Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), ex.Message);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
                 _stopwatch?.Stop();
             }
         }
@@ -107,13 +107,13 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private void StartServerTimings()
+        private async Task StartServerTimingsAsync()
         {
             var serverTimings = Ribbon.TraceWatchers.First(tw => tw.GetType() == typeof(ServerTimesViewModel));
             if (serverTimings.IsChecked)
             {
                 // if the server timings trace is already active start running queries
-                RunNextQuery();
+                await RunNextQuery();
             }
             else
             {
@@ -122,7 +122,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private void RunNextQuery()
+        private async Task RunNextQuery()
         {
             if (_currentColdRun < CalculatedColdCacheRuns)
             {
@@ -141,7 +141,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (!_benchmarkingPassComplete)
             {
-                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
+                await EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
             }
 
             // if we have completed the runs with ViewAs On
@@ -359,7 +359,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (_viewAsRuns + _currentColdRun + _currentWarmRun < _totalRuns)
             {
-                RunNextQuery();
+                await RunNextQuery();
             } 
             else
             {
@@ -388,12 +388,12 @@ namespace DaxStudio.UI.ViewModels
             dt.Rows.Add(dr);
         }
 
-        public Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
+        public async Task HandleAsync(TraceChangedEvent message, CancellationToken cancellationToken)
         {
-            if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started 
-                && message.Sender is ServerTimesViewModel) RunNextQuery();
+            if (message.TraceStatus == QueryTrace.Interfaces.QueryTraceStatus.Started
+                && message.Sender is ServerTimesViewModel) { await RunNextQuery(); }
             // TODO - need to handle trace errors
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
         }
 
         #endregion

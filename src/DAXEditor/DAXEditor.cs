@@ -17,10 +17,10 @@ using ICSharpCode.AvalonEdit.Rendering;
 using System.Windows.Controls;
 using System.Text;
 using ICSharpCode.AvalonEdit;
-using System.ComponentModel;
 using System.Windows.Documents;
 using System.Windows.Automation.Peers;
-using DAXEditor;
+
+
 
 namespace DAXEditorControl
 {
@@ -91,10 +91,12 @@ namespace DAXEditorControl
     {
         private readonly BracketRenderer.BracketHighlightRenderer _bracketRenderer;
         private WordHighlighTransformer _wordHighlighter;
+        private SelectionBackgroundRenderer _selectionBackgroundRenderer;
         private readonly TextMarkerService _textMarkerService;
         private ToolTip _toolTip;
         private bool _syntaxErrorDisplayed;
         private IHighlighter _documentHighlighter;
+        private FontSizeConverter _fontSizeConverter = new FontSizeConverter();
 
         static DAXEditor()
         {
@@ -135,15 +137,19 @@ namespace DAXEditorControl
             // add the stub Intellisense provider
             IntellisenseProvider = new IntellisenseProviderStub();
 
+            _selectionBackgroundRenderer = new SelectionBackgroundRenderer();
+
+            _wordHighlighter = new WordHighlighTransformer(_highlightFunction, HighlightBackgroundBrush);
+
             this.DocumentChanged += DaxEditor_DocumentChanged;
             DataObject.AddPastingHandler(this, OnDataObjectPasting);
             DataObject.AddCopyingHandler(this, OnDataObjectCopying);
-            RegiserKeyBindings();
+            RegisterKeyBindings();
         }
 
         public EventHandler<DataObjectCopyingEventArgs> OnCopying { get; set; }
 
-        private void RegiserKeyBindings()
+        private void RegisterKeyBindings()
         {
             
             //InputBindings.Add(new InputBinding( new HotKeyCommand(MoveLineUp) , new KeyGesture(Key.Up, ModifierKeys.Control | ModifierKeys.Shift)));
@@ -304,7 +310,7 @@ namespace DAXEditorControl
             // default settings - can be overridden in the settings dialog
             this.FontFamily = new FontFamily("Lucida Console");
             this.DefaultFontSize = 11.0;
-            this.FontSize = DefaultFontSize;
+            this.FontSizeInPoints = DefaultFontSize;
             this.ShowLineNumbers = true;
             
         }
@@ -363,13 +369,16 @@ namespace DAXEditorControl
                    get { return _highlightFunction; }
                    set {
                        if (_highlightFunction != null)
-                       { 
-                           // remove the old function before adding the new one
-                           this.TextArea.TextView.LineTransformers.Remove(_wordHighlighter); 
+                       {
+                            if (TextArea.TextView.LineTransformers.Contains(_wordHighlighter))
+                            {
+                                // remove the old function before adding the new one
+                                this.TextArea.TextView.LineTransformers.Remove(_wordHighlighter);
+                            }
                        }
                        _highlightFunction = value;
-                        _wordHighlighter = new WordHighlighTransformer(_highlightFunction, HighlightBackgroundBrush);
-                        this.TextArea.TextView.LineTransformers.Add(_wordHighlighter);
+                       _wordHighlighter.HightlightFunction = _highlightFunction;
+                       this.TextArea.TextView.LineTransformers.Add(_wordHighlighter);
                    }
                }
 
@@ -377,14 +386,60 @@ namespace DAXEditorControl
         public double DefaultFontSize {
             get { return _defaultFontSize; }
             set { _defaultFontSize = value;
-                FontSize = _defaultFontSize;
+                FontSizeInPoints = _defaultFontSize;
             } 
         }
 
+        public static readonly DependencyProperty FontSizeInPointsProperty =
+            DependencyProperty.Register("FontSizeInPoints", typeof(double), typeof(DAXEditor),
+                //new PropertyMetadata( 11.0, OnFontSizeInPointsPropertyChanged, OnFontSizeInPointsCoerceValue)
+                new PropertyMetadata(OnFontSizeInPointsPropertyChanged) { CoerceValueCallback = OnFontSizeInPointsCoerceValue }
+                );
+
+        public Double FontSizeInPoints
+        {
+            get { return (double)GetValue(FontSizeInPointsProperty); }
+            set { SetValue(FontSizeInPointsProperty, value);
+                //FontSize = (double)_fontSizeConverter.ConvertFrom($"{value}pt");
+            }
+        }
+
+        private static object OnFontSizeInPointsCoerceValue(DependencyObject d, object baseValue)
+        {
+            double value = (double)baseValue;
+            if (value < MinFontSize) return MinFontSize;
+            if (value > MaxFontSize) return MaxFontSize;
+            return value;
+        }
+
+        private void OnFontSizeInPointsPropertyChanged(double size)
+        {
+            if (size < MinFontSize) size = MinFontSize;
+            if (size > MaxFontSize) size = MaxFontSize;
+            FontSize = (double)_fontSizeConverter.ConvertFrom($"{size}pt");
+        }
+
+        private static void OnFontSizeInPointsPropertyChanged(
+            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((DAXEditor)d).OnFontSizeInPointsPropertyChanged((double)e.NewValue);
+        }
+
+
+        //private double _fontSizeInPoints = 0;
+        //public double FontSizeInPoints { 
+        //    get { return _fontSizeInPoints; } 
+        //    set {
+        //        _fontSizeInPoints = value;
+                
+                
+        //    }
+        //}
+
         public double FontScale
         {
-            get => FontSize/DefaultFontSize * 100;
-            set => FontSize = DefaultFontSize * value/100;
+            get => FontSizeInPoints/DefaultFontSize * 100;
+            set => FontSizeInPoints = DefaultFontSize * value/100;
         }
 
         private readonly List<double> _fontScaleDefaultValues = new List<double>() {25.0, 50.0, 100.0, 200.0, 300.0, 400.0};
@@ -402,42 +457,43 @@ namespace DAXEditorControl
 
         private DaxStudioBracketSearcher FindBrackets
         { get; set; }
+       
 
-        
-
- public void HighlightBrackets()
- {
-        //if (this.TextArea.Options.EnableHighlightBrackets == true)
-      //{
-        if (this.FindBrackets == null)
-        {
-          this.FindBrackets = new DaxStudioBracketSearcher();
+         public void HighlightBrackets()
+         {
+                //if (this.TextArea.Options.EnableHighlightBrackets == true)
+              //{
+                if (this.FindBrackets == null)
+                {
+                  this.FindBrackets = new DaxStudioBracketSearcher();
+                }
+                var bracketSearchResult = FindBrackets.SearchBracket(this.Document, this.TextArea.Caret.Offset);
+                this._bracketRenderer.SetHighlight(bracketSearchResult);
+              //}
+              //else
+              //{
+              //  this._bracketRenderer.SetHighlight(null);
+              //}
         }
-        var bracketSearchResult = FindBrackets.SearchBracket(this.Document, this.TextArea.Caret.Offset);
-        this._bracketRenderer.SetHighlight(bracketSearchResult);
-      //}
-      //else
-      //{
-      //  this._bracketRenderer.SetHighlight(null);
-      //}
-}
 
+        private const double MinFontSize = 6.0;
+        private const double MaxFontSize = 200.0;
+        private const double FontChangeFactor = 1.0;
         private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                double fontSize = this.FontSize + e.Delta / 25.0;
+                
+                double newFontSize = this.FontSizeInPoints + ((e.Delta / 120) * FontChangeFactor);
 
-                if (fontSize < 6)
-                    this.FontSize = 6;
+                if (newFontSize < MinFontSize)
+                    newFontSize = MinFontSize;
                 else
                 {
-                    if (fontSize > 200)
-                        this.FontSize = 200;
-                    else
-                        this.FontSize = fontSize;
+                    if (newFontSize > MaxFontSize)
+                        newFontSize = MaxFontSize;
                 }
-
+                FontSizeInPoints = newFontSize;
                 e.Handled = true;
             }
         }
@@ -545,6 +601,14 @@ namespace DAXEditorControl
             // remove any previous error markers
             ClearErrorMarkings();
 
+            // if we have an active selection we need to offset the error marking based on the selection
+            TextLocation selectionLocation = new TextLocation();
+            if (SelectionLength > 0)
+            {
+                selectionLocation = Document.GetLocation(SelectionStart);
+                line = line + selectionLocation.Line -1;
+                if (line == 1 && selectionLocation.Column > 1) column = column + selectionLocation.Column -1;
+            }
             if (line >= 1 && line <= this.Document.LineCount)
             {
                 int offset = this.Document.GetOffset(new TextLocation(line, column));
@@ -819,6 +883,43 @@ namespace DAXEditorControl
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        public void ClearFindSelection()
+        {
+            FindSelectionOffset = 0;
+            FindSelectionLength = 0;
+            TextArea.TextView.Redraw();
+        }
+
+        private int _findSelectionOffset = 0;
+        public int FindSelectionOffset
+        {
+            get => _findSelectionOffset;
+            set { _findSelectionOffset = value;
+                _selectionBackgroundRenderer.StartOffset = _findSelectionOffset;
+                _wordHighlighter.FindSelectionOffset = _findSelectionOffset;
+            }
+        }
+
+        private int _findSelectionLength = 0;
+        public int FindSelectionLength
+        {
+            get => _findSelectionLength;
+            set { 
+                _findSelectionLength = value;
+                _selectionBackgroundRenderer.Length = _findSelectionLength;
+                _wordHighlighter.FindSelectionLength = _findSelectionLength;
+                if (_findSelectionLength == 0)
+                {
+                    TextArea.TextView.BackgroundRenderers.Remove(_selectionBackgroundRenderer);
+                }
+                else
+                {
+                    TextArea.TextView.BackgroundRenderers.Add(_selectionBackgroundRenderer);
+                }
+            }
+        }
+
     }
 
 

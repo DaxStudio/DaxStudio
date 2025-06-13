@@ -9,8 +9,8 @@
              d:DesignHeight="300" d:DesignWidth="300"
              Caption="Query Parameters"
              Style="{StaticResource DaxStudioDialogStyle}"
-             Width="500"
-             Height="450">
+             Width="600"
+             Height="500">
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -45,10 +45,12 @@
                 </StackPanel>
                 <TextBlock Padding="10,10,0,5">The following parameters require values:</TextBlock>
             </StackPanel>
+        <!--  -->
             <DataGrid  Grid.Row="2" 
                        ItemsSource="{Binding Parameters}"
                        AutoGenerateColumns="False" 
-                       SelectionUnit="Cell" PreviewKeyDown="OnDataGridPreviewKeyDown"
+                       SelectionUnit="Cell" 
+                       PreviewKeyDown="OnDataGridPreviewKeyDown"
                        x:Name="ParameterGrid" 
                        Margin="10px 0" BorderBrush="DarkGray"
                        HeadersVisibility="Column"
@@ -66,15 +68,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--<DataGridTextColumn Header="Value" Binding="{Binding Value}"  Width="*" 
-                            CellStyle="{DynamicResource SelectableCellStyle}"/>-->
-                    <!--<DataGridComboBoxColumn 
-                        Header="Type"
-                        IsReadOnly="False"
-                        ItemsSource="{Binding Source={StaticResource types}}"
-                        SelectedItemBinding="{Binding TypeName}">
-                        
-                    </DataGridComboBoxColumn>-->
+
                     <DataGridTemplateColumn Header="Type">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -86,7 +80,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Value" Width="*" >
-                        <!--CellStyle="{DynamicResource SelectableCellStyle}" -->
+
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -94,7 +88,11 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                <TextBox x:Name="ValueBox" DockPanel.Dock="Left" Text="{Binding ValueString,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="2px" Padding="3px" HorizontalAlignment="Stretch" />
+                                <TextBox x:Name="ValueBox" 
+                                         DockPanel.Dock="Left" 
+                                         Text="{Binding ValueString,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="2px" Padding="3px" 
+                                         HorizontalAlignment="Stretch" 
+                                         AcceptsReturn="True" MaxLines="5" VerticalScrollBarVisibility="Auto"  />
                                 <Image Source="{DynamicResource successDrawingImage}"
                                                 VerticalAlignment="Center"
                                                 Grid.Column="1"
@@ -111,28 +109,11 @@
                     
                 </DataGrid.Columns>
                 <DataGrid.Resources>
-                    <Style  x:Key="SelectableCellStyle"
-                        TargetType="{x:Type DataGridCell}">
-                        <Setter Property="KeyboardNavigation.IsTabStop"  Value="False" />
-                        <Setter Property="Foreground" Value="Red" />
-                        <Setter Property="Padding" Value="3px" />
-                        <Setter Property="Background" Value="{x:Null}" />
-                        <Setter Property="BorderBrush" Value="{x:Null}" />
-                        
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="KeyboardNavigation.IsTabStop" Value="True" />
-                                <Setter Property="Background" Value="{x:Null}" />
-                                <Setter Property="BorderBrush" Value="{x:Null}" />
-
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
 
                     <Style TargetType="{x:Type DataGridCell}" >
                         <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
-                        <Setter Property="Foreground" Value="Red" />
-                        <Setter Property="Padding" Value="3px" />
+                    
+                    <Setter Property="Padding" Value="3px" />
                         <Style.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter Property="BorderBrush" Value="{x:Null}"/>
@@ -147,32 +128,7 @@
 
                 </DataGrid.Resources>
             </DataGrid>
-            <!--<ListView x:Name="DocumentList" Grid.Row="2"
-                      ItemsSource="{Binding Parameters}" 
-                      Margin="10,0" HorizontalAlignment="Stretch"  
-                      behaviours:GridViewColumnResize.Enabled="True"
-                      >
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Parameter" Width="Auto">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Width="Auto" Height="18" Text="{Binding Name}" />
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="Value" Width="Auto" behaviours:GridViewColumnResize.Width="*1">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBox MinWidth="50px" Text="{Binding Path=Value}" Width="Auto" HorizontalAlignment="Stretch" />
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
- 
-            </ListView>-->
-            <Button x:Name="WriteParameterXml" IsDefault="True" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4" Style="{DynamicResource DefaultButtonStyle}">_Write Parameter XML</Button>
+            <Button x:Name="WriteParameterXml" IsDefault="False" Grid.Row="3" Margin="9,7" Width="140" HorizontalAlignment="Left" TabIndex="4" Style="{DynamicResource DefaultButtonStyle}">_Write Parameter XML</Button>
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 
                 <Button x:Name="OK" IsDefault="True" TabIndex="1" Style="{DynamicResource AccentButtonStyle}" MinWidth="65" Margin="8 0">Ok</Button>

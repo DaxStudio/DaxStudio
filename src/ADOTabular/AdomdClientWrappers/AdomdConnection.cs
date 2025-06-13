@@ -1,4 +1,5 @@
 ﻿using ADOTabular.Enums;
+using Microsoft.AnalysisServices.AdomdClient;
 using System;
 using System.Data;
 using System.Threading;
@@ -6,22 +7,25 @@ using Adomd = Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular.AdomdClientWrappers
 {
-    public sealed class AdomdConnection:IDisposable
+    public sealed class AdomdConnection : IDisposable
     {
         private readonly AdomdType _type;
         private Adomd.AdomdConnection _conn;
-        
+
         private readonly object rowsetLock = new object();
         public AdomdConnection(Adomd.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
             _conn = connection;
         }
-        
+
         public AdomdConnection(string connectionString, AdomdType type)
         {
             _conn = new Adomd.AdomdConnection(connectionString);
         }
+
+        public AccessToken AccessToken { get => _conn.AccessToken; set => _conn.AccessToken = value; }
+        public Func<AccessToken, AccessToken> OnAccessTokenExpired { get => _conn.OnAccessTokenExpired; set => _conn.OnAccessTokenExpired = value; }
 
         internal AdomdType Type
         {
@@ -36,15 +40,9 @@ namespace ADOTabular.AdomdClientWrappers
             }
         }
 
-        
         public void Open()
         {
             _conn.Open();
-        }
-
-        public void Open(string connectionString)
-        {
-            _conn.Open(connectionString);
         }
 
         public void Close()
@@ -59,7 +57,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void ChangeDatabase(string database)
         {
-            if (database == null) return; 
+            if (database == null) return;
             if (database.Trim().Length == 0) return;
             if (string.Equals(database, _conn.Database, StringComparison.OrdinalIgnoreCase)) return;
             _conn.ChangeDatabase(database);
@@ -105,7 +103,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-                return _conn.SessionID;   
+                return _conn.SessionID;
             }
             set
             {
@@ -117,7 +115,7 @@ namespace ADOTabular.AdomdClientWrappers
         {
             get
             {
-               return _conn.Database;
+                return _conn.Database;
             }
         }
 
@@ -136,10 +134,10 @@ namespace ADOTabular.AdomdClientWrappers
             Adomd.AdomdRestrictionCollection coll = new Adomd.AdomdRestrictionCollection();
             if (restrictions != null)
             {
-                
+
                 foreach (AdomdClientWrappers.AdomdRestriction res in restrictions)
                 {
-                    coll.Add(new Adomd.AdomdRestriction( res.Name, res.Value));
+                    coll.Add(new Adomd.AdomdRestriction(res.Name, res.Value));
                 }
             }
             if (_conn.State != ConnectionState.Open)
@@ -147,10 +145,10 @@ namespace ADOTabular.AdomdClientWrappers
                 _conn.Open();
             }
 
-            // wait 10 seconds before timing out
-            if (Monitor.TryEnter(rowsetLock, new TimeSpan(0,0,30 )))
+            // wait 30 seconds before timing out
+            if (Monitor.TryEnter(rowsetLock, new TimeSpan(0, 0, 30)))
             {
-            
+
                 try
                 {
                     return _conn.GetSchemaDataSet(schemaName, coll, throwOnInlineErrors);
@@ -159,7 +157,8 @@ namespace ADOTabular.AdomdClientWrappers
                 {
                     Monitor.Exit(rowsetLock);
                 }
-            } else
+            }
+            else
             {
                 throw new InvalidOperationException($"Timeout exceeded attempting to establish internal lock for GetSchemaDataSet for {schemaName}");
             }

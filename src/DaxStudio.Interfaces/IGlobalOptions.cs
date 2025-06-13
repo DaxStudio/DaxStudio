@@ -1,17 +1,17 @@
 ﻿using DaxStudio.Interfaces.Enums;
 using System;
-using System.ComponentModel;
 using System.Security;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using DaxStudio.Interfaces.Attributes;
 using Serilog.Events;
 using Serilog.Core;
-using Dax.Metadata;
+using DaxStudio.Common.Interfaces;
+
 
 namespace DaxStudio.Interfaces
 {
-    public interface IGlobalOptions: IGlobalOptionsBase, IVpaOptions
+    public interface IGlobalOptions: IGlobalOptionsBase, IVpaOptions, IHaveLastUsedUPN
     {
         bool AutoHideMetadataVerticalScrollbars { get; set; }
         bool AutoRefreshMetadataCloud { get; set; }
@@ -36,7 +36,7 @@ namespace DaxStudio.Interfaces
         bool EditorConvertTabsToSpaces { get; set; }
         bool EditorEnableIntellisense { get; set; }
         string EditorFontFamily { get; set; }
-        [JsonIgnore] double EditorFontSizePx { get; }
+        double EditorFontSize { get; set; }
         int EditorIndentationSize { get; set; }
         MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
         bool EditorShowFunctionInsightsOnHover { get; set; }
@@ -168,6 +168,7 @@ namespace DaxStudio.Interfaces
         TextFileType CmdLineTextFileType { get; set; }
         bool XlsxUseZip64Compression { get; set; }
         bool XlsxAlwaysWriteCellReferences { get; set; }
+        bool ShowObjectNameInServerTimings { get; set; }
 
     }
 }

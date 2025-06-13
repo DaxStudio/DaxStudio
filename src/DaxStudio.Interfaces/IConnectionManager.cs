@@ -2,7 +2,8 @@
 using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
 using DaxStudio.Common.Enums;
-using Microsoft.AnalysisServices.AdomdClient;
+using TOM = Microsoft.AnalysisServices;
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using System.Collections.Generic;
 using System.Data;
 
@@ -18,7 +19,7 @@ namespace DaxStudio.Interfaces
         bool IsConnected { get; }
         string SessionId { get; }
         int SPID { get; }
-        HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses { get; }
+        Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses { get; }
         AdomdType Type { get; }
         DaxColumnsRemap DaxColumnsRemapInfo { get; }
         void Ping();
@@ -28,9 +29,9 @@ namespace DaxStudio.Interfaces
         ADOTabularDatabase Database { get; }
         string SelectedModelName { get; }
 
-        ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string query, List<AdomdParameter> paramList);
+        ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string query, List<Adomd.AdomdParameter> paramList);
         DataTable ExecuteDaxQueryDataTable(string query);
-
         ServerType ServerType { get; }
+        Adomd.AccessToken AccessToken { get; }
     }
 }

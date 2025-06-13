@@ -20,7 +20,8 @@ namespace DaxStudio.UI.Utils
         ColumnClosed,
         Measure,
         MeasureClosed,
-        LetterOrDigit,
+        Letter,
+        Digit,
         Other,
         NotSet,
         TableDelimiter,
@@ -138,7 +139,8 @@ namespace DaxStudio.UI.Utils
                     case '[':
                         if (daxState.LineState != LineState.String)
                         {
-                            if (daxState.LineState == LineState.LetterOrDigit
+                            if (daxState.LineState == LineState.Letter
+                                || daxState.LineState == LineState.Digit
                                 || daxState.LineState == LineState.Table
                                 || daxState.LineState == LineState.TableClosed)
                             {
@@ -202,8 +204,7 @@ namespace DaxStudio.UI.Utils
                             && daxState.LineState != LineState.Measure
                             )
                         {
-
-                            daxState.SetState(line[i].IsDaxLetterOrDigit() ? LineState.LetterOrDigit : LineState.Other, i);
+                            SetLetterOrDigitState(line, daxState, i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
                         if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);
@@ -226,7 +227,7 @@ namespace DaxStudio.UI.Utils
                             && daxState.LineState != LineState.Dmv
                             && daxState.LineState != LineState.Measure)
                         {
-                            daxState.SetState( line[i].IsDaxLetterOrDigit() || line[i] == '$'?LineState.LetterOrDigit:LineState.Other ,i);
+                            SetLetterOrDigitState(line, daxState, i);
                         }
                         if (daxState.LineState == LineState.Table) sbTableName.Append(line[i]);
                         if (daxState.LineState == LineState.Column) sbColumnName.Append(line[i]);
@@ -249,6 +250,22 @@ namespace DaxStudio.UI.Utils
             daxState.TableName = sbTableName.ToString();
             daxState.ColumnName = sbColumnName.ToString();
             return daxState;
+        }
+
+        private static void SetLetterOrDigitState(string line, DaxLineState daxState, int i)
+        {
+            if (line[i].IsDaxLetter())
+            {
+                daxState.SetState(LineState.Letter, i);
+            }
+            else if (char.IsDigit(line[i]))
+            {
+                daxState.SetState(LineState.Digit, i);
+            }
+            else
+            {
+                daxState.SetState(LineState.Other, i);
+            }
         }
 
         public static string GetPreceedingTableName(string line)

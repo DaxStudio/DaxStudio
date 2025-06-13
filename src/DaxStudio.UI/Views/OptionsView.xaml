@@ -9,7 +9,7 @@
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:nud="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
              xmlns:pg="clr-namespace:DaxStudio.Controls.PropertyGrid;assembly=DaxStudio.Controls.PropertyGrid"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:val="clr-namespace:DaxStudio.UI.Validation" xmlns:cal="http://www.caliburnproject.org"
              xmlns:templateSelectors="clr-namespace:DaxStudio.UI.TemplateSelectors"

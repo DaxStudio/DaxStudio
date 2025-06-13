@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using Windows.Storage.Search;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -25,7 +26,8 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowRewriteAttempts { get { return _showRewriteAttempts; } set { _showRewriteAttempts = value; NotifyOfPropertyChange(); } }
         private bool _showMetrics = true;  // default to true
         public bool ShowMetrics { get { return _showMetrics; } set { _showMetrics = value; NotifyOfPropertyChange(); } }
-
+        private bool _showObjectName = false;
+        public bool ShowObjectName { get { return _showObjectName; } set { _showObjectName = value;NotifyOfPropertyChange(); } }
         public bool LayoutRight { get { return !LayoutBottom; } set {LayoutBottom = !value; }}
         private bool _layoutBottom;
         public bool LayoutBottom

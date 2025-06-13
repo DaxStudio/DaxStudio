@@ -15,21 +15,16 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ADOTabular.Utils;
 using DaxStudio.UI.Interfaces;
-using System.Threading;
 using DaxStudio.Common.Enums;
 using System.Xml.XPath;
 using System.IO;
-using static Dax.Vpax.Tools.VpaxTools;
-using DaxStudio.Controls.DataGridFilter.Querying;
-using DaxStudio.UI.ViewModels;
-using System.Data.Common;
 using System.Data.OleDb;
-using System.Windows.Forms.VisualStyles;
-using Microsoft.AnalysisServices;
+using TOM = Microsoft.AnalysisServices;
 using System.Xml;
 using ADOTabular.Interfaces;
+using DaxStudio.Common;
+using ADOTabular.Extensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -149,7 +144,7 @@ namespace DaxStudio.UI.Model
         public IEnumerable<string> AllFunctions => _connection.AllFunctions;
 
         public IEnumerable<string> Keywords => _keywords;
-        public string ApplicationName => _connection?.ApplicationName??"DAX Studio";
+        public string ApplicationName => _connection?.ApplicationName ?? "DAX Studio";
 
         public void Cancel()
         {
@@ -195,9 +190,19 @@ namespace DaxStudio.UI.Model
                     {
                         var contextDb = context.GetDatabaseName();
                         var currentDb = contextDb ?? Database?.Name ?? string.Empty;
+                        
+                        // cache the AccessToken
+                        var accessTokenCopy = _connection.AccessToken;
+                        var onAccessTokenExpiredCopy = _connection.OnAccessTokenExpired;
+                        
                         _connection.Close(true); // force the connection closed and close the session
 
                         _connection = new ADOTabularConnection(_connection.ConnectionString, _connection.Type);
+                        if (accessTokenCopy.IsNotNull())
+                        {
+                            _connection.AccessToken = accessTokenCopy;
+                            _connection.OnAccessTokenExpired = onAccessTokenExpiredCopy;
+                        }
                         _connection.ChangeDatabase(currentDb);
 
                         _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_connection.SessionId));
@@ -218,9 +223,19 @@ namespace DaxStudio.UI.Model
                     {
                         var contextDb = context.GetDatabaseName();
                         var currentDb = contextDb ?? Database?.Name ?? string.Empty;
+
+                        // cache the AccessToken
+                        var accessTokenCopy = _connection.AccessToken;
+                        var onAccessTokenExpiredCopy = _connection.OnAccessTokenExpired;
+
                         _dmvConnection.Close(true); // force the connection closed and close the session
 
                         _dmvConnection = new ADOTabularConnection(_dmvConnection.ConnectionString, _dmvConnection.Type);
+                        if (accessTokenCopy.IsNotNull())
+                        {
+                            _dmvConnection.AccessToken = accessTokenCopy;
+                            _dmvConnection.OnAccessTokenExpired = onAccessTokenExpiredCopy;
+                        }
                         _dmvConnection.ChangeDatabase(currentDb);
 
                         _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_dmvConnection.SessionId));
@@ -240,7 +255,22 @@ namespace DaxStudio.UI.Model
         public ADOTabularDatabase Database => _dmvRetry.Execute(() => {
             return _dmvConnection?.Database;
         });
-        public string DatabaseName => _dmvRetry.Execute(() => _dmvConnection?.Database?.Name ?? string.Empty);
+        public string DatabaseName
+        {
+            get
+            {
+                try
+                {
+                    return _dmvRetry.Execute(() => _dmvConnection?.Database?.Name ?? string.Empty);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(DatabaseName), "Error getting database name");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error getting database name: {ex.Message}"));
+                    return string.Empty;
+                }
+            }
+        }
         public DaxMetadata DaxMetadataInfo {
             get {
                 return _dmvConnection?.DaxMetadataInfo;
@@ -258,7 +288,7 @@ namespace DaxStudio.UI.Model
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
 
-                    if (_dmvConnection.HasRlsParameters())
+                    if (_dmvConnection.IsTestingRls)
                     {
                         newConn = _dmvConnection.CloneWithoutRLS();
                         conn = newConn;
@@ -300,7 +330,7 @@ namespace DaxStudio.UI.Model
                     // if the connection contains EffectiveUserName or Roles we clone it and strip those out
                     // so that we can run the discover command to get the column remap info
                     // Otherwise we just use the current connection
-                    if (_connection.HasRlsParameters())
+                    if (_connection.IsTestingRls)
                     {
                         newConn = _dmvConnection.CloneWithoutRLS();
                         conn = newConn;
@@ -395,11 +425,17 @@ namespace DaxStudio.UI.Model
                     bool hasChanged = await Task.Run(() =>
                     {
                         var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
+                        if (this.AccessToken.IsNotNull())
+                        {
+                            conn.AccessToken = this.AccessToken;
+                            conn.OnAccessTokenExpired = this.OnAccessTokenExpired;
+                        }
                         conn.ChangeDatabase(this.DatabaseName);
                         if (conn.State != ConnectionState.Open) conn.Open();
                         var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
                         _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
                         conn.Close(true); // close and end the session
+                        conn.Dispose();
                         return dbChanges;
                     });
                     return hasChanged;
@@ -460,7 +496,7 @@ namespace DaxStudio.UI.Model
         public string SessionId => _connection.SessionId;
         public ServerType ServerType { get; private set; }
 
-        public int SPID { get { return _connection?.SPID??0; } }
+        public int SPID { get { return _connection?.State != ConnectionState.Open ? 0 : _connection?.SPID??0; } }
         public string ShortFileName => _connection.ShortFileName;
 
         public  bool ShouldAutoRefreshMetadata( IGlobalOptions options)
@@ -673,7 +709,7 @@ namespace DaxStudio.UI.Model
         {
             if (_connection != null)
             {
-                if (_connection.State == ConnectionState.Open)
+                if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline )
                 {
                     if (Database != null && database != null && _connection.Database.Name != database.Name) 
                     {
@@ -780,15 +816,15 @@ namespace DaxStudio.UI.Model
         {
 
             var model = _dmvConnection.Database.Models.BaseModel;
-            var modelMeasures = (from t in model.Tables
-                                 from m in t.Measures
-                                 select m).ToList();
+
+            var dependentMeasures = FindDependentMeasures(measureName);
+
             var distinctColumns = (from t in model.Tables
                                    from c in t.Columns
                                    where c.ObjectType == ADOTabularObjectType.Column
                                    select c.Name).Distinct().ToList();
 
-            var finalMeasure = modelMeasures.First(m => m.Name == measureName);
+            var finalMeasure = dependentMeasures.First(m => m.Name == measureName);
 
             var resultExpression = finalMeasure.Expression;
 
@@ -797,9 +833,12 @@ namespace DaxStudio.UI.Model
             do
             {
                 foundDependentMeasures = false;
-                foreach (var modelMeasure in modelMeasures)
+                foreach (var modelMeasure in dependentMeasures)
                 {
-                    Regex daxMeasureRegex = new Regex($@"\[{ modelMeasure.Name.Replace("]","]]")}]|'{modelMeasure.Table.DaxName}'\[{modelMeasure.Name.Replace("]", "]]")}]|{modelMeasure.Table.DaxName}\[{modelMeasure.Name.Replace("]", "]]")}]");
+                    var escapedName = Regex.Escape(modelMeasure.Name).Replace("]", "]]");
+                    var escapedTable = Regex.Escape(modelMeasure.Table.DaxName);
+
+                    Regex daxMeasureRegex = new Regex($@"\[{ escapedName}]|'{escapedTable}'\[{escapedName}]|{escapedTable}\[{escapedName}]");
                     bool hasComments = modelMeasure.Expression.Contains(@"--");
                     string newExpression = daxMeasureRegex.Replace(resultExpression, $" CALCULATE ( { modelMeasure.Expression}{(hasComments ? "\r\n" : string.Empty)})");
 
@@ -852,7 +891,77 @@ namespace DaxStudio.UI.Model
                 if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
                 dependentMeasures.Add(measure);
 
-                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='EVALUATE {{ {measure.Expression.Replace("'", "''" )} }}'";
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
+
+                using (var dr = ExecuteReader(dmvDependency, null))
+                {
+                    while (dr.Read())
+                    {
+                        var referencedObjectType = dr.GetString(0);
+                        if (referencedObjectType != "MEASURE") continue;
+                        // var referencedTable = dr.GetString(1);
+                        var referencedMeasureName = dr.GetString(2);
+                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        {
+                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
+                            scanMeasures.Enqueue(dependentMeasure);
+                        }
+                    }
+                }
+            }
+            return dependentMeasures;
+        }
+
+        public List<ADOTabularMeasure> FindDependentMeasuresForQuery(string query, bool recursive)
+        {
+            if (!IsConnected)
+            {
+                // We do not support offline analysis of dependent measures
+                // By using VPAX we could implement it by using the old algorithm with search/replace
+                // but it would be better to wait for a tokenizer before implementing it
+                throw new ApplicationException("Connection required to execute FindDependentMeasures");
+            }
+
+            var modelMeasures = GetAllMeasures();
+
+            var dependentMeasures = new List<ADOTabularMeasure>();
+            Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
+
+            // get all the measures referenced in the query
+            var dmvQuery = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='{query.Replace("'", "''")}'";
+            using (var dr = ExecuteReader(dmvQuery, null))
+            {
+                while (dr.Read())
+                {
+                    var referencedObjectType = dr.GetString(0);
+                    if (referencedObjectType != "MEASURE") continue;
+                    var referencedMeasureName = dr.GetString(2);
+                    if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                    {
+                        var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
+                        scanMeasures.Enqueue(dependentMeasure);
+                    }
+                }
+            }
+
+            if (!recursive)
+            {
+                while (scanMeasures.Count > 0)
+                {
+                    var m = scanMeasures.Dequeue();
+                    dependentMeasures.Add(m);
+                }
+                return dependentMeasures;
+            }
+
+            // recursively get all the measures that the measures referenced in the query depend on
+            while (scanMeasures.Count > 0)
+            {
+                var measure = scanMeasures.Dequeue();
+                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                dependentMeasures.Add(measure);
+
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
 
                 using (var dr = ExecuteReader(dmvDependency, null))
                 {
@@ -897,31 +1006,28 @@ namespace DaxStudio.UI.Model
         public void Connect(IConnectEvent message)
         {
             var id = new Guid();
-            var msg = new ConnectEvent(message.ConnectionString, message.PowerPivotModeSelected, message.ApplicationName, message.PowerPivotModeSelected?message.WorkbookName:message.PowerBIFileName, message.ServerType, message.RefreshDatabases, message.DatabaseName);
-            ConnectAsync(msg, id).Wait();
+            var msg = new ConnectEvent(message.ConnectionString, message.PowerPivotModeSelected, message.ApplicationName, message.PowerPivotModeSelected?message.WorkbookName:message.PowerBIFileName, message.ServerType, message.RefreshDatabases, message.DatabaseName, message.AccessToken);
+            ConnectAsync(msg, id).GetAwaiter().GetResult();
         }
 
         internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
         {
             IsConnecting = true;
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
 
             if (message.ServerType == ServerType.Offline)
-                OpenOfflineConnection(message);
+                await OpenOfflineConnectionAsync(message);
             else
-                OpenOnlineConnection(message, uniqueId);
-
+                await OpenOnlineConnectionAsync(message, uniqueId);
 
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
-            //await _eventAggregator.PublishOnUIThreadAsync(new SelectedDatabaseChangedEvent(_dmvConnection.Database?.Name));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
-            //await Task.Delay(300);
-
 
         }
 
-        private void OpenOfflineConnection(ConnectEvent message)
+        private async Task OpenOfflineConnectionAsync(ConnectEvent message)
         {
 
             var vpaContent = message.VpaxContent; //Dax.Vpax.Tools.VpaxTools.ImportVpax(message.FileName);
@@ -936,39 +1042,55 @@ namespace DaxStudio.UI.Model
             ServerType = message.ServerType;
             FileName = message.FileName??String.Empty;
             IsPowerPivot = message.PowerPivotModeSelected;
-            Databases.Add(_connection.Database);
+            //Databases.Add(_connection.Database);
             //Database = _connection.Database;
-            _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
         }
 
         public Dictionary<string, ADOTabularColumn> Columns => _dmvConnection?.Columns;
 
-        private void OpenOnlineConnection(ConnectEvent message, Guid uniqueId)
+        private async Task OpenOnlineConnectionAsync(ConnectEvent message, Guid uniqueId)
         {
             var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
             _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
             _dmvConnection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
 
+            
+            if (message.AccessToken.IsNotNull())
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), $"Setting Connection AccessToken (ExpirationTime: {message.AccessToken.ExpirationTime})");
+                _connection.AccessToken = message.AccessToken;
+                _connection.OnAccessTokenExpired = OnAccessTokenExpired;
+                _dmvConnection.AccessToken = message.AccessToken;
+                _dmvConnection.OnAccessTokenExpired = OnAccessTokenExpired;
+            }
+
             ServerType = message.ServerType;
             FileName = message.FileName;
             IsPowerPivot = message.PowerPivotModeSelected;
-            
-            // open the DMV connection
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "Start open DMV connection");
-            if (_dmvConnection.State != ConnectionState.Open) _dmvConnection.Open();
-            //_connection = _dmvConnection.Clone();
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "End open DMV connection");
-            
+
+            // open the DMV connection          
+            var openDmvConnTask = _dmvConnection.OpenAsync();
+
             // Open the main query connection
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "Start open query connection");
-            if (_connection.State != ConnectionState.Open)  _connection.Open(); 
- 
-            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnection), "End open query connection");
-            
+            var openConnTask = _connection.OpenAsync();
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
+            await Task.WhenAll(openConnTask, openDmvConnTask);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
+
             SetSelectedDatabase(_dmvConnection.Database);
 
         }
 
+        private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
+        {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
+            var newToken = PbiServiceHelper.RefreshToken(token);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
+            return newToken;
+
+        }
         private string UpdateApplicationName(string connectionString, Guid uniqueId)
         {
             var builder = new OleDbConnectionStringBuilder(connectionString);
@@ -1111,7 +1233,7 @@ namespace DaxStudio.UI.Model
                 builder["Roles"] = roles;
             }
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, this.DatabaseName);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, this.DatabaseName, this.AccessToken);
             connEvent.ActiveTraces = activeTraces;
             await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             
@@ -1132,7 +1254,7 @@ namespace DaxStudio.UI.Model
             builder.Remove("Roles");
             builder.Remove("EffectiveUsername");
 
-            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, DatabaseName);
+            var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, DatabaseName, AccessToken);
             connEvent.ActiveTraces = activeTraces;
             _eventAggregator.PublishOnUIThreadAsync(connEvent);
 
@@ -1149,8 +1271,8 @@ namespace DaxStudio.UI.Model
                 || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
         }
         private object _supportedTraceEventClassesLock = new object();
-        private HashSet<DaxStudioTraceEventClass> _supportedTraceEventClasses;
-        public HashSet<DaxStudioTraceEventClass> SupportedTraceEventClasses
+        private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> _supportedTraceEventClasses;
+        public Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses
         {
             get
             {
@@ -1162,9 +1284,9 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        private HashSet<DaxStudioTraceEventClass> PopulateSupportedTraceEventClasses()
+        private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> PopulateSupportedTraceEventClasses()
         {
-            var result = new HashSet<DaxStudioTraceEventClass>();
+            var result = new Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>>();
             using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
             {
                 while (dr.Read())
@@ -1178,7 +1300,14 @@ namespace DaxStudio.UI.Model
                         var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
                         while (iter.MoveNext())
                         {
-                            result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt);
+                            var columns = new HashSet<TOM.TraceColumn>();
+                            var iter2 = iter.Current.Select("../EVENTCOLUMNLIST/EVENTCOLUMN/ID");
+                            while (iter2.MoveNext())
+                            {
+                                columns.Add((TOM.TraceColumn)iter2.Current.ValueAsInt);
+                            }
+                            
+                            result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt, columns);
                         }
                     }
                 }
@@ -1250,7 +1379,7 @@ namespace DaxStudio.UI.Model
 
             await Task.Run(() =>
             {
-                var server = new Server();
+                var server = new TOM.Server();
                 var db = server.Databases[_dmvConnection.Database.Id];
                 db.Model.RequestRefresh(Microsoft.AnalysisServices.Tabular.RefreshType.Full);
                 db.Model.SaveChanges();
@@ -1288,5 +1417,8 @@ namespace DaxStudio.UI.Model
 
         }
 
+        public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
+
     }
+
 }

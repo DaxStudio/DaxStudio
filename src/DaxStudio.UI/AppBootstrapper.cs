@@ -172,6 +172,11 @@ namespace DaxStudio.UI
             ModernWpf.ThemeDictionary.SetKey(darkTheme, "Dark");
             themeResources.ThemeDictionaries.Add("Dark", darkTheme);
 
+            var highcontrastTheme = new ResourceDictionary();
+            highcontrastTheme.Source = new Uri("pack://application:,,,/DaxStudio.UI;component/Theme/HighContrast.DaxStudio.Theme.xaml");
+            ModernWpf.ThemeDictionary.SetKey(highcontrastTheme, "HighContrast");
+            themeResources.ThemeDictionaries.Add("HighContrast", highcontrastTheme);
+
             Application.Current.Resources.MergedDictionaries.Add(themeResources);
 
             var controlResources = new ModernWpf.Controls.XamlControlsResources();

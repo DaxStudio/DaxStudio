@@ -112,7 +112,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(42, daxState2.EndOffset, "EndOffset String");
             
             var daxState3 = DaxLineParser.ParseLine(dax, 3,0);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState3.LineState);
+            Assert.AreEqual(LineState.Letter, daxState3.LineState);
             Assert.AreEqual(0, daxState3.StartOffset, "StartOffset Filter");
             Assert.AreEqual(6, daxState3.EndOffset, "EndOffset Filter");
 
@@ -136,7 +136,7 @@ namespace DaxStudio.Tests
             var dax = "filter(Dim_D";
             //                                         ^ 32
             var daxState = DaxLineParser.ParseLine(dax, dax.Length - 1, 0);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState);
+            Assert.AreEqual(LineState.Letter, daxState.LineState);
             Assert.AreEqual(dax.Length , daxState.EndOffset, "EndOffset");
             Assert.AreEqual(dax.Length - "Dim_D".Length, daxState.StartOffset, "StartOffset");
             
@@ -173,7 +173,7 @@ namespace DaxStudio.Tests
         public void MultiLineParsing()
         {
             var daxState = DaxLineParser.ParseLine(" e", 2,6);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState);
+            Assert.AreEqual(LineState.Letter, daxState.LineState);
             Assert.AreEqual(7, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(8, daxState.EndOffset, "EndOffset");
         }
@@ -272,7 +272,7 @@ namespace DaxStudio.Tests
             var qry = "EVALUATE FILTER(Reseller, Reseller[Reselle]= \"bob\")";
             //                    ^
             var daxState = DaxLineParser.ParseLine(qry, 11, 0);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(LineState.Letter, daxState.LineState, "LineState");
             Assert.AreEqual(15, daxState.EndOffset, "EndOffset");
             Assert.AreEqual(9, daxState.StartOffset, "StartOffset");
             Assert.AreEqual("FILTER", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
@@ -285,7 +285,7 @@ namespace DaxStudio.Tests
             var qry = "EVALUATE EXPON.DIST(123";
             //                    ^
             var daxState = DaxLineParser.ParseLine(qry, 11, 0);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(LineState.Letter, daxState.LineState, "LineState");
             Assert.AreEqual(19, daxState.EndOffset, "EndOffset");
             Assert.AreEqual(9, daxState.StartOffset, "StartOffset");
             Assert.AreEqual("EXPON.DIST", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
@@ -297,7 +297,7 @@ namespace DaxStudio.Tests
             var qry = "EVALUATE ";
             //                    ^
             var daxState = DaxLineParser.ParseLine(qry, 1, 0);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(LineState.Letter, daxState.LineState, "LineState");
             Assert.AreEqual(0, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(8, daxState.EndOffset, "EndOffset");
             
@@ -310,7 +310,7 @@ namespace DaxStudio.Tests
             var qry = "EVALUATE";
             //                    ^
             var daxState = DaxLineParser.ParseLine(qry, 1, 0);
-            Assert.AreEqual(LineState.LetterOrDigit, daxState.LineState, "LineState");
+            Assert.AreEqual(LineState.Letter, daxState.LineState, "LineState");
             Assert.AreEqual(0, daxState.StartOffset, "StartOffset");
             Assert.AreEqual(8, daxState.EndOffset, "EndOffset");
 
@@ -327,6 +327,17 @@ namespace DaxStudio.Tests
             Assert.AreEqual(16, daxState.EndOffset, "EndOffset");
 
             Assert.AreEqual("(", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
+        }
+
+        [TestMethod]
+        public void TestDigit()
+        {
+            var qry = "EVALUATE 1";
+            var daxState = DaxLineParser.ParseLine(qry, 10, 0);
+            Assert.AreEqual(LineState.Digit, daxState.LineState, "LineState");
+            Assert.AreEqual(9, daxState.StartOffset, "StartOffset");
+            Assert.AreEqual(10, daxState.EndOffset, "EndOffset");
+            Assert.AreEqual("1", qry.Substring(daxState.StartOffset, daxState.EndOffset - daxState.StartOffset));
         }
 
     }

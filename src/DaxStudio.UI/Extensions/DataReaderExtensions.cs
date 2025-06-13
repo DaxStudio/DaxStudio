@@ -129,8 +129,6 @@ namespace DaxStudio.UI.Extensions
             bool moreResults = true;
             int tableIdx = 1;
             int localeId = reader.Connection.LocaleIdentifier;
-
-            var tmpConn = reader.Connection;
             
             while (moreResults)
             {
@@ -143,7 +141,6 @@ namespace DaxStudio.UI.Extensions
                     foreach (DataRow row in dtSchema.Rows)
                     {
                         string columnName = Convert.ToString(row["ColumnName"]);
-                        //string columnDaxName = DaxHelper.GetDaxResultColumnName(columnName, tmpConn);
                         string columnDaxName = DaxHelper.GetQuotedColumnName(columnName);
                         Type columnType = (Type)row["DataType"];
                         if (columnType.Name == "XmlaDataReader") columnType = typeof(string);
@@ -152,8 +149,7 @@ namespace DaxStudio.UI.Extensions
                         column.AllowDBNull = (bool)row[Constants.AllowDbNull];
                         daxCol = null;
                         connection.Columns.TryGetValue(columnName, out daxCol);
-                        //tmpConn.Columns.TryGetValue(columnName, out daxCol);
-                        if (daxCol == null) tmpConn.Columns.TryGetValue(columnDaxName, out daxCol);
+                        if (daxCol == null) connection.Columns.TryGetValue(columnDaxName, out daxCol);
                         if (IsSessionsDmv && columnName == Constants.SessionSpidColumn)
                         {
                             column.ExtendedProperties.Add(Constants.SessionSpidColumn, true);
@@ -220,7 +216,6 @@ namespace DaxStudio.UI.Extensions
                             dataRow[((DataColumn)listCols[i])] = reader.GetDataReaderValue(i);
                         else
                         {
-                            //dataRow[((DataColumn)listCols[i])] = reader[i] ?? DBNull.Value;
                             dataRow[i] = reader[i] ?? DBNull.Value;
                         }
 

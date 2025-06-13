@@ -1,6 +1,7 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.UI.Utils;
+using Microsoft.PowerBI.Api.Models;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -72,6 +73,7 @@ namespace DaxStudio.UI.ViewModels
         {
             Debug.WriteLine("Setting focus to Databases");
             FocusManager.SetFocus(this, nameof(DatabasesView));
+
         }
     }
 }

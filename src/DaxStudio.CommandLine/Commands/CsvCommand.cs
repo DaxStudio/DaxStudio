@@ -59,11 +59,14 @@ namespace DaxStudio.CommandLine.Commands
                     return _parameters;
                 } 
             } 
-            public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new System.NotImplementedException(); }
+            public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new NotImplementedException(); }
+
+
         }
 
         public override ValidationResult Validate(CommandContext context, Settings settings)
         {
+            
             if (string.IsNullOrWhiteSpace(settings.OutputFile)) return ValidationResult.Error("You must specify an Out option");
             var result = base.Validate(context, settings);
             return result;
@@ -71,16 +74,14 @@ namespace DaxStudio.CommandLine.Commands
 
         public override int Execute(CommandContext context, Settings settings)
         {
-            VersionInfo.Output();
+            
             Log.Information("Starting CSV command");
             try
             {
                 if (settings.File != null && settings.Query == null)
                 {
-                    settings.Query = System.IO.File.ReadAllText(settings.File);
+                    settings.Query = File.ReadAllText(settings.File);
                 }
-
-                
 
                 QueryRunner runner = new QueryRunner(settings);
                 var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();

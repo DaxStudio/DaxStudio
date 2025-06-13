@@ -24,7 +24,7 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
-using ADOTabular.Utils;
+//using ADOTabular.Utils;
 using Caliburn.Micro;
 using Dax.ViewModel;
 using DAXEditorControl;
@@ -59,7 +59,8 @@ using ICSharpCode.AvalonEdit.Folding;
 using Dax.Model.Extractor;
 using Dax.Vpax.Obfuscator.Common;
 using Dax.Vpax.Obfuscator;
-using ICSharpCode.NRefactory.Ast;
+using DaxStudio.Common.Extensions;
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -127,7 +128,6 @@ namespace DaxStudio.UI.ViewModels
         private string _displayName = "";
         private ILog _logger;
         private readonly RibbonViewModel _ribbon;
-        private readonly Regex _rexQueryError;
         private readonly Guid _uniqueId;
         private IQueryHistoryEvent _currentQueryDetails;
         private DocumentViewModel _sourceDocument;
@@ -157,10 +157,6 @@ namespace DaxStudio.UI.ViewModels
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
                 SettingProvider = settingProvider;
                 ServerTimingDetails = serverTimingDetails;
-                _rexQueryError =
-                    new Regex(
-                        @"^(?:Query \()(?<line>\d+)(?:\s*,\s*)(?<col>\d+)(?:\s*\))(?<err>.*)$|Line\s+(?<line>\d+),\s+Offset\s+(?<col>\d+),(?<err>.*)$",
-                        RegexOptions.Compiled | RegexOptions.Multiline);
                 _uniqueId = Guid.NewGuid();
                 Options = options;
                 AutoSaver = autoSaver;
@@ -224,7 +220,7 @@ namespace DaxStudio.UI.ViewModels
             State = DocumentState.New;
             var items = new ObservableCollection<ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
 
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx));
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSize));
             SizeUnitLabel.PropertyChanged += SizeUnitPropertyChanged;
 
             // Initialize default Tool Windows
@@ -413,7 +409,8 @@ namespace DaxStudio.UI.ViewModels
                 cnn.FileName,
                 cnn.ServerType
                 , false
-                , cnn.Database.Name ));
+                , cnn.Database.Name
+                , cnn.AccessToken));
 
             _sourceDocument = null;
         }
@@ -465,21 +462,29 @@ namespace DaxStudio.UI.ViewModels
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
-                string content = e.DataObject.GetData("UnicodeText", true) as string;
+                string content = null;
+                LongLineStateMachine sm;
+                (content, sm)  = ClipboardHelper.GetText(e.DataObject);
 
                 if (content == null) return;
 
-                var sm = new LongLineStateMachine(Constants.MaxLineLength);
-                var newContent = sm.ProcessString(content);
+                
                 if (sm.QueryCommentFound)
                 {
-                    switch (await ShowStripDirectQueryDialog(sm.CommentPosition, sm.Comment, newContent.Length))
+                    switch (await ShowStripDirectQueryDialog(sm.CommentPosition, sm.Comment, content.Length))
                     {
                         case MultipleQueriesDetectedDialogResult.RemoveDirectQuery:
+                            e.CancelCommand();
                             // remove the direct query code from the text we are pasting in
-                            newContent = newContent.Substring(0, sm.CommentPosition);
-                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "Direct Query code removed from pasted text"));
-                            break;
+                            content = content.Substring(0, sm.CommentPosition);
+                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, "DirectQuery code removed from pasted text"));
+                            //var dataObject = new DataObject(newContent);
+                            //e.DataObject = dataObject;
+                            //e.DataObject.SetData("UnicodeText", newContent);
+                            var editor2 = this.GetEditor();
+                            editor2.Document.Insert(editor2.CaretOffset, content);
+                            
+                            return;
                         case MultipleQueriesDetectedDialogResult.KeepDirectQuery:
                             break;
                         case MultipleQueriesDetectedDialogResult.Cancel:
@@ -487,10 +492,7 @@ namespace DaxStudio.UI.ViewModels
                             return;
                     }
                 }
-
-                var dataObject = new DataObject(newContent);
-                e.DataObject = dataObject;
-
+                
             }
             catch (Exception ex)
             {
@@ -1082,6 +1084,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (await ShouldAutoRefreshMetadataAsync())
                 {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CheckForMetadataUpdatesAsync), "Auto Refreshing Metadata - Start");
                     OutputMessage("Updated Model Metadata detected");
                     if (Options.ShowMetadataRefreshPrompt)
                     {
@@ -1089,8 +1092,9 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-                        RefreshMetadata();
+                        await RefreshMetadataAsync();
                     }
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CheckForMetadataUpdatesAsync), "Auto Refreshing Metadata - Finish");
                 }
             }
             catch (Exception ex)
@@ -1253,6 +1257,7 @@ namespace DaxStudio.UI.ViewModels
                             // on change of connection we need to disable traces as they will
                             // be pointing to the old connection
                             traceWatcher.IsChecked = false;
+                            traceWatcher.StopTrace();
                             // then we need to check if the new connection can be traced
                             traceWatcher.CheckEnabled(Connection, activeTrace);
                         }
@@ -1437,11 +1442,21 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
+
+                var token = default(Adomd.AccessToken);
+                if (server.RequiresEntraAuth())
+                {
+                    // prompt for access token
+                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = PbiServiceHelper.SwitchAccount(hwnd, Options).Result;
+                    token = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                }
+
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, String.Empty, string.Empty,
                     server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ? ServerType.PowerBIDesktop : ServerType.AnalysisServices,
                     server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase),
                     _app.Args().Database??string.Empty
-                    ));
+                    ,token));
                 _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 return true;
             }
@@ -1514,7 +1529,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     foreach (var p in QueryInfo?.Parameters?.Values)
                     {
-                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value));
+                        coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdParameter(p.Name, p.Value??string.Empty));
                     }
                 }
                 return coll;
@@ -1918,14 +1933,14 @@ namespace DaxStudio.UI.ViewModels
 
         private void StopTimer()
         {
-            _queryStopWatch.Stop();
+            _queryStopWatch?.Stop();
             
             _timer.Stop();
             _timer.Elapsed -= _timer_Elapsed;
 
             NotifyOfPropertyChange(() => ElapsedQueryTime);
             _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
-            _queryStopWatch.Reset();
+            _queryStopWatch?.Reset();
         }
 
         private void StartTimer()
@@ -2174,7 +2189,7 @@ namespace DaxStudio.UI.ViewModels
                     }
                     else
                     {
-
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), "Sending QueryStarted Event");
                         await _eventAggregator.PublishOnUIThreadAsync(new QueryStartedEvent());
 
                         if (message.QueryProvider is ISaveState)
@@ -2185,7 +2200,7 @@ namespace DaxStudio.UI.ViewModels
                         
 
                         OutputMessage("Query Started");
-                        
+                        ClearQueryError();
                         StartTimer();
                         
                         await message.ResultsTarget.OutputResultsAsync(this, message.QueryProvider, null);
@@ -2202,22 +2217,36 @@ namespace DaxStudio.UI.ViewModels
 
                     }
                 }
+                catch (AggregateException aggEx)
+                {
+                    var durationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
+                    var aggExMsg = string.Empty;
+                    foreach (var ex in aggEx.InnerExceptions)
+                    {
+                        Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
+                        aggExMsg = aggExMsg + ex.Message + Environment.NewLine;
+                        OutputError(ex.Message, false);
+                    }
+                    OutputQueryError(aggExMsg);
+                    QueryFailed(aggExMsg);
+                }
                 catch (Exception ex)
                 {
+
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RunQueryInternalAsync), ex.Message);
-                    //await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
-                    var durationMs = _queryStopWatch?.ElapsedMilliseconds??0;
-                    ActivateOutput();
-                    OutputError(ex.Message);
-                    OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs);
-                    QueryFailed(ex.Message);
-                                        
+                    var durationMs = _queryStopWatch?.ElapsedMilliseconds ?? 0;
+                    OutputQueryError(ex.Message);
+                    OutputError(ex.Message,false);
+                    //OutputError("Query Batch Completed with errors listed above (you may need to scroll up)", durationMs, false);
+                    QueryFailed(ex.Message);              
                 }
+
                 finally
                 {
                     IsQueryRunning = false;
                     NotifyOfPropertyChange(() => CanRunQuery);
                     StopTimer();
+                    ActivateResults();
                 }
 
             }
@@ -2359,52 +2388,43 @@ namespace DaxStudio.UI.ViewModels
 
         public void OutputError(string error)
         {
-            OutputError(error, double.NaN);
-            ActivateOutput();
+            OutputError(error, true);
+        }
+        public void OutputError(string error, bool activateOutput)
+        {
+            OutputError(error, double.NaN, activateOutput);
         }
 
         public void OutputError(string error, double durationMs)
         {
+            OutputError(error, durationMs, true);
+        }
+        public void OutputError(string error, double durationMs, bool activateOutput)
+        {
 
             //"Query ( , )"
-            var m = _rexQueryError.Match(error);
-            if (m.Success)
+            var loc = RegexHelper.GetQueryErrorLocation(error);
+            if (loc.Line > 0 || loc.Column > 0)
             {
-#pragma warning disable CA1806 // Do not ignore method results
-                int.TryParse(m.Groups["line"].Value, out var line);
-                int.TryParse(m.Groups["col"].Value, out var col);
-#pragma warning restore CA1806 // Do not ignore method results
-                OutputError(error, line, col);
+                OutputError(error, loc.Line, loc.Column);
             }
             else
             {
                 OutputPane?.AddError(error, durationMs);
-                ActivateOutput();
             }
+            if (activateOutput) ActivateOutput();
         }
 
         public void OutputError(string error, int row, int column)
         {
-            int msgRow = 0;
-            int msgCol = 0;
-            //"Query ( , )"
-            var m = _rexQueryError.Match(error);
-            if (m.Success)
-            {
-#pragma warning disable CA1806 // Do not ignore method results
-                int.TryParse(m.Groups["line"].Value, out msgRow);
-                int.TryParse(m.Groups["col"].Value, out msgCol);
-#pragma warning restore CA1806 // Do not ignore method results
-                msgCol += column > 0 ? column - 1 : 0;
-                msgRow += row > 0 ? row - 1 : 0;
-            }
+
             var editor = GetEditor();
             editor.Dispatcher.Invoke(() =>
             {
-                editor.DisplayErrorMarkings(msgRow, msgCol, 1, error);
+                editor.DisplayErrorMarkings(row, column, 1, error);
             });
 
-            OutputPane?.AddError(error, msgRow, msgCol);
+            OutputPane?.AddError(error, row, column);
             ActivateOutput();
         }
 
@@ -2616,6 +2636,56 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
+        public void DefineMeasures() {
+            string word = string.Empty;
+            try
+            {
+                word = _editor.ContextMenuWord;
+                var measureName = word.Trim('[', ']');
+                if (this.Connection == null) return;
+                if (!this.Connection.IsConnected) return;
+                this.Connection.SelectedModel.MeasureExpressions.TryGetValue(measureName, out var expr);
+                if (expr != null)
+                {
+                    DefineMeasureOnEditor(word, expr);
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error defining the measure '{word}': " + ex.Message;
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+
+            }
+        }
+
+        public void DefineDependentMeasures()
+        {
+            string word = string.Empty;
+            try
+            {
+                word = _editor.ContextMenuWord;
+                var measureName = word.Trim('[', ']');
+                
+                if (this.Connection == null) return;
+                if (!this.Connection.IsConnected) return;
+                var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
+
+                foreach (var measure in dependentMeasures)
+                {
+                    DefineMeasureOnEditor(measure.Name, measure.Expression);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error defining the dependent measures '{word}': " + ex.Message;
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineDependentMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+
+            }
+        }
+
         const string MODELMEASURES_BEGIN = "---- MODEL MEASURES BEGIN ----";
         const string MODELMEASURES_END = "---- MODEL MEASURES END ----";
         
@@ -2693,6 +2763,8 @@ namespace DaxStudio.UI.ViewModels
                     else
                     {
                         measureDeclaration = $"DEFINE {newSection}";
+                        // look for preceeding EVALUATE
+                        MoveSelectionToPreceedingEvaluate();
                         InsertTextAtSelection(measureDeclaration, false, false);
                     }
                 }
@@ -2701,6 +2773,26 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Error(e, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasureOnEditor), e.Message);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "The following error occurred while trying to define the measure\n" + e.Message));
+            }
+        }
+
+        private void MoveSelectionToPreceedingEvaluate()
+        {
+
+            var editor = GetEditor();
+            if (editor == null)
+            {
+                Log.Error("{class} {method} {message}", nameof(DocumentViewModel), nameof(MoveSelectionToPreceedingEvaluate), "Unable to get a reference to the editor control");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to insert text into the edit pane, please try the operation again."));
+                return;
+            }
+            var regexLastEvaluate = new Regex("(evaluate)(?!.*(?:evaluate))", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
+            var startOffset = editor.CaretOffset;
+            var textToSearch = editor.DocumentGetText(0, startOffset);
+            var match = regexLastEvaluate.Match(textToSearch);
+            if (match?.Captures.Count >= 1)
+            {
+                editor.CaretOffset = match.Captures[0].Index;
             }
         }
 
@@ -2731,6 +2823,7 @@ namespace DaxStudio.UI.ViewModels
             // synch the ribbon buttons and the server timings pane
             if (watcher is ServerTimesViewModel stvModel && watcher.IsChecked)
             {
+                ServerTimingDetails.ShowObjectName = Options.ShowObjectNameInServerTimings;
                 stvModel.ServerTimingDetails = ServerTimingDetails;
                 stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
                 stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
@@ -2831,6 +2924,13 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
             }
+            catch( UnauthorizedAccessException ex)
+            {
+                // this means we don't have write access to the file so trigger a save as
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SavePackageFile), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Access Denied to the File: {FileName}\nPrompting for alternate location"));
+                SaveAs();
+            }
             catch (Exception ex)
             {
                 // catch and report any errors while trying to save
@@ -2865,6 +2965,13 @@ namespace DaxStudio.UI.ViewModels
                 IsDirty = false;
                 NotifyOfPropertyChange(() => DisplayName);
                 DeleteAutoSave();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // catch and report any errors while trying to save
+                Log.Error(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(SaveSingleFiles), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Access Denied to the File: {FileName}\nPrompting for alternate location"));
+                SaveAs();
             }
             catch (Exception ex)
             {
@@ -3193,7 +3300,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error loading file"));
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
                 }
                 finally
                 {
@@ -3217,7 +3324,7 @@ namespace DaxStudio.UI.ViewModels
             
             var editor = GetEditor();
 
-            package = Package.Open(FileName);
+            package = Package.Open(FileName,FileMode.Open, FileAccess.Read);
 
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
             if (!package.PartExists(uriTom)) return package;
@@ -3292,7 +3399,6 @@ namespace DaxStudio.UI.ViewModels
                 {
                     await Task.Run(async () =>
                         {
-                            //MetadataPane.IsBusy = true;
                             if (message.RefreshDatabases) RefreshConnectionFilename(message);
 
                             await SetupConnectionAsync(message);
@@ -3346,7 +3452,7 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                var server = ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
+                var server = ADOTabular.Utils.ConnectionStringParser.Parse(message.ConnectionString)["Data Source"];
                 var serverParts = server.Split(':');
                 if (serverParts.Length != 2) {
                     // if there is no colon in the datasource this is not a local engine instance
@@ -3803,6 +3909,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 FindReplaceDialog.TextToFind = SelectedText;
             }
+            FindReplaceDialog.Editor = ShowMeasureExpressionEditor ? MeasureExpressionEditor.Editor : Editor;
             FindReplaceDialog.ShowReplace = false;
             FindReplaceDialog.IsVisible = true;
             FindReplaceDialog.ActivateAsync();
@@ -3813,6 +3920,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 FindReplaceDialog.TextToFind = SelectedText;
             }
+
+            FindReplaceDialog.Editor = ShowMeasureExpressionEditor ? MeasureExpressionEditor.Editor : Editor;
             FindReplaceDialog.ShowReplace = true;
             FindReplaceDialog.IsVisible = true;
             FindReplaceDialog.ActivateAsync();
@@ -3853,6 +3962,9 @@ namespace DaxStudio.UI.ViewModels
 
                 if (editor.SelectionLength > 0)
                 {
+                    var selectionStart = editor.Document.GetLocation(editor.SelectionStart);
+                    lineOffset = selectionStart.Line;
+                    colOffset = selectionStart.Column;
                     // clear the selection
                     editor.SelectionStart = 0;
                     editor.SelectionLength = 0;
@@ -4123,17 +4235,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        internal void RefreshMetadata()
+        internal async Task RefreshMetadataAsync()
         {
             try
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Starting Refresh");
+                await Task.Run(() =>
+                {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadataAsync), "Starting Refresh");
 
-                Connection.Refresh();
-                MetadataPane.RefreshDatabases();
-                Databases = MetadataPane.Databases;
-                MetadataPane.RefreshMetadata();
-                OutputMessage("Metadata Refreshed");
+                    Connection.Refresh();
+                    MetadataPane.RefreshDatabases();
+                    Databases = MetadataPane.Databases;
+                    MetadataPane.RefreshMetadata();
+                });
             }
             catch (Exception ex)
             {
@@ -4145,11 +4259,11 @@ namespace DaxStudio.UI.ViewModels
                 }
                 msg = "Error Refreshing Metadata: " + msg;
                 OutputError(msg);
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), msg);
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadataAsync), msg);
             }
             finally
             {
-                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadata), "Finished Refresh");
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(RefreshMetadataAsync), "Finished Refresh");
             }
         }
         private bool _isFocused;
@@ -4236,10 +4350,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new FontFamily(Options.EditorFontFamily);
             }
-            if (editor.FontSize != Options.EditorFontSizePx)
+            if (editor.FontSizeInPoints != Options.EditorFontSize)
             {
-                editor.FontSize = Options.EditorFontSizePx;
-                SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSizePx);
+                editor.FontSizeInPoints = Options.EditorFontSize;
+                SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSize);
                 SizeUnitLabel.StringValue = "100";
             }
 
@@ -4251,8 +4365,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.DisableIntellisense();
             }
-
-
+            if (foldingStrategy != null)
+            {
+                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+            }
         }
 
         public QueryHistoryPaneViewModel QueryHistoryPane { get; set; }
@@ -4882,7 +4998,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
             if (Options.UseIndentCodeFolding) StartFoldingManager();
             else StopFoldingManager();
-            
+            if (foldingStrategy != null)
+            {
+                foldingStrategy.TabIndent = Options.EditorIndentationSize;
+            }
             UpdateTheme();
             return Task.CompletedTask;
         }
@@ -5029,24 +5148,29 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         public void LookupDaxGuide() {
-            string word = _editor.ContextMenuWord;
-            if (this.Connection == null) return;
-            if (!this.Connection.IsConnected) return;
-            if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+            string word = string.Empty;
+            try
             {
-                System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
+                word = _editor.ContextMenuWord;
+                if (this.Connection == null) return;
+                if (!this.Connection.IsConnected) return;
+                if (this.Connection.AllFunctions.Contains(word, StringComparer.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Process.Start($"https://dax.guide/{word}/?aff=dax-studio");
+                }
+            }
+            catch (Exception ex)
+            {
+                var msg = $"Error looking up DAX Guide for '{word}': " + ex.Message;
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LookupDaxGuide), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+
             }
         }
 
         public string LookupDaxGuideHeader => $"Lookup {_editor.ContextMenuWord.ToUpper(System.Globalization.CultureInfo.InvariantCulture)} in DAX Guide";
 
-        //private bool _isViewAsActive = false;
-        public bool IsViewAsActive { get => Connection.IsTestingRls;
-            //private set { 
-            //    _isViewAsActive = value;
-            //    NotifyOfPropertyChange();
-            //} 
-        }
+        public bool IsViewAsActive { get => Connection?.IsTestingRls??false;}
         public bool IsLoadingLayout { get; private set; }
         public bool IsConnectionDialogOpen { get; internal set; }
 
@@ -5116,6 +5240,13 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ToggleCommentEvent message, CancellationToken cancellationToken)
         {
             var editor = GetEditor();
+            if (editor == null) {
+                var msg = "Unable to toggle comment - Editor is null";
+                Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync<ToggleCommentEvent>", msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                System.Media.SystemSounds.Beep.Play();
+                return Task.CompletedTask; 
+            }
             if (editor.IsInComment()) UnCommentSelection();
             else CommentSelection();
             return Task.CompletedTask;
@@ -5201,5 +5332,28 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool UseIndentCodeFolding => Options.UseIndentCodeFolding;
+
+        public void OutputQueryError(string errorMessage)
+        {
+            QueryResultsPane.ErrorMessage = errorMessage;
+            var _editor = GetEditor();
+            if (_editor != null)
+            {
+                TextLocation selectionLoc = new TextLocation();
+                if (_editor.SelectionLength > 0)
+                {
+                    selectionLoc = _editor.Document.GetLocation(_editor.SelectionStart);
+                    
+                }
+                QueryResultsPane.SelectionLocation = selectionLoc;
+            }
+        }
+
+        public void ClearQueryError()
+        {
+            QueryResultsPane.ErrorMessage = string.Empty;
+        }
+
+        public IEditor Editor { get => _editor; }
     }
 }

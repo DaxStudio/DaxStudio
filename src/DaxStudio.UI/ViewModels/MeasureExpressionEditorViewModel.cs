@@ -19,6 +19,7 @@ using DaxStudio.UI.Events;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using DAXEditorControl;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -89,16 +90,15 @@ namespace DaxStudio.UI.ViewModels
             
             
             var items = new ObservableCollection<UnitComboLib.ViewModel.ListItem>(ScreenUnitsHelper.GenerateScreenUnitList());
-            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSizePx), 0);
+            SizeUnitLabel = new UnitViewModel(items, new ScreenConverter(Options.EditorFontSize), 0);
         }
+
+        public IEditor Editor { get => _editor; }
 
         protected override void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
             _editor = GetEditor();
-
-            // TODO - if theme is dark increase brightness of syntax highlights
-            //_editor.ChangeColorBrightness(1.25);
             _editor.SetSyntaxHighlightColorTheme(Options.AutoTheme.ToString());
 
             IntellisenseProvider.Editor = _editor;
@@ -148,8 +148,14 @@ namespace DaxStudio.UI.ViewModels
                 // with a "normal" space. This is helpful when pasting code from other 
                 // sources like web pages or word docs which may have non-breaking
                 // which would normally cause the tabular engine to throw an error
-                string content = e.DataObject.GetData("UnicodeText", true) as string;
-                var dataObject = new DataObject(content.Replace('\u00A0', ' '));
+                string content = null;
+
+                (content, _) = ClipboardHelper.GetText(e.DataObject);
+
+                if (content == null) return;
+
+
+                var dataObject = new DataObject(content);
                 e.DataObject = dataObject;
 
             }
@@ -235,10 +241,10 @@ namespace DaxStudio.UI.ViewModels
             {
                 editor.FontFamily = new System.Windows.Media.FontFamily(Options.EditorFontFamily);
             }
-            if (editor.FontSize != Options.EditorFontSizePx)
+            if (editor.FontSizeInPoints != Options.EditorFontSize)
             {
-                editor.FontSize = Options.EditorFontSizePx;
-                this.SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSizePx);
+                editor.FontSizeInPoints = Options.EditorFontSize;
+                this.SizeUnitLabel.SetOneHundredPercentFontSize(Options.EditorFontSize);
                 this.SizeUnitLabel.StringValue = "100";
             }
 

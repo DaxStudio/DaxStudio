@@ -16,6 +16,7 @@ namespace DaxStudio.ExcelAddin.AmoWrapper
         internal delegate void VoidDelegate();
         internal delegate T ReturnDelegate<T>();
 
+        
         Microsoft.AnalysisServices.Server _svr;
         ExcelAmo.Microsoft.AnalysisServices.Server _xlSvr;
         AmoType _type;

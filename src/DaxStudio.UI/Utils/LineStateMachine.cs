@@ -10,6 +10,7 @@ namespace DaxStudio.UI.Utils
         private const string SqlQueryComment = "// SQL Query";
         private const string SqlDirectQueryComment = "// Direct Query";
         private const string DaxQueryComment = "// DAX Query";
+        private const string QueryComment = "// Query";
 
         public State CurrentState { get; set; }
         private StringBuilder _sbMain;
@@ -45,7 +46,9 @@ namespace DaxStudio.UI.Utils
 
         public bool CurrentLineIsSqlQueryComment()
         {
-            return _sbCurrentLine.ToString() == SqlQueryComment || _sbCurrentLine.ToString() == SqlDirectQueryComment;
+            return _sbCurrentLine.ToString() == SqlQueryComment 
+                || _sbCurrentLine.ToString() == SqlDirectQueryComment
+                || _sbCurrentLine.ToString() == QueryComment;
         }
 
         public bool QueryCommentFound  => SqlQueryCommentPosition > 0 || DaxQueryCommentPosition > 0;
