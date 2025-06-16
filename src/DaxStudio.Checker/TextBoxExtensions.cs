@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace DaxStudio.CheckerApp
 {
-    public static class TextBoxExtensions
+    internal static class TextBoxExtensions
     {
 
         public const string INDENT = "    ";

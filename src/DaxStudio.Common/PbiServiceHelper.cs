@@ -63,6 +63,7 @@ namespace DaxStudio.Common
             return workspaces;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "<Pending>")]
         public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options)
         {
 
@@ -241,6 +242,7 @@ namespace DaxStudio.Common
             return newToken;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "<Pending>")]
         private static AuthenticationResult RefreshTokenInternal(TokenDetails token)
         {
             var lastUpn = (token.UserContext?.ToString())??string.Empty;

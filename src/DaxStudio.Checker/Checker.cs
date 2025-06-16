@@ -16,8 +16,9 @@ using System.Xml;
 namespace DaxStudio.CheckerApp
 {
 
-    public enum ExcelVersion
+    internal enum ExcelVersion
     {
+        None,
         Excel2010 = 13,
         Excel2013 = 14,
         Excel2016 = 15,
@@ -25,7 +26,7 @@ namespace DaxStudio.CheckerApp
         Excelv17  = 17,
     }
 
-    public class Checker
+    internal class Checker
     {
         private readonly List<Version> AdomdVersions = new List<Version>();
 
@@ -40,6 +41,7 @@ namespace DaxStudio.CheckerApp
 
         #region Public Properties
         public RichTextBox Output { get { return _output; } }
+        private static readonly char[] trimChars = new char[] { '"' };
         #endregion
 
         #region Constructor
@@ -535,9 +537,9 @@ namespace DaxStudio.CheckerApp
             const int PE_POINTER_OFFSET = 60;
             const int MACHINE_OFFSET = 4;
             byte[] data = new byte[4096];
-            using (Stream s = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            using (FileStream s = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                s.Read(data, 0, 4096);
+                _ = s.Read(data, 0, 4096);
             }
             // dos header is 64 bytes, last element, long (4 bytes) is the address of the PE header
             int PE_HEADER_ADDR = BitConverter.ToInt32(data, PE_POINTER_OFFSET);
@@ -574,7 +576,7 @@ namespace DaxStudio.CheckerApp
         {
             if (path.EndsWith("\"", StringComparison.InvariantCultureIgnoreCase))
             {
-                return (path.TrimStart(new char[] { '"' }).TrimEnd(new char[] { '"' }) + ".config");
+                return (path.TrimStart(trimChars).TrimEnd(trimChars) + ".config");
             }
             return (path + ".config");
         }

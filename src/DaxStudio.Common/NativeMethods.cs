@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Common
 {
-
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes", Justification = "user32 is a common system assembly")]
     public class NativeMethods
     {
 

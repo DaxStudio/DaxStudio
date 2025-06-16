@@ -13,7 +13,7 @@
   /// 
   /// Source: http://www.codeproject.com/Articles/31837/Creating-an-Internationalized-Wizard-in-WPF
   /// </summary>
-  internal class RelayCommand<T> : ICommand
+  internal sealed class RelayCommand<T> : ICommand
   {
     #region Fields
     private readonly Action<T> mExecute;

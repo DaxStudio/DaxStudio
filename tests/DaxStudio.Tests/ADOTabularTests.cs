@@ -41,7 +41,7 @@ namespace DaxStudio.Tests
         private static ADOTabularDatabase mockDatabase;
         //private Dictionary<string, ADOTabularColumn> columnCollection;
 
-        private bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
+        private static bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
             {
@@ -53,7 +53,7 @@ namespace DaxStudio.Tests
             return false;
         }
 
-        private bool IsResellerSalesTable(AdomdRestrictionCollection res)
+        private static bool IsResellerSalesTable(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
             {
@@ -337,7 +337,7 @@ namespace DaxStudio.Tests
             var paramTable = tabs["Slicer by number of days"];
             Assert.IsNotNull(paramTable);
             Assert.AreEqual(paramTable.Columns["Slicer by number of days Order"], paramTable.Columns["Slicer by number of days"].OrderBy);
-            Assert.AreEqual(true, paramTable.Columns["Slicer by number of days"].GroupBy.Count > 0, "The groupBy columns collection is not empty");
+            Assert.IsTrue(paramTable.Columns["Slicer by number of days"].GroupBy.Count > 0, "The groupBy columns collection is not empty");
             Assert.AreEqual(paramTable.Columns["Slicer by number of days Fields"], paramTable.Columns["Slicer by number of days"].GroupBy[0]);
             //Assert.AreEqual(paramTable.Columns["QuarterNo"], paramTable.Columns["Quarter"].OrderBy);
             //Assert.IsNull(paramTable.Columns["QuarterNo"].OrderBy);
@@ -371,11 +371,11 @@ namespace DaxStudio.Tests
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             //var tabs = new ADOTabularTableCollection(conn, m);
             Assert.AreEqual (13, m.Tables.Count);
-            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SubstituteWithIndex);
-            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SummarizeColumns);
-            Assert.AreEqual(true, m.Capabilities.DAXFunctions.TreatAs);
-            Assert.AreEqual(true, m.Capabilities.Variables);
-            Assert.AreEqual(true, m.Capabilities.TableConstructor);
+            Assert.IsTrue(m.Capabilities.DAXFunctions.SubstituteWithIndex);
+            Assert.IsTrue(m.Capabilities.DAXFunctions.SummarizeColumns);
+            Assert.IsTrue(m.Capabilities.DAXFunctions.TreatAs);
+            Assert.IsTrue(m.Capabilities.Variables);
+            Assert.IsTrue(m.Capabilities.TableConstructor);
         }
 
         [TestMethod]
@@ -444,8 +444,8 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(1, tabDate.FolderItems.Count, "Table Name is correct");
             Assert.AreEqual("Calendar Folder", tabDate.FolderItems[0].Name);
-            Assert.IsInstanceOfType(tabDate.Columns["Calendar"], typeof(ADOTabularHierarchy));
-            Assert.AreEqual(true, tabDate.Columns["Calendar"].IsInDisplayFolder);
+            Assert.IsInstanceOfType<ADOTabularHierarchy>(tabDate.Columns["Calendar"]);
+            Assert.IsTrue(tabDate.Columns["Calendar"].IsInDisplayFolder);
             //Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
 
         }
@@ -623,8 +623,8 @@ namespace DaxStudio.Tests
             var cmpyTab = tabs["Date"];
 
 
-            Assert.AreEqual(true, cmpyTab.IsDateTable, "'Date' table is marked as date table");
-            Assert.AreEqual(false, tabs["Customer"].IsDateTable, "'Date' table is marked as date table");
+            Assert.IsTrue(cmpyTab.IsDateTable, "'Date' table is marked as date table");
+            Assert.IsFalse(tabs["Customer"].IsDateTable, "'Date' table is marked as date table");
 
         }
 
@@ -659,7 +659,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
-            Assert.AreEqual(false, h.IsVisible);
+            Assert.IsFalse(h.IsVisible);
             Assert.AreEqual(3, h.Levels.Count);
             Assert.AreEqual("Group", h.Levels[0].LevelName);
             Assert.AreEqual("Country", h.Levels[1].LevelName);
@@ -717,7 +717,7 @@ namespace DaxStudio.Tests
 
             var kw = connection.Keywords;
 
-            Assert.AreEqual(true, kw.Count == keywordDataSet.Tables[0].Rows.Count, "More than 5 keywords found");
+            Assert.AreEqual(keywordDataSet.Tables[0].Rows.Count, kw.Count, "More than 5 keywords found");
 
         }
 
@@ -725,7 +725,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestColumnRenamingForDataBinding()
         {
-            var dt = new DataTable();
+            using var dt = new DataTable();
             dt.Columns.Add("table1[Column1]");
             dt.Columns.Add("table2[Column1]");
             dt.Columns.Add("table1[Column2]");
@@ -746,7 +746,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestMDXColumnRenamingForDataBinding()
         {
-            var dt = new DataTable();
+            using var dt = new DataTable();
             dt.Columns.Add("[blah].[blah]");
             dt.Columns.Add("[Measures].[Test]");
             dt.FixColumnNaming( "SELECT [blah].[blah].[blah] on 0 from [Cube]");
@@ -759,7 +759,7 @@ namespace DaxStudio.Tests
         public void CreatePowerPivotConnection()
         {
             var mockEventAgg = new Mock<IEventAggregator>().Object;
-            var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
+            using var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=DAX Studio Test", "");
             Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=DAX Studio Test;Show Hidden Cubes=true", cnn.ConnectionString);
         }
@@ -768,7 +768,7 @@ namespace DaxStudio.Tests
         public void CreatePowerPivotConnectionWithFileName()
         {
             var mockEventAgg = new Mock<IEventAggregator>().Object;
-            var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
+            using var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=DAX Studio Test", "Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";");
             Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=DAX Studio Test;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";Show Hidden Cubes=true", cnn.ConnectionString);
         }

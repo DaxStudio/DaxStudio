@@ -4,7 +4,7 @@ using System.Windows.Automation.Peers;
 
 namespace DAXEditorControl
 {
-    internal class AutomationPeerStub : FrameworkElementAutomationPeer
+    internal sealed class AutomationPeerStub : FrameworkElementAutomationPeer
     {
         AutomationControlType _controlType;
 

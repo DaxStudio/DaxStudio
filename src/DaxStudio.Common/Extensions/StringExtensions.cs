@@ -79,7 +79,7 @@ namespace DaxStudio.Common.Extensions
             }
             if (url.StartsWith(scheme, StringComparison.InvariantCultureIgnoreCase) && url.Length > scheme.Length + "://".Length)
             {
-                return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.InvariantCultureIgnoreCase) == 0;
+                return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.OrdinalIgnoreCase) == 0;
             }
             return false;
         }

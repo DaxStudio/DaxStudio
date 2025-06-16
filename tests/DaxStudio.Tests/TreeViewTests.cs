@@ -95,7 +95,7 @@ namespace DaxStudio.Tests
             return new ADOTabularDatabase(_connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
         }
 
-        private bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
+        private static bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
             {
@@ -186,7 +186,7 @@ namespace DaxStudio.Tests
  
             var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "QTD Folder"));
             Assert.IsNotNull(folder, "Folder Object not found");
-            Assert.AreEqual(folder.Name,"QTD Folder");
+            Assert.AreEqual("QTD Folder", folder.Name);
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Internet Current Quarter Margin") as TreeViewColumn;
             Assert.IsInstanceOfType(col, typeof(TreeViewColumn));

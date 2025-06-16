@@ -27,16 +27,14 @@ namespace DaxStudio.Tests
             var proxy = System.Net.WebRequest.GetSystemWebProxy();
             proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
 
-            if (redirectUrl == null)
-            {
-                // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
-                // The following 2 requests are doing manual POST re-direct
-                var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
-                redirectRequest.AllowAutoRedirect = false;
-                redirectRequest.Proxy = proxy;
-                var redirectResponse = (HttpWebResponse)redirectRequest.GetResponse();
-                redirectUrl = redirectResponse.Headers["Location"];
-            }
+            // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
+            // The following 2 requests are doing manual POST re-direct
+            var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
+            redirectRequest.AllowAutoRedirect = false;
+            redirectRequest.Proxy = proxy;
+            var redirectResponse = (HttpWebResponse)redirectRequest.GetResponse();
+            redirectUrl = redirectResponse.Headers["Location"];
+
 
             var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(redirectUrl);
 
@@ -102,22 +100,20 @@ namespace DaxStudio.Tests
 
             var proxy = System.Net.WebRequest.GetSystemWebProxy();
             proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-            
-            if (redirectUrl == null)
+
+            // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
+            // The following 2 requests are doing manual POST re-direct
+            var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
+            redirectRequest.AllowAutoRedirect = false;
+            //redirectRequest.Proxy = proxy;
+            using (var redirectResponse = (HttpWebResponse)redirectRequest.GetResponse())
             {
-                // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
-                // The following 2 requests are doing manual POST re-direct
-                var redirectRequest = System.Net.HttpWebRequest.Create(uri) as HttpWebRequest;
-                redirectRequest.AllowAutoRedirect = false;
-                //redirectRequest.Proxy = proxy;
-                using (var redirectResponse = (HttpWebResponse)redirectRequest.GetResponse())
-                {
-                    redirectUrl = redirectResponse.Headers["Location"];
-                    redirectUri = new Uri(redirectUrl);
-                    System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
-                }
-                //redirectUrl = string.Format("http://{0}/api/daxformatter/daxrichformatverbose", redirectUri.Host);
+                redirectUrl = redirectResponse.Headers["Location"];
+                redirectUri = new Uri(redirectUrl);
+                System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
             }
+            //redirectUrl = string.Format("http://{0}/api/daxformatter/daxrichformatverbose", redirectUri.Host);
+            
 
             var wr = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(redirectUrl);
             

@@ -5,7 +5,7 @@ namespace DAXEditorControl
     // This Intellisense Stub class is used when the editor is not connected to any 
     // data source (or if Intellisense is switched off in the options)
     // so none of the functions do anything by design.
-    class IntellisenseProviderStub:IIntellisenseProvider
+    sealed class IntellisenseProviderStub:IIntellisenseProvider
     {
         public void ProcessTextEntered(object sender, System.Windows.Input.TextCompositionEventArgs e, ref ICSharpCode.AvalonEdit.CodeCompletion.CompletionWindow completionWindow)
         {

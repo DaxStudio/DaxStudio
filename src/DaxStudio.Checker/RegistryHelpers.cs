@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DaxStudio.CheckerApp
 {
-    public static class RegistryHelpers
+    internal static class RegistryHelpers
     {
         public static IEnumerable<string> GetRegValueNames(RegistryView view, string regPath,
                                   RegistryHive hive = RegistryHive.LocalMachine)

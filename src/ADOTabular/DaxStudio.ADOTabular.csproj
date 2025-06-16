@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>ADOTabular</RootNamespace>
     <SccProjectName>SAK</SccProjectName>

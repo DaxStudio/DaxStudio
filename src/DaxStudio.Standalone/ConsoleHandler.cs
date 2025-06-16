@@ -9,6 +9,7 @@ namespace DaxStudio.Standalone
 {
     internal class ConsoleHandler
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes", Justification = "kernel32 is a common system assembly")]
         internal static class NativeMethods
         {
             [DllImport("kernel32.dll", SetLastError = true)]
@@ -21,9 +22,11 @@ namespace DaxStudio.Standalone
             internal static extern bool GetConsoleMode(IntPtr hConsoleHandle, out int mode);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+
             internal static extern IntPtr GetStdHandle(int nStdHandle);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+
             internal static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
         }
 
@@ -43,14 +46,15 @@ namespace DaxStudio.Standalone
             //const int FileTypeRemote = 0x8000;
             //const int FileTypeUnknown = 0x0000;
 
-            var handle = new SafeFileHandle(ioHandle, ownsHandle: false);
+            using (var handle = new SafeFileHandle(ioHandle, ownsHandle: false))
+            { 
+                var type = NativeMethods.GetFileType(handle);
+                if (type == FileTypeDisk || type == FileTypePipe)
+                    return true;
 
-            var type = NativeMethods.GetFileType(handle);
-            if (type == FileTypeDisk || type == FileTypePipe)
-                return true;
-
-            //return !GetConsoleMode(ioHandle, out var num);
-            return false;
+                //return !GetConsoleMode(ioHandle, out var num);
+                return false;
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoOptimization)]

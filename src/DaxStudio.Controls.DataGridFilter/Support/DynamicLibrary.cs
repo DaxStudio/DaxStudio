@@ -198,7 +198,7 @@ namespace System.Linq.Dynamic
         public bool Ascending;
     }
 
-    internal class Signature : IEquatable<Signature>
+    internal sealed class Signature : IEquatable<Signature>
     {
         public DynamicProperty[] Properties;
         public int HashCode;
