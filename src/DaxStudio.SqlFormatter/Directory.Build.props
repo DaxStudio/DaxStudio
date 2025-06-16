@@ -1,0 +1,12 @@
+<Project>
+<PropertyGroup>
+	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+	<GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+	<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+	<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+	<GenerateAssemblyCopyrightAttribute>true</GenerateAssemblyCopyrightAttribute>
+</PropertyGroup>
+ <PropertyGroup>
+   <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) DAX Studio ($([System.DateTime]::UtcNow.ToString("s")))</Copyright>
+ </PropertyGroup>
+</Project>

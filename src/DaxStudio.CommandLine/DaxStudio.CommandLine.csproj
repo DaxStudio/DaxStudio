@@ -1,19 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{533F7484-9E1A-4984-8D42-831D79711053}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RootNamespace>DaxStudio.CommandLine</RootNamespace>
     <AssemblyName>dscmd</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <LangVersion>8.0</LangVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <Deterministic>true</Deterministic>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -29,84 +20,34 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
     <OutputPath>..\..\Release\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Cmd Only\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>dscmd.ico</ApplicationIcon>
+    <Title>dscmd</Title>
+    <Company>DAX Studio</Company>
+    <Product>DAX Studio</Product>
+    <Description>DAX Studio Command Line</Description>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\DirectLakeModeDescriptionAttribute.cs" />
-    <Compile Include="Helpers\AccessTokenHelper.cs" />
-    <Compile Include="Helpers\NativeMethods.cs" />
-    <Compile Include="UIStubs\CmdLineDocument.cs" />
-    <Compile Include="UIStubs\CmdLineHost.cs" />
-    <Compile Include="UIStubs\CmdLineMetadataPane.cs" />
-    <Compile Include="Commands\CaptureDiagnosticsCommand.cs" />
-    <Compile Include="Commands\CommandSettingsBase.cs" />
-    <Compile Include="Commands\CommandSettingsFileBase.cs" />
-    <Compile Include="Commands\CommandSettingsFolderBase.cs" />
-    <Compile Include="Commands\CustomTraceCommand.cs" />
-    <Compile Include="Commands\VpaxCommand.cs" />
-    <Compile Include="Commands\XlsxCommand.cs" />
-    <Compile Include="Commands\CsvCommand.cs" />
-    <Compile Include="Commands\ExportCsvCommand.cs" />
-    <Compile Include="Commands\ExportSqlCommand.cs" />
-    <Compile Include="UIStubs\ConnectEvent.cs" />
-    <Compile Include="UIStubs\ConsoleLogger.cs" />
-    <Compile Include="Help\CustomHelpProvider.cs" />
-    <Compile Include="Infrastructure\TypeRegistrar.cs" />
-    <Compile Include="Infrastructure\TypeResolver.cs" />
-    <Compile Include="Infrastructure\VersionInfo.cs" />
-    <Compile Include="Interfaces\ISettingsConnection.cs" />
-    <Compile Include="Converters\StringListTypeConverter.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UIStubs\HaveLastUsedUPNStub.cs" />
-    <Compile Include="UIStubs\QueryRunner.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="ViewModel\CmdCustomTraceViewModel.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
@@ -115,25 +56,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj">
-      <Project>{dc91c987-2aeb-4f82-b8ba-3ff6a5614ed7}</Project>
-      <Name>ADOTabular</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
-      <Project>{508a1faa-9157-4474-94b4-fdbf76ffa74b}</Project>
-      <Name>DaxStudio.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj">
-      <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>
-      <Name>DaxStudio.UI</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj" />
+    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
+    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
+    <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AnalysisServices">
@@ -179,5 +105,4 @@
   <ItemGroup>
     <Content Include="dscmd.ico" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

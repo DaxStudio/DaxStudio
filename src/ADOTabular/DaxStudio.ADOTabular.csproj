@@ -1,35 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ADOTabular</RootNamespace>
-    <AssemblyName>DaxStudio.ADOTabular</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
+	  <VersionPrefix>1.7.0</VersionPrefix>
+	  <AssemblyName>DaxStudio.ADOTabular</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -37,13 +20,8 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
     <OutputPath>..\..\Release\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -53,148 +31,46 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Exel 2013|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug Excel 2013\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\ADOTabular.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Standalone|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug Standalone\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\ADOTabular.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
+    <Title>DaxStudio.ADOTabular</Title>
+    <Company>daxstudio.org</Company>
+    <Authors>DAX Studio</Authors>
+    <PackageProjectUrl>https://daxstudio.org</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/daxstudio/daxstudio</RepositoryUrl>
+    <Description>ADOTabular client library</Description>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Tests\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Cmd Only\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AdomdClientWrappers\AdomdCommand.cs" />
-    <Compile Include="AdomdClientWrappers\AdomdConnection.cs" />
-    <Compile Include="AdomdClientWrappers\AdomdDataAdapter.cs" />
-    <Compile Include="AdomdClientWrappers\AdomdDataReader.cs" />
-    <Compile Include="AdomdClientWrappers\AdomdParameter.cs" />
-    <Compile Include="AdomdClientWrappers\AdomdRestriction.cs" />
-    <Compile Include="AdomdClientWrappers\ExcelAdoMdConnections.cs" />
-    <Compile Include="ADOTabularDisplayFolder.cs" />
-    <Compile Include="ADOTabularConnectionType.cs" />
-    <Compile Include="ADOTabularMeasureCollection.cs" />
-    <Compile Include="ADOTabularMeasure.cs" />
-    <Compile Include="ADOTabularColumn.cs" />
-    <Compile Include="ADOTabularKeywordCollection.cs" />
-    <Compile Include="ADOTabularKpiComponent.cs" />
-    <Compile Include="ADOTabularColumnCollection.cs" />
-    <Compile Include="ADOTabularDatabase.cs" />
-    <Compile Include="ADOTabularDatabaseCollection.cs" />
-    <Compile Include="ADOTabularConnection.cs" />
-    <Compile Include="ADOTabularDynamicManagementView.cs" />
-    <Compile Include="ADOTabularDynamicManagementViewCollection.cs" />
-    <Compile Include="ADOTabularFunction.cs" />
-    <Compile Include="ADOTabularFunctionCollection.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ADOTabularFunctionGroup.cs" />
-    <Compile Include="ADOTabularFunctionGroupCollection.cs" />
-    <Compile Include="ADOTabularLevel.cs" />
-    <Compile Include="ADOTabularHierarchy.cs" />
-    <Compile Include="ADOTabularKpi.cs" />
-    <Compile Include="ADOTabularMetadataImages.cs" />
-    <Compile Include="ADOTabularModel.cs" />
-    <Compile Include="ADOTabularModelCapabilities.cs" />
-    <Compile Include="ADOTabularModelCollection.cs" />
-    <Compile Include="ADOTabularObjectReference.cs" />
-    <Compile Include="ADOTabularFunctionArgument.cs" />
-    <Compile Include="ADOTabularFunctionArgumentCollection.cs" />
-    <Compile Include="ADOTabularRelationship.cs" />
-    <Compile Include="ADOTabularStandardColumn.cs" />
-    <Compile Include="ADOTabularTable.cs" />
-    <Compile Include="ADOTabularTableCollection.cs" />
-    <Compile Include="ADOTabularVariation.cs" />
-    <Compile Include="ADOTabularEnums.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="DiscoverXmlParser.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="Enums\AdomdType.cs" />
-    <Compile Include="Extensions\AccessTokenExtensions.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Extensions\TOMMeasureExtensions.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Interfaces\IADOTabularColumn.cs" />
-    <Compile Include="Interfaces\IADOTabularConnection.cs" />
-    <Compile Include="Interfaces\IADOTabularObject.cs" />
-    <Compile Include="Interfaces\IADOTabularReference.cs" />
-    <Compile Include="Interfaces\IDatabaseReference.cs" />
-    <Compile Include="Interfaces\IDAXFunctions.cs" />
-    <Compile Include="Interfaces\IDmv.cs" />
-    <Compile Include="Interfaces\IModelCapabilities.cs" />
-    <Compile Include="MetadataInfo\DaxColumnsRemap.cs" />
-    <Compile Include="MetadataInfo\DaxFunction.cs" />
-    <Compile Include="MetadataInfo\DaxMetadata.cs" />
-    <Compile Include="MetadataInfo\DaxTablesRemap.cs" />
-    <Compile Include="MetadataInfo\SsasVersion.cs" />
-    <Compile Include="MetaDataVisitorCSDL.cs" />
-    <Compile Include="Interfaces\IMetaDataVisitor.cs" />
-    <Compile Include="MetaDataVisitorADOMD.cs" />
-    <Compile Include="MetadataVisitorVpax.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\ConnectionStringParser.cs" />
-    <Compile Include="Utils\MetadataImageHelper.cs" />
-    <Compile Include="Utils\TaskExtensions.cs" />
-    <Compile Include="Utils\XmlReaderExtensions.cs" />
-    <Compile Include="VersionComparisonExtension.cs" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">
       <Link>.editorconfig</Link>
     </None>
-    <None Include="app.config" />
-    <Compile Include="Interfaces\IADOTabularFolderReference.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dax.Model.Extractor">
@@ -226,61 +102,9 @@
     <PackageReference Include="System.Buffers">
       <Version>4.6.1</Version>
     </PackageReference>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.ValueTuple">
       <Version>4.6.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <!--<Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.AdomdClient'">
-        <Aliases>ExcelAdomdClientReference</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.Amo'">
-        <Aliases>ExcelAmoClientReference</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)' == 'Unofficial.Excel.Amo'">
-        <Aliases>ExcelAdomdClientReference</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>-->
-  <!--<Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-    <ItemGroup>
-      <PackageReference Condition="'%(Include)' == 'Unofficial.Excel.Amo'">
-        <Aliases>ExcelAdomdClientReference</Aliases>
-      </PackageReference>
-    </ItemGroup>
-  </Target>-->
-  <!--<Target Name="solveAliasProblem">
-    <ConvertToAbsolutePath Paths="..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.AdomdClient.dll">
-      <Output TaskParameter="AbsolutePaths" PropertyName="FullPathOriginal" />
-    </ConvertToAbsolutePath>
-    <ItemGroup>
-      <ReferencePath Remove="$(FullPathOriginal)" />
-      <ReferencePath Include="$(FullPathOriginal)">
-        <Aliases>ExcelAdomdClientReference</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
-  <PropertyGroup>
-    <CoreCompileDependsOn>solveAliasProblem</CoreCompileDependsOn>
-  </PropertyGroup>-->
 </Project>

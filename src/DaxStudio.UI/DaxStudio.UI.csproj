@@ -1,43 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\Common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <TargetFramework>net472</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5EFEFF14-3052-4DC1-B020-8E259062B899}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DaxStudio.UI</RootNamespace>
-    <AssemblyName>DaxStudio.UI</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <Utf8Output>true</Utf8Output>
     <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -45,14 +23,7 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>8.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -65,113 +36,51 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Standalone|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug Standalone\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>
-    </CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
-  <!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>..\..\Release\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>
-    </CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Standalone|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug Standalone\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>
-    </CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excel 2013|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug Excel 2013\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>
-    </CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Excel 2013|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug Excel 2013\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\DaxStudio.UI.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>
-    </CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Images\DaxStudio.ico</ApplicationIcon>
@@ -179,38 +88,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Tests\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Tests\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Cmd Only\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Cmd Only\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <CodeAnalysisRuleSet>..\DSCodeAnalysis.ruleset</CodeAnalysisRuleSet>
@@ -220,31 +113,12 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="PresentationFramework.Aero" />
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="UIAutomationProvider" />
-    <Reference Include="UIAutomationTypes" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
@@ -253,1140 +127,25 @@
     <Compile Include="..\CommonAssemblyVersion.cs">
       <Link>Properties\CommonAssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="AppBootstrapper.cs" />
-    <Compile Include="AttachedProperties\BrushBindingHelper.cs" />
-    <Compile Include="AttachedProperties\DataGridAutoScroll.cs" />
-    <Compile Include="AttachedProperties\DataGridColumnVisibilityProperty.cs" />
-    <Compile Include="AttachedProperties\DaxEditorFocusExtensions.cs" />
-    <Compile Include="AttachedProperties\DesignModeHelpers.cs" />
-    <Compile Include="AttachedProperties\FluentRibbonKeyTip.cs" />
-    <Compile Include="AttachedProperties\GridSplitterController.cs" />
-    <Compile Include="AttachedProperties\ForegroundBindingHelper.cs" />
-    <Compile Include="AttachedProperties\ImageBindingHelper.cs" />
-    <Compile Include="AttachedProperties\ImageSpinner.cs" />
-    <Compile Include="AttachedProperties\InitialFocusExtentions.cs" />
-    <Compile Include="AttachedProperties\DataGridExtensions.cs" />
-    <Compile Include="AttachedProperties\DefaultButtonExtensions.cs" />
-    <Compile Include="AttachedProperties\DefaultButton.cs" />
-    <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
-    <Compile Include="AttachedProperties\LayoutAnchorablePaneAutoHideMinWidthHelper.cs" />
-    <Compile Include="AttachedProperties\DataGridHorizontalScroll.cs" />
-    <Compile Include="AttachedProperties\ListViewExtenders.cs" />
-    <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
-    <Compile Include="AttachedProperties\MouseObserver.cs" />
-    <Compile Include="AttachedProperties\ContentControlLineNumberHelper.cs" />
-    <Compile Include="AttachedProperties\TriggerDebugTracer.cs" />
-    <Compile Include="AttachedProperties\VisibilityAnimation.cs" />
-    <Compile Include="Behaviours\AvalonDockLayoutSerializerBehaviour.cs" />
-    <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
-    <Compile Include="AttachedProperties\DataSourcePasteHandlerHelper.cs" />
-    <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
-    <Compile Include="Behaviours\GridViewColumnResize.cs" />
-    <Compile Include="Behaviours\ListViewScrollIntoViewBehaviour.cs" />
-    <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
-    <Compile Include="Behaviours\ListViewSorterBehaviour.cs" />
-    <Compile Include="Behaviours\PasswordBoxBindingBehaviour.cs" />
-    <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
-    <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
-    <Compile Include="Controls\BindableRichTextBox.cs" />
-    <Compile Include="Controls\BindingProxy.cs" />
-    <Compile Include="Controls\ClipBorder.cs" />
-    <Compile Include="Controls\DataGridCustomCopy.cs" />
-    <Compile Include="Controls\DataGridNoContextMenu.cs" />
-    <Compile Include="Controls\DaxStudioDialog.cs" />
-    <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
-      <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\StorageEngineTime.xaml.cs">
-      <DependentUpon>StorageEngineTime.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\TextBoxEx.cs" />
-    <Compile Include="Controls\TreeViewEx.cs" />
-    <Compile Include="Controls\Utils.cs" />
-    <Compile Include="Controls\ZoomableUserControl.cs" />
-    <Compile Include="Conventions\AvalonDockCustomConventions.cs" />
-    <Compile Include="Conventions\ModernWpfConventions.cs" />
-    <Compile Include="Conventions\VisibilityBindingConvention.cs" />
-    <Compile Include="Converters\ActiveDocumentConverter.cs" />
-    <Compile Include="Converters\AllNumericConverter.cs" />
-    <Compile Include="Converters\BoolNotConverter.cs" />
-    <Compile Include="Converters\BoolToCollapsedConverter.cs" />
-    <Compile Include="Converters\BoolToDoubleConverter.cs" />
-    <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
-    <Compile Include="Converters\BoolToHighContrastForegroundConverter.cs" />
-    <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
-    <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
-    <Compile Include="Converters\BoolToLeftThicknessConverter.cs" />
-    <Compile Include="Converters\BoolToRightThicknessConverter.cs" />
-    <Compile Include="Converters\BoolToThicknessConverter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Converters\CanDuplicateMeasureConverter.cs" />
-    <Compile Include="Converters\CappedRowHeightConverter.cs" />
-    <Compile Include="Converters\CappedHeightConverter.cs" />
-    <Compile Include="Converters\CircularProgressBar\ArcEndPointConverter.cs" />
-    <Compile Include="Converters\CircularProgressBar\ArcSizeConverter.cs" />
-    <Compile Include="Converters\CircularProgressBar\ArcStrockThicknessConverter.cs" />
-    <Compile Include="Converters\CircularProgressBar\LocalEx.cs" />
-    <Compile Include="Converters\CircularProgressBar\RotateTransformCentreConverter.cs" />
-    <Compile Include="Converters\CircularProgressBar\StartPointConverter.cs" />
-    <Compile Include="Converters\QueryTabToSpacesConverter.cs" />
-    <Compile Include="Converters\DateTimeToHHMMSSConverter.cs" />
-    <Compile Include="Converters\DataBindingDebugConverter.cs" />
-    <Compile Include="Converters\DatetimeToLocalTimeConverter.cs" />
-    <Compile Include="Converters\DynamicResourceLookupConverter.cs" />
-    <Compile Include="Converters\EnumDescriptionTypeConverter.cs" />
-    <Compile Include="Converters\FilterValueHeightConverter.cs" />
-    <Compile Include="Converters\FindResourceFromStringConverter.cs" />
-    <Compile Include="Converters\FontToSupportedGlyphConverter.cs" />
-    <Compile Include="Converters\BoolToItalicConverter.cs" />
-    <Compile Include="Converters\LongToFormattedMsConverter.cs" />
-    <Compile Include="Converters\IsMeasureVisibilityConverter.cs" />
-    <Compile Include="Converters\IsMultiLineFilterTypeConverter.cs" />
-    <Compile Include="Converters\MinWidthOrientationConverter.cs" />
-    <Compile Include="Converters\NotZeroConverter.cs" />
-    <Compile Include="Converters\ObjectToBooleanConverter.cs" />
-    <Compile Include="Converters\OutputTargetImageResourceConverter.cs" />
-    <Compile Include="Converters\QueryPlanMarginConverter.cs" />
-    <Compile Include="Converters\QueryPlanSelectionConverter.cs" />
-    <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
-    <Compile Include="Converters\StringPercentToDoubleConverter.cs" />
-    <Compile Include="Converters\TableImageConverter.cs" />
-    <Compile Include="Converters\VpaColumnDaxNameConverter.cs" />
-    <Compile Include="Converters\TimelineLengthConverter.cs" />
-    <Compile Include="Converters\TimelineMarginConverter.cs" />
-    <Compile Include="Enums\CustomTraceOutput.cs" />
-    <Compile Include="Enums\SaveAsExtension.cs" />
-    <Compile Include="Events\CopyPasteServerTimings.cs" />
-    <Compile Include="Events\CopySEQuery.cs" />
-    <Compile Include="Events\DocumentActivatedEvent.cs" />
-    <Compile Include="Events\PasteDaxFileEvent.cs" />
-    <Compile Include="Events\CopyWithHeadersEvent.cs" />
-    <Compile Include="Events\DuplicateMeasureEvent.cs" />
-    <Compile Include="Events\EditorHotkeyEvent.cs" />
-    <Compile Include="Events\LoadQueryBuilderEvent.cs" />
-    <Compile Include="Events\NoQueryTextEvent.cs" />
-    <Compile Include="Events\PasteServerTimings.cs" />
-    <Compile Include="Events\QueryBuilderUpdateEvent.cs" />
-    <Compile Include="Events\RefreshConnectionDialogEvent.cs" />
-    <Compile Include="Events\RunStyleChangedEvent.cs" />
-    <Compile Include="Events\SendTabularObjectToQueryBuilderEvent.cs" />
-    <Compile Include="Events\SendTabularObjectToEditor.cs" />
-    <Compile Include="Events\SetRunStyleEvent.cs" />
-    <Compile Include="Events\ThemeChangedEvent.cs" />
-    <Compile Include="Events\ToggleCommentEvent.cs" />
-    <Compile Include="Events\ViewMetricsCompleteEvent.cs" />
-    <Compile Include="Events\VpaViewExpandedEvent.cs" />
-    <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
-    <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
-    <Compile Include="Extensions\DaxStudioWindowManager.cs" />
-    <Compile Include="Extensions\FileExtensions.cs" />
-    <Compile Include="Extensions\HyperlinkExtensions.cs" />
-    <Compile Include="Extensions\StoreageModeExtensions.cs" />
-    <Compile Include="Interfaces\ICancellable.cs" />
-    <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
-    <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
-    <Compile Include="Interfaces\IQueryPlanRow.cs" />
-    <Compile Include="Interfaces\ITraceDiagnostics.cs" />
-    <Compile Include="Interfaces\ITraceWatcher.cs" />
-    <Compile Include="Interfaces\ITraceWatcherData.cs" />
-    <Compile Include="JsonConverters\ADOTabularColumnCreationConverter.cs" />
-    <Compile Include="JsonConverters\QueryBuilderColumnDataTypeConverter.cs" />
-    <Compile Include="JsonConverters\QueryBuilderConverter.cs" />
-    <Compile Include="Converters\RightMarginMultiplyConverter.cs" />
-    <Compile Include="Converters\ServerNameConverter.cs" />
-    <Compile Include="Converters\ServerNameTrimmingConverter.cs" />
-    <Compile Include="Enums\MultipleQueriesDetectedDialogResult.cs" />
-    <Compile Include="Enums\QueryBuilderItem.cs" />
-    <Compile Include="Events\ConnectFailedEvent.cs" />
-    <Compile Include="Events\ConnectionOpenedEvent.cs" />
-    <Compile Include="Events\DatabaseChangedEvent.cs" />
-    <Compile Include="Events\EditorResizeEvent.cs" />
-    <Compile Include="Events\ReconnectEvent.cs" />
-    <Compile Include="Events\SelectedDatabaseChangedEvent.cs" />
-    <Compile Include="Events\SendColumnToQueryBuilderEvent.cs" />
-    <Compile Include="Events\SetFocusEvent.cs" />
-    <Compile Include="Events\ShowMeasureExpressionEditor.cs" />
-    <Compile Include="Events\TablesRefreshedEvent.cs" />
-    <Compile Include="Extensions\ContextExtensions.cs" />
-    <Compile Include="Extensions\DependencyObjectExtensions.cs" />
-    <Compile Include="Extensions\EnumExtensions.cs" />
-    <Compile Include="Extensions\LinqExtensions.cs" />
-    <Compile Include="Extensions\QueryBuilderColumnExtensions.cs" />
-    <Compile Include="Extensions\VersionExtensions.cs" />
-    <Compile Include="Interfaces\IDaxDocument.cs" />
-    <Compile Include="Interfaces\IDaxStudioHost.cs" />
-    <Compile Include="Interfaces\IDaxStudioProxy.cs" />
-    <Compile Include="Interfaces\IMetadataProvider.cs" />
-    <Compile Include="Interfaces\IQueryBuilderFieldList.cs" />
-    <Compile Include="Interfaces\IQueryRunner.cs" />
-    <Compile Include="Interfaces\IQueryTextProvider.cs" />
-    <Compile Include="Interfaces\IZoomable.cs" />
-    <Compile Include="JsonConverters\InterfaceContractResolver.cs" />
-    <Compile Include="JsonConverters\SecureStringConverter.cs" />
-    <Compile Include="JsonConverters\SingleOrArrayConverter.cs" />
-    <Compile Include="MarkupExtensions\ConverterBindableParameter.cs" />
-    <Compile Include="MarkupExtensions\EnumBindingSourceExtension.cs" />
-    <Compile Include="Converters\EnumBooleanConverter.cs" />
-    <Compile Include="Converters\EnumDescriptionConverter.cs" />
-    <Compile Include="Converters\EventSubclassConverter.cs" />
-    <Compile Include="Converters\FontConverter.cs" />
-    <Compile Include="Converters\GreaterThanConverter.cs" />
-    <Compile Include="Converters\HotKeyConverter.cs" />
-    <Compile Include="Converters\IntToFormattedMsConverter.cs" />
-    <Compile Include="Converters\IntToDoubleConverter.cs" />
-    <Compile Include="Converters\MatchingResultColourConverter.cs" />
-    <Compile Include="Converters\MaxMultiConverter.cs" />
-    <Compile Include="Converters\MaxTextLinesConverter.cs" />
-    <Compile Include="Converters\MinusConverter.cs" />
-    <Compile Include="Converters\MultiplyWithMinConverter.cs" />
-    <Compile Include="Converters\NegativeColourConverter.cs" />
-    <Compile Include="Converters\OffsetConverter.cs" />
-    <Compile Include="Converters\DynamicDataGridConverter.cs" />
-    <Compile Include="Converters\DynamicGridViewConverter.cs" />
-    <Compile Include="Converters\MultiplyConverter.cs" />
-    <Compile Include="Converters\QueryMultiLineConverter.cs" />
-    <Compile Include="Converters\QuerySingleLineConverter.cs" />
-    <Compile Include="Converters\RelativeWidthConverter.cs" />
-    <Compile Include="Converters\ResourceLookupConverter.cs" />
-    <Compile Include="Converters\RowMaxHeightVisibilityConverter.cs" />
-    <Compile Include="Converters\StringFormatConverter.cs" />
-    <Compile Include="Converters\StringToVisibilityConverter.cs" />
-    <Compile Include="Converters\xmSqlToDocumentConverter.cs" />
-    <Compile Include="Converters\StringWhitespaceRemovalConverter.cs" />
-    <Compile Include="Enums\DialogResult.cs" />
-    <Compile Include="Enums\ExportDataType.cs" />
-    <Compile Include="Enums\ExportStatus.cs" />
-    <Compile Include="Enums\FilterType.cs" />
-    <Compile Include="Enums\OpenDialogResult.cs" />
-    <Compile Include="Enums\QueryEndSubClass.cs" />
-    <Compile Include="Enums\SqlAuthenticationType.cs" />
-    <Compile Include="Events\AllDocumentsClosedEvent.cs" />
-    <Compile Include="Events\AutoSaveEvent.cs" />
-    <Compile Include="Events\AutoSaveRecoveryEvent.cs" />
-    <Compile Include="Events\ChangeThemeEvent.cs" />
-    <Compile Include="Events\DockManagerLoadLayout.cs" />
-    <Compile Include="Events\DockManagerSaveLayout.cs" />
-    <Compile Include="Events\ExportDaxFunctionsEvent.cs" />
-    <Compile Include="Events\ExportStatusUpdateEvent.cs" />
-    <Compile Include="Events\LoggingEnabledEvent.cs" />
-    <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
-    <Compile Include="Events\RefreshOutputTargetsEvent.cs" />
-    <Compile Include="Events\ServerTimingsEvent.cs" />
-    <Compile Include="Events\ShowTraceWindowEvent.cs" />
-    <Compile Include="Events\SizeUnitsUpdatedEvent.cs" />
-    <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
-    <Compile Include="Events\StopAutoSaveTimerEvent.cs" />
-    <Compile Include="Events\UpdateHotkeys.cs" />
-    <Compile Include="Extensions\ApplicationExtensions.cs" />
-    <Compile Include="Extensions\CharExtensions.cs" />
-    <Compile Include="Extensions\DataReaderExtensions.cs" />
-    <Compile Include="Extensions\DataSetExtensions.cs" />
-    <Compile Include="Extensions\DockingManagerExtensions.cs" />
-    <Compile Include="Extensions\ExceptionExtensions.cs" />
-    <Compile Include="Extensions\HttpClientExtensions.cs" />
-    <Compile Include="Extensions\MiscExtensions.cs" />
-    <Compile Include="Extensions\QueryEventExtensions.cs" />
-    <Compile Include="Extensions\ServerVersionExtensions.cs" />
-    <Compile Include="Extensions\SqlBulkCopyExtensions.cs" />
-    <Compile Include="Extensions\ViewAwareExtensions.cs" />
-    <Compile Include="Extensions\ListExtensions.cs" />
-    <Compile Include="Extensions\ProcessExtensions.cs" />
-    <Compile Include="Interfaces\IAutoSaver.cs" />
-    <Compile Include="Interfaces\IDataGridWindow.cs" />
-    <Compile Include="Interfaces\ISettingProvider.cs" />
-    <Compile Include="JsonConverters\DaxFileConverter.cs" />
-    <Compile Include="JsonConverters\ServerTimingConverter.cs" />
-    <Compile Include="JsonConverters\VersionConverter.cs" />
-    <Compile Include="MarkupExtensions\ResourceBinding.cs" />
-    <Compile Include="Model\AggregateRewriteSummary.cs" />
-    <Compile Include="Model\AutoSaveIndex.cs" />
-    <Compile Include="Model\AutoSaveIndexEntry.cs" />
-    <Compile Include="Model\CaptureDiagnosticsSource.cs" />
-    <Compile Include="Model\ClipboardManager.cs" />
-    <Compile Include="Model\ClipboardTextProvider.cs" />
-    <Compile Include="Model\ConnectionManager.cs" />
-    <Compile Include="Model\CustomTraceTemplate.cs" />
-    <Compile Include="Model\HotKey.cs" />
-    <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
-    <Compile Include="Model\IndentFoldingStrategy.cs" />
-    <Compile Include="Model\JumpListHelper.cs" />
-    <Compile Include="Model\PowerBIPerformanceData.cs" />
-    <Compile Include="Model\QueryBeginEvent.cs" />
-    <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />
-    <Compile Include="Model\QueryBuilder\ADOTabularTableStub.cs" />
-    <Compile Include="Model\QueryBuilder\QueryBuilder.cs" />
-    <Compile Include="Model\QueryBuilder\QueryBuilderColumn.cs" />
-    <Compile Include="Model\QueryBuilder\QueryBuilderDropHandler.cs" />
-    <Compile Include="Model\QueryBuilder\QueryBuilderFieldList.cs" />
-    <Compile Include="Model\QueryBuilder\QueryBuilderFilterList.cs" />
-    <Compile Include="Model\QueryInfo.cs" />
-    <Compile Include="Model\QueryParameter.cs" />
-    <Compile Include="Model\SimplePropertyChangedBase.cs" />
-    <Compile Include="Model\SqlFormatter.cs" />
-    <Compile Include="Model\TraceEvent.cs" />
-    <Compile Include="Model\SettingsProviderFactory.cs" />
-    <Compile Include="Model\TreeViewFunctions.cs" />
-    <Compile Include="Resources\DesignTimeResourceDictionary.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetClipboard.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetExcelLinkedOdc.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetExcelFile.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetFormattedTextFile.cs" />
-    <Compile Include="TemplateSelectors\AvalonDockTemplateSelector.cs" />
-    <Compile Include="Converters\VisibilityToBooleanConverter.cs" />
-    <Compile Include="Converters\WorkbookNameConverter.cs" />
-    <Compile Include="Enums\FileIcons.cs" />
-    <Compile Include="Enums\SaveResult.cs" />
-    <Compile Include="Events\ActivateDocumentEvent.cs" />
-    <Compile Include="Events\ActivateTrace.cs" />
-    <Compile Include="Events\ApplicationActivatedEvent.cs" />
-    <Compile Include="Events\CancelQueryEvent.cs" />
-    <Compile Include="Events\ConnectionPendingEvent.cs" />
-    <Compile Include="Events\CommentEvent.cs" />
-    <Compile Include="Events\ConnectEvent.cs" />
-    <Compile Include="Events\CancelConnectEvent.cs" />
-    <Compile Include="Events\DmvsLoadedEvent.cs" />
-    <Compile Include="Events\DocumentConnectionUpdateEvent.cs" />
-    <Compile Include="Events\EditorPositionChangedEvent.cs" />
-    <Compile Include="Events\FileOpenedEvent.cs" />
-    <Compile Include="Events\FileSavedEvent.cs" />
-    <Compile Include="Events\FunctionsLoadedEvent.cs" />
-    <Compile Include="Events\LoadFileEvent.cs" />
-    <Compile Include="Events\MetadataLoadedEvent.cs" />
-    <Compile Include="Events\NavigateToLocationEvent.cs" />
-    <Compile Include="Events\NewVersionEvent.cs" />
-    <Compile Include="Events\OpenRecentFileEvent.cs" />
-    <Compile Include="Events\OpenFileEvent.cs" />
-    <Compile Include="Events\OutputMessage.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Events\QueryFinishedEvent.cs" />
-    <Compile Include="Events\QueryHistoryEvent.cs" />
-    <Compile Include="Events\QueryResultsPaneMessageEvent.cs" />
-    <Compile Include="Events\QueryTraceCompletedEvent.cs" />
-    <Compile Include="Events\SelectionChangeCaseEvent.cs" />
-    <Compile Include="Events\DefineMeasureOnEditor.cs" />
-    <Compile Include="Events\ServerTimingDetailsUpdatedEvent.cs" />
-    <Compile Include="Events\SetSelectedWorksheetEvent.cs" />
-    <Compile Include="Events\TraceChangedEvent.cs" />
-    <Compile Include="Events\TraceChangingEvent.cs" />
-    <Compile Include="Events\TraceWatcherToggleEvent.cs" />
-    <Compile Include="Events\UpdateEditorOptions.cs" />
-    <Compile Include="Events\UpdateTimerTextEvent.cs" />
-    <Compile Include="MarkupExtensions\NinjaBinding.cs" />
-    <Compile Include="Model\DaxFile.cs" />
-    <Compile Include="Model\DaxFormatter.cs" />
-    <Compile Include="Enums\DocumentState.cs" />
-    <Compile Include="Interfaces\ISaveState.cs" />
-    <Compile Include="Model\DaxStudioTraceEventClassSubclass.cs" />
-    <Compile Include="Model\GlobalQueryHistory.cs" />
-    <Compile Include="Model\LinkedQueryResult.cs" />
-    <Compile Include="Model\NotifyIcon.cs" />
-    <Compile Include="Model\ProxyPowerPivot.cs" />
-    <Compile Include="Model\QueryPlanModel.cs" />
-    <Compile Include="Interfaces\IToolWindow.cs" />
-    <Compile Include="Model\RunStyle.cs" />
-    <Compile Include="Model\ServerTimesModel.cs" />
-    <Compile Include="Model\StaticQueryResult.cs" />
-    <Compile Include="Model\StatusBarMessage.cs" />
-    <Compile Include="Model\TraceWatcherCollection.cs" />
-    <Compile Include="Model\TreeViewTables.cs" />
-    <Compile Include="Model\VersionCheck.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="ResultsTargets\ResultsTargetExcelLinked.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetExcelStatic.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetTextFile.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetTimer.cs" />
-    <Compile Include="Model\ToolWindowBase.cs" />
-    <Compile Include="TemplateSelectors\DataGridWindowTemplateSelector.cs" />
-    <Compile Include="TemplateSelectors\OptionsPropertyTemplateSelector.cs" />
-    <Compile Include="TemplateSelectors\ResultsGridCellTemplateSelector.cs" />
-    <Compile Include="Theme\ThemeManager.cs" />
-    <Compile Include="Triggers\EnterKeyTrigger.cs" />
-    <Compile Include="Triggers\InputBindingTrigger.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Triggers\KeyBindingTrigger.cs" />
-    <Compile Include="Triggers\KeyPressTrigger.cs" />
-    <Compile Include="Utils\ApplicationCloseAllStrategy.cs" />
-    <Compile Include="Utils\ApplicationHelper.cs" />
-    <Compile Include="Utils\AssemblyLoader.cs" />
-    <Compile Include="Utils\AutoSaver.cs" />
-    <Compile Include="Utils\ClipboardHelper.cs" />
-    <Compile Include="Utils\DaxxFormat.cs" />
-    <Compile Include="Utils\DelegateCommand.cs" />
-    <Compile Include="Utils\FlowDocumentHelper.cs" />
-    <Compile Include="Utils\FocusManager.cs" />
-    <Compile Include="Utils\FormatDebugMode.cs" />
-    <Compile Include="Utils\HighContrastHelper.cs" />
-    <Compile Include="Utils\Intellisense\DaxStudioCompletionWindow.cs" />
-    <Compile Include="Utils\LineStateMachine.cs" />
-    <Compile Include="Utils\LongLineStateMachine.cs" />
-    <Compile Include="Utils\DelimiterTranslator\DelimiterStateMachine.cs" />
-    <Compile Include="Utils\DelimiterTranslator\StringStateMachine.cs" />
-    <Compile Include="Utils\DisabledCommand.cs" />
-    <Compile Include="Utils\DuplicateKeyComparer.cs" />
-    <Compile Include="Utils\FixedSizeQueue.cs" />
-    <Compile Include="Extensions\IntegerExtensions.cs" />
-    <Compile Include="Utils\InputBindingCommand.cs" />
-    <Compile Include="Utils\InputBindings.cs" />
-    <Compile Include="Utils\Intellisense\IInsightProvider.cs" />
-    <Compile Include="Utils\JsonSettingProviderAppData.cs" />
-    <Compile Include="Utils\JsonSettingProviderBase.cs" />
-    <Compile Include="Utils\JsonSettingProviderPortable.cs" />
-    <Compile Include="Utils\ManagedIpHelper.cs" />
-    <Compile Include="Utils\OdcHelper.cs" />
-    <Compile Include="Utils\ParameterHelper.cs" />
-    <Compile Include="Utils\RegexHelper.cs" />
-    <Compile Include="Utils\RelayCommand.cs" />
-    <Compile Include="Utils\ScreenUnitsHelper.cs" />
-    <Compile Include="Utils\SendKeys.cs" />
-    <Compile Include="Utils\SerilogDaxStudioMemoryBufferSink.cs" />
-    <Compile Include="Utils\SerilogDaxStudioOutputSink.cs" />
-    <Compile Include="Utils\SqlProfilerHelper.cs" />
-    <Compile Include="Utils\SystemInfo.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="Extensions\StringEncryptionExtensions.cs" />
-    <Compile Include="Utils\ApplicationCloseCheck.cs" />
-    <Compile Include="TemplateSelectors\ToolWindowTemplateSelector.cs" />
-    <Compile Include="Converters\BoolToHiddenConverter.cs" />
-    <Compile Include="Extensions\DatabaseCollectionExtensions.cs" />
-    <Compile Include="Extensions\DataTableExtensions.cs" />
-    <Compile Include="DaxStudioDockingManager.cs" />
-    <Compile Include="Events\ConnectionChangedEvent.cs" />
-    <Compile Include="Events\RunQueryEvent.cs" />
-    <Compile Include="Events\SaveDocumentEvent.cs" />
-    <Compile Include="Events\SendTextToEditor.cs" />
-    <Compile Include="Interfaces\IResultsTarget.cs" />
-    <Compile Include="Utils\Intellisense\DaxCompletionData.cs" />
-    <Compile Include="Utils\DaxHelper.cs" />
-    <Compile Include="Utils\Intellisense\DaxIntellisenseProvider.cs" />
-    <Compile Include="Utils\Intellisense\DaxLineParser.cs" />
-    <Compile Include="Utils\DaxStudioLayoutStrategy.cs" />
-    <Compile Include="Utils\EventExtension.cs" />
-    <Compile Include="Interfaces\IDocumentWorkspace.cs" />
-    <Compile Include="Interfaces\IHaveShutdownTask.cs" />
-    <Compile Include="Utils\JsonDataTableConverter.cs" />
-    <Compile Include="Utils\MessageBoxEx.cs" />
-    <Compile Include="Utils\PaneStyleSelector.cs" />
-    <Compile Include="Utils\PowerBIHelper.cs" />
-    <Compile Include="Extensions\TraceWatcherCollectionExtensions.cs" />
-    <Compile Include="Utils\TraceWatcherFactory.cs" />
-    <Compile Include="Utils\UserHelper.cs" />
-    <Compile Include="Utils\TimelineHeatmapImageGenerator.cs" />
-    <Compile Include="Utils\WrapSharingViolations.cs" />
-    <Compile Include="Utils\XlsxHelper.cs" />
-    <Compile Include="Utils\ZoomHelper.cs" />
-    <Compile Include="Validation\BindingProxy.cs" />
-    <Compile Include="Validation\HotkeyValidationRule.cs" />
-    <Compile Include="ViewModels\BenchmarkServerFEViewModel.cs" />
-    <Compile Include="ViewModels\BenchmarkViewModel.cs" />
-    <Compile Include="ViewModels\BrowseWorkspacesViewModel.cs" />
-    <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
-    <Compile Include="ViewModels\CustomTraceDialogViewModel.cs" />
-    <Compile Include="ViewModels\DatabaseDialogViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
-    <Compile Include="Utils\UIHelper.cs" />
-    <Compile Include="Events\ConnectionClosedEvent.cs" />
-    <Compile Include="Utils\ModelAnalyzer.cs" />
-    <Compile Include="Utils\WebRequestFactory.cs" />
-    <Compile Include="Extensions\WindowManagerExtensions.cs" />
-    <Compile Include="Utils\WindowPlacement.cs" />
-    <Compile Include="ViewModels\DesignData\DesignDocumentViewModel.cs" />
-    <Compile Include="ViewModels\DesignData\DesignTimeDataFactory.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardBasePageViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnBuilderViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardCsvFolderViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTablesViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardChooseTypeViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardSqlConnStrViewModel.cs" />
-    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardViewModel.cs" />
-    <Compile Include="ViewModels\GettingStartedViewModel.cs" />
-    <Compile Include="ViewModels\HelpWatermarkViewModel.cs" />
-    <Compile Include="ViewModels\MeasureExpressionEditorViewModel.cs" />
-    <Compile Include="ViewModels\PowerBIPerformanceDataViewModel.cs" />
-    <Compile Include="ViewModels\FindReplaceDialogViewModel.cs" />
-    <Compile Include="ViewModels\GotoLineDialogViewModel.cs" />
-    <Compile Include="ViewModels\HelpAboutViewModel.cs" />
-    <Compile Include="ViewModels\OptionsViewModel.cs" />
-    <Compile Include="Model\QueryEvent.cs" />
-    <Compile Include="ViewModels\QueryBuilderViewModel.cs" />
-    <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
-    <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
-    <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
-    <Compile Include="ViewModels\EvaluateAndLogTraceViewModel.cs" />
-    <Compile Include="ViewModels\CustomTraceViewModel.cs" />
-    <Compile Include="ViewModels\RefreshTraceViewModel.cs" />
-    <Compile Include="ViewModels\SaveDialogViewModel.cs" />
-    <Compile Include="ViewModels\AllServerQueriesViewModel.cs" />
-    <Compile Include="Model\QueryBuilder\QueryBuilderFilter.cs" />
-    <Compile Include="ViewModels\MultipleQueriesDetectedDialogViewModel.cs" />
-    <Compile Include="ViewModels\RequestInformationViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzerDialogViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\PartitionGroupDescription.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\RelationshipGroupDescription.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\TableGroupDescription.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\VertiPaqAnalyzerViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\VpaColumnViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\VpaPartitionViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\VpaRelationshipViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\VpaSummaryViewModel.cs" />
-    <Compile Include="ViewModels\VertipaqAnalyzer\VpaTableViewModel.cs" />
-    <Compile Include="ViewModels\ViewAsDialogViewModel.cs" />
-    <Compile Include="Views\AllServerQueriesView.xaml.cs">
-      <DependentUpon>AllServerQueriesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\BrowseWorkspacesView.xaml.cs">
-      <DependentUpon>BrowseWorkspacesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DatabaseDialogView.xaml.cs">
-      <DependentUpon>DatabaseDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\BenchmarkServerFEView.xaml.cs">
-      <DependentUpon>BenchmarkServerFEView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\CaptureDiagnosticsView.xaml.cs">
-      <DependentUpon>CaptureDiagnosticsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\CrashReportingBlockedDialogView.xaml.cs">
-      <DependentUpon>CrashReportingBlockedDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\CustomTraceDialogView.xaml.cs">
-      <DependentUpon>CustomTraceDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\GettingStartedView.xaml.cs">
-      <DependentUpon>GettingStartedView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MultipleQueriesDetectedDialogView.xaml.cs">
-      <DependentUpon>MultipleQueriesDetectedDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\BenchmarkView.xaml.cs">
-      <DependentUpon>BenchmarkView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DocumentView.xaml.cs">
-      <DependentUpon>DocumentView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardExportStatusView.xaml.cs">
-      <DependentUpon>ExportDataWizardExportStatusView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardChooseTablesView.xaml.cs">
-      <DependentUpon>ExportDataWizardChooseTablesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardCsvFolderView.xaml.cs">
-      <DependentUpon>ExportDataWizardCsvFolderView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardSqlConnBuilderView.xaml.cs">
-      <DependentUpon>ExportDataWizardSqlConnBuilderView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardSqlConnStrView.xaml.cs">
-      <DependentUpon>ExportDataWizardSqlConnStrView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardChooseTypeView.xaml.cs">
-      <DependentUpon>ExportDataWizardChooseTypeView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ExportDataWizard\ExportDataWizardView.xaml.cs">
-      <DependentUpon>ExportDataWizardView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\GotoLineDialogView.xaml.cs">
-      <DependentUpon>GotoLineDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\HelpWatermarkView.xaml.cs">
-      <DependentUpon>HelpWatermarkView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MeasureExpressionEditorView.xaml.cs">
-      <DependentUpon>MeasureExpressionEditorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\OptionsView.xaml.cs">
-      <DependentUpon>OptionsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\QueryPlanTraceViewModel.cs" />
-    <Compile Include="ViewModels\DmvPaneViewModel.cs" />
-    <Compile Include="ViewModels\FunctionPaneViewModel.cs" />
-    <Compile Include="Utils\DebugLogger.cs" />
-    <Compile Include="IShell.cs" />
-    <Compile Include="Utils\RegistrySettingProvider.cs" />
-    <Compile Include="RichTextBoxWatermarked.xaml.cs">
-      <DependentUpon>RichTextBoxWatermarked.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\ConnectionDialogViewModel.cs" />
-    <Compile Include="ViewModels\MetadataPaneViewModel.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ViewModels\OutputPaneViewModel.cs" />
-    <Compile Include="ViewModels\QueryResultsPaneViewModel.cs" />
-    <Compile Include="ResultsTargets\ResultsTargetGrid.cs" />
-    <Compile Include="Events\QueryStartedEvent.cs" />
-    <Compile Include="ViewModels\ServerTimesViewModel.cs" />
-    <Compile Include="ViewModels\ServerTimingDetailsViewModel.cs" />
-    <Compile Include="ViewModels\StatusBarViewModel.cs" />
-    <Compile Include="ViewModels\ToolPaneBaseViewModel.cs" />
-    <Compile Include="ViewModels\DocumentTabViewModel.cs" />
-    <Compile Include="ViewModels\DocumentViewModel.cs" />
-    <Compile Include="Events\NewDocumentEvent.cs" />
-    <Compile Include="ViewModels\RibbonViewModel.cs" />
-    <Compile Include="ViewModels\ShellViewModel.cs" />
-    <Compile Include="ViewModels\TraceWatcherBaseViewModel.cs" />
-    <Compile Include="Views\ConnectionDialogView.xaml.cs">
-      <DependentUpon>ConnectionDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DmvPaneView.xaml.cs">
-      <DependentUpon>DmvPaneView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FindReplaceDialogView.xaml.cs">
-      <DependentUpon>FindReplaceDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FunctionPaneView.xaml.cs">
-      <DependentUpon>FunctionPaneView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DocumentTabView.xaml.cs">
-      <DependentUpon>DocumentTabView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\HelpAboutView.xaml.cs">
-      <DependentUpon>HelpAboutView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MetadataPaneView.xaml.cs">
-      <DependentUpon>MetadataPaneView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\OutputPaneView.xaml.cs">
-      <DependentUpon>OutputPaneView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PowerBIPerformanceDataView.xaml.cs">
-      <DependentUpon>PowerBIPerformanceDataView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\QueryBuilderView.xaml.cs">
-      <DependentUpon>QueryBuilderView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\QueryHistoryPaneView.xaml.cs">
-      <DependentUpon>QueryHistoryPaneView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\QueryPlanTraceView.xaml.cs">
-      <DependentUpon>QueryPlanTraceView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\QueryResultsPaneView.xaml.cs">
-      <DependentUpon>QueryResultsPaneView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\EvaluateAndLogTraceView.xaml.cs">
-      <DependentUpon>EvaluateAndLogTraceView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\CustomTraceView.xaml.cs">
-      <DependentUpon>CustomTraceView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\RefreshProgressViewModel.cs" />
-    <Compile Include="Views\RefreshProgressView.xaml.cs">
-      <DependentUpon>RefreshProgressView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\RefreshTraceView.xaml.cs">
-      <DependentUpon>RefreshTraceView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\RibbonView.xaml.cs">
-      <DependentUpon>RibbonView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\QueryParametersDialogView.xaml.cs">
-      <DependentUpon>QueryParametersDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\AutoSaveRecoverDialogView.xaml.cs">
-      <DependentUpon>AutoSaveRecoverDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SaveDialogView.xaml.cs">
-      <DependentUpon>SaveDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ServerTimesView.xaml.cs">
-      <DependentUpon>ServerTimesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\StatusBarView.xaml.cs">
-      <DependentUpon>StatusBarView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ucSpinner.xaml.cs">
-      <DependentUpon>ucSpinner.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\VertipaqAnalyzerDialogView.xaml.cs">
-      <DependentUpon>VertipaqAnalyzerDialogView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\VertiPaqAnalyzerView.xaml.cs">
-      <DependentUpon>VertiPaqAnalyzerView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\RequestInformationView.xaml.cs">
-      <DependentUpon>RequestInformationView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ViewAsDialogView.xaml.cs">
-      <DependentUpon>ViewAsDialogView.xaml</DependentUpon>
-    </Compile>
-    <Page Include="Controls\HotKeyEditorControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\StorageEngineTime.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Themes\TextBoxEx.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Properties\DesignTimeResources.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\DaxStudioResources.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\CompletionList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\DataGrid.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\FluentRibbon\DropDownButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\FluentRibbon\GalleryItem.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\FluentRibbon\Menu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\Styles\InsightWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\ListViewStyle.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\Styles\ToggleSwitchSmall.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\TraceWatcherStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\HighContrast.AvalonEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\HighContrast.DaxStudio.Colors.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Dark.Icons.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\HighContrast.DaxStudio.Theme.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Light.Icons.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\logo.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\MeasureExpressionEditorResources.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\MetadataIcons.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\DaxStudio.Button.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\ExpanderArrowStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\ModernWpf.Medium.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Theme\Dark.AvalonDock.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Dark.AvalonEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Dark.DaxStudio.Colors.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Dark.DaxStudio.Theme.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Light.AvalonDock.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Light.AvalonEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Light.DaxStudio.Colors.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\Light.DaxStudio.Theme.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\BrowseWorkspacesView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\DatabaseDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\BenchmarkServerFEView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\CaptureDiagnosticsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\CrashReportingBlockedDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\CustomTraceDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\GettingStartedView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MultipleQueriesDetectedDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\BenchmarkView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardExportStatusView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardChooseTablesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardCsvFolderView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardSqlConnBuilderView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardSqlConnStrView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardChooseTypeView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ExportDataWizard\ExportDataWizardView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\HelpWatermarkView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MeasureExpressionEditorView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\QueryBuilderView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\EvaluateAndLogTraceView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\CustomTraceView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\RefreshProgressView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\RefreshTraceView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\VertipaqAnalyzerDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\VertiPaqAnalyzerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\RequestInformationView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\ViewAsDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Resource Include="Images\TraceControls\play.png" />
-    <Resource Include="Resources\Styles\MetaDataPaneViewStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Resource>
-    <Resource Include="Resources\Styles\ScrollingVerticalTabs.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Resource>
-    <Page Include="Resources\ExpanderTemplates.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\AvalonDock.NavigatorWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\BusyPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\DaxStudio.RadioButton.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\DaxStudioDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\Styles\LabelSpinnerStyle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\AllServerQueriesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
-    </Page>
-    <Page Include="Views\DocumentView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
-    </Page>
-    <Page Include="Views\GotoLineDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\OptionsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\FindReplaceDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\HelpAboutView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\MetadataPaneView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\PowerBIPerformanceDataView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
-    </Page>
-    <Page Include="Views\QueryHistoryPaneView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\QueryParametersDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\AutoSaveRecoverDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\SaveDialogView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\StatusBarView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ucSpinner.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="RichTextBoxWatermarked.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\ConnectionDialogView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\DmvPaneView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\FunctionPaneView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\DocumentTabView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\OutputPaneView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\QueryPlanTraceView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\QueryResultsPaneView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\RibbonView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <!--<Page Include="Resources\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">-->
-    <Page Include="Resources\DesignTimeResources.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
-    </Page>
-    <Page Include="Views\ServerTimesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ShellView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include=".editorconfig" />
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-    <Compile Include="Events\CloseTraceWindowEvent.cs" />
-    <None Include="ApplicationInsights.config" />
-    <None Include="DaxStudio.UI.ruleset" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <AppDesigner Include="Properties\" />
-    <Page Include="Resources\Styles\DaxStudio.Spinner.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\Styles\DaxStudio.FluentRibbonStyles.xaml">
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme\DaxStudio.BaseStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj">
-      <Project>{DC91C987-2AEB-4F82-B8BA-3FF6A5614ED7}</Project>
-      <Name>DaxStudio.ADOTabular</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\AvalonDock.Themes.DaxStudio\DaxStudio.AvalonDock.Themes.csproj">
-      <Project>{b89d0c1b-90ab-4e59-a657-a95fd84d11f1}</Project>
-      <Name>DaxStudio.AvalonDock.Themes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DAXEditor\DaxStudio.DAXEditor.csproj">
-      <Project>{ee4788c1-dca6-465f-8049-28ceace6586f}</Project>
-      <Name>DaxStudio.DAXEditor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj">
-      <Project>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</Project>
-      <Name>DaxStudio.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Controls.DataGridFilter\DaxStudio.Controls.DataGridFilter.csproj">
-      <Project>{512fd53f-9ad1-46a1-a961-9fabdfad50c5}</Project>
-      <Name>DaxStudio.Controls.DataGridFilter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj">
-      <Project>{cd71ebc4-7cd8-47e9-854f-d295805efadd}</Project>
-      <Name>DaxStudio.Controls.PropertyGrid</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
-      <Project>{9CDCCC97-CA3B-4BDF-B062-DA0266387B76}</Project>
-      <Name>DaxStudio.Interfaces</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
-      <Project>{a7912abb-e3ad-45c4-a8a7-183828db300e}</Project>
-      <Name>DaxStudio.QueryTrace</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj">
-      <Project>{efe78597-d6f1-45f3-9cc5-a01a2d957bfa}</Project>
-      <Name>DaxStudio.SqlFormatter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UnitComboLib\DaxStudio.UnitComboLib.csproj">
-      <Project>{c8c325ad-d7ab-4e56-8a6b-7e8b11eb5443}</Project>
-      <Name>DaxStudio.UnitComboLib</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj" />
+    <ProjectReference Include="..\AvalonDock.Themes.DaxStudio\DaxStudio.AvalonDock.Themes.csproj" />
+    <ProjectReference Include="..\DAXEditor\DaxStudio.DAXEditor.csproj" />
+    <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
+    <ProjectReference Include="..\DaxStudio.Controls.DataGridFilter\DaxStudio.Controls.DataGridFilter.csproj" />
+    <ProjectReference Include="..\DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj" />
+    <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
+    <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />
+    <ProjectReference Include="..\DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj" />
+    <ProjectReference Include="..\UnitComboLib\DaxStudio.UnitComboLib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\DaxStudio.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\daxstudio-logo_32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\daxstudio-logo_250x250.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="daxstudio-logo_250x250.png" />
@@ -1535,21 +294,6 @@
   <ItemGroup>
     <Resource Include="Resources\daxstudio-logo_250x250_lighter.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see https://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
   <Target Name="ApplyAlias" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
     <ItemGroup>
       <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.Amo'">

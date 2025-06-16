@@ -10,6 +10,8 @@ ECHO DaxStudio.Standalone
 ECHO DaxStudio.ExcelAddin
 ECHO DaxStudio.Checker
 ECHO.
+ECHO ADOTabular
+ECHO DaxEditor
 ECHO DaxStudio.UI
 ECHO DaxStudio.Interfaces
 ECHO DaxStudio.Common
@@ -20,7 +22,10 @@ ECHO.
 ECHO.
 REM Ask the user if hes really sure to continue beyond this point XXXXXXXX
 set /p choice=Are you sure you want to continue (Y/N)?
-if not '%choice%'=='Y' Goto EndOfBatch
+if '%choice%' == 'Y' Goto Next
+else if '%choice%' == 'y' Goto Next
+else Goto EndOfBatch
+:Next
 REM Script does not continue unless user types 'Y' in upper case letter
 ECHO.
 ECHO XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -31,10 +36,15 @@ ECHO Removing vs settings folder with *.sou file
 ECHO.
 RMDIR /S /Q .vs
 
-ECHO Deleting BIN and OBJ Folders in DaxEditor
+ECHO Deleting BIN and OBJ Folders in src\ADOTabular
 ECHO.
 RMDIR /S /Q src\ADOTabular\bin
 RMDIR /S /Q src\ADOTabular\obj
+
+ECHO Deleting BIN and OBJ Folders in src\AvalonDock.Themes.DaxStudio
+ECHO.
+RMDIR /S /Q src\AvalonDock.Themes.DaxStudio\bin
+RMDIR /S /Q src\AvalonDock.Themes.DaxStudio\obj
 
 ECHO Deleting BIN and OBJ Folders in DaxEditor
 ECHO.
@@ -50,6 +60,11 @@ ECHO Deleting BIN and OBJ Folders in DaxStudio.Common
 ECHO.
 RMDIR /S /Q src\DaxStudio.Common\bin
 RMDIR /S /Q src\DaxStudio.Common\obj
+
+ECHO Deleting BIN and OBJ Folders in DaxStudio.CommandLine
+ECHO.
+RMDIR /S /Q src\DaxStudio.CommandLine\bin
+RMDIR /S /Q src\DaxStudio.CommandLine\obj
 
 ECHO Deleting BIN and OBJ Folders in DaxStudio.Controls.DataGridFilter
 ECHO.
