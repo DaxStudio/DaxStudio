@@ -149,11 +149,12 @@ namespace DaxStudio.QueryTrace
             {
                 // PowerPivot in Excel does not have direct query events, so skip it if makes it this far
                 if (eventClass == DaxStudioTraceEventClass.DirectQueryEnd) continue;
-
+                // PowerPivot in Excel does not have ExecutionMetrics events, so skip it if makes it this far
+                if (eventClass == DaxStudioTraceEventClass.ExecutionMetrics) continue;
                 var amoEventClass = (ExcelAmo.Microsoft.AnalysisServices.TraceEventClass)eventClass;
                 if (trace.Events.Find(amoEventClass) != null)
                     continue;
-
+                
                 xlAmo.TraceEvent trcEvent = TraceEventFactoryExcel.CreateTrace(amoEventClass);
                 trace.Events.Add(trcEvent);
             }
@@ -421,9 +422,15 @@ namespace DaxStudio.QueryTrace
                     if (_trace != null)
                     {
                         _trace.OnEvent -= OnTraceEventInternal;
-                        _trace?.Drop();
-                        _trace?.Dispose();
-                        _trace = null;
+                        try
+                        {
+                            _trace?.Drop();
+                            _trace?.Dispose();
+                        }
+                        finally
+                        {
+                            _trace = null;
+                        }
                     }
                     
                     _server?.Disconnect();
