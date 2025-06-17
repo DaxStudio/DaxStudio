@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>DAXEditor</RootNamespace>
     <SccProjectName>SAK</SccProjectName>
@@ -66,11 +66,11 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-	<ItemGroup>
-		<Compile Include="..\CommonAssemblyVersion.cs">
-			<Link>Properties\CommonAssemblyVersion.cs</Link>
-		</Compile>
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\CommonAssemblyVersion.cs">
+      <Link>Properties\CommonAssemblyVersion.cs</Link>
+    </Compile>
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\DAXEditor.Column.png" />
     <Resource Include="Resources\DAXEditor.Function.png" />
@@ -84,23 +84,14 @@
     <ProjectReference Include="..\UnitComboLib\DaxStudio.UnitComboLib.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AvalonEdit">
-      <Version>6.3.1.120</Version>
-    </PackageReference>
+    <PackageReference Include="AvalonEdit" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>9.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="ModernWpfUI">
-      <Version>0.9.6</Version>
-    </PackageReference>
-    <PackageReference Include="Mono.Cecil">
-      <Version>0.11.6</Version>
-    </PackageReference>
-    <PackageReference Include="SharpDevelopCodeCompletion">
-      <Version>1.33.2</Version>
-    </PackageReference>
+    <PackageReference Include="ModernWpfUI" />
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="SharpDevelopCodeCompletion" />
   </ItemGroup>
   <PropertyGroup>
     <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>

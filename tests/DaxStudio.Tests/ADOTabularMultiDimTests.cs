@@ -214,7 +214,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
 
             Assert.AreEqual(33, tabs.Count);
-            Assert.AreEqual(41, tabs["Customer"].Columns.Count()); // excludes internal rowcount column
+            Assert.AreEqual(41, tabs["Customer"].Columns.Count); // excludes internal rowcount column
             Assert.AreEqual(0, tabs["Customer"].Columns[2].DistinctValues);
 
             // Check TOM objects

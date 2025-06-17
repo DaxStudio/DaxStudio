@@ -207,7 +207,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
             
             Assert.AreEqual(4, tabs.Count);
-            Assert.AreEqual(8, tabs["Sales"].Columns.Count()); // excludes internal rowcount column
+            Assert.AreEqual(8, tabs["Sales"].Columns.Count); // excludes internal rowcount column
             Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
 
             // Check TOM objects
@@ -247,7 +247,7 @@ namespace DaxStudio.Tests
                 var tabs = new ADOTabularTableCollection(connection, m);
 
                 Assert.AreEqual(4, tabs.Count);
-                Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+                Assert.AreEqual(8, tabs["Sales"].Columns.Count);
                 Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
             }
 
@@ -257,7 +257,7 @@ namespace DaxStudio.Tests
                 var tabs = new ADOTabularTableCollection(connection, m);
 
                 Assert.AreEqual(4, tabs.Count);
-                Assert.AreEqual(8, tabs["Sales"].Columns.Count());
+                Assert.AreEqual(8, tabs["Sales"].Columns.Count);
                 Assert.AreEqual(0, tabs["Sales"].Columns[2].DistinctValues);
             }
         }
@@ -287,7 +287,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
 
             Assert.AreEqual(13, tabs.Count, "Wrong number of tables in database");
-            Assert.AreEqual(2, tabs["ProductCategory"].Columns.Count(), "Wrong Column Count in ProductCategory");
+            Assert.AreEqual(2, tabs["ProductCategory"].Columns.Count, "Wrong Column Count in ProductCategory");
             Assert.AreEqual(8, tabs["ProductCategory"].Columns["ProductCategory"].DistinctValues);
         }
 
@@ -542,32 +542,33 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\RelationshipCsdl.xml");
-            var tabs = new ADOTabularTableCollection(connection, m);
+            using (System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\RelationshipCsdl.xml"))
+            {
+                var tabs = new ADOTabularTableCollection(connection, m);
 
-            v.GenerateTablesFromXmlReader(tabs, xr);
+                v.GenerateTablesFromXmlReader(tabs, xr);
 
-            Assert.AreEqual(6, tabs.Count, "Table count is correct");
-            Assert.AreEqual(1, tabs["Customer"].Relationships.Count, "Customer Table has incorrect relationship count");
-            Assert.AreEqual(0, tabs["Accounts"].Relationships.Count, "Accounts Table has incorrect relationship count");
-            Assert.AreEqual(1, tabs["Customer Geography"].Relationships.Count, "Customer Geography Table has incorrect relationship count");
-            Assert.AreEqual("Both", tabs["Customer Geography"].Relationships[0].CrossFilterDirection, "Customer Geography Table has a Both crossfilter relationship");
-            Assert.AreEqual(1, tabs["Geography Population"].Relationships.Count, "Geography Table has incorrect relationship count");
-            Assert.AreEqual(2, tabs["Customer Accounts"].Relationships.Count, "Customer Accounts Table has incorrect relationship count");
-            Assert.AreEqual("Both", tabs["Customer Accounts"].Relationships[0].CrossFilterDirection, "Customer Accounts Table has a Both crossfilter on relationship 0");
-            Assert.AreEqual("", tabs["Customer Accounts"].Relationships[1].CrossFilterDirection, "Customer Accounts Table does not have a Both crossfilter on relationship 1");
+                Assert.AreEqual(6, tabs.Count, "Table count is correct");
+                Assert.AreEqual(1, tabs["Customer"].Relationships.Count, "Customer Table has incorrect relationship count");
+                Assert.AreEqual(0, tabs["Accounts"].Relationships.Count, "Accounts Table has incorrect relationship count");
+                Assert.AreEqual(1, tabs["Customer Geography"].Relationships.Count, "Customer Geography Table has incorrect relationship count");
+                Assert.AreEqual("Both", tabs["Customer Geography"].Relationships[0].CrossFilterDirection, "Customer Geography Table has a Both crossfilter relationship");
+                Assert.AreEqual(1, tabs["Geography Population"].Relationships.Count, "Geography Table has incorrect relationship count");
+                Assert.AreEqual(2, tabs["Customer Accounts"].Relationships.Count, "Customer Accounts Table has incorrect relationship count");
+                Assert.AreEqual("Both", tabs["Customer Accounts"].Relationships[0].CrossFilterDirection, "Customer Accounts Table has a Both crossfilter on relationship 0");
+                Assert.AreEqual("", tabs["Customer Accounts"].Relationships[1].CrossFilterDirection, "Customer Accounts Table does not have a Both crossfilter on relationship 1");
 
-            var tabCust = tabs["Customer"];
-            var relCustToCustGeog = tabCust.Relationships[0];
+                var tabCust = tabs["Customer"];
+                var relCustToCustGeog = tabCust.Relationships[0];
 
-            //var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
+                //var col = tabCust.Columns.GetByPropertyRef("Customer_Geography_ID2");
 
-            Assert.AreEqual("", relCustToCustGeog.CrossFilterDirection);
-            Assert.AreEqual("Customer_Geography_ID2", relCustToCustGeog.FromColumn, "Incorrect from column");
-            Assert.AreEqual("*", relCustToCustGeog.FromColumnMultiplicity);
-            Assert.AreEqual("Customer_Geography_ID", relCustToCustGeog.ToColumn,"Incorrect to column");
-            Assert.AreEqual("0..1", relCustToCustGeog.ToColumnMultiplicity );
-
+                Assert.AreEqual("", relCustToCustGeog.CrossFilterDirection);
+                Assert.AreEqual("Customer_Geography_ID2", relCustToCustGeog.FromColumn, "Incorrect from column");
+                Assert.AreEqual("*", relCustToCustGeog.FromColumnMultiplicity);
+                Assert.AreEqual("Customer_Geography_ID", relCustToCustGeog.ToColumn, "Incorrect to column");
+                Assert.AreEqual("0..1", relCustToCustGeog.ToColumnMultiplicity);
+            }
         }
 
 
@@ -656,7 +657,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
 
             Assert.AreEqual(15, tabs.Count);
-            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
+            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count);
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
             Assert.IsFalse(h.IsVisible);
@@ -677,7 +678,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
 
             Assert.AreEqual(15, tabs.Count);
-            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
+            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count);
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var k = tabs["Sales Territory"].Columns["Total Current Quarter Sales Performance"] as ADOTabularKpi;
             Assert.AreEqual("Total Current Quarter Sales Performance", k.Caption);

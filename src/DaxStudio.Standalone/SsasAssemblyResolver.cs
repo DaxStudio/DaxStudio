@@ -53,7 +53,10 @@ namespace DaxStudio.Standalone
 
         private Assembly AddAssemblyToCache(string name)
         {
-            if (_assemblies.ContainsKey(name)) return _assemblies[name];
+
+            _assemblies.TryGetValue(name, out Assembly value);            
+            if (value != null) return value;
+
             if (name.StartsWith("Microsoft.AnalysisServices,", StringComparison.InvariantCultureIgnoreCase) 
                 || name.StartsWith("Microsoft.AnalysisServices.AdomdClient,", StringComparison.InvariantCultureIgnoreCase) 
                 || name.StartsWith("Microsoft.AnalysisServices.Core,", StringComparison.InvariantCultureIgnoreCase))

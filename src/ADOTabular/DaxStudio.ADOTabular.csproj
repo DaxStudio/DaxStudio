@@ -8,8 +8,8 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
-	  <VersionPrefix>1.7.0</VersionPrefix>
-	  <AssemblyName>DaxStudio.ADOTabular</AssemblyName>
+    <VersionPrefix>1.7.0</VersionPrefix>
+    <AssemblyName>DaxStudio.ADOTabular</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\bin\Debug\</OutputPath>
@@ -73,38 +73,20 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="Dax.ViewModel">
-      <Version>1.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="Dax.Vpax">
-      <Version>1.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.98.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.98.0.3</Version>
-    </PackageReference>
+    <PackageReference Include="Dax.Model.Extractor" />
+    <PackageReference Include="Dax.ViewModel" />
+    <PackageReference Include="Dax.ViewVpaExport" />
+    <PackageReference Include="Dax.Vpax" />
+    <PackageReference Include="Microsoft.AnalysisServices" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>9.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Serilog">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Buffers">
-      <Version>4.6.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.ValueTuple">
-      <Version>4.6.1</Version>
-    </PackageReference>
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="System.Buffers" />
+    <PackageReference Include="System.Data.DataSetExtensions" />
+    <PackageReference Include="System.Data.OleDb" />
+    <PackageReference Include="System.ValueTuple" />
   </ItemGroup>
 </Project>

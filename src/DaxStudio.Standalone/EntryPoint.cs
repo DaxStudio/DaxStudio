@@ -425,27 +425,10 @@ namespace DaxStudio.Standalone
             
         }
 
-
         private static void AddResourceDictionary(this Application app, string src)
         {
             app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(src, UriKind.RelativeOrAbsolute) });
         }
-
-        private static void ProcessMessage(NamedPipeServerStream pipe, Application app)
-        {
-            var bf = new BinaryFormatter();
-            var inargs = bf.Deserialize(pipe) as string[];
-            app.ReadCommandLineArgs(inargs);
-            if (!string.IsNullOrEmpty(app.Args().FileName))
-            {
-                _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
-            }
-            else
-            {
-                _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
-            }
-        }
-
 
     }
 }

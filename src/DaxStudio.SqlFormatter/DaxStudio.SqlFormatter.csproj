@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
     <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
     <Company>DaxStudio.org</Company>
@@ -25,8 +25,4 @@
 			<Link>Properties\CommonAssemblyVersion.cs</Link>
 		</Compile>
 	</ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
 </Project>

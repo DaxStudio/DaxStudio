@@ -152,6 +152,11 @@ namespace DaxStudio.UI.Model
         {
             // do nothing
         }
+
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+            
+        }
     }
 
 }

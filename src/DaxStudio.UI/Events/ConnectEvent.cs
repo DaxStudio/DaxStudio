@@ -1,7 +1,7 @@
 ﻿using ADOTabular.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
-using Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.AnalysisServices;
 using System;
 using System.Collections.Generic;
 using System.Text;

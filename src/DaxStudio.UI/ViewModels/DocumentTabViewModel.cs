@@ -21,7 +21,7 @@ using AvalonDock.Controls;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
 using System.Windows.Controls;
-using Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.AnalysisServices;
 using DaxStudio.Common.Extensions;
 using DaxStudio.UI.Utils;
 
@@ -170,7 +170,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
                 //ActiveDocument = newItem as DocumentViewModel;
                 var docs = GetChildren();
-                if (docs.Count() == 0 && newItem is DocumentViewModel doc && doc.IsClosing ) { return; }
+                if (!docs.Any() && newItem is DocumentViewModel doc && doc.IsClosing ) { return; }
                 docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
 

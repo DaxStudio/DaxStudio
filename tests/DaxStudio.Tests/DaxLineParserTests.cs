@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.UI.Utils;
-using Castle.Components.DictionaryAdapter.Xml;
+//using Castle.Components.DictionaryAdapter.Xml;
 
 namespace DaxStudio.Tests
 {

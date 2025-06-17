@@ -19,7 +19,7 @@ using System.Windows.Input;
 //using DaxStudio.Controls.PropertyGrid;
 using System.Threading;
 using DaxStudio.UI.Model;
-using Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.AnalysisServices;
 using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
@@ -391,7 +391,7 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetDirectQueryMode()
         {
-            if (string.IsNullOrEmpty(DirectQueryMode) || DirectQueryMode.ToLower() == "default")
+            if (string.IsNullOrEmpty(DirectQueryMode) || string.Equals(DirectQueryMode, "default", StringComparison.OrdinalIgnoreCase))
                 return string.Empty;
             else
                 return $"DirectQueryMode={DirectQueryMode};";
@@ -453,7 +453,7 @@ namespace DaxStudio.UI.ViewModels
             
         }
 
-        private object GetEffectiveUserName()
+        private string GetEffectiveUserName()
         {
             if (string.IsNullOrWhiteSpace(EffectiveUserName))
                 return string.Empty;
@@ -744,7 +744,7 @@ namespace DaxStudio.UI.ViewModels
                 try {
                     string text = Convert.ToString(e.DataObject.GetData(DataFormats.Text));
 
-                    if (text.Contains(";")) {
+                    if (text.Contains(';')) {
                         var msg = "Detected paste of a string with semi-colons, attempting to parse out the \"Data Source\" and \"Initial Catalog\" properties";
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted), msg);
                         _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, msg));
@@ -787,7 +787,7 @@ namespace DaxStudio.UI.ViewModels
                 return;
             }
 
-            if (DataSource.Contains(";"))
+            if (DataSource.Contains(';'))
             {
                 ShowConnectionWarning = true;
                 ConnectionWarning = "The Server Name cannot contain semi-colon(;) characters";

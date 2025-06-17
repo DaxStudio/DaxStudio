@@ -14,6 +14,11 @@ using ADOTabular.Utils;
 using ADOTabular.Interfaces;
 using System.Diagnostics;
 using System.Threading.Tasks;
+#if NET472
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
+#else
+using Adomd = Microsoft.AnalysisServices;
+#endif
 
 namespace ADOTabular
 {
@@ -39,13 +44,13 @@ namespace ADOTabular
             : this(connectionString, connectionType, showHidden, ADOTabularMetadataDiscovery.Csdl)
         { }
 
-        public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken
+        public Adomd.AccessToken AccessToken
         {
             get => _adomdConn.AccessToken;
             set => _adomdConn.AccessToken = value;
         }
 
-        public Func<Microsoft.AnalysisServices.AdomdClient.AccessToken, Microsoft.AnalysisServices.AdomdClient.AccessToken> OnAccessTokenExpired
+        public Func<Adomd.AccessToken, Adomd.AccessToken> OnAccessTokenExpired
         {
             get => _adomdConn.OnAccessTokenExpired;
             set => _adomdConn.OnAccessTokenExpired = value;
@@ -1026,7 +1031,7 @@ namespace ADOTabular
                 _dmvCollection = this._dmvCollection,
                 ServerType = this.ServerType
             };
-            if (!this.AccessToken.Equals(default(Microsoft.AnalysisServices.AdomdClient.AccessToken)))
+            if (!this.AccessToken.Equals(default(Adomd.AccessToken)))
             {
                 cnn.AccessToken = this.AccessToken;
                 cnn.OnAccessTokenExpired = OnAccessTokenExpired;

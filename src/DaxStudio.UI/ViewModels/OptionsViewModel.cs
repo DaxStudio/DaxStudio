@@ -1942,7 +1942,7 @@ namespace DaxStudio.UI.ViewModels
 
         private Version _dismissedVersion = new Version();
         [DataMember, DefaultValue("0.0.0.0")]
-        [JsonConverter(typeof(VersionConverter))]
+        [JsonConverter(typeof(JsonConverters.VersionConverter))]
         public Version DismissedVersion
         {
             get => _dismissedVersion;

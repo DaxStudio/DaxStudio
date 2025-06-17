@@ -1,5 +1,9 @@
 ﻿using DaxStudio.Common;
-using Microsoft.AnalysisServices.AdomdClient;
+#if NET472
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
+#else
+using Adomd = Microsoft.AnalysisServices;
+#endif
 using Tom = Microsoft.AnalysisServices;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
@@ -17,6 +21,7 @@ using System.Windows.Interop;
 using System.Windows;
 using System.Windows.Controls;
 using DaxStudio.Common.Interfaces;
+using static System.Net.WebRequestMethods;
 
 namespace DaxStudio.Common
 {
@@ -39,7 +44,8 @@ namespace DaxStudio.Common
         //private static string commonInstance = "https://login.microsoftonline.com/common";
         private static string scope = "organizations";
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
-        private static IEnumerable<string> scopes = new List<string>() { "https://analysis.windows.net/powerbi/api/.default" };
+        //private static IEnumerable<string> scopes = new List<string>() { "https://analysis.windows.net/powerbi/api/.default"};
+        private static IEnumerable<string> scopes = new List<string>() { "https://*.asazure.windows.net/.default" };
         public static async Task<List<Workspace>> GetWorkspacesAsync(AuthenticationResult token)
         {
             var workspaces = new List<Workspace>();
@@ -209,12 +215,14 @@ namespace DaxStudio.Common
 
         private struct TokenDetails
         {
-            public TokenDetails(AccessToken token)
-            {
-                AccessToken = token.Token;
-                ExpiresOn = token.ExpirationTime;
-                UserContext = token.UserContext;
-            }
+
+            //public TokenDetails(Adomd.AccessToken token)
+            //{
+            //    AccessToken = token.Token;
+            //    ExpiresOn = token.ExpirationTime;
+            //    UserContext = token.UserContext;
+            //}
+
             public TokenDetails(Tom.AccessToken token)
             {
                 AccessToken = token.Token;
@@ -234,13 +242,13 @@ namespace DaxStudio.Common
             return newToken;
         }
 
-        public static AccessToken RefreshToken(AccessToken token)
-        { 
-            var details = new TokenDetails(token);
-            var authResult = RefreshTokenInternal(details);
-            AccessToken newToken = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult?.Account?.Username??string.Empty);
-            return newToken;
-        }
+        //public static Adomd.AccessToken RefreshToken(Adomd.AccessToken token)
+        //{ 
+        //    var details = new TokenDetails(token);
+        //    var authResult = RefreshTokenInternal(details);
+        //    Adomd.AccessToken newToken = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult?.Account?.Username??string.Empty);
+        //    return newToken;
+        //}
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "<Pending>")]
         private static AuthenticationResult RefreshTokenInternal(TokenDetails token)

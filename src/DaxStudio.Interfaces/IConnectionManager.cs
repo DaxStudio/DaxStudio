@@ -3,7 +3,11 @@ using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
 using DaxStudio.Common.Enums;
 using TOM = Microsoft.AnalysisServices;
+#if NET472
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
+#else
+using Adomd = Microsoft.AnalysisServices;
+#endif
 using System.Collections.Generic;
 using System.Data;
 
@@ -29,7 +33,7 @@ namespace DaxStudio.Interfaces
         ADOTabularDatabase Database { get; }
         string SelectedModelName { get; }
 
-        ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string query, List<Adomd.AdomdParameter> paramList);
+        ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReader(string query, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList);
         DataTable ExecuteDaxQueryDataTable(string query);
         ServerType ServerType { get; }
         Adomd.AccessToken AccessToken { get; }

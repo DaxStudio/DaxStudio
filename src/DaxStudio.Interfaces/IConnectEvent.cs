@@ -1,5 +1,10 @@
 ﻿using ADOTabular.Enums;
+#if NET472
 using Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices;
+#endif
+
 using System;
 
 namespace DaxStudio.Interfaces

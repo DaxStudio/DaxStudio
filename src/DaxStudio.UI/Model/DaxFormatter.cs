@@ -23,11 +23,8 @@ namespace DaxStudio.UI.Model
         public static string SHA256(string input)
         {
             if (input == null) return "";
-
-            var hasher = new SHA256Cng();
             var sb = new StringBuilder();
-
-            byte[] hashedBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(input), 0, Encoding.UTF8.GetByteCount(input));
+            byte[] hashedBytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(input));
 
             foreach (var b in hashedBytes)
             {

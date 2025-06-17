@@ -1,19 +1,13 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.Interfaces;
-using DaxStudio.Common;
-using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
-using Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.AnalysisServices;
 using Serilog;
-using System;
 using System.Data;
-using System.Data.Common;
-using System.Data.OleDb;
 using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.UIStubs

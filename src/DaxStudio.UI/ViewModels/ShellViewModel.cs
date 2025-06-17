@@ -1,33 +1,33 @@
-using System;
-using System.Reflection;
 using Caliburn.Micro;
-using System.ComponentModel.Composition;
+using DaxStudio.Common;
+using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Utils;
-using DaxStudio.UI.Model;
-using Serilog;
-using System.Windows;
-using DaxStudio.Common;
-using System.Timers;
-using System.Linq;
-using System.Collections.Generic;
-using System.Security.Principal;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
-using System.Windows.Media;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Windows.Input;
+using DaxStudio.UI.Model;
+using DaxStudio.UI.Utils;
+using DaxStudio.UI.Views;
+using GongSolutions.Wpf.DragDrop;
+using Newtonsoft.Json;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
-using DaxStudio.UI.Views;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
-using common = DaxStudio.Common;
-using DaxStudio.Common.Extensions;
-using GongSolutions.Wpf.DragDrop;
-using Windows.ApplicationModel.VoiceCommands;
+using System.Windows.Media;
+using Common = DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -637,34 +637,17 @@ namespace DaxStudio.UI.ViewModels
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-                 
-            
+
+
             // If our message
-            if (msg == common.NativeMethods.WM_COPYDATA)
+            if (msg == Common.NativeMethods.WM_COPYDATA)
             {
-                // msg.LParam contains a pointer to the COPYDATASTRUCT struct
-                common.NativeMethods.COPYDATASTRUCT dataStruct =
-                    (common.NativeMethods.COPYDATASTRUCT)Marshal.PtrToStructure(
-                    lParam, typeof(common.NativeMethods.COPYDATASTRUCT));
-
-                // Create a byte array to hold the data
-                byte[] bytes = new byte[dataStruct.cbData];
-
-                // Make a copy of the original data referenced by 
-                // the COPYDATASTRUCT struct
-                Marshal.Copy(dataStruct.lpData, bytes, 0,
-                    dataStruct.cbData);
-                // Deserialize the data back into a string
-                MemoryStream stream = new MemoryStream(bytes);
-                BinaryFormatter b = new BinaryFormatter();
-
-                // This is the message sent from the other application
-                string[] rawmessage = (string[])b.Deserialize(stream);
-
-                // do something with our message
                 var app = Application.Current;
-                app.ReadCommandLineArgs(rawmessage);
 
+                string[] rawmessage = WMHelper.ReceiveCopyDataMessage(lParam);
+                    
+                app.ReadCommandLineArgs(rawmessage);
+                
                 _host.Proxy.Port = app.Args().Port;
 
                 if (!string.IsNullOrEmpty(app.Args().FileName))
@@ -755,6 +738,11 @@ namespace DaxStudio.UI.ViewModels
             // TODO we should look at looping over all files, but currently this does not work,
             //      it appears that the second file starts to open before the first has finished opening 
             //      and we endup with errors or incorrectly loaded files.
+        }
+
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+            
         }
     }
 

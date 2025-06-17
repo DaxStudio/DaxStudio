@@ -165,7 +165,7 @@ namespace DaxStudio.UI.Utils
                 }
             }
             
-            Log.Verbose("Proxy: {proxyAddress}", _proxy.GetProxy(new Uri(uri)).AbsolutePath);
+            Log.Verbose("Proxy: {proxyAddress}", _proxy.GetProxy(new Uri(uri))?.AbsolutePath??string.Empty);
             return _proxy;
         }
 

@@ -230,54 +230,6 @@
     This section specifies references for the project.
   -->
   <ItemGroup>
-    <Reference Include="Microsoft.AnalysisServices, Version=19.98.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.19.98.0.3\lib\net472\Microsoft.AnalysisServices.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.98.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.19.98.0.3\lib\net472\Microsoft.AnalysisServices.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.SPClient.Interfaces, Version=19.98.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.19.98.0.3\lib\net472\Microsoft.AnalysisServices.SPClient.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.98.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.19.98.0.3\lib\net472\Microsoft.AnalysisServices.Tabular.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=19.98.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AnalysisServices.19.98.0.3\lib\net472\Microsoft.AnalysisServices.Tabular.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Owin, Version=1.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Owin.1.2.2\lib\net45\Microsoft.AspNet.SignalR.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.6, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.6\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Bcl.TimeProvider, Version=9.0.0.6, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Bcl.TimeProvider.9.0.6\lib\net462\Microsoft.Bcl.TimeProvider.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Excel.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.AdomdClient.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Excel.Amo, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Unofficial.Excel.Amo.11.0.2832.12\lib\net40\Microsoft.Excel.Amo.dll</HintPath>
-      <Aliases>ExcelAmo</Aliases>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Identity.Client, Version=4.72.1.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Identity.Client.4.72.1\lib\net472\Microsoft.Identity.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Identity.Client.Broker, Version=4.72.1.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Identity.Client.Broker.4.72.1\lib\net462\Microsoft.Identity.Client.Broker.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Identity.Client.NativeInterop, Version=0.19.0.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Identity.Client.NativeInterop.0.19.0\lib\net461\Microsoft.Identity.Client.NativeInterop.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.IdentityModel.Abstractions, Version=8.12.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.IdentityModel.Abstractions.8.12.0\lib\net472\Microsoft.IdentityModel.Abstractions.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -287,71 +239,20 @@
     <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.4.2.2\lib\net45\Microsoft.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Diagnostics, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Diagnostics.4.2.2\lib\net45\Microsoft.Owin.Diagnostics.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.HttpListener, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.4.2.2\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Hosting, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Hosting.4.2.2\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.4.2.2\lib\net45\Microsoft.Owin.Security.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json.Bson, Version=1.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.Bson.1.0.3\lib\net45\Newtonsoft.Json.Bson.dll</HintPath>
-    </Reference>
     <Reference Include="Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Polly, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Polly.8.6.0\lib\net472\Polly.dll</HintPath>
-    </Reference>
-    <Reference Include="Polly.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Polly.Core.8.6.0\lib\net472\Polly.Core.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Serilog, Version=4.3.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.4.3.0\lib\net471\Serilog.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Settings.AppSettings, Version=3.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Settings.AppSettings.3.0.0\lib\net462\Serilog.Settings.AppSettings.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.EventLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.EventLog.4.0.0\lib\net462\Serilog.Sinks.EventLog.dll</HintPath>
-    </Reference>
-    <Reference Include="Serilog.Sinks.File, Version=7.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.Sinks.File.7.0.0\lib\net471\Serilog.Sinks.File.dll</HintPath>
-    </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
-    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=9.0.0.6, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Diagnostics.DiagnosticSource.9.0.6\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -361,28 +262,16 @@
       <HintPath>..\..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
-    <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.6.0.0\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reflection, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reflection.4.3.0\lib\net462\System.Reflection.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Runtime.Extensions.4.3.1\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -394,18 +283,6 @@
       <HintPath>..\..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="System.Threading.Channels, Version=9.0.0.6, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Threading.Channels.9.0.6\lib\net462\System.Threading.Channels.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Threading.Tasks.Extensions.4.6.3\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http, Version=5.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Core.5.3.0\lib\net45\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.Owin, Version=5.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Owin.5.3.0\lib\net45\System.Web.Http.Owin.dll</HintPath>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
@@ -660,4 +537,80 @@
   <Import Project="..\..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
   <Import Project="..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
   <Import Project="..\..\packages\Serilog.4.3.0\build\Serilog.targets" Condition="Exists('..\..\packages\Serilog.4.3.0\build\Serilog.targets')" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AnalysisServices" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Core" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Owin" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Owin" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.OwinSelfHost" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" />
+    <PackageReference Include="Microsoft.Identity.Client.NativeInterop" />
+    <PackageReference Include="Microsoft.IdentityModel.Abstractions" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" />
+    <PackageReference Include="Microsoft.Owin" />
+    <PackageReference Include="Microsoft.Owin.Diagnostics" />
+    <PackageReference Include="Microsoft.Owin.Host.HttpListener" />
+    <PackageReference Include="Microsoft.Owin.Hosting" />
+    <PackageReference Include="Microsoft.Owin.Security" />
+    <PackageReference Include="Microsoft.Owin.SelfHost" />
+    <PackageReference Include="NETStandard.Library" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json.Bson" />
+    <PackageReference Include="Owin" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Polly.Core" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Settings.AppSettings" />
+    <PackageReference Include="Serilog.Sinks.EventLog" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="System.Buffers" />
+    <PackageReference Include="System.Collections" />
+    <PackageReference Include="System.Collections.Concurrent" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.Diagnostics.Debug" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Diagnostics.Tools" />
+    <PackageReference Include="System.Globalization" />
+    <PackageReference Include="System.IO" />
+    <PackageReference Include="System.IO.Compression" />
+    <PackageReference Include="System.Linq" />
+    <PackageReference Include="System.Linq.Expressions" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Net.Primitives" />
+    <PackageReference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.ObjectModel" />
+    <PackageReference Include="System.Reflection" />
+    <PackageReference Include="System.Reflection.Extensions" />
+    <PackageReference Include="System.Reflection.Primitives" />
+    <PackageReference Include="System.Resources.ResourceManager" />
+    <PackageReference Include="System.Runtime" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+    <PackageReference Include="System.Runtime.Extensions" />
+    <PackageReference Include="System.Runtime.InteropServices" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Runtime.Numerics" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" />
+    <PackageReference Include="System.Security.Cryptography.Encoding" />
+    <PackageReference Include="System.Security.Cryptography.Primitives" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" />
+    <PackageReference Include="System.Text.Encoding" />
+    <PackageReference Include="System.Text.Encoding.Extensions" />
+    <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="System.Threading" />
+    <PackageReference Include="System.Threading.Channels" />
+    <PackageReference Include="System.Threading.Tasks" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="System.ValueTuple" />
+    <PackageReference Include="System.Xml.ReaderWriter" />
+    <PackageReference Include="System.Xml.XDocument" />
+	<PackageReference Include="Unofficial.Excel.Amo" >
+      <Aliases>ExcelAmo</Aliases>
+	</PackageReference>
+  </ItemGroup>
 </Project>

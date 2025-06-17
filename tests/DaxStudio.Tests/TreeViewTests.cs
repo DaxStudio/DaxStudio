@@ -189,7 +189,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual("QTD Folder", folder.Name);
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Internet Current Quarter Margin") as TreeViewColumn;
-            Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
+            Assert.IsInstanceOfType<TreeViewColumn>(col);
             if (col != null) Assert.AreEqual(MetadataImages.Measure, col.MetadataImage);
         }
 

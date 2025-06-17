@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
-using Windows.Storage.Search;
+//using Windows.Storage.Search;
 
 namespace DaxStudio.UI.ViewModels
 {

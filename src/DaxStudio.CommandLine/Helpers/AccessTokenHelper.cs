@@ -1,7 +1,7 @@
 ﻿using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
-using Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.AnalysisServices;
 using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Helpers

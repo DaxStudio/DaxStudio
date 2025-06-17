@@ -21,6 +21,7 @@ using System.Xml.XPath;
 using System.IO;
 using System.Data.OleDb;
 using TOM = Microsoft.AnalysisServices;
+using Adomd = Microsoft.AnalysisServices;
 using System.Xml;
 using ADOTabular.Interfaces;
 using DaxStudio.Common;
@@ -1083,7 +1084,7 @@ namespace DaxStudio.UI.Model
 
         }
 
-        private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
+        private Adomd.AccessToken OnAccessTokenExpired(Adomd.AccessToken token)
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
             var newToken = PbiServiceHelper.RefreshToken(token);
@@ -1417,7 +1418,7 @@ namespace DaxStudio.UI.Model
 
         }
 
-        public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
+        public Adomd.AccessToken AccessToken { get => _connection.AccessToken; }
 
     }
 

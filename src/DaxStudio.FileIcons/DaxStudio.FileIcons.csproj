@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
   </PropertyGroup>
@@ -20,10 +20,6 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Cmd Only\</OutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>

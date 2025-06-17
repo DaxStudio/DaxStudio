@@ -21,10 +21,8 @@ using DaxStudio.Common.Enums;
 using DaxStudio.Common;
 using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
-using System.Windows;
-using Windows.UI.Core;
 using Fluent;
-using Microsoft.PowerBI.Api.Models;
+
 
 namespace DaxStudio.UI.ViewModels
 {

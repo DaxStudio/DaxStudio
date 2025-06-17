@@ -1,19 +1,24 @@
 ﻿using ADOTabular.Enums;
-using Microsoft.AnalysisServices.AdomdClient;
+
 using System;
 using System.Data;
 using System.Threading;
+#if NET472
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+using Adomd = Microsoft.AnalysisServices;
+#endif
 
 namespace ADOTabular.AdomdClientWrappers
 {
     public sealed class AdomdConnection : IDisposable
     {
         private readonly AdomdType _type;
-        private Adomd.AdomdConnection _conn;
+        private Microsoft.AnalysisServices.AdomdClient.AdomdConnection _conn;
 
         private readonly object rowsetLock = new object();
-        public AdomdConnection(Adomd.AdomdConnection connection)
+        public AdomdConnection(Microsoft.AnalysisServices.AdomdClient.AdomdConnection connection)
         {
             _type = AdomdType.AnalysisServices;
             _conn = connection;
@@ -21,11 +26,11 @@ namespace ADOTabular.AdomdClientWrappers
 
         public AdomdConnection(string connectionString, AdomdType type)
         {
-            _conn = new Adomd.AdomdConnection(connectionString);
+            _conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(connectionString);
         }
 
-        public AccessToken AccessToken { get => _conn.AccessToken; set => _conn.AccessToken = value; }
-        public Func<AccessToken, AccessToken> OnAccessTokenExpired { get => _conn.OnAccessTokenExpired; set => _conn.OnAccessTokenExpired = value; }
+        public Adomd.AccessToken AccessToken { get => _conn.AccessToken; set => _conn.AccessToken = value; }
+        public Func<Adomd.AccessToken, Adomd.AccessToken> OnAccessTokenExpired { get => _conn.OnAccessTokenExpired; set => _conn.OnAccessTokenExpired = value; }
 
         internal AdomdType Type
         {
@@ -131,13 +136,13 @@ namespace ADOTabular.AdomdClientWrappers
 
         public DataSet GetSchemaDataSet(string schemaName, AdomdRestrictionCollection restrictions, bool throwOnInlineErrors)
         {
-            Adomd.AdomdRestrictionCollection coll = new Adomd.AdomdRestrictionCollection();
+            Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection coll = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
             if (restrictions != null)
             {
 
                 foreach (AdomdClientWrappers.AdomdRestriction res in restrictions)
                 {
-                    coll.Add(new Adomd.AdomdRestriction(res.Name, res.Value));
+                    coll.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction(res.Name, res.Value));
                 }
             }
             if (_conn.State != ConnectionState.Open)

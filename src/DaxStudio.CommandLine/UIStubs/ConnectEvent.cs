@@ -1,8 +1,6 @@
 ﻿using ADOTabular.Enums;
 using DaxStudio.Interfaces;
-using Microsoft.AnalysisServices.AdomdClient;
-using System;
-
+using Microsoft.AnalysisServices;
 
 namespace DaxStudio.CommandLine.UIStubs
 {

@@ -60,7 +60,7 @@ using Dax.Model.Extractor;
 using Dax.Vpax.Obfuscator.Common;
 using Dax.Vpax.Obfuscator;
 using DaxStudio.Common.Extensions;
-using Adomd = Microsoft.AnalysisServices.AdomdClient;
+using Adomd = Microsoft.AnalysisServices;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -4461,13 +4461,13 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveable 
         public FileIcons Icon { get {
 
-                return !IsDiskFileName || Path.GetExtension(FileName).ToLower(System.Globalization.CultureInfo.InvariantCulture) == ".dax" ? FileIcons.Dax : FileIcons.Other; } }
+                return !IsDiskFileName || string.Equals(Path.GetExtension(FileName), ".dax", StringComparison.InvariantCultureIgnoreCase) ? FileIcons.Dax : FileIcons.Other; } }
 
         public string ImageResource
         {
             get
             {
-                return !IsDiskFileName || Path.GetExtension(FileName).ToLower(System.Globalization.CultureInfo.InvariantCulture) == ".dax" ? "daxDrawingImage" : "fileDrawingImage";
+                return !IsDiskFileName || string.Equals(Path.GetExtension(FileName), ".dax", StringComparison.InvariantCultureIgnoreCase) ? "daxDrawingImage" : "fileDrawingImage";
             }
         }
 
@@ -5352,6 +5352,11 @@ namespace DaxStudio.UI.ViewModels
         public void ClearQueryError()
         {
             QueryResultsPane.ErrorMessage = string.Empty;
+        }
+
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+
         }
 
         public IEditor Editor { get => _editor; }

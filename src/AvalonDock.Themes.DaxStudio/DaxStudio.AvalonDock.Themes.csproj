@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <RootNamespace>AvalonDock.Themes</RootNamespace>
-	<TargetFrameworks>net472</TargetFrameworks>
+    <TargetFrameworks>net8.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>sn.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>False</SignAssembly>
@@ -18,27 +18,25 @@
     <PackageId>Dirkster.AvalonDock.Themes.VS2013</PackageId>
     <Authors>https://github.com/Dirkster99/AvalonDock</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <ApplicationIcon></ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
     <OutputType>Library</OutputType>
     <StartupObject />
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <BaseOutputPath>..\bin\Debug\</BaseOutputPath>
     <Configurations>Debug;Release;Cmd Only</Configurations>
   </PropertyGroup>
-
   <ItemGroup>
     <Resource Include="**\*.png" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="DaxStudio.ico" />
   </ItemGroup>
-
   <!-- NuGet Packaging -->
   <ItemGroup>
     <None Include="LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.72.1" />
+    <PackageReference Include="Dirkster.AvalonDock" />
   </ItemGroup>
 </Project>
