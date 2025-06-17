@@ -79,6 +79,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccessTokenContext.cs" />
     <Compile Include="Extensions\ApplicationExtensions.cs" />
     <Compile Include="ApplicationPaths.cs" />
     <Compile Include="AppProperties.cs" />
