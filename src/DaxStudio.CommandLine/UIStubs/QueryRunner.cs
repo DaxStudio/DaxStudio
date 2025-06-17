@@ -25,7 +25,7 @@ namespace DaxStudio.CommandLine.UIStubs
             Options = new OptionsViewModel(EventAggregator, _settingProvider);
             // this supports interactive Entra Auth if needed
             if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
-            AccessToken = AccessTokenHelper.GetAccessToken();
+            AccessToken = AccessTokenHelper.GetAccessToken(ConnectionStringWithInitialCatalog);
             }
         }
 

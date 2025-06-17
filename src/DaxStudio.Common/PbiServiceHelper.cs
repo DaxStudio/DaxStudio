@@ -44,8 +44,9 @@ namespace DaxStudio.Common
         //private static string commonInstance = "https://login.microsoftonline.com/common";
         private static string scope = "organizations";
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
-        //private static IEnumerable<string> scopes = new List<string>() { "https://analysis.windows.net/powerbi/api/.default"};
-        private static IEnumerable<string> scopes = new List<string>() { "https://*.asazure.windows.net/.default" };
+        private static IEnumerable<string> powerbiScope = new List<string>() { "https://analysis.windows.net/powerbi/api/.default" };
+        private static IEnumerable<string> asazureScope = new List<string>() { "https://*.asazure.windows.net/.default" };
+
         public static async Task<List<Workspace>> GetWorkspacesAsync(AuthenticationResult token)
         {
             var workspaces = new List<Workspace>();
@@ -69,8 +70,10 @@ namespace DaxStudio.Common
             return workspaces;
         }
 
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "<Pending>")]
-        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options)
+        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope)
+
         {
 
             AuthenticationResult authResult = null;
@@ -95,10 +98,10 @@ namespace DaxStudio.Common
             {
                 firstAccount = PublicClientApplication.OperatingSystemAccount;
             }
-
+            var scope = GetScope(tokenScope);
             try
             {
-                authResult = await app.AcquireTokenSilent(scopes, firstAccount).ExecuteAsync();
+                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync();
                 options.LastUsedUPN = authResult.Account.Username;
             }
             catch (MsalUiRequiredException)
@@ -109,7 +112,7 @@ namespace DaxStudio.Common
 
                 try
                 {
-                    authResult = await app.AcquireTokenInteractive(scopes)
+                    authResult = await app.AcquireTokenInteractive(scope)
                         .WithAccount(firstAccount)
                         .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                                                           //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
@@ -154,12 +157,13 @@ namespace DaxStudio.Common
             return _clientApp;
         }
 
-        public static async Task<AuthenticationResult> SwitchAccount(IntPtr? hwnd, IHaveLastUsedUPN options)
+        public static async Task<AuthenticationResult> SwitchAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope)
         {
+            var scope = GetScope(tokenScope);
             var app = GetPublicClientApp();
             try
             {
-                var authResult = await app.AcquireTokenInteractive(scopes)
+                var authResult = await app.AcquireTokenInteractive(scope)
                             .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                                                               //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
                             .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
@@ -170,7 +174,7 @@ namespace DaxStudio.Common
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(SwitchAccount), "Error getting user token interactively");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(SwitchAccountAsync), "Error getting user token interactively");
                 throw;
                 return null;
             }
@@ -227,11 +231,11 @@ namespace DaxStudio.Common
             {
                 AccessToken = token.Token;
                 ExpiresOn = token.ExpirationTime;
-                UserContext = token.UserContext;
+                UserContext = token.UserContext as AccessTokenContext;
             }
             public string AccessToken;
             public DateTimeOffset ExpiresOn;
-            public object UserContext;
+            public AccessTokenContext UserContext;
         }
 
         public static Tom.AccessToken RefreshToken(Tom.AccessToken token)
@@ -251,9 +255,27 @@ namespace DaxStudio.Common
         //}
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "<Pending>")]
+        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry,  string username, AccessTokenScope scope)
+        {
+            // TODO
+            var context = new AccessTokenContext
+            {
+                UserName = username,
+                TokenScope = scope
+            };
+            var accessToken = new AccessToken(token,expiry, context);
+            return accessToken;
+        }
+
+        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
+        {
+            var accessToken = new AccessToken(token, expiry, context);
+            return accessToken;
+        }
+
         private static AuthenticationResult RefreshTokenInternal(TokenDetails token)
         {
-            var lastUpn = (token.UserContext?.ToString())??string.Empty;
+            var lastUpn = (token.UserContext?.UserName)??string.Empty;
 
             AuthenticationResult authResult = null;
             var app = GetPublicClientApp();
@@ -266,12 +288,12 @@ namespace DaxStudio.Common
                 firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.CurrentCultureIgnoreCase));
             }
 
+            var scope = GetScope(token);
 
             try
             {
                 if (firstAccount == null) throw new MsalUiRequiredException("UserNotFoundInCache", "User not found in cache");
-
-                authResult = app.AcquireTokenSilent(scopes, firstAccount).ExecuteAsync().Result;
+                authResult = app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync().Result;
 
             }
             catch (MsalUiRequiredException)
@@ -280,7 +302,7 @@ namespace DaxStudio.Common
 
                 try
                 {
-                    authResult = app.AcquireTokenInteractive(scopes)
+                    authResult = app.AcquireTokenInteractive(scope)
                         .WithAccount(firstAccount)
                         //.WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                         .WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
@@ -301,6 +323,19 @@ namespace DaxStudio.Common
 
             // TODO - not sure if this is the correct way to refresh the token
             return authResult;
+        }
+
+        private static IEnumerable<string> GetScope(TokenDetails tokenDetails)
+        {
+            return GetScope(tokenDetails.UserContext.TokenScope);
+        }
+
+        private static IEnumerable<string> GetScope(AccessTokenScope scope)
+        {
+            if (scope == AccessTokenScope.AsAzure)
+                return asazureScope;
+            else
+                return powerbiScope;
         }
 
         public static IntPtr? GetHwnd(ContentControl view)

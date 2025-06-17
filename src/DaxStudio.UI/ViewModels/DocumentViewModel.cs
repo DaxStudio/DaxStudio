@@ -1448,7 +1448,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // prompt for access token
                     IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = PbiServiceHelper.SwitchAccount(hwnd, Options).Result;
+                    var authResult = PbiServiceHelper.SwitchAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI).Result;
                     token = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
                 }
 
