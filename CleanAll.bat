@@ -81,9 +81,19 @@ ECHO.
 RMDIR /S /Q src\DaxStudio.ExcelAddin\bin
 RMDIR /S /Q src\DaxStudio.ExcelAddin\obj
 
+ECHO Deleting BIN and OBJ Folders in DaxStudio.FileIcons
+ECHO.
+RMDIR /S /Q src\DaxStudio.FileIcons\bin
+RMDIR /S /Q src\DaxStudio.FileIcons\obj
+
 ECHO Deleting BIN and OBJ Folders in DaxStudio.Interfaces
 ECHO.
 RMDIR /S /Q src\DaxStudio.Interfaces\bin
+RMDIR /S /Q src\DaxStudio.Interfaces\obj
+
+ECHO Deleting BIN and OBJ Folders in DaxStudio.Launcher
+ECHO.
+RMDIR /S /Q src\DaxStudio.UriHandler\bin
 RMDIR /S /Q src\DaxStudio.Interfaces\obj
 
 ECHO Deleting BIN and OBJ Folders in DaxStudio.QueryTrace
@@ -96,6 +106,11 @@ ECHO Deleting BIN and OBJ Folders in DaxStudio.QueryTrace.Excel
 ECHO.
 RMDIR /S /Q src\DaxStudio.QueryTrace.Excel\bin
 RMDIR /S /Q src\DaxStudio.QueryTrace.Excel\obj
+
+ECHO Deleting BIN and OBJ Folders in DaxStudio.SqlFormatter
+ECHO.
+RMDIR /S /Q src\DaxStudio.SqlFormatter\bin
+RMDIR /S /Q src\DaxStudio.SqlFormatter\obj
 
 ECHO Deleting BIN and OBJ Folders in DaxStudio.Standalone
 ECHO.
@@ -119,6 +134,10 @@ ECHO.
 RMDIR /S /Q tests\DaxStudio.Tests\bin
 RMDIR /S /Q tests\DaxStudio.Tests\obj
 
+ECHO Deleting BIN and OBJ Folders in DaxStudio.CommandLineTests
+ECHO.
+RMDIR /S /Q tests\DaxStudio.CommandLineTests\bin
+RMDIR /S /Q tests\DaxStudio.CommandLineTests\obj
 
 PAUSE
 
