@@ -8,7 +8,7 @@ using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices;
 using Microsoft.AnalysisServices.Tabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -31,9 +31,9 @@ namespace DaxStudio.Tests
         [TestInitialize]
         public void TestSetup()
         {
-            mockOptions = new Mock<IGlobalOptions>().Object;
-            mockEventAggregator = new Mocks.MockEventAggregator();
-            mockWindowManager = new Mock<IWindowManager>().Object;
+            mockOptions = Substitute.For<IGlobalOptions>();
+            mockEventAggregator = Substitute.For<IEventAggregator>();
+            mockWindowManager = Substitute.For<IWindowManager>();
         }
 
         [TestMethod]

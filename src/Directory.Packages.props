@@ -63,8 +63,8 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Newtonsoft.Json.Bson" Version="1.0.3" />
     <PackageVersion Include="Owin" Version="1.0" />
-    <PackageVersion Include="Polly" Version="8.6.0" />
-    <PackageVersion Include="Polly.Core" Version="8.6.0" />
+    <PackageVersion Include="Polly" Version="8.6.1" />
+    <PackageVersion Include="Polly.Core" Version="8.6.1" />
     <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.Settings.AppSettings" Version="3.0.0" />
     <PackageVersion Include="Serilog.Sinks.EventLog" Version="4.0.0" />
@@ -99,6 +99,7 @@
     <PackageVersion Include="System.Reflection" Version="4.3.0" />
     <PackageVersion Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageVersion Include="System.Reflection.Extensions" Version="4.3.0" />
+    <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="9.0.6" />
     <PackageVersion Include="System.Reflection.Primitives" Version="4.3.0" />
     <PackageVersion Include="System.Resources.ResourceManager" Version="4.3.0" />
     <PackageVersion Include="System.Runtime" Version="4.3.1" />

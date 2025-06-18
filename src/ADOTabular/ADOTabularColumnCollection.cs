@@ -123,7 +123,8 @@ namespace ADOTabular
 
         public ADOTabularColumn GetByPropertyRef(string referenceName)
         {
-            return _colsByRef[referenceName];
+            _colsByRef.TryGetValue(referenceName, out var value);
+            return value;
             //foreach (var c in _cols)
             //{
             //    if (c.Value.InternalReference.Equals(referenceName, System.StringComparison.InvariantCultureIgnoreCase))

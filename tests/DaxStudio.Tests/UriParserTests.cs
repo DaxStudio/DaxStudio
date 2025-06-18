@@ -1,6 +1,6 @@
 ﻿using DaxStudio.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using System;
 using System.Web;
 using System.Windows;
@@ -15,7 +15,7 @@ namespace DaxStudio.Tests
         [TestInitialize]
         public void Setup()
         {
-            mockApp = Application.Current??(new Mock<Application>()).Object;
+            mockApp = Application.Current??(Substitute.For<Application>());
         }
 
         [TestMethod]

@@ -43,7 +43,7 @@ namespace DaxStudio.Common.Extensions
 
         public static bool Contains(this string input, string searchFor, StringComparison comparison)
         {
-            return input.IndexOf(searchFor, comparison) >= 0;
+            return input.Contains(searchFor, comparison);
         }
 
         public static string Format(this string input, params object[] args)
@@ -54,7 +54,7 @@ namespace DaxStudio.Common.Extensions
         public static bool IsFunctionKey(this string input)
         {
             if (input.Length <= 1) return false;
-            if (!input.StartsWith("F")) return false;
+            if (!input.StartsWith("F", StringComparison.OrdinalIgnoreCase )) return false;
             return input.Substring(1).IsNumeric();
         }
 

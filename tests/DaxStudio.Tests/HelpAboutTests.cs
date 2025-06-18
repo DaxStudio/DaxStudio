@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace DaxStudio.Tests
 {
@@ -19,7 +19,8 @@ namespace DaxStudio.Tests
             var stubVerChk = new VersionCheckMock();
             using (var stubHost = new Mocks.MockDaxStudioHost())
             {
-                var mockOptions = new Mock<IGlobalOptions>().Object;
+                var mockOptionsMoq = Substitute.For<IGlobalOptions>();
+                var mockOptions = mockOptionsMoq;
                 var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg, stubVerChk, stubHost, mockOptions);
                 var ra = hlp.ReferencedAssemblies;
                 Assert.IsTrue(ra.Count >= 32);
@@ -32,7 +33,7 @@ namespace DaxStudio.Tests
             var stubVerChk = new VersionCheckMock();
             using (var stubHost = new Mocks.MockDaxStudioHost())
             {
-                var mockOptions = new Mock<IGlobalOptions>().Object;
+                var mockOptions = Substitute.For<IGlobalOptions>();
                 var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg, stubVerChk, stubHost, mockOptions);
                 var ra = hlp.ReferencedAssemblies;
                 foreach (var a in ra)

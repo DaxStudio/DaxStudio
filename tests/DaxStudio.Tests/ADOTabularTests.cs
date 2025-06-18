@@ -4,7 +4,7 @@ using System.Linq;
 using ADOTabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.UI.Extensions;
-using Moq;
+using NSubstitute;
 using DaxStudio.Tests.Utils;
 using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using MeasureTM = DaxStudio.Tests.Utils.MeasureTM;
@@ -65,7 +65,7 @@ namespace DaxStudio.Tests
             return false;
         }
 
-        private ADOTabularDatabase GetTestDB()
+        private static ADOTabularDatabase GetTestDB()
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             return new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
@@ -135,63 +135,63 @@ namespace DaxStudio.Tests
         }
 
 
-        private IADOTabularConnection MockConnection(string csdlFile)
+        private static IADOTabularConnection MockConnection(string csdlFile)
         {
-            var mockConn = new Mock<IADOTabularConnection>();
+            var mockConn = Substitute.For<IADOTabularConnection>();
             var columnCollection = new Dictionary<string, ADOTabularColumn>();
             
-            mockConn.SetupGet(x => x.Columns).Returns(columnCollection);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false)).Returns(keywordDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false)).Returns(functionDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS")).Returns(dmvDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_CUBES", It.IsAny<AdomdRestrictionCollection>())).Returns(cubesDataSet);
-            mockConn.Setup(x => x.ShowHiddenObjects).Returns(true);
-            var mockDb = new Mock<ADOTabularDatabase>(mockConn.Object, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
-            mockDatabase = mockDb.Object;
-            mockConn.SetupGet(x => x.Database).Returns(mockDatabase);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.Columns.Returns(columnCollection);
+            mockConn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Returns(keywordDataSet);
+            mockConn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Returns(functionDataSet);
+            mockConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS").Returns(dmvDataSet);
+            mockConn.GetSchemaDataSet("MDSCHEMA_CUBES", Arg.Any<AdomdRestrictionCollection>()).Returns(cubesDataSet);
+            mockConn.ShowHiddenObjects.Returns(true);
+            var mockDb = Substitute.For<ADOTabularDatabase>(mockConn, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
+            mockDatabase = mockDb;
+            mockConn.Database.Returns(mockDatabase);
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES", 
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)), 
-                false))
+                Arg.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)), 
+                false)
                 .Returns(measureDataSet_MD);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
-                false))
+                Arg.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
+                false)
                 .Returns(measureDataSetEmpty);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "TMSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesTable(res))
-                ))
+                Arg.Is<AdomdRestrictionCollection>(res => IsResellerSalesTable(res))
+                )
                 .Returns(measureDataSet_TM);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "TMSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesTable(res))
-                ))
+                Arg.Is<AdomdRestrictionCollection>(res => !IsResellerSalesTable(res))
+                )
                 .Returns(measureDataSetEmpty);
-            mockConn.Setup(x => x.GetSchemaDataSet("TMSCHEMA_TABLES", It.IsAny<AdomdRestrictionCollection>())).Returns(tablesDataSet);
-            mockConn.Setup(x => x.ServerVersion).Returns("15.0.0");
-            mockConn.SetupGet(x => x.Visitor).Returns(new MetaDataVisitorCSDL(mockConn.Object));
-
-            mockConn.SetupGet(x => x.Keywords).Returns(new ADOTabularKeywordCollection(mockConn.Object));
-            mockConn.SetupGet(x => x.AllFunctions).Returns(new List<string>());
-            mockConn.SetupGet(x => x.DynamicManagementViews).Returns( new ADOTabularDynamicManagementViewCollection(mockConn.Object));
-            mockConn.SetupGet(x => x.IsAdminConnection).Returns(true);
+            mockConn.GetSchemaDataSet("TMSCHEMA_TABLES", Arg.Any<AdomdRestrictionCollection>()).Returns(tablesDataSet);
+            mockConn.ServerVersion.Returns("15.0.0");
+            mockConn.Visitor.Returns(new MetaDataVisitorCSDL(mockConn));
+            var keywords = new ADOTabularKeywordCollection(mockConn);
+            mockConn.Keywords.Returns(keywords);
+            mockConn.AllFunctions.Returns(new List<string>());
+            mockConn.DynamicManagementViews.Returns(new ADOTabularDynamicManagementViewCollection(mockConn));
+            mockConn.IsAdminConnection.Returns(true);
             var csdlString = File.ReadAllText(csdlFile);
             var csdlDataSet = new DataSet();
             var csdlDataTable = new DataTable();
             csdlDataTable.Columns.Add("metadata", typeof(string));
             csdlDataTable.Rows.Add(csdlString);
             csdlDataSet.Tables.Add(csdlDataTable);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_CSDL_METADATA", It.IsAny<AdomdRestrictionCollection>())).Returns(csdlDataSet);
+            mockConn.GetSchemaDataSet("DISCOVER_CSDL_METADATA", Arg.Any<AdomdRestrictionCollection>()).Returns(csdlDataSet);
 
             var emptyDataset = new DataSet();
             var emptyDataTable = new DataTable();
             emptyDataset.Tables.Add(emptyDataTable);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", It.IsAny<AdomdRestrictionCollection>())).Returns(emptyDataset);
+            mockConn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", Arg.Any<AdomdRestrictionCollection>()).Returns(emptyDataset);
 
 
-            return mockConn.Object;
+            return mockConn;
         }
         #endregion
 
@@ -213,7 +213,7 @@ namespace DaxStudio.Tests
             // Check TOM objects
 
             Assert.AreEqual(4, m.TOMModel.Tables.Count, "Count of tables in TOM Model");
-            Assert.AreEqual(4, m.TOMModel.Tables["Sales"].Columns.Count, "Count of columns in TOM Model"); // includes external rowcount column
+            Assert.AreEqual(3, m.TOMModel.Tables["Sales"].Columns.Count, "Count of columns in TOM Model"); // includes external rowcount column
             Assert.AreEqual(5, m.TOMModel.Tables["Sales"].Measures.Count, "Count of measures in TOM Model");
         }
 
@@ -381,7 +381,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void TestADOTabularGetDatabaseID()
         {
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\discover_xml_metadata.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\discover_xml_metadata.xml");
             
             var dbs = DiscoverXmlParser.Databases(xr);
 
@@ -394,7 +394,7 @@ namespace DaxStudio.Tests
             //ADOTabularConnection c = new ADOTabularConnection("Data Source=localhost", AdomdType.AnalysisServices);
             //MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(c);
             //ADOTabularModel m = new ADOTabularModel(c, "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\discover_xml_metadata.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\discover_xml_metadata.xml");
             //var tabs = new ADOTabularTableCollection(c, m);
             //v.GenerateTablesFromXmlReader(tabs, xr);
             var props = DiscoverXmlParser.ServerProperties(xr);
@@ -410,7 +410,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\AdvWrksFoldersCsdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\AdvWrksFoldersCsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
 
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -433,7 +433,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\HierInFolder.csdl");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\HierInFolder.csdl");
             var tabs = new ADOTabularTableCollection(connection, m);
 
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -457,7 +457,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\NestedFoldersCsdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\NestedFoldersCsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
 
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -498,7 +498,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\NestedMultipleFoldersCsdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\NestedMultipleFoldersCsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
 
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -580,7 +580,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test","Test", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\advwrkscsdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\advwrkscsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
             
             v.GenerateTablesFromXmlReader(tabs, xr);
@@ -601,7 +601,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test","Test Caption", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\advwrkscsdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\advwrkscsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
             var cmpyTab = tabs["Sales Quota"];
@@ -618,7 +618,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test Caption", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\advwrkscsdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\advwrkscsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
             var cmpyTab = tabs["Date"];
@@ -637,7 +637,7 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test Caption", "Test Description", "");
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\aw_internetsales_2014_csdl.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\aw_internetsales_2014_csdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
             v.GenerateTablesFromXmlReader(tabs, xr);
             var cmpyTab = tabs["Internet Sales"];
@@ -657,7 +657,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
 
             Assert.AreEqual(15, tabs.Count);
-            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count);
+            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count(), "Total Column Count");
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
             Assert.IsFalse(h.IsVisible);
@@ -678,7 +678,7 @@ namespace DaxStudio.Tests
             var tabs = new ADOTabularTableCollection(conn, m);
 
             Assert.AreEqual(15, tabs.Count);
-            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count);
+            Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count(), "Total Column Count");
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var k = tabs["Sales Territory"].Columns["Total Current Quarter Sales Performance"] as ADOTabularKpi;
             Assert.AreEqual("Total Current Quarter Sales Performance", k.Caption);
@@ -705,7 +705,7 @@ namespace DaxStudio.Tests
             var m = new ADOTabularModel(conn,db, "AdventureWorks", "AdventureWorks", "Test AdventureWorks", "");            
             var tabs = new ADOTabularTableCollection(conn, m);
 
-            System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\AdvWrks.xml");
+            using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\AdvWrks.xml");
 
             Assert.AreEqual(1, tabs["Reseller Sales"].Measures.Count,"There should be 1 measure populated by the mocks");
         }
@@ -759,7 +759,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void CreatePowerPivotConnection()
         {
-            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var mockEventAgg = Substitute.For<IEventAggregator>();
             using var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=DAX Studio Test", "");
             Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=DAX Studio Test;Show Hidden Cubes=true", cnn.ConnectionString);
@@ -768,7 +768,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void CreatePowerPivotConnectionWithFileName()
         {
-            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var mockEventAgg = Substitute.For<IEventAggregator>();
             using var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=DAX Studio Test", "Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";");
             Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=DAX Studio Test;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";Show Hidden Cubes=true", cnn.ConnectionString);

@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -132,10 +133,12 @@ namespace DaxStudio.CheckerApp
             var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Output.AppendIndentedLine($"Version =  v{version}");
 
-            var uiPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.exe");
-            var uiAss = Assembly.LoadFile(uiPath);
-            var uiVersion = uiAss.GetName().Version;
+            var uiPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "daxstudio.ui.dll");          
+            
+            FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(uiPath);
+            var uiVersion = myFileVersionInfo.FileVersion.ToString();
             Output.AppendIndentedLine($"DaxStudio.exe Version =  v{uiVersion}");
+
         }
 
         public void CheckOSInfo()
@@ -256,7 +259,7 @@ namespace DaxStudio.CheckerApp
                     Output.AppendLine("DAX Studio registry 'Path' value not found.");
                     str = DEFAULT_DAX_STUDIO_PATH;
 
-                    string path = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+                    string path = new Uri(Assembly.GetExecutingAssembly().Location).LocalPath;
                     var directory = Path.GetDirectoryName(path);
                     str = Path.Combine(directory, "daxstudio.exe");
                     Output.AppendIndentedLine($"  Attempting to use current path: {str}");
@@ -521,7 +524,7 @@ namespace DaxStudio.CheckerApp
             return excelArch;
         }
 
-        public enum MachineType
+        internal enum MachineType
         {
             Native = 0, 
             x86 = 0x014c, 
@@ -574,7 +577,7 @@ namespace DaxStudio.CheckerApp
 
         private static string GetConfigPath(string path)
         {
-            if (path.EndsWith("\"", StringComparison.InvariantCultureIgnoreCase))
+            if (path.EndsWith('\"'))
             {
                 return (path.TrimStart(trimChars).TrimEnd(trimChars) + ".config");
             }
@@ -721,7 +724,7 @@ namespace DaxStudio.CheckerApp
 
         internal string GetCurrentPath()
         {
-            string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             return Path.GetDirectoryName(path);
         }
 

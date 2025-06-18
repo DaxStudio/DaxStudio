@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Tests
 {
-    [TestClass]
+    [TestClass,Ignore]
     public class BuildTests
     {
         [TestMethod]

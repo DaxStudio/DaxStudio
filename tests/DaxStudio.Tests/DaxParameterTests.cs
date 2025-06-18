@@ -6,7 +6,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.Tests.Assertions;
 using DaxStudio.Tests.Helpers;
 using Caliburn.Micro;
-using Moq;
+using NSubstitute;
 using System.Collections.Generic;
 
 namespace DaxStudio.Tests
@@ -137,7 +137,7 @@ SUMMARIZE (
         [TestInitialize]
         public void InitializeTest()
         {
-            mockEventAggregator = new Mock<IEventAggregator>().Object;
+            mockEventAggregator = Substitute.For<IEventAggregator>();
         }
 
         [TestMethod]

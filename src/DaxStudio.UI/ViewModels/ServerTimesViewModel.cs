@@ -366,9 +366,9 @@ namespace DaxStudio.UI.ViewModels
 
         private string GetFormatString(string name)
         {
-            if (name.EndsWith("Ms") 
-                || name.EndsWith("KB")
-                || name.EndsWith("Rows")) return "N0";
+            if (name.EndsWith("Ms",StringComparison.OrdinalIgnoreCase) 
+                || name.EndsWith("KB", StringComparison.OrdinalIgnoreCase) 
+                || name.EndsWith("Rows", StringComparison.OrdinalIgnoreCase)) return "N0";
             return string.Empty;
         }
 
@@ -586,7 +586,7 @@ namespace DaxStudio.UI.ViewModels
         }
         private static string FormatStep2(Match match)
         {
-            return match.Value.Substring(0,match.Value.Length-3) + "\r\n\t\tON";
+            return string.Concat(match.Value.AsSpan(0,match.Value.Length-3), "\r\n\t\tON");
         }
         private static string FormatStep3(Match match)
         {
@@ -1578,10 +1578,9 @@ namespace DaxStudio.UI.ViewModels
         {
 
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
-            using (TextWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+            using (StreamWriter tw = new StreamWriter(package.CreatePart(uriTom, "application/json", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
             {
                 tw.Write(GetJson());
-                tw.Close();
             }
         }
 
@@ -1591,7 +1590,7 @@ namespace DaxStudio.UI.ViewModels
             if (!package.PartExists(uri)) return;
             _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
-            using (TextReader tr = new StreamReader(part.GetStream()))
+            using (StreamReader tr = new StreamReader(part.GetStream()))
             {
                 string data = tr.ReadToEnd();
                 LoadJson(data);

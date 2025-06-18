@@ -1,22 +1,22 @@
 ﻿using ADOTabular;
 using DaxStudio.UI.Model;
-using Moq;
+using NSubstitute;
 using System;
 using ADOTabular.Interfaces;
 
 namespace DaxStudio.Tests.Mocks
 {
-    public class MockColumn 
+    internal static class MockColumn 
     {
 
         public static IADOTabularColumn CreateADOTabularColumn(string caption, string daxName, Type dataType, ADOTabularObjectType objectType, bool isModelItem = true, SortDirection sortDirection = SortDirection.ASC)
         {
-            var col = new Mock<IADOTabularColumn>();
-            col.SetupGet(x => x.Caption).Returns(caption);
-            col.SetupGet(x => x.DaxName).Returns(daxName);
-            col.SetupGet(x => x.SystemType).Returns(dataType);
-            col.SetupGet(x => x.ObjectType).Returns(objectType);
-            return col.Object;
+            var col = Substitute.For<IADOTabularColumn>();
+            col.Caption.Returns(caption);
+            col.DaxName.Returns(daxName);
+            col.SystemType.Returns(dataType);
+            col.ObjectType.Returns(objectType);
+            return col;
         }
 
         public static QueryBuilderColumn Create(string caption, string daxName, Type dataType, ADOTabularObjectType objectType, bool isModelItem = true, SortDirection sortDirection = SortDirection.ASC)

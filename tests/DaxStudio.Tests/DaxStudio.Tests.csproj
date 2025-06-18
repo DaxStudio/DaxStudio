@@ -73,10 +73,10 @@
     <PackageReference Include="Dax.Vpax" Version="1.10.0" />
     <PackageReference Include="Humanizer" Version="2.14.1" />
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-    <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" Version="3.9.2" />
     <PackageReference Include="MSTestHacks" Version="2.3.20" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="SharpDevelopCodeCompletion" Version="1.33.2" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.6" />
     <PackageReference Include="System.Memory" Version="4.6.3" />

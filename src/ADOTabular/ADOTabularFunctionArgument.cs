@@ -9,7 +9,12 @@ namespace ADOTabular
         
         public ADOTabularFunctionArgument(DataRow dr)
         {
-            if (dr == null) throw new ArgumentNullException(nameof(dr));
+
+            if (dr == null)
+            {
+                throw new ArgumentNullException(nameof(dr));
+            }
+
             Name = dr["NAME"].ToString();
             Description = dr["DESCRIPTION"].ToString();
             Optional = bool.Parse(dr["OPTIONAL"].ToString());

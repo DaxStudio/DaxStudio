@@ -3,7 +3,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.Tests.Mocks;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.Tests
 {
-    class QueryPlanTraceViewModelTester : QueryPlanTraceViewModel
+    sealed class QueryPlanTraceViewModelTester : QueryPlanTraceViewModel
     {
         public QueryPlanTraceViewModelTester(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions, windowManager)
         {
@@ -34,9 +34,9 @@ namespace DaxStudio.Tests
 		[TestInitialize]
 		public void TestSetup()
 		{
-			mockOptions = new Mock<IGlobalOptions>().Object;
+			mockOptions = Substitute.For<IGlobalOptions>();
 			mockEventAggregator = new Mocks.MockEventAggregator();
-			mockWindowManager = new Mock<IWindowManager>().Object;
+			mockWindowManager = Substitute.For<IWindowManager>();
 		}
 
 		[TestMethod]

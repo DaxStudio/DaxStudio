@@ -37,7 +37,7 @@ namespace DaxStudio.Tests.Utils
         public string KEYWORD { get; set; }
     }
 
-    public class MeasureMD
+    internal class MeasureMD
     {
         public string MEASURE_NAME { get; set; }
         public string MEASURE_CAPTION { get; set; }
@@ -46,13 +46,13 @@ namespace DaxStudio.Tests.Utils
         public string EXPRESSION { get; set; }    
     }
 
-    public class TableTM
+    internal class TableTM
     {
         public UInt64 ID { get; set; }
         public string Name { get; set; }
     }
 
-    public class MeasureTM
+    internal class MeasureTM
     {
         public UInt64 TableID { get; set; }
         public string Name { get; set; }
@@ -62,14 +62,14 @@ namespace DaxStudio.Tests.Utils
     }
 
 
-    public class Cube {
+    internal class Cube {
         public string CUBE_NAME { get; set; }
         public string CUBE_CAPTION { get; set; }
         public string DESCRIPTION { get; set; }
         public string BASE_CUBE_NAME { get; set; }
     }
 
-    public class CSDL_METADATA
+    internal class CsdlMetadata
     {
         public string Metadata { get; set; }
     }

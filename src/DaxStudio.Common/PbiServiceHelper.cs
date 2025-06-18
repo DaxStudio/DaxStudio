@@ -255,7 +255,7 @@ namespace DaxStudio.Common
         //}
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "<Pending>")]
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry,  string username, AccessTokenScope scope)
+        public static Adomd.AccessToken CreateAccessToken(string token, DateTimeOffset expiry,  string username, AccessTokenScope scope)
         {
             // TODO
             var context = new AccessTokenContext
@@ -263,13 +263,13 @@ namespace DaxStudio.Common
                 UserName = username,
                 TokenScope = scope
             };
-            var accessToken = new AccessToken(token,expiry, context);
+            var accessToken = new Adomd.AccessToken(token,expiry, context);
             return accessToken;
         }
 
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
+        public static Adomd.AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
         {
-            var accessToken = new AccessToken(token, expiry, context);
+            var accessToken = new Adomd.AccessToken(token, expiry, context);
             return accessToken;
         }
 

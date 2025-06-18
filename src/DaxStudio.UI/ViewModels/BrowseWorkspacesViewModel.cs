@@ -41,7 +41,7 @@ namespace DaxStudio.UI.ViewModels
             if (String.IsNullOrEmpty(SearchCriteria))
                 return true;
             else
-                return (((Workspace)db).Name.IndexOf(SearchCriteria, StringComparison.OrdinalIgnoreCase) >= 0);
+                return (((Workspace)db).Name.Contains(SearchCriteria, StringComparison.OrdinalIgnoreCase));
         }
 
         public bool HasSearchCriteria => !string.IsNullOrEmpty(SearchCriteria);

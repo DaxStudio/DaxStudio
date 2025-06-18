@@ -887,36 +887,38 @@ namespace ADOTabular
                             caption = refName;
                         if (!string.IsNullOrWhiteSpace(caption))
                         {
-                        
-                            if (kpi.IsBlank())
+                            if (contents != "RowNumber")
                             {
-                                var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents)
+                                if (kpi.IsBlank())
                                 {
-                                    SystemType = Type.GetType($"System.{dataType}"),
-                                    DataType = dataTypeEnum,
-                                    Nullable = nullable,
-                                    MinValue = minValue,
-                                    MaxValue = maxValue,
-                                    DistinctValues = distinctValueCount,
-                                    FormatString = formatString,
-                                    StringValueMaxLength = stringValueMaxLength,
-                                    OrderByRef = orderBy
-                                };
-                                col.Variations.AddRange(variations);
-                                col.GroupByRefs.AddRange(groupBy);
-                                tables.Model.AddRole(col);
-                                tab.Columns.Add(col);
-                                _conn.Columns.Add(col.DaxName.TrimStart('\'').Replace("'[","["), col);
-                            }
-                            else
-                            {
-                                colType = ADOTabularObjectType.KPI;
-                                var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi)
+                                    var col = new ADOTabularColumn(tab, refName, name, caption, description, isVisible, colType, contents)
+                                    {
+                                        SystemType = Type.GetType($"System.{dataType}"),
+                                        DataType = dataTypeEnum,
+                                        Nullable = nullable,
+                                        MinValue = minValue,
+                                        MaxValue = maxValue,
+                                        DistinctValues = distinctValueCount,
+                                        FormatString = formatString,
+                                        StringValueMaxLength = stringValueMaxLength,
+                                        OrderByRef = orderBy
+                                    };
+                                    col.Variations.AddRange(variations);
+                                    col.GroupByRefs.AddRange(groupBy);
+                                    tables.Model.AddRole(col);
+                                    tab.Columns.Add(col);
+                                    _conn.Columns.Add(col.DaxName.TrimStart('\'').Replace("'[", "["), col);
+                                }
+                                else
                                 {
-                                    SystemType = Type.GetType($"System.{dataType}")
-                                };
-                                tab.Columns.Add(kpiCol);
-                                _conn.Columns.Add(kpiCol.DaxName, kpiCol);
+                                    colType = ADOTabularObjectType.KPI;
+                                    var kpiCol = new ADOTabularKpi(tab, refName, name, caption, description, isVisible, colType, contents, kpi)
+                                    {
+                                        SystemType = Type.GetType($"System.{dataType}")
+                                    };
+                                    tab.Columns.Add(kpiCol);
+                                    _conn.Columns.Add(kpiCol.DaxName, kpiCol);
+                                }
                             }
                         }
 
