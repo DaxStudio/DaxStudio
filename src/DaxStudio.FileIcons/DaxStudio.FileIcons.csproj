@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks>net8.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <Configurations>Cmd Only;Debug;Release;Tests</Configurations>
   </PropertyGroup>

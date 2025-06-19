@@ -5,7 +5,7 @@ using System.Data;
 
 namespace DaxStudio.Tests.Utils
 {
-    public static class DmvHelpers
+    internal static class DmvHelpers
     {
         public static DataTable ListToTable<T>(List<T> rows)
         {
@@ -22,17 +22,17 @@ namespace DaxStudio.Tests.Utils
         }
     }
 
-    public class Function
+    internal class Function
     {
         public string FUNCTION_NAME { get; set; }
         public int ORIGIN { get; set; }
     }
 
-    public class Dmv
+    internal class Dmv
     {
         public string SchemaName { get; set; }
     }
-    public class Keyword
+    internal class Keyword
     {
         public string KEYWORD { get; set; }
     }
@@ -46,13 +46,13 @@ namespace DaxStudio.Tests.Utils
         public string EXPRESSION { get; set; }    
     }
 
-    internal class TableTM
+    internal sealed class TableTM
     {
         public UInt64 ID { get; set; }
         public string Name { get; set; }
     }
 
-    internal class MeasureTM
+    internal sealed class MeasureTM
     {
         public UInt64 TableID { get; set; }
         public string Name { get; set; }

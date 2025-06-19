@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -92,7 +93,7 @@ namespace DaxStudio.Tests
         }
         
         
-        public IADOTabularConnection MockConnection(string csdlFile)
+        public static IADOTabularConnection MockConnection(string csdlFile)
         {
             var mockConn = Substitute.For<IADOTabularConnection>();
             var columnCollection = new Dictionary<string, ADOTabularColumn>();
@@ -153,7 +154,7 @@ namespace DaxStudio.Tests
         }
 
 
-        private bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
+        private static bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
             {
@@ -179,12 +180,12 @@ namespace DaxStudio.Tests
 
 
         [TestMethod]
-        public void TestPowerBITomModel_CSDL_2_0()
+        public void TestPowerBITomModelCSDL20()
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             connection.Visitor = v;
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00",CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(connection, m);
 
@@ -198,11 +199,11 @@ namespace DaxStudio.Tests
 
 
         [TestMethod]
-        public void TestPowerBITomModel_CSDL_2_5()
+        public void TestPowerBITomModelCSDL25()
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl_2_5.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(connection, m);
 

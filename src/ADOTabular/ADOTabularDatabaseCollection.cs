@@ -134,8 +134,8 @@ namespace ADOTabular
             // Update the lastUpdated datetime
             foreach (var dbName in tmpDatabaseDict.Keys)
             {
-                if (_databaseDictionary.ContainsKey(dbName)) {
-                    _databaseDictionary[dbName].LastUpdate = tmpDatabaseDict[dbName].LastUpdate;
+                if (_databaseDictionary.TryGetValue(dbName, out DatabaseDetails db)) {
+                    db.LastUpdate = tmpDatabaseDict[dbName].LastUpdate;
                 } else
                 {
                     _databaseDictionary.Add(dbName, tmpDatabaseDict[dbName]);

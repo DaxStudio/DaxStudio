@@ -41,7 +41,7 @@ namespace DaxStudio.Tests
         private static ADOTabularDatabase mockDatabase;
         //private Dictionary<string, ADOTabularColumn> columnCollection;
 
-        private bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
+        private static bool IsResellerSalesMeasureGroup(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
             {
@@ -53,7 +53,7 @@ namespace DaxStudio.Tests
             return false;
         }
 
-        private bool IsResellerSalesTable(AdomdRestrictionCollection res)
+        private static bool IsResellerSalesTable(AdomdRestrictionCollection res)
         {
             foreach (AdomdRestriction r in res)
             {

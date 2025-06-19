@@ -83,21 +83,22 @@ Name: "blockallinternetaccess"; Description: "[NOT RECOMMENDED] Blocks all featu
 Name: "modifypath"; Description: "&Add application directory to your environmental path";
 
 [Files]
-Source: "..\release\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
-Source: "..\release\bin\DaxStudio.vsto"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
-Source: "..\release\bin\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
-Source: "..\release\bin\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
-Source: "..\release\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; Excludes: "*.pdb,*.xml,DaxStudio.vshost.*,*.config,DaxStudio.dll,DaxStudio.exe,DaxStudio.vsto,daxstudio.pbitool.json,*.portable,Microsoft.Excel.*.dll,*.Tests.dll"
+;Source: "..\release\bin\net8.0-windows\DaxStudio.exe"; DestDir: "{app}"; Flags: ignoreversion; Components: Core
+;Source: "..\release\bin\net472\DaxStudio.vsto"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
+;Source: "..\release\bin\net472\DaxStudio.dll"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
+;Source: "..\release\bin\net472\DaxStudio.dll.manifest"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core
+Source: "..\release\bin\net472\*"; DestDir: "{app}\bin"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core
+Source: "..\release\bin\net8.0-windows\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs ignoreversion; Components: Core; 
 
 ; PBI Desktop integration (If installing in ALL USERS mode)
-Source: "..\release\bin\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Check: IsAdminInstallMode;                                                                                    
+Source: "..\release\bin\net8.0-windows\daxstudio.pbitool.json"; DestDir: "{commoncf32}\Microsoft Shared\Power BI Desktop\External Tools"; Components: Core; Check: IsAdminInstallMode;                                                                                    
 
 ;Standalone configs
-Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
-Source: "..\release\dscmd.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
+;Source: "..\release\DaxStudio.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
+;Source: "..\release\dscmd.exe.config"; DestDir: "{app}"; Flags: ignoreversion; Components: Core;
 ;Excel Addin configs
-Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Core; Check: IsExcel2010Installed
-Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core; Check: Not IsExcel2010Installed
+;Source: "..\release\bin\DaxStudio.dll.xl2010.config"; DestDir: "{app}\bin"; DestName: "DaxStudio.dll.config"; Flags: ignoreversion; Components: Core; Check: IsExcel2010Installed
+;Source: "..\release\bin\DaxStudio.dll.config"; DestDir: "{app}\bin"; Flags: ignoreversion; Components: Core; Check: Not IsExcel2010Installed
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

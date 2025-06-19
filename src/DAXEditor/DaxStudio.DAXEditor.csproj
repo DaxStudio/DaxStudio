@@ -91,7 +91,6 @@
     </PackageReference>
     <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="Mono.Cecil" />
-    <PackageReference Include="SharpDevelopCodeCompletion" />
   </ItemGroup>
   <PropertyGroup>
     <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>

@@ -196,7 +196,7 @@ namespace ADOTabular
                 var dimName = dimUName.Substring(1, dimUName.Length - 2); // remove square brackets
                 var hierName = row["HIERARCHY_NAME"].ToString();
                 Dictionary<string, string> hd;
-                if (!_hierStructure.ContainsKey(dimName))
+                if (!_hierStructure.TryGetValue(dimName, out Dictionary<string, string> value))
                 {
                     hd = new Dictionary<string, string>();
 
@@ -204,7 +204,7 @@ namespace ADOTabular
                 }
                 else
                 {
-                    hd = _hierStructure[dimName];
+                    hd = value;
                 }
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
@@ -584,7 +584,7 @@ namespace ADOTabular
                 }
                 rdr.Read();
             }
-            return "";
+            return string.Empty;
         }
 
         private static (string Role, string Multiplicity) GetAssociationEnd(XmlReader rdr)
@@ -1327,10 +1327,10 @@ namespace ADOTabular
 
         private string GetHierarchyStructure(ADOTabularTable table, string hierName, string hierCap)
         {
-            if (_hierStructure == null) return "";
-            if (_hierStructure.Count == 0) return "";
-            if (!_hierStructure.ContainsKey(table.Caption)) return "";
-            if (!_hierStructure[table.Caption].ContainsKey(hierCap ?? hierName)) return "";
+            if (_hierStructure == null) return string.Empty;
+            if (_hierStructure.Count == 0) return string.Empty;
+            if (!_hierStructure.ContainsKey(table.Caption)) return string.Empty;
+            if (!_hierStructure[table.Caption].ContainsKey(hierCap ?? hierName)) return string.Empty;
             
             return _hierStructure[table.Caption][hierCap ?? hierName];
         }

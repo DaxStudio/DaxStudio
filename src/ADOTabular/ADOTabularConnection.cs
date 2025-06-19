@@ -880,9 +880,9 @@ namespace ADOTabular
         {
             get
             {
-                if (Properties == null) return "";
-                if (!Properties.ContainsKey("Application Name")) return "";
-                return Properties["Application Name"];
+                if (Properties == null) return string.Empty;
+                if (!Properties.TryGetValue("Application Name", out string value)) return string.Empty;
+                return value;
             }
         }
 

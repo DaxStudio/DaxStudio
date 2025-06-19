@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
+	  <RuntimeIdentifiers>win-arm64;win-x64;win-x86</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <AssemblyName>dscmd</AssemblyName>
     <LangVersion>8.0</LangVersion>

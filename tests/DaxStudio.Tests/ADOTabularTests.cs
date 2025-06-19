@@ -14,6 +14,7 @@ using Caliburn.Micro;
 using ADOTabular.Interfaces;
 using ADOTabular.AdomdClientWrappers;
 using System.IO;
+using System.Globalization;
 
 namespace DaxStudio.Tests
 {
@@ -202,7 +203,7 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn,db, "Test","Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, m);
             
@@ -222,7 +223,7 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
 //            System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml");
             var tabs = new ADOTabularTableCollection(conn, m);
@@ -240,7 +241,7 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             using (System.Xml.XmlReader xr = new System.Xml.XmlTextReader(@"..\..\data\csdl.xml"))
             {
@@ -267,7 +268,7 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\mtm_csdl.xml");
             MetaDataVisitorCSDL visitor = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel model = new ADOTabularModel(conn,db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, model);
 
@@ -282,7 +283,7 @@ namespace DaxStudio.Tests
             
             var conn = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn,db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, m);
 
@@ -296,15 +297,14 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
-            ADOTabularModel m = new ADOTabularModel(conn,db, "Test", "Test", "Test Description", "");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
+            ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, m);
 
             var promoTable = tabs["Promotion"];
             Assert.IsNotNull(promoTable);
             Assert.AreEqual(0, promoTable.Columns["PromotionName"].Variations.Count);
             Assert.AreEqual(1, promoTable.Columns["StartDate"].Variations.Count);
-
         }
 
         [TestMethod]
@@ -312,7 +312,7 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, m);
 
@@ -330,7 +330,7 @@ namespace DaxStudio.Tests
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\FieldParams_Csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             var tabs = new ADOTabularTableCollection(conn, m);
 
@@ -352,7 +352,7 @@ namespace DaxStudio.Tests
             var conn = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
             conn.Visitor = v;
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             //var tabs = new ADOTabularTableCollection(conn, m);
             Assert.AreEqual(13, m.Tables.Count);
@@ -367,7 +367,7 @@ namespace DaxStudio.Tests
             var conn = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
             conn.Visitor = v;
-            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             //var tabs = new ADOTabularTableCollection(conn, m);
             Assert.AreEqual (13, m.Tables.Count);
@@ -408,7 +408,7 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\AdvWrksFoldersCsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
@@ -431,7 +431,7 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection, db, "Test", "Test", "Test Description", "");
             using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\HierInFolder.csdl");
             var tabs = new ADOTabularTableCollection(connection, m);
@@ -455,7 +455,7 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\NestedFoldersCsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);
@@ -496,7 +496,7 @@ namespace DaxStudio.Tests
         {
             var connection = MockConnection($@"{Constants.TestDataPath}\csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
-            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularDatabase db = new ADOTabularDatabase(connection, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00", CultureInfo.InvariantCulture), "1200", "*", "Test Description");
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
             using System.Xml.XmlReader xr = new System.Xml.XmlTextReader($@"{Constants.TestDataPath}\NestedMultipleFoldersCsdl.xml");
             var tabs = new ADOTabularTableCollection(connection, m);

@@ -23,6 +23,14 @@
     <ReleaseDirectory>.\Release</ReleaseDirectory>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <OutputFolder>$(ReleaseDirectory)\bin\net8.0-windows</OutputFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputFolderXl>$(ReleaseDirectory)\bin\net472</OutputFolderXl>
+  </PropertyGroup>
+
   <Target Name="Clean" DependsOnTargets="MakeReleaseFolder">
     <Message Text="Cleaning DaxStudio.Standalone" />
     <!--<MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />-->
@@ -43,17 +51,18 @@
     <Message Text="Building DaxStudio.Standalone" />
     <MSBuild Projects=".\src\daxstudio.sln" 
              Targets="Clean;Build" 
-             Properties="RestorePackages=false" />
+             Properties="RestorePackages=false;Configuration=Release" />
   </Target>
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Tests" />
-    <!--<MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />-->
+    <MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />
+    <!--<MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.CommandLine.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />-->
   </Target>
 
   <Target Name="DeletePdb" AfterTargets="Build" DependsOnTargets="Build">
     <ItemGroup>
-      <FilesToDelete Include=".\Release\**\*.pdb"/>
+      <FilesToDelete Include="$(ReleaseDirectory)\**\*.pdb"/>
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
@@ -61,7 +70,7 @@
 
   <Target Name="DeleteXml" AfterTargets="Build" DependsOnTargets="Build">
     <ItemGroup>
-      <FilesToDelete Include=".\Release\**\*.xml"/>
+      <FilesToDelete Include="$(ReleaseDirectory)\**\*.xml"/>
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
@@ -72,10 +81,12 @@
 
   <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb">
     <ItemGroup>
-      <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;.\Release\bin\dscmd.exe;.\Release\bin\dscmd.exe.config;" />
+      <FilesToMove Include="$(OutputFolder)\**\*.*" />
+      <FilesAfterMove Include="@(FilesToRename -> '%(RecursiveDir)%(Filename).$(Extension)')" />    
     </ItemGroup>
     <Message Text="Moving exe files" Importance="High" />
-    <Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release" />
+    <!--<Move SourceFiles="@(FilesToMove)" DestinationFolder="$(ReleaseDirectory)" />-->
+    <!--<Move SourceFiles="@(FilesToMove)" DestinationFolder="$(ReleaseDirectory)" DestinationFiles="@(FilesAfterMove)"/>-->
   </Target>
 
 
@@ -98,16 +109,16 @@
 
   <Target Name="SignAssemblies" DependsOnTargets="Build;MoveExes">
     <ItemGroup>
-	    <DllFiles Include=".\Release\bin\DaxStudio.*.dll;.\Release\bin\DaxStudio.dll"/>
+	    <DllFiles Include="$(OutputFolderXl)\DaxStudio.*.dll;$(OutputFolderXl)\DaxStudio.dll;$(OutputFolder)\DaxStudio.*.dll;$(OutputFolderXl)\*.exe"/>
     </ItemGroup>
 
     <Message Text="Attempting to sign Assemblies" Importance="high" /> 
-    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.exe' 
+    <!--<Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\dscmd.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.checker.exe' 
-          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
+          IgnoreExitCode="false" ContinueOnError="ErrorAndStop" /> -->
     <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -mdop 1 %(DllFiles.Identity)' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 
@@ -115,7 +126,7 @@
   
  <Target Name="DllsToSign" >
    <ItemGroup>
-	    <DllFiles Include=".\Release\bin\DaxStudio.*.dll"/>
+	    <DllFiles Include="$(OutputFolderXl)\DaxStudio.*.dll;$(OutputFolder)\DaxStudio.*.dll"/>
     </ItemGroup>
 	  <Message Text="DLLs: @(DllFiles, ' ')" Importance="high" />
  </Target>
@@ -124,7 +135,7 @@
   <Target Name="SignVsto" DependsOnTargets="SignAssemblies">
     <Message Text="Attempting to sign DaxStudio.vsto file" Importance="high"/>
 
-    <Exec WorkingDirectory=".\Release\bin" Command='sign code azure-key-vault DaxStudio.vsto -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -d "DAX Studio Excel Addin" -u https://daxstudio.org' 
+    <Exec WorkingDirectory="$(OutputFolderXl)" Command='sign code azure-key-vault DaxStudio.vsto -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -d "DAX Studio Excel Addin" -u https://daxstudio.org' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
   </Target>
 
@@ -169,12 +180,12 @@
 
   <Target Name="SignedPortable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies;MoveTestsOut">
     <Message Text="Creating .zip file" Importance="High" />
-    <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
+    <ZipDirectory SourceDirectory="$(OutputFolder)" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
 
   <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;MoveTestsOut">
     <Message Text="Creating .zip file" Importance="High" />
-    <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
+    <ZipDirectory SourceDirectory="$(OutputFolder)" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
 
 <Target Name="MoveTestsOut">
