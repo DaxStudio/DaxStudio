@@ -462,7 +462,9 @@ namespace DaxStudio.UI.Model
         public bool IsConnected { get
             {
                 if (_connection == null) return false;
-                return _connection.State == ConnectionState.Open;
+                // make sure both connections are open so that we can run queries 
+                // and return metadata information
+                return _connection.State == ConnectionState.Open && _dmvConnection.State == ConnectionState.Open;
             }
         }
         public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT ?? false;
