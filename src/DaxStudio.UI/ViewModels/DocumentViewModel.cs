@@ -4036,10 +4036,11 @@ namespace DaxStudio.UI.ViewModels
                 ServerDatabaseInfo info = new ServerDatabaseInfo();
                 if (Connection.IsConnected)
                 {
-                    var serverName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.ServerName;
-                    var databaseName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.Database?.Name;
                     try
                     {
+                        var serverName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.ServerName;
+                        var databaseName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.Database?.Name;
+                    
                         info.ServerName = serverName ?? "";
                         info.ServerEdition = Connection.ServerEdition ?? "";
                         info.ServerType = Connection.ServerType.GetDescription() ?? "";
