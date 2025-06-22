@@ -215,9 +215,6 @@
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
     </PackageReference>
-    <PackageReference Include="SharpDevelopCodeCompletion">
-      <Version>1.33.2</Version>
-    </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
       <Version>9.0.6</Version>
     </PackageReference>
