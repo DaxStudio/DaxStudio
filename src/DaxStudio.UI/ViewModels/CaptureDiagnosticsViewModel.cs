@@ -17,7 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DaxStudio.UI.ResultsTargets;
 using System.Windows;
-
+using TaskExtensions = DaxStudio.UI.Extensions.TaskExtensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -330,7 +330,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), nameof(StartTracesAsync), "Starting QueryPlan and ServerTimings traces");
             try
             {
-                await Task.WhenAll(
+                await TaskExtensions.WhenAll(
                     EnsureTraceIsStartedAsync(_serverTimingsTrace),
                     EnsureTraceIsStartedAsync(_queryPlanTrace)
                 );

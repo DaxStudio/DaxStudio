@@ -25,6 +25,7 @@ using System.Xml;
 using ADOTabular.Interfaces;
 using DaxStudio.Common;
 using ADOTabular.Extensions;
+using TaskExtensions = DaxStudio.UI.Extensions.TaskExtensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -1078,7 +1079,7 @@ namespace DaxStudio.UI.Model
             var openConnTask = _connection.OpenAsync();
 
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
-            await Task.WhenAll(openConnTask, openDmvConnTask);
+            await TaskExtensions.WhenAll(openConnTask, openDmvConnTask);
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
 
             SetSelectedDatabase(_dmvConnection.Database);
