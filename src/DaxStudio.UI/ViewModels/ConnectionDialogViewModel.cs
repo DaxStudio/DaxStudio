@@ -559,12 +559,14 @@ namespace DaxStudio.UI.ViewModels
                 var token = default(AccessToken);
                 if (serverType == ServerType.AzureAnalysisServices || serverType == ServerType.PowerBIService)
                 {
-                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var tokenScope = serverType == ServerType.AzureAnalysisServices ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
-                    var authResult = await PbiServiceHelper.SwitchAccountAsync(hwnd, Options, tokenScope);
-                    token = PbiServiceHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, tokenScope);
+                    var authResult = await EntraIdHelper.SwitchAccountAsync(hwnd, Options, tokenScope);
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, tokenScope);
+                    Log.Debug("Attempting connection with token for user: {User}", authResult.Account.Username);
                 }
-                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType), PowerPivotModeSelected ? WorkbookName : powerBIFileName, serverType, false, string.Empty,token);
+                
+                var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType), PowerPivotModeSelected ? WorkbookName : powerBIFileName, serverType, false, string.Empty, token);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
                 await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             }

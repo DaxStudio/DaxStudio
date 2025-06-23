@@ -23,7 +23,7 @@ namespace DaxStudio.CommandLine.Helpers
         {
             var tokenScope = AccessTokenHelper.GetScopeFromConnectionString(connStr);
             var hwnd = NativeMethods.GetConsoleWindow();
-            var authResult = PbiServiceHelper.SwitchAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope ).Result;
+            var authResult = EntraIdHelper.SwitchAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope ).Result;
             return new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
         }
 

@@ -403,8 +403,8 @@ namespace DaxStudio.UI.ViewModels
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token
-                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = await PbiServiceHelper.SwitchAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI);
+                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = await EntraIdHelper.SwitchAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI);
                     token = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
                 }
                 await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 

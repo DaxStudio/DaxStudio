@@ -1088,7 +1088,7 @@ namespace DaxStudio.UI.Model
         private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
-            var newToken = PbiServiceHelper.RefreshToken(token);
+            var newToken = EntraIdHelper.RefreshToken(token);
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
             return newToken;
 
