@@ -4,6 +4,7 @@
                     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                     xmlns:view="clr-namespace:DaxStudio.UI.Views"
                     xmlns:ui="http://schemas.modernwpf.com/2019"
+                    
                     >
 
 
@@ -12,7 +13,9 @@
         <!--<ui:XamlControlsResources/>-->
         <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
         <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ModernWpf.Medium.xaml"/>-->
+
     </ResourceDictionary.MergedDictionaries>
+
 
     <Style x:Key="DaxStudioDialog" TargetType="{x:Type Border}">
         <!--<Setter Property="BorderBrush" Value="{StaticResource DaxStudioBrush}" />-->
@@ -64,7 +67,7 @@
                         <Grid  Height="Auto">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -84,8 +87,27 @@
                                              x:Name="PART_Caption"
                                              />
                             </StackPanel>
-                            
-                            <ContentPresenter Grid.Row="1" x:Name="PART_Content" Content="{TemplateBinding Content}" />
+                                <Button Grid.Column="1" IsCancel="{TemplateBinding CloseIsDefaultCancel}" 
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="5"
+                                        Margin="0,-10,-10,0"
+                                        VerticalAlignment="Top"    
+                                        >
+                                    
+                                    <Path
+										        x:Name="PART_ImgPinClose"
+										        Width="10"
+										        Height="10"
+										        Margin="1,0,0,1"
+										        VerticalAlignment="Center"
+										        Data="{DynamicResource PinClose}"
+										        Fill="{DynamicResource Theme.Brush.Default.Fore}"
+										        Stretch="Uniform" />
+                                    
+
+                                </Button>
+                                <ContentPresenter Grid.Row="1" Grid.ColumnSpan="2" x:Name="PART_Content" Content="{TemplateBinding Content}" />
 
                         </Grid>
                     </Border>

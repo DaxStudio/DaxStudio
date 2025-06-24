@@ -405,7 +405,7 @@ namespace DaxStudio.QueryTrace
         private AccessToken OnAccessTokenExpired(AccessToken token)
         {
             Log.Information("{class} {method} {message}", nameof(QueryTraceEngine), nameof(OnAccessTokenExpired), "Refreshing expired AccessToken");
-            var newToken = PbiServiceHelper.RefreshToken(token);
+            var newToken = EntraIdHelper.RefreshToken(token);
             return newToken;
         }
 

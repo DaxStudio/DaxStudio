@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace DaxStudio.UI.Controls
 {
-    public class DaxStudioDialog: ContentControl
+    public  class DaxStudioDialog : ContentControl
     {
         public override void OnApplyTemplate()
         {
@@ -47,6 +47,23 @@ namespace DaxStudio.UI.Controls
             DependencyProperty.Register("Icon", typeof(ImageSource),
               typeof(DaxStudioDialog), new PropertyMetadata(null));
 
+
+        /// <summary>
+        /// Gets or sets the Label which is displayed next to the field
+        /// </summary>
+        public bool CloseIsDefaultCancel
+        {
+            get { return (bool)GetValue(CloseIsDefaultCancelProperty); }
+            set { SetValue(CloseIsDefaultCancelProperty, value); }
+        }
+
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty CloseIsDefaultCancelProperty =
+            DependencyProperty.Register("CloseIsDefaultCancel", typeof(bool),
+              typeof(DaxStudioDialog), new PropertyMetadata(false));
         #endregion
+
     }
 }

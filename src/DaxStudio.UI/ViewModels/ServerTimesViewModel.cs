@@ -33,8 +33,6 @@ using DaxStudio.Interfaces.Enums;
 using System.Windows.Documents;
 using DaxStudio.UI.Views;
 using DaxStudio.UI.Controls;
-using PoorMansTSqlFormatterLib.Interfaces;
-using PoorMansTSqlFormatterLib.ParseStructure;
 using System.Data;
 using DaxStudio.UI.Enums;
 

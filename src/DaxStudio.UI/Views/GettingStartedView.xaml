@@ -8,11 +8,13 @@
              xmlns:attachedProperties="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:converters="clr-namespace:DaxStudio.UI.Converters"
              Caption="Start typing your query in this area"
+             CloseIsDefaultCancel="True"
              Icon="{DynamicResource editorDrawingImage}"
              mc:Ignorable="d" 
              Padding="10 24 10 200"
-             d:DesignHeight="450" d:DesignWidth="620"
-             Width="620">
+             d:DesignHeight="270" d:DesignWidth="620"
+             Width="620"
+                      MinHeight="270">
 
         <ctrl:DaxStudioDialog.Resources>
             <converters:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
@@ -91,6 +93,8 @@
                         <Button Grid.Column="2" 
                                 VerticalAlignment="Center"
                                 MinWidth="70" 
+                                IsDefault="True"
+                                Style="{DynamicResource AccentButtonStyle}"
                                 x:Name="Close">OK</Button>
                         
 

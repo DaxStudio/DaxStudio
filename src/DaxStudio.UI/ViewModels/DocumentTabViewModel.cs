@@ -311,18 +311,20 @@ namespace DaxStudio.UI.ViewModels
                 _documentCount = GetMaxDocNumber();
                 _documentCount++;
                 newDoc.DisplayName = $"Query{_documentCount}.dax";
-                
-                //newDoc.Parent = this;
-                //newDoc.ConductWith(this);
 
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
 
                 await ActivateItemAsync(newDoc);
-                //ActiveDocument = newDoc;
 
                 new System.Action(CleanActiveDocument).BeginOnUIThread();
 
-                
+                await Task.Yield();
+
+                bool flowControl = await WaitForViewToLoad(newDoc);
+                if (!flowControl)
+                {
+                    return;
+                }
 
                 if (sourceDocument == null
                     || sourceDocument.Connection.IsConnected == false)
@@ -335,7 +337,7 @@ namespace DaxStudio.UI.ViewModels
                     if (copyContent) ActiveDocument.CopyContent(sourceDocument);
                 }
 
-                
+
             }
             catch (Exception ex)
             {
@@ -343,6 +345,29 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening new document\n{ex.Message}"));
             }
 
+        }
+
+        private async Task<bool> WaitForViewToLoad(DocumentViewModel newDoc)
+        {
+            // wait for the view to be attached before we proceed
+            object view = null;
+            int viewRetryCount = 0;
+            while (view == null && viewRetryCount < 10)
+            {
+                view = newDoc.GetView();
+                // wait 100ms for the view to be attached before trying again
+                if (view == null) await Task.Delay(100);
+                viewRetryCount++;
+            }
+
+            if (view == null)
+            {
+                Log.Error(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Failed to get view for new document after 10 attempts");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to open new document. Please try again."));
+                return false;
+            }
+
+            return true;
         }
 
         private int GetMaxDocNumber()
@@ -373,13 +398,13 @@ namespace DaxStudio.UI.ViewModels
                 var database = _app.Args().Database;
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
-                Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), $"Connecting to Server: {server} Database:{database}");
+                Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ConnectToServerAsync), $"Connecting to Server: {server} Database:{database}");
                 var token = default(AccessToken);
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token
-                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = await PbiServiceHelper.SwitchAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI);
+                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = await EntraIdHelper.SwitchAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI);
                     token = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
                 }
                 await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
@@ -660,6 +685,12 @@ namespace DaxStudio.UI.ViewModels
             }
             // todo get tab.Model to get at DocumentViewModel
             System.Diagnostics.Debug.WriteLine("duplicate tab");
+        }
+
+        protected override void OnActivationProcessed(IScreen item, bool success)
+        {
+            base.OnActivationProcessed(item, success);
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnActivationProcessed), $"Activation processed for {item.DisplayName} with success: {success}");
         }
 
     }

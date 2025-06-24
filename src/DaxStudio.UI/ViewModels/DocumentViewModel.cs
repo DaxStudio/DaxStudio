@@ -936,10 +936,8 @@ namespace DaxStudio.UI.ViewModels
 
         protected void SubscribeAll()
         {
-            if (!_isSubscribed)
-                _isSubscribed = true;
-            else
-                return;
+            if (_isSubscribed) return;
+                
 
             _eventAggregator.SubscribeOnPublishedThread(this);
             _eventAggregator.SubscribeOnPublishedThread(Connection);
@@ -958,6 +956,7 @@ namespace DaxStudio.UI.ViewModels
                 if (w is QueryHistoryPaneViewModel) { continue; }
                 _eventAggregator.SubscribeOnPublishedThread(w);
             }
+            _isSubscribed = true;
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SubscribeAll), $"Subscribed to all events for: {DisplayName} ({AutoSaveId})");
         }
 
@@ -1447,8 +1446,8 @@ namespace DaxStudio.UI.ViewModels
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token
-                    IntPtr? hwnd = PbiServiceHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = PbiServiceHelper.SwitchAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI).Result;
+                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var authResult = EntraIdHelper.SwitchAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI).Result;
                     token = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
                 }
 
@@ -4036,10 +4035,11 @@ namespace DaxStudio.UI.ViewModels
                 ServerDatabaseInfo info = new ServerDatabaseInfo();
                 if (Connection.IsConnected)
                 {
-                    var serverName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.ServerName;
-                    var databaseName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.Database?.Name;
                     try
                     {
+                        var serverName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.ServerName;
+                        var databaseName = Connection.IsPowerPivot | Connection.IsPowerBIorSSDT ? Connection.FileName : Connection.Database?.Name;
+                    
                         info.ServerName = serverName ?? "";
                         info.ServerEdition = Connection.ServerEdition ?? "";
                         info.ServerType = Connection.ServerType.GetDescription() ?? "";
@@ -4587,11 +4587,18 @@ namespace DaxStudio.UI.ViewModels
                     var modelName = GetSelectedModelName();
                     Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                     Dax.Metadata.Model model = null;
+
+                    var connStr = Connection.ConnectionStringWithInitialCatalog;
+                    if (Connection.AccessToken.IsNotNull())
+                    {
+                        connStr += ";Password=" + Connection.AccessToken.Token;
+                    }
+
                     await Task.Run(() => {
                         try
                         {
                             model = TomExtractor.GetDaxModel(
-                                Connection.ServerName, Connection.DatabaseName,
+                                connStr,
                                 "DaxStudio", version.ToString(),
                                 readStatisticsFromData: readStatisticsFromData,
                                 sampleRows: dialog.VpaxSampleReferentialIntegrityViolations,
@@ -4607,8 +4614,11 @@ namespace DaxStudio.UI.ViewModels
                                 Log.Warning(ex, "{class} {method} {message}", nameof(DocumentViewModel), nameof(ViewAnalysisDataAsync), $"Error loading VPA view with ReadStatisticsFromData enabled: {ex.Message}");
                                 OutputWarning($"Error viewing metrics with ReadStatisticsFromData enabled (retry without statistics): {ex.Message}");
 
+
+
                                 model = TomExtractor.GetDaxModel(
-                                    Connection.ServerName, Connection.DatabaseName,
+                                    //Connection.ServerName, Connection.DatabaseName,
+                                    connStr,
                                     "DaxStudio", version.ToString(),
                                     readStatisticsFromData: false, // Disable statistics during retry
                                     sampleRows: dialog.VpaxSampleReferentialIntegrityViolations,
@@ -4630,7 +4640,7 @@ namespace DaxStudio.UI.ViewModels
 
                     if (Options.VpaxIncludeTom)
                     {
-                        Microsoft.AnalysisServices.Tabular.Database database = TomExtractor.GetDatabase(Connection.ServerName, Connection.DatabaseName);
+                        Microsoft.AnalysisServices.Tabular.Database database = TomExtractor.GetDatabase(connStr);
                         vpaView.Database = database;
                     }
                 }
