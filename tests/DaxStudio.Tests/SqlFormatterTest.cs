@@ -208,86 +208,84 @@ NOT(
         [TestMethod]
         public void TestRemovingSessionContext()
         {
-            string sqlQuery = @"EXEC sys.sp_set_session_context N'client_correlation_id',
-    'EBE7BFEC-F7BD-46A3-92AC-3DD7064DA732';
-SELECT TOP (1000001) 1 AS [c22],
-    [t1].[ProductID],
-    [t1].[Name],
-    [t1].[ProductNumber],
-    [t1].[Color],
-    [t1].[StandardCost],
-    [t1].[ListPrice],
-    [t1].[Size],
-    [t1].[Weight],
-    [t1].[ProductCategoryID],
-    [t1].[ProductModelID],
-    [t1].[SellStartDate],
-    [t1].[SellEndDate],
-    [t1].[DiscontinuedDate],
-    [t1].[ThumbnailPhotoFileName],
-    [t1].[rowguid],
-    [t1].[ModifiedDate]
-FROM (
-    SELECT [ProductID],
-        [Name],
-        [ProductNumber],
-        [Color],
-        CAST([StandardCost] AS MONEY) AS [StandardCost],
-        CAST([ListPrice] AS MONEY) AS [ListPrice],
-        [Size],
-        [Weight],
-        [ProductCategoryID],
-        [ProductModelID],
-        [SellStartDate],
-        [SellEndDate],
-        [DiscontinuedDate],
-        [ThumbnailPhotoFileName],
-        [rowguid],
-        [ModifiedDate]
-    FROM [dbo].[Product_SM] AS [t1]
-    ) AS [t1]
-EXEC sys.sp_set_session_context N'client_correlation_id',
-    NULL;
+            string sqlQuery = @"EXEC sys.sp_set_session_context N'client_correlation_id'," + Environment.NewLine +
+    "'EBE7BFEC-F7BD-46A3-92AC-3DD7064DA732';" + Environment.NewLine +
+"SELECT TOP (1000001) 1 AS [c22]," + Environment.NewLine +  
+"    [t1].[ProductID]," + Environment.NewLine +
+"    [t1].[Name]," + Environment.NewLine +
+"    [t1].[ProductNumber]," + Environment.NewLine +
+"    [t1].[Color]," + Environment.NewLine + 
+"    [t1].[StandardCost]," + Environment.NewLine +
+"    [t1].[ListPrice]," + Environment.NewLine +
+"    [t1].[Size]," + Environment.NewLine +
+"    [t1].[Weight]," + Environment.NewLine +
+"    [t1].[ProductCategoryID]," + Environment.NewLine +
+"    [t1].[ProductModelID]," + Environment.NewLine +
+"    [t1].[SellStartDate]," + Environment.NewLine +
+"    [t1].[SellEndDate]," + Environment.NewLine +
+"    [t1].[DiscontinuedDate]," + Environment.NewLine + 
+"    [t1].[ThumbnailPhotoFileName]," + Environment.NewLine +
+"    [t1].[rowguid]," + Environment.NewLine +
+"    [t1].[ModifiedDate]" + Environment.NewLine +
+"FROM (" + Environment.NewLine +
+"    SELECT [ProductID]," + Environment.NewLine +   
+"        [Name]," + Environment.NewLine +
+"        [ProductNumber]," + Environment.NewLine +  
+"        [Color]," + Environment.NewLine +
+"        CAST([StandardCost] AS MONEY) AS [StandardCost]," + Environment.NewLine +
+"        CAST([ListPrice] AS MONEY) AS [ListPrice]," + Environment.NewLine +
+"        [Size]," + Environment.NewLine +
+"        [Weight]," + Environment.NewLine +
+"        [ProductCategoryID]," + Environment.NewLine +
+"        [ProductModelID]," + Environment.NewLine +
+"        [SellStartDate]," + Environment.NewLine +
+"        [SellEndDate]," + Environment.NewLine +
+"        [DiscontinuedDate]," + Environment.NewLine +
+"        [ThumbnailPhotoFileName]," + Environment.NewLine +
+"        [rowguid]," + Environment.NewLine +
+"        [ModifiedDate]" + Environment.NewLine +
+"    FROM [dbo].[Product_SM] AS [t1]" + Environment.NewLine +
+"    ) AS [t1]" + Environment.NewLine +
+"EXEC sys.sp_set_session_context N'client_correlation_id'," + Environment.NewLine +
+"    NULL;" + Environment.NewLine 
+;
 
-";
-
-            string expectedSql = @"|~K~|SELECT|~E~| |~K~|TOP|~E~| (1000001) 1 |~K~|AS|~E~| [c22],
-	[t1].[ProductID],
-	[t1].[Name],
-	[t1].[ProductNumber],
-	[t1].[Color],
-	[t1].[StandardCost],
-	[t1].[ListPrice],
-	[t1].[Size],
-	[t1].[Weight],
-	[t1].[ProductCategoryID],
-	[t1].[ProductModelID],
-	[t1].[SellStartDate],
-	[t1].[SellEndDate],
-	[t1].[DiscontinuedDate],
-	[t1].[ThumbnailPhotoFileName],
-	[t1].[rowguid],
-	[t1].[ModifiedDate]
-|~K~|FROM|~E~| (
-	|~K~|SELECT|~E~| [ProductID],
-		[Name],
-		[ProductNumber],
-		[Color],
-		CAST([StandardCost] |~K~|AS|~E~| |~K~|MONEY|~E~|) |~K~|AS|~E~| [StandardCost],
-		CAST([ListPrice] |~K~|AS|~E~| |~K~|MONEY|~E~|) |~K~|AS|~E~| [ListPrice],
-		[Size],
-		[Weight],
-		[ProductCategoryID],
-		[ProductModelID],
-		[SellStartDate],
-		[SellEndDate],
-		[DiscontinuedDate],
-		[ThumbnailPhotoFileName],
-		[rowguid],
-		[ModifiedDate]
-	|~K~|FROM|~E~| [dbo].[Product_SM] |~K~|AS|~E~| [t1]
-	) |~K~|AS|~E~| [t1]
-";
+            string expectedSql = @"|~K~|SELECT|~E~| |~K~|TOP|~E~| (1000001) 1 |~K~|AS|~E~| [c22]," + Environment.NewLine +
+"\t[t1].[ProductID]," + Environment.NewLine +
+"	[t1].[Name]," + Environment.NewLine +
+"	[t1].[ProductNumber]," + Environment.NewLine +
+"	[t1].[Color]," + Environment.NewLine +
+"	[t1].[StandardCost]," + Environment.NewLine +
+"	[t1].[ListPrice]," + Environment.NewLine +
+"	[t1].[Size]," + Environment.NewLine +
+"	[t1].[Weight]," + Environment.NewLine +
+"	[t1].[ProductCategoryID]," + Environment.NewLine +
+"	[t1].[ProductModelID]," + Environment.NewLine +
+"	[t1].[SellStartDate]," + Environment.NewLine +
+"	[t1].[SellEndDate]," + Environment.NewLine +
+"	[t1].[DiscontinuedDate]," + Environment.NewLine +
+"	[t1].[ThumbnailPhotoFileName]," + Environment.NewLine +
+"	[t1].[rowguid]," + Environment.NewLine +
+"	[t1].[ModifiedDate]" + Environment.NewLine +
+"|~K~|FROM|~E~| (" + Environment.NewLine +
+"	|~K~|SELECT|~E~| [ProductID]," + Environment.NewLine +
+"		[Name]," + Environment.NewLine +
+"		[ProductNumber]," + Environment.NewLine +
+"		[Color]," + Environment.NewLine +
+"		CAST([StandardCost] |~K~|AS|~E~| |~K~|MONEY|~E~|) |~K~|AS|~E~| [StandardCost]," + Environment.NewLine +
+"		CAST([ListPrice] |~K~|AS|~E~| |~K~|MONEY|~E~|) |~K~|AS|~E~| [ListPrice]," + Environment.NewLine +
+"		[Size]," + Environment.NewLine +
+"		[Weight]," + Environment.NewLine +
+"		[ProductCategoryID]," + Environment.NewLine +
+"		[ProductModelID]," + Environment.NewLine +
+"		[SellStartDate]," + Environment.NewLine +
+"		[SellEndDate]," + Environment.NewLine +
+"		[DiscontinuedDate]," + Environment.NewLine +
+"		[ThumbnailPhotoFileName]," + Environment.NewLine +
+"		[rowguid]," + Environment.NewLine +
+"		[ModifiedDate]" + Environment.NewLine +
+"	|~K~|FROM|~E~| [dbo].[Product_SM] |~K~|AS|~E~| [t1]" + Environment.NewLine +
+"	) |~K~|AS|~E~| [t1]" + Environment.NewLine;
             // SQL Formatter for DirectQuery
             var actual = SqlFormatter.FormatSql(sqlQuery);
 
