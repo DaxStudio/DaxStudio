@@ -24,7 +24,6 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
-//using ADOTabular.Utils;
 using Caliburn.Micro;
 using Dax.ViewModel;
 using DAXEditorControl;
@@ -2586,44 +2585,51 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(SendTextToEditor message, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(message.DatabaseName) && Databases != null)
+            try
             {
-                if (Databases.Any(db => db.Name == message.DatabaseName))
-                    if (Connection.DatabaseName != message.DatabaseName)
-                    {
-                        try
+                if (!string.IsNullOrEmpty(message.DatabaseName) && Databases != null)
+                {
+                    if (Databases.Any(db => db.Name == message.DatabaseName))
+                        if (Connection.DatabaseName != message.DatabaseName)
                         {
-                            MetadataPane.ChangeDatabase(message.DatabaseName);
-                            OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                            try
+                            {
+                                MetadataPane.ChangeDatabase(message.DatabaseName);
+                                OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
+                                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"), cancellationToken);
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
-                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"), cancellationToken);
-                        }
-                    }
-                    else
-                        OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
+                        else
+                            OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
+                }
+
+                // make sure that the query does not have excessively long lines
+                // as these are both hard to read and they can freeze up the UI
+                // while the syntax highlighting runs 
+                var sm = new LongLineStateMachine(Constants.MaxLineLength);
+                var newContent = sm.ProcessString(message.TextToSend);
+
+                InsertTextAtSelection(newContent, message.RunQuery, message.ReplaceQueryBuilderQuery);
+
+                if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
+
+                //run the query
+                await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget), cancellationToken);
+
+                // un-select text
+                var editor = GetEditor();
+                editor.SelectionLength = 0;
+                editor.SelectionStart = editor.Text.Length;
             }
-
-            // make sure that the query does not have excessively long lines
-            // as these are both hard to read and they can freeze up the UI
-            // while the syntax highlighting runs 
-            var sm = new LongLineStateMachine(Constants.MaxLineLength);
-            var newContent = sm.ProcessString(message.TextToSend);
-
-            InsertTextAtSelection(newContent, message.RunQuery, message.ReplaceQueryBuilderQuery);
-
-            if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
-
-            //run the query
-            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget), cancellationToken);
-
-            // un-select text
-            var editor = GetEditor();
-            editor.SelectionLength = 0;
-            editor.SelectionStart = editor.Text.Length;
-
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel),"HandleAsync<SendTextToEditor>", ex.Message);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error sending text to editor: {ex.Message}"), cancellationToken);
+            }
         }
 
         public Task HandleAsync(DefineMeasureOnEditor message, CancellationToken cancellationToken)
