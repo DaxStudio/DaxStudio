@@ -1794,7 +1794,7 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         #region Execute Query
-        private Stopwatch _queryStopWatch;
+        private Stopwatch _queryStopWatch = new Stopwatch();
         private Timer _timer = new Timer(300);
 
         public Stopwatch QueryStopWatch
@@ -1939,7 +1939,6 @@ namespace DaxStudio.UI.ViewModels
 
             NotifyOfPropertyChange(() => ElapsedQueryTime);
             _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
-            _queryStopWatch?.Reset();
         }
 
         private void StartTimer()
@@ -1947,7 +1946,7 @@ namespace DaxStudio.UI.ViewModels
             
             _timer.Elapsed += _timer_Elapsed;
             _timer.Start();
-            _queryStopWatch = new Stopwatch();
+            _queryStopWatch.Reset();
             _queryStopWatch.Start();
         }
 
@@ -2249,56 +2248,6 @@ namespace DaxStudio.UI.ViewModels
                 }
 
             }
-        }
-
-
-        private bool GenerateQueryForSelectedMetadataItem()
-        {
-            const string unknownValue = "<UNKNOWN>";
-            const string queryHeader = "// Generated DAX Query\n";
-            string objectType = unknownValue;
-            string objectName = unknownValue;
-            string query = string.Empty;
-            var selection = this.MetadataPane.SelectedItems.ToList()[0];
-            switch (selection) {
-                case TreeViewTable t:
-                    objectType = "Table";
-                    objectName = t.Caption;
-                    query = $"{queryHeader}EVALUATE {t.DaxName}";
-                    break;
-                case TreeViewColumn c when c.IsColumn:
-                    objectType = "Column";
-                    objectName = c.Caption;
-                    query = $"{queryHeader}EVALUATE VALUES({c.DaxName})";
-                    break;
-                case TreeViewColumn m when m.IsMeasure:
-                    objectType = "Measure";
-                    objectName = m.Caption;
-                    if (this.Connection.SelectedModel.Capabilities.TableConstructor)
-                        query = $"{queryHeader}EVALUATE {{ {m.DaxName} }}";
-                    else
-                        query = $"{queryHeader}EVALUATE ROW(\"{m.Caption}\", {m.DaxName})";
-                    break;
-                case TreeViewColumn h when h.Column is ADOTabularHierarchy:
-                    objectType = "Hierarchy";
-                    objectName = h.Caption;
-                    var hier = ((ADOTabularHierarchy)h.Column);
-                    query = $"{queryHeader}EVALUATE GROUPBY({hier.Table.DaxName},\n{string.Join(",\n", hier.Levels.Select(l => l.Column.DaxName))}\n)";
-                    break;
-                default:
-
-                    break;
-            }
-
-            if (objectType == unknownValue)
-            {
-                // todo - do we need a different message box here or is the standard warning enough?
-                return false;
-            }
-
-
-
-            return false;
         }
 
 
