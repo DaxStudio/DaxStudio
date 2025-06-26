@@ -24,7 +24,6 @@ using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
-//using ADOTabular.Utils;
 using Caliburn.Micro;
 using Dax.ViewModel;
 using DAXEditorControl;
@@ -1192,7 +1191,7 @@ namespace DaxStudio.UI.ViewModels
             return true;
         }
 
-        public bool IsClosing { get; private set; } = false;
+        public bool IsClosing { get; private set; }
 
         public ConnectionManager Connection { get; }
 
@@ -2017,7 +2016,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync<RunQueryEvent>", "Error running query");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error running query: {ex.Message}"),cancellationToken);
             }
         }
 
@@ -2585,44 +2584,51 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(SendTextToEditor message, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(message.DatabaseName) && Databases != null)
+            try
             {
-                if (Databases.Any(db => db.Name == message.DatabaseName))
-                    if (Connection.DatabaseName != message.DatabaseName)
-                    {
-                        try
+                if (!string.IsNullOrEmpty(message.DatabaseName) && Databases != null)
+                {
+                    if (Databases.Any(db => db.Name == message.DatabaseName))
+                        if (Connection.DatabaseName != message.DatabaseName)
                         {
-                            MetadataPane.ChangeDatabase(message.DatabaseName);
-                            OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                            try
+                            {
+                                MetadataPane.ChangeDatabase(message.DatabaseName);
+                                OutputMessage($"Current Database changed to '{message.DatabaseName}'");
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
+                                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"), cancellationToken);
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "{class} {method} {message}", "DocumentViewModel", "Handle<SendTextToEditor>", ex.Message);
-                            await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while attempt to change to the '{message.DatabaseName}': {ex.Message}"), cancellationToken);
-                        }
-                    }
-                    else
-                        OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
+                        else
+                            OutputWarning($"Could not switch to the '{message.DatabaseName}' database");
+                }
+
+                // make sure that the query does not have excessively long lines
+                // as these are both hard to read and they can freeze up the UI
+                // while the syntax highlighting runs 
+                var sm = new LongLineStateMachine(Constants.MaxLineLength);
+                var newContent = sm.ProcessString(message.TextToSend);
+
+                InsertTextAtSelection(newContent, message.RunQuery, message.ReplaceQueryBuilderQuery);
+
+                if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
+
+                //run the query
+                await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget), cancellationToken);
+
+                // un-select text
+                var editor = GetEditor();
+                editor.SelectionLength = 0;
+                editor.SelectionStart = editor.Text.Length;
             }
-
-            // make sure that the query does not have excessively long lines
-            // as these are both hard to read and they can freeze up the UI
-            // while the syntax highlighting runs 
-            var sm = new LongLineStateMachine(Constants.MaxLineLength);
-            var newContent = sm.ProcessString(message.TextToSend);
-
-            InsertTextAtSelection(newContent, message.RunQuery, message.ReplaceQueryBuilderQuery);
-
-            if (!message.RunQuery) return;  // exit here if we don't want to run the selected text
-
-            //run the query
-            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget), cancellationToken);
-
-            // un-select text
-            var editor = GetEditor();
-            editor.SelectionLength = 0;
-            editor.SelectionStart = editor.Text.Length;
-
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel),"HandleAsync<SendTextToEditor>", ex.Message);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error sending text to editor: {ex.Message}"), cancellationToken);
+            }
         }
 
         public Task HandleAsync(DefineMeasureOnEditor message, CancellationToken cancellationToken)
@@ -2844,7 +2850,7 @@ namespace DaxStudio.UI.ViewModels
             // it unless the user activates this document and makes a change
             if (editor == null) return;
 
-            using (TextWriter tw = new StreamWriter(fileName, false, _defaultFileEncoding))
+            using (StreamWriter tw = new StreamWriter(fileName, false, _defaultFileEncoding))
             {
 
                 var text = string.Empty;
@@ -2853,7 +2859,6 @@ namespace DaxStudio.UI.ViewModels
                     text = editor.Text;
                 });
                 await tw.WriteAsync(text);
-                tw.Close();
             }
             LastAutoSaveUtcTime = DateTime.UtcNow;
         }
@@ -2896,10 +2901,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 var package = Package.Open(FileName, FileMode.Create);
                 Uri uriDax = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
-                using (TextWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
+                using (StreamWriter tw = new StreamWriter(package.CreatePart(uriDax, "text/plain", CompressionOption.Maximum).GetStream(), Encoding.UTF8))
                 {
                     tw.Write(GetEditor().Text);
-                    tw.Close();
                 }
 
 
@@ -2941,10 +2945,9 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                using (TextWriter tw = new StreamWriter(FileName, false, _defaultFileEncoding))
+                using (StreamWriter tw = new StreamWriter(FileName, false, _defaultFileEncoding))
                 {
                     tw.Write(GetEditor().Text);
-                    tw.Close();
                 }
 
                 // Save all visible TraceWatchers
@@ -3119,20 +3122,18 @@ namespace DaxStudio.UI.ViewModels
                 Uri uri = PackUriHelper.CreatePartUri(new Uri(pathJson, UriKind.Relative));
                 using (Package package = Package.Open(path, FileMode.Create))
                 {
-                    using (TextWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
+                    using (StreamWriter tw = new StreamWriter(package.CreatePart(uri, "application/json", CompressionOption.Maximum).GetStream(), Encoding.Unicode))
                     {
                         tw.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                        tw.Close();
                     }
                     package.Close();
                 }
             }
             else
             {
-                using (TextWriter tw2 = new StreamWriter(path, false, Encoding.Unicode))
+                using (StreamWriter tw2 = new StreamWriter(path, false, Encoding.Unicode))
                 {
                     tw2.Write(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    tw2.Close();
                 }
             }
 
@@ -3329,7 +3330,7 @@ namespace DaxStudio.UI.ViewModels
             if (!package.PartExists(uriTom)) return package;
 
             var part = package.GetPart(uriTom);
-            using (TextReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
+            using (StreamReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
             {
                 // put contents in edit window
                 editor.Dispatcher.Invoke(() =>
@@ -3338,7 +3339,6 @@ namespace DaxStudio.UI.ViewModels
                     editor.Document.Text = tr.ReadToEnd();
                     editor.Document.EndUpdate();
                 });
-                tr.Close();
 
             }
 
@@ -3348,7 +3348,7 @@ namespace DaxStudio.UI.ViewModels
 
         private void LoadSingleFile()
         {
-            using (TextReader tr = new StreamReader(FileName, true))
+            using (StreamReader tr = new StreamReader(FileName, true))
             {
                 var editor = GetEditor();
                 // put contents in edit window
@@ -3358,7 +3358,6 @@ namespace DaxStudio.UI.ViewModels
                     editor.Document.Text = tr.ReadToEnd();
                     editor.Document.EndUpdate();
                 });
-                tr.Close();
             }   
         }
 
@@ -3952,7 +3951,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (editor == null) {
                 Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<NavigateToLocationEvent>", "Unable to get a reference to the editor");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Unable to get a reference to the edit pane, please try again"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Unable to get a reference to the edit pane, please try again"),cancellationToken);
                 return Task.CompletedTask;
             }
 
@@ -3983,7 +3982,7 @@ namespace DaxStudio.UI.ViewModels
             } catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<NavigateToLocationEvent>",  "Unable to get a reference to the editor" );
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Unable to get a reference to the edit TextArea, please try again"));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Unable to get a reference to the edit TextArea, please try again"), cancellationToken);
             }
 
             return Task.CompletedTask;
@@ -4461,13 +4460,13 @@ namespace DaxStudio.UI.ViewModels
         #region ISaveable 
         public FileIcons Icon { get {
 
-                return !IsDiskFileName || string.Equals(Path.GetExtension(FileName), ".dax", StringComparison.InvariantCultureIgnoreCase) ? FileIcons.Dax : FileIcons.Other; } }
+                return !IsDiskFileName || Path.GetExtension(FileName).Equals(".dax", StringComparison.OrdinalIgnoreCase) ? FileIcons.Dax : FileIcons.Other; } }
 
         public string ImageResource
         {
             get
             {
-                return !IsDiskFileName || string.Equals(Path.GetExtension(FileName), ".dax", StringComparison.InvariantCultureIgnoreCase) ? "daxDrawingImage" : "fileDrawingImage";
+                return !IsDiskFileName || Path.GetExtension(FileName).Equals( ".dax",StringComparison.OrdinalIgnoreCase) ? "daxDrawingImage" : "fileDrawingImage";
             }
         }
 
@@ -5253,7 +5252,7 @@ namespace DaxStudio.UI.ViewModels
             if (editor == null) {
                 var msg = "Unable to toggle comment - Editor is null";
                 Log.Error(Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync<ToggleCommentEvent>", msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg),CancellationToken.None);
                 System.Media.SystemSounds.Beep.Play();
                 return Task.CompletedTask; 
             }
