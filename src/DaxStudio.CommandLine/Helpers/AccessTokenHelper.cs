@@ -2,6 +2,7 @@
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using Microsoft.AnalysisServices.AdomdClient;
+using System;
 using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Helpers
@@ -18,11 +19,25 @@ namespace DaxStudio.CommandLine.Helpers
 
             return true;
         }
-        public static AccessToken GetAccessToken()
+        public static AccessToken GetAccessToken(string connStr)
         {
+            var tokenScope = AccessTokenHelper.GetScopeFromConnectionString(connStr);
             var hwnd = NativeMethods.GetConsoleWindow();
-            var authResult = PbiServiceHelper.SwitchAccount(hwnd, new HaveLastUsedUPNStub()).Result;
+            var authResult = EntraIdHelper.SwitchAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope ).Result;
             return new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+        }
+
+        private static AccessTokenScope GetScopeFromConnectionString(string connStr)
+        {
+            var builder = new OleDbConnectionStringBuilder(connStr);
+            if (builder.DataSource.IsAsAzure())
+            {
+                return AccessTokenScope.AsAzure;
+            }
+            else
+            {
+                return AccessTokenScope.PowerBI;
+            }
         }
     }
 }

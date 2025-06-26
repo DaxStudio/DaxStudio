@@ -25,6 +25,7 @@ using System.Xml;
 using ADOTabular.Interfaces;
 using DaxStudio.Common;
 using ADOTabular.Extensions;
+using TaskExtensions = DaxStudio.UI.Extensions.TaskExtensions;
 
 namespace DaxStudio.UI.Model
 {
@@ -462,7 +463,9 @@ namespace DaxStudio.UI.Model
         public bool IsConnected { get
             {
                 if (_connection == null) return false;
-                return _connection.State == ConnectionState.Open;
+                // make sure both connections are open so that we can run queries 
+                // and return metadata information
+                return _connection.State == ConnectionState.Open && _dmvConnection.State == ConnectionState.Open;
             }
         }
         public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT ?? false;
@@ -1076,7 +1079,7 @@ namespace DaxStudio.UI.Model
             var openConnTask = _connection.OpenAsync();
 
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
-            await Task.WhenAll(openConnTask, openDmvConnTask);
+            await TaskExtensions.WhenAll(openConnTask, openDmvConnTask);
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
 
             SetSelectedDatabase(_dmvConnection.Database);
@@ -1086,7 +1089,7 @@ namespace DaxStudio.UI.Model
         private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
-            var newToken = PbiServiceHelper.RefreshToken(token);
+            var newToken = EntraIdHelper.RefreshToken(token);
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
             return newToken;
 

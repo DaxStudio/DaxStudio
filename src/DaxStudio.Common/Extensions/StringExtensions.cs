@@ -92,5 +92,10 @@ namespace DaxStudio.Common.Extensions
             if (url.HasUriProtocolScheme("asazure")) return true;
             return false;
         }
+        public static bool IsAsAzure(this string url)
+        {
+            if (url.HasUriProtocolScheme("asazure")) return true;
+            return false;
+        }
     }
 }

@@ -653,6 +653,7 @@
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                                    Height="30"
                                    ToolTip="Open a New Query"
+                                   KeyTip="N"
                                    DockPanel.Dock="Top"
                                    cal:Message.Attach="[Event Click] = [Action NewQuery]">
                         </Fluent:Button>
@@ -660,6 +661,7 @@
                         <Fluent:Button
                             Name="btnNewQueryConnected"
                             Header="New (Copy Connection)"
+                            KeyTip="W"
                             ToolTip="Open a New Query with the current connection"
                             Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                             Height="30"
@@ -668,8 +670,9 @@
                         </Fluent:Button>
 
                         <Fluent:BackstageTabItem 
-                        Header="Open" 
-                        Height="30"
+                            Header="Open" 
+                            KeyTip="O"
+                            Height="30"
                             Background="{DynamicResource Theme.Brush.MenuBar.Back}"
                             >
 
@@ -799,6 +802,7 @@
 
                         <Fluent:Button Name="btnSave" 
                                    Header="Save" 
+                                   KeyTip="S"
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}" 
                                    HorizontalContentAlignment="Left"
                                    Height="30"
@@ -807,18 +811,20 @@
 
                         <Fluent:Button Name="btnSaveAs" 
                                    Header="Save As" 
+                                   KeyTip="A"
                                    Height="30"
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"
                                    cal:Message.Attach="[Event Click] = [Action SaveAs]">
                         </Fluent:Button>
 
-                        <Fluent:BackstageTabItem Header="Options" Height="30">
+                        <Fluent:BackstageTabItem Header="Options" KeyTip="P" Height="30">
                             <ContentControl x:Name="Options" cal:View.Model="{Binding Path=Options}"  />
                         </Fluent:BackstageTabItem>
 
                                                
                         <Fluent:Button Name="btnExit" 
-                                   Header="Exit" 
+                                   Header="Close DAX Studio" 
+                                       KeyTip="C"
                                    Foreground="{DynamicResource Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}"  
                                    VerticalAlignment="Bottom"
                                    DockPanel.Dock="Bottom"

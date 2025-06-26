@@ -8,10 +8,12 @@ using System.Text.RegularExpressions;
 
 namespace DaxStudio.UI.Model
 {
+    
 
     internal static class SqlFormatter 
     {
         #region ISqlFormatProvider
+        
 
         // SQL Formatter for DirectQuery
         private static ISqlTokenizer _tokenizer = new PoorMansTSqlFormatterLib.Tokenizers.TSqlStandardTokenizer();
@@ -37,6 +39,7 @@ namespace DaxStudio.UI.Model
             UppercaseKeywords = true
         });
 
+        static Regex dqSqlRemoveSessionContext = new Regex(@"EXEC\s+sys\.sp_set_session_context\s+N'client_correlation_id',.*?;", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
         static Regex searchColumnNames = new Regex(@"c\d+", RegexOptions.Compiled);
         //static Regex searchTableNames = new Regex(@"t\d+", RegexOptions.Compiled);
         /// <summary>
@@ -165,9 +168,16 @@ namespace DaxStudio.UI.Model
 #pragma warning restore CS8321 // Local function is declared but never used
         }
 
+        private static string RemoveSessionContext(this string textData)
+        {
+            // Remove the EXEC sys.sp_set_session_context N'client_correlation_id', 'c1234567890';
+            return dqSqlRemoveSessionContext.Replace(textData, string.Empty);
+        }
+
         public static string FormatSql(string textData)
         {
-            var tokenizedSql = _tokenizer.TokenizeSQL(textData);
+            var cleanedSql = textData.RemoveSessionContext();
+            var tokenizedSql = _tokenizer.TokenizeSQL(cleanedSql);
             var parsedSql = _parser.ParseSQL(tokenizedSql);
             var renamedSql = RenameSqlColumnAliases(parsedSql);
             string text = _formatter.FormatSQLTree(renamedSql);
