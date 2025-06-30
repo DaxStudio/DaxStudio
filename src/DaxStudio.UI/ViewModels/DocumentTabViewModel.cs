@@ -285,7 +285,6 @@ namespace DaxStudio.UI.ViewModels
                 newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
 
                 await ActivateItemAsync(newDoc);
-                //ActiveDocument = newDoc;
 
             }
             catch (Exception ex)

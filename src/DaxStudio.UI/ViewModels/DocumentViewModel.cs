@@ -3145,9 +3145,9 @@ namespace DaxStudio.UI.ViewModels
             //ChangeConnection();
             //IsDirty = false; 
 
-            await Execute.OnUIThreadAsync(async () =>
+            Execute.OnUIThread(() =>
             {
-                await Task.Run(() => { LoadFile(FileName); });
+                 LoadFile(FileName); 
             });
 
             // todo - should we be checking for exceptions in this continuation
@@ -3209,63 +3209,67 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadFile(string fileName)
         {
-
-            if (File.Exists(FileName))
+            using (new StatusBarMessage(this, $"Loading file: {FileName}..."))
             {
-                FileName = fileName;
-                DisplayName = Path.GetFileName(FileName);
-                IsDiskFileName = true;
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), $"Loading file: {fileName}");
 
-                if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+                if (File.Exists(FileName))
                 {
-                    ImportAnalysisData(fileName, string.Empty);
-                    return;
-                }
+                    FileName = fileName;
+                    DisplayName = Path.GetFileName(FileName);
+                    IsDiskFileName = true;
 
-                if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-                {
-                    // try to get default dict file
-                    ImportAnalysisData(fileName, string.Empty);
-                    return;
-                }
-
-                try
-                {
-                    _isLoadingFile = true;
-
-                    if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                    if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                     {
+                        ImportAnalysisData(fileName, string.Empty);
+                        return;
+                    }
 
-                        using (var package = LoadPackageFile())
+                    if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // try to get default dict file
+                        ImportAnalysisData(fileName, string.Empty);
+                        return;
+                    }
+
+                    try
+                    {
+                        _isLoadingFile = true;
+
+                        if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                         {
-                            LoadState(package);
+
+                            using (var package = LoadPackageFile())
+                            {
+                                LoadState(package);
+                            }
+                        }
+                        else
+                        {
+                            LoadSingleFile();
+                            LoadState();
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        LoadSingleFile();
-                        LoadState();
+                        Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
+                    }
+                    finally
+                    {
+                        _isLoadingFile = false;
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
+                    Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
+                    OutputError(string.Format("The file '{0}' was not found", FileName));
                 }
-                finally
-                {
-                    _isLoadingFile = false;
-                }
-            }
-            else
-            {
-                Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
-                OutputError(string.Format("The file '{0}' was not found", FileName));
-            }
 
 
-            IsDirty = false;
-            State = DocumentState.Loaded;
+                IsDirty = false;
+                State = DocumentState.Loaded;
+            }
         }
 
         private Package LoadPackageFile()
