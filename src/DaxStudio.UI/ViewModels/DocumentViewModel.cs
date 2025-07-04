@@ -61,6 +61,7 @@ using Dax.Vpax.Obfuscator;
 using DaxStudio.Common.Extensions;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using ADOTabular.Extensions;
+using Microsoft.PowerBI.Api.Models.Credentials;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -3747,8 +3748,8 @@ namespace DaxStudio.UI.ViewModels
             QueryResultsPane.ResultsIcon = icon;
         }
 
-        public FindReplaceDialogViewModel FindReplaceDialog { get; set; }
-        public GotoLineDialogViewModel GotoLineDialog { get; set; }
+        internal FindReplaceDialogViewModel FindReplaceDialog { get; set; }
+        internal GotoLineDialogViewModel GotoLineDialog { get; set; }
 
         #region Highlighting
 

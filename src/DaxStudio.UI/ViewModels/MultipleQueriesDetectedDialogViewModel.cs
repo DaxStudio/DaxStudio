@@ -6,7 +6,7 @@ using DaxStudio.UI.Enums;
 namespace DaxStudio.UI.ViewModels
 {
     [Export]
-    public class MultipleQueriesDetectedDialogViewModel:Screen
+    public class MultipleQueriesDetectedDialogViewModel:BaseDialogViewModel
     {
         public MultipleQueriesDetectedDialogViewModel(IGlobalOptions options)
         {
@@ -42,9 +42,10 @@ namespace DaxStudio.UI.ViewModels
             await TryCloseAsync(true);
         }
 
-        public void Cancel()
+        public override void Close()
         {
             Result = MultipleQueriesDetectedDialogResult.Cancel;
+            TryCloseAsync();
         }
 
         public bool RememberChoice { get; set; }

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class GotoLineDialogViewModel : Screen, INotifyDataErrorInfo
+    class GotoLineDialogViewModel : BaseDialogViewModel, INotifyDataErrorInfo
     {
         private int _lineNo;
         private int _maxLines;
@@ -105,7 +105,7 @@ namespace DaxStudio.UI.ViewModels
         }
 
         
-        public async void Cancel()
+        public async override void Close()
         {
             await this.TryCloseAsync();
         }

@@ -14,7 +14,7 @@ using Serilog;
 namespace DaxStudio.UI.ViewModels
 {
     [Export]
-    public class HelpAboutViewModel : Screen
+    public class HelpAboutViewModel : BaseDialogViewModel
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IDaxStudioHost _host;
@@ -54,32 +54,6 @@ namespace DaxStudio.UI.ViewModels
                 BuildDate = "<n/a>";
             }
 
-
-            //VersionChecker.PropertyChanged += VersionChecker_PropertyChanged;
-            //Task.Run(() => 
-            //    {
-            //        this.VersionChecker.Update(); 
-            //    })
-            //    .ContinueWith((previous)=> {
-            //        //  checking for exceptions and log them
-            //        if (previous.IsFaulted)
-            //        {
-            //            Log.Error(previous.Exception, "{class} {method} {message}", nameof(HelpAboutViewModel), "ctor", $"Error updating version information: {previous.Exception.Message}");
-            //            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Unable to check for an updated release on github"));
-            //            CheckingUpdateStatus = false;
-            //            NotifyOfPropertyChange(() => CheckingUpdateStatus);
-            //            return;
-            //        }
-
-            //        CheckingUpdateStatus = false;
-            //        UpdateStatus = VersionChecker.VersionStatus;
-            //        VersionIsLatest = VersionChecker.VersionIsLatest;
-            //        DownloadUrl = VersionChecker.DownloadUrl;
-            //        NotifyOfPropertyChange(() => VersionIsLatest);
-            //        NotifyOfPropertyChange(() => DownloadUrl);
-            //        NotifyOfPropertyChange(() => UpdateStatus);
-            //        NotifyOfPropertyChange(() => CheckingUpdateStatus);
-            //    },TaskScheduler.Default);
         }
 
         public void VersionUpdateStarting(object sender, EventArgs e)
@@ -94,19 +68,10 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => UpdateStatus);
             NotifyOfPropertyChange(() => LastChecked);
             VersionIsLatest = VersionChecker.VersionIsLatest;
-            //DownloadUrl = VersionChecker.DownloadUrl;
             NotifyOfPropertyChange(() => VersionIsLatest);
             NotifyOfPropertyChange(() => DownloadUrl);
         }
 
-        //void VersionChecker_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        //{
-        //    if (e.PropertyName == "VersionStatus")
-        //    {
-
-        //        VersionUpdateComplete();
-        //    }
-        //}
 
         public string FullVersionNumber { get; }
         
@@ -114,7 +79,6 @@ namespace DaxStudio.UI.ViewModels
         
         public string BuildDate { get; }
 
-        //[Import(typeof(IVersionCheck))]
         public IVersionCheck VersionChecker { get; }
 
         public SortedList<string,string> ReferencedAssemblies
@@ -197,8 +161,6 @@ namespace DaxStudio.UI.ViewModels
 
             var names = assembly.GetManifestResourceNames();
             var name = names.FirstOrDefault(n => n.EndsWith(resourceName));
-            //string ns = "DaxStudio.Standalone";
-            //string name = String.Format("{0}.MyDocuments.Document.pdf", ns);
             using (var stream = assembly.GetManifestResourceStream(name))
             {
                 if (stream == null) return null;
@@ -207,6 +169,11 @@ namespace DaxStudio.UI.ViewModels
                 var str = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
                 return str;
             }
+        }
+
+        public override void Close()
+        {
+            TryCloseAsync();
         }
     }
 

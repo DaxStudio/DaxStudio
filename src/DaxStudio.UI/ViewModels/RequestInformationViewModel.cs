@@ -14,7 +14,7 @@ using Screen = Caliburn.Micro.Screen;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class RequestInformationViewModel : Screen, ITraceDiagnostics
+    public class RequestInformationViewModel : BaseDialogViewModel, ITraceDiagnostics
     {
         private DialogResult _dialogResult;
 
@@ -47,5 +47,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public DialogResult Result => _dialogResult;
+
+        public override void Close()
+        {
+            _dialogResult = DialogResult.Cancel;
+            TryCloseAsync();
+        }
     }
 }

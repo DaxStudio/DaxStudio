@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class CustomTraceDialogViewModel:Screen
+    public class CustomTraceDialogViewModel:BaseDialogViewModel
     {
 
         public CustomTraceDialogViewModel(IGlobalOptions options)
@@ -55,7 +55,7 @@ namespace DaxStudio.UI.ViewModels
                 return false;
             }
         }
-        public void Cancel()
+        public override void Close()
         {
             Result = DialogResult.Cancel;
         }

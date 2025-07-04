@@ -11,7 +11,7 @@
              xmlns:ui="http://schemas.modernwpf.com/2019"
              xmlns:local="clr-namespace:DaxStudio.UI.Views" 
              xmlns:conv1="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-
+             CloseIsDefaultCancel="True"
              Icon="{DynamicResource aboutDrawingImage}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"

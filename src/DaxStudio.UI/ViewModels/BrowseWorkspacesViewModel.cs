@@ -17,7 +17,7 @@ using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class BrowseWorkspacesViewModel : Screen
+    class BrowseWorkspacesViewModel : BaseDialogViewModel
     {
         private AuthenticationResult _authResult;
         private IntPtr? _viewHwnd;
@@ -143,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
             this.TryCloseAsync();
         }
 
-        public void Cancel()
+        public override void Close()
         {
             Result = System.Windows.Forms.DialogResult.Cancel;
             this.TryCloseAsync();

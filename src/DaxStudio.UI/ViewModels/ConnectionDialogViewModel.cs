@@ -24,7 +24,7 @@ using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
-    class ConnectionDialogViewModel : Screen
+    class ConnectionDialogViewModel : BaseDialogViewModel
         , IHandle<ApplicationActivatedEvent>
         , IHandle<RefreshConnectionDialogEvent>
     {
@@ -553,11 +553,13 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
                 // we cache this to a local variable in case there are any exceptions thrown while building the ConnectionString
+                //connectionString = $"{ConnectionString};User ID= ;";
                 connectionString = ConnectionString;
-                
 
                 var token = default(AccessToken);
-                if (serverType == ServerType.AzureAnalysisServices || serverType == ServerType.PowerBIService)
+                
+
+                if ((serverType == ServerType.AzureAnalysisServices || serverType == ServerType.PowerBIService))
                 {
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var tokenScope = serverType == ServerType.AzureAnalysisServices ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;

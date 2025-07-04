@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public  class GettingStartedViewModel:Screen, IDisposable
+    class GettingStartedViewModel:BaseDialogViewModel, IDisposable
     {
         public GettingStartedViewModel(DocumentViewModel document, IGlobalOptions options)
         {
@@ -16,8 +16,9 @@ namespace DaxStudio.UI.ViewModels
             Document = document;
         }
 
-        public void Close()
+        public override void Close()
         {
+            System.Diagnostics.Debug.WriteLine("Dialog Close");
             this.TryCloseAsync();
         }
 

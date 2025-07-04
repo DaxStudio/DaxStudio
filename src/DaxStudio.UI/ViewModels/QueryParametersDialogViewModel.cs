@@ -9,7 +9,7 @@ using System.ComponentModel.Composition;
 namespace DaxStudio.UI.ViewModels
 {
     [Export]
-    public class QueryParametersDialogViewModel:Screen
+    public class QueryParametersDialogViewModel:BaseDialogViewModel
     {
         static QueryParametersDialogViewModel()
         {
@@ -55,7 +55,7 @@ namespace DaxStudio.UI.ViewModels
             await TryCloseAsync();
         }
 
-        public async void Cancel()
+        public async override void Close()
         {
             DialogResult = DialogResult.Cancel;
             await TryCloseAsync();

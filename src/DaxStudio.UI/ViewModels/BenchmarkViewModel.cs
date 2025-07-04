@@ -17,8 +17,9 @@ using DaxStudio.UI.ResultsTargets;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class BenchmarkViewModel : Screen, IDisposable, ICancellable
-        , IHandle<ServerTimingsEvent>
+    class BenchmarkViewModel : BaseDialogViewModel
+        ,IDisposable ,ICancellable
+        ,IHandle<ServerTimingsEvent>
         ,IHandle<TraceChangedEvent>
         ,IHandle<UpdateGlobalOptions>
     {

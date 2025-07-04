@@ -31,7 +31,7 @@ namespace DaxStudio.UI.ViewModels
         public long CPUDuration { get; set; }
     }
 
-    public class CaptureDiagnosticsViewModel:Screen,
+    class CaptureDiagnosticsViewModel: BaseDialogViewModel,
         IHandle<ViewMetricsCompleteEvent>,
         IHandle<TraceChangedEvent>,
         IHandle<QueryTraceCompletedEvent>,
@@ -289,9 +289,9 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
             } 
         } 
-        public async void Close()
+        public override void Close()
         {
-            await TryCloseAsync();
+            TryCloseAsync();
         }
         private bool _canCancel = true;
         private bool _includeTOM;

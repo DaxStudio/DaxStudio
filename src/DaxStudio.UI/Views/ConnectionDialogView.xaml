@@ -13,11 +13,13 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         x:Class="DaxStudio.UI.Views.ConnectionDialogView"
         Caption="Connect"
+        
         Icon="{DynamicResource connectDrawingImage}"
         Padding="10 24 10 200"
         DataContext="{Binding}" 
         Loaded="UserControl_Loaded" 
         Width="800">
+    <!-- CloseIsDefaultCancel="True"-->
     <!--         Style="{StaticResource DaxStudioDialogStyle}" -->
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
@@ -39,13 +41,7 @@
             </conv:ResourceLookupConverter>
 
             <Style TargetType="{x:Type TextBlock}" x:Key="disabledText" >
-                <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />-->
                 <Style.Triggers>
-
-                    <!--<Trigger Property="IsEnabled" Value="True">
-                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextColorKey}}" />
-                    </Trigger>-->
-
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter Property="Foreground" Value="Transparent" />
                     </Trigger>
@@ -69,45 +65,28 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
-            
+
 
             <ResourceDictionary.MergedDictionaries>
                 <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetaDataPaneViewStyle.xaml"/>
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.RadioButton.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Button.xaml"/>
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/ExpanderTemplates.xaml"/>-->
-                <!--<ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>-->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ctrl:DaxStudioDialog.Resources>
-    <!--<Border Padding="10,10,10,200" Margin="0,0,0,0"  >
-        <Border Style="{StaticResource DaxStudioDialog}" >-->
 
-    <Grid  Height="Auto"
-                   >
+    <Grid  Height="Auto">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <!-- MinHeight="131"-->
             <RowDefinition Height="Auto"/>
-
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <!--<Grid.Effect>
-                    <fluent:GrayscaleEffect/>
-                </Grid.Effect>-->
-        <!--<StackPanel Orientation="Horizontal" Margin="0 0 0 16">
-                    <Image Source="{DynamicResource connectDrawingImage}"/>
-                    <TextBlock Text="Connect" 
-                           Style="{StaticResource DialogCaption}"/>
-                </StackPanel>-->
-        <!-- Radio Button Grid-->
+
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -152,7 +131,7 @@
                                                  Style="{StaticResource MaterialDesignCircularProgressBar}" 
                                                  IsIndeterminate="True"
                                                  Margin="0,0,5,0" Width="16" Height="16"/>
-                            <!-- Source="{Binding Icon,Converter={StaticResource EmbeddedSsasIcons}}"  -->
+
                             <Image x:Name="pbiIcon" 
                                            ap:ImageBindingHelper.SourceResourceKey="{Binding Path=Icon, Converter={StaticResource IconNames}, Mode=OneTime}"
                                            Margin="0,0,5,0" 
@@ -176,7 +155,6 @@
                                  x:Name="rdoTabularServer" 
                                  VerticalAlignment="Center" 
                                  IsChecked="{Binding ServerModeSelected, Mode=TwoWay}" 
-                                 
                                  Grid.Column="0" 
                                  Grid.Row="1"
                                  GroupName="ConnectionType">
@@ -258,19 +236,7 @@
                         </Grid>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
-                
-                <!--<ComboBox.Style>
-                                    <Style TargetType="{x:Type ComboBox}">
-                                        <Style.Triggers>
-                                            <Trigger Property="Text" Value="{x:Null}">
-                                                <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
-                                            </Trigger>
-                                            <Trigger Property="Text" Value="">
-                                                <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ComboBox.Style>-->
+
                 <i:Interaction.Behaviors>
                     <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
                 </i:Interaction.Behaviors>
@@ -303,29 +269,15 @@
                                Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
                                Visibility="{Binding HasPowerPivotModel, Converter={StaticResource BoolToNotHiddenConverter}}"
                                TextWrapping="Wrap">Launch DAX Studio from an Excel file containing a Power Pivot model to enable this option.</TextBlock>
-                <!--<TextBlock Margin="40 0"
-                           Visibility="{Binding HasPowerPivotModel , Converter={StaticResource BoolToNotCollapsedConverter}}"
-                           Foreground="{DynamicResource Theme.Brush.Accent2}"
-                               >Warning: Power Pivot model not detected</TextBlock>-->
             </StackPanel>
         </Grid>
 
-
-
-        <!-- Template="{StaticResource RevealExpanderTemp}"-->
         <Expander x:Name="myExpander" Header="Advanced Options"
 					      ExpandDirection="Down" 
                           IsExpanded="False"       
 					      Grid.Row="2" 
                           Grid.Column="0"  Margin="10,24,0,8" >
-            <!-- Template="{StaticResource RevealExpanderTemp}" -->
-            <!--<Expander.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock FontWeight="SemiBold" Margin="0,10,0,10" FontSize="13"><Run Text="Advanced Options"/></TextBlock>
-                        </DataTemplate>
-                    </Expander.HeaderTemplate>-->
-            <!--</GroupBox>-->
-            <!--<GroupBox Header="Server Options" Margin="0,0,0,0" Name="grpOptions" >-->
+
             <Grid x:Name="AdvancedOptions"  Height="Auto" Margin="10,24,0,0" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="125"/>
@@ -347,19 +299,19 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Initial Catalog: " Height="28" HorizontalAlignment="Left"  x:Name="lblCatalogs" VerticalAlignment="Top"  Grid.Row="0" Grid.Column="0" IsEnabled="{Binding ServerModeSelected}"/>
-                    <!--<Image Source="{DynamicResource refresh_toolbarDrawingImage}" Width="16" Height="16" Style="{StaticResource SpinningImage}" Grid.Column="1"
-                               Margin="0 0 4 0"
-                                >-->
-                        <Image Source="{DynamicResource refresh_toolbarDrawingImage}" Width="16" Height="16" ap:ImageSpinner.Spin="True" Grid.Column="1"
+                    <Label Content="Initial Catalog: " 
+                           Height="28" 
+                           HorizontalAlignment="Left"  
+                           x:Name="lblCatalogs" 
+                           VerticalAlignment="Top"  Grid.Row="0" Grid.Column="0" 
+                           IsEnabled="{Binding ServerModeSelected}"/>
+                    <Image Source="{DynamicResource refresh_toolbarDrawingImage}" Width="16" Height="16" ap:ImageSpinner.Spin="True" Grid.Column="1"
                                Margin="0 0 4 0"
                                Visibility="{Binding IsLoadingDatabases, Converter={StaticResource BoolToVisibilityConverter}}" >
-                            <!-- -->
                     </Image>
 
                 </Grid>
 
-                <!--SelectedItem="{Binding Path=InitialCatalog}"-->
                 <ComboBox Height="23" Grid.Column="1" Grid.Row="0" x:Name="cboCatalogs" 
                             HorizontalAlignment="Stretch"
                             IsEditable="True"      
@@ -450,20 +402,12 @@
                             Width="70" 
                             IsDefault="True"
                             Style="{DynamicResource AccentButtonStyle}"
-                            VerticalAlignment="Bottom" 
-                            
+                            VerticalAlignment="Bottom"
                             />
-            <!-- 
-                    BorderBrush="Gray"
-                            BorderThickness="0 0 0 2"
-                    mah:ControlsHelper.CornerRadius="5"
-                    Style="{DynamicResource DaxStudioButtonStyle}"
-                    -->
+
             <Button Content="Cancel"  
                             HorizontalAlignment="Right" 
-                             
                             Margin="8 0 0 0"
-
                             x:Name="Cancel" 
                             VerticalAlignment="Bottom" 
                             Width="70" 

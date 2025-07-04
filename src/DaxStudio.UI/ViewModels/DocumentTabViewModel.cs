@@ -689,7 +689,7 @@ namespace DaxStudio.UI.ViewModels
         protected override void OnActivationProcessed(IScreen item, bool success)
         {
             base.OnActivationProcessed(item, success);
-            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnActivationProcessed), $"Activation processed for {item.DisplayName} with success: {success}");
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnActivationProcessed), $"Activation processed for {item?.DisplayName??"<null>"} with success: {success}");
         }
 
     }
