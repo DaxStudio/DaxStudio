@@ -1,7 +1,9 @@
 ﻿using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Common.Interfaces;
-using Microsoft.AnalysisServices.AdomdClient;
+#if NET472
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
+#endif
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
 using Microsoft.Identity.Client.Extensions.Msal;
@@ -293,18 +295,21 @@ namespace DaxStudio.Common
 
         private struct TokenDetails
         {
-            public TokenDetails(AccessToken token)
+#if NET472
+            public TokenDetails(Adomd.AccessToken token)
             {
                 AccessToken = token.Token;
                 ExpiresOn = token.ExpirationTime;
                 UserContext = token.UserContext as AccessTokenContext;
             }
+#endif
             public TokenDetails(Tom.AccessToken token)
             {
                 AccessToken = token.Token;
                 ExpiresOn = token.ExpirationTime;
                 UserContext = token.UserContext as AccessTokenContext;
             }
+
             public string AccessToken;
             public DateTimeOffset ExpiresOn;
             public AccessTokenContext UserContext;
@@ -318,16 +323,18 @@ namespace DaxStudio.Common
             return newToken;
         }
 
-        public static AccessToken RefreshToken(AccessToken token)
+#if NET472
+        public static Adomd.AccessToken RefreshToken(Adomd.AccessToken token)
         {
             var details = new TokenDetails(token);
             var authResult = RefreshTokenInternal(details);
-            AccessToken newToken = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
+            Adomd.AccessToken newToken = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
+#endif
 
-
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId)
+#if NET472
+        public static Adomd.AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId)
         {
             // TODO
             var context = new AccessTokenContext
@@ -336,16 +343,35 @@ namespace DaxStudio.Common
                 TokenScope = scope,
                 TenantId = tenantId
             };
-            var accessToken = new AccessToken(token, expiry, context);
+            var accessToken = new Adomd.AccessToken(token, expiry, context);
             return accessToken;
         }
 
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
+        public static Adomd.AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
         {
-            var accessToken = new AccessToken(token, expiry, context);
+            var accessToken = new Adomd.AccessToken(token, expiry, context);
+            return accessToken;
+        }
+#else
+        public static Tom.AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId)
+        {
+            // TODO
+            var context = new AccessTokenContext
+            {
+                UserName = username,
+                TokenScope = scope,
+                TenantId = tenantId
+            };
+            var accessToken = new Tom.AccessToken(token, expiry, context);
             return accessToken;
         }
 
+        public static Tom.AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
+        {
+            var accessToken = new Tom.AccessToken(token, expiry, context);
+            return accessToken;
+        }
+#endif
         private static AuthenticationResult RefreshTokenInternal(TokenDetails token)
         {
             var lastUpn = (token.UserContext?.UserName) ?? string.Empty;
