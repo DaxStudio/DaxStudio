@@ -17,7 +17,7 @@ using DaxStudio.Common;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class BrowseWorkspacesViewModel : Screen
+    class BrowseWorkspacesViewModel : BaseDialogViewModel
     {
         private AuthenticationResult _authResult;
         private IntPtr? _viewHwnd;
@@ -76,8 +76,16 @@ namespace DaxStudio.UI.ViewModels
             
             // first get the authentication token
             AccountStatus = "Connecting...";
+            string tenantId = string.Empty; 
             // getting workspaces only requires PowerBI scope, so we can use the same token for switching accounts
-            _authResult =  switchAccount ? await EntraIdHelper.SwitchAccountAsync(hwnd, Options, AccessTokenScope.PowerBI) : await EntraIdHelper.AcquireTokenAsync(hwnd, Options, AccessTokenScope.PowerBI) ;
+            if (switchAccount)
+            {
+                (_authResult, tenantId) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, AccessTokenScope.PowerBI, string.Empty);
+            }
+            else
+            {
+                _authResult = await EntraIdHelper.AcquireTokenAsync(hwnd, Options, AccessTokenScope.PowerBI, string.Empty);
+            }
             AccountStatus = string.Empty;
             if (_authResult == null) {
                 // if the user cancelled we should exit here
@@ -143,7 +151,7 @@ namespace DaxStudio.UI.ViewModels
             this.TryCloseAsync();
         }
 
-        public void Cancel()
+        public override void Close()
         {
             Result = System.Windows.Forms.DialogResult.Cancel;
             this.TryCloseAsync();

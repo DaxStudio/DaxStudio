@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class VertipaqAnalyzerDialogViewModel:Caliburn.Micro.Screen, IVpaOptions
+    public class VertipaqAnalyzerDialogViewModel : BaseDialogViewModel, IVpaOptions
     {
         IVpaOptions _options;
         IEventAggregator _eventAggregator;
@@ -25,16 +25,19 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool _vpaxReadStatisticsFromData;
-        public bool VpaxReadStatisticsFromData {  get => _vpaxReadStatisticsFromData; 
-            set { 
+        public bool VpaxReadStatisticsFromData
+        {
+            get => _vpaxReadStatisticsFromData;
+            set
+            {
                 _vpaxReadStatisticsFromData = value;
                 NotifyOfPropertyChange();
-            } 
+            }
         }
         public bool VpaxReadStatisticsFromDirectQuery { get; set; }
 
         public DirectLakeExtractionMode VpaxDirectLakeExtractionMode { get; set; }
-        public int VpaxSampleReferentialIntegrityViolations { get;set; }
+        public int VpaxSampleReferentialIntegrityViolations { get; set; }
         public VpaTableColumnDisplay VpaTableColumnDisplay { get; set; }
         public DialogResult Result { get; private set; } = DialogResult.Cancel;
         public bool VpaxAdjustSegmentsMetrics { get; set; }
@@ -42,7 +45,7 @@ namespace DaxStudio.UI.ViewModels
         public int VpaxStatsColumnBatchSize { get; set; }
         public async void Ok()
         {
-            
+
             if (VpaxDontShowOptionsDialog)
             {
                 // save the setting back to the global options
@@ -57,6 +60,12 @@ namespace DaxStudio.UI.ViewModels
             }
             Result = DialogResult.OK;
             await TryCloseAsync();
+        }
+
+        public override void Close()
+        {
+            Result = DialogResult.Cancel;
+            TryCloseAsync();
         }
     }
 }

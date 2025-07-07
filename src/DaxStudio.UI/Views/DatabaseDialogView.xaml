@@ -9,70 +9,38 @@
              xmlns:i2="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:beh="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:trig="clr-namespace:DaxStudio.UI.Triggers"
-
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:cal="http://caliburnmicro.com"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              Caption="Select Database"
+             CloseIsDefaultCancel="True"
              Icon="{DynamicResource connectDrawingImage}"
-             Style="{StaticResource DaxStudioDialogStyle}"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-                      Focusable="False"
+             Focusable="False"
              MinWidth="400"
              MinHeight="450">
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
-            <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
-        </ResourceDictionary.MergedDictionaries>
-
-            <!--<Style TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
-            <Setter Property="Margin" Value="4,2"/>
-                <Setter Property="Padding" Value="8,2"/>
-            </Style>-->
+                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudioDialog.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate  DataType="{x:Type model:AutoSaveIndexEntry}">
-                
-                    <StackPanel Orientation="Horizontal">
+
+                <StackPanel Orientation="Horizontal">
                     <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}" VerticalAlignment="Center" MinWidth="24"/>
                     <Grid>
                         <Image  Margin="0,3,10,3" ap:ImageBindingHelper.SourceResourceKey="{Binding ImageResource}" Width="32"/>
-                        <!--<Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
-                                                        Margin="0,3,10,3" Width="32" Height="32" />-->
-                            <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
-                        </Grid>
-                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding DisplayName}" FontSize="18"/>
-                            <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
-                        </StackPanel>
-                    </StackPanel>
-                
-                <!--<StackPanel Orientation="Vertical">
-                                        
-                    <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldOpen}"/>
-                    <TextBlock x:Name="DisplayName" Text="{Binding DisplayName}"></TextBlock>
-                    <TextBlock x:Name="OriginalFileName" Text="{Binding OriginalFileName}"></TextBlock>
-                </StackPanel>-->
-            </DataTemplate>
-            
-            <!--<DataTemplate  DataType="{x:Type viewModel:DocumentViewModel}">
-                
-                <StackPanel Orientation="Horizontal">
-                    <CheckBox x:Name="ShouldOpen" IsChecked="{Binding ShouldSave}" VerticalAlignment="Center"></CheckBox>
-                    <Grid>
-                        <Image Source="{Binding Path=Icon,Converter={StaticResource FileIcons}}"
-                                                    Margin="0,3,10,3" Width="32" Height="32" />
                         <TextBlock Text="{Binding ExtensionLabel}" Foreground="DimGray" FontSize="10" FontWeight="Bold" Margin="6,12,0,0"></TextBlock>
                     </Grid>
                     <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding FileAndExtension}" FontSize="18"/>
+                        <TextBlock Text="{Binding DisplayName}" FontSize="18"/>
                         <TextBlock Text="{Binding Folder}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="DimGray"></TextBlock>
                     </StackPanel>
                 </StackPanel>
-            </DataTemplate>-->
-   
+            </DataTemplate>
         </ResourceDictionary>
     </ctrl:DaxStudioDialog.Resources>
         

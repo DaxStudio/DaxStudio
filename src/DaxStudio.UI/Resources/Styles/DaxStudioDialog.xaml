@@ -3,9 +3,9 @@
                     xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
                     xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                     xmlns:view="clr-namespace:DaxStudio.UI.Views"
-                    xmlns:ui="http://schemas.modernwpf.com/2019"
-                    
-                    >
+                    xmlns:ui="http://schemas.modernwpf.com/2019" 
+                    xmlns:cal="http://caliburnmicro.com"
+                    xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
 
 
     <ResourceDictionary.MergedDictionaries>
@@ -104,8 +104,12 @@
 										        Data="{DynamicResource PinClose}"
 										        Fill="{DynamicResource Theme.Brush.Default.Fore}"
 										        Stretch="Uniform" />
-                                    
 
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="Click">
+                                            <cal:ActionMessage MethodName="Close"/>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
                                 </Button>
                                 <ContentPresenter Grid.Row="1" Grid.ColumnSpan="2" x:Name="PART_Content" Content="{TemplateBinding Content}" />
 

@@ -16,10 +16,9 @@
     MaxHeight="600"
     MaxWidth="550"
     Padding="0 0 0 100"
-
     MinWidth="500"
     DataContext="{Binding}"
-    x:Name="dlgHelpAbout">
+    >
     <ctrl:DaxStudioDialog.Resources>
         <ResourceDictionary>
             <!--<BitmapImage x:Key="DaxStudioLogo"  UriSource="..\images\daxstudio-splash.png"/>-->

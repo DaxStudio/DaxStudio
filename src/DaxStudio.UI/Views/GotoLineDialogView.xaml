@@ -65,7 +65,7 @@
                   
                 </Button>
                 
-                <Button x:Name="Cancel"  Margin="2px" IsCancel="True" Style="{DynamicResource DefaultButtonStyle}">Cancel</Button>
+                <Button x:Name="Close"  Margin="2px" IsCancel="True" Style="{DynamicResource DefaultButtonStyle}">Cancel</Button>
                 </StackPanel>
             </Grid>
         

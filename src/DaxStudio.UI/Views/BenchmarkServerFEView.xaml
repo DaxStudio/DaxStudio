@@ -66,7 +66,7 @@
 
         <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="0 16 0 0">
             <Button x:Name="Run" IsDefault="True"  Content="Run" Margin="3" Padding="3" MinWidth="55" Style="{DynamicResource AccentButtonStyle}"/>
-            <Button x:Name="Cancel" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
+            <Button x:Name="Close" IsCancel="True" Content="Cancel" Margin="3" Padding="3" MinWidth="55"/>
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Vertical">

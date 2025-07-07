@@ -10,10 +10,8 @@ using DaxStudio.UI.Extensions;
 using Serilog;
 using DaxStudio.UI.Events;
 using DaxStudio.Common;
-using System.Windows.Controls;
 using System.Threading.Tasks;
 using System.Threading;
-using ICSharpCode.AvalonEdit.Rendering;
 
 
 
@@ -25,7 +23,7 @@ namespace DaxStudio.UI.ViewModels
         Prev
     }
         
-    public class FindReplaceDialogViewModel : Screen, IViewAware
+    class FindReplaceDialogViewModel : BaseDialogViewModel, IViewAware
     {
 
 
@@ -209,7 +207,7 @@ namespace DaxStudio.UI.ViewModels
             FindText();
         }
 
-        public void Close()
+        public override void Close()
         {
             IsVisible = false;
         }
