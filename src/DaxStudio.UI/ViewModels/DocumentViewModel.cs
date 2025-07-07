@@ -1448,8 +1448,9 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // prompt for access token
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = EntraIdHelper.SwitchAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI).Result;
-                    token = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                    var scopeType = server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
+                    var (authResult,tenantId) = EntraIdHelper.PromptForAccountAsync(hwnd, Options, scopeType, server).Result;
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, scopeType, tenantId);
                 }
 
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, String.Empty, string.Empty,

@@ -19,5 +19,6 @@ namespace DaxStudio.Common
         public string UserName { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public AccessTokenScope TokenScope { get; set; }
+        public string TenantId { get; set; }
     }
 }

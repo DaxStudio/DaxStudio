@@ -76,8 +76,16 @@ namespace DaxStudio.UI.ViewModels
             
             // first get the authentication token
             AccountStatus = "Connecting...";
+            string tenantId = string.Empty; 
             // getting workspaces only requires PowerBI scope, so we can use the same token for switching accounts
-            _authResult =  switchAccount ? await EntraIdHelper.SwitchAccountAsync(hwnd, Options, AccessTokenScope.PowerBI) : await EntraIdHelper.AcquireTokenAsync(hwnd, Options, AccessTokenScope.PowerBI) ;
+            if (switchAccount)
+            {
+                (_authResult, tenantId) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, AccessTokenScope.PowerBI, string.Empty);
+            }
+            else
+            {
+                _authResult = await EntraIdHelper.AcquireTokenAsync(hwnd, Options, AccessTokenScope.PowerBI, string.Empty);
+            }
             AccountStatus = string.Empty;
             if (_authResult == null) {
                 // if the user cancelled we should exit here
