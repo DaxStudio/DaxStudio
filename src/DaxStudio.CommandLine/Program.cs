@@ -140,6 +140,10 @@ namespace DaxStudio.CommandLine
                 .WithExample(new[] { "vpax", "c:\\temp\\export\\model.vpax", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" })
                 .WithExample(new[] { "vpax", "c:\\temp\\export\\model.vpax", "-c", "\"Data Source=localhost\\tabular;Initial Catalog=Adventure Works\"" });
 
+            config.AddCommand<AccessTokenCommand>("accesstoken")
+                            .WithDescription("Returns an access token that can be used to run other commands without repeated authentication prompts")
+                            .WithExample(new[] { "accesstoken", "-s", "asazure://australiasoutheast.asazure.windows.net/myserver", "-d", "\"Adventure Works\"" })
+                            .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" });
 #if DEBUG
                 // Custom Trace
                 config.AddCommand<CustomTraceCommand>("customtrace")

@@ -78,13 +78,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\DirectLakeModeDescriptionAttribute.cs" />
+    <Compile Include="Commands\AccessTokenCommand.cs" />
+    <Compile Include="Commands\CommandSettingsBase.cs" />
     <Compile Include="Helpers\AccessTokenHelper.cs" />
     <Compile Include="Helpers\NativeMethods.cs" />
     <Compile Include="UIStubs\CmdLineDocument.cs" />
     <Compile Include="UIStubs\CmdLineHost.cs" />
     <Compile Include="UIStubs\CmdLineMetadataPane.cs" />
     <Compile Include="Commands\CaptureDiagnosticsCommand.cs" />
-    <Compile Include="Commands\CommandSettingsBase.cs" />
+    <Compile Include="Commands\CommandSettingsRawBase.cs" />
     <Compile Include="Commands\CommandSettingsFileBase.cs" />
     <Compile Include="Commands\CommandSettingsFolderBase.cs" />
     <Compile Include="Commands\CustomTraceCommand.cs" />
