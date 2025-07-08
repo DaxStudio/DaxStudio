@@ -24,10 +24,6 @@
     <OutputPath>bin\Cmd Only\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data.DataSetExtensions" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
   </ItemGroup>
   <ItemGroup>

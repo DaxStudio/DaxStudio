@@ -6,7 +6,7 @@ using System.Threading;
 #if NET472
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 #else
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
 using Adomd = Microsoft.AnalysisServices;
 #endif
 
