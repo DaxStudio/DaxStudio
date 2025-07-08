@@ -44,8 +44,6 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Configuration" />
     <Reference Update="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -75,7 +73,6 @@
     <PackageReference Include="Humanizer" Version="2.14.1" />
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
     <PackageReference Include="MSTest" Version="3.9.2" />
-    <PackageReference Include="MSTestHacks" Version="2.3.20" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.6" />
