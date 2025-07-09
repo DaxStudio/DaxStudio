@@ -6,8 +6,8 @@
 #define myAppMinor
 #define myAppRevision
 #define myAppBuild
-#define MyAppVersionFull GetVersionComponents('..\release\DaxStudio.exe', myAppMajor, myAppMinor, myAppRevision, myAppBuild)
-#define MyAppVersion GetVersionNumbersString('..\release\DaxStudio.exe')
+#define MyAppVersionFull GetVersionComponents('..\release\bin\net8.0-windows\DaxStudio.exe', myAppMajor, myAppMinor, myAppRevision, myAppBuild)
+#define MyAppVersion GetVersionNumbersString('..\release\bin\net8.0-windows\DaxStudio.exe')
 #define MyAppPublisher "DAX Studio"
 #define MyAppURL "https://daxstudio.org"
 #define MyAppExeName "DaxStudio.exe"

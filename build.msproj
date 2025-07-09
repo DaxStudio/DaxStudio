@@ -76,7 +76,7 @@
   </Target>
 
   <PropertyGroup>
-    <MyAssemblies>.\Release\bin\DaxStudio.dll</MyAssemblies>
+    <MyAssemblies>.\Release\bin\net8.0-windows\DaxStudio.dll</MyAssemblies>
   </PropertyGroup>
 
   <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb">
