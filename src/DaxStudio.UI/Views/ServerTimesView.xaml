@@ -12,6 +12,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:cal="http://caliburnmicro.com" xmlns:Fluent="urn:fluent-ribbon"
+                          xmlns:ui="http://schemas.modernwpf.com/2019"
                           mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
              cal:View.ApplyConventions="False">
@@ -41,7 +42,13 @@
             <conv:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter"/>
 
             <controls:BindingProxy x:Key="ShowObjectName" Data="{Binding ShowObjectName, Converter={StaticResource BoolToCollapsedConverter}}"/>
-            
+
+            <Style x:Key="TraceButton" BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+                <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
+                <Setter Property="Padding" Value="4 4 4 4"/>
+                <Setter Property="Margin" Value="2 2" />
+            </Style>
+
             <Style x:Key="TimelineCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
                 <Setter Property="ToolTip">
                     <Setter.Value>
@@ -280,7 +287,7 @@
                     </primitives:DataGridCellPresenter.Content>
                 </primitives:DataGridCellPresenter>
             </DataTemplate>
-            
+            <ctrl:BindingProxy x:Key="Proxy" Data="{Binding}" />
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -381,15 +388,50 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource bottom_layout_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
-                        
+
                     </StackPanel>
                 </ToggleButton>
+
+                <!--<Button DockPanel.Dock="Right" Style="{StaticResource TraceButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>...</TextBlock>
+                    </StackPanel>
+                    
+                    <ui:FlyoutService.Flyout>
+                        <ui:CommandBarFlyout
+                            x:Name="CommandBarFlyout2"
+                            Placement="BottomEdgeAlignedLeft">
+                            <ui:CommandBarFlyout.SecondaryCommands>
+                                <ui:AppBarToggleButton Label="SQL"  cal:Message.Attach="[Event Click] = [Action ToggleSql]" IsChecked="True">
+                                </ui:AppBarToggleButton>
+                                <ui:AppBarToggleButton Label="TabularQuery" cal:Message.Attach="[Event Click] = [Action ToggleTabularQueries]" IsChecked="True"/>
+                            </ui:CommandBarFlyout.SecondaryCommands>
+                        </ui:CommandBarFlyout>
+                    </ui:FlyoutService.Flyout>
+                </Button>-->
+                
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowMetrics}"
                               ToolTip="Show ExecutionMetrics events">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{DynamicResource metrics_toolbarDrawingImage}"
                                Margin="0 0 4 0"/>
                         <TextBlock>Metrics</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowTabularQueries}"
+                              ToolTip="Show TabularQuery events">
+                    <StackPanel Orientation="Horizontal">
+                        <!--<Image Source="{DynamicResource metrics_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>-->
+                        <TextBlock>TQ</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowSql}"
+                              ToolTip="Show SQL events">
+                    <StackPanel Orientation="Horizontal">
+                        <!--<Image Source="{DynamicResource metrics_toolbarDrawingImage}"
+                               Margin="0 0 4 0"/>-->
+                        <TextBlock>SQL</TextBlock>
                     </StackPanel>
                 </ToggleButton>
                 <ToggleButton DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}" IsChecked="{Binding ServerTimingDetails.ShowInternal}"

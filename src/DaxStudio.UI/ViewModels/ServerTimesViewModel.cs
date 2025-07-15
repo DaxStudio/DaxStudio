@@ -1462,8 +1462,16 @@ namespace DaxStudio.UI.ViewModels
                               ((e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
                                   && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan
+                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.TabularQuery
+                                  && e.ClassSubclass.Subclass != DaxStudioTraceEventSubclass.TabularQueryInternal
                                   && e.Class != DaxStudioTraceEventClass.ExecutionMetrics
+                                  && e.ClassSubclass.QueryLanguage != DaxStudioTraceEventClassSubclass.Language.SQL
                                ) && ServerTimingDetails.ShowScan)
+                               ||
+                               (e.ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL && ServerTimingDetails.ShowSql)
+                               ||
+                              ((e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.TabularQuery 
+                              || e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.TabularQueryInternal) && ServerTimingDetails.ShowTabularQueries)
                               ||
                               (e.ClassSubclass.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted && ServerTimingDetails.ShowRewriteAttempts)
                               ||
@@ -1739,6 +1747,8 @@ namespace DaxStudio.UI.ViewModels
                 case "ShowCache":
                 case "ShowInternal":
                 case "ShowMetrics":
+                case "ShowSql":
+                case "ShowTabularQueries":
                     NotifyOfPropertyChange(nameof(StorageEngineEvents));
                     break;
                 case "ShowObjectName":
@@ -2097,6 +2107,22 @@ namespace DaxStudio.UI.ViewModels
                 _globalOptions.ShowObjectNameInServerTimings = value;
                 NotifyOfPropertyChange();
             }
+        }
+        public bool ShowSql { get => ServerTimingDetails.ShowSql; set => ServerTimingDetails.ShowSql = value; }
+        public bool ShowTabularQueries { get => ServerTimingDetails.ShowTabularQueries; set => ServerTimingDetails.ShowTabularQueries = value; }
+
+        public void ToggleSql()
+        {             
+            ShowSql = !ShowSql;
+            NotifyOfPropertyChange(nameof(ShowSql));
+            NotifyOfPropertyChange(nameof(StorageEngineEvents));
+        }
+
+        public void ToggleTabularQueries()
+        {
+            ShowTabularQueries = !ShowTabularQueries;
+            NotifyOfPropertyChange(nameof(ShowTabularQueries));
+            NotifyOfPropertyChange(nameof(StorageEngineEvents));
         }
 
         public TooltipStruct Tooltips { get; } = new TooltipStruct();
