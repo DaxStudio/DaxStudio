@@ -7,6 +7,7 @@ using DaxStudio.Interfaces.Attributes;
 using Serilog.Events;
 using Serilog.Core;
 using DaxStudio.Common.Interfaces;
+using System.Drawing;
 
 
 namespace DaxStudio.Interfaces
@@ -41,6 +42,8 @@ namespace DaxStudio.Interfaces
         MultipleQueriesDetectedOnPaste EditorMultipleQueriesDetectedOnPaste { get; set; }
         bool EditorShowFunctionInsightsOnHover { get; set; }
         bool EditorShowLineNumbers { get; set; }
+        bool EditorShowWhitespace { get; set; }
+        bool EditorShowControlCharacters { get; set; }
         bool EditorWordWrap { get; set; }
         bool ExcludeHeadersWhenCopyingResults { get; set; }
         DateTime LastVersionCheckUTC { get; set; }

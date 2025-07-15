@@ -5010,6 +5010,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
+            NotifyOfPropertyChange(nameof(ShowWhitespace));
+            NotifyOfPropertyChange(nameof(ShowControlCharacters));
             if (Options.UseIndentCodeFolding) StartFoldingManager();
             else StopFoldingManager();
             if (foldingStrategy != null)
@@ -5369,5 +5371,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IEditor Editor { get => _editor; }
+
+        public bool ShowWhitespace { get => Options.EditorShowWhitespace; }
+        public bool ShowControlCharacters { get => Options.EditorShowControlCharacters; }
+
     }
 }
