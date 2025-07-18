@@ -9,6 +9,7 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.ViewModels;
 using DAXEditorControl;
+using DaxStudio.Tests.Utils;
 
 namespace DaxStudio.Tests
 {

@@ -444,7 +444,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual(1, tabDate.FolderItems.Count, "Table Name is correct");
             Assert.AreEqual("Calendar Folder", tabDate.FolderItems[0].Name);
-            Assert.IsInstanceOfType<ADOTabularHierarchy>(tabDate.Columns["Calendar"]);
+            Assert.IsInstanceOfType(tabDate.Columns["Calendar"], typeof(ADOTabularHierarchy));
             Assert.IsTrue(tabDate.Columns["Calendar"].IsInDisplayFolder);
             //Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
 

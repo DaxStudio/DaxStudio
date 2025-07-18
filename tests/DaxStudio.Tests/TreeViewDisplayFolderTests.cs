@@ -187,7 +187,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(folder.Name,"Amount Folder");
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Amount") as TreeViewColumn;
-            Assert.IsInstanceOfType<TreeViewColumn>(col);
+            Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
             Assert.AreEqual(MetadataImages.Column, col.MetadataImage);
             
 
@@ -215,7 +215,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(folder.Name, "Price");
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Price") as TreeViewColumn;
-            Assert.IsInstanceOfType<TreeViewColumn>(col);
+            Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
             Assert.AreEqual(MetadataImages.Column, col.MetadataImage);
 
 
@@ -242,7 +242,7 @@ namespace DaxStudio.Tests
             Assert.AreEqual(folder.Name, "Dates");
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Date_Hierarchy1") as TreeViewColumn;
-            Assert.IsInstanceOfType<TreeViewColumn>(col);
+            Assert.IsInstanceOfType(col, typeof(TreeViewColumn));
             Assert.AreEqual(MetadataImages.Hierarchy, col.MetadataImage);
 
 

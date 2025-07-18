@@ -71,13 +71,14 @@
     <PackageReference Include="Dax.ViewVpaExport" Version="1.10.0" />
     <PackageReference Include="Dax.Vpax" Version="1.10.0" />
     <PackageReference Include="Humanizer" Version="2.14.1" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.3.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.6" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NSubstitute" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.6" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.7" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
-    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageReference Include="System.ValueTuple" Version="4.6.1" />
