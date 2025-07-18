@@ -2304,12 +2304,6 @@ namespace DaxStudio.UI.ViewModels
         public StatusBarViewModel StatusBar { get; set; }
 
 
-        public DataTable ResultsTable
-        {
-            get => QueryResultsPane.ResultsDataTable;
-            set => QueryResultsPane.ResultsDataTable = value;
-        }
-
         public DataSet ResultsDataSet
         {
             get => QueryResultsPane.ResultsDataSet;
@@ -5375,5 +5369,11 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowWhitespace { get => Options.EditorShowWhitespace; }
         public bool ShowControlCharacters { get => Options.EditorShowControlCharacters; }
 
+        public void ClearQueryResults()
+        {
+            QueryResultsPane.Clear();
+            QueryResultsPane.ErrorMessage = string.Empty;
+
+        }
     }
 }

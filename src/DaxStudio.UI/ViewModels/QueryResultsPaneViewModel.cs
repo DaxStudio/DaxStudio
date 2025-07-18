@@ -63,16 +63,6 @@ namespace DaxStudio.UI.ViewModels
         public override string DefaultDockingPane => "DockBottom";
         public override string ContentId => "results";
 
-        public DataTable ResultsDataTable
-        {
-            get => _resultsTable;
-            set
-            {
-                _resultsTable = value;
-                ShowResultsTable = true;
-                NotifyOfPropertyChange(() => ResultsDataView);
-            }
-        }
 
         public DataSet ResultsDataSet
         {
@@ -262,6 +252,8 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(QueryStartedEvent message, CancellationToken cancellation)
         {
+            // if we are not outputting to the grid it should be cleared
+            if (!ShowResultsTable) Clear();
             IsBusy = true;
             return Task.CompletedTask;
         }
@@ -270,7 +262,8 @@ namespace DaxStudio.UI.ViewModels
         {
             IsBusy = false;
             // clear out any data if the query is cancelled
-            ResultsDataTable = new DataTable("Empty");
+            ResultsDataSet?.Dispose();
+            ResultsDataSet = new DataSet("Empty");
             return Task.CompletedTask;
         }
 
@@ -507,6 +500,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _errorMessage = value;
+                if (!string.IsNullOrWhiteSpace(_errorMessage)) Clear();
                 ErrorLocation = RegexHelper.GetQueryErrorLocation(_errorMessage);
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(() => ShowErrorMessage);
@@ -531,7 +525,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void Clear()
         {
-            ResultsDataSet.Tables.Clear();
+            ResultsDataSet?.Tables?.Clear();
             ShowResultsTable = false;
             ResultsMessage = "Results Cleared";
         }

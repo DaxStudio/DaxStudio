@@ -121,22 +121,22 @@ namespace DaxStudio.CommandLine.UIStubs
 
         public void QueryCompleted()
         {
-            // TODO
+            // Not applicable for cmdline
         }
 
         public void QueryCompleted(bool isCancelled)
         {
-            // TODO
+            // Not applicable for cmdline
         }
 
         public void SetResultsMessage(string message, OutputTarget icon)
         {
-            // TODO
+            // Not applicable for cmdline
         }
 
         public void QueryFailed(string errorMessage)
         {
-            // TODO
+            // Not applicable for cmdline
         }
 
         public void OutputQueryError(string errorMessage)
@@ -146,7 +146,12 @@ namespace DaxStudio.CommandLine.UIStubs
 
         public void ClearQueryError()
         {
-            // TODO
+            // Not applicable for cmdline
+        }
+
+        public void ClearQueryResults()
+        {
+            // Not applicable for cmdline
         }
     }
 }

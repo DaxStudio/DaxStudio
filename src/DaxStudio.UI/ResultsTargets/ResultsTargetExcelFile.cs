@@ -5,7 +5,6 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
 using LargeXlsx;
-using Serilog;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -76,8 +75,8 @@ namespace DaxStudio.UI.ResultsTargets
             // Save document 
             await Task.Run(() =>
             {
-
                 runner.OutputMessage("Query Started");
+                runner.ClearQueryResults();
 
                 var sw = Stopwatch.StartNew();
 
@@ -130,7 +129,7 @@ namespace DaxStudio.UI.ResultsTargets
                         sw.Stop();
                         durationMs = sw.ElapsedMilliseconds;
 
-                        runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                        runner.SetResultsMessage($"Query results written to:\n{fileName}", OutputTarget.File);
                         runner.ActivateOutput();
                     }
 

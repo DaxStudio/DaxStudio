@@ -1,12 +1,10 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
-using Serilog;
 using System.Threading;
 
 namespace DaxStudio.UI.ResultsTargets
@@ -66,10 +64,11 @@ namespace DaxStudio.UI.ResultsTargets
         {
             await Task.Run(async () =>
                 {
-
+                    runner.ClearQueryResults();
                     var sw = Stopwatch.StartNew();
                     var dq = textProvider.QueryText;
-                        
+
+
                     //  write results to Excel
                     await runner.Host.Proxy.OutputLinkedResultAsync(dq
                         , runner.SelectedWorksheet

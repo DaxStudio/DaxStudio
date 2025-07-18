@@ -660,7 +660,7 @@
                                                 <MenuItem x:Name="Copy" Header="Copy" 
                                                       cal:Message.Attach="Copy()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>

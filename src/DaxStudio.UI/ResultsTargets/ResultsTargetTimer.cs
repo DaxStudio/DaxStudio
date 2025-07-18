@@ -1,11 +1,8 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.Threading.Tasks;
-using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
-using Serilog;
-using Caliburn.Micro;
+using System;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -35,7 +32,8 @@ namespace DaxStudio.UI.ResultsTargets
         public async Task OutputResultsAsync(IQueryRunner runner, IQueryTextProvider textProvider, string filename)
         {
 
-            await Task.Run(() => { 
+            await Task.Run(() => {
+                runner.ClearQueryResults();
                 var sw = Stopwatch.StartNew();
 
                 var dq = textProvider.QueryText;
@@ -56,7 +54,9 @@ namespace DaxStudio.UI.ResultsTargets
                 var durationMs = sw.ElapsedMilliseconds;
                 runner.OutputMessage(string.Format("Query Completed ({0:N0} row{1} returned)", rowCnt, rowCnt == 1 ? "" : "s"), durationMs);
                 runner.RowCount = rowCnt;
-                runner.SetResultsMessage("Query timings sent to Log tab", OutputTarget.Timer);
+                
+                var durationStr = durationMs < 1000? $"{durationMs} ms" : TimeSpan.FromMilliseconds(durationMs).ToString(@"hh\:mm\:ss\.fff");
+                runner.SetResultsMessage(string.Format("Query Completed in {2} ({0:N0} row{1} returned)", rowCnt, rowCnt == 1 ? "" : "s", durationStr), OutputTarget.Timer);
                 runner.ActivateOutput();
 
             });
