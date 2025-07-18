@@ -38,7 +38,7 @@ namespace DaxStudio.UI.ViewModels
 {
     [DataContract]
     [Export(typeof(IGlobalOptions))]
-    public class OptionsViewModel : Screen, IGlobalOptions, IDisposable
+    public sealed class OptionsViewModel : Screen, IGlobalOptions, IDisposable
     {
         private const string DefaultEditorFontFamily = "Lucida Console";
         private const double DefaultEditorFontSize = 11.0;
@@ -2684,11 +2684,49 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _editorShowWhitespace = false;
+        [DataMember, DefaultValue(false)]
+        [Category("Editor")]
+        [DisplayName("Show Whitespace")]
+        [SortOrder(33)]
+        public bool EditorShowWhitespace
+        {
+            get => _editorShowWhitespace;
+            set
+            {
+                if (_editorShowWhitespace == value) return;
+                _editorShowWhitespace = value;
+                NotifyOfPropertyChange(() => EditorShowWhitespace);
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(EditorShowWhitespace), value, _isInitializing, this);
+            }
+        }
+
+        private bool _editorControlCharacters = false;
+        [DataMember, DefaultValue(false)]
+        [Category("Editor")]
+        [DisplayName("Show Control Characters")]
+        [SortOrder(35)]
+        public bool EditorShowControlCharacters
+        {
+            get => _editorControlCharacters;
+            set
+            {
+                if (_editorControlCharacters == value) return;
+                _editorControlCharacters = value;
+                NotifyOfPropertyChange();
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(EditorShowControlCharacters), value, _isInitializing, this);
+            }
+        }
+
+
+
         #region IDisposable Support
         private bool _disposedValue; // To detect redundant calls
         private MultipleQueriesDetectedOnPaste _removeDirectQueryCode;
 
-        protected virtual void Dispose(bool disposing)
+        void Dispose(bool disposing)
         {
             if (!_disposedValue)
             {

@@ -17,7 +17,7 @@
              d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
         <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
-        
+        <conv:NullToBoolConverter x:Key="NullToBoolConverter" />
         <conv:ResourceLookupConverter x:Key="IconNames">
             <ResourceDictionary>
                 <sys:String x:Key="Information">infoDrawingImage</sys:String>
@@ -84,6 +84,14 @@
                       Focusable="False" >
                 <ListView.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Copy" 
+                                  Command="ApplicationCommands.Copy" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  IsEnabled="{Binding SelectedItem, ElementName=Messages, Converter={StaticResource NullToBoolConverter}}">
+                            <MenuItem.Icon>
+                                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
                         <MenuItem 
                             Header="Clear Log"
                             cal:Message.Attach="Clear()" />

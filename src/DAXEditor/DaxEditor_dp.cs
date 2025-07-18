@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
@@ -348,5 +349,101 @@ namespace DAXEditorControl
             base.OnLostMouseCapture(e);
             System.Diagnostics.Debug.WriteLine("OnLostMouseCapture");
         }
+
+        // Show Spaces Dependency Property
+        private static readonly DependencyProperty ShowSpacesProperty =
+            DependencyProperty.Register("ShowSpaces", typeof(bool), typeof(DAXEditor), new UIPropertyMetadata(false, OnShowSpacesChanged));
+
+        private static void OnShowSpacesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is DAXEditor view)) return;
+            if (e == null) return;
+
+            view.Options.ShowSpaces = (bool)e.NewValue;
+        }
+
+        
+        public bool ShowSpaces
+        {
+            get => (bool)GetValue(ShowSpacesProperty);
+            set => SetValue(ShowSpacesProperty, value);
+        }
+
+        // Show Tabs
+        private static readonly DependencyProperty ShowTabsProperty =
+            DependencyProperty.Register("ShowTabs", typeof(bool), typeof(DAXEditor), new UIPropertyMetadata(false, OnShowTabsChanged));
+
+        private static void OnShowTabsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is DAXEditor view)) return;
+            if (e == null) return;
+
+            view.Options.ShowTabs = (bool)e.NewValue;
+        }
+
+
+        public bool ShowTabs
+        {
+            get => (bool)GetValue(ShowTabsProperty);
+            set => SetValue(ShowTabsProperty, value);
+        }
+
+        // Show Box for Control Characters
+        private static readonly DependencyProperty ShowBoxForControlCharactersProperty =
+            DependencyProperty.Register("ShowBoxForControlCharacters", typeof(bool), typeof(DAXEditor), new UIPropertyMetadata(false, OnShowBoxForControlCharactersChanged));
+
+        private static void OnShowBoxForControlCharactersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is DAXEditor view)) return;
+            if (e == null) return;
+
+            view.Options.ShowBoxForControlCharacters = (bool)e.NewValue;
+        }
+
+        public bool ShowBoxForControlCharacters
+        {
+            get => (bool)GetValue(ShowBoxForControlCharactersProperty);
+            set => SetValue(ShowBoxForControlCharactersProperty, value);
+        }
+
+        // Non Printable Character Brush
+        private static readonly DependencyProperty NonPrintableCharacterBrushProperty =
+            DependencyProperty.Register("NonPrintableCharacterBrush", typeof(Brush), typeof(DAXEditor), new UIPropertyMetadata(new SolidColorBrush(Colors.Transparent), OnNonPrintableCharacterBrushChanged));
+
+        private static void OnNonPrintableCharacterBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is DAXEditor view)) return;
+            if (e == null) return;
+            if ( e.NewValue is SolidColorBrush b)
+            {
+                if (b.Color == Colors.Transparent) return; // do nothing 
+            }
+            view.TextArea.TextView.NonPrintableCharacterBrush = (Brush)e.NewValue;
+        }
+
+        public Brush NonPrintableCharacterBrush
+        {
+            get => (Brush)GetValue(NonPrintableCharacterBrushProperty);
+            set => SetValue(NonPrintableCharacterBrushProperty, value);
+        }
+
+        // Show End of Line
+        private static readonly DependencyProperty ShowEndOfLineProperty =
+            DependencyProperty.Register("ShowEndOfLine", typeof(bool), typeof(DAXEditor), new UIPropertyMetadata(false, OnShowEndOfLineChanged));
+
+        private static void OnShowEndOfLineChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is DAXEditor view)) return;
+            if (e == null) return;
+
+            view.Options.ShowEndOfLine = (bool)e.NewValue;
+        }
+
+        public bool ShowEndOfLine
+        {
+            get => (bool)GetValue(ShowEndOfLineProperty);
+            set => SetValue(ShowEndOfLineProperty, value);
+        }
+
     }
 }

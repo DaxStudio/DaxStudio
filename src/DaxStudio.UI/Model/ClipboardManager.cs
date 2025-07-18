@@ -5,6 +5,7 @@ using Polly;
 using Polly.Retry;
 using Serilog;
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -16,49 +17,63 @@ namespace DaxStudio.UI.Model
     {
         static RetryPolicy _retrySetText;
         static RetryPolicy _retrySetData;
+        const int MaxRetryCount = 3;
+        const int retryDelay = 50;
         static ClipboardManager()
         {
 
             _retrySetText = Policy
-                .HandleInner<System.Runtime.InteropServices.COMException>()
-                .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200),
-                    (exception, timespan, retryCount, context) =>
+                .Handle<System.Runtime.InteropServices.COMException>()
+                .OrInner<COMException>()
+                .WaitAndRetry(MaxRetryCount, retryCount => TimeSpan.FromMilliseconds(retryDelay * retryCount),
+                    onRetry: (exception, timespan, retryCount, context) =>
                     {
-                        var text = context.GetText();
-                        // attempt to set the clipboard text again
-                        System.Windows.Clipboard.SetText(text);
-                        Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ClipboardManager),
-                            "ClipboardManagerSetTextRetryPolicy", exception.Message);
+                        Log.Warning(exception, Common.Constants.LogRetryMessageTemplate, nameof(ClipboardManager),
+                            "ClipboardManagerSetTextRetryPolicy", timespan, retryCount, MaxRetryCount, exception.Message);       
                     });
 
             _retrySetData = Policy
-                .HandleInner<System.Runtime.InteropServices.COMException>()
-                .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200),
-                    (exception, timespan, retryCount, context) =>
+                .Handle<System.Runtime.InteropServices.COMException>()
+                .OrInner<COMException>()
+                .WaitAndRetry(MaxRetryCount, retryCount => TimeSpan.FromMilliseconds(retryDelay * retryCount),
+                    onRetry: (exception, timespan, retryCount, context) =>
                     {
-                        var format = context.GetFormat();
-                        var data = context.GetData();
-                        // attempt to set the clipboard text again
-                        System.Windows.Clipboard.SetData(format, data);
-                        Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ClipboardManager),
-                            "ClipboardManagerSetDataRetryPolicy", exception.Message);
+                        Log.Warning(exception, Common.Constants.LogRetryMessageTemplate, 
+                            nameof(ClipboardManager),
+                            "ClipboardManagerSetDataRetryPolicy", timespan, retryCount, MaxRetryCount , exception.Message);
                     });
 
         }
         public static void SetText(string text)
         {
-            var context = new Polly.Context().WithText(text).WithTextDataFormat(TextDataFormat.Text);
-            _retrySetText.Execute((ctx) => { 
-                System.Windows.Clipboard.SetText(text);
-            },context);
+            SetText(text, TextDataFormat.Text);
+        }
+
+        private static void SetTextImpl(string text, TextDataFormat format = TextDataFormat.Text)
+        {
+            if (string.IsNullOrEmpty(text)) return;         
+            if (format == TextDataFormat.Text && text.Contains("\r\n"))
+            {
+                // if the text contains line breaks then we need to use the UnicodeText format
+                format = TextDataFormat.UnicodeText;
+            }
+            //Clipboard.SetText(text, format);
+            DataObject dataObject = new DataObject(format == TextDataFormat.Text?  DataFormats.Text : DataFormats.UnicodeText,text,true);
+            Clipboard.SetDataObject(dataObject, true);
+            Log.Verbose(Constants.LogMessageTemplate, nameof(ClipboardManager), nameof(SetTextImpl), "Clipboard Text set");
         }
 
         internal static void SetText(string text, TextDataFormat format)
         {
-            var context = new Polly.Context().WithText(text).WithTextDataFormat(format);
-            _retrySetText.Execute((ctx) => {
-                System.Windows.Clipboard.SetText(text,format);
-            }, context);
+            _retrySetText.Execute(() => {
+                SetTextImpl(text,format);
+            });
+        }
+
+        private static void SetDataImpl(string format, object data)
+        {
+            if (string.IsNullOrEmpty(format) || data == null) return;
+            System.Windows.Clipboard.SetData(format, data);
         }
 
         static readonly string HEADER =
@@ -110,11 +125,11 @@ namespace DaxStudio.UI.Model
                 var link = $"daxstudio:?server={HttpUtility.UrlEncode(connection.ServerName)}&database={HttpUtility.UrlEncode(connection.DatabaseName)}&query={text.Base64Encode()}";
                 var linkHtml = $"<div><a href='{link}' Style='Font-Size:9px'>Open in DAX Studio</a></div>";
                 var newHtml = InsertHtmlHeader(linkHtml, fragment);
-                var context = new Polly.Context().WithFormat(Clipboard_Html_Format).WithData(newHtml);
-                _retrySetData.Execute((ctx) =>
+
+                _retrySetData.Execute(() =>
                 {
-                    data.SetData(Clipboard_Html_Format, newHtml);
-                }, context);
+                    SetDataImpl(Clipboard_Html_Format, newHtml);
+                });
             }
             catch (Exception ex)
             {
@@ -137,11 +152,10 @@ namespace DaxStudio.UI.Model
                 // and only keeps the character style
                 var newRichText = richText.Replace("\\par", "\\line");
 
-                var context = new Polly.Context().WithFormat(Clipboard_RichText_Format).WithData(newRichText);
-                _retrySetData.Execute((ctx) =>
+                _retrySetData.Execute(() =>
                 {
-                    data.SetData(Clipboard_RichText_Format, newRichText);
-                }, context);
+                    SetDataImpl(Clipboard_RichText_Format, newRichText);
+                });
                 
             }
             catch (Exception ex)

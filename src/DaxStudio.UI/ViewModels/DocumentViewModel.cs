@@ -2304,12 +2304,6 @@ namespace DaxStudio.UI.ViewModels
         public StatusBarViewModel StatusBar { get; set; }
 
 
-        public DataTable ResultsTable
-        {
-            get => QueryResultsPane.ResultsDataTable;
-            set => QueryResultsPane.ResultsDataTable = value;
-        }
-
         public DataSet ResultsDataSet
         {
             get => QueryResultsPane.ResultsDataSet;
@@ -2594,18 +2588,27 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public void DefineMeasures() {
+            
+            if (this.Connection == null || (!this.Connection?.IsConnected ?? false)) {
+                var msg = "Unable to Define Measures as we are not connected to a data model";
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                return; 
+            }
+
             string word = string.Empty;
+            
             try
             {
                 word = _editor.ContextMenuWord;
                 var measureName = word.Trim('[', ']');
-                if (this.Connection == null) return;
-                if (!this.Connection.IsConnected) return;
-                this.Connection.SelectedModel.MeasureExpressions.TryGetValue(measureName, out var expr);
-                if (expr != null)
-                {
-                    DefineMeasureOnEditor(word, expr);
-                }
+
+                if (_editor.SelectionLength == 0)
+                    DefineSingleMeasureByName(measureName);
+                else
+                    DefineMeasuresForQuery();
+
+
             }
             catch (Exception ex)
             {
@@ -2616,22 +2619,51 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void DefineMeasuresForQuery(bool recursive = false)
+        {
+            var measures = this.Connection.FindDependentMeasuresForQuery(_editor.SelectedText, recursive);
+            if (measures.Count == 0) return;
+            _editor.SelectionLength = 0; // set the selection length to 0 to stop the query being overwritten
+            foreach (var m in measures) {
+                var measureFullName = $"{m.Table.DaxName}{m.DaxName}";
+                DefineMeasureOnEditor(measureFullName, m.Expression);
+            }
+        }
+
+        private void DefineSingleMeasureByName(string measureName)
+        {
+            //this.Connection.SelectedModel.MeasureExpressions.TryGetValue(measureName, out var expr);
+            var measure = (from t in this.Connection.SelectedModel.Tables
+                           from m in t.Measures
+                           where m.DaxName == measureName
+                           select m).FirstOrDefault();
+
+            if (measure != null)
+            {
+                var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
+                DefineMeasureOnEditor(measureFullName, measure.Expression);
+            }
+        }
+
         public void DefineDependentMeasures()
         {
+            if (this.Connection == null || (!this.Connection?.IsConnected ?? false))
+            {
+                var msg = "Unable to Define Measures as we are not connected to a data model";
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineDependentMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                return;
+            }
+
             string word = string.Empty;
             try
             {
                 word = _editor.ContextMenuWord;
                 var measureName = word.Trim('[', ']');
-                
-                if (this.Connection == null) return;
-                if (!this.Connection.IsConnected) return;
-                var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
-
-                foreach (var measure in dependentMeasures)
-                {
-                    DefineMeasureOnEditor(measure.Name, measure.Expression);
-                }
+                if (_editor.SelectionLength == 0)
+                    DefineDependentMeasuresByName(measureName);
+                else
+                    DefineMeasuresForQuery(true);
 
             }
             catch (Exception ex)
@@ -2640,6 +2672,17 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineDependentMeasures), msg);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
 
+            }
+        }
+
+        private void DefineDependentMeasuresByName(string measureName)
+        {
+            var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
+
+            foreach (var measure in dependentMeasures)
+            {
+                var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
+                DefineMeasureOnEditor(measureFullName, measure.Expression);
             }
         }
 
@@ -3200,7 +3243,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
             if (package.PartExists(uri))
             {
-                var vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
+                vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
                 ToolWindows.Add(vpaView);
                 vpaView.LoadPackage(package);
             }
@@ -4961,6 +5004,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
+            NotifyOfPropertyChange(nameof(ShowWhitespace));
+            NotifyOfPropertyChange(nameof(ShowControlCharacters));
             if (Options.UseIndentCodeFolding) StartFoldingManager();
             else StopFoldingManager();
             if (foldingStrategy != null)
@@ -5325,5 +5370,15 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IEditor Editor { get => _editor; }
+
+        public bool ShowWhitespace { get => Options.EditorShowWhitespace; }
+        public bool ShowControlCharacters { get => Options.EditorShowControlCharacters; }
+
+        public void ClearQueryResults()
+        {
+            QueryResultsPane.Clear();
+            QueryResultsPane.ErrorMessage = string.Empty;
+
+        }
     }
 }
