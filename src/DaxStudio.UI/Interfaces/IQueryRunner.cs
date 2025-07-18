@@ -21,7 +21,6 @@ namespace DaxStudio.UI.Interfaces
         string QueryText { get; }
         Task<DataTable> ExecuteDataTableQueryAsync(string daxQuery);
         AdomdDataReader ExecuteDataReaderQuery(string daxQuery, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList);
-        DataTable ResultsTable { get; set; }
         DataSet ResultsDataSet { get; set; }
         void OutputMessage(string message);
         void OutputMessage(string message, double duration);
@@ -48,5 +47,6 @@ namespace DaxStudio.UI.Interfaces
         ConnectionManager Connection { get; }
         void OutputQueryError(string errorMessage);
         void ClearQueryError();
+        void ClearQueryResults();
     }
 }

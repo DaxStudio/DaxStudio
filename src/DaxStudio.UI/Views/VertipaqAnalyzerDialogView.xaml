@@ -75,7 +75,7 @@
 
         <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Right">
             <Button x:Name="Ok" Content="Ok" Margin="8" IsDefault="True" MinWidth="60"  Style="{DynamicResource AccentButtonStyle}"/>
-            <Button Content="Cancel" Margin="8" IsCancel="True"/>
+            <Button x:Name="Close" Content="Cancel" Margin="8" IsCancel="True"/>
         </StackPanel>
 
         <Grid Grid.Row="5" Grid.ColumnSpan="2">

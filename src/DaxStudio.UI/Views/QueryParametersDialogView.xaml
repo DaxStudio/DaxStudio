@@ -132,7 +132,7 @@
             <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                 
                 <Button x:Name="OK" IsDefault="True" TabIndex="1" Style="{DynamicResource AccentButtonStyle}" MinWidth="65" Margin="8 0">Ok</Button>
-                <Button x:Name="Cancel" IsCancel="True" TabIndex="2" Style="{DynamicResource DefaultButtonStyle}" MinWidth="65">Cancel</Button>
+                <Button x:Name="Close" IsCancel="True" TabIndex="2" Style="{DynamicResource DefaultButtonStyle}" MinWidth="65">Cancel</Button>
             </StackPanel>
         </Grid>
 

@@ -19,7 +19,7 @@ using DaxStudio.UI.ResultsTargets;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class BenchmarkServerFEViewModel : Screen, IDisposable, ICancellable
+    class BenchmarkServerFEViewModel : BaseDialogViewModel , IDisposable, ICancellable
         , IHandle<ServerTimingsEvent>
         , IHandle<TraceChangedEvent>
         , IHandle<UpdateGlobalOptions>
@@ -110,7 +110,7 @@ ROW (
             }
         }
 
-        public void Cancel()
+        public override void Close()
         {
             _stopwatch?.Stop();
             IsCancelled = true;

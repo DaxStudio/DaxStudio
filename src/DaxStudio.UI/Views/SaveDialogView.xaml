@@ -135,7 +135,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="7,5" HorizontalAlignment="Right">
                     <Button x:Name="Save" Margin="{StaticResource ButtonMargin}" Style="{DynamicResource AccentButtonStyle}">_Save</Button>
                     <Button x:Name="DontSave"  Margin="{StaticResource ButtonMargin}" >Do_n't Save</Button>
-                    <Button x:Name="Cancel" IsCancel="True"  Margin="{StaticResource ButtonMargin}" >Cancel</Button>
+                    <Button x:Name="Close" IsCancel="True"  Margin="{StaticResource ButtonMargin}" >Cancel</Button>
                 </StackPanel>
             </Grid>
 

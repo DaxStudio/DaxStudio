@@ -9,7 +9,7 @@ namespace DaxStudio.UI.ViewModels
 {
 
     [Export]
-    public class SaveDialogViewModel : Screen
+    public class SaveDialogViewModel : BaseDialogViewModel
     {
 
         [ImportingConstructor]
@@ -37,9 +37,9 @@ namespace DaxStudio.UI.ViewModels
             Result = SaveDialogResult.DontSave;
             await TryCloseAsync (true);
         }
-        public void Cancel() {
+        public override void Close() {
             Result = SaveDialogResult.Cancel;
-            //TryClose(false);
+            TryCloseAsync();
         }
 
         public void ToggleShouldSave(ISaveable item)

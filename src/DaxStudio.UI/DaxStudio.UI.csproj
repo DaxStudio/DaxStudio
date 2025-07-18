@@ -314,6 +314,7 @@
     <Compile Include="Converters\BoolToDoubleConverter.cs" />
     <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
     <Compile Include="Converters\BoolToHighContrastForegroundConverter.cs" />
+    <Compile Include="Converters\NullToBoolConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
     <Compile Include="Converters\BoolToLeftThicknessConverter.cs" />
@@ -683,6 +684,7 @@
     <Compile Include="Utils\ZoomHelper.cs" />
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
+    <Compile Include="ViewModels\BaseDialogViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkServerFEViewModel.cs" />
     <Compile Include="ViewModels\BenchmarkViewModel.cs" />
     <Compile Include="ViewModels\BrowseWorkspacesViewModel.cs" />

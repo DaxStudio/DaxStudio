@@ -1,7 +1,5 @@
 ﻿using ADOTabular;
-using Caliburn.Micro;
 using DaxStudio.UI.Utils;
-using Microsoft.PowerBI.Api.Models;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -9,7 +7,7 @@ using System.Windows.Data;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class DatabaseDialogViewModel:Screen
+    class DatabaseDialogViewModel:BaseDialogViewModel
     {
 
         public DatabaseDialogViewModel(ADOTabularDatabaseCollection databases)

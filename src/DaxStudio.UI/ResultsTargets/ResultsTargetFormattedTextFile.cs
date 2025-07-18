@@ -1,7 +1,6 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Converters.CircularProgressBar;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
@@ -61,7 +60,7 @@ namespace DaxStudio.UI.Model
                 fileName = dlg.FileName;
                 await Task.Run(() =>
                 {
-
+                    runner.ClearQueryResults();
                     var sw = Stopwatch.StartNew();
 
                     string sep = "\t";
@@ -117,7 +116,7 @@ namespace DaxStudio.UI.Model
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
-                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                            runner.SetResultsMessage($"Query results written to:\n{fileName}", OutputTarget.File);
                             runner.ActivateOutput();
                         }
                     }

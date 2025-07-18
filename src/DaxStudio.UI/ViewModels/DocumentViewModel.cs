@@ -61,6 +61,7 @@ using Dax.Vpax.Obfuscator;
 using DaxStudio.Common.Extensions;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using ADOTabular.Extensions;
+using Microsoft.PowerBI.Api.Models.Credentials;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -1447,8 +1448,9 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // prompt for access token
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = EntraIdHelper.SwitchAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI).Result;
-                    token = new Adomd.AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                    var scopeType = server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
+                    var (authResult,tenantId) = EntraIdHelper.PromptForAccountAsync(hwnd, Options, scopeType, server).Result;
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, scopeType, tenantId);
                 }
 
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, String.Empty, string.Empty,
@@ -1794,7 +1796,7 @@ namespace DaxStudio.UI.ViewModels
         #endregion
 
         #region Execute Query
-        private Stopwatch _queryStopWatch;
+        private Stopwatch _queryStopWatch = new Stopwatch();
         private Timer _timer = new Timer(300);
 
         public Stopwatch QueryStopWatch
@@ -1939,7 +1941,6 @@ namespace DaxStudio.UI.ViewModels
 
             NotifyOfPropertyChange(() => ElapsedQueryTime);
             _eventAggregator.PublishOnUIThreadAsync(new UpdateTimerTextEvent(ElapsedQueryTime));
-            _queryStopWatch?.Reset();
         }
 
         private void StartTimer()
@@ -1947,7 +1948,7 @@ namespace DaxStudio.UI.ViewModels
             
             _timer.Elapsed += _timer_Elapsed;
             _timer.Start();
-            _queryStopWatch = new Stopwatch();
+            _queryStopWatch.Reset();
             _queryStopWatch.Start();
         }
 
@@ -2252,56 +2253,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        private bool GenerateQueryForSelectedMetadataItem()
-        {
-            const string unknownValue = "<UNKNOWN>";
-            const string queryHeader = "// Generated DAX Query\n";
-            string objectType = unknownValue;
-            string objectName = unknownValue;
-            string query = string.Empty;
-            var selection = this.MetadataPane.SelectedItems.ToList()[0];
-            switch (selection) {
-                case TreeViewTable t:
-                    objectType = "Table";
-                    objectName = t.Caption;
-                    query = $"{queryHeader}EVALUATE {t.DaxName}";
-                    break;
-                case TreeViewColumn c when c.IsColumn:
-                    objectType = "Column";
-                    objectName = c.Caption;
-                    query = $"{queryHeader}EVALUATE VALUES({c.DaxName})";
-                    break;
-                case TreeViewColumn m when m.IsMeasure:
-                    objectType = "Measure";
-                    objectName = m.Caption;
-                    if (this.Connection.SelectedModel.Capabilities.TableConstructor)
-                        query = $"{queryHeader}EVALUATE {{ {m.DaxName} }}";
-                    else
-                        query = $"{queryHeader}EVALUATE ROW(\"{m.Caption}\", {m.DaxName})";
-                    break;
-                case TreeViewColumn h when h.Column is ADOTabularHierarchy:
-                    objectType = "Hierarchy";
-                    objectName = h.Caption;
-                    var hier = ((ADOTabularHierarchy)h.Column);
-                    query = $"{queryHeader}EVALUATE GROUPBY({hier.Table.DaxName},\n{string.Join(",\n", hier.Levels.Select(l => l.Column.DaxName))}\n)";
-                    break;
-                default:
-
-                    break;
-            }
-
-            if (objectType == unknownValue)
-            {
-                // todo - do we need a different message box here or is the standard warning enough?
-                return false;
-            }
-
-
-
-            return false;
-        }
-
-
         private IQueryHistoryEvent CreateQueryHistoryEvent(ISaveState queryProvider, string queryText, string parameters)
         {
             var json = queryProvider.GetJson();
@@ -2352,12 +2303,6 @@ namespace DaxStudio.UI.ViewModels
 
         public StatusBarViewModel StatusBar { get; set; }
 
-
-        public DataTable ResultsTable
-        {
-            get => QueryResultsPane.ResultsDataTable;
-            set => QueryResultsPane.ResultsDataTable = value;
-        }
 
         public DataSet ResultsDataSet
         {
@@ -2643,18 +2588,27 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public void DefineMeasures() {
+            
+            if (this.Connection == null || (!this.Connection?.IsConnected ?? false)) {
+                var msg = "Unable to Define Measures as we are not connected to a data model";
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                return; 
+            }
+
             string word = string.Empty;
+            
             try
             {
                 word = _editor.ContextMenuWord;
                 var measureName = word.Trim('[', ']');
-                if (this.Connection == null) return;
-                if (!this.Connection.IsConnected) return;
-                this.Connection.SelectedModel.MeasureExpressions.TryGetValue(measureName, out var expr);
-                if (expr != null)
-                {
-                    DefineMeasureOnEditor(word, expr);
-                }
+
+                if (_editor.SelectionLength == 0)
+                    DefineSingleMeasureByName(measureName);
+                else
+                    DefineMeasuresForQuery();
+
+
             }
             catch (Exception ex)
             {
@@ -2665,22 +2619,51 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void DefineMeasuresForQuery(bool recursive = false)
+        {
+            var measures = this.Connection.FindDependentMeasuresForQuery(_editor.SelectedText, recursive);
+            if (measures.Count == 0) return;
+            _editor.SelectionLength = 0; // set the selection length to 0 to stop the query being overwritten
+            foreach (var m in measures) {
+                var measureFullName = $"{m.Table.DaxName}{m.DaxName}";
+                DefineMeasureOnEditor(measureFullName, m.Expression);
+            }
+        }
+
+        private void DefineSingleMeasureByName(string measureName)
+        {
+            //this.Connection.SelectedModel.MeasureExpressions.TryGetValue(measureName, out var expr);
+            var measure = (from t in this.Connection.SelectedModel.Tables
+                           from m in t.Measures
+                           where m.DaxName == measureName
+                           select m).FirstOrDefault();
+
+            if (measure != null)
+            {
+                var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
+                DefineMeasureOnEditor(measureFullName, measure.Expression);
+            }
+        }
+
         public void DefineDependentMeasures()
         {
+            if (this.Connection == null || (!this.Connection?.IsConnected ?? false))
+            {
+                var msg = "Unable to Define Measures as we are not connected to a data model";
+                Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineDependentMeasures), msg);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                return;
+            }
+
             string word = string.Empty;
             try
             {
                 word = _editor.ContextMenuWord;
                 var measureName = word.Trim('[', ']');
-                
-                if (this.Connection == null) return;
-                if (!this.Connection.IsConnected) return;
-                var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
-
-                foreach (var measure in dependentMeasures)
-                {
-                    DefineMeasureOnEditor(measure.Name, measure.Expression);
-                }
+                if (_editor.SelectionLength == 0)
+                    DefineDependentMeasuresByName(measureName);
+                else
+                    DefineMeasuresForQuery(true);
 
             }
             catch (Exception ex)
@@ -2689,6 +2672,17 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(DefineDependentMeasures), msg);
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
 
+            }
+        }
+
+        private void DefineDependentMeasuresByName(string measureName)
+        {
+            var dependentMeasures = this.Connection.FindDependentMeasures(measureName);
+
+            foreach (var measure in dependentMeasures)
+            {
+                var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
+                DefineMeasureOnEditor(measureFullName, measure.Expression);
             }
         }
 
@@ -3196,9 +3190,9 @@ namespace DaxStudio.UI.ViewModels
             //ChangeConnection();
             //IsDirty = false; 
 
-            await Execute.OnUIThreadAsync(async () =>
+            Execute.OnUIThread(() =>
             {
-                await Task.Run(() => { LoadFile(FileName); });
+                 LoadFile(FileName); 
             });
 
             // todo - should we be checking for exceptions in this continuation
@@ -3249,7 +3243,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
             if (package.PartExists(uri))
             {
-                var vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
+                vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
                 ToolWindows.Add(vpaView);
                 vpaView.LoadPackage(package);
             }
@@ -3260,63 +3254,67 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadFile(string fileName)
         {
-
-            if (File.Exists(FileName))
+            using (new StatusBarMessage(this, $"Loading file: {FileName}..."))
             {
-                FileName = fileName;
-                DisplayName = Path.GetFileName(FileName);
-                IsDiskFileName = true;
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), $"Loading file: {fileName}");
 
-                if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
+                if (File.Exists(FileName))
                 {
-                    ImportAnalysisData(fileName, string.Empty);
-                    return;
-                }
+                    FileName = fileName;
+                    DisplayName = Path.GetFileName(FileName);
+                    IsDiskFileName = true;
 
-                if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-                {
-                    // try to get default dict file
-                    ImportAnalysisData(fileName, string.Empty);
-                    return;
-                }
-
-                try
-                {
-                    _isLoadingFile = true;
-
-                    if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                    if (FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase))
                     {
+                        ImportAnalysisData(fileName, string.Empty);
+                        return;
+                    }
 
-                        using (var package = LoadPackageFile())
+                    if (FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // try to get default dict file
+                        ImportAnalysisData(fileName, string.Empty);
+                        return;
+                    }
+
+                    try
+                    {
+                        _isLoadingFile = true;
+
+                        if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                         {
-                            LoadState(package);
+
+                            using (var package = LoadPackageFile())
+                            {
+                                LoadState(package);
+                            }
+                        }
+                        else
+                        {
+                            LoadSingleFile();
+                            LoadState();
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        LoadSingleFile();
-                        LoadState();
+                        Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
+                    }
+                    finally
+                    {
+                        _isLoadingFile = false;
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
+                    Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
+                    OutputError(string.Format("The file '{0}' was not found", FileName));
                 }
-                finally
-                {
-                    _isLoadingFile = false;
-                }
-            }
-            else
-            {
-                Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
-                OutputError(string.Format("The file '{0}' was not found", FileName));
-            }
 
 
-            IsDirty = false;
-            State = DocumentState.Loaded;
+                IsDirty = false;
+                State = DocumentState.Loaded;
+            }
         }
 
         private Package LoadPackageFile()
@@ -3794,8 +3792,8 @@ namespace DaxStudio.UI.ViewModels
             QueryResultsPane.ResultsIcon = icon;
         }
 
-        public FindReplaceDialogViewModel FindReplaceDialog { get; set; }
-        public GotoLineDialogViewModel GotoLineDialog { get; set; }
+        internal FindReplaceDialogViewModel FindReplaceDialog { get; set; }
+        internal GotoLineDialogViewModel GotoLineDialog { get; set; }
 
         #region Highlighting
 
@@ -5006,6 +5004,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ConvertTabsToSpaces));
             NotifyOfPropertyChange(nameof(IndentationSize));
             NotifyOfPropertyChange(nameof(UseIndentCodeFolding));
+            NotifyOfPropertyChange(nameof(ShowWhitespace));
+            NotifyOfPropertyChange(nameof(ShowControlCharacters));
             if (Options.UseIndentCodeFolding) StartFoldingManager();
             else StopFoldingManager();
             if (foldingStrategy != null)
@@ -5365,5 +5365,15 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public IEditor Editor { get => _editor; }
+
+        public bool ShowWhitespace { get => Options.EditorShowWhitespace; }
+        public bool ShowControlCharacters { get => Options.EditorShowControlCharacters; }
+
+        public void ClearQueryResults()
+        {
+            QueryResultsPane.Clear();
+            QueryResultsPane.ErrorMessage = string.Empty;
+
+        }
     }
 }

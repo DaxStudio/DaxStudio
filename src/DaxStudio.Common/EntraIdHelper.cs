@@ -1,23 +1,29 @@
 ﻿using DaxStudio.Common;
+using DaxStudio.Common.Extensions;
+using DaxStudio.Common.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
-using Tom = Microsoft.AnalysisServices;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
 using Microsoft.Identity.Client.Extensions.Msal;
 using Microsoft.PowerBI.Api;
 using Microsoft.PowerBI.Api.Models;
 using Microsoft.Rest;
+using Microsoft.Win32.SafeHandles;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Interop;
 using System.Windows;
 using System.Windows.Controls;
-using DaxStudio.Common.Interfaces;
-using Microsoft.Win32.SafeHandles;
+using System.Windows.Interop;
+using Tom = Microsoft.AnalysisServices;
 
 namespace DaxStudio.Common
 {
@@ -28,18 +34,18 @@ namespace DaxStudio.Common
         //private static string ClientId = "90fd9dec-463e-4e03-8cbe-8f0baa9bb7e8";
         //private static string ClientId = "7f67af8a-fedc-4b08-8b4e-37c4d127b6cf";  // PBI Desktop Client ID
         private static string ClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
-        private static string Instance = "https://login.microsoftonline.com/";
-        //private static string commonInstance = "https://login.microsoftonline.com/common";
-        private static string scope = "organizations";
+        private static string Instance = "https://login.microsoftonline.com/organizations";
+        
+        private static Regex regexGuid = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
         private static IEnumerable<string> powerbiScope = new List<string>() { "https://analysis.windows.net/powerbi/api/.default" };
         private static IEnumerable<string> asazureScope = new List<string>() { "https://*.asazure.windows.net/.default" };
 
-        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope)
+        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,string tenantId)
         {
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp();
+            var app = GetPublicClientApp(tenantId);
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 
@@ -97,32 +103,46 @@ namespace DaxStudio.Common
             return authResult;
         }
 
-        public static IPublicClientApplication GetPublicClientApp()
+        public static IPublicClientApplication GetPublicClientApp(string tenantId)
         {
-            if (_clientApp != null) return _clientApp;
+            //if (_clientApp != null) return _clientApp;
 
             BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
 
+            var authority = ReplaceTenantInInstance(Instance, tenantId);
+
             _clientApp = PublicClientApplicationBuilder.Create(ClientId)
                 //.WithAuthority($"{Instance}{Tenant}")
-                .WithAuthority($"{Instance}{scope}")
+                .WithAuthority(authority)
                 .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
                 .WithDefaultRedirectUri()
                 .WithBroker(brokerOptions)
                 .Build();
 
             MsalCacheHelper cacheHelper = CreateCacheHelperAsync().GetAwaiter().GetResult();
-
+            
             // Let the cache helper handle MSAL's cache, otherwise the user will be prompted to sign-in every time.
             cacheHelper.RegisterCache(_clientApp.UserTokenCache);
 
             return _clientApp;
         }
 
-        public static async Task<AuthenticationResult> SwitchAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope)
+        private static Uri ReplaceTenantInInstance(string instance, string tenantId)
         {
+            if (string.IsNullOrEmpty(tenantId))
+            {
+                return new Uri(instance);
+            }
+
+            return new Uri(instance.Replace("organizations", tenantId));
+        }
+
+        public static async Task<(AuthenticationResult,string)> PromptForAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, string serverName)
+        {
+
             var scope = GetScope(tokenScope);
-            var app = GetPublicClientApp();
+            var tenantId = GetTenantIdFromServerName(serverName);
+            var app = GetPublicClientApp(tenantId);
             try
             {
                 var authResult = await app.AcquireTokenInteractive(scope)
@@ -132,19 +152,111 @@ namespace DaxStudio.Common
                             .WithPrompt(Prompt.SelectAccount)
                             .ExecuteAsync();
                 options.LastUsedUPN = authResult.Account.Username;
-                return authResult;
+                return (authResult, tenantId);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(SwitchAccountAsync), "Error getting user token interactively");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), "Error getting user token interactively");
                 throw;
-                return null;
+                return (null, string.Empty);
+            }
+        }
+
+        public static string GetTenantIdFromServerName(string serverName)
+        {
+            if (serverName.StartsWith("asazure://", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetTenantForAsAzure(serverName);
+            }
+            else if (serverName.RequiresEntraAuth())
+            {
+                return GetTenantForPowerBI(serverName);
+            }
+            else
+            {
+                throw new ArgumentException($"Unsupported server name format: {serverName}");
+            }
+        }
+
+        private static string GetTenantForPowerBI(string serverName)
+        {
+            //Look for a guid in the serverName
+            var parts = serverName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var match = regexGuid.Match(serverName);
+            if (match.Success)
+            {
+                // If we found a GUID, return it as the tenant ID
+                return match.Value;
+            }
+
+            return string.Empty; // This indicates the default tenant, which is usually the first tenant in the list
+        }
+
+        private static string GetTenantForAsAzure(string serverName)
+        {
+            /*
+             * request POST https://australiasoutheast.asazure.windows.net/webapi/clusterResolve
+            {
+                    "ServerName": "dev",
+                    "DatabaseName": "",
+                    "PremiumPublicXmlaEndpoint" : false
+            }
+            * response
+            {
+	            "clusterFQDN": "asazureause1-australiasoutheast.asazure.windows.net",
+	            "coreServerName": "dev",
+	            "tenantId": "d2d5283f-21bf-4fb9-bfa1-1e91215840c1"
+            }
+            */
+            var parts = serverName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var host = parts.Length > 1 ? parts[1] : string.Empty;
+            var server = parts.Length > 2 ? parts[2].Replace(":rw", string.Empty) : string.Empty;
+            ServicePointManager.SecurityProtocol &= ~SecurityProtocolType.Ssl3;
+            var method = "POST";
+            Uri uri = new Uri($"https://{host}/webapi/ClusterResolve"); //?api-version=2020-04-01");
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
+            httpWebRequest.Method = method;
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.UserAgent = "ADOMD.NET";
+
+            NameResolutionRequest requestContent = new NameResolutionRequest
+            {
+                ServerName = server,
+                DatabaseName = "",
+                PremiumPublicXmlaEndpoint = false
+            };
+
+            var requestSerializer = new DataContractJsonSerializer(typeof(NameResolutionRequest));
+            //using (Stream requestStream = httpWebRequest.GetRequestStream())
+            //    requestSerializer.WriteObject(requestStream, (object)requestContent);
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                requestSerializer.WriteObject((Stream)memoryStream, (object)requestContent);
+                memoryStream.Seek(0L, SeekOrigin.Begin);
+                httpWebRequest.ContentLength = memoryStream.Length;
+                using (Stream requestStream = httpWebRequest.GetRequestStream())
+                    memoryStream.CopyTo(requestStream);
+            }
+
+            using (var response1 = (HttpWebResponse)httpWebRequest.GetResponse())
+            {
+                if (response1.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new WebException($"Unexpected response status code: {response1.StatusCode}");
+                }
+                var responseSerializer = new DataContractJsonSerializer(typeof(NameResolutionResult));
+                using (Stream responseStream = response1.GetResponseStream())
+                    return ((NameResolutionResult)responseSerializer.ReadObject(responseStream)).TenantId;
+
             }
         }
 
         public static async Task SignOutAsync()
         {
-            var app = GetPublicClientApp();
+            // TODO - will the app still have the same list of accounts if we 
+            //        have connected to different tenants?
+            var app = GetPublicClientApp(string.Empty);
 
 
             IAccount firstAccount = (await app.GetAccountsAsync()).FirstOrDefault();
@@ -174,7 +286,7 @@ namespace DaxStudio.Common
 
         public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
         {
-            var app = GetPublicClientApp();
+            var app = GetPublicClientApp(string.Empty);
             var accounts = await app.GetAccountsAsync();
             return accounts;
         }
@@ -215,13 +327,14 @@ namespace DaxStudio.Common
         }
 
 
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope)
+        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId)
         {
             // TODO
             var context = new AccessTokenContext
             {
                 UserName = username,
-                TokenScope = scope
+                TokenScope = scope,
+                TenantId = tenantId
             };
             var accessToken = new AccessToken(token, expiry, context);
             return accessToken;
@@ -238,7 +351,7 @@ namespace DaxStudio.Common
             var lastUpn = (token.UserContext?.UserName) ?? string.Empty;
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp();
+            var app = GetPublicClientApp(token.UserContext.TenantId);
             IAccount firstAccount = null;
             var accounts = app.GetAccountsAsync().Result;
 
@@ -304,5 +417,31 @@ namespace DaxStudio.Common
             return hwnd?.Handle;
         }
 
+    }
+
+    [DataContract]
+    class NameResolutionRequest
+    {
+        [DataMember(Name = "serverName")]
+        public string ServerName { get; set; }
+
+        [DataMember(Name = "databaseName")]
+        public string DatabaseName { get; set; }
+
+        [DataMember(Name = "premiumPublicXmlaEndpoint")]
+        public bool PremiumPublicXmlaEndpoint { get; set; }
+    }
+
+    [DataContract]
+    class NameResolutionResult
+    {
+        [DataMember(Name = "clusterFQDN")]
+        public string ClusterFqdn { get; set; }
+
+        [DataMember(Name = "coreServerName")]
+        public string CoreServerName { get; set; }
+
+        [DataMember(Name = "tenantId")]
+        public string TenantId { get; set; }
     }
 }

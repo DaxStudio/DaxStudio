@@ -82,7 +82,7 @@ namespace DaxStudio.UI.ViewModels
             var qhe = queryHistoryEvent as QueryHistoryEvent;
             return qhe != null 
                 && (string.Equals( qhe.ServerName, CurrentDocument?.Connection?.ServerNameForHistory??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByServer)
-                && (string.Equals( qhe.DatabaseName, CurrentDocument?.Connection?.DatabaseName??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByDatabase);
+                && (string.Equals( qhe.DatabaseName, CurrentDocument?.Connection?.Database?.Caption??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByDatabase);
         }
 
         public ICollectionView QueryHistory => _queryHistory;

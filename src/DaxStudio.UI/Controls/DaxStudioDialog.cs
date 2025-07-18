@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace DaxStudio.UI.Controls
 {
-    public  class DaxStudioDialog : ContentControl
+    public abstract class DaxStudioDialog : ContentControl
     {
         public override void OnApplyTemplate()
         {
@@ -64,6 +64,7 @@ namespace DaxStudio.UI.Controls
             DependencyProperty.Register("CloseIsDefaultCancel", typeof(bool),
               typeof(DaxStudioDialog), new PropertyMetadata(false));
         #endregion
+
 
     }
 }

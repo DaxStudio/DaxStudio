@@ -9,7 +9,6 @@ using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using System.Threading;
 using System.IO;
-using ADOTabular;
 using Serilog;
 
 namespace DaxStudio.UI.ResultsTargets
@@ -70,6 +69,7 @@ namespace DaxStudio.UI.ResultsTargets
                 {
 
                     runner.OutputMessage("Opening .odc file in Excel");
+                    runner.ClearQueryResults();
                     var sw = Stopwatch.StartNew();
                     var dq = textProvider.QueryText;
 

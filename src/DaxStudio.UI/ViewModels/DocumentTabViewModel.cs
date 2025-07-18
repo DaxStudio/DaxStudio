@@ -285,7 +285,6 @@ namespace DaxStudio.UI.ViewModels
                 newDoc.State = DocumentState.LoadPending;  // this triggers the DocumentViewModel to open the file
 
                 await ActivateItemAsync(newDoc);
-                //ActiveDocument = newDoc;
 
             }
             catch (Exception ex)
@@ -404,8 +403,8 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // prompt for access token
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var authResult = await EntraIdHelper.SwitchAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI);
-                    token = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username);
+                    var (authResult,tenantId) = await EntraIdHelper.PromptForAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, tenantId);
                 }
                 await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
                                                                         false, 
@@ -690,7 +689,7 @@ namespace DaxStudio.UI.ViewModels
         protected override void OnActivationProcessed(IScreen item, bool success)
         {
             base.OnActivationProcessed(item, success);
-            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnActivationProcessed), $"Activation processed for {item.DisplayName} with success: {success}");
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnActivationProcessed), $"Activation processed for {item?.DisplayName??"<null>"} with success: {success}");
         }
 
     }

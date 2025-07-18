@@ -38,5 +38,25 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => LayoutRight);
             }
         }
+        private bool _showSql = true; // show SQL by default
+        public bool ShowSql
+        {
+            get { return _showSql; }
+            set
+            {
+                _showSql = value;
+                NotifyOfPropertyChange(() => ShowSql);
+            }
+        }
+        private bool _showTabularQueries = true; // show Tabular queries by default
+        public bool ShowTabularQueries
+        {
+            get { return _showTabularQueries; }
+            set
+            {
+                _showTabularQueries = value;
+                NotifyOfPropertyChange(() => ShowTabularQueries);
+            }
+        }
     }
 }

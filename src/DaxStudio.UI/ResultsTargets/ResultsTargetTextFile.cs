@@ -69,7 +69,7 @@ namespace DaxStudio.UI.ResultsTargets
                 
                 await Task.Run(() =>
                 {
-
+                    runner.ClearQueryResults();
                     var sw = Stopwatch.StartNew();
                     long durationMs = 0;
                     string sep = "\t";
@@ -125,7 +125,7 @@ namespace DaxStudio.UI.ResultsTargets
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
-                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
+                            runner.SetResultsMessage($"Query results written to file\n{fileName}", OutputTarget.File);
                             runner.ActivateOutput();
                         }
                     }
