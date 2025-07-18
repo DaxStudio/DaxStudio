@@ -3243,7 +3243,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
             if (package.PartExists(uri))
             {
-                var vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
+                vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
                 ToolWindows.Add(vpaView);
                 vpaView.LoadPackage(package);
             }
