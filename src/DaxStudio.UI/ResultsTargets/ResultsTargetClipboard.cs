@@ -52,9 +52,9 @@ namespace DaxStudio.UI.ResultsTargets
             await Task.Run(() =>
                 {
                     long durationMs = 0;
-
+                    runner.ClearQueryResults();
                     var sw = Stopwatch.StartNew();
-                        
+
                     string sep = "\t";
                     bool shouldQuoteStrings = true; //default to quoting all string fields
                     string decimalSep = System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
@@ -110,8 +110,8 @@ namespace DaxStudio.UI.ResultsTargets
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
-                            runner.SetResultsMessage("Query results written to file", OutputTarget.File);
-                            runner.ActivateOutput();
+                            runner.SetResultsMessage("Query results written to Clipboard", OutputTarget.File);
+                            //runner.ActivateOutput();
                         }
 
                     }

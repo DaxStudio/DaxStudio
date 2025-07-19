@@ -222,7 +222,7 @@
                                               cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
                                               cal:Message.Attach="CopyData($eventArgs)">
                                         <MenuItem.Icon>
-                                            <Image Source="{DynamicResource copyDrawingImage}"/>
+                                            <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                     <MenuItem Header="Copy with Headers" 
@@ -353,7 +353,7 @@
                                               cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
                                               cal:Message.Attach="CopyError()">
                                         <MenuItem.Icon>
-                                            <Image Source="{DynamicResource copyDrawingImage}"/>
+                                            <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                     <MenuItem Header="Goto Error" 

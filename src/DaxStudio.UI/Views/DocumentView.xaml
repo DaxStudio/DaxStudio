@@ -617,6 +617,11 @@
                                                    WordWrap="{Binding WordWrap}"
                                                    ConvertTabsToSpaces="{Binding ConvertTabsToSpaces}"
                                                    IndentationSize="{Binding IndentationSize}"
+                                                   ShowSpaces="{Binding ShowWhitespace}"
+                                                   ShowTabs="{Binding ShowWhitespace}"
+                                                   ShowEndOfLine="{Binding ShowWhitespace}"
+                                                   ShowBoxForControlCharacters="{Binding ShowControlCharacters}"
+                                                   NonPrintableCharacterBrush="{DynamicResource Theme.Brush.Muted.Fore}"
                                                    cal:Message.Attach="[Event SizeChanged] = [OnEditorSizeChanged($view, $eventArgs)]; [Event ContextMenuOpening] = [EditorContextMenuOpening()]; [Event MouseHover] = [OnEditorHover($source, $eventArgs)]; [Event GotFocus] = [Action GotFocus]"
                                                    fm:FoldingMargin.FoldingMarkerBackgroundBrush="{DynamicResource Theme.Brush.Default.Back}"    
                                                    fm:FoldingMargin.FoldingMarkerBrush="{DynamicResource Theme.Brush.Muted.Fore}"
@@ -655,7 +660,7 @@
                                                 <MenuItem x:Name="Copy" Header="Copy" 
                                                       cal:Message.Attach="Copy()">
                                                     <MenuItem.Icon>
-                                                        <Image Source="{DynamicResource copyDrawingImage}"/>
+                                                        <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
                                                     </MenuItem.Icon>
 
                                                 </MenuItem>

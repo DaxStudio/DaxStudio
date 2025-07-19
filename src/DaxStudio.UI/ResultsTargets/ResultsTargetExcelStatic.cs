@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
@@ -40,6 +39,7 @@ namespace DaxStudio.UI.ResultsTargets
         {
             await Task.Run(async () =>
                 {
+                    runner.ClearQueryResults();
 
                     var sw = Stopwatch.StartNew();
 

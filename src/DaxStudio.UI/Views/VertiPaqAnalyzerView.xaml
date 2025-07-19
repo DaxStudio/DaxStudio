@@ -640,6 +640,7 @@
                             <DataGridTemplateColumn ClipboardContentBinding="{Binding TableColumnName}" 
                                                 Header="Table-Column"
                                                 MinWidth="160"
+                                                SortMemberPath="TableColumnName"
                                                 Visibility="{Binding Path=Data, Source={StaticResource ColumnsShowDashedTableColumn}}">
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}" >
@@ -944,6 +945,7 @@
                         <DataGrid.Columns>
                             <DataGridTemplateColumn x:Name="colRelName" MinWidth="300" 
                                                     Header="Table / Relationship"
+                                                    SortMemberPath="RelationshipFromToName"
                                                     ClipboardContentBinding="{Binding RelationshipFromToName}">
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource LeftHeader}">

@@ -23,8 +23,10 @@ namespace DaxStudio.CommandLine.Helpers
         {
             GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
             var hwnd = NativeMethods.GetConsoleWindow();
-            var (authResult,tenantId) = EntraIdHelper.PromptForAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope, serverName).Result; 
-            return EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, tokenScope, tenantId);
+            var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
+            var (authResult, tenantId) = EntraIdHelper.PromptForAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope, dataSource).Result;
+            var token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, tokenScope, tenantId);
+            return token;
         }
 
         private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope, out string serverName)
