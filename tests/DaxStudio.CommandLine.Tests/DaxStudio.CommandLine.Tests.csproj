@@ -81,6 +81,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="psPbiLoopTest.ps1" />
     <None Include="psTest.ps1" />
     <None Include="SmokeTestPBI.cmd" />
     <None Include="SmokeTest.cmd" />

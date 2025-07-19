@@ -18,7 +18,7 @@ namespace DaxStudio.CommandLine.Commands
 {
     internal class CustomTraceCommand : AsyncCommand<CustomTraceCommand.Settings>
     {
-        internal class Settings : CommandSettingsBase
+        internal class Settings : CommandSettingsRawBase
         {
             [CommandArgument(0, "[Template]")]
             [Description("The trace template to be used")]

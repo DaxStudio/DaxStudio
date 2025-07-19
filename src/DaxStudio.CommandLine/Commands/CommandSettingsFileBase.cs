@@ -2,7 +2,7 @@
 
 namespace DaxStudio.CommandLine.Commands
 {
-    internal class CommandSettingsFileBase: CommandSettingsBase
+    internal class CommandSettingsFileBase: CommandSettingsRawBase
     {
         [CommandArgument(0, "<OutputFile>")]
         public string OutputFile { get; set; }

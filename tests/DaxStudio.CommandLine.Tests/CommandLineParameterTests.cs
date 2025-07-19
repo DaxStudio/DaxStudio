@@ -22,7 +22,7 @@ namespace DaxStudio.CommandLine.Tests
         {
             var settings = new CsvCommand.Settings();
             settings.Server = "localhost";
-            
+
 
             var validationResult = settings.Validate();
             Assert.AreEqual(false, validationResult.Successful, validationResult.Message);
@@ -61,7 +61,7 @@ namespace DaxStudio.CommandLine.Tests
 
             var validationResult = settings.Validate();
             Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
-            Assert.IsNull( validationResult.Message);
+            Assert.IsNull(validationResult.Message);
         }
 
         [TestMethod]
@@ -74,9 +74,49 @@ namespace DaxStudio.CommandLine.Tests
 
             var validationResult = settings.Validate();
             Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
-            Assert.IsNull( validationResult.Message);
-            Assert.AreEqual("Data Source=localhost;User ID=testUser;Password=testPwd",settings.FullConnectionString, "connection strings don't match");
+            Assert.IsNull(validationResult.Message);
+            Assert.AreEqual("Data Source=localhost;User ID=testUser;Password=testPwd", settings.FullConnectionString, "connection strings don't match");
         }
+
+        [TestMethod]
+        public void access_token_with_server_should_succeed()
+        {
+            var settings = new AccessTokenCommand.Settings();
+            settings.Server = "asazure://australiasoutheast.asazure.windows.net/myserver";
+            settings.Database = "mydatabase";
+            var validationResult = settings.Validate();
+            Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
+            Assert.IsNull(validationResult.Message);
+        }
+
+        [TestMethod]
+        public void Using_server_and_password_should_succeed()
+        {
+            var settings = new CsvCommand.Settings();
+            settings.Server = "localhost";
+            settings.Database = "Adventure Works";
+            settings.Password = "testPwd";
+
+
+            var validationResult = settings.Validate();
+            Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
+            Assert.IsNull(validationResult.Message);
+        }
+
+        [TestMethod]
+        public void access_token_command_validation_should_succeed()
+        {
+            var settings = new AccessTokenCommand.Settings();
+            settings.Server = "asazure://australiasoutheast.asazure.windows.net/myserver";
+            settings.Database = "mydatabase";
+            var validationResult = settings.Validate();
+            var accessTokenCommand = new AccessTokenCommand();
+            var cmdValidationResult = accessTokenCommand.Validate(null , settings);
+            Assert.AreEqual(true, validationResult.Successful, validationResult.Message);
+            Assert.AreEqual(true, cmdValidationResult.Successful, cmdValidationResult.Message);
+            Assert.IsNull(validationResult.Message);
+        }
+
     }
 }
 

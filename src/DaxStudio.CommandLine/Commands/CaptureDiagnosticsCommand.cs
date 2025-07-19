@@ -12,7 +12,7 @@ namespace DaxStudio.CommandLine.Commands
     
     internal class CaptureDiagnosticsCommand:Command<CaptureDiagnosticsCommand.Settings>
     {
-        internal class Settings : CommandSettingsBase, IQueryTextProvider
+        internal class Settings : CommandSettingsRawBase, IQueryTextProvider
         {
 
             [CommandArgument(0, "[file]")]

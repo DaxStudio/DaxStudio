@@ -21,7 +21,7 @@ namespace DaxStudio.CommandLine.Helpers
         }
         public static AccessToken GetAccessToken(string connStr)
         {
-            var tokenScope = AccessTokenHelper.GetScopeFromConnectionString(connStr);
+            GetScopeFromConnectionString(connStr, out var tokenScope,out var serverName );
             var hwnd = NativeMethods.GetConsoleWindow();
             var dataSource = new OleDbConnectionStringBuilder(connStr).DataSource;
             var (authResult, tenantId) = EntraIdHelper.PromptForAccountAsync(hwnd, new HaveLastUsedUPNStub(), tokenScope, dataSource).Result;
@@ -29,16 +29,17 @@ namespace DaxStudio.CommandLine.Helpers
             return token;
         }
 
-        private static AccessTokenScope GetScopeFromConnectionString(string connStr)
+        private static void GetScopeFromConnectionString(string connStr, out AccessTokenScope tokenScope, out string serverName)
         {
             var builder = new OleDbConnectionStringBuilder(connStr);
+            serverName = builder.DataSource;
             if (builder.DataSource.IsAsAzure())
             {
-                return AccessTokenScope.AsAzure;
+                tokenScope = AccessTokenScope.AsAzure;
             }
             else
             {
-                return AccessTokenScope.PowerBI;
+                tokenScope = AccessTokenScope.PowerBI;
             }
         }
     }

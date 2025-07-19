@@ -17,7 +17,7 @@ namespace DaxStudio.CommandLine.Commands
 {
     internal class ExportSqlCommand : AsyncCommand<ExportSqlCommand.Settings>
     {
-        internal class Settings: CommandSettingsBase
+        internal class Settings: CommandSettingsRawBase
         {
 
 
