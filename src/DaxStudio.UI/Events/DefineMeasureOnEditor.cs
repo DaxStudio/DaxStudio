@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using ADOTabular;
 
 namespace DaxStudio.UI.Events
 {
@@ -13,6 +10,13 @@ namespace DaxStudio.UI.Events
             this.MeasureExpression = measureExpression;
             this.MeasureFormatStringName = measureFormatStringName;
             this.FormatStringExpression = formatStringExpression;
+        }
+        public DefineMeasureOnEditor(ADOTabularMeasure measure)
+        {
+            this.MeasureName = measure.Table.DaxName + measure.DaxName;
+            this.MeasureExpression = measure.Expression;
+            this.MeasureFormatStringName = measure.FormatStringDaxName;
+            this.FormatStringExpression = measure.FormatStringExpression;
         }
 
         public string MeasureName { get; set; }

@@ -653,7 +653,7 @@ namespace DaxStudio.UI.ViewModels
                 var dependentMeasures = FindDependentMeasures(column.Name);
                 foreach (var measure in dependentMeasures)
                 {
-                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure.DaxName, measure.Expression, null, null));
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure));
                 }
             }
             catch (Exception ex)
@@ -674,8 +674,8 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var measure in measures)
                 {
-                    var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
-                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureFullName, measure.Expression, measure.FormatStringDaxName, measure.FormatStringExpression));
+
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure));
                 }
             }
             catch (Exception ex)
