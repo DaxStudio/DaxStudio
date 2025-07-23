@@ -23,7 +23,7 @@ namespace DaxStudio.UI.ViewModels
         Prev
     }
         
-    class FindReplaceDialogViewModel : BaseDialogViewModel, IViewAware
+    public class FindReplaceDialogViewModel : BaseDialogViewModel, IViewAware
     {
 
 

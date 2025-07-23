@@ -3792,8 +3792,8 @@ namespace DaxStudio.UI.ViewModels
             QueryResultsPane.ResultsIcon = icon;
         }
 
-        internal FindReplaceDialogViewModel FindReplaceDialog { get; set; }
-        internal GotoLineDialogViewModel GotoLineDialog { get; set; }
+        public FindReplaceDialogViewModel FindReplaceDialog { get; set; }
+        public GotoLineDialogViewModel GotoLineDialog { get; set; }
 
         #region Highlighting
 
