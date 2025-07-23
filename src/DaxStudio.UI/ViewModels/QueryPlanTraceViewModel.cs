@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
+using DaxStudio.Common.Enums;
+using DaxStudio.Interfaces;
+using DaxStudio.QueryTrace;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
-using System.Text.RegularExpressions;
+using DaxStudio.UI.Utils;
+using Newtonsoft.Json;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.IO.Packaging;
+using System.Linq;
 using System.Text;
-using System.Windows.Media;
-using Newtonsoft.Json;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.QueryTrace;
-using DaxStudio.Interfaces;
-using DaxStudio.UI.Utils;
-using Serilog;
-using DaxStudio.Common.Enums;
-using DaxStudio.UI.Extensions;
-using System.Threading.Tasks;
-using System.Threading;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Media;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -32,12 +31,15 @@ namespace DaxStudio.UI.ViewModels
         public int NextSiblingRowNumber { get; set; }
         public bool HighlightRow { get; set; }
 
+        //public ObservableCollection<IQueryPlanRow> Children { get; set; } = new ObservableCollection<IQueryPlanRow>();
+
         private const int SPACE_PER_LEVEL = 4;
         public virtual void PrepareQueryPlanRow(string line, int rowNumber) {
             RowNumber = rowNumber;
             Level = line.Where(c => c == '\t').Count();
             Operation = line.Trim();
             IndentedOperation = new string(' ', Level * SPACE_PER_LEVEL) + Operation;
+
         }
         static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan,int startingRowNumber)
             where T : QueryPlanRow, new()
@@ -54,13 +56,13 @@ namespace DaxStudio.UI.ViewModels
             }).ToList());
         }
         static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan)
-    where T : QueryPlanRow, new()
+            where T : QueryPlanRow, new()
         {
             return PrepareQueryPlan<T>(physicalQueryPlan, 0);
         }
 
         static public BindableCollection<T> PreparePhysicalQueryPlan<T>(string physicalQueryPlan, int startingRowNumber)
-    where T : PhysicalQueryPlanRow, new()
+            where T : PhysicalQueryPlanRow, new()
         {
             BindableCollection<T> rawQueryPlan = PrepareQueryPlan<T>(physicalQueryPlan, startingRowNumber);
 
@@ -93,7 +95,7 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
-    public class PhysicalQueryPlanRow : QueryPlanRow {
+    public class PhysicalQueryPlanRow : QueryPlanRow, IQueryPlanTreeNode<PhysicalQueryPlanRow> {
         public long? Records { get; set; }
 
         private const string RecordsPrefix = @"#Records=";
@@ -106,7 +108,8 @@ namespace DaxStudio.UI.ViewModels
 
         private const string CachePrefix = @"Cache:|VertipaqResult:|DirectQueryResult|DataPostFilter:";
         static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
-
+        [JsonIgnore]
+        public IObservableCollection<PhysicalQueryPlanRow> Children { get; set; } = new BindableCollection<PhysicalQueryPlanRow>();
         public override void PrepareQueryPlanRow(string line, int rowNumber) { 
             base.PrepareQueryPlanRow(line, rowNumber);
             var matchRecords = recordsRegex.Match(line);
@@ -129,8 +132,9 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
-    public class LogicalQueryPlanRow : QueryPlanRow {
-
+    public class LogicalQueryPlanRow : QueryPlanRow , IQueryPlanTreeNode<LogicalQueryPlanRow>{
+        [JsonIgnore]
+        public IObservableCollection<LogicalQueryPlanRow> Children { get; set; } = new BindableCollection<LogicalQueryPlanRow>();
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
@@ -266,6 +270,34 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private void LoadOperationTree<T>(
+            BindableCollection<T> queryPlanRows,
+            BindableCollection<T> queryPlanTree)
+            where T : QueryPlanRow, IQueryPlanTreeNode<T>
+        {
+            Stack<T> parents = new Stack<T>();
+            T prevItem = default;
+            foreach (var item in queryPlanRows)
+            {
+                if (item.Level == 0)
+                    queryPlanTree.Add(item);
+                else if (item.Level == (prevItem?.Level ?? 0))
+                    parents.Peek().Children.Add(item);
+                else if (item.Level > (prevItem?.Level ?? 0))
+                {
+                    parents.Push(prevItem);
+                    prevItem.Children.Add(item);
+                }
+                else if (item.Level < (prevItem?.Level ?? 0))
+                {
+                    while (parents.Count > 0 && parents.Peek().Level >= item.Level)
+                        parents.Pop();
+                    parents.Peek().Children.Add(item);
+                }
+                prevItem = item;
+            }
+        }
+
         public override string TraceStatusText
         {
             get
@@ -317,16 +349,63 @@ namespace DaxStudio.UI.ViewModels
             get {
                 return _physicalQueryPlanRows;
             }
-            private set { _physicalQueryPlanRows = value; }
+            private set { 
+                _physicalQueryPlanRows = value;
+                LoadOperationTree<PhysicalQueryPlanRow>(PhysicalQueryPlanRows, PhysicalQueryPlanTree);
+            }
         }
+
+        public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanTree {
+            get; 
+        } = new BindableCollection<PhysicalQueryPlanRow>();
+
+        public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanTree
+        {
+            get; 
+        } = new BindableCollection<LogicalQueryPlanRow>();
 
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows {
             get {
                 return _logicalQueryPlanRows;
             }
-            private set { _logicalQueryPlanRows = value; }
+            private set { 
+                _logicalQueryPlanRows = value;
+                LoadOperationTree<LogicalQueryPlanRow>(LogicalQueryPlanRows, LogicalQueryPlanTree);
+            }
         }
-        
+
+        private void LoadLogicalTree(BindableCollection<LogicalQueryPlanRow> queryPlanRows, BindableCollection<LogicalQueryPlanRow> queryPlanTree)
+        {
+            Stack<LogicalQueryPlanRow> parents = new Stack<LogicalQueryPlanRow>();
+            var prevItem = default(LogicalQueryPlanRow);
+            foreach (var item in queryPlanRows)
+            {
+                {
+                    if (item.Level == 0)
+                        queryPlanTree.Add(item);
+                    else if (item.Level == (prevItem?.Level ?? 0))
+                    {
+                        parents.Peek().Children.Add(item);
+                    }
+                    else if (item.Level > (prevItem?.Level ?? 0))
+                    {
+                        parents.Push(prevItem);
+                        prevItem.Children.Add(item);
+
+                    }
+                    else if (item.Level < (prevItem?.Level ?? 0))
+                    {
+                        while (parents.Count > 0 && parents.Peek().Level >= item.Level)
+                        {
+                            parents.Pop();
+                        }
+                        parents.Peek().Children.Add(item);
+                    }
+                }
+                prevItem = item;
+            }
+        }
+
         // IToolWindow interface
         public override string Title => "Query Plan";
         public override string ImageResource => "query_planDrawingImage";

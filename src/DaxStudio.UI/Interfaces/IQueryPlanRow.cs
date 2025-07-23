@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaxStudio.UI.Interfaces
+﻿namespace DaxStudio.UI.Interfaces
 {
-    interface IQueryPlanRow
+    public interface IQueryPlanRow
     {
         int RowNumber { get; set; }
         int Level { get; set; }

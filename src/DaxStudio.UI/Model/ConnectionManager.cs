@@ -26,6 +26,7 @@ using ADOTabular.Interfaces;
 using DaxStudio.Common;
 using ADOTabular.Extensions;
 using TaskExtensions = DaxStudio.UI.Extensions.TaskExtensions;
+using System.Threading;
 
 namespace DaxStudio.UI.Model
 {
@@ -574,33 +575,37 @@ namespace DaxStudio.UI.Model
 
         public string SelectedModelName { get; set; }
 
-
-        public async Task UpdateColumnSampleData(ITreeviewColumn column, int sampleSize) 
+        private ADOTabularConnection _sampleDataConnection;
+        private readonly object _sampleDataLock = new object();
+        public async Task UpdateColumnSampleDataAsync(ITreeviewColumn column, int sampleSize, CancellationToken cancellationToken) 
         {
 
             column.UpdatingSampleData = true;
             try
             {
                 await Task.Run(() => {
-                    using (var newConn = _dmvConnection.Clone())
+                    // cancel any existing sample data connection
+                    _sampleDataConnection?.TryCancel();
+                    //_sampleDataConnection?.TryClose();
+
+                    if (column.SampleData.Any()) return; // if we already have sample data then don't do anything
+                    lock (_sampleDataLock)
                     {
-                        column.SampleData?.Clear();
-                        try
+                        using (_sampleDataConnection = _dmvConnection.Clone())
                         {
-                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleData), "Error getting sample data");
-                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error getting sample data for tooltip\n{ex.Message}"));
+                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(_sampleDataConnection, sampleSize));
                         }
                     }
-                });
+                }, cancellationToken);
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
             }
             catch (Exception ex)
             {
                 var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
-                Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleData), errorMsg);
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), errorMsg);
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
             }
             finally
@@ -609,7 +614,21 @@ namespace DaxStudio.UI.Model
             }
 
         }
-        public async Task UpdateColumnBasicStats(ITreeviewColumn column)
+
+        public void CancelUpdatingColumnSampleData()
+        {
+            if (_sampleDataConnection != null)
+            {
+                _sampleDataConnection.Cancel();
+                _sampleDataConnection.Close();
+                _sampleDataConnection.Dispose();
+                _sampleDataConnection = null;
+            }
+        }
+
+        private ADOTabularConnection _basicStatConnection;
+        private readonly object _basicStatsLock = new object();
+        public async Task UpdateColumnBasicStatsAsync(ITreeviewColumn column, CancellationToken cancellationToken)
         {
 
       
@@ -617,14 +636,25 @@ namespace DaxStudio.UI.Model
             try
             {
                 await Task.Run(() => {
-                    using (var newConn = _dmvConnection.Clone())
+                    
+                     _basicStatConnection?.TryCancel(); // cancel any existing basic stats connection
+                     //_basicStatConnection?.TryClose();
+
+                    lock (_basicStatsLock)
                     {
-                        column.InternalColumn.UpdateBasicStats(newConn);
-                        column.MinValue = column.InternalColumn.MinValue;
-                        column.MaxValue = column.InternalColumn.MaxValue;
-                        column.DistinctValues = column.InternalColumn.DistinctValues;
+                        using (_basicStatConnection = _dmvConnection.Clone())
+                        {
+                            column.InternalColumn.UpdateBasicStats(_basicStatConnection);
+                            column.MinValue = column.InternalColumn.MinValue;
+                            column.MaxValue = column.InternalColumn.MaxValue;
+                            column.DistinctValues = column.InternalColumn.DistinctValues;
+                        }
                     }
-                });
+                }, cancellationToken); // add cancellation token
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
             }
             catch (Exception ex)
             {
@@ -633,6 +663,17 @@ namespace DaxStudio.UI.Model
             finally
             {
                 column.UpdatingBasicStats = false;
+            }
+        }
+
+        public void CancelUpdatingColumnBasicStats()
+        {
+            if (_basicStatConnection != null)
+            {
+                _basicStatConnection.Cancel();
+                _basicStatConnection.Close();
+                _basicStatConnection.Dispose();
+                _basicStatConnection = null;
             }
         }
 
@@ -1152,18 +1193,28 @@ namespace DaxStudio.UI.Model
             });
         }
 
-        public async void UpdateTableBasicStats(TreeViewTable table)
+        private ADOTabularConnection _tableStatsConnection;
+        private readonly object _tableStatsLock = new object();
+        public async Task UpdateTableBasicStatsAsync(TreeViewTable table)
         {
             table.UpdatingBasicStats = true;
             try
             {
                 await Task.Run(() => {
-                    using (var newConn = _dmvConnection.Clone())
+                    _tableStatsConnection?.TryCancel(); // cancel any existing table stats connection
+                    //_tableStatsConnection?.TryClose();
+                    lock (_tableStatsLock)
                     {
-                        table.UpdateBasicStats(newConn);
-;
+                        using (_tableStatsConnection = _dmvConnection.Clone())
+                        {
+                            table.UpdateBasicStats(_tableStatsConnection);
+                        }
                     }
                 });
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
             }
             catch (Exception ex)
             {
@@ -1172,6 +1223,17 @@ namespace DaxStudio.UI.Model
             finally
             {
                 table.UpdatingBasicStats = false;
+            }
+        }
+
+        public void CancelUpdatingTableBasicStats()
+        {
+            if (_tableStatsConnection != null)
+            {
+                _tableStatsConnection.Cancel();
+                _tableStatsConnection.Close();
+                _tableStatsConnection.Dispose();
+                _tableStatsConnection = null;
             }
         }
 

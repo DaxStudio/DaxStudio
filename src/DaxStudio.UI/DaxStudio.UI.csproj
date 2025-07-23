@@ -388,6 +388,7 @@
     <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
+    <Compile Include="Interfaces\IQueryPlanTreeNode.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="Interfaces\ITraceWatcherData.cs" />
@@ -1470,6 +1471,9 @@
     </PackageReference>
     <PackageReference Include="Dax.Vpax.Obfuscator">
       <Version>1.1.3</Version>
+    </PackageReference>
+    <PackageReference Include="DaxStudio.Controls">
+      <Version>0.1.1</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.1</Version>

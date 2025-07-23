@@ -56,7 +56,7 @@ namespace DaxStudio.UI.Extensions
             }
 
             throw allTasks.Exception ??
-                  throw new Exception("AggregateException of all tasks was null. What the hell.");
+                  throw new Exception("AggregateException of all tasks was null.");
 
         }
 
@@ -75,8 +75,16 @@ namespace DaxStudio.UI.Extensions
             }
 
             throw allTasks.Exception ??
-                  throw new Exception("AggregateException of all tasks was null. What the hell.");
+                  throw new Exception("AggregateException of all tasks was null.");
 
+        }
+
+        public static async Task OnTimeout<T>(this T t, Action<T> action, int waitms) where T : Task
+        {
+            if (!(await Task.WhenAny(t, Task.Delay(waitms)) == t))
+            {
+                action(t);
+            }
         }
     }
 }

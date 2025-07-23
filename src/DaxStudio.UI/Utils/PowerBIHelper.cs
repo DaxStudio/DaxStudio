@@ -69,12 +69,19 @@ namespace DaxStudio.UI.Utils
         public EmbeddedSSASIcon Icon { get; private set; }
     }
 
-    public class PowerBIHelper
+    public static class PowerBIHelper
     {
-    
-        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS)
+
+        private static readonly List<PowerBIInstance> _instances = new List<PowerBIInstance>();
+        private static bool instancesLoaded = false;
+
+        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
         {
-            List<PowerBIInstance> _instances = new List<PowerBIInstance>();
+            if (!refreshList && instancesLoaded)
+            {
+                Log.Debug("{class} {method} Returning cached PowerBI instances", nameof(PowerBIHelper), nameof(GetLocalInstances));
+                return _instances;
+            }
 
             _instances.Clear();
 
@@ -139,6 +146,7 @@ namespace DaxStudio.UI.Utils
                 }
 
             }
+            instancesLoaded = true;
             return _instances;    
         }
 

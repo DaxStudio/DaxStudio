@@ -798,8 +798,25 @@ namespace ADOTabular
             {
                 return;
             }
+            if (_runningCommand?.Connection?.State != ConnectionState.Open) return;
+
             _runningCommand.Cancel();
 
+        }
+
+        /// <summary>
+        /// TryCancel will attempt to cancel without throwing an exception if there is an error
+        /// </summary>
+        public void TryCancel()
+        {
+            try
+            {
+                Cancel();
+            }
+            catch (Exception)
+            {
+                // Swallow any errors
+            }
         }
 
 

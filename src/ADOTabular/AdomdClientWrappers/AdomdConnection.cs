@@ -50,6 +50,18 @@ namespace ADOTabular.AdomdClientWrappers
             _conn.Close();
         }
 
+        public void TryClose()
+        {
+            try
+            {
+                _conn.Close();
+            }
+            catch (Exception)
+            {
+                // swallow any exceptions
+            }
+        }
+
         public void Close(bool endSession)
         {
             _conn.Close(endSession);
