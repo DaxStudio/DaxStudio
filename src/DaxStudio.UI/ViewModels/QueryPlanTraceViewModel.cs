@@ -138,14 +138,14 @@ namespace DaxStudio.UI.ViewModels
     }
 
     //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
-    class QueryPlanTraceViewModel: TraceWatcherBaseViewModel, 
+    class QueryPlanTraceViewModel : TraceWatcherBaseViewModel,
         ISaveState,
         ITraceDiagnostics,
         IHaveData
     {
         [ImportingConstructor]
-        public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) 
-            : base(eventAggregator, globalOptions, windowManager) 
+        public QueryPlanTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager)
+            : base(eventAggregator, globalOptions, windowManager)
 
         {
             _physicalQueryPlanRows = new BindableCollection<PhysicalQueryPlanRow>();
@@ -154,12 +154,12 @@ namespace DaxStudio.UI.ViewModels
 
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
-            return new List<DaxStudioTraceEventClass> 
+            return new List<DaxStudioTraceEventClass>
                 { DaxStudioTraceEventClass.DAXQueryPlan
                 , DaxStudioTraceEventClass.QueryBegin
                 , DaxStudioTraceEventClass.QueryEnd };
         }
-    
+
 
         // This method is called after the WaitForEvent is seen (usually the QueryEnd event)
         // This is where you can do any processing of the events before displaying them to the UI
@@ -179,7 +179,7 @@ namespace DaxStudio.UI.ViewModels
                     PrepareLogicalQueryPlan(traceEvent.TextData);
                     NotifyOfPropertyChange(() => LogicalQueryPlanText);
                 }
-                if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan 
+                if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
                     && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqPhysicalPlan)
                 {
                     PhysicalQueryPlanText = traceEvent.TextData;
@@ -203,20 +203,22 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
 
-        public override void OnReset() {
+        public override void OnReset()
+        {
             IsBusy = false;
             ClearAll();
             ProcessResults();
         }
 
-        protected void PreparePhysicalQueryPlan(string physicalQueryPlan) 
+        protected void PreparePhysicalQueryPlan(string physicalQueryPlan)
         {
-            _physicalQueryPlanRows.AddRange( QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
+            _physicalQueryPlanRows.AddRange(QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
             UpdateNextSibling(_physicalQueryPlanRows);
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 
-        protected void PrepareLogicalQueryPlan(string logicalQueryPlan) {
+        protected void PrepareLogicalQueryPlan(string logicalQueryPlan)
+        {
             _logicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<LogicalQueryPlanRow>(logicalQueryPlan);
             UpdateNextSibling(_logicalQueryPlanRows);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
@@ -244,17 +246,19 @@ namespace DaxStudio.UI.ViewModels
                         while (true)
                         {
                             var prev = siblingStack.Pop();
-                            if (prev.RowNumber == row.RowNumber - 1) {
+                            if (prev.RowNumber == row.RowNumber - 1)
+                            {
                                 prev.NextSiblingRowNumber = prev.RowNumber;
                             }
-                            else {
+                            else
+                            {
                                 prev.NextSiblingRowNumber = row.RowNumber;
                             }
                             if (prev.Level <= row.Level) break;
                             if (!siblingStack.Any()) break;
                         }
                     }
-                    
+
                 }
 
                 siblingStack.Push(row);
@@ -324,85 +328,66 @@ namespace DaxStudio.UI.ViewModels
         private BindableCollection<LogicalQueryPlanRow> _logicalQueryPlanRows;
 
         private PhysicalQueryPlanRow _selectedPhysicalRow;
-        public PhysicalQueryPlanRow SelectedPhysicalRow {
-            get {
+        public PhysicalQueryPlanRow SelectedPhysicalRow
+        {
+            get
+            {
                 return _selectedPhysicalRow;
             }
-            set {
+            set
+            {
                 _selectedPhysicalRow = value;
                 NotifyOfPropertyChange(() => SelectedPhysicalRow);
             }
         }
 
         private LogicalQueryPlanRow _selectedLogicalRow;
-        public LogicalQueryPlanRow SelectedLogicalRow {
-            get {
+        public LogicalQueryPlanRow SelectedLogicalRow
+        {
+            get
+            {
                 return _selectedLogicalRow;
             }
-            set {
+            set
+            {
                 _selectedLogicalRow = value;
                 NotifyOfPropertyChange(() => SelectedLogicalRow);
             }
         }
 
-        public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows {
-            get {
+        public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanRows
+        {
+            get
+            {
                 return _physicalQueryPlanRows;
             }
-            private set { 
+            private set
+            {
                 _physicalQueryPlanRows = value;
                 LoadOperationTree<PhysicalQueryPlanRow>(PhysicalQueryPlanRows, PhysicalQueryPlanTree);
             }
         }
 
-        public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanTree {
-            get; 
+        public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanTree
+        {
+            get;
         } = new BindableCollection<PhysicalQueryPlanRow>();
 
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanTree
         {
-            get; 
+            get;
         } = new BindableCollection<LogicalQueryPlanRow>();
 
-        public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows {
-            get {
+        public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows
+        {
+            get
+            {
                 return _logicalQueryPlanRows;
             }
-            private set { 
+            private set
+            {
                 _logicalQueryPlanRows = value;
                 LoadOperationTree<LogicalQueryPlanRow>(LogicalQueryPlanRows, LogicalQueryPlanTree);
-            }
-        }
-
-        private void LoadLogicalTree(BindableCollection<LogicalQueryPlanRow> queryPlanRows, BindableCollection<LogicalQueryPlanRow> queryPlanTree)
-        {
-            Stack<LogicalQueryPlanRow> parents = new Stack<LogicalQueryPlanRow>();
-            var prevItem = default(LogicalQueryPlanRow);
-            foreach (var item in queryPlanRows)
-            {
-                {
-                    if (item.Level == 0)
-                        queryPlanTree.Add(item);
-                    else if (item.Level == (prevItem?.Level ?? 0))
-                    {
-                        parents.Peek().Children.Add(item);
-                    }
-                    else if (item.Level > (prevItem?.Level ?? 0))
-                    {
-                        parents.Push(prevItem);
-                        prevItem.Children.Add(item);
-
-                    }
-                    else if (item.Level < (prevItem?.Level ?? 0))
-                    {
-                        while (parents.Count > 0 && parents.Peek().Level >= item.Level)
-                        {
-                            parents.Pop();
-                        }
-                        parents.Peek().Children.Add(item);
-                    }
-                }
-                prevItem = item;
             }
         }
 
@@ -470,7 +455,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
             NotifyOfPropertyChange(nameof(LogicalQueryPlanRows));
             NotifyOfPropertyChange(nameof(CanExport));
-            NotifyOfPropertyChange(nameof( CanShowTraceDiagnostics));
+            NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
         }
 
         public void SavePackage(Package package)
@@ -505,10 +490,12 @@ namespace DaxStudio.UI.ViewModels
         public override void ClearAll()
         {
             Events.Clear();
-            _physicalQueryPlanRows.Clear();
-            _logicalQueryPlanRows.Clear();
-            NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
-            NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+            PhysicalQueryPlanRows.Clear();
+            LogicalQueryPlanRows.Clear();
+            NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof( LogicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof(PhysicalQueryPlanTree));
+            NotifyOfPropertyChange(nameof(LogicalQueryPlanTree));
         }
 
         public override void CopyAll()
@@ -560,16 +547,30 @@ namespace DaxStudio.UI.ViewModels
 
             });
         }
-        //protected override void OnUpdateGlobalOptions(UpdateGlobalOptions message)
-        //{
-        //    base.OnUpdateGlobalOptions(message);
-        //    NotifyOfPropertyChange(nameof(ShowQueryPlanNextLine));
-        //    NotifyOfPropertyChange(nameof(ShowQueryPlanLineLevel));
-        //}
+        private bool _showLogicalQueryPlan = true;
+        public bool ShowLogicalQueryPlan
+        {
+            get => _showLogicalQueryPlan;
+            set
+            {
+                _showLogicalQueryPlan = value;
+                // if both toggles have been set to false switch on the other plan
+                if (!ShowPhysicalQueryPlan && !ShowLogicalQueryPlan) ShowPhysicalQueryPlan = true;
+                NotifyOfPropertyChange();
+            }
+        }
 
-
-        //public bool ShowQueryPlanNextLine => GlobalOptions.ShowQueryPlanNextLine;
-        //public bool ShowQueryPlanLineLevel => GlobalOptions.ShowQueryPlanLineLevel;
-
+        private bool _showPhysicalQueryPlan = true;
+        public bool ShowPhysicalQueryPlan
+        {
+            get => _showPhysicalQueryPlan;
+            set
+            {
+                _showPhysicalQueryPlan = value;
+                // if both toggles have been set to false switch on the other plan
+                if (!ShowPhysicalQueryPlan && !ShowLogicalQueryPlan) ShowLogicalQueryPlan = true;
+                NotifyOfPropertyChange();
+            }
+        }
     }
 }

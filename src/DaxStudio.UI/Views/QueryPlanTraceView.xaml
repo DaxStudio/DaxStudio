@@ -28,6 +28,7 @@
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <conv:QueryPlanSelectionConverter x:Key="QueryPlanSelectionConverter" />
             <conv:QueryPlanMarginConverter x:Key="QueryPlanMarginConverter"/>
+            <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                 <Setter Property="Padding" Value="4 4 8 4"/>
                 <Setter Property="HorizontalAlignment" Value="Right" />
@@ -158,9 +159,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="2*"/>
+            <RowDefinition Height="{Binding ShowPhysicalQueryPlan, Converter={StaticResource BoolToGridRowHeightConverter}, ConverterParameter=2}"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="{Binding ShowLogicalQueryPlan, Converter={StaticResource BoolToGridRowHeightConverter}, ConverterParameter=1}"/>
         </Grid.RowDefinitions>
         <TextBlock x:Name="TraceStatusText"
                    Grid.ColumnSpan="5"
@@ -229,9 +230,18 @@
                     </StackPanel>
                 </Button>
                     <!--<Rectangle DockPanel.Dock="Right"/>-->
-
-
-                </DockPanel>
+                <ToggleButton x:Name="ShowLogicalPlan" 
+                              IsChecked="{Binding ShowLogicalQueryPlan}"
+                              DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}"
+                              >
+                    <TextBlock>Logical Plan</TextBlock></ToggleButton>  
+                <ToggleButton x:Name="ShowPhysicalPlan" DockPanel.Dock="Right" 
+                              Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding ShowPhysicalQueryPlan}"
+                              >
+                    <TextBlock>Physical Plan</TextBlock></ToggleButton>
+                
+            </DockPanel>
             </controls:ClipBorder>
 
 
@@ -262,7 +272,8 @@
                         TextPath="Data.Operation"
                         LineStroke="Gray"
                         SelectedLineStroke="Red"
-                        Width="*">
+                        Width="*"
+                        ClipboardContentBinding="{Binding Data.IndentedOperation}">
 
                     </ctrls:TreeGridTreeColumn>
 
@@ -367,7 +378,7 @@
             Width="Auto" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
-                      Background="Transparent"
+            Background="Transparent"
             Margin="0"/>
         <controls:ClipBorder Grid.Row="4"
                              CornerRadius="4"
@@ -394,7 +405,8 @@
                         TextPath="Data.Operation"
                         LineStroke="Gray"
                         SelectedLineStroke="Red"
-                        Width="*">
+                        Width="*"
+                        ClipboardContentBinding="{Binding Data.IndentedOperation}">
                         
                     </ctrls:TreeGridTreeColumn>
                     

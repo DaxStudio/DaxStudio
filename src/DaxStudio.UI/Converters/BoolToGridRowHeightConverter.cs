@@ -10,7 +10,13 @@ namespace DaxStudio.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((bool)value == true) ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            // if a converter parameter is provided, it should be an integer representing the height in stars
+            int starHeight = parameter switch
+            {
+                int intValue => intValue,
+                _ => 1
+            };
+            return ((bool)value == true) ? new GridLength(starHeight, GridUnitType.Star) : new GridLength(0);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
