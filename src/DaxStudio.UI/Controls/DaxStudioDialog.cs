@@ -63,6 +63,20 @@ namespace DaxStudio.UI.Controls
         public static readonly DependencyProperty CloseIsDefaultCancelProperty =
             DependencyProperty.Register("CloseIsDefaultCancel", typeof(bool),
               typeof(DaxStudioDialog), new PropertyMetadata(false));
+
+
+        public bool ShowDefaultClose
+        {
+            get { return (bool)GetValue(ShowDefaultCloseProperty); }
+            set { SetValue(ShowDefaultCloseProperty, value); }
+        }
+
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty ShowDefaultCloseProperty =
+            DependencyProperty.Register("ShowDefaultClose", typeof(bool),
+              typeof(DaxStudioDialog), new PropertyMetadata(true));
         #endregion
 
 
