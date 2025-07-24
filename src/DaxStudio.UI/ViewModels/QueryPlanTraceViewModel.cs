@@ -54,6 +54,7 @@ namespace DaxStudio.UI.ViewModels
                 operation.PrepareQueryPlanRow(line, ++rowNumber);
                 return operation;
             }).ToList());
+
         }
         static public BindableCollection<T> PrepareQueryPlan<T>(string physicalQueryPlan)
             where T : QueryPlanRow, new()
@@ -214,6 +215,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _physicalQueryPlanRows.AddRange(QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
             UpdateNextSibling(_physicalQueryPlanRows);
+            LoadOperationTree<PhysicalQueryPlanRow>(PhysicalQueryPlanRows, PhysicalQueryPlanTree);
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 
@@ -221,6 +223,7 @@ namespace DaxStudio.UI.ViewModels
         {
             _logicalQueryPlanRows = QueryPlanRow.PrepareQueryPlan<LogicalQueryPlanRow>(logicalQueryPlan);
             UpdateNextSibling(_logicalQueryPlanRows);
+            LoadOperationTree<LogicalQueryPlanRow>(LogicalQueryPlanRows, LogicalQueryPlanTree);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
         }
 
