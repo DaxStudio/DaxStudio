@@ -216,6 +216,7 @@ namespace DaxStudio.UI.ViewModels
             _physicalQueryPlanRows.AddRange(QueryPlanRow.PreparePhysicalQueryPlan<PhysicalQueryPlanRow>(physicalQueryPlan, _physicalQueryPlanRows.Count));
             UpdateNextSibling(_physicalQueryPlanRows);
             LoadOperationTree<PhysicalQueryPlanRow>(PhysicalQueryPlanRows, PhysicalQueryPlanTree);
+            NotifyOfPropertyChange(() => PhysicalQueryPlanTree);
             NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
         }
 
@@ -225,6 +226,7 @@ namespace DaxStudio.UI.ViewModels
             UpdateNextSibling(_logicalQueryPlanRows);
             LoadOperationTree<LogicalQueryPlanRow>(LogicalQueryPlanRows, LogicalQueryPlanTree);
             NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+            NotifyOfPropertyChange(() => LogicalQueryPlanTree);
         }
 
         // this method updates each row with it's next sibling so that we know how to highlight
