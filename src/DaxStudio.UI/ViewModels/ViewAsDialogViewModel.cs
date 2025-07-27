@@ -29,7 +29,7 @@ namespace DaxStudio.UI.ViewModels
     }
 
     [Export]
-    public class ViewAsDialogViewModel : Screen
+    public class ViewAsDialogViewModel : BaseDialogViewModel
     {
         private DialogResult _dialogResult = DialogResult.Cancel;
         private IMetadataProvider _connectionManager;
