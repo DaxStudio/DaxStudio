@@ -178,14 +178,16 @@ namespace DaxStudio.UI.ViewModels
                 {
                     LogicalQueryPlanText = traceEvent.TextData;
                     PrepareLogicalQueryPlan(traceEvent.TextData);
-                    NotifyOfPropertyChange(() => LogicalQueryPlanText);
+                    NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+                    NotifyOfPropertyChange(() => LogicalQueryPlanTree);
                 }
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
                     && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqPhysicalPlan)
                 {
                     PhysicalQueryPlanText = traceEvent.TextData;
                     PreparePhysicalQueryPlan(traceEvent.TextData);
-                    NotifyOfPropertyChange(() => PhysicalQueryPlanText);
+                    NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
+                    NotifyOfPropertyChange(() => PhysicalQueryPlanTree);
                 }
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryBegin)
                 {
@@ -376,11 +378,13 @@ namespace DaxStudio.UI.ViewModels
         public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanTree
         {
             get;
+            private set;
         } = new BindableCollection<PhysicalQueryPlanRow>();
 
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanTree
         {
             get;
+            private set;
         } = new BindableCollection<LogicalQueryPlanRow>();
 
         public BindableCollection<LogicalQueryPlanRow> LogicalQueryPlanRows
@@ -497,6 +501,8 @@ namespace DaxStudio.UI.ViewModels
             Events.Clear();
             PhysicalQueryPlanRows.Clear();
             LogicalQueryPlanRows.Clear();
+            PhysicalQueryPlanTree = new BindableCollection<PhysicalQueryPlanRow>();
+            LogicalQueryPlanTree = new BindableCollection<LogicalQueryPlanRow>();
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
             NotifyOfPropertyChange(nameof( LogicalQueryPlanRows));
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanTree));
