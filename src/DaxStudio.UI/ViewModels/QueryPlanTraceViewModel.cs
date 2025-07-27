@@ -228,7 +228,7 @@ namespace DaxStudio.UI.ViewModels
             foreach (var row in logicalQueryPlanRows)
             {
 
-                if (row.Level <= prevLevel && siblingStack.Any())
+                if (row.Level <= prevLevel && siblingStack.Count > 0)
                 {
                     if (row.Level == prevLevel)
                     {
@@ -247,7 +247,7 @@ namespace DaxStudio.UI.ViewModels
                                 prev.NextSiblingRowNumber = row.RowNumber;
                             }
                             if (prev.Level <= row.Level) break;
-                            if (!siblingStack.Any()) break;
+                            if (siblingStack.Count == 0) break;
                         }
                     }
                     
@@ -259,7 +259,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // anything remaining on the stack will cover all operations 
-            while (siblingStack.Any())
+            while (siblingStack.Count > 0)
             {
                 var row = siblingStack.Pop();
                 row.NextSiblingRowNumber = prevRow.RowNumber + 1;

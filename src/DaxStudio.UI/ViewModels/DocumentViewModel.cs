@@ -1,33 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Packaging;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
-using ADOTabular;
+﻿using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
+using ADOTabular.Extensions;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
+using AvalonDock;
 using Caliburn.Micro;
+using Dax.Model.Extractor;
 using Dax.ViewModel;
+using Dax.Vpax.Obfuscator;
+using Dax.Vpax.Obfuscator.Common;
 using DAXEditorControl;
 using DaxStudio.Common;
+using DaxStudio.Common.Extensions;
+using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Enums;
@@ -43,25 +29,41 @@ using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using ICSharpCode.AvalonEdit.Folding;
+using Microsoft.Identity.Client.NativeInterop;
+using Microsoft.PowerBI.Api.Models;
+using Microsoft.PowerBI.Api.Models.Credentials;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Packaging;
+using System.Linq;
+using System.Linq.Dynamic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
-using AvalonDock;
-using Constants = DaxStudio.Common.Constants;
-using Timer = System.Timers.Timer;
-using FocusManager = DaxStudio.UI.Utils.FocusManager;
-using System.Linq.Dynamic;
-using DaxStudio.Controls.PropertyGrid;
-using ICSharpCode.AvalonEdit.Folding;
-using Dax.Model.Extractor;
-using Dax.Vpax.Obfuscator.Common;
-using Dax.Vpax.Obfuscator;
-using DaxStudio.Common.Extensions;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
-using ADOTabular.Extensions;
-using Microsoft.PowerBI.Api.Models.Credentials;
+using Constants = DaxStudio.Common.Constants;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
+using Timer = System.Timers.Timer;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -2320,6 +2322,11 @@ namespace DaxStudio.UI.ViewModels
             OutputPane?.AddInformation(message);
         }
 
+        public void OutputMessage(OutputMessage message)
+        {
+            OutputPane?.AddMessage(message);
+        }
+
         public void OutputMessage(string message, double duration)
         {
             OutputPane?.AddSuccess(message, duration);
@@ -3926,6 +3933,26 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(OutputMessage message, CancellationToken cancellationToken)
         {
+
+            //if (message.MessageType == MessageType.Error)
+            //{
+
+
+            //    var loc = RegexHelper.GetQueryErrorLocation(message.Text);
+            //    if (loc.Line > 0 || loc.Column > 0)
+            //    {
+            //        var editor = GetEditor();
+            //        editor.Dispatcher.Invoke(() =>
+            //        {
+            //            editor.DisplayErrorMarkings(loc.Line, loc.Column, 1, message.Text);
+            //        });
+            //    }
+
+            //    if (message.ActivateOutput) ActivateOutput();
+            //}
+
+            OutputMessage(message);
+
             switch (message.MessageType)
             {
                 case MessageType.Error:
@@ -4725,6 +4752,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         await ExportAnalysisDataAsync(dlg.FileName, dictionaryPath, inputDictionaryPath);
                     }
+                    await _eventAggregator.PublishOnUIThreadAsync(new FolderOutputMessage($"{Path.GetFileName(dlg.FileName)} saved", Path.GetDirectoryName(dlg.FileName)));
                 }
                 finally
                 {
