@@ -25,6 +25,7 @@ using LargeXlsx;
 using static LargeXlsx.XlsxAlignment;
 using System.Reflection;
 using CsvHelper.Configuration.Attributes;
+using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
 
 namespace DaxStudio.UI.ViewModels
 {

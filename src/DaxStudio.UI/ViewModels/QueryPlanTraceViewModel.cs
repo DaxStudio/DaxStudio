@@ -1,5 +1,7 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Common.Enums;
+using DaxStudio.Controls;
+using DaxStudio.Controls.Model;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Events;
@@ -11,23 +13,33 @@ using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class QueryPlanRow : IQueryPlanRow {
+    [DataContract]
+    public class QueryPlanRow : PropertyChangedBase, IQueryPlanRow {
+        [DataMember]
         public string Operation { get;  set; }
+        [DataMember]
         public string IndentedOperation { get;  set; }
+        [DataMember]
         public int Level { get;  set; }
+        [DataMember]
         public int RowNumber { get;  set; }
+        [DataMember]
         public int NextSiblingRowNumber { get; set; }
         public bool HighlightRow { get; set; }
 
@@ -97,8 +109,18 @@ namespace DaxStudio.UI.ViewModels
     }
 
     public class PhysicalQueryPlanRow : QueryPlanRow, IQueryPlanTreeNode<PhysicalQueryPlanRow> {
+        [DataMember]
         public long? Records { get; set; }
-
+        private long? _selectedAncestorRecords;
+        [JsonIgnore]
+        public long? SelectedAncestorRecords { 
+            get => _selectedAncestorRecords;
+            set
+            {
+                _selectedAncestorRecords = value;
+                NotifyOfPropertyChange();
+            }
+        }
         private const string RecordsPrefix = @"#Records=";
         private const string searchRecords = RecordsPrefix + @"([0-9]*)";
         static Regex recordsRegex = new Regex(searchRecords, RegexOptions.Compiled);
@@ -581,6 +603,89 @@ namespace DaxStudio.UI.ViewModels
                 // if both toggles have been set to false switch on the other plan
                 if (!ShowPhysicalQueryPlan && !ShowLogicalQueryPlan) ShowLogicalQueryPlan = true;
                 NotifyOfPropertyChange();
+            }
+        }
+
+        // ...
+
+        public void OnSorting(object sender, DataGridSortingEventArgs e)
+        {
+            TreeGrid dataGrid = sender as TreeGrid;
+            var previouslySelectedItem = dataGrid.SelectedItem;
+
+            // Custom sorting logic
+            var column = e.Column;
+            var showLines = (column == dataGrid.Columns[0] && (column.SortDirection == ListSortDirection.Descending || column.SortDirection == null));
+            TreeColumn treeColumn = (TreeColumn)dataGrid.Columns.FirstOrDefault(c => c is TreeColumn);
+            treeColumn.ShowTreeLines = showLines;
+
+            Task.Yield();
+
+            // Let the sort happen first
+            dataGrid.Dispatcher.BeginInvoke((System.Action)(() =>
+            {
+                // Re-select the item after sorting
+                dataGrid.SelectedItem = previouslySelectedItem;
+                if (previouslySelectedItem != null)
+                {
+                    dataGrid.UpdateLayout();
+                    Task.Yield();
+                    Task.Delay(50);
+                    dataGrid.ScrollIntoView(previouslySelectedItem);
+                    dataGrid.ScrollToItemOffset(previouslySelectedItem, false);
+
+                }
+            }),DispatcherPriority.ContextIdle);
+        }
+
+        // This property is used to bind the FindDescendantsWithHigherRecordCounts method to the TreeGrid
+        public Func<object, object, bool> FindDescendantsWithHigherRecordCountsFunc => FindDescendantsWithHigherRecordCounts;
+
+        public bool FindDescendantsWithHigherRecordCounts(object selectedItem, object item)
+        {
+            if (item is TreeGridRow<object> treeItem && selectedItem is TreeGridRow<object> seletedTreeItem)
+            {
+                var data = treeItem.Data as PhysicalQueryPlanRow;
+                var selectedData = seletedTreeItem.Data as PhysicalQueryPlanRow;
+                var records = data.Records ?? 0;
+
+                return records > selectedData.Records;
+
+            }
+
+            return false;
+        }
+
+        private TreeGridRow<object> _selectedPhysicalQueryPlanRow;
+        public TreeGridRow<object> SelectedPhysicalQueryPlanRow { get => _selectedPhysicalQueryPlanRow;
+            set { 
+                if (_selectedPhysicalQueryPlanRow == value) return;
+                var data = (PhysicalQueryPlanRow)value.Data;
+                ClearAllRecordCountHightlightsRecursive(data);
+                _selectedPhysicalQueryPlanRow = value;
+                NotifyOfPropertyChange(() => SelectedPhysicalQueryPlanRow);
+                if (value != null)
+                {
+                    HighlightHigherRecordCountRecursive(data, data.Records);
+                }
+            } 
+        }
+
+        private void HighlightHigherRecordCountRecursive(PhysicalQueryPlanRow value, long? selectedRecordsValue)
+        {
+            foreach(var child in value.Children)
+            {
+                HighlightHigherRecordCountRecursive(child, selectedRecordsValue);
+                child.SelectedAncestorRecords = selectedRecordsValue;
+            }
+        }
+
+        private void ClearAllRecordCountHightlightsRecursive(PhysicalQueryPlanRow value)
+        {            
+            // clear all highlights
+            foreach ( var row in PhysicalQueryPlanRows)
+            {
+                row.SelectedAncestorRecords = null;
             }
         }
     }

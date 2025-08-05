@@ -29,6 +29,10 @@
             <conv:QueryPlanSelectionConverter x:Key="QueryPlanSelectionConverter" />
             <conv:QueryPlanMarginConverter x:Key="QueryPlanMarginConverter"/>
             <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
+            <conv:AncestorRecordsColorConverter x:Key="AncestorRecordsColorConverter" />
+            <conv:AncestorRecordsImageResourceConverter x:Key="AncestorRecordsImageResourceConverter" />
+
+
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                 <Setter Property="Padding" Value="4 4 8 4"/>
                 <Setter Property="HorizontalAlignment" Value="Right" />
@@ -259,23 +263,82 @@
                 FrozenColumnCount="2"
                 GridLinesVisibility="None" 
                 AlternationCount="2"
+                SelectedValue="{Binding SelectedPhysicalQueryPlanRow}"
+                cal:Message.Attach="[Event Sorting] = [Action OnSorting($source, $eventArgs)]"
                 RowStyle="{StaticResource DefaultDataGridRowStyle}"
                 AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
                 Style="{StaticResource TreeGridStyle}"
+                CustomDescendantFilter="{Binding FindDescendantsWithHigherRecordCountsFunc}"  
+                ShowDefaultContextMenu="True"
                 >
+                <ctrls:TreeGrid.ContextMenu>
+                    <ContextMenu>
+                        <Separator/>
+                        <MenuItem Header="Show Descendants with Higher Record Counts" 
+                              Command="{Binding PlacementTarget.ExecuteCustomDescendantFilter, 
+                                  RelativeSource={RelativeSource FindAncestor, 
+                                  AncestorType={x:Type ContextMenu}}}"
+                              CommandParameter="{Binding PlacementTarget.SelectedItem, 
+                                  RelativeSource={RelativeSource FindAncestor, 
+                                  AncestorType={x:Type ContextMenu}}}"/>
+                    </ContextMenu>
+                </ctrls:TreeGrid.ContextMenu>
                 <ctrls:TreeGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTextColumn Header="Records" Width="60" IsReadOnly="True" Binding="{Binding Data.Records, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <ctrls:TreeGridTreeColumn 
+                    <DataGridTemplateColumn Header="Records" Width="60" 
+                                        IsReadOnly="True" 
+ >
+                        <DataGridTemplateColumn.CellTemplate>
+                        
+                        <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Data.Records, StringFormat='#,#;;'}" 
+                                           HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"
+                                               >
+                                    
+                        <TextBlock.Foreground>
+                            <MultiBinding Converter="{StaticResource AncestorRecordsColorConverter}">
+                                <Binding Path="Data.Records" />
+                                <Binding Path="Data.SelectedAncestorRecords" />
+                            </MultiBinding>
+                        </TextBlock.Foreground>
+                                </TextBlock>
+                                    <Image Grid.Column="1"
+                                           VerticalAlignment="Center"
+                                           Width="12" Height="12"
+                                           Margin="0 0 0 0"
+                                           >
+                                        <Image.Source >
+                                            <MultiBinding Converter="{StaticResource AncestorRecordsImageResourceConverter}">
+                                                <Binding Path="Data.Records" />
+                                                <Binding Path="Data.SelectedAncestorRecords" />
+                                            </MultiBinding>
+                                        </Image.Source>
+                                    </Image>
+                                    <!-- Visibility="{Binding Data.Records, Converter={StaticResource BoolToVisibilityConverter}}"-->
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <ctrls:TreeColumn 
                         Header="Physical Query Plan"
                         TextPath="Data.Operation"
-                        LineStroke="Gray"
-                        SelectedLineStroke="Red"
                         Width="*"
                         ClipboardContentBinding="{Binding Data.IndentedOperation}">
-
-                    </ctrls:TreeGridTreeColumn>
+                        <ctrls:TreeColumn.TreeLineStyle>
+                            <Style TargetType="ctrls:TreeCell">
+                                <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <Setter Property="SelectedLineStroke" Value="{DynamicResource Theme.Brush.Icons.Red}"/>
+                                <Setter Property="LineStroke" Value="{DynamicResource Theme.Brush.Muted.Fore}"/>
+                            </Style>
+                        </ctrls:TreeColumn.TreeLineStyle>
+                    </ctrls:TreeColumn>
 
                 </ctrls:TreeGrid.Columns>
             </ctrls:TreeGrid>
@@ -400,15 +463,19 @@
                 <ctrls:TreeGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                     
-                    <ctrls:TreeGridTreeColumn 
+                    <ctrls:TreeColumn 
                         Header="Logical Query Plan"
                         TextPath="Data.Operation"
-                        LineStroke="Gray"
-                        SelectedLineStroke="Red"
                         Width="*"
                         ClipboardContentBinding="{Binding Data.IndentedOperation}">
-                        
-                    </ctrls:TreeGridTreeColumn>
+                        <ctrls:TreeColumn.TreeLineStyle>
+                            <Style TargetType="ctrls:TreeCell">
+                                <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                <Setter Property="SelectedLineStroke" Value="{DynamicResource Theme.Brush.Icons.Red}"/>
+                                <Setter Property="LineStroke" Value="{DynamicResource Theme.Brush.Muted.Fore}"/>
+                            </Style>
+                        </ctrls:TreeColumn.TreeLineStyle>
+                    </ctrls:TreeColumn>
                     
                 </ctrls:TreeGrid.Columns>
             </ctrls:TreeGrid>

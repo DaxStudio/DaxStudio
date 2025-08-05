@@ -23,6 +23,7 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
+using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
 
 namespace DaxStudio.UI.ViewModels
 {
