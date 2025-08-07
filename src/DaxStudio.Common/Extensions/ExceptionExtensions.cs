@@ -8,7 +8,7 @@ namespace DaxStudio.Common.Extensions
 {
     public static class ExceptionExtensions
     {
-        public static string GetAllExceptionMessages(this Exception ex)
+        public static string GetInnerExceptionMessages(this Exception ex)
         {
             var innerEx = ex;
             var msg = "";
@@ -18,6 +18,21 @@ namespace DaxStudio.Common.Extensions
                 innerEx = innerEx.InnerException;
             }
             return msg;
+        }
+
+        public static string GetAllMessages(this AggregateException ex)
+        {
+            if (ex == null) return string.Empty;
+            var sb = new StringBuilder();
+            foreach (var inner in ex.Flatten().InnerExceptions)
+            {
+                sb.AppendLine(inner.Message);
+                if (inner is AggregateException aggEx)
+                {
+                    sb.AppendLine(aggEx.GetAllMessages());
+                }
+            }
+            return sb.ToString();
         }
     }
 }

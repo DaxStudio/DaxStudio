@@ -8,10 +8,11 @@ using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.UI.Model;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.UIStubs;
+using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.Commands
 {
-    internal class XlsxCommand : Command<XlsxCommand.Settings>
+    internal class XlsxCommand : AsyncCommand<XlsxCommand.Settings>
     {
         public IEventAggregator EventAggregator { get; }
 
@@ -62,7 +63,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, settings);
         }
 
-        public override int Execute(CommandContext context, Settings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             Log.Information("Starting XLSX command");
             if (settings.File != null && settings.Query == null)
@@ -74,13 +75,13 @@ namespace DaxStudio.CommandLine.Commands
             var runner = new QueryRunner(settings);
             var target = new DaxStudio.UI.ResultsTargets.ResultsTargetExcelFile(host, EventAggregator);
 
-            AnsiConsole.Status()
+            await AnsiConsole.Status()
                 .AutoRefresh(true)
                 .Spinner(Spinner.Known.Star)
                 .SpinnerStyle(Style.Parse("green bold"))
-                .Start("Exporting to file...", ctx =>
+                .StartAsync("Exporting to file...", async ctx =>
                 {   
-                    target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
+                    await target.OutputResultsAsync(runner, settings, settings.OutputFile);
                 });
        
             
