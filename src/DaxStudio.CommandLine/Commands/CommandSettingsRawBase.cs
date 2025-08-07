@@ -128,14 +128,18 @@ namespace DaxStudio.CommandLine.Commands
                 
                     foreach (var instance in instances)
                     {
-                        if (instance.Name == PowerBIFileName)
+                        if (instance.Name.Equals(PowerBIFileName, StringComparison.CurrentCultureIgnoreCase))
                         {
                             Server = $"localhost:{instance.Port}";
                             Log.Information($"Found running instance of '{PowerBIFileName}' on port: {instance.Port}");
-                            return;
+                            break;
                         }
                     }
                 });
+
+            if (!Server.StartsWith("localhost:"))
+                throw new ArgumentException($"Invalid Server parameter. Unable to find a running Power BI Desktop instance with the '{Server}' file open");
+
         }
 
     }
