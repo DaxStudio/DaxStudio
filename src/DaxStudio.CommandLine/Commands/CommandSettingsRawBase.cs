@@ -29,6 +29,8 @@ namespace DaxStudio.CommandLine.Commands
         public string Password { get; set; }
 
 
+
+
         //[CommandArgument(1, "[connectionstring]")]
         [CommandOption("-c|--connectionstring <connectionString>")]
         [Description("The connection string for the data source")]

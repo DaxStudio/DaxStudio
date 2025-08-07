@@ -25,12 +25,12 @@ namespace DaxStudio.UI.Utils
             {
                 PopulateInfo();
                 Log.Information("DAX STUDIO VERSION: {version}", version);
-                Log.Information("System Info: {setting} = {value}", "OSCaption", osInfo.Name);
-                Log.Information("System Info: {setting} = {value}", "OSRelease", osInfo.Release);
-                Log.Information("System Info: {setting} = {value}", "OSVersion", osInfo.Version.ToString());
-                Log.Information("System Info: {setting} = {value}", "OSArchitecture", osInfo.Architecture);
-                Log.Information("System Info: {setting} = {value}", "VisibleMemoryGB", osInfo.TotalVisibleMemory.ToString("n2"));
-                Log.Information("System Info: {setting} = {value}", "FreeMemoryGB", osInfo.TotalFreeMemory.ToString("n2"));
+                Log.Information("System Info: {setting} = {value}", "OSCaption", osInfo?.Name??"-");
+                Log.Information("System Info: {setting} = {value}", "OSRelease", osInfo?.Release??"-");
+                Log.Information("System Info: {setting} = {value}", "OSVersion", osInfo?.Version.ToString());
+                Log.Information("System Info: {setting} = {value}", "OSArchitecture", osInfo?.Architecture);
+                Log.Information("System Info: {setting} = {value}", "VisibleMemoryGB", (osInfo?.TotalVisibleMemory??-1).ToString("n2"));
+                Log.Information("System Info: {setting} = {value}", "FreeMemoryGB", (osInfo?.TotalFreeMemory??-1).ToString("n2"));
                 Log.Information("Culture Info: {setting} = {value}", "Name", curCulture.Name);
                 Log.Information("Culture Info: {setting} = {value}", "DisplayName", curCulture.DisplayName);
                 Log.Information("Culture Info: {setting} = {value}", "EnglishName", curCulture.EnglishName);
@@ -50,15 +50,34 @@ namespace DaxStudio.UI.Utils
         private static void PopulateInfo()
         {
             if (version != null) return; // exit here if this info is already populated
-            osInfo = GetOSInfo();
+            
+
+            Task task = Task.Run(() =>
+            {
+                osInfo = GetOSInfo();
+            });
+
+            if (!task.Wait(TimeSpan.FromSeconds(3)))
+            {
+                Console.WriteLine("WMI query timed out.");
+            }
+
+
             version = Assembly.GetExecutingAssembly().GetName().Version;
             curCulture = Thread.CurrentThread.CurrentCulture;
         }
 
         private static OSInfo GetOSInfo()
         {
+            // Create EnumerationOptions with a timeout
+            EnumerationOptions options = new EnumerationOptions
+            {
+                Timeout = TimeSpan.FromSeconds(5), // Set timeout to 5 seconds
+                ReturnImmediately = false // Ensures the query waits for results
+            };
+
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2","SELECT * FROM Win32_OperatingSystem",options);
             
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_OperatingSystem");
             var result = new OSInfo();
             try
             {

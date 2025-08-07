@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Controls;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
 using System.Collections.ObjectModel;
@@ -9,7 +10,7 @@ namespace DaxStudio.UI.ViewModels
 {
 
     [Export]
-    public class AutoSaveRecoveryDialogViewModel : Screen
+    public class AutoSaveRecoveryDialogViewModel : BaseDialogViewModel
     {
         private OpenDialogResult _dialogResult = OpenDialogResult.Cancel;
         [ImportingConstructor]

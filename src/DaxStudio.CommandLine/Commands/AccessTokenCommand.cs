@@ -18,12 +18,10 @@ namespace DaxStudio.CommandLine.Commands
             return ValidationResult.Success();
         }
         public override int Execute(CommandContext context, Settings settings)
-        {
-            
-                var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
-                Console.Write(accessToken.Token);
-                return 0;
-
+        {            
+            var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
+            Console.Write(accessToken.Token);
+            return 0;
         }
 
     }
