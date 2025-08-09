@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
-    class GotoLineDialogViewModel : BaseDialogViewModel, INotifyDataErrorInfo
+    public class GotoLineDialogViewModel : BaseDialogViewModel, INotifyDataErrorInfo
     {
         private int _lineNo;
         private int _maxLines;

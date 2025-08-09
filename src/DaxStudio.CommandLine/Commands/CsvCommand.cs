@@ -13,10 +13,12 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.UI.Utils;
 using System.Linq;
+using DaxStudio.Common.Extensions;
+using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.Commands
 {
-    internal class CsvCommand : Command<CsvCommand.Settings>
+    internal class CsvCommand : AsyncCommand<CsvCommand.Settings>
     {
         internal class Settings : CommandSettingsFileBase,IQueryTextProvider
         {
@@ -72,68 +74,58 @@ namespace DaxStudio.CommandLine.Commands
             return result;
         }
 
-        public override int Execute(CommandContext context, Settings settings)
+        
+
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             
             Log.Information("Starting CSV command");
-            try
+
+            if (settings.File != null && settings.Query == null)
             {
-                if (settings.File != null && settings.Query == null)
-                {
-                    settings.Query = File.ReadAllText(settings.File);
-                }
-
-                QueryRunner runner = new QueryRunner(settings);
-                var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
-
-                if (settings.FileType == TextFileType.Unknown) {
-                    var fi = new FileInfo(settings.OutputFile);
-
-                    switch (fi.Extension.ToLower())
-                    {
-                        case ".csv":
-                            settings.FileType = TextFileType.UTF8CSV;
-                            break;
-                        case ".txt":
-                            settings.FileType = TextFileType.TAB;
-                            break;  
-                        case ".json":
-                            settings.FileType = TextFileType.JSON;
-                            break;
-                        default:
-                            settings.FileType = (TextFileType)runner.Options.DefaultTextFileType; 
-                            break;
-                    }
-                }
-
-                // export to csv
-                AnsiConsole.Status()
-                    .AutoRefresh(true)
-                    .Spinner(Spinner.Known.Star)
-                    .SpinnerStyle(Style.Parse("green bold"))
-                    .Start("Exporting to file...", ctx =>
-                    {
-                        //AnsiConsole.MarkupLine("[green]Done![/]");
-
-                        runner.Options.CmdLineTextFileType = settings.FileType;
-                        target.OutputResultsAsync(runner, settings, settings.OutputFile).Wait();
-                    });
-                Log.Information("Finished CSV command");
-                return 0;
-            } 
-            catch (AggregateException aex)
-            {
-                foreach (var ex in aex.InnerExceptions)
-                {
-                    Log.Error(ex, "Error: {message}", ex.Message);
-                }
-                return 2;
+                settings.Query = File.ReadAllText(settings.File);
             }
-            catch (Exception ex)
+
+            QueryRunner runner = new QueryRunner(settings);
+            var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
+
+            if (settings.FileType == TextFileType.Unknown)
             {
-                Log.Error(ex, "Error: {message}", ex.Message);
-                return 1;
+                var fi = new FileInfo(settings.OutputFile);
+
+                switch (fi.Extension.ToLower())
+                {
+                    case ".csv":
+                        settings.FileType = TextFileType.UTF8CSV;
+                        break;
+                    case ".txt":
+                        settings.FileType = TextFileType.TAB;
+                        break;
+                    case ".json":
+                        settings.FileType = TextFileType.JSON;
+                        break;
+                    default:
+                        settings.FileType = (TextFileType)runner.Options.DefaultTextFileType;
+                        break;
+                }
             }
+
+            // export to csv
+            await AnsiConsole.Status()
+                .AutoRefresh(true)
+                .Spinner(Spinner.Known.Star)
+                .SpinnerStyle(Style.Parse("green bold"))
+                .StartAsync("Exporting to file...", async ctx =>
+                {
+                    //AnsiConsole.MarkupLine("[green]Done![/]");
+
+                    runner.Options.CmdLineTextFileType = settings.FileType;
+                    await target.OutputResultsAsync(runner, settings, settings.OutputFile).ConfigureAwait(true);
+                });
+
+            Log.Information("Finished CSV command");
+            return 0;
+
         }
     }
 

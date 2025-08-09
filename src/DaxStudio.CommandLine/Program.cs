@@ -1,21 +1,25 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.CommandLine.Commands;
+using DaxStudio.CommandLine.Extensions;
+using DaxStudio.CommandLine.Help;
+using DaxStudio.CommandLine.Infrastructure;
+using DaxStudio.CommandLine.UIStubs;
+using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
+using Spectre.Console;
+using Spectre.Console.Cli;
 using System;
 using System.Collections.Generic;
-using Spectre.Console.Cli;
-using DaxStudio.CommandLine.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
-using DaxStudio.UI.Interfaces;
-using Serilog.Sinks.Spectre;
-using Serilog.Events;
 using System.Threading.Tasks;
-using DaxStudio.CommandLine.Help;
-using DaxStudio.CommandLine.UIStubs;
-using DaxStudio.CommandLine.Extensions;
+using StringExtensions = DaxStudio.CommandLine.Extensions.StringExtensions;
 
 
 namespace DaxStudio.CommandLine
@@ -53,16 +57,18 @@ namespace DaxStudio.CommandLine
             }
             catch (AggregateException ex2)
             {
-                foreach (var ex in ex2.InnerExceptions)
-                {
-                    Log.Error(ex, "Error: {message}", ex.Message);
-                }
+                Log.Error(ex2, "Error: {message}", ex2.GetAllMessages());
+
                 return 1;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error: {message}",ex.Message);
                 return 1;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
             }
 
 //#if DEBUG
@@ -95,15 +101,19 @@ namespace DaxStudio.CommandLine
    
             Log.Logger = _log;
             */
-            var outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}";
-            if (verboseLogging) { outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}"; }
+            var outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}";
+            LoggingLevelSwitch levelSwitch = new LoggingLevelSwitch();
+            levelSwitch.MinimumLevel = verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information;
+            if (verboseLogging) { outputTemplate = "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"; }
 
             Log.Logger = new LoggerConfiguration()
-                        .WriteTo.Spectre(outputTemplate, restrictedToMinimumLevel: LogEventLevel.Information)
-                        .MinimumLevel.Information()
+                        //.WriteTo.Spectre(outputTemplate, restrictedToMinimumLevel: LogEventLevel.Information)
+                        //.WriteTo.Spectre(outputTemplate: outputTemplate, restrictedToMinimumLevel: verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information)
+                        .WriteTo.Console(outputTemplate: outputTemplate, restrictedToMinimumLevel: verboseLogging ? LogEventLevel.Verbose : LogEventLevel.Information, theme: AnsiConsoleTheme.Code)
+                        .MinimumLevel.ControlledBy(levelSwitch)
                         .CreateLogger();
             
-            // Log.Information("Logger Initialized");
+            //Log.Information("Logger Initialized");
         }
 
         static CommandApp CreateCommands(TypeRegistrar registrar)
@@ -111,6 +121,11 @@ namespace DaxStudio.CommandLine
             var app = new CommandApp(registrar);
             app.Configure(config =>
             {
+                config.SetExceptionHandler((ex, resolver) =>
+                {
+                    Log.Error(ex, "Error: {message}", ex.GetInnerExceptionMessages());
+                });
+
                 config.SetHelpProvider(new CustomHelpProvider(config.Settings));
 
                 config.AddBranch<CommandSettings>("export", export =>
