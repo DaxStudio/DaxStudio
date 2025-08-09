@@ -32,6 +32,7 @@
             <conv:AncestorRecordsColorConverter x:Key="AncestorRecordsColorConverter" />
             <conv:AncestorRecordsImageResourceConverter x:Key="AncestorRecordsImageResourceConverter" />
 
+            <controls:BindingProxy x:Key="Proxy" Data="{Binding PhysicalQueryPlanTree}" />
 
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
                 <Setter Property="Padding" Value="4 4 8 4"/>
@@ -273,7 +274,7 @@
                 ShowDefaultContextMenu="True"
                 >
                 <ctrls:TreeGrid.ContextMenu>
-                    <ContextMenu>
+                    <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                         <Separator/>
                         <MenuItem Header="Show Descendants with Higher Record Counts" 
                               Command="{Binding PlacementTarget.ExecuteCustomDescendantFilter, 
@@ -282,6 +283,10 @@
                               CommandParameter="{Binding PlacementTarget.SelectedItem, 
                                   RelativeSource={RelativeSource FindAncestor, 
                                   AncestorType={x:Type ContextMenu}}}"/>
+                        <!--<MenuItem Header="Test"
+                                  cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                  cal:Message.Attach="[Event Click] = [Action TestContextMenuCommand($dataContext)]"
+                                  />-->
                     </ContextMenu>
                 </ctrls:TreeGrid.ContextMenu>
                 <ctrls:TreeGrid.Columns>

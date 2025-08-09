@@ -81,11 +81,9 @@ namespace DaxStudio.UI.Utils
 
         private static readonly List<PowerBIInstance> _instances = new List<PowerBIInstance>();
         private static bool instancesLoaded = false;
-
-        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
         const int MaxParallelInstanceScans = 5;
 
-        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS)
+        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
         {
             if (!refreshList && instancesLoaded)
             {
@@ -176,13 +174,8 @@ namespace DaxStudio.UI.Utils
                     Log.Error("{class} {Method} {Error} {StackTrace}", nameof(PowerBIHelper), nameof(GetLocalInstances), ex.Message, ex.StackTrace);
                 }
 
+                return instance;
             });
-            if (instance == null)
-            {
-                Log.Debug("{class} {method} No PowerBI instance found for process: {processName} PID: {pid}", nameof(PowerBIHelper), nameof(GetLocalInstances), proc.ProcessName, proc.Id);
-            }
-            return instance;    
-            
         }
 
         public static bool IsAdministrator()

@@ -9,12 +9,14 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -26,6 +28,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -687,6 +690,25 @@ namespace DaxStudio.UI.ViewModels
             {
                 row.SelectedAncestorRecords = null;
             }
+        }
+
+        public void TestContextMenuCommand(object source)
+        {
+            System.Diagnostics.Debug.WriteLine($"Context Menu Command executed from {source.GetType().Name} ");
+            _ = ExpandDescendantsWithHigherRecordCounts(this.SelectedPhysicalQueryPlanRow , this.SelectedPhysicalQueryPlanRow);
+        }
+
+        private bool ExpandDescendantsWithHigherRecordCounts(TreeGridRow<object> selectedItem, TreeGridRow<object> item)
+        {
+            bool childExpanded = false;
+            foreach (var child in item.Children)
+            {
+                childExpanded = ExpandDescendantsWithHigherRecordCounts(selectedItem, child);
+                child.IsExpanded = child.GetDataAs<PhysicalQueryPlanRow>().Records > selectedItem.GetDataAs<PhysicalQueryPlanRow>().Records | childExpanded;
+                childExpanded = child.IsExpanded | childExpanded;
+
+            }
+            return childExpanded;
         }
     }
 }
