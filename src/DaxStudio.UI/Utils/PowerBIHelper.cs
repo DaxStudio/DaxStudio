@@ -5,6 +5,8 @@ using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Security.Principal;
 using DaxStudio.Common;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace DaxStudio.UI.Utils
 {
@@ -16,7 +18,7 @@ namespace DaxStudio.UI.Utils
         Loading,
         None
     }
-    public class PowerBIInstance
+    public class PowerBIInstance : IComparable<PowerBIInstance>
     {
         public static readonly string[] PBIDesktopMainWindowTitleSuffixes = new string[]
         {
@@ -67,6 +69,11 @@ namespace DaxStudio.UI.Utils
         public string Name { get; private set; }
 
         public EmbeddedSSASIcon Icon { get; private set; }
+
+        public int CompareTo(PowerBIInstance obj)
+        {
+            return Name.CompareTo(obj.Name);
+        }
     }
 
     public static class PowerBIHelper
@@ -76,6 +83,9 @@ namespace DaxStudio.UI.Utils
         private static bool instancesLoaded = false;
 
         public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
+        const int MaxParallelInstanceScans = 5;
+
+        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS)
         {
             if (!refreshList && instancesLoaded)
             {
@@ -83,31 +93,52 @@ namespace DaxStudio.UI.Utils
                 return _instances;
             }
 
-            _instances.Clear();
-
             var dict = ManagedIpHelper.GetExtendedTcpDictionary();
             var msmdsrvProcesses = Process.GetProcessesByName("msmdsrv");
-            foreach (var proc in msmdsrvProcesses)
-            { 
+
+            Func<Process, Task> myfunc = async (proc) =>
+            {
+                var instance = await GetInstanceDetailsAsync(includePBIRS, dict, proc, IsAdministrator());
+                if (instance != null)
+                {
+                    _instances.Add( instance);
+                }
+            };
+
+            _instances.Clear(); // clear the list before we start
+
+            msmdsrvProcesses.ParallelForEachAsync(async proc => await myfunc(proc), MaxParallelInstanceScans).Wait();
+
+            _instances.Sort(); // order by name
+
+            instancesLoaded = true;
+
+            return _instances;
+        }
+
+        private static async Task<PowerBIInstance> GetInstanceDetailsAsync(bool includePBIRS, Dictionary<int, TcpRow> tcpPorts, Process proc, bool isAdmin)
+        {
+            return await Task.Run<PowerBIInstance>(() => {
+                PowerBIInstance instance = null;
                 int _port = 0;
                 string parentTitle = string.Empty; // $"localhost:{_port}";
                 EmbeddedSSASIcon _icon = EmbeddedSSASIcon.PowerBI;
                 var parent = proc.GetParent();
-                
+
                 if (parent != null)
                 {
                     // exit here if the parent == "services" then this is a SSAS instance
-                    if (parent.ProcessName.Equals("services", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (parent.ProcessName.Equals("services", StringComparison.OrdinalIgnoreCase)) return instance;
 
                     // exit here if the parent == "RSHostingService" then this is a SSAS instance
                     if (parent.ProcessName.Equals("RSHostingService", StringComparison.OrdinalIgnoreCase))
                     {
                         // only show PBI Report Server if we are running as admin
                         // otherwise we won't have any access to the models
-                        if (IsAdministrator() && includePBIRS)
+                        if (isAdmin && includePBIRS)
                             _icon = EmbeddedSSASIcon.PowerBIReportServer;
                         else
-                            continue;
+                            return instance;
                     }
 
                     // if the process was launched from Visual Studio change the icon
@@ -115,7 +146,7 @@ namespace DaxStudio.UI.Utils
 
                     // get the window title so that we can parse out the file name
                     parentTitle = parent.MainWindowTitle;
-                    
+
                     if (parentTitle.Length == 0)
                     {
                         // for minimized windows we need to use some Win32 api calls to get the title
@@ -127,27 +158,31 @@ namespace DaxStudio.UI.Utils
                 try
                 {
                     TcpRow tcpRow = null;
-                    dict.TryGetValue(proc.Id, out tcpRow);
+                    tcpPorts.TryGetValue(proc.Id, out tcpRow);
                     if (tcpRow != null)
                     {
                         _port = tcpRow.LocalEndPoint.Port;
-                        _instances.Add(new PowerBIInstance(parentTitle, _port, _icon));
+                        instance = new PowerBIInstance(parentTitle, _port, _icon);
                         Log.Debug("{class} {method} PowerBI found on port: {port}", nameof(PowerBIHelper), nameof(GetLocalInstances), _port);
                     }
                     else
                     {
                         Log.Debug("{class} {method} PowerBI port not found for process: {processName} PID: {pid}", nameof(PowerBIHelper), nameof(GetLocalInstances), proc.ProcessName, proc.Id);
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {
                     Log.Error("{class} {Method} {Error} {StackTrace}", nameof(PowerBIHelper), nameof(GetLocalInstances), ex.Message, ex.StackTrace);
                 }
 
+            });
+            if (instance == null)
+            {
+                Log.Debug("{class} {method} No PowerBI instance found for process: {processName} PID: {pid}", nameof(PowerBIHelper), nameof(GetLocalInstances), proc.ProcessName, proc.Id);
             }
-            instancesLoaded = true;
-            return _instances;    
+            return instance;    
+            
         }
 
         public static bool IsAdministrator()
