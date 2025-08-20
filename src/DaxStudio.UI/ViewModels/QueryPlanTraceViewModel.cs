@@ -1,3 +1,5 @@
+
+﻿using System;
 ﻿using Caliburn.Micro;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls;
@@ -9,26 +11,23 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
-using Mono.Cecil;
 using Newtonsoft.Json;
 using Serilog;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics.Tracing;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.IO.Packaging;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Threading;
-using Windows.UI.Xaml.Controls.Primitives;
+using System.Windows.Controls;
+using System.ComponentModel;
+
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -134,8 +133,11 @@ namespace DaxStudio.UI.ViewModels
 
         private const string CachePrefix = @"Cache:|VertipaqResult:|DirectQueryResult|DataPostFilter:";
         static Regex cacheRegex = new Regex(CachePrefix, RegexOptions.Compiled);
+
+
         [JsonIgnore]
-        public IObservableCollection<PhysicalQueryPlanRow> Children { get; set; } = new BindableCollection<PhysicalQueryPlanRow>();
+        public List<PhysicalQueryPlanRow> Children { get; set; } = new List<PhysicalQueryPlanRow>();
+
         public override void PrepareQueryPlanRow(string line, int rowNumber) { 
             base.PrepareQueryPlanRow(line, rowNumber);
             var matchRecords = recordsRegex.Match(line);
@@ -158,12 +160,14 @@ namespace DaxStudio.UI.ViewModels
         }
     }
 
+
     public class LogicalQueryPlanRow : QueryPlanRow , IQueryPlanTreeNode<LogicalQueryPlanRow>{
         [JsonIgnore]
-        public IObservableCollection<LogicalQueryPlanRow> Children { get; set; } = new BindableCollection<LogicalQueryPlanRow>();
+        public List<LogicalQueryPlanRow> Children { get; set; } = new List<LogicalQueryPlanRow>();
+
     }
 
-    //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
+        //[Export(typeof(ITraceWatcher)),PartCreationPolicy(CreationPolicy.NonShared)]
     class QueryPlanTraceViewModel : TraceWatcherBaseViewModel,
         ISaveState,
         ITraceDiagnostics,
@@ -181,9 +185,9 @@ namespace DaxStudio.UI.ViewModels
         protected override List<DaxStudioTraceEventClass> GetMonitoredEvents()
         {
             return new List<DaxStudioTraceEventClass>
-                { DaxStudioTraceEventClass.DAXQueryPlan
-                , DaxStudioTraceEventClass.QueryBegin
-                , DaxStudioTraceEventClass.QueryEnd };
+            { DaxStudioTraceEventClass.DAXQueryPlan
+            , DaxStudioTraceEventClass.QueryBegin
+            , DaxStudioTraceEventClass.QueryEnd };
         }
 
 
@@ -306,6 +310,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+
         private void LoadOperationTree<T>(
             BindableCollection<T> queryPlanRows,
             BindableCollection<T> queryPlanTree)
@@ -316,19 +321,32 @@ namespace DaxStudio.UI.ViewModels
             foreach (var item in queryPlanRows)
             {
                 if (item.Level == 0)
+                {
+                    queryPlanTree.IsNotifying = false;
                     queryPlanTree.Add(item);
+                    queryPlanTree.IsNotifying = true;
+                }
                 else if (item.Level == (prevItem?.Level ?? 0))
+                {
+
                     parents.Peek().Children.Add(item);
+
+                }
                 else if (item.Level > (prevItem?.Level ?? 0))
                 {
                     parents.Push(prevItem);
+
                     prevItem.Children.Add(item);
+
                 }
                 else if (item.Level < (prevItem?.Level ?? 0))
                 {
                     while (parents.Count > 0 && parents.Peek().Level >= item.Level)
                         parents.Pop();
+
+
                     parents.Peek().Children.Add(item);
+
                 }
                 prevItem = item;
             }
@@ -393,12 +411,16 @@ namespace DaxStudio.UI.ViewModels
             {
                 return _physicalQueryPlanRows;
             }
+
             private set
             {
                 _physicalQueryPlanRows = value;
-                LoadOperationTree<PhysicalQueryPlanRow>(PhysicalQueryPlanRows, PhysicalQueryPlanTree);
+                LoadOperationTree<PhysicalQueryPlanRow>(PhysicalQueryPlanRows, _fullPhysicalQueryPlanTree);
+                PhysicalQueryPlanTree.AddRange(_fullPhysicalQueryPlanTree);
             }
         }
+
+        private BindableCollection<PhysicalQueryPlanRow> _fullPhysicalQueryPlanTree = new BindableCollection<PhysicalQueryPlanRow>();
 
         public BindableCollection<PhysicalQueryPlanRow> PhysicalQueryPlanTree
         {
@@ -439,7 +461,7 @@ namespace DaxStudio.UI.ViewModels
         protected override bool IsFinalEvent(DaxStudioTraceEventArgs traceEvent)
         {
             return traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd ||
-                   traceEvent.EventClass == DaxStudioTraceEventClass.Error;
+                    traceEvent.EventClass == DaxStudioTraceEventClass.Error;
         }
 
         #region ISaveState Methods
@@ -529,7 +551,7 @@ namespace DaxStudio.UI.ViewModels
             PhysicalQueryPlanTree = new BindableCollection<PhysicalQueryPlanRow>();
             LogicalQueryPlanTree = new BindableCollection<LogicalQueryPlanRow>();
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
-            NotifyOfPropertyChange(nameof( LogicalQueryPlanRows));
+            NotifyOfPropertyChange(nameof(LogicalQueryPlanRows));
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanTree));
             NotifyOfPropertyChange(nameof(LogicalQueryPlanTree));
         }
@@ -574,14 +596,14 @@ namespace DaxStudio.UI.ViewModels
         {
             var traceDiagnosticsViewModel = new RequestInformationViewModel(this);
             await WindowManager.ShowDialogBoxAsync(traceDiagnosticsViewModel, settings: new Dictionary<string, object>
-            {
-                { "WindowStyle", WindowStyle.None},
-                { "ShowInTaskbar", false},
-                { "ResizeMode", ResizeMode.NoResize},
-                { "Background", Brushes.Transparent},
-                { "AllowsTransparency",true}
+        {
+            { "WindowStyle", WindowStyle.None},
+            { "ShowInTaskbar", false},
+            { "ResizeMode", ResizeMode.NoResize},
+            { "Background", Brushes.Transparent},
+            { "AllowsTransparency",true}
 
-            });
+        });
         }
         private bool _showLogicalQueryPlan = true;
         public bool ShowLogicalQueryPlan
@@ -611,16 +633,24 @@ namespace DaxStudio.UI.ViewModels
 
         // ...
 
+
         public void OnSorting(object sender, DataGridSortingEventArgs e)
         {
-            TreeGrid dataGrid = sender as TreeGrid;
+            var dataGrid = sender as DaxStudio.UI.Controls.PhysicalQueryPlanTreeGrid;
             var previouslySelectedItem = dataGrid.SelectedItem;
 
             // Custom sorting logic
             var column = e.Column;
             var showLines = (column == dataGrid.Columns[0] && (column.SortDirection == ListSortDirection.Descending || column.SortDirection == null));
+
+            if (e.Column == dataGrid.Columns[1] && e.Column.SortDirection == null)
+            {
+                e.Column.SortDirection = ListSortDirection.Ascending;
+            }
             TreeColumn treeColumn = (TreeColumn)dataGrid.Columns.FirstOrDefault(c => c is TreeColumn);
             treeColumn.ShowTreeLines = showLines;
+            treeColumn.ShowExpander = showLines;
+
 
             Task.Yield();
 
@@ -638,7 +668,7 @@ namespace DaxStudio.UI.ViewModels
                     dataGrid.ScrollToItemOffset(previouslySelectedItem, false);
 
                 }
-            }),DispatcherPriority.ContextIdle);
+            }), DispatcherPriority.ContextIdle);
         }
 
         // This property is used to bind the FindDescendantsWithHigherRecordCounts method to the TreeGrid
@@ -659,24 +689,28 @@ namespace DaxStudio.UI.ViewModels
             return false;
         }
 
-        private TreeGridRow<object> _selectedPhysicalQueryPlanRow;
-        public TreeGridRow<object> SelectedPhysicalQueryPlanRow { get => _selectedPhysicalQueryPlanRow;
-            set { 
+        private TreeGridRow<PhysicalQueryPlanRow> _selectedPhysicalQueryPlanRow;
+        public TreeGridRow<PhysicalQueryPlanRow> SelectedPhysicalQueryPlanRow
+        {
+            get => _selectedPhysicalQueryPlanRow;
+            set
+            {
                 if (_selectedPhysicalQueryPlanRow == value) return;
-                var data = (PhysicalQueryPlanRow)value.Data;
-                ClearAllRecordCountHightlightsRecursive(data);
+                var data = (PhysicalQueryPlanRow)value?.Data;
                 _selectedPhysicalQueryPlanRow = value;
+
                 NotifyOfPropertyChange(() => SelectedPhysicalQueryPlanRow);
                 if (value != null)
                 {
+                    ClearAllRecordCountHightlightsRecursive(data);
                     HighlightHigherRecordCountRecursive(data, data.Records);
                 }
-            } 
+            }
         }
 
         private void HighlightHigherRecordCountRecursive(PhysicalQueryPlanRow value, long? selectedRecordsValue)
         {
-            foreach(var child in value.Children)
+            foreach (var child in value.Children)
             {
                 HighlightHigherRecordCountRecursive(child, selectedRecordsValue);
                 child.SelectedAncestorRecords = selectedRecordsValue;
@@ -684,18 +718,63 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private void ClearAllRecordCountHightlightsRecursive(PhysicalQueryPlanRow value)
-        {            
+        {
             // clear all highlights
-            foreach ( var row in PhysicalQueryPlanRows)
+            foreach (var row in PhysicalQueryPlanRows)
             {
                 row.SelectedAncestorRecords = null;
             }
         }
 
-        public void TestContextMenuCommand(object source)
+        Stack<BindableCollection<PhysicalQueryPlanRow>> _drillinStack = new Stack<BindableCollection<PhysicalQueryPlanRow>>();
+
+
+        public bool CanDrillIn(object source)
+        {
+            System.Diagnostics.Debug.WriteLine($"Context Menu Command CanExecute from {source.GetType().Name} ");
+            return SelectedPhysicalQueryPlanRow != null && SelectedPhysicalQueryPlanRow.Children.Count > 0;
+        }
+
+        public void DrillIn(object source)
         {
             System.Diagnostics.Debug.WriteLine($"Context Menu Command executed from {source.GetType().Name} ");
-            _ = ExpandDescendantsWithHigherRecordCounts(this.SelectedPhysicalQueryPlanRow , this.SelectedPhysicalQueryPlanRow);
+            //_ = ExpandDescendantsWithHigherRecordCounts(this.SelectedPhysicalQueryPlanRow , this.SelectedPhysicalQueryPlanRow);
+            var selectedNode = this.SelectedPhysicalQueryPlanRow?.GetDataAs<PhysicalQueryPlanRow>();
+            if (selectedNode == null) return;
+            var existingRootItems = new BindableCollection<PhysicalQueryPlanRow>();
+            existingRootItems.AddRange(PhysicalQueryPlanTree);
+            _drillinStack.Push(existingRootItems);
+            this.PhysicalQueryPlanTree.Clear();
+            this.PhysicalQueryPlanTree.Add(selectedNode);
+        }
+
+        public bool CanDrillOut(object source)
+        {
+            return _drillinStack.Count > 0;
+        }
+
+        public void DrillOut(object source)
+        {
+            System.Diagnostics.Debug.WriteLine($"Context Menu Command executed from {source.GetType().Name} ");
+            //_ = ExpandDescendantsWithHigherRecordCounts(this.SelectedPhysicalQueryPlanRow , this.SelectedPhysicalQueryPlanRow);
+            this.PhysicalQueryPlanTree.Clear();
+            //BindableCollection<PhysicalQueryPlanRow> tempTree = new BindableCollection<PhysicalQueryPlanRow>();
+            //LoadOperationTree<PhysicalQueryPlanRow>( PhysicalQueryPlanRows, PhysicalQueryPlanTree);
+            //foreach (var item in tempTree)
+            // {
+            //    PhysicalQueryPlanTree.Add( item);
+            //}
+            //PhysicalQueryPlanTree.AddRange(_fullPhysicalQueryPlanTree);
+            //NotifyOfPropertyChange(nameof(PhysicalQueryPlanTree));
+            PhysicalQueryPlanTree.IsNotifying = false;
+            var previousTreeItems = _drillinStack.Pop();
+            PhysicalQueryPlanTree.AddRange(previousTreeItems);
+            //foreach (var item in previousTreeItems)
+            //{
+            //    PhysicalQueryPlanTree.Add(item);
+            //}
+            PhysicalQueryPlanTree.IsNotifying = true;
+            PhysicalQueryPlanTree.Refresh();
         }
 
         private bool ExpandDescendantsWithHigherRecordCounts(TreeGridRow<object> selectedItem, TreeGridRow<object> item)
@@ -710,5 +789,19 @@ namespace DaxStudio.UI.ViewModels
             }
             return childExpanded;
         }
+
+        private bool _showPhysicalQueryPlanFilters;
+        public bool ShowPhysicalQueryPlanFilters 
+        { 
+            get => _showPhysicalQueryPlanFilters;
+            set 
+            { 
+                _showPhysicalQueryPlanFilters = value;
+                NotifyOfPropertyChange();
+            } 
+        }
+    
     }
+
 }
+

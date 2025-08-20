@@ -12,6 +12,9 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:ctrls="clr-namespace:DaxStudio.Controls;assembly=DaxStudio.Controls"
+             xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
+             xmlns:uictrl="clr-namespace:DaxStudio.UI.Controls"
+
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
@@ -153,9 +156,9 @@
                 </Style.Triggers>
             </Style>
 
-            <Style x:Key="TreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="ctrls:TreeGrid" />
+            <Style x:Key="TreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="uictrl:PhysicalQueryPlanTreeGrid" />
 
-
+            <Style x:Key="LogicalTreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="ctrls:TreeGrid" />
 
         </ResourceDictionary>
         
@@ -239,13 +242,25 @@
                               IsChecked="{Binding ShowLogicalQueryPlan}"
                               DockPanel.Dock="Right" Style="{StaticResource TraceToggleButton}"
                               >
-                    <TextBlock>Logical Plan</TextBlock></ToggleButton>  
-                <ToggleButton x:Name="ShowPhysicalPlan" DockPanel.Dock="Right" 
+                    <TextBlock>Logical Plan</TextBlock></ToggleButton>
+
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" >
+                    <ToggleButton x:Name="ShowPhysicalPlan" 
                               Style="{StaticResource TraceToggleButton}"
                               IsChecked="{Binding ShowPhysicalQueryPlan}"
-                              >
-                    <TextBlock>Physical Plan</TextBlock></ToggleButton>
-                
+                              Margin="2 2 0 2">
+                        <TextBlock>Physical Plan</TextBlock>
+                    </ToggleButton>
+                    <ToggleButton Style="{StaticResource TraceToggleButton}" 
+                                  Margin="0 2 2 2" 
+                                  ToolTip="Show Filters for Physical Query Plan" 
+                                  IsChecked="{Binding ShowPhysicalQueryPlanFilters}">
+                        <Image Source="{DynamicResource filter_toolbarDrawingImage}"
+                               Width="16" 
+                               Height="16"
+                               Margin="0 0 4 0"/>
+                    </ToggleButton>
+                    </StackPanel>
             </DockPanel>
             </controls:ClipBorder>
 
@@ -257,43 +272,61 @@
                              BorderThickness="1"
                              Style="{StaticResource BusyBlur}"
                              BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
-            <ctrls:TreeGrid
-                RootItems="{Binding PhysicalQueryPlanTree}"
-                ChildrenBindingPath="Children"
-                ExpandOnLoad="True"
-                FrozenColumnCount="2"
-                GridLinesVisibility="None" 
-                AlternationCount="2"
-                SelectedValue="{Binding SelectedPhysicalQueryPlanRow}"
-                cal:Message.Attach="[Event Sorting] = [Action OnSorting($source, $eventArgs)]"
-                RowStyle="{StaticResource DefaultDataGridRowStyle}"
-                AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
-                Background="{DynamicResource Theme.Brush.Content.Back}"
-                Style="{StaticResource TreeGridStyle}"
-                CustomDescendantFilter="{Binding FindDescendantsWithHigherRecordCountsFunc}"  
-                ShowDefaultContextMenu="True"
+
+            <uictrl:PhysicalQueryPlanTreeGrid x:Name="PhysicalTreeGrid"
+                    RootItems="{Binding PhysicalQueryPlanTree}"
+                    ChildrenBindingPath="Children"
+                    ExpandOnLoad="True"
+                    FrozenColumnCount="2"
+                    GridLinesVisibility="None" 
+                    AlternationCount="2"
+                    SelectedValue="{Binding SelectedPhysicalQueryPlanRow}"
+                    cal:Message.Attach="[Event Sorting] = [Action OnSorting($source, $eventArgs)]"
+                    RowStyle="{StaticResource DefaultDataGridRowStyle}"
+                    AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
+                    Background="{DynamicResource Theme.Brush.Content.Back}"
+                    Style="{StaticResource TreeGridStyle}"
+                    CustomDescendantFilter="{Binding FindDescendantsWithHigherRecordCountsFunc}"  
+                    ShowDefaultContextMenu="True"
+                    EnableRowVirtualization="True"
+                    IsReadOnly="True"
+                    filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
+                    filter:DataGridExtensions.IsClearButtonVisible="False"
+                    filter:DataGridExtensions.IsFilterVisible="{Binding ShowPhysicalQueryPlanFilters}" 
+                    ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
+		                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		            ResourceId=DataGridHeaderFilterControlStyle}}"
                 >
-                <ctrls:TreeGrid.ContextMenu>
+                <uictrl:PhysicalQueryPlanTreeGrid.ContextMenu>
                     <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                         <Separator/>
-                        <MenuItem Header="Show Descendants with Higher Record Counts" 
+                        <!--<MenuItem Header="Show Descendants with Higher Record Counts" 
                               Command="{Binding PlacementTarget.ExecuteCustomDescendantFilter, 
                                   RelativeSource={RelativeSource FindAncestor, 
                                   AncestorType={x:Type ContextMenu}}}"
                               CommandParameter="{Binding PlacementTarget.SelectedItem, 
                                   RelativeSource={RelativeSource FindAncestor, 
-                                  AncestorType={x:Type ContextMenu}}}"/>
-                        <!--<MenuItem Header="Test"
+                                  AncestorType={x:Type ContextMenu}}}"/>-->
+                        <MenuItem Header="Drill In"
                                   cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
-                                  cal:Message.Attach="[Event Click] = [Action TestContextMenuCommand($dataContext)]"
-                                  />-->
+                                  cal:Message.Attach="[Event Click] = [Action DrillIn($dataContext)]"
+                                  />
+                        <MenuItem Header="Drill Out"
+                                  cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                                  cal:Message.Attach="[Event Click] = [Action DrillOut($dataContext)]"
+                                  />
                     </ContextMenu>
-                </ctrls:TreeGrid.ContextMenu>
-                <ctrls:TreeGrid.Columns>
-                    <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTemplateColumn Header="Records" Width="60" 
+                </uictrl:PhysicalQueryPlanTreeGrid.ContextMenu>
+                <uictrl:PhysicalQueryPlanTreeGrid.Columns>
+                    <DataGridTextColumn Header="Line" Width="60" 
                                         IsReadOnly="True" 
- >
+                                        Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}"
+                                        filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"/>
+                    <DataGridTemplateColumn Header="Records" Width="100" 
+                                            IsReadOnly="True" 
+                                            SortMemberPath="Data.Records"
+                                            
+                                            filter:DataGridColumnExtensions.CustomBindingPath="Data.Records">
                         <DataGridTemplateColumn.CellTemplate>
                         
                         <DataTemplate>
@@ -335,7 +368,10 @@
                         Header="Physical Query Plan"
                         TextPath="Data.Operation"
                         Width="*"
-                        ClipboardContentBinding="{Binding Data.IndentedOperation}">
+                        ClipboardContentBinding="{Binding Data.IndentedOperation}"
+                        filter:DataGridColumnExtensions.CustomBindingPath="Data.Operation"
+                        filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+                        >
                         <ctrls:TreeColumn.TreeLineStyle>
                             <Style TargetType="ctrls:TreeCell">
                                 <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
@@ -343,10 +379,27 @@
                                 <Setter Property="LineStroke" Value="{DynamicResource Theme.Brush.Muted.Fore}"/>
                             </Style>
                         </ctrls:TreeColumn.TreeLineStyle>
+                        <ctrls:TreeColumn.TextTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding .}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="Orange"/>
+                                            <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DataContext.Data.HighlightRow, RelativeSource={RelativeSource AncestorType={x:Type ctrls:TreeCell}}}" Value="True">
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                </TextBlock>
+
+                            </DataTemplate>
+                        </ctrls:TreeColumn.TextTemplate>
                     </ctrls:TreeColumn>
 
-                </ctrls:TreeGrid.Columns>
-            </ctrls:TreeGrid>
+                </uictrl:PhysicalQueryPlanTreeGrid.Columns>
+            </uictrl:PhysicalQueryPlanTreeGrid>
             <!--<DataGrid 
                   SelectedItem="{Binding SelectedPhysicalRow}" 
                   HorizontalAlignment="Stretch" 
@@ -453,7 +506,9 @@
                              BorderThickness="1"
                              BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                              Style="{StaticResource BusyBlur}">
+
             <ctrls:TreeGrid
+                x:Name="LogicalTreeGrid"
                 RootItems="{Binding LogicalQueryPlanTree}"
                 ChildrenBindingPath="Children"
                 ExpandOnLoad="True"
@@ -463,7 +518,9 @@
                 RowStyle="{StaticResource DefaultDataGridRowStyle}"
                 AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
-                Style="{StaticResource TreeGridStyle}"
+                Style="{StaticResource LogicalTreeGridStyle}"
+                EnableRowVirtualization="True"
+                IsReadOnly="True"
                 >
                 <ctrls:TreeGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
