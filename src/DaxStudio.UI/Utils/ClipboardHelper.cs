@@ -41,6 +41,13 @@ namespace DaxStudio.UI.Utils
             return Tuple.Create(newContent, sm );
         }
 
-        
+        public static void SetDataObject(string text, IDataObject dataObject )
+        {
+            _retryPolicy.Execute(() =>
+            {
+                dataObject.SetData(text);
+            });
+        }
+
     }
 }
