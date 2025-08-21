@@ -167,7 +167,7 @@ namespace DaxStudio.UI.Converters
                     case ']':
                     case '[':
                     case '.':
-                    //case '^':
+                    case '^':
                     case '\\': 
                         sb.Append(escape);
                         sb.Append(c);
