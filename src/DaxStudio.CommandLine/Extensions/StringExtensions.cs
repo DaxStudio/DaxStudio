@@ -22,35 +22,8 @@ namespace DaxStudio.CommandLine.Extensions
             return false;
         }
 
-        /*
-    // Removes a[i..i+n], preserving the order of array elements.
-    void RemoveAt(this ref string[] a, int i, int n)
-    {
-        // Create a Span that references the array elements.
-        var s = a.AsSpan();
-        // Move array elements that follow the ones to remove to the front.
-        // Caveat: Use `s`, not `a`, or else the result may be invalid.
-        s[(i + n)..].CopyTo(s[i..^n]);
-        // Cut the last n array elements off.
-        a = a[..^n];
-
-
-    }
-*/
-
 
         // Removes a[i..i+n], preserving the order of array elements.
-        //public static void RemoveAt(this string[] a, int i, int n)
-        //{
-        //    // Create a Span that references the array elements.
-        //    var s = a.AsSpan();
-        //    // Move array elements that follow the ones to remove to the front.
-        //    // Caveat: Use `s`, not `a`, or else the result may be invalid.
-        //    s.Slice(i + n).CopyTo(s.Slice(i, s.Length - i - n));
-        //    // Cut the last n array elements off.
-        //    a = s.Slice(0, s.Length - n).ToArray();
-        //}
-
         public static void RemoveAt(ref string[] a, int i, int n)
         {
             // Create a Span that references the array elements.
