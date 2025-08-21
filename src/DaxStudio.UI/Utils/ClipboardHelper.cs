@@ -45,7 +45,7 @@ namespace DaxStudio.UI.Utils
         {
             _retryPolicy.Execute(() =>
             {
-                dataObject.SetData(text);
+                dataObject = new DataObject(text);
             });
         }
 
