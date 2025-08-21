@@ -493,6 +493,8 @@ namespace DaxStudio.UI.ViewModels
                             return;
                     }
                 }
+
+                ClipboardHelper.SetDataObject(content, e.DataObject);           
                 
             }
             catch (Exception ex)

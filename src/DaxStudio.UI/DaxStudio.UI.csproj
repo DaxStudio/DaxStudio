@@ -317,6 +317,7 @@
     <Compile Include="Converters\BoolToDoubleConverter.cs" />
     <Compile Include="Converters\BoolToGridRowHeightConverter.cs" />
     <Compile Include="Converters\BoolToHighContrastForegroundConverter.cs" />
+    <Compile Include="Converters\FixedStringConverter.cs" />
     <Compile Include="Converters\NullToBoolConverter.cs" />
     <Compile Include="Converters\BoolToNotVisibleConverter.cs" />
     <Compile Include="Converters\BoolToNotHiddenConverter.cs" />
