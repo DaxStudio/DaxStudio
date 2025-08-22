@@ -25,6 +25,7 @@ using DaxStudio.Interfaces;
 using System.ComponentModel;
 using DaxStudio.UI.Converters;
 using DaxStudio.Common.Extensions;
+using DaxStudio.UI.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -48,7 +49,7 @@ namespace DaxStudio.UI.ViewModels
         Unicode
     }
 
-    public class ExportDataWizardViewModel : Conductor<IScreen>.Collection.OneActive, IDisposable
+    public class ExportDataWizardViewModel : Conductor<IScreen>.Collection.OneActive, IDisposable, IExportDataDetails
     {
         #region Private Fields
 
@@ -175,9 +176,9 @@ namespace DaxStudio.UI.ViewModels
         public bool CsvQuoteStrings { get; set; } = true;
         public string CsvFolder { get; set; } = "";
         public CsvEncoding CsvEncoding { get; set; } = CsvEncoding.UTF8;
-        public ObservableCollection<SelectedTable> Tables { get; } = new ObservableCollection<SelectedTable>();
+        public ObservableCollection<SelectedTable> Tables { get; set; } = new ObservableCollection<SelectedTable>();
         public TransitionMap TransitionMap { get; } = new TransitionMap();
-        public bool TruncateTables { get; internal set; } = true;
+        public bool TruncateTables { get; set; } = true;
 
         #endregion
 

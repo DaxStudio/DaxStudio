@@ -386,6 +386,7 @@
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="Extensions\StoreageModeExtensions.cs" />
     <Compile Include="Interfaces\ICancellable.cs" />
+    <Compile Include="Interfaces\IExportDataDetails.cs" />
     <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
