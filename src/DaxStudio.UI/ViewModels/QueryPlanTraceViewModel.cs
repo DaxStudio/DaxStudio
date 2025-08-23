@@ -1,6 +1,6 @@
 
-﻿using System;
-﻿using Caliburn.Micro;
+using System;
+using Caliburn.Micro;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls;
 using DaxStudio.Controls.Model;
@@ -650,7 +650,6 @@ namespace DaxStudio.UI.ViewModels
             TreeColumn treeColumn = (TreeColumn)dataGrid.Columns.FirstOrDefault(c => c is TreeColumn);
             treeColumn.ShowTreeLines = showLines;
             treeColumn.ShowExpander = showLines;
-
 
             Task.Yield();
 

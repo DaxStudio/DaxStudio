@@ -325,7 +325,6 @@
                     <DataGridTemplateColumn Header="Records" Width="100" 
                                             IsReadOnly="True" 
                                             SortMemberPath="Data.Records"
-                                            
                                             filter:DataGridColumnExtensions.CustomBindingPath="Data.Records">
                         <DataGridTemplateColumn.CellTemplate>
                         
@@ -364,6 +363,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+                    <!-- ShowTreeLines="{Binding Path=(filter:DataGridExtensions.HasActiveFilters), ElementName=PhysicalQueryPlan}" -->
                     <ctrls:TreeColumn 
                         Header="Physical Query Plan"
                         TextPath="Data.Operation"
