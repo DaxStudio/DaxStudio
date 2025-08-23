@@ -74,11 +74,23 @@ namespace DaxStudio.Controls.DataGridFilter
             {
                 IsFiltered = false;
             }
+
+            // Update the DataGrid's HasActiveFilters property
+            if (DataGrid != null)
+            {
+                DataGridExtensions.SetHasActiveFilters(DataGrid, DataGridExtensions.CheckHasActiveFilters(DataGrid));
+            }
         }
 
         private void FilterClearedEvent(object sender, EventArgs e)
         {
             IsFiltered = false;
+
+            // Update the DataGrid's HasActiveFilters property
+            if (DataGrid != null)
+            {
+                DataGridExtensions.SetHasActiveFilters(DataGrid, DataGridExtensions.CheckHasActiveFilters(DataGrid));
+            }
         }
 
         public DataGridColumnHeader AssignedDataGridColumnHeader

@@ -258,6 +258,7 @@
                              Style="{StaticResource BusyBlur}"
                              BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
             <ctrls:TreeGrid
+                x:Name="PhysicalQueryPlan"
                 RootItems="{Binding PhysicalQueryPlanTree}"
                 ChildrenBindingPath="Children"
                 ExpandOnLoad="True"
@@ -293,7 +294,7 @@
                     <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
                     <DataGridTemplateColumn Header="Records" Width="60" 
                                         IsReadOnly="True" 
- >
+                                        SortMemberPath="Data.Records" >
                         <DataGridTemplateColumn.CellTemplate>
                         
                         <DataTemplate>
@@ -331,11 +332,13 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+                    <!-- ShowTreeLines="{Binding Path=(filter:DataGridExtensions.HasActiveFilters), ElementName=PhysicalQueryPlan}" -->
                     <ctrls:TreeColumn 
                         Header="Physical Query Plan"
                         TextPath="Data.Operation"
                         Width="*"
-                        ClipboardContentBinding="{Binding Data.IndentedOperation}">
+                        ClipboardContentBinding="{Binding Data.IndentedOperation}"
+                        >
                         <ctrls:TreeColumn.TreeLineStyle>
                             <Style TargetType="ctrls:TreeCell">
                                 <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
@@ -343,6 +346,7 @@
                                 <Setter Property="LineStroke" Value="{DynamicResource Theme.Brush.Muted.Fore}"/>
                             </Style>
                         </ctrls:TreeColumn.TreeLineStyle>
+                        
                     </ctrls:TreeColumn>
 
                 </ctrls:TreeGrid.Columns>

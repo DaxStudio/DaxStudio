@@ -621,7 +621,7 @@ namespace DaxStudio.UI.ViewModels
             var showLines = (column == dataGrid.Columns[0] && (column.SortDirection == ListSortDirection.Descending || column.SortDirection == null));
             TreeColumn treeColumn = (TreeColumn)dataGrid.Columns.FirstOrDefault(c => c is TreeColumn);
             treeColumn.ShowTreeLines = showLines;
-
+            treeColumn.ShowExpander = showLines;
             Task.Yield();
 
             // Let the sort happen first
