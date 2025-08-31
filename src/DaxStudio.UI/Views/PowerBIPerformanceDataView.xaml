@@ -39,6 +39,11 @@
                 <sys:String>SQL</sys:String>
             </col:ArrayList>
 
+            <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
@@ -158,6 +163,13 @@
                 Grid.Row="1"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                
                 <controls:DataGridCustomCopy x:Name="PerformanceData" 
 
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
@@ -187,13 +199,15 @@
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
                     IsReadOnly="True"
+                                             behaviours:FooterWidthLinkBehavior.FooterGrid="{Binding ElementName=FooterGrid}"
                     >
 
             <DataGrid.Resources>
 
-                <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
+                        <Style TargetType="{x:Type controls:DataGridCustomCopy}" BasedOn="{StaticResource DefaultDataGridStyle}">
                     <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
-                </Style>
+
+                        </Style>
                 
                 <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
                     <Setter Property="Template">
@@ -219,10 +233,7 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                             <Setter Property="MinHeight" Value="20"/>
                         </Style>
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
-                    <Setter Property="HorizontalAlignment" Value="Right" />
-                            <Setter Property="VerticalAlignment" Value="Center" />
-                        </Style>
+
             </DataGrid.Resources>
 
             <DataGrid.ContextMenu>
@@ -281,14 +292,14 @@
                     Header="QueryStart" 
                     IsReadOnly="True" 
                     Width="80" 
-                    Binding="{Binding QueryStartTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+                     
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
                     filter:DataGridColumnExtensions.CustomBindingPath="QueryStartTime"/>
                 <DataGridTextColumn 
                     Header="QueryEnd" 
                     IsReadOnly="True" 
                     Width="80" 
-                    Binding="{Binding QueryEndTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+                    
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
                     filter:DataGridColumnExtensions.CustomBindingPath="QueryEndTime"/>
                 <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
@@ -337,6 +348,104 @@
 
             </DataGrid.Columns>
         </controls:DataGridCustomCopy>
+                    
+                    <!-- Footer Grid -->
+                    <DataGrid x:Name="FooterGrid"
+                              Grid.Row="1"
+                              HeadersVisibility="None"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserResizeColumns="False"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Hidden"
+                              GridLinesVisibility="All"
+                              ItemsSource="{Binding FooterItem}">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <!--<DataGridTextColumn Header="StartTime" IsReadOnly="True" Width="65" Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  />-->
+                            <DataGridTextColumn 
+        Header="#" 
+        IsReadOnly="True" 
+        Width="{Binding Columns[0].Width, ElementName=PerformanceData}" 
+        
+        filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True" 
+        />
+
+                            <DataGridTextColumn 
+        Header="Visual" 
+        IsReadOnly="True" 
+        Width="{Binding Columns[1].Width, ElementName=PerformanceData}" 
+        Binding="{Binding VisualName, Mode=OneTime}"
+        filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+        />
+
+                            <DataGridTextColumn 
+        Header="QueryStart" 
+        IsReadOnly="True" 
+        Width="{Binding Columns[2].Width, ElementName=PerformanceData}" 
+        Binding="{Binding QueryStartTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+        filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
+        filter:DataGridColumnExtensions.CustomBindingPath="QueryStartTime"/>
+                            <DataGridTextColumn 
+        Header="QueryEnd" 
+        IsReadOnly="True" 
+        Width="{Binding Columns[3].Width, ElementName=PerformanceData}" 
+        Binding="{Binding QueryEndTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+        filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
+        filter:DataGridColumnExtensions.CustomBindingPath="QueryEndTime"/>
+                            <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
+                            Binding="{Binding QueryType}" />-->
+
+                            <!--<DataGridComboBoxColumn Header="Type" Width="40" 
+                            filter:DataGridColumnExtensions.CustomBindingPath="QueryType"
+                            ItemsSource="{StaticResource QueryTypes}"
+                            SelectedItemBinding="{Binding QueryType}">
+    </DataGridComboBoxColumn>-->
+                            <DataGridTextColumn  
+                        Header="Rows"
+                        IsReadOnly="True"
+                                 Width="{Binding Columns[4].Width, ElementName=PerformanceData}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        Binding="{Binding RowCount, StringFormat='#,0',Mode=OneTime}"                                    
+                        filter:DataGridColumnExtensions.CustomBindingPath="RowCount">
+
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Query Ms" IsReadOnly="True" Width="{Binding Columns[5].Width, ElementName=PerformanceData}" 
+                        Binding="{Binding QueryDuration, StringFormat='#,0 ms', Mode=OneTime}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        filter:DataGridColumnExtensions.CustomBindingPath="QueryDuration"
+                        />
+                            <DataGridTextColumn Header="Render Ms" IsReadOnly="True" Width="{Binding Columns[6].Width, ElementName=PerformanceData}" 
+                        Binding="{Binding RenderDuration, StringFormat='#,0 ms',Mode=OneTime}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        filter:DataGridColumnExtensions.CustomBindingPath="RenderDuration"
+                        />
+                            <DataGridTextColumn Header="Total Ms" IsReadOnly="True" Width="{Binding Columns[7].Width, ElementName=PerformanceData}" 
+                        Binding="{Binding TotalDuration, StringFormat='#,0 ms',Mode=OneTime}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        filter:DataGridColumnExtensions.CustomBindingPath="TotalDuration"
+                        />
+
+                            <DataGridTemplateColumn Header="Query" Width="{Binding Columns[8].Width, ElementName=PerformanceData}"  CellTemplate="{StaticResource QueryTextCell}" 
+                            filter:DataGridColumnExtensions.CustomBindingPath="QueryText"
+                            filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+                            ClipboardContentBinding="{Binding QueryTextQuoted, Mode=OneTime}"
+                            />
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </controls:ClipBorder>
         </Grid>
         

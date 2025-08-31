@@ -47,7 +47,7 @@ namespace DaxStudio.UI.Model
         [Ignore]
         public string QueryTextQuoted { 
             get { 
-                return QueryText.Replace("\t","    ");
+                return QueryText?.Replace("\t","    ");
             } 
         }
 
