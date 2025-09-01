@@ -18,11 +18,13 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Xml;
 using Tom = Microsoft.AnalysisServices;
 
 namespace DaxStudio.Common
@@ -33,7 +35,7 @@ namespace DaxStudio.Common
         private static IPublicClientApplication _clientApp;
         //private static string ClientId = "90fd9dec-463e-4e03-8cbe-8f0baa9bb7e8";
         //private static string ClientId = "7f67af8a-fedc-4b08-8b4e-37c4d127b6cf";  // PBI Desktop Client ID
-        private static string ClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
+        private static string DefaultClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
         private static string Instance = "https://login.microsoftonline.com/organizations";
         
         private static Regex regexGuid = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -41,11 +43,11 @@ namespace DaxStudio.Common
         private static IEnumerable<string> powerbiScope = new List<string>() { "https://analysis.windows.net/powerbi/api/.default" };
         private static IEnumerable<string> asazureScope = new List<string>() { "https://*.asazure.windows.net/.default" };
 
-        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,string tenantId)
+        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
         {
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp(tenantId);
+            var app = GetPublicClientApp(context);
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 
@@ -103,15 +105,19 @@ namespace DaxStudio.Common
             return authResult;
         }
 
-        public static IPublicClientApplication GetPublicClientApp(string tenantId)
+        public static IPublicClientApplication GetPublicClientApp(AccessTokenContext context)
         {
             //if (_clientApp != null) return _clientApp;
 
             BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
 
-            var authority = ReplaceTenantInInstance(Instance, tenantId);
+            var defaultAuthority = GetDefaultAuthority(context);
 
-            _clientApp = PublicClientApplicationBuilder.Create(ClientId)
+            var authority = ReplaceTenantInInstance(defaultAuthority, context.TenantId);
+
+            var clientId = GetClientID(context);
+
+            _clientApp = PublicClientApplicationBuilder.Create(clientId)
                 //.WithAuthority($"{Instance}{Tenant}")
                 .WithAuthority(authority)
                 .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
@@ -127,6 +133,26 @@ namespace DaxStudio.Common
             return _clientApp;
         }
 
+        private static string GetDefaultAuthority(AccessTokenContext context)
+        {
+            var auth = Instance;
+            var record = GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
+            if (record != null)
+            {
+                auth = record.Authority.Replace("common", "organizations");
+            }
+            return auth;
+        }
+
+        private static string GetClientID(AccessTokenContext context)
+        {
+            // Lookup client ID based on token scope
+            var clientId = DefaultClientId;
+            var result = DaxStudio.Common.EntraIdHelper.GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
+            if (result != null) clientId = result.ApplicationId;
+            return clientId;
+        }
+
         private static Uri ReplaceTenantInInstance(string instance, string tenantId)
         {
             if (string.IsNullOrEmpty(tenantId))
@@ -137,12 +163,19 @@ namespace DaxStudio.Common
             return new Uri(instance.Replace("organizations", tenantId));
         }
 
-        public static async Task<(AuthenticationResult,string)> PromptForAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, string serverName)
+        public static async Task<(AuthenticationResult,AccessTokenContext)> PromptForAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, string serverName)
         {
 
             var scope = GetScope(tokenScope);
             var tenantId = GetTenantIdFromServerName(serverName);
-            var app = GetPublicClientApp(tenantId);
+            var hostPostfix = GetHostPostfix(new Uri( serverName));
+            var context = new AccessTokenContext
+            {
+                TokenScope = tokenScope,
+                TenantId = tenantId,
+                DomainPostfix = hostPostfix
+            };
+            var app = GetPublicClientApp(context);
             try
             {
                 var authResult = await app.AcquireTokenInteractive(scope)
@@ -152,14 +185,82 @@ namespace DaxStudio.Common
                             .WithPrompt(Prompt.SelectAccount)
                             .ExecuteAsync();
                 options.LastUsedUPN = authResult.Account.Username;
-                return (authResult, tenantId);
+                context.Username = authResult.Account.Username;
+                return (authResult, context);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), "Error getting user token interactively");
                 throw;
-                return (null, string.Empty);
+                return (null, null);
             }
+        }
+
+        internal static string GetHostPostfix(Uri serverName)
+        {
+            if (serverName == null) throw new ArgumentNullException(nameof(serverName));
+            
+            var record = (AuthenticationInformationRecord)null;
+            TryFindAuthenticationInformation(serverName, GetAuthenticationInformation(), out record);
+
+            return record.DomainPostfix;
+        }
+
+        internal static AuthenticationInformationRecord GetAuthenticationInformationFromDomainPostfix(string domainPostfix)
+        {
+            var knownRecords = GetAuthenticationInformation();
+            foreach (var record in knownRecords)
+            {
+                if (record.DomainPostfix.Equals(domainPostfix,StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return record;
+                }
+            }
+            return (AuthenticationInformationRecord)null;
+        }
+
+        private static AuthenticationInformationRecord[] remoteSecurityConfig;
+
+        private static AuthenticationInformationRecord[] GetAuthenticationInformation()
+        {
+            // For any other URL formats, download the security config file
+            if (remoteSecurityConfig == null)
+            {
+
+                using (WebClient webClient = new WebClient())
+                {
+                    try
+                    {
+                        using (Stream info = (Stream)new MemoryStream(webClient.DownloadData("https://global.asazure.windows.net/ASAzureSecurityConfig.xml")))
+                            remoteSecurityConfig = DeserializeAuthenticationInformation(info);
+                    }
+                    catch (WebException ex)
+                    {
+                        remoteSecurityConfig = new AuthenticationInformationRecord[0];
+                    }
+                }
+            }
+            return remoteSecurityConfig;
+        }
+
+        private static bool TryFindAuthenticationInformation(
+                      Uri dataSource,
+                      AuthenticationInformationRecord[] knownRecords,
+                      out AuthenticationInformationRecord record)
+        {
+            record = (AuthenticationInformationRecord)null;
+            for (int index = 0; index < knownRecords.Length; ++index)
+            {
+                if (dataSource.Host.EndsWith(knownRecords[index].DomainPostfix, StringComparison.InvariantCultureIgnoreCase) && (record == null || knownRecords[index].DomainPostfix.Length > record.DomainPostfix.Length))
+                    record = knownRecords[index];
+            }
+            return record != null;
+        }
+
+        private static AuthenticationInformationRecord[] DeserializeAuthenticationInformation(  Stream info)
+        {
+            using (XmlDictionaryReader textReader = XmlDictionaryReader.CreateTextReader(info, new XmlDictionaryReaderQuotas()))
+                return (AuthenticationInformationRecord[])new DataContractSerializer(typeof(AuthenticationInformationRecord[]), "AuthenticationInformations", string.Empty).ReadObject(textReader, true);
         }
 
         public static string GetTenantIdFromServerName(string serverName)
@@ -252,20 +353,20 @@ namespace DaxStudio.Common
             }
         }
 
-        public static async Task SignOutAsync()
-        {
-            // TODO - will the app still have the same list of accounts if we 
-            //        have connected to different tenants?
-            var app = GetPublicClientApp(string.Empty);
+        //public static async Task SignOutAsync()
+        //{
+        //    // TODO - will the app still have the same list of accounts if we 
+        //    //        have connected to different tenants?
+        //    var app = GetPublicClientApp(string.Empty);
 
 
-            IAccount firstAccount = (await app.GetAccountsAsync()).FirstOrDefault();
-            if (firstAccount == null)
-            {
-                return;
-            }
-            await app.RemoveAsync(firstAccount);
-        }
+        //    IAccount firstAccount = (await app.GetAccountsAsync()).FirstOrDefault();
+        //    if (firstAccount == null)
+        //    {
+        //        return;
+        //    }
+        //    await app.RemoveAsync(firstAccount);
+        //}
 
         private static async Task<MsalCacheHelper> CreateCacheHelperAsync()
         {
@@ -284,12 +385,12 @@ namespace DaxStudio.Common
             return cacheHelper;
         }
 
-        public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
-        {
-            var app = GetPublicClientApp(string.Empty);
-            var accounts = await app.GetAccountsAsync();
-            return accounts;
-        }
+        //public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
+        //{
+        //    var app = GetPublicClientApp(string.Empty);
+        //    var accounts = await app.GetAccountsAsync();
+        //    return accounts;
+        //}
 
         private struct TokenDetails
         {
@@ -327,18 +428,19 @@ namespace DaxStudio.Common
         }
 
 
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId)
-        {
-            // TODO
-            var context = new AccessTokenContext
-            {
-                UserName = username,
-                TokenScope = scope,
-                TenantId = tenantId
-            };
-            var accessToken = new AccessToken(token, expiry, context);
-            return accessToken;
-        }
+        //public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId, string hostPostfix)
+        //{
+        //    // TODO
+        //    var context = new AccessTokenContext
+        //    {
+        //        Username = username,
+        //        TokenScope = scope,
+        //        TenantId = tenantId,
+        //        DomainPostfix = hostPostfix
+        //    };
+        //    var accessToken = new AccessToken(token, expiry, context);
+        //    return accessToken;
+        //}
 
         public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
         {
@@ -348,10 +450,10 @@ namespace DaxStudio.Common
 
         private static AuthenticationResult RefreshTokenInternal(TokenDetails token)
         {
-            var lastUpn = (token.UserContext?.UserName) ?? string.Empty;
+            var lastUpn = (token.UserContext?.Username) ?? string.Empty;
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp(token.UserContext.TenantId);
+            var app = GetPublicClientApp(token.UserContext);
             IAccount firstAccount = null;
             var accounts = app.GetAccountsAsync().Result;
 
@@ -444,4 +546,24 @@ namespace DaxStudio.Common
         [DataMember(Name = "tenantId")]
         public string TenantId { get; set; }
     }
+
+    [DataContract(Name = "AuthenticationInformation", Namespace = "")]
+    sealed class AuthenticationInformationRecord
+    {
+        [DataMember(Name = "DomainPostfix", Order = 0)]
+        public string DomainPostfix { get; private set; }
+
+        [DataMember(Name = "Authority", Order = 1)]
+        public string Authority { get; private set; }
+
+        [DataMember(Name = "Authority.v2", Order = 2, EmitDefaultValue = true)]
+        public string Authority2 { get; private set; }
+
+        [DataMember(Name = "ApplicationId", Order = 3)]
+        public string ApplicationId { get; private set; }
+
+        [DataMember(Name = "ResourceId", Order = 4, EmitDefaultValue = true)]
+        public string ResourceId { get; private set; }
+    }
+
 }
