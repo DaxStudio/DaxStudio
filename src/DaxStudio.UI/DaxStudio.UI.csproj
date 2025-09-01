@@ -281,6 +281,7 @@
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="AttachedProperties\DataSourcePasteHandlerHelper.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
+    <Compile Include="Behaviours\FooterWidthLinkBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewScrollIntoViewBehaviour.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
@@ -389,6 +390,7 @@
     <Compile Include="Interfaces\IExportDataDetails.cs" />
     <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
+    <Compile Include="Interfaces\IPowerBIPerformanceData.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />
