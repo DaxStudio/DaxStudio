@@ -389,6 +389,7 @@
     <Compile Include="Interfaces\ICancellable.cs" />
     <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
+    <Compile Include="Interfaces\IPowerBIPerformanceData.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />

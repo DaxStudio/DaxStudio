@@ -60,7 +60,7 @@ namespace DaxStudio.UI.ViewModels
 
         public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; }
 
-        public BindableCollection<PowerBIPerformanceData> FooterItem { get; } = new BindableCollection<PowerBIPerformanceData>();
+        public BindableCollection<IPowerBIPerformanceData> FooterItem { get; } = new BindableCollection<IPowerBIPerformanceData>();
 
         private readonly ICollectionView performanceDataView;
 
@@ -170,12 +170,11 @@ namespace DaxStudio.UI.ViewModels
 
         private void CalculateFooterItem()
         {
-   
-            var item = new PowerBIPerformanceData() { VisualName = "Total:" };
+            FooterItem.Clear();
+            var item = new PowerBIPerformanceDataTotal() { VisualName = "Total:" };
             item.RowCount = PerformanceData.Sum(x => x.RowCount);
-            //item.QueryDuration = PerformanceData.Sum(x => x.QueryDuration > 0 ? x.QueryDuration : 0);
-            //item.RenderDuration = PerformanceData.Sum(x => x.RenderDuration > 0 ? x.RenderDuration : 0);
-            //item.TotalDuration = item.QueryDuration + item.RenderDuration;
+            item.QueryDuration = PerformanceData.Sum(x => x.QueryDuration > 0 ? x.QueryDuration : 0);
+            item.RenderDuration = PerformanceData.Sum(x => x.RenderDuration > 0 ? x.RenderDuration : 0);
             FooterItem.Add(item);
         }
 
