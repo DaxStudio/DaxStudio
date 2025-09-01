@@ -139,7 +139,7 @@ namespace DaxStudio.Common
             var record = GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
             if (record != null)
             {
-                auth = record.Authority.Replace("common", "organizations");
+                auth = record.Authority.Replace("/common", "/organizations");
             }
             return auth;
         }
