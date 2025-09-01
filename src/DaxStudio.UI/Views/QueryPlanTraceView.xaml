@@ -34,7 +34,8 @@
             <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
             <conv:AncestorRecordsColorConverter x:Key="AncestorRecordsColorConverter" />
             <conv:AncestorRecordsImageResourceConverter x:Key="AncestorRecordsImageResourceConverter" />
-
+            <conv:TrueAndFalseConverter x:Key="TrueAndFalseConverter" />
+            
             <controls:BindingProxy x:Key="Proxy" Data="{Binding PhysicalQueryPlanTree}" />
 
             <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}">
@@ -293,8 +294,9 @@
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
                     filter:DataGridExtensions.IsClearButtonVisible="False"
                     filter:DataGridExtensions.IsFilterVisible="{Binding ShowPhysicalQueryPlanFilters}" 
+                    filter:DataGridExtensions.HasActiveFilters="{Binding HasPhysicalFilterActive, Mode=OneWayToSource}"
                     ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-		                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+		                    TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
 		            ResourceId=DataGridHeaderFilterControlStyle}}"
                 >
                 <uictrl:PhysicalQueryPlanTreeGrid.ContextMenu>
@@ -371,7 +373,19 @@
                         ClipboardContentBinding="{Binding Data.IndentedOperation}"
                         filter:DataGridColumnExtensions.CustomBindingPath="Data.Operation"
                         filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+                        ShowTreeLines="{Binding DataContext.ShowPhysicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}, Mode=OneWay}"
+                        ShowExpander="{Binding DataContext.ShowPhysicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}, Mode=OneWay}"
                         >
+                        <!-- 
+                        ShowTreeLines="{Binding Path=(filter:DataGridExtensions.HasActiveFilters), ElementName=PhysicalTreeGrid}"
+                        ShowTreeLines="{Binding Path=DataContext.IsSortedByRowNumber, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}}"
+                        -->
+                        <!--<ctrls:TreeColumn.ShowTreeLines>
+                            <MultiBinding Converter="{StaticResource TrueAndFalseConverter}">
+                                <Binding Path="DataContext.IsSortedByRowNumber" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}"/>
+                                <Binding Path="(filter:DataGridExtensions.HasActiveFilters)" ElementName="PhysicalTreeGrid" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"/>
+                            </MultiBinding>
+                        </ctrls:TreeColumn.ShowTreeLines>-->
                         <ctrls:TreeColumn.TreeLineStyle>
                             <Style TargetType="ctrls:TreeCell">
                                 <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
@@ -384,7 +398,6 @@
                                 <TextBlock Text="{Binding .}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
-                                            <Setter Property="Foreground" Value="Orange"/>
                                             <Style.Triggers>
                                             <DataTrigger Binding="{Binding DataContext.Data.HighlightRow, RelativeSource={RelativeSource AncestorType={x:Type ctrls:TreeCell}}}" Value="True">
                                                 <Setter Property="FontWeight" Value="Bold"/>

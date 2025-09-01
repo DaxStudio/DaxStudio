@@ -641,15 +641,14 @@ namespace DaxStudio.UI.ViewModels
 
             // Custom sorting logic
             var column = e.Column;
-            var showLines = (column == dataGrid.Columns[0] && (column.SortDirection == ListSortDirection.Descending || column.SortDirection == null));
+            IsSortedByRowNumber = (column == dataGrid.Columns[0] && (column.SortDirection == ListSortDirection.Descending || column.SortDirection == null));
 
             if (e.Column == dataGrid.Columns[1] && e.Column.SortDirection == null)
             {
                 e.Column.SortDirection = ListSortDirection.Ascending;
             }
             TreeColumn treeColumn = (TreeColumn)dataGrid.Columns.FirstOrDefault(c => c is TreeColumn);
-            treeColumn.ShowTreeLines = showLines;
-            treeColumn.ShowExpander = showLines;
+            
 
             Task.Yield();
 
@@ -737,7 +736,7 @@ namespace DaxStudio.UI.ViewModels
         public void DrillIn(object source)
         {
             System.Diagnostics.Debug.WriteLine($"Context Menu Command executed from {source.GetType().Name} ");
-            //_ = ExpandDescendantsWithHigherRecordCounts(this.SelectedPhysicalQueryPlanRow , this.SelectedPhysicalQueryPlanRow);
+           
             var selectedNode = this.SelectedPhysicalQueryPlanRow?.GetDataAs<PhysicalQueryPlanRow>();
             if (selectedNode == null) return;
             var existingRootItems = new BindableCollection<PhysicalQueryPlanRow>();
@@ -755,23 +754,13 @@ namespace DaxStudio.UI.ViewModels
         public void DrillOut(object source)
         {
             System.Diagnostics.Debug.WriteLine($"Context Menu Command executed from {source.GetType().Name} ");
-            //_ = ExpandDescendantsWithHigherRecordCounts(this.SelectedPhysicalQueryPlanRow , this.SelectedPhysicalQueryPlanRow);
+    
             this.PhysicalQueryPlanTree.Clear();
-            //BindableCollection<PhysicalQueryPlanRow> tempTree = new BindableCollection<PhysicalQueryPlanRow>();
-            //LoadOperationTree<PhysicalQueryPlanRow>( PhysicalQueryPlanRows, PhysicalQueryPlanTree);
-            //foreach (var item in tempTree)
-            // {
-            //    PhysicalQueryPlanTree.Add( item);
-            //}
-            //PhysicalQueryPlanTree.AddRange(_fullPhysicalQueryPlanTree);
-            //NotifyOfPropertyChange(nameof(PhysicalQueryPlanTree));
+    
             PhysicalQueryPlanTree.IsNotifying = false;
             var previousTreeItems = _drillinStack.Pop();
             PhysicalQueryPlanTree.AddRange(previousTreeItems);
-            //foreach (var item in previousTreeItems)
-            //{
-            //    PhysicalQueryPlanTree.Add(item);
-            //}
+
             PhysicalQueryPlanTree.IsNotifying = true;
             PhysicalQueryPlanTree.Refresh();
         }
@@ -799,7 +788,40 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
             } 
         }
-    
+
+        private bool _hasPhysicalFilterActive;
+        public bool HasPhysicalFilterActive
+        {
+            get => _hasPhysicalFilterActive;
+            set
+            {
+                _hasPhysicalFilterActive = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(ShowPhysicalTreeLines));
+            }
+        }
+        private bool _showPhysicalTreeLines = true;
+        public bool ShowPhysicalTreeLines
+        {
+            get => IsSortedByRowNumber & !HasPhysicalFilterActive;
+            set
+            {
+                _showPhysicalTreeLines = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private bool _isSortedByRowNumber = true;
+        public bool IsSortedByRowNumber
+        {
+            get => _isSortedByRowNumber;
+            set
+            {
+                _isSortedByRowNumber = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(ShowPhysicalTreeLines));
+            }
+        }
     }
 
 }
