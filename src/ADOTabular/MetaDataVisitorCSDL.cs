@@ -1628,19 +1628,26 @@ namespace ADOTabular
             //if (int.Parse(_conn.Database.CompatibilityLevel) < 1702) return;
             if (!_conn.DynamicManagementViews.Contains("TMSCHEMA_CALENDARS")) return;
             // Load remapping
-            using AdomdDataReader result = _conn.ExecuteReader(QUERY_CALENDARS, null);
-            while (result.Read())
+            try
             {
-                int? tableId = GetInt(result, 0);
-                string calendarName = GetString(result, 1);
+                using AdomdDataReader result = _conn.ExecuteReader(QUERY_CALENDARS, null);
+                while (result.Read())
+                {
+                    int? tableId = GetInt(result, 0);
+                    string calendarName = GetString(result, 1);
 
-                // Safety check - if two tables have the same name
-                // this can throw a duplicate key error; the IF check prevents this.
-                if (!calendars.Contains(calendarName))
-                    calendars.Add(new ADOTabularCalendar(tableId, calendarName));
+                    // Safety check - if two tables have the same name
+                    // this can throw a duplicate key error; the IF check prevents this.
+                    if (!calendars.Contains(calendarName))
+                        calendars.Add(new ADOTabularCalendar(tableId, calendarName));
 
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ignore errors here - could be a compatibility level issue or a permission issue accessing the DMV
+                System.Diagnostics.Debug.WriteLine($"Error reading calendars: {ex.Message}");
             }
         }
     }
-
 }
