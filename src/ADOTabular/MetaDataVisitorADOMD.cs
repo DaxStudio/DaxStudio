@@ -9,7 +9,7 @@ namespace ADOTabular
 {
     public class MetaDataVisitorADOMD : IMetaDataVisitor
     {
-        private readonly ADOTabularConnection _conn;
+        private readonly IADOTabularConnection _conn;
 
         public MetaDataVisitorADOMD(ADOTabularConnection conn) 
         {
@@ -267,6 +267,11 @@ namespace ADOTabular
         public ADOTabularDatabase Visit(ADOTabularConnection conn)
         {
             return null;
+        }
+
+        public void Visit(ADOTabularCalendarCollection calendars)
+        {
+            /* Do Nothing */
         }
     }
 

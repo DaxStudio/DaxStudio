@@ -17,6 +17,7 @@
         Hierarchy,
         Kpi,
         UnnaturalHierarchy,
+        Calendar,
         Unknown
     }
 

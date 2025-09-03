@@ -122,6 +122,8 @@
     <Compile Include="AdomdClientWrappers\AdomdParameter.cs" />
     <Compile Include="AdomdClientWrappers\AdomdRestriction.cs" />
     <Compile Include="AdomdClientWrappers\ExcelAdoMdConnections.cs" />
+    <Compile Include="ADOTabularCalendar.cs" />
+    <Compile Include="ADOTabularCalendarCollection.cs" />
     <Compile Include="ADOTabularDisplayFolder.cs" />
     <Compile Include="ADOTabularConnectionType.cs" />
     <Compile Include="ADOTabularMeasureCollection.cs" />

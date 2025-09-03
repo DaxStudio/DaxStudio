@@ -34,6 +34,8 @@ namespace ADOTabular.Utils
                     return MetadataImages.UnnaturalHierarchy;
                 case ADOTabularObjectType.Level:
                     return MetadataImages.Column;
+                case ADOTabularObjectType.Calendar:
+                    return MetadataImages.Calendar;
                 default:
                     return MetadataImages.Unknown;
             }

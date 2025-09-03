@@ -33,7 +33,8 @@ namespace DaxStudio.UI.Utils.Intellisense
         Measures  = 8,
         Tables    = 16,
         DMV       = 32,
-        All       = Tables | Functions | Keywords  // columns and measures are only shown after a '[' char
+        Calendars = 64,
+        All       = Tables | Functions | Keywords | Calendars // columns and measures are only shown after a '[' char
     }
 
     public class DaxIntellisenseProvider:
@@ -168,7 +169,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                             }
                             break;
                         case "'":
-                            PopulateCompletionData(data, IntellisenseMetadataTypes.Tables);
+                            PopulateCompletionData(data, IntellisenseMetadataTypes.Tables | IntellisenseMetadataTypes.Calendars);
                             break;
 
                         default:
@@ -178,7 +179,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.Columns, _daxState);
                                     break;
                                 case LineState.Table:
-                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables, _daxState);
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables | IntellisenseMetadataTypes.Calendars, _daxState);
                                     break;
                                 case LineState.Measure:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.Measures);
@@ -187,7 +188,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.DMV);
                                     break;
                                 case LineState.Digit: // only table names can start with digits
-                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables, _daxState);
+                                    PopulateCompletionData(data, IntellisenseMetadataTypes.Tables | IntellisenseMetadataTypes.Calendars, _daxState);
                                     break;
                                 default:
                                     PopulateCompletionData(data, IntellisenseMetadataTypes.All);
@@ -614,6 +615,15 @@ namespace DaxStudio.UI.Utils.Intellisense
                             }
                         }
                     }
+                }
+            }
+
+            // add calendars
+            if (metadataType.HasFlag(IntellisenseMetadataTypes.Calendars))
+            {
+                foreach (var cal in Model.Calendars)
+                {
+                    tmpData.Add(new DaxCompletionData(this, cal, _daxState));
                 }
             }
 

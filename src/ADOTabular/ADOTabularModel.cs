@@ -9,16 +9,6 @@ namespace ADOTabular
         private readonly IADOTabularConnection _adoTabConn;
         private ADOTabularTableCollection _tableColl;
         private readonly object tableLock = new object();
-        //public ADOTabularModel(IADOTabularConnection adoTabConn, DataRow dr)
-        //{
-        //    _adoTabConn = adoTabConn;
-        //    Name = dr["CUBE_NAME"].ToString();
-        //    Caption = dr["CUBE_CAPTION"].ToString();
-        //    Description = dr["DESCRIPTION"].ToString();
-        //    BaseModelName = dr["BASE_CUBE_NAME"].ToString();
-        //    Roles = new Dictionary<string, ADOTabularColumn>();
-        //    Relationships = new List<ADOTabularRelationship>();
-        //}
 
         public ADOTabularModel(IADOTabularConnection adoTabConn, ADOTabularDatabase database, string name, string caption, string description, string baseModelName)
         {
@@ -55,6 +45,22 @@ namespace ADOTabular
                     }
                 }
                 return _tableColl;
+            }
+        }
+
+        private ADOTabularCalendarCollection _calendars;
+        public ADOTabularCalendarCollection Calendars
+        {
+            get
+            {
+                if (_calendars == null)
+                {
+                    lock (tableLock)
+                    {
+                        _calendars ??= new ADOTabularCalendarCollection(_adoTabConn);
+                    }
+                }
+                return _calendars;
             }
         }
 

@@ -1,18 +1,19 @@
-﻿using System;
+﻿using ADOTabular.AdomdClientWrappers;
+using ADOTabular.Enums;
+using ADOTabular.Extensions;
+using ADOTabular.Interfaces;
+using ADOTabular.MetadataInfo;
+using ADOTabular.Utils;
+using Microsoft.AnalysisServices.Tabular;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Xml;
 using System.Linq;
-using System.Xml.Linq;
-using ADOTabular.AdomdClientWrappers;
-using ADOTabular.Utils;
-using ADOTabular.Interfaces;
-using ADOTabular.Enums;
-using ADOTabular.Extensions;
-using Microsoft.AnalysisServices.Tabular;
 using System.Threading.Tasks;
-using Serilog;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace ADOTabular
 {
@@ -1402,6 +1403,11 @@ namespace ADOTabular
         private static string GetString(IDataRecord dr, int column) {
             return dr.IsDBNull(column) ? null : dr.GetString(column);
         }
+
+        private static long? GetLong(IDataRecord dr, int column)
+        {
+            return dr.IsDBNull(column) ? (long?)null : dr.GetInt64(column);
+        }
         private static string GetXmlString(IDataRecord dr, int column) {
             // Use the original AdomdDataReader (we don't have to use the proxy here!)
             if (!(dr.GetValue(column) is Microsoft.AnalysisServices.AdomdClient.AdomdDataReader mdXmlField))
@@ -1612,6 +1618,28 @@ namespace ADOTabular
         public ADOTabularDatabase Visit(ADOTabularConnection conn)
         {
             return null;
+        }
+
+        public void Visit(ADOTabularCalendarCollection calendars)
+        {
+            // Clear remapping
+            calendars.Clear();
+            const string QUERY_CALENDARS = @"select [TableID], [Name] from $SYSTEM.TMSCHEMA_CALENDARS";
+            //if (int.Parse(_conn.Database.CompatibilityLevel) < 1702) return;
+            if (!_conn.DynamicManagementViews.Contains("TMSCHEMA_CALENDARS")) return;
+            // Load remapping
+            using AdomdDataReader result = _conn.ExecuteReader(QUERY_CALENDARS, null);
+            while (result.Read())
+            {
+                int? tableId = GetInt(result, 0);
+                string calendarName = GetString(result, 1);
+
+                // Safety check - if two tables have the same name
+                // this can throw a duplicate key error; the IF check prevents this.
+                if (!calendars.Contains(calendarName))
+                    calendars.Add(new ADOTabularCalendar(tableId, calendarName));
+
+            }
         }
     }
 

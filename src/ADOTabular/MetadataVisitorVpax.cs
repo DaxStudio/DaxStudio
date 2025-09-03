@@ -199,17 +199,22 @@ namespace ADOTabular
 
         public void Visit(DaxMetadata daxMetadata)
         {
-            throw new NotImplementedException();
+            // TODO - read daxMetadata from vpax
         }
 
         public void Visit(DaxColumnsRemap daxColumnsRemap)
         {
-            throw new NotImplementedException();
+            // TODO - read column remap from vpax
         }
 
         public void Visit(DaxTablesRemap daxColumnsRemap)
         {
-            throw new NotImplementedException();
+            // TODO - read table remap from vpax
+        }
+
+        public void Visit(ADOTabularCalendarCollection calendars)
+        {
+            // TODO - read calendars from vpax
         }
     }
 }

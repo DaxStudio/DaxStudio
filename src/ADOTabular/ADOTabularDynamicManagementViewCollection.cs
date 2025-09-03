@@ -51,5 +51,11 @@ namespace ADOTabular
         {
             return GetEnumerator();
         }
+
+        public bool Contains(string dmvName)
+        {
+            var dtDmvs = GetDmvTable();
+            return dtDmvs.Select($"[SchemaName] = '{dmvName}'").Length == 1;
+        }
     }
 }

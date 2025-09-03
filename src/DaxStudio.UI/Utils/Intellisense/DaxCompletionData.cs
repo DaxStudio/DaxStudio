@@ -80,6 +80,16 @@ _insightProvider = insightProvider;
             _insightProvider = insightProvider;
         }
 
+        public DaxCompletionData(IInsightProvider insightProvider, ADOTabular.ADOTabularCalendar calendar, DaxLineState state)
+        {
+            _text = calendar.DaxName;
+            _content = calendar.Caption;
+            _description = string.IsNullOrEmpty(calendar.Description) ? null : calendar.Description;
+            _imageResource = GetImageResource(calendar.MetadataImage);
+            _priority = 100.0;
+            _insightProvider = insightProvider;
+        }
+
         public void Complete(ICSharpCode.AvalonEdit.Editing.TextArea textArea, ICSharpCode.AvalonEdit.Document.ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
             CompleteInternal(textArea.Document, completionSegment, insertionRequestEventArgs);
@@ -238,6 +248,8 @@ _insightProvider = insightProvider;
                     break;
                 case ADOTabular.MetadataImages.Table:
                     return "tableDrawingImage";
+                case ADOTabular.MetadataImages.Calendar:
+                        return "datetimeDrawingImage";
                 default:
                     throw new NotImplementedException("Metadata image type not found");
             }

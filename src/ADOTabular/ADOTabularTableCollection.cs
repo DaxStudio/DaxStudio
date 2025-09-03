@@ -2,9 +2,6 @@
 using System.Collections;
 using ADOTabular.Interfaces;
 using Microsoft.AnalysisServices.Tabular;
-using ADOTabular.Extensions;
-
-//using Microsoft.AnalysisServices.AdomdClient;
 
 namespace ADOTabular
 {
@@ -25,13 +22,6 @@ namespace ADOTabular
         {
             get
             {
-                //if (_tables == null)
-                //{
-                //    if (_tables == null)
-                //    {
-                //        _adoTabConn.Visitor.Visit(this);
-                //    }
-                //}
                 return _tables;
             }
         }
@@ -49,10 +39,7 @@ namespace ADOTabular
         public void Add(ADOTabularTable table)
         {
             if (table == null) return;
-            //if (_tables == null)
-            //{
-            //    _tables ??= new SortedDictionary<string, ADOTabularTable>();
-            //}
+
             _tables.Add(table.Name, table);
 
             Model.TOMModel.Tables.Add(new Table(){Name = table.Name, Description = table.Description, DataCategory = table.DataCategory});
@@ -80,9 +67,7 @@ namespace ADOTabular
             }
 
         }
-
-
-        
+     
         public ADOTabularTable GetById(string internalId)
         {
             foreach (var t in InternalTableCollection.Values)

@@ -20,5 +20,7 @@ namespace ADOTabular.Interfaces
 
         void Visit(MetadataInfo.DaxTablesRemap daxColumnsRemap);
 
+        void Visit(ADOTabularCalendarCollection calendars);
+
     }
 }
