@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Security.Claims;
@@ -36,7 +37,7 @@ namespace DaxStudio.Common
         //private static string ClientId = "90fd9dec-463e-4e03-8cbe-8f0baa9bb7e8";
         //private static string ClientId = "7f67af8a-fedc-4b08-8b4e-37c4d127b6cf";  // PBI Desktop Client ID
         private static string DefaultClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
-        private static string Instance = "https://login.microsoftonline.com/organizations";
+        private static string DefaultAuthority = "https://login.microsoftonline.com/organizations";
         
         private static Regex regexGuid = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
@@ -111,11 +112,14 @@ namespace DaxStudio.Common
 
             BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
 
-            var defaultAuthority = GetDefaultAuthority(context);
+
+            var authenticationInformation = GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
+
+            var defaultAuthority = authenticationInformation.Authority;
 
             var authority = ReplaceTenantInInstance(defaultAuthority, context.TenantId);
 
-            var clientId = GetClientID(context);
+            var clientId = authenticationInformation.ApplicationId;
 
             _clientApp = PublicClientApplicationBuilder.Create(clientId)
                 //.WithAuthority($"{Instance}{Tenant}")
@@ -133,25 +137,6 @@ namespace DaxStudio.Common
             return _clientApp;
         }
 
-        private static string GetDefaultAuthority(AccessTokenContext context)
-        {
-            var auth = Instance;
-            var record = GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
-            if (record != null)
-            {
-                auth = record.Authority.Replace("/common", "/organizations");
-            }
-            return auth;
-        }
-
-        private static string GetClientID(AccessTokenContext context)
-        {
-            // Lookup client ID based on token scope
-            var clientId = DefaultClientId;
-            var result = DaxStudio.Common.EntraIdHelper.GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
-            if (result != null) clientId = result.ApplicationId;
-            return clientId;
-        }
 
         private static Uri ReplaceTenantInInstance(string instance, string tenantId)
         {
@@ -213,6 +198,9 @@ namespace DaxStudio.Common
             {
                 if (record.DomainPostfix.Equals(domainPostfix,StringComparison.InvariantCultureIgnoreCase))
                 {
+                    record.Authority = record.Authority.Replace("/common", "/organizations");
+                    if (string.IsNullOrWhiteSpace(record.Authority)) {  record.Authority = DefaultAuthority; }
+                    if (string.IsNullOrWhiteSpace(record.ApplicationId)) { record.ApplicationId = DefaultClientId; }
                     return record;
                 }
             }
@@ -236,7 +224,16 @@ namespace DaxStudio.Common
                     }
                     catch (WebException ex)
                     {
-                        remoteSecurityConfig = new AuthenticationInformationRecord[0];
+                        try
+                        {
+                            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+                            using (Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(((IEnumerable<string>)executingAssembly.GetManifestResourceNames()).FirstOrDefault<string>((Func<string, bool>)(name => name.EndsWith("ASAzureSecurityConfig.xml")))))
+                                remoteSecurityConfig = DeserializeAuthenticationInformation(manifestResourceStream);
+                        }
+                        catch
+                        {
+                            remoteSecurityConfig = new AuthenticationInformationRecord[0];
+                        }
                     }
                 }
             }
@@ -554,13 +551,13 @@ namespace DaxStudio.Common
         public string DomainPostfix { get; private set; }
 
         [DataMember(Name = "Authority", Order = 1)]
-        public string Authority { get; private set; }
+        public string Authority { get; internal set; }
 
         [DataMember(Name = "Authority.v2", Order = 2, EmitDefaultValue = true)]
         public string Authority2 { get; private set; }
 
         [DataMember(Name = "ApplicationId", Order = 3)]
-        public string ApplicationId { get; private set; }
+        public string ApplicationId { get; internal set; }
 
         [DataMember(Name = "ResourceId", Order = 4, EmitDefaultValue = true)]
         public string ResourceId { get; private set; }

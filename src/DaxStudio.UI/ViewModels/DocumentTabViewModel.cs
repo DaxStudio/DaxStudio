@@ -476,23 +476,21 @@ namespace DaxStudio.UI.ViewModels
         {
             await PasteQueryDocumentAsync(message.FileName);
         }
-
+        bool _isClosing = false;
         public async Task TabClosing(object sender, DocumentClosingEventArgs args)
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Starting");
             try
             {
+                if (_isClosing) return; // prevent re-entrancy
+                _isClosing = true;  
+
                 var doc = args.Document.Content as IScreen;
                 if (doc == null) return;
 
                 args.Cancel = true; // cancel the default tab close action as we want to call 
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => {await  CloseTabAsync(doc); }), DispatcherPriority.Normal);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-                //CloseTabAsync(doc);
-
+                await Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => { await CloseTabAsync(doc); }), DispatcherPriority.Normal);
 
             }
             catch (Exception ex)

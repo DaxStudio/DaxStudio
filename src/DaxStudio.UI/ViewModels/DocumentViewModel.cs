@@ -1180,6 +1180,10 @@ namespace DaxStudio.UI.ViewModels
 
         public bool Close()
         {
+            if (IsClosing) return false;
+
+            IsClosing = true;
+            
             // Close the document's connection 
             Connection.Close(true);
             // turn off any running traces
@@ -1189,8 +1193,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             var docTab = Parent as DocumentTabViewModel;
-            docTab?.CloseItemAsync(this);
-            IsClosing = true;
+            docTab?.CloseItemAsync(this).Wait();
             docTab?.Items.Remove(this);
             return true;
         }
