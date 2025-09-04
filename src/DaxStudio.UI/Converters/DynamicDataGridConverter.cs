@@ -139,8 +139,6 @@ namespace DaxStudio.UI.Converters
                         ClipboardContentBinding = (BindingBase)(columnBinding ?? clipboardBinding)
                     };
 
-                    if (columnBinding == null)
-
                     columns.Add(dgc);
                 }
 
