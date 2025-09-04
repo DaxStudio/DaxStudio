@@ -7,13 +7,13 @@ namespace ADOTabular
 {
     public class ADOTabularFunctionGroupCollection : IEnumerable<ADOTabularFunctionGroup>
     {
-        private readonly Dictionary<string, ADOTabularFunctionGroup> _funcGroups;
+        private readonly SortedDictionary<string, ADOTabularFunctionGroup> _funcGroups;
         private readonly Dictionary<string, ADOTabularFunction> _funcDict;
         private readonly ADOTabularConnection _connection;
         public ADOTabularFunctionGroupCollection(ADOTabularConnection connection)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            _funcGroups = new Dictionary<string, ADOTabularFunctionGroup>();
+            _funcGroups = new SortedDictionary<string, ADOTabularFunctionGroup>();
             _funcDict = new Dictionary<string, ADOTabularFunction>( StringComparer.OrdinalIgnoreCase);
             _connection.Visitor.Visit(this);
         }

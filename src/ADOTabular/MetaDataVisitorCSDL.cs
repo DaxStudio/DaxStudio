@@ -1342,7 +1342,9 @@ namespace ADOTabular
         public void Visit(ADOTabularFunctionGroupCollection functionGroups)
         {
             if (functionGroups == null) throw new ArgumentNullException(nameof(functionGroups));
-            DataRow[] drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS",null,false).Tables[0].Select("ORIGIN=3 OR ORIGIN=4");
+            var catalogRestriction = new AdomdRestriction("CATALOG_NAME", _conn.Database.Name);
+            var restrictions = new AdomdRestrictionCollection { catalogRestriction };
+            DataRow[] drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", restrictions, false).Tables[0].Select("ORIGIN = 2 OR ORIGIN = 3 OR ORIGIN = 4");
             foreach (DataRow dr in drFuncs)
             {
                 functionGroups.AddFunction(dr);
