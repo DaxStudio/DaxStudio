@@ -121,6 +121,8 @@ namespace DaxStudio.Common
 
             var clientId = authenticationInformation.ApplicationId;
 
+            Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetPublicClientApp), $"Using Authority: {authority}, ClientId: {clientId}, DomainPostfix: {context.DomainPostfix}, TenantId: {context.TenantId}");
+
             _clientApp = PublicClientApplicationBuilder.Create(clientId)
                 //.WithAuthority($"{Instance}{Tenant}")
                 .WithAuthority(authority)
@@ -160,6 +162,9 @@ namespace DaxStudio.Common
                 TenantId = tenantId,
                 DomainPostfix = hostPostfix
             };
+
+            Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), $"Prompting user to sign-in interactively. Authority: {DefaultAuthority}, ClientId: {DefaultClientId}, DomainPostfix: {hostPostfix}, TenantId: {tenantId}");
+
             var app = GetPublicClientApp(context);
             try
             {
