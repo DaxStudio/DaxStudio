@@ -24,8 +24,6 @@ namespace DaxStudio.UI.Converters
             if (value is DataView dv)
             {
                 
-
-                //var gridView = new GridView();
                 var cols = dv.ToTable().Columns;
                 foreach (DataColumn item in cols)
                 {
