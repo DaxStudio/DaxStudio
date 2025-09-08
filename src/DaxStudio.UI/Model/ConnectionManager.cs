@@ -497,7 +497,7 @@ namespace DaxStudio.UI.Model
         public string ServerNameForHistory => !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
-        public ServerType ServerType { get; private set; }
+        public ServerType ServerType { get => _connection.ServerType; private set { _connection.ServerType = value; } }
 
         public int SPID { get { return _connection?.State != ConnectionState.Open ? 0 : _connection?.SPID??0; } }
         public string ShortFileName => _connection.ShortFileName;
