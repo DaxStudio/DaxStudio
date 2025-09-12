@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Extensions
             public bool UseOriginalName { get; set; }
         }
 
-        public static string[] CleanColumnNames(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader)
+        public static string[] CleanColumnNames(this IDataReader reader)
         {
             string[] columns = new string[reader.FieldCount];
             for (int i = 0; i < reader.FieldCount; i++)

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DaxStudio.UI.Views.ExportDataWizardCsvFolderView"
+﻿<UserControl x:Class="DaxStudio.UI.Views.ExportDataWizardOutputFolderView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -39,38 +39,12 @@
             </Grid>
         </StackPanel>
 
-        <Grid Grid.Row="3" Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Label Content="CSV Delimiter:" Margin="0,5"/>
-            <RadioButton Content="Culture Default List Separator" GroupName="Delimiters" x:Name="UseCultureDefaultDelimiter" Grid.Row="1" Margin="0,3" />
-            <RadioButton Content="Comma" GroupName="Delimiters" x:Name="UseCommaDelimiter"  Margin="0,3" Grid.Row="2" />
-            <RadioButton Content="Tab" GroupName="Delimiters" x:Name="UseTabDelimiter"  Margin="0,3" Grid.Row="3"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="4">
-                <RadioButton Content="Other" GroupName="Delimiters" x:Name="UseOtherDelimiter"  Margin="0,3" />
-                <TextBox x:Name="CsvDelimiter"  Width="30" Margin="10,0" IsEnabled="{Binding IsChecked, ElementName=UseOtherDelimiter}"></TextBox>
-            </StackPanel>
-            <CheckBox x:Name="CsvQuoteStrings" Content="Quote all string fields" Grid.Row="5" Margin="0,10"/>
-        </Grid>
-
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="File Encoding:"/>
-            <ComboBox x:Name="Encoding" 
-                      Grid.Column="1"
-                      ItemsSource="{Binding CsvEncodings}" 
-                      SelectedItem="{Binding CsvEncoding}"
-                      />
         </Grid>
         <StackPanel Orientation="Vertical" Grid.Row="6">
             <Separator Foreground="{DynamicResource DaxStudioBrush}" />

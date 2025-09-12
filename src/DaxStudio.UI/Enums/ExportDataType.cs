@@ -3,6 +3,7 @@
     public enum ExportDataType
     {
         CsvFolder,
+        ParquetFolder,
         SqlTables
     }
 }

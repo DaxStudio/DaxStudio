@@ -11,6 +11,7 @@ namespace DaxStudio.UI.ViewModels
         {
             ExportTypes = new List<ExportTypes>();
             ExportTypes.Add(new ViewModels.ExportTypes() { Name = "CSV Files", ExportType = Enums.ExportDataType.CsvFolder, ImageResource = "csvDrawingImage" });
+            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "Parquet Files", ExportType = Enums.ExportDataType.ParquetFolder, ImageResource = "parquetDrawingImage" });
             ExportTypes.Add(new ViewModels.ExportTypes() { Name = "SQL Tables", ExportType = Enums.ExportDataType.SqlTables, ImageResource = "results_tableDrawingImage" });
         }
 
@@ -36,6 +37,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 case Enums.ExportDataType.CsvFolder:
                     NextPage = ExportDataWizardPage.ChooseCsvFolder;
+                    break;
+                case Enums.ExportDataType.ParquetFolder:
+                    NextPage = ExportDataWizardPage.ChooseParquetFolder;
                     break;
                 case Enums.ExportDataType.SqlTables:
                     NextPage = ExportDataWizardPage.BuildSqlConnection;
