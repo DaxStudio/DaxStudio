@@ -34,7 +34,7 @@
             <conv:BoolToGridRowHeightConverter x:Key="BoolToGridRowHeightConverter"/>
             <conv:AncestorRecordsColorConverter x:Key="AncestorRecordsColorConverter" />
             <conv:AncestorRecordsImageResourceConverter x:Key="AncestorRecordsImageResourceConverter" />
-            <conv:TrueAndFalseConverter x:Key="TrueAndFalseConverter" />
+
             
             <controls:BindingProxy x:Key="Proxy" Data="{Binding PhysicalQueryPlanTree}" />
 
@@ -380,12 +380,7 @@
                         ShowTreeLines="{Binding Path=(filter:DataGridExtensions.HasActiveFilters), ElementName=PhysicalTreeGrid}"
                         ShowTreeLines="{Binding Path=DataContext.IsSortedByRowNumber, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}}"
                         -->
-                        <!--<ctrls:TreeColumn.ShowTreeLines>
-                            <MultiBinding Converter="{StaticResource TrueAndFalseConverter}">
-                                <Binding Path="DataContext.IsSortedByRowNumber" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}"/>
-                                <Binding Path="(filter:DataGridExtensions.HasActiveFilters)" ElementName="PhysicalTreeGrid" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"/>
-                            </MultiBinding>
-                        </ctrls:TreeColumn.ShowTreeLines>-->
+
                         <ctrls:TreeColumn.TreeLineStyle>
                             <Style TargetType="ctrls:TreeCell">
                                 <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>

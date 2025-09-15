@@ -358,7 +358,6 @@
     <Compile Include="Converters\ResourceThemeLookupConverter.cs" />
     <Compile Include="Converters\StringPercentToDoubleConverter.cs" />
     <Compile Include="Converters\TableImageConverter.cs" />
-    <Compile Include="Converters\TrueAndFalseConverter.cs" />
     <Compile Include="Converters\VpaColumnDaxNameConverter.cs" />
     <Compile Include="Converters\TimelineLengthConverter.cs" />
     <Compile Include="Converters\TimelineMarginConverter.cs" />
