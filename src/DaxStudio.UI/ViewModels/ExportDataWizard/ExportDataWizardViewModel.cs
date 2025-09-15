@@ -25,12 +25,15 @@ using DaxStudio.Interfaces;
 using System.ComponentModel;
 using DaxStudio.UI.Converters;
 using DaxStudio.Common.Extensions;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
     public enum ExportDataWizardPage
     {
         ChooseCsvFolder,
+        ChooseParquetFolder,
         BuildSqlConnection,
         ChooseTables,
         ExportStatus,
@@ -48,9 +51,8 @@ namespace DaxStudio.UI.ViewModels
         Unicode
     }
 
-    public class ExportDataWizardViewModel : Conductor<IScreen>.Collection.OneActive, IDisposable
+    public class ExportDataWizardViewModel : Conductor<IScreen>.Collection.OneActive, IDisposable, IExportDataDetails
     {
-        #region Private Fields
 
         readonly Stack<IScreen> _previousPages = new Stack<IScreen>();
         private string _sqlTableName = string.Empty;
@@ -66,9 +68,7 @@ namespace DaxStudio.UI.ViewModels
         private const string ExportCompleteMsg = "Model Export Complete: {0} tables exported";
         private const string ExportIncompleteMsg = "Model Export Incomplete: {0} of {1} tables exported (last table may be partially populated)";
         private const string ExportTableMsg = "Exported {0:N0} row{1} to {2}";
-        #endregion
 
-        #region Constructor
         public ExportDataWizardViewModel(IEventAggregator eventAggregator, IDocumentToExport document, IGlobalOptions options)
         {
             Document = document ?? throw new ArgumentNullException(nameof(document));
@@ -122,7 +122,9 @@ namespace DaxStudio.UI.ViewModels
         {
             TransitionMap.Add<ExportDataWizardChooseTypeViewModel, ExportDataWizardCsvFolderViewModel>(ExportDataWizardPage.ChooseCsvFolder);
             TransitionMap.Add<ExportDataWizardChooseTypeViewModel, ExportDataWizardSqlConnBuilderViewModel>(ExportDataWizardPage.BuildSqlConnection);
+            TransitionMap.Add<ExportDataWizardChooseTypeViewModel, ExportDataWizardOutputFolderViewModel>(ExportDataWizardPage.ChooseParquetFolder);
             TransitionMap.Add<ExportDataWizardCsvFolderViewModel, ExportDataWizardChooseTablesViewModel>(ExportDataWizardPage.ChooseTables);
+            TransitionMap.Add<ExportDataWizardOutputFolderViewModel, ExportDataWizardChooseTablesViewModel>(ExportDataWizardPage.ChooseTables);
             TransitionMap.Add<ExportDataWizardSqlConnBuilderViewModel, ExportDataWizardSqlConnStrViewModel>(ExportDataWizardPage.ManualConnectionString);
             TransitionMap.Add<ExportDataWizardSqlConnBuilderViewModel, ExportDataWizardChooseTablesViewModel>(ExportDataWizardPage.ChooseTables);
             TransitionMap.Add<ExportDataWizardSqlConnStrViewModel, ExportDataWizardChooseTablesViewModel>(ExportDataWizardPage.ChooseTables);
@@ -137,7 +139,7 @@ namespace DaxStudio.UI.ViewModels
             await ActivateItemAsync(chooseExportType);
         }
 
-        #endregion
+  
 
         protected override IScreen DetermineNextItemToActivate(IList<IScreen> list, int lastIndex)
         {
@@ -173,11 +175,11 @@ namespace DaxStudio.UI.ViewModels
         public string SqlConnectionString { get; set; }
         public string CsvDelimiter { get; set; } = ",";
         public bool CsvQuoteStrings { get; set; } = true;
-        public string CsvFolder { get; set; } = "";
+        public string OutputFolder { get; set; } = "";
         public CsvEncoding CsvEncoding { get; set; } = CsvEncoding.UTF8;
-        public ObservableCollection<SelectedTable> Tables { get; } = new ObservableCollection<SelectedTable>();
+        public ObservableCollection<SelectedTable> Tables { get; set; } = new ObservableCollection<SelectedTable>();
         public TransitionMap TransitionMap { get; } = new TransitionMap();
-        public bool TruncateTables { get; internal set; } = true;
+        public bool TruncateTables { get; set; } = true;
 
         #endregion
 
@@ -224,10 +226,13 @@ namespace DaxStudio.UI.ViewModels
                         switch (ExportType)
                         {
                             case ExportDataType.CsvFolder:
-                                await ExportDataToCSV(this.CsvFolder);
+                                await ExportDataToCSV(this.OutputFolder);
                                 break;
                             case ExportDataType.SqlTables:
                                 await ExportDataToSQLServer(this.SqlConnectionString, this.Schema, this.TruncateTables);
+                                break;
+                            case ExportDataType.ParquetFolder:
+                                await ExportDataToParquet(this.OutputFolder);
                                 break;
                             default:
                                 throw new ArgumentException("Unknown ExportType requested");
@@ -244,29 +249,166 @@ namespace DaxStudio.UI.ViewModels
 
                     }
                 });
-                //.ContinueWith(HandleFaults, TaskContinuationOptions.OnlyOnFaulted);
 
-
-                //void HandleFaults(Task t)
-                //{
-                //    if (t.Exception == null) return;
-                //    var ex = t.Exception.GetBaseException();
-                //    // calls HandleExceptions on each child exception in the AggregateException from the Task
-                //    t.Exception.Handle(HandleExceptions);
-                //}
-
-                //bool HandleExceptions(Exception ex)
-                //{
-                //    Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
-                //    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
-                //    return true;
-                //}
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
                 await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
             }
+        }
+
+        private async Task ExportDataToParquet(string outputPath)
+        {
+            var exceptionFound = false;
+
+            if (string.IsNullOrEmpty(Document.Connection.SelectedModelName))
+            {
+                return;
+            }
+
+            var selectedTables = Tables.Where(t => t.IsSelected).ToList();
+            exceptionFound = await ExportDataToParquetFilesAsync(outputPath, selectedTables);
+            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+            Document.QueryStopWatch.Reset();
+        }
+
+        public async Task<bool> ExportDataToParquetFilesAsync(string outputPath, List<SelectedTable> selectedTables)
+        {
+            var exceptionFound = false;
+
+            if (!Directory.Exists(outputPath))
+            {
+                Directory.CreateDirectory(outputPath);
+            }
+
+            await Task.Run(async () =>
+            {
+                Document.QueryStopWatch.Start();
+
+
+                var totalTables = selectedTables.Count;
+                var tableCnt = 0;
+
+
+                foreach (var table in selectedTables)
+                {
+                    await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(table));
+
+                    tableCnt++;
+                    try
+                    {
+                        table.Status = ExportStatus.Exporting;
+                        var fileName = CleanNameOfIllegalChars(table.Caption);
+
+                        var parquetFilePath = Path.Combine(outputPath, $"{fileName}.parquet");
+
+                        var daxRowCount = $"EVALUATE ROW(\"RowCount\", COUNTROWS( {table.DaxName} ) )";
+
+                        // get a count of the total rows in the table
+                        var connRead = Document.Connection;
+                        DataTable dtRows = connRead.ExecuteDaxQueryDataTable(daxRowCount);
+                        var totalRows = dtRows.Rows[0].Field<long?>(0) ?? 0;
+                        table.TotalRows = totalRows;
+
+
+                        using (Stream fileStream = new FileStream(parquetFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true))
+                        using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
+                        {
+                            for (long batchRows = 0; batchRows < totalRows; batchRows += MaxBatchSize)
+                            {
+
+                                var daxQuery = $"EVALUATE {table.DaxName}";
+
+                                // if the connection supports TOPNSKIP then use that to query batches of rows
+                                if (connRead.AllFunctions.Contains("TOPNSKIP"))
+                                    daxQuery = $"EVALUATE TOPNSKIP({MaxBatchSize}, {batchRows}, {table.DaxName} )";
+
+                                Action<string> updateStatus = (s) => statusMsg.Update(s);
+                                Action<long, bool> updateProgress = (rowCount, isCancelled) =>
+                                {
+                                    table.RowCount = rowCount;
+                                    table.Status = isCancelled ? ExportStatus.Cancelled : ExportStatus.Exporting;
+                                    statusMsg.Update($"Exporting Table {tableCnt} of {totalTables} : {table.DaxName} ({rowCount + batchRows:N0} rows)");
+                                    Document.RefreshElapsedTime();
+                                };
+                                Func<bool> isCancelRequested = () => CancelRequested;
+
+
+                                using (var reader = connRead.ExecuteReader(daxQuery, null))
+                                {
+
+                                    // Write data
+                                    await ParquetExporter.ExportDataReaderToParquetInChunksAsync(fileStream, reader, updateStatus, updateProgress, isCancelRequested);
+
+                                    Document.RefreshElapsedTime();
+
+
+                                    // if cancel has been requested do not write any more files
+                                    if (CancelRequested)
+                                    {
+                                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                        table.Status = ExportStatus.Cancelled;
+                                        MarkWaitingTablesAsSkipped();
+
+                                        // break out of foreach table loop
+                                        break;
+                                    }
+                                }
+
+                                // do not loop around if the current connection does not support TOPNSKIP
+                                if (!connRead.AllFunctions.Contains("TOPNSKIP")) break;
+
+                                if (CancelRequested)
+                                {
+                                    MarkWaitingTablesAsSkipped();
+                                    table.Status = ExportStatus.Cancelled;
+                                    break;
+
+                                }
+                            } // end of batch
+
+                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", table.DaxName + ".csv")));
+
+                            if (CancelRequested)
+                            {
+                                MarkWaitingTablesAsSkipped();
+                                break;
+
+                            }
+                        }
+
+
+                        table.Status = ExportStatus.Done;
+                    }
+                    catch (Exception ex)
+                    {
+                        table.Status = ExportStatus.Error;
+                        exceptionFound = true;
+                        Log.Error(ex, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToParquetFilesAsync), "Error while exporting model to parquet");
+                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
+                        await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                    }
+
+                }
+
+                Document.QueryStopWatch.Stop();
+
+                // export complete
+                if (!exceptionFound)
+                {
+                    if (CancelRequested)
+                    {
+                        var completeCnt = Tables.Count(t => t.Status == ExportStatus.Done);
+                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
+                    }
+                    else
+                    {
+                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
+                    }
+                }
+            });
+            return exceptionFound;
         }
 
         private bool _cancelRequested;
@@ -417,7 +559,7 @@ namespace DaxStudio.UI.ViewModels
                                         if (CancelRequested)
                                         {
                                             EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
-
+                                            table.Status = ExportStatus.Cancelled;
                                             MarkWaitingTablesAsSkipped();
 
                                             // break out of foreach table loop

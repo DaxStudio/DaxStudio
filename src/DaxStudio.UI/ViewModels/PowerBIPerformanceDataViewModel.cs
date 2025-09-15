@@ -61,6 +61,8 @@ namespace DaxStudio.UI.ViewModels
 
         public IObservableCollection<PowerBIPerformanceData> PerformanceData { get; }
 
+        public BindableCollection<IPowerBIPerformanceData> FooterItem { get; } = new BindableCollection<IPowerBIPerformanceData>();
+
         private readonly ICollectionView performanceDataView;
 
         public ICollectionView PerformanceDataView
@@ -151,6 +153,7 @@ namespace DaxStudio.UI.ViewModels
                             PerformanceData.Add(line);
                         }
                     }
+                    CalculateFooterItem();
                     CanCaptureDiagnostics = Ribbon?.ActiveDocument?.Connection?.IsConnected ?? false;
                     _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
                 }
@@ -164,6 +167,16 @@ namespace DaxStudio.UI.ViewModels
                     this.IsBusy = false;
                 }
             }
+        }
+
+        private void CalculateFooterItem()
+        {
+            FooterItem.Clear();
+            var item = new PowerBIPerformanceDataTotal() { VisualName = "Total:" };
+            item.RowCount = PerformanceData.Sum(x => x.RowCount);
+            item.QueryDuration = PerformanceData.Sum(x => x.QueryDuration > 0 ? x.QueryDuration : 0);
+            item.RenderDuration = PerformanceData.Sum(x => x.RenderDuration > 0 ? x.RenderDuration : 0);
+            FooterItem.Add(item);
         }
 
         public bool IsBusy { get; private set; }

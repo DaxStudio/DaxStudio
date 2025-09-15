@@ -104,6 +104,9 @@ namespace DaxStudio.CommandLine.Commands
                     case ".json":
                         settings.FileType = TextFileType.JSON;
                         break;
+                    case ".parquet":
+                        settings.FileType = TextFileType.PARQUET;
+                        break;
                     default:
                         settings.FileType = (TextFileType)runner.Options.DefaultTextFileType;
                         break;

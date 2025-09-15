@@ -498,7 +498,12 @@ namespace DaxStudio.UI.Model
         public string ServerNameForHistory => !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
         public string ServerVersion => _connection.ServerVersion;
         public string SessionId => _connection.SessionId;
-        public ServerType ServerType { get; private set; }
+        public ServerType ServerType { get => _connection?.ServerType??ServerType.AnalysisServices; 
+            private set {
+                if (_connection == null) return;
+                _connection.ServerType = value; 
+            } 
+        }
 
         public int SPID { get { return _connection?.State != ConnectionState.Open ? 0 : _connection?.SPID??0; } }
         public string ShortFileName => _connection.ShortFileName;
@@ -1480,6 +1485,13 @@ namespace DaxStudio.UI.Model
             await Task.Run(() => _dmvConnection.ExecuteNonQuery(refreshCommand));
             return;
 
+        }
+
+        public DataSet DiscoverQueryDependencies(string queryText)
+        {
+            var restriction = new AdomdRestriction("QUERY", queryText);
+            var restrictions = new AdomdRestrictionCollection() { restriction};
+            return _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
         }
 
         public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }

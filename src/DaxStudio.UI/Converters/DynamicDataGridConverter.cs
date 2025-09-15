@@ -24,8 +24,6 @@ namespace DaxStudio.UI.Converters
             if (value is DataView dv)
             {
                 
-
-                //var gridView = new GridView();
                 var cols = dv.ToTable().Columns;
                 foreach (DataColumn item in cols)
                 {
@@ -139,8 +137,6 @@ namespace DaxStudio.UI.Converters
                         ClipboardContentBinding = (BindingBase)(columnBinding ?? clipboardBinding)
                     };
 
-                    if (columnBinding == null)
-
                     columns.Add(dgc);
                 }
 
@@ -167,7 +163,7 @@ namespace DaxStudio.UI.Converters
                     case ']':
                     case '[':
                     case '.':
-                    //case '^':
+                    case '^':
                     case '\\': 
                         sb.Append(escape);
                         sb.Append(c);
