@@ -1647,7 +1647,11 @@
 
             </Fluent:RibbonGroupBox>
             <Fluent:RibbonGroupBox Header="Testing">
-                
+                <Fluent:Button Header="Discover Query Dependencies" x:Name="DiscoverQueryDependencies" Size="Large"
+                               cal:Message.Attach="[Event Click] = [Action DiscoverQueryDependencies()]"
+                               Icon="{DynamicResource query_dependenciesDrawingImage}"
+                               LargeIcon="{DynamicResource query_dependenciesDrawingImage}">
+                </Fluent:Button>
             </Fluent:RibbonGroupBox>
         </Fluent:RibbonTabItem>    
           

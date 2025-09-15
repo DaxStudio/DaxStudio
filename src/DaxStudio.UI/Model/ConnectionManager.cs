@@ -1425,6 +1425,13 @@ namespace DaxStudio.UI.Model
 
         }
 
+        public DataSet DiscoverQueryDependencies(string queryText)
+        {
+            var restriction = new AdomdRestriction("QUERY", queryText);
+            var restrictions = new AdomdRestrictionCollection() { restriction};
+            return _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
+        }
+
         public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
 
     }

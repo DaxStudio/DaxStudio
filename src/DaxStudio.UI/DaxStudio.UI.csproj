@@ -724,6 +724,7 @@
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="Model\QueryEvent.cs" />
     <Compile Include="ViewModels\QueryBuilderViewModel.cs" />
+    <Compile Include="ViewModels\QueryDependenciesViewModel.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
@@ -751,6 +752,9 @@
     </Compile>
     <Compile Include="Views\BrowseWorkspacesView.xaml.cs">
       <DependentUpon>BrowseWorkspacesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\QueryDependenciesView.xaml.cs">
+      <DependentUpon>QueryDependenciesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DatabaseDialogView.xaml.cs">
       <DependentUpon>DatabaseDialogView.xaml</DependentUpon>
@@ -1060,6 +1064,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\BrowseWorkspacesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\QueryDependenciesView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
