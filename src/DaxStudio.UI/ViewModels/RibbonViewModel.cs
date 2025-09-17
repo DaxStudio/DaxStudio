@@ -117,12 +117,7 @@ namespace DaxStudio.UI.ViewModels
             // populate run styles
             RunStyles.Add(new RunStyle("Run Query", RunStyleIcons.RunOnly,  "Executes the text in the Editor and sends the results to the selected output"));
             RunStyles.Add(new RunStyle("Run Query Builder", RunStyleIcons.RunBuilder,"Executes the Query Builder and sends the results to the selected output"));
-            //RunStyles.Add(new RunStyle("Clear Cache then Run", RunStyleIcons.ClearThenRun, true,false,false, "Clears the database cache, then executes the query and sends the results to the selected output"));
-#if DEBUG
-            //            RunStyles.Add(new RunStyle("Benchmark", RunStyleIcons.RunBenchmark, false, false, false, "Executes the query multiple times and captures the timings"));
-            //RunStyles.Add(new RunStyle("Run Table Function", RunStyleIcons.RunFunction, true, true,false, "Attempts to executes the selected function by inserting 'EVALUATE' in front of it and sends the results to the selected output"));
-            //RunStyles.Add(new RunStyle("Run Measure", RunStyleIcons.RunScalar, true, true, true, "Attempts to executes the selected measure or scalar function by wrapping the selection with 'EVALUATE ROW(...)' and sends the results to the selected output"));
-#endif
+
             // set default run style
             var defaultRunStyle = RunStyleIcons.RunOnly;
 
@@ -146,19 +141,20 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
         }
 
-        //public string NewQueryTitle => $"New ({Options.HotkeyNewDocument})";
-
-        public void NewQueryWithCurrentConnection(bool copyContent = false)
+        public async void NewQueryWithCurrentConnection(bool copyContent = false)
         {
             if (ActiveDocument == null) return;
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent)).ContinueWith((precedent) => { 
-                if (precedent.IsFaulted)
-                {
-                    var msg = "Error opening new document with current connection";
-                    Log.Error(precedent.Exception, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(NewQueryWithCurrentConnection), msg);
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"{msg}\n{precedent.Exception.Message}"));
-                }
-            });
+            try
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent));
+            }
+            catch (Exception ex)
+            {
+                var msg = "Error opening new document with current connection";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(NewQueryWithCurrentConnection), msg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"{msg}\n{ex.Message}"));
+
+            }
         }
 
         public bool CanNewQueryWithCurrentConnection => ActiveDocument != null && ActiveDocument.IsConnected;
@@ -427,6 +423,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCacheAuto);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
+                NotifyOfPropertyChange(() => CanDiscoverQueryDependencies);
                 TraceWatchers?.DisableAll();
                 return;
             }
@@ -438,6 +435,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => CanClearCacheAuto);
                 NotifyOfPropertyChange(() => CanRefreshMetadata);
                 NotifyOfPropertyChange(() => CanConnect);
+                NotifyOfPropertyChange(() => CanDiscoverQueryDependencies);
                 UpdateTraceWatchers();
                 Log.Debug("{Class} {Event} {ServerName}", "RibbonViewModel", "RefreshConnectionDetails", connection.ServerName);                
             }
@@ -1493,6 +1491,12 @@ namespace DaxStudio.UI.ViewModels
                 ActiveDocument?.OutputError(ex.Message);
             }
             return Task.CompletedTask;
+        }
+
+        public bool CanDiscoverQueryDependencies => CanRunQuery;
+        public void DiscoverQueryDependencies()
+        {
+            ActiveDocument?.DiscoverQueryDependencies();
         }
     }
 }

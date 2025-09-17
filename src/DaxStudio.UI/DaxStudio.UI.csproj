@@ -281,6 +281,7 @@
     <Compile Include="Behaviours\BindableFocusBehaviour.cs" />
     <Compile Include="AttachedProperties\DataSourcePasteHandlerHelper.cs" />
     <Compile Include="Behaviours\FindReplaceBehaviour.cs" />
+    <Compile Include="Behaviours\FooterWidthLinkBehaviour.cs" />
     <Compile Include="Behaviours\GridViewColumnResize.cs" />
     <Compile Include="Behaviours\ListViewScrollIntoViewBehaviour.cs" />
     <Compile Include="Behaviours\ListViewClipboardBehaviour.cs" />
@@ -386,8 +387,10 @@
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
     <Compile Include="Extensions\StoreageModeExtensions.cs" />
     <Compile Include="Interfaces\ICancellable.cs" />
+    <Compile Include="Interfaces\IExportDataDetails.cs" />
     <Compile Include="Interfaces\IHaveLongRunningOperation.cs" />
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
+    <Compile Include="Interfaces\IPowerBIPerformanceData.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />
@@ -643,6 +646,7 @@
     <Compile Include="Utils\ManagedIpHelper.cs" />
     <Compile Include="Utils\OdcHelper.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\ParquetExporter.cs" />
     <Compile Include="Utils\RegexHelper.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ScreenUnitsHelper.cs" />
@@ -692,6 +696,7 @@
     <Compile Include="ViewModels\CaptureDiagnosticsViewModel.cs" />
     <Compile Include="ViewModels\CustomTraceDialogViewModel.cs" />
     <Compile Include="ViewModels\DatabaseDialogViewModel.cs" />
+    <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardIOutputFolderViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\ExportDataWizardExportStatusViewModel.cs" />
     <Compile Include="ViewModels\ExportDataWizard\TransitionMap.cs" />
     <Compile Include="Utils\UIHelper.cs" />
@@ -719,6 +724,7 @@
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="Model\QueryEvent.cs" />
     <Compile Include="ViewModels\QueryBuilderViewModel.cs" />
+    <Compile Include="ViewModels\QueryDependenciesViewModel.cs" />
     <Compile Include="ViewModels\QueryHistoryPaneViewModel.cs" />
     <Compile Include="ViewModels\QueryParametersDialogViewModel.cs" />
     <Compile Include="ViewModels\AutoSaveRecoveryDialogViewModel.cs" />
@@ -747,6 +753,9 @@
     <Compile Include="Views\BrowseWorkspacesView.xaml.cs">
       <DependentUpon>BrowseWorkspacesView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\QueryDependenciesView.xaml.cs">
+      <DependentUpon>QueryDependenciesView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DatabaseDialogView.xaml.cs">
       <DependentUpon>DatabaseDialogView.xaml</DependentUpon>
     </Compile>
@@ -761,6 +770,9 @@
     </Compile>
     <Compile Include="Views\CustomTraceDialogView.xaml.cs">
       <DependentUpon>CustomTraceDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExportDataWizard\ExportDataWizardOutputFolderView.xaml.cs">
+      <DependentUpon>ExportDataWizardOutputFolderView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GettingStartedView.xaml.cs">
       <DependentUpon>GettingStartedView.xaml</DependentUpon>
@@ -1055,6 +1067,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\QueryDependenciesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\DatabaseDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1074,6 +1090,10 @@
     <Page Include="Views\CustomTraceDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExportDataWizard\ExportDataWizardOutputFolderView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\GettingStartedView.xaml">
       <SubType>Designer</SubType>
@@ -1500,7 +1520,7 @@
       <Version>6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>9.0.6</Version>
+      <Version>9.0.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <Version>9.0.0</Version>
@@ -1522,8 +1542,11 @@
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.6</Version>
     </PackageReference>
+    <PackageReference Include="Parquet.Net">
+      <Version>5.2.0</Version>
+    </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.6.0</Version>
+      <Version>8.6.3</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>4.3.0</Version>

@@ -11,7 +11,7 @@ using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace DaxStudio.Tests
 {
@@ -19,7 +19,7 @@ namespace DaxStudio.Tests
     public class QueryBuilderTests
     {
         private IModelCapabilities modelCaps;
-        private Mock<IDAXFunctions> mockFuncs;
+        private IDAXFunctions mockFuncs;
         private IGlobalOptions mockOptions;
         private IEventAggregator mockEventAggregator = new MockEventAggregator();
 
@@ -27,12 +27,12 @@ namespace DaxStudio.Tests
         public void TestSetup()
         {
             // Setup the modelCaps variable
-            var mockModelCaps = new Mock<IModelCapabilities>();
-            mockFuncs = new Mock<IDAXFunctions>();
-            mockFuncs.Setup(f => f.TreatAs).Returns(true);
-            mockModelCaps.Setup(c => c.DAXFunctions).Returns(mockFuncs.Object);
-            modelCaps = mockModelCaps.Object;
-            mockOptions = new Mock<IGlobalOptions>().Object;
+            var mockModelCaps = Substitute.For<IModelCapabilities>();
+            mockFuncs = Substitute.For<IDAXFunctions>();
+            mockFuncs.TreatAs = true;
+            mockModelCaps.DAXFunctions.Returns(mockFuncs);
+            modelCaps = mockModelCaps;
+            mockOptions = Substitute.For<IGlobalOptions>();
         }
 
         [TestMethod]
@@ -441,7 +441,7 @@ ORDER BY
                             ADOTabularObjectType.Column), modelCaps, mockEventAggregator)
                     {FilterType = FilterType.Is, FilterValue = "24/24/2019"});
 
-            ExceptionAssert.Throws<ArgumentException>(
+            Assert.ThrowsExactly<ArgumentException>(
                 () => QueryBuilder.BuildQuery(modelCaps, cols, filters,false, "Products", DelimiterType.Comma),
                 "Unable to parse the value '24/24/2019' as a DateTime value");
 
@@ -493,9 +493,9 @@ CALCULATETABLE(
             cols.Add(MockColumn.Create("Color", "'Product'[Color]", typeof(string), ADOTabularObjectType.Column));
             var meas = MockColumn.Create("Total Sales", "[Total Sales]", typeof(double), ADOTabularObjectType.Measure);
             meas.MeasureExpression = "123";
-            var tab = new Mock<IADOTabularObject>();
-            tab.SetupGet(t => t.DaxName).Returns("'Internet Sales'");
-            meas.SelectedTable = tab.Object;
+            var tab = Substitute.For<IADOTabularObject>();
+            tab.DaxName.Returns("'Internet Sales'");
+            meas.SelectedTable = tab;
             cols.Add(meas);
 
             filters.Add(
@@ -535,9 +535,9 @@ ORDER BY
             var meas = MockColumn.Create("Test Measure", null, typeof(double), ADOTabularObjectType.Measure, false);
             meas.MeasureExpression = "123";
 
-            var tab = new Mock<IADOTabularObject>();
-            tab.SetupGet(t => t.DaxName).Returns("'Internet Sales'");
-            meas.SelectedTable = tab.Object;
+            var tab = Substitute.For<IADOTabularObject>();
+            tab.DaxName.Returns("'Internet Sales'");
+            meas.SelectedTable = tab;
             cols.Add(meas);
 
             filters.Add(
@@ -567,7 +567,7 @@ ORDER BY
         public void TestTreatAsStringFilterQuery()
         {
             // specify that this model supports TreatAs
-            mockFuncs.Setup(f => f.TreatAs).Returns(true);
+            mockFuncs.TreatAs = true;
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
@@ -605,7 +605,7 @@ ORDER BY
         public void TestTreatAsNumberFilterQuery()
         {
             // specify that this model supports TreatAs
-            mockFuncs.Setup(f => f.TreatAs).Returns(true);
+            mockFuncs.TreatAs = true;
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
@@ -643,7 +643,7 @@ ORDER BY
         public void TestInListFilterQuery()
         {
             // specify that this model supports TreatAs
-            mockFuncs.Setup(f => f.TreatAs).Returns(true);
+            mockFuncs.TreatAs = true;
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
@@ -681,7 +681,7 @@ ORDER BY
         public void TestNotInListFilterQuery()
         {
             // specify that this model supports TreatAs
-            mockFuncs.Setup(f => f.TreatAs).Returns(true);
+            mockFuncs.TreatAs = true;
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
@@ -720,7 +720,7 @@ ORDER BY
         public void TestInListFilterQueryWithoutTreatAs()
         {
             // specify that this model supports TreatAs
-            mockFuncs.Setup(f => f.TreatAs).Returns(false);
+            mockFuncs.TreatAs = false;
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();
@@ -734,7 +734,7 @@ ORDER BY
                 ADOTabularObjectType.Column);
 
             filters.Add(new QueryBuilderFilter(filterCol, modelCaps, mockEventAggregator)
-            { FilterType = FilterType.In, FilterValue = "red\ngreen\nblue" });
+            {FilterType = FilterType.In, FilterValue = "red\ngreen\nblue" });
 
 
             var qry = QueryBuilder.BuildQuery(modelCaps, cols, filters,false, "Products", DelimiterType.Comma);
@@ -952,7 +952,7 @@ ORDER BY
         public void TestInListFilterQueryWithSemiColonDelimiter()
         {
             // specify that this model supports TreatAs
-            mockFuncs.Setup(f => f.TreatAs).Returns(false);
+            mockFuncs.TreatAs = false;
 
             List<QueryBuilderColumn> cols = new List<QueryBuilderColumn>();
             List<QueryBuilderFilter> filters = new List<QueryBuilderFilter>();

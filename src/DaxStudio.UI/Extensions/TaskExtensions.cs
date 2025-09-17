@@ -58,8 +58,7 @@ namespace DaxStudio.UI.Extensions
                 //ignore
             }
 
-            throw allTasks.Exception ??
-                  throw new Exception("AggregateException of all tasks was null. What the hell.");
+            throw allTasks.Exception ?? new Exception("AggregateException of all tasks was null. What the hell.");
 
         }
 

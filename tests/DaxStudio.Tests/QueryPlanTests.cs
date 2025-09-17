@@ -3,7 +3,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.Tests.Mocks;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace DaxStudio.Tests
         }
 
 		public void TestPrepareLogicalQueryPlan(string queryPlan)
-        {
+		{
 			base.PrepareLogicalQueryPlan(queryPlan);
         }
     }
@@ -34,9 +34,9 @@ namespace DaxStudio.Tests
 		[TestInitialize]
 		public void TestSetup()
 		{
-			mockOptions = new Mock<IGlobalOptions>().Object;
+			mockOptions = Substitute.For<IGlobalOptions>();
 			mockEventAggregator = new Mocks.MockEventAggregator();
-			mockWindowManager = new Mock<IWindowManager>().Object;
+			mockWindowManager = Substitute.For<IWindowManager>();
 		}
 
 		[TestMethod]

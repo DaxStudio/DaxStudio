@@ -8,6 +8,7 @@ namespace DaxStudio.Interfaces.Enums
         UNICODECSV = 2,
         JSON       = 3,
         TAB        = 4,
-        CUSTOM     = 5
+        PARQUET    = 5,
+        CUSTOM     = 6
     }
 }
