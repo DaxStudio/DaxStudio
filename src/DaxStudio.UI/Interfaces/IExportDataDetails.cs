@@ -18,7 +18,7 @@ namespace DaxStudio.UI.Interfaces
         string SqlConnectionString { get; set; }
         string CsvDelimiter { get; set; }
         bool CsvQuoteStrings { get; set; }
-        string CsvFolder { get; set; }
+        string OutputFolder { get; set; }
         CsvEncoding CsvEncoding { get; set; }
         ObservableCollection<SelectedTable> Tables { get; set; } 
         bool TruncateTables { get; set; }

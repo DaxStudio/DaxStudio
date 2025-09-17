@@ -192,7 +192,7 @@ ROW (
             // todo - activate results
 
             // close the Benchmarking dialog
-            await this.TryCloseAsync(true);
+            await TryCloseAsync();
         }
 
         private void CalculateBenchmarkSummary()

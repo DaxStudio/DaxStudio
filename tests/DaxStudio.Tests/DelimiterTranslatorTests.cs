@@ -150,7 +150,7 @@ SUMMARIZECOLUMNS(
 )
 /* END QUERY BUILDER */
 ";
-            StringAssert.Equals(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
 

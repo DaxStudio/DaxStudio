@@ -1,7 +1,6 @@
 ﻿using ADOTabular;
 using DaxStudio.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +13,7 @@ using System.Linq;
 using DaxStudio.UI.Interfaces;
 using ADOTabular.Interfaces;
 using ADOTabular.AdomdClientWrappers;
+using NSubstitute;
 
 namespace DaxStudio.Tests
 {
@@ -40,7 +40,7 @@ namespace DaxStudio.Tests
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext)
         {
-            mockOptions = new Mock<IGlobalOptions>().Object;
+            mockOptions = Substitute.For<IGlobalOptions>();
             //ConnectionString = @"Data Source=localhost\tab17;";
             //ConnectionString = @"Data Source=.\sql2014tb";
             keywordDataSet = new DataSet();
@@ -113,54 +113,56 @@ namespace DaxStudio.Tests
         [TestInitialize()]
         public void MyTestInitialize()
         {
-            var mockConn = new Mock<IADOTabularConnection>();
+            var mockConn = Substitute.For<IADOTabularConnection>();
             var columnCollection = new Dictionary<string, ADOTabularColumn>();
 
-            mockConn.SetupGet(x => x.Columns).Returns(columnCollection);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false)).Returns(keywordDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false)).Returns(functionDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_CUBES", It.IsAny<AdomdRestrictionCollection>())).Returns(cubesDataSet);
-            mockConn.Setup(x => x.ShowHiddenObjects).Returns(true);
-            var mockDb = new Mock<ADOTabularDatabase>(mockConn.Object, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
-            mockDatabase = mockDb.Object;
-            mockConn.SetupGet(x => x.Database).Returns(mockDatabase);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.Columns.Returns(columnCollection);
+            mockConn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Returns(keywordDataSet);
+            mockConn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Returns(functionDataSet);
+            mockConn.GetSchemaDataSet("MDSCHEMA_CUBES", Arg.Any<AdomdRestrictionCollection>()).Returns(cubesDataSet);
+            mockConn.ShowHiddenObjects.Returns(true);
+            var mockDb = Substitute.For<ADOTabularDatabase>(mockConn, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
+            mockDatabase = mockDb;
+            mockConn.Database.Returns(mockDatabase);
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)),
-                false))
+                Arg.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)),
+                false)
                 .Returns(measureDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
-                false))
+                Arg.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
+                false)
                 .Returns(measureDataSetEmpty);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res))
-                ))
+                Arg.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res))
+                )
                 .Returns(measureDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res))
-                ))
+                Arg.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res))
+                )
                 .Returns(measureDataSetEmpty);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "DISCOVER_CSDL_METADATA",
-                It.IsAny<AdomdRestrictionCollection>()
-                ))
+                Arg.Any<AdomdRestrictionCollection>()
+                )
                 .Returns(csdlMetaDataRowset);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_HIERARCHIES",
-                It.IsAny<AdomdRestrictionCollection>()
-                ))
+                Arg.Any<AdomdRestrictionCollection>()
+                )
                 .Returns(emptyDataSet);
-            mockConn.Setup(x => x.ServerVersion).Returns("15.0.0");
-            mockConn.SetupGet(x => x.Visitor).Returns(new MetaDataVisitorCSDL(mockConn.Object));
+            mockConn.ServerVersion.Returns("15.0.0");
+            var visitor = new MetaDataVisitorCSDL(mockConn);
+            mockConn.Visitor.Returns(visitor);
+            var keywords = new ADOTabularKeywordCollection(mockConn);
+            mockConn.Keywords.Returns(keywords);
+            var emptyList = new List<string>();
+            mockConn.AllFunctions.Returns(emptyList);
 
-            mockConn.SetupGet(x => x.Keywords).Returns(new ADOTabularKeywordCollection(mockConn.Object));
-            mockConn.SetupGet(x => x.AllFunctions).Returns(new List<string>());
-
-            connection = mockConn.Object;
+            connection = mockConn;
         }
         //
         // Use TestCleanup to run code after each test has run
@@ -175,8 +177,8 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            var mockEventAggregator = new Mock<IEventAggregator>().Object;
-            var mockMetadata = new Mock<IMetadataPane>().Object;
+            var mockEventAggregator = Substitute.For<IEventAggregator>();
+            var mockMetadata = Substitute.For<IMetadataPane>();
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator,mockMetadata);
             Assert.AreEqual(2, tt.Count, "Correct Table Count");
 
@@ -203,8 +205,8 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            var mockEventAggregator = new Mock<IEventAggregator>().Object;
-            var mockMetadata = new Mock<IMetadataPane>().Object;
+            var mockEventAggregator = Substitute.For<IEventAggregator>();
+            var mockMetadata = Substitute.For<IMetadataPane>();
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator, mockMetadata);
             Assert.AreEqual(2, tt.Count, "Correct Table Count");
 
@@ -230,8 +232,8 @@ namespace DaxStudio.Tests
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(connection);
             ADOTabularDatabase db = GetTestDB();
             ADOTabularModel m = new ADOTabularModel(connection,db, "Test", "Test", "Test Description", "");
-            var mockEventAggregator = new Mock<IEventAggregator>().Object;
-            var mockMetadata = new Mock<IMetadataPane>().Object;
+            var mockEventAggregator = Substitute.For<IEventAggregator>();
+            var mockMetadata = Substitute.For<IMetadataPane>();
             var tt = m.TreeViewTables(mockOptions, mockEventAggregator, mockMetadata);
             Assert.AreEqual(2, tt.Count, "Correct Table Count");
 

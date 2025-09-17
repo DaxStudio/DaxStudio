@@ -140,11 +140,21 @@ namespace DaxStudio.CommandLine
                         .WithDescription("Exports specified tables to csv files in a folder")
                         .WithExample(new[] { "export", "csv", "c:\\temp\\export", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" })
                         .WithExample(new[] { "export", "csv", "c:\\temp\\export", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-t", "Product \"Product Category\" \"Reseller Sales\"" });
+
+                    export.AddCommand<ExportParquetCommand>("parquet")
+                        .WithDescription("Exports specified tables to parquet files in a folder")
+                        .WithExample(new[] { "export", "parquet", "c:\\temp\\export", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"" })
+                        .WithExample(new[] { "export", "parquet", "c:\\temp\\export", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-t", "Product \"Product Category\" \"Reseller Sales\"" });
                 });
 
             config.AddCommand<CsvCommand>("csv")
                 .WithDescription("Writes query results out to a .csv file")
                 .WithExample(new[] { "csv", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q","\"EVALUATE 'Product Categories'\"" });
+            // the file command is an alias for the csv command
+            config.AddCommand<CsvCommand>("file")
+                .WithDescription("Writes query results out to a file (csv/txt/json/parquet)")
+                .WithExample(new[] { "file", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\"" })
+                .WithExample(new[] { "file", "c:\\temp\\export\\myresults.parquet", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\"" });
 
             config.AddCommand<XlsxCommand>("xlsx")
                 .WithDescription("Writes query results out to an .xlsx file")

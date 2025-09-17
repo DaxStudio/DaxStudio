@@ -14,11 +14,11 @@ namespace DaxStudio.UI.ViewModels
             UseCultureDefaultDelimiter = true;
         }
 
-        public string CsvFolder
+        public string OutputFolder
         {
-            get => Wizard.CsvFolder;
-            set { Wizard.CsvFolder = value;
-                NotifyOfPropertyChange(() => CsvFolder);
+            get => Wizard.OutputFolder;
+            set { Wizard.OutputFolder = value;
+                NotifyOfPropertyChange(() => OutputFolder);
                 NotifyOfPropertyChange(() => CanNext);
             }
         }
@@ -88,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
                 System.Windows.Forms.DialogResult result = dialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    this.CsvFolder = dialog.SelectedPath;
+                    this.OutputFolder = dialog.SelectedPath;
                 }
             }
 
@@ -96,8 +96,9 @@ namespace DaxStudio.UI.ViewModels
 
         public CsvEncoding CsvEncoding
         {
-            get => Wizard.CsvEncoding; 
-            set { 
+            get => Wizard.CsvEncoding;
+            set
+            {
                 Wizard.CsvEncoding = value;
                 NotifyOfPropertyChange();
             }
@@ -118,6 +119,6 @@ namespace DaxStudio.UI.ViewModels
             await TryCloseAsync();
         }
 
-        public bool CanNext => CsvFolder.Length > 0;
+        public bool CanNext => OutputFolder.Length > 0;
     }
 }

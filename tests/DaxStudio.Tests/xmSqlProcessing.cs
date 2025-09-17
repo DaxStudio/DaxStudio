@@ -2,7 +2,7 @@
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,13 +36,12 @@ WHERE
 |~K~|FROM|~E~| 'Product'
 |~K~|WHERE|~E~|
 	 ( |~K~|COALESCE|~E~| ( [|~S~|CallbackDataID|~E~||~F~| ( SEARCH ( ""R"", 'Product'[Color], 1, 0 ) )|~E~| ] ( |~K~|PFDATAID|~E~| ( 'Product'[Color] ) ) ) = |~K~|COALESCE|~E~| ( 1 ) ) ;";
-            var options = new Mock<IGlobalOptions>();
-            options.Setup(o => o.HighlightXmSqlCallbacks).Returns(true);
+            var options = Substitute.For<IGlobalOptions>();
+            options.HighlightXmSqlCallbacks.Returns(true);
             var args = new DaxStudioTraceEventArgs();
             args.EventClassName = "VertiPaqSEQueryEnd";
             args.TextData = xmSql;
-            var evnt = new TraceStorageEngineEvent( args, 1, options.Object, null, null);
-            
+            var evnt = new TraceStorageEngineEvent( args, 1, options, null, null);
             
             //evnt.QueryRichText = xmSql;
             Assert.AreEqual(formattedxmSql, evnt.QueryRichText);

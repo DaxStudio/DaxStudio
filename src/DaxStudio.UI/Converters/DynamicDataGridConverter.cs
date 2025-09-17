@@ -24,8 +24,6 @@ namespace DaxStudio.UI.Converters
             if (value is DataView dv)
             {
                 
-
-                //var gridView = new GridView();
                 var cols = dv.ToTable().Columns;
                 foreach (DataColumn item in cols)
                 {
@@ -138,8 +136,6 @@ namespace DaxStudio.UI.Converters
                         SortMemberPath = item.ColumnName,
                         ClipboardContentBinding = (BindingBase)(columnBinding ?? clipboardBinding)
                     };
-
-                    if (columnBinding == null)
 
                     columns.Add(dgc);
                 }

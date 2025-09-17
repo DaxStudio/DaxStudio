@@ -48,7 +48,7 @@ namespace DaxStudio.Common
         {
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp(context);
+            var app = await GetPublicClientAppAsync(tenantId);
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 
@@ -106,7 +106,7 @@ namespace DaxStudio.Common
             return authResult;
         }
 
-        public static IPublicClientApplication GetPublicClientApp(AccessTokenContext context)
+        public static async Task<IPublicClientApplication> GetPublicClientAppAsync(string tenantId)
         {
             //if (_clientApp != null) return _clientApp;
 
@@ -131,7 +131,7 @@ namespace DaxStudio.Common
                 .WithBroker(brokerOptions)
                 .Build();
 
-            MsalCacheHelper cacheHelper = CreateCacheHelperAsync().GetAwaiter().GetResult();
+            MsalCacheHelper cacheHelper = await CreateCacheHelperAsync();
             
             // Let the cache helper handle MSAL's cache, otherwise the user will be prompted to sign-in every time.
             cacheHelper.RegisterCache(_clientApp.UserTokenCache);
@@ -155,6 +155,7 @@ namespace DaxStudio.Common
 
             var scope = GetScope(tokenScope);
             var tenantId = GetTenantIdFromServerName(serverName);
+
             var hostPostfix = GetHostPostfix(new Uri( serverName));
             var context = new AccessTokenContext
             {
@@ -165,7 +166,8 @@ namespace DaxStudio.Common
 
             Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), $"Prompting user to sign-in interactively. Authority: {DefaultAuthority}, ClientId: {DefaultClientId}, DomainPostfix: {hostPostfix}, TenantId: {tenantId}");
 
-            var app = GetPublicClientApp(context);
+            var app = await GetPublicClientAppAsync(tenantId);
+
             try
             {
                 var authResult = await app.AcquireTokenInteractive(scope)
@@ -355,20 +357,6 @@ namespace DaxStudio.Common
             }
         }
 
-        //public static async Task SignOutAsync()
-        //{
-        //    // TODO - will the app still have the same list of accounts if we 
-        //    //        have connected to different tenants?
-        //    var app = GetPublicClientApp(string.Empty);
-
-
-        //    IAccount firstAccount = (await app.GetAccountsAsync()).FirstOrDefault();
-        //    if (firstAccount == null)
-        //    {
-        //        return;
-        //    }
-        //    await app.RemoveAsync(firstAccount);
-        //}
 
         private static async Task<MsalCacheHelper> CreateCacheHelperAsync()
         {
@@ -387,12 +375,12 @@ namespace DaxStudio.Common
             return cacheHelper;
         }
 
-        //public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
-        //{
-        //    var app = GetPublicClientApp(string.Empty);
-        //    var accounts = await app.GetAccountsAsync();
-        //    return accounts;
-        //}
+        public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
+        {
+            var app = await GetPublicClientAppAsync(string.Empty);
+            var accounts = await app.GetAccountsAsync();
+            return accounts;
+        }
 
         private struct TokenDetails
         {
@@ -413,18 +401,18 @@ namespace DaxStudio.Common
             public AccessTokenContext UserContext;
         }
 
-        public static Tom.AccessToken RefreshToken(Tom.AccessToken token)
+        public static async Task<Tom.AccessToken> RefreshToken(Tom.AccessToken token)
         {
             var details = new TokenDetails(token);
-            var authResult = RefreshTokenInternal(details);
+            var authResult = await RefreshTokenInternalAsync(details);
             Tom.AccessToken newToken = new Tom.AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
 
-        public static AccessToken RefreshToken(AccessToken token)
+        public static async Task<AccessToken> RefreshToken(AccessToken token)
         {
             var details = new TokenDetails(token);
-            var authResult = RefreshTokenInternal(details);
+            var authResult = await RefreshTokenInternalAsync(details);
             AccessToken newToken = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
@@ -450,14 +438,14 @@ namespace DaxStudio.Common
             return accessToken;
         }
 
-        private static AuthenticationResult RefreshTokenInternal(TokenDetails token)
+        private static async Task<AuthenticationResult> RefreshTokenInternalAsync(TokenDetails token)
         {
             var lastUpn = (token.UserContext?.Username) ?? string.Empty;
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp(token.UserContext);
+            var app = await GetPublicClientAppAsync(token.UserContext.TenantId);
             IAccount firstAccount = null;
-            var accounts = app.GetAccountsAsync().Result;
+            var accounts = await app.GetAccountsAsync();
 
             // if the user signed-in before, try to get that account info from the cache
             if (!string.IsNullOrEmpty(lastUpn))
