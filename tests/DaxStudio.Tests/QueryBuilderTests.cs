@@ -441,7 +441,7 @@ ORDER BY
                             ADOTabularObjectType.Column), modelCaps, mockEventAggregator)
                     {FilterType = FilterType.Is, FilterValue = "24/24/2019"});
 
-            ExceptionAssert.Throws<ArgumentException>(
+            Assert.ThrowsExactly<ArgumentException>(
                 () => QueryBuilder.BuildQuery(modelCaps, cols, filters,false, "Products", DelimiterType.Comma),
                 "Unable to parse the value '24/24/2019' as a DateTime value");
 

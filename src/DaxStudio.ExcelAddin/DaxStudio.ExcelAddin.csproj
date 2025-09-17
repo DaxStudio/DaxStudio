@@ -290,6 +290,12 @@
     <Reference Include="Microsoft.Owin.Security, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Owin.Security.4.2.2\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MSTest.TestFramework.3.10.4\lib\net462\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MSTest.TestFramework.3.10.4\lib\net462\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -554,6 +560,10 @@
     <None Include="images\DaxStudio.ico" />
     <None Include="images\DaxStudioSetupBanner.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\MSTest.Analyzers.3.10.4\analyzers\dotnet\cs\MSTest.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\packages\MSTest.Analyzers.3.10.4\analyzers\dotnet\cs\MSTest.Analyzers.dll" />
+  </ItemGroup>
   <!-- Include the build rules for a C# project. -->
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
@@ -639,6 +649,7 @@
     <Error Condition="!Exists('..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Identity.Client.NativeInterop.0.19.0\build\net461\Microsoft.Identity.Client.NativeInterop.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Identity.Client.NativeInterop.0.19.0\build\net461\Microsoft.Identity.Client.NativeInterop.props'))" />
     <Error Condition="!Exists('..\..\packages\Serilog.4.3.0\build\Serilog.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Serilog.4.3.0\build\Serilog.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MSTest.TestFramework.3.10.4\build\net462\MSTest.TestFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MSTest.TestFramework.3.10.4\build\net462\MSTest.TestFramework.targets'))" />
   </Target>
   <!-- transofrm the config file so that logging in the app.debug.config is removed when we do a release build -->
   <UsingTask TaskName="TransformXml" AssemblyFile="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Web\Microsoft.Web.Publishing.Tasks.dll" />
@@ -648,4 +659,5 @@
   <Import Project="..\..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
   <Import Project="..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
   <Import Project="..\..\packages\Serilog.4.3.0\build\Serilog.targets" Condition="Exists('..\..\packages\Serilog.4.3.0\build\Serilog.targets')" />
+  <Import Project="..\..\packages\MSTest.TestFramework.3.10.4\build\net462\MSTest.TestFramework.targets" Condition="Exists('..\..\packages\MSTest.TestFramework.3.10.4\build\net462\MSTest.TestFramework.targets')" />
 </Project>
