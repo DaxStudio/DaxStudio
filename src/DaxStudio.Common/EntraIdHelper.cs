@@ -48,7 +48,7 @@ namespace DaxStudio.Common
         {
 
             AuthenticationResult authResult = null;
-            var app = await GetPublicClientAppAsync(tenantId);
+            var app = await GetPublicClientAppAsync(context);
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 
@@ -106,14 +106,15 @@ namespace DaxStudio.Common
             return authResult;
         }
 
-        public static async Task<IPublicClientApplication> GetPublicClientAppAsync(string tenantId)
+        public static async Task<IPublicClientApplication> GetPublicClientAppAsync(AccessTokenContext context)
         {
             //if (_clientApp != null) return _clientApp;
 
             BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
 
-
-            var authenticationInformation = GetAuthenticationInformationFromDomainPostfix(context.DomainPostfix);
+           
+            if (!TryFindAuthenticationInformation(new Uri ($"powerbi://{context.DomainPostfix}"), out var authenticationInformation))
+                throw new ArgumentException($"Could not find authentication information for domain postfix: {context.DomainPostfix}", nameof(context.DomainPostfix));
 
             var defaultAuthority = authenticationInformation.Authority;
 
@@ -121,7 +122,7 @@ namespace DaxStudio.Common
 
             var clientId = authenticationInformation.ApplicationId;
 
-            Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetPublicClientApp), $"Using Authority: {authority}, ClientId: {clientId}, DomainPostfix: {context.DomainPostfix}, TenantId: {context.TenantId}");
+            Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetPublicClientAppAsync), $"Using Authority: {authority}, ClientId: {clientId}, DomainPostfix: {context.DomainPostfix}, TenantId: {context.TenantId}");
 
             _clientApp = PublicClientApplicationBuilder.Create(clientId)
                 //.WithAuthority($"{Instance}{Tenant}")
@@ -166,7 +167,7 @@ namespace DaxStudio.Common
 
             Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), $"Prompting user to sign-in interactively. Authority: {DefaultAuthority}, ClientId: {DefaultClientId}, DomainPostfix: {hostPostfix}, TenantId: {tenantId}");
 
-            var app = await GetPublicClientAppAsync(tenantId);
+            var app = await GetPublicClientAppAsync(context);
 
             try
             {
@@ -193,35 +194,49 @@ namespace DaxStudio.Common
             if (serverName == null) throw new ArgumentNullException(nameof(serverName));
             
             var record = (AuthenticationInformationRecord)null;
-            TryFindAuthenticationInformation(serverName, GetAuthenticationInformation(), out record);
+            if (!TryFindAuthenticationInformation(serverName, out record))
+                throw new ArgumentException($"Could not find authentication information for server: {serverName}", nameof(serverName));
 
-            return record.DomainPostfix;
+            return record?.DomainPostfix??string.Empty;
         }
 
-        internal static AuthenticationInformationRecord GetAuthenticationInformationFromDomainPostfix(string domainPostfix)
-        {
-            var knownRecords = GetAuthenticationInformation();
-            foreach (var record in knownRecords)
-            {
-                if (record.DomainPostfix.Equals(domainPostfix,StringComparison.InvariantCultureIgnoreCase))
-                {
-                    record.Authority = record.Authority.Replace("/common", "/organizations");
-                    if (string.IsNullOrWhiteSpace(record.Authority)) {  record.Authority = DefaultAuthority; }
-                    if (string.IsNullOrWhiteSpace(record.ApplicationId)) { record.ApplicationId = DefaultClientId; }
-                    return record;
-                }
-            }
-            return (AuthenticationInformationRecord)null;
-        }
+        //internal static AuthenticationInformationRecord GetAuthenticationInformationFromDomainPostfix(string domainPostfix)
+        //{
+        //    var knownRecords = GetAuthenticationInformation();
+        //    foreach (var record in knownRecords)
+        //    {
+        //        if (record.DomainPostfix.Equals(domainPostfix,StringComparison.InvariantCultureIgnoreCase))
+        //        {
+        //            record.Authority = record.Authority.Replace("/common", "/organizations");
+        //            if (string.IsNullOrWhiteSpace(record.Authority)) {  record.Authority = DefaultAuthority; }
+        //            if (string.IsNullOrWhiteSpace(record.ApplicationId)) { record.ApplicationId = DefaultClientId; }
+        //            return record;
+        //        }
+        //    }
+        //    return (AuthenticationInformationRecord)null;
+        //}
 
         private static AuthenticationInformationRecord[] remoteSecurityConfig;
+        private static AuthenticationInformationRecord[] embeddedSecurityConfig;
 
-        private static AuthenticationInformationRecord[] GetAuthenticationInformation()
+        private static AuthenticationInformationRecord[] GetAuthenticationInformation(        
+            bool isEmbeddedInfo)
         {
-            // For any other URL formats, download the security config file
+            if (isEmbeddedInfo)
+            {
+                Log.Verbose(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetAuthenticationInformation), "Getting authentication information from embedded config");
+                if (embeddedSecurityConfig == null)
+                {
+                    Assembly executingAssembly = Assembly.GetExecutingAssembly();
+                    using (Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(((IEnumerable<string>)executingAssembly.GetManifestResourceNames()).FirstOrDefault<string>((Func<string, bool>)(name => name.EndsWith("ASAzureSecurityConfig.xml")))))
+                        embeddedSecurityConfig = DeserializeAuthenticationInformation(manifestResourceStream);
+                }
+                return embeddedSecurityConfig;
+            }
+
+            Log.Verbose(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetAuthenticationInformation), "Getting authentication information from remote config");
             if (remoteSecurityConfig == null)
             {
-
                 using (WebClient webClient = new WebClient())
                 {
                     try
@@ -231,20 +246,21 @@ namespace DaxStudio.Common
                     }
                     catch (WebException ex)
                     {
-                        try
-                        {
-                            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-                            using (Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(((IEnumerable<string>)executingAssembly.GetManifestResourceNames()).FirstOrDefault<string>((Func<string, bool>)(name => name.EndsWith("ASAzureSecurityConfig.xml")))))
-                                remoteSecurityConfig = DeserializeAuthenticationInformation(manifestResourceStream);
-                        }
-                        catch
-                        {
-                            remoteSecurityConfig = new AuthenticationInformationRecord[0];
-                        }
+                        remoteSecurityConfig = new AuthenticationInformationRecord[0];
                     }
                 }
             }
             return remoteSecurityConfig;
+        }
+
+  
+
+        internal static bool TryFindAuthenticationInformation(
+            Uri dataSource,
+            out AuthenticationInformationRecord record)
+        {
+            record = (AuthenticationInformationRecord)null;
+            return TryFindAuthenticationInformation(dataSource, GetAuthenticationInformation(true), out record) || TryFindAuthenticationInformation(dataSource, GetAuthenticationInformation(false), out record);
         }
 
         private static bool TryFindAuthenticationInformation(
@@ -255,8 +271,14 @@ namespace DaxStudio.Common
             record = (AuthenticationInformationRecord)null;
             for (int index = 0; index < knownRecords.Length; ++index)
             {
-                if (dataSource.Host.EndsWith(knownRecords[index].DomainPostfix, StringComparison.InvariantCultureIgnoreCase) && (record == null || knownRecords[index].DomainPostfix.Length > record.DomainPostfix.Length))
+                if (dataSource.Host.EndsWith(knownRecords[index].DomainPostfix, StringComparison.InvariantCultureIgnoreCase)
+                    && (record == null || knownRecords[index].DomainPostfix.Length > record.DomainPostfix.Length))
+                {
                     record = knownRecords[index];
+                    record.Authority = record.Authority.Replace("/common", "/organizations");
+                    if (string.IsNullOrWhiteSpace(record.Authority)) { record.Authority = DefaultAuthority; }
+                    if (string.IsNullOrWhiteSpace(record.ApplicationId)) { record.ApplicationId = DefaultClientId; }
+                }
             }
             return record != null;
         }
@@ -375,12 +397,6 @@ namespace DaxStudio.Common
             return cacheHelper;
         }
 
-        public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
-        {
-            var app = await GetPublicClientAppAsync(string.Empty);
-            var accounts = await app.GetAccountsAsync();
-            return accounts;
-        }
 
         private struct TokenDetails
         {
@@ -443,7 +459,7 @@ namespace DaxStudio.Common
             var lastUpn = (token.UserContext?.Username) ?? string.Empty;
 
             AuthenticationResult authResult = null;
-            var app = await GetPublicClientAppAsync(token.UserContext.TenantId);
+            var app = await GetPublicClientAppAsync(token.UserContext);
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 

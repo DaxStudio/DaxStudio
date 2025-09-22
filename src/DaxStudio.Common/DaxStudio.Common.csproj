@@ -168,14 +168,9 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-	<Target Name="DownloadEmbeddedResources" BeforeTargets="BeforeBuild">
-		<DownloadFile
-		  SourceUrl="%(EmbeddedResource.WebResourceUrl)"
-		  DestinationFolder="$(MSBuildProjectDirectory)"
-		  DestinationFileName="%(EmbeddedResource.Identity)"
-		  SkipUnchangedFiles="true" />
 
-		<Message Text="✅ Download complete: %(EmbeddedResource.Identity)" Importance="High" />
-	</Target>
-	
+
+
+
+
 </Project>
