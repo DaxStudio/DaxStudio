@@ -148,7 +148,7 @@
       <Version>19.104.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>9.0.6</Version>
+      <Version>9.0.9</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>4.3.0</Version>
@@ -166,7 +166,7 @@
       <Version>0.51.1</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>9.0.6</Version>
+      <Version>9.0.9</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.6.3</Version>

@@ -137,10 +137,10 @@
       <Version>2.0.3</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
+      <Version>13.0.4</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.6.3</Version>
+      <Version>8.6.4</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>4.3.0</Version>
