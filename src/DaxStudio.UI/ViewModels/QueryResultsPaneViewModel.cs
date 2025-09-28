@@ -297,15 +297,13 @@ namespace DaxStudio.UI.ViewModels
         private void CheckSelectionAndCopy(object source)
         {
             var selectionSet = false;
-            DataGrid grid = null;
             if (source == null) return;
             if (source is MenuItem menu)
             {
                 if (menu.Parent is ContextMenu ctxMenu)
                 {
-                    if (ctxMenu.PlacementTarget is DataGrid)
+                    if (ctxMenu.PlacementTarget is DataGrid grid)
                     {
-                        grid = (DataGrid)ctxMenu.PlacementTarget;
                         if (grid.SelectedCells.Count == 0)
                         {
                             // if this is a grid and nothing is selected
@@ -314,18 +312,20 @@ namespace DaxStudio.UI.ViewModels
                             grid.Focus();
                             selectionSet = true;
                         }
+
+                        ApplicationCommands.Copy.Execute(null, null);
+
+                        if (selectionSet)
+                        {
+                            // if we set the selection as part of the copy command 
+                            // then we should clear it
+                            grid.SelectedCells.Clear();
+                        }
                     }
                 }
             }
 
-            ApplicationCommands.Copy.Execute(null, null);
 
-            if (selectionSet)
-            {
-                // if we set the selection as part of the copy command 
-                // then we should clear it
-                grid.SelectedCells.Clear();
-            }
         }
 
         public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)
