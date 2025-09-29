@@ -7,10 +7,10 @@ using System.IO.Packaging;
 
 namespace DaxStudio.UI.ViewModels
 {
-    public class QueryDependenciesViewModel : Screen, IZoomable, IToolWindow, ISaveState
+    public class QueryDependenciesViewModel : ToolPaneBaseViewModel, IZoomable, IToolWindow, ISaveState
     {
-        public QueryDependenciesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager){ 
-        
+        public QueryDependenciesViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator){ 
+
         }
 
         private DataTable _dependencies;
@@ -21,25 +21,15 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        public double Scale { get; set ; }
 
-        public string Title => "Query Dependencies";
+        public override string Title => "Query Dependencies";
 
-        public string DefaultDockingPane   => "DockBottom"; 
+        public override string DefaultDockingPane   => "DockBottom"; 
     
 
-        public bool CanCloseWindow  { get { return true; }
-            set { }
-        }
+        public override bool CanHide => false;
 
-        public bool CanHide => false;
-
-        public int AutoHideMinHeight { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public bool IsSelected { get; set; }
-
-        public string ContentId => "QueryDependencies";
-
-        public event EventHandler OnScaleChanged;
+        public override string ContentId => "QueryDependencies";
 
         public string GetJson()
         {
@@ -76,5 +66,7 @@ namespace DaxStudio.UI.ViewModels
             get => _showFilters; 
             set { _showFilters = value; NotifyOfPropertyChange(); } 
         }
+
+
     }
 }
