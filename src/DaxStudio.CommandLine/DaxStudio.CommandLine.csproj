@@ -95,7 +95,7 @@
     <Compile Include="Commands\CustomTraceCommand.cs" />
     <Compile Include="Commands\VpaxCommand.cs" />
     <Compile Include="Commands\XlsxCommand.cs" />
-    <Compile Include="Commands\CsvCommand.cs" />
+    <Compile Include="Commands\FileCommand.cs" />
     <Compile Include="Commands\ExportCsvCommand.cs" />
     <Compile Include="Commands\ExportSqlCommand.cs" />
     <Compile Include="UIStubs\ConnectEvent.cs" />

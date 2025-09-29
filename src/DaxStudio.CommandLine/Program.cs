@@ -147,11 +147,11 @@ namespace DaxStudio.CommandLine
                         .WithExample(new[] { "export", "parquet", "c:\\temp\\export", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-t", "Product \"Product Category\" \"Reseller Sales\"" });
                 });
 
-            config.AddCommand<CsvCommand>("csv")
+            config.AddCommand<FileCommand>("csv")
                 .WithDescription("Writes query results out to a .csv file")
                 .WithExample(new[] { "csv", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q","\"EVALUATE 'Product Categories'\"" });
             // the file command is an alias for the csv command
-            config.AddCommand<CsvCommand>("file")
+            config.AddCommand<FileCommand>("file")
                 .WithDescription("Writes query results out to a file (csv/txt/json/parquet)")
                 .WithExample(new[] { "file", "c:\\temp\\export\\myresults.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\"" })
                 .WithExample(new[] { "file", "c:\\temp\\export\\myresults.parquet", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-q", "\"EVALUATE 'Product Categories'\"" });

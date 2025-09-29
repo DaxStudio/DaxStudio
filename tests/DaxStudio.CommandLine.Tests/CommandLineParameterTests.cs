@@ -9,7 +9,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void TestServerDatabaseNames()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.Server = "localhost";
             settings.Database = "Adventure Works";
 
@@ -20,7 +20,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_servername_should_fail()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.Server = "localhost";
 
 
@@ -32,7 +32,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_databasename_should_fail()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.Database = "Adventure Works";
 
 
@@ -44,7 +44,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_servername_with_connectionstring_should_fail()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.Server = "localhost";
             settings.ConnectionString = "data source=localhost";
 
@@ -56,7 +56,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_connectionstring_should_suceed()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.ConnectionString = "data source=localhost";
 
             var validationResult = settings.Validate();
@@ -67,7 +67,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_connectionstring_and_user_should_succeed()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.ConnectionString = "data source=localhost";
             settings.UserID = "testUser";
             settings.Password = "testPwd";
@@ -92,7 +92,7 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_server_and_password_should_succeed()
         {
-            var settings = new CsvCommand.Settings();
+            var settings = new FileCommand.Settings();
             settings.Server = "localhost";
             settings.Database = "Adventure Works";
             settings.Password = "testPwd";

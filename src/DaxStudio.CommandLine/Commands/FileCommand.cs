@@ -7,18 +7,14 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.UI.Model;
 using System;
-using DaxStudio.CommandLine.Infrastructure;
 using System.IO;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.CommandLine.UIStubs;
-using DaxStudio.UI.Utils;
-using System.Linq;
-using DaxStudio.Common.Extensions;
 using System.Threading.Tasks;
 
 namespace DaxStudio.CommandLine.Commands
 {
-    internal class CsvCommand : AsyncCommand<CsvCommand.Settings>
+    internal class FileCommand : AsyncCommand<FileCommand.Settings>
     {
         internal class Settings : CommandSettingsFileBase,IQueryTextProvider
         {
@@ -34,10 +30,6 @@ namespace DaxStudio.CommandLine.Commands
             [CommandOption("-t|--fileType")]
             [Description("Specifies the format of the file")]
             public TextFileType FileType { get; set; }
-
-            //[CommandArgument(0,"[filename]")]
-            //[Description("The name of the file for the results")]
-            //public string Out { get; set; }
 
             public string EditorText => Query;
 
@@ -79,7 +71,7 @@ namespace DaxStudio.CommandLine.Commands
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
         {
             
-            Log.Information("Starting CSV command");
+            Log.Information("Starting File command");
 
             if (settings.File != null && settings.Query == null)
             {
@@ -126,7 +118,7 @@ namespace DaxStudio.CommandLine.Commands
                     await target.OutputResultsAsync(runner, settings, settings.OutputFile).ConfigureAwait(true);
                 });
 
-            Log.Information("Finished CSV command");
+            Log.Information("Finished FILE command");
             return 0;
 
         }
