@@ -564,8 +564,8 @@ namespace DaxStudio.UI.ViewModels
                 {
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var tokenScope = serverType == ServerType.AzureAnalysisServices ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
-                    var ( authResult,tenantId) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, tokenScope, DataSource);
-                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, tokenScope, tenantId);
+                    var ( authResult,context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, tokenScope, DataSource);
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
                     Log.Debug("Attempting connection with token for user: {User}", authResult.Account.Username);
                 }
                 

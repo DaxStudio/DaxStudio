@@ -16,9 +16,11 @@ namespace DaxStudio.Common
 
     public class AccessTokenContext
     {
-        public string UserName { get; set; }
+        public string Username { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public AccessTokenScope TokenScope { get; set; }
         public string TenantId { get; set; }
+        public string DomainPostfix { get; set; }
+        public IEnumerable<string> Scope { get; set; }
     }
 }

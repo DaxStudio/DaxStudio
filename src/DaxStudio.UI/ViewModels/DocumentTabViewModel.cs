@@ -403,8 +403,8 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // prompt for access token
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var (authResult,tenantId) = await EntraIdHelper.PromptForAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
-                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, tenantId);
+                    var (authResult,context) = await EntraIdHelper.PromptForAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
                 }
                 await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
                                                                         false, 
@@ -476,23 +476,21 @@ namespace DaxStudio.UI.ViewModels
         {
             await PasteQueryDocumentAsync(message.FileName);
         }
-
+        bool _isClosing = false;
         public async Task TabClosing(object sender, DocumentClosingEventArgs args)
         {
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Starting");
             try
             {
+                if (_isClosing) return; // prevent re-entrancy
+                _isClosing = true;  
+
                 var doc = args.Document.Content as IScreen;
                 if (doc == null) return;
 
                 args.Cancel = true; // cancel the default tab close action as we want to call 
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => {await  CloseTabAsync(doc); }), DispatcherPriority.Normal);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-                //CloseTabAsync(doc);
-
+                await Dispatcher.CurrentDispatcher.InvokeAsync(new System.Action(async () => { await CloseTabAsync(doc); }), DispatcherPriority.Normal);
 
             }
             catch (Exception ex)

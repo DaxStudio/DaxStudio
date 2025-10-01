@@ -23,6 +23,7 @@ using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Shell;
+using Windows.Management.Update;
 //using Microsoft.Identity.Client;
 
 namespace DaxStudio.Standalone
@@ -194,6 +195,10 @@ namespace DaxStudio.Standalone
             App.Args().LoggingEnabledByHotKey = isLoggingKeyDown;
 
             var logCmdLineSwitch = App.Args().LoggingEnabled;
+            var isPreviewBuild = false;
+#if PREVIEW
+            isPreviewBuild = true;
+#endif
 
 #if DEBUG
             Serilog.Debugging.SelfLog.Enable(Console.Out);
@@ -201,13 +206,14 @@ namespace DaxStudio.Standalone
             // write basic information about the current PC to the log file
             SystemInfo.WriteToLog();
 
-            if (isLoggingKeyDown) Log.Information($"Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
-            if (logCmdLineSwitch) Log.Information("Logging enabled by Excel Add-in");
+            if (isLoggingKeyDown) Log.Information($"Verbose Logging enabled due to {Constants.LoggingHotKeyName} key being held down");
+            if (isPreviewBuild) Log.Information($"Verbose Logging enabled due to being a PREVIEW build");
+            if (logCmdLineSwitch) Log.Information("Verbose Logging enabled by Excel Add-in");
             Log.Information("CommandLine Args: {args}", Environment.GetCommandLineArgs());
             Log.Information($"Portable Mode: {ApplicationPaths.IsInPortableMode}");
 
             // Set the default logging level
-            if (isLoggingKeyDown || logCmdLineSwitch)
+            if (isLoggingKeyDown || logCmdLineSwitch || isPreviewBuild)
             {
 #if DEBUG
                 levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Verbose;

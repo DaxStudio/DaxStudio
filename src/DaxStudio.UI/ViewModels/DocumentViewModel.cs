@@ -1187,6 +1187,10 @@ namespace DaxStudio.UI.ViewModels
 
         public bool Close()
         {
+            if (IsClosing) return false;
+
+            IsClosing = true;
+            
             // Close the document's connection 
             Connection.Close(true);
             // turn off any running traces
@@ -1196,8 +1200,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             var docTab = Parent as DocumentTabViewModel;
-            docTab?.CloseItemAsync(this);
-            IsClosing = true;
+            docTab?.CloseItemAsync(this).Wait();
             docTab?.Items.Remove(this);
             return true;
         }
@@ -1466,8 +1469,8 @@ namespace DaxStudio.UI.ViewModels
                     // prompt for access token
                     IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var scopeType = server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
-                    var (authResult, tenantId) = EntraIdHelper.PromptForAccountAsync(hwnd, Options, scopeType, server).Result;
-                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, authResult.Account.Username, scopeType, tenantId);
+                    var (authResult,context) = EntraIdHelper.PromptForAccountAsync(hwnd, Options, scopeType, server).Result;
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
                 }
 
                 _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", false, String.Empty, string.Empty,

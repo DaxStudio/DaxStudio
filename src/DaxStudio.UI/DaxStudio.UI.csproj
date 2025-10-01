@@ -1554,9 +1554,6 @@
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>
     </PackageReference>
-    <PackageReference Include="System.Threading.Tasks.Extensions">
-      <Version>4.6.3</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\daxstudio-logo_250x250_glow.png" />
