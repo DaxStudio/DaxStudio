@@ -21,5 +21,6 @@ namespace DaxStudio.Common
         public AccessTokenScope TokenScope { get; set; }
         public string TenantId { get; set; }
         public string DomainPostfix { get; set; }
+        public IEnumerable<string> Scope { get; set; }
     }
 }

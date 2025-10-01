@@ -13,6 +13,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -154,18 +155,26 @@ namespace DaxStudio.Common
         public static async Task<(AuthenticationResult,AccessTokenContext)> PromptForAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, string serverName)
         {
 
-            var scope = GetScope(tokenScope);
+            IEnumerable<string> scope = GetScope(tokenScope);
             var tenantId = GetTenantIdFromServerName(serverName);
 
-            var hostPostfix = GetHostPostfix(new Uri( serverName));
+            var authInfo = GetAuthenticationInformationFromUri(new Uri( serverName));
+
+            // override the scope if the authentication information contains a ResourceId
+            if (!string.IsNullOrEmpty(authInfo.ResourceId))
+                scope = authInfo.GetDefaultScopes();
+
             var context = new AccessTokenContext
             {
                 TokenScope = tokenScope,
                 TenantId = tenantId,
-                DomainPostfix = hostPostfix
+                DomainPostfix = authInfo.DomainPostfix,
+                Scope = scope
             };
 
-            Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), $"Prompting user to sign-in interactively. Authority: {DefaultAuthority}, ClientId: {DefaultClientId}, DomainPostfix: {hostPostfix}, TenantId: {tenantId}");
+            if (Log.IsEnabled(Serilog.Events.LogEventLevel.Debug))
+                Log.Debug("{class} {method} Prompting user to sign-in interactively. Authority: {authority}, ClientId: {applicationId}, DomainPostfix: {domainPostfix}, TenantId: {tenantId} Scope: {@scope}",
+                            nameof(EntraIdHelper), nameof(PromptForAccountAsync), authInfo.Authority, authInfo.ApplicationId, authInfo.DomainPostfix, tenantId, scope);
 
             var app = await GetPublicClientAppAsync(context);
 
@@ -189,7 +198,7 @@ namespace DaxStudio.Common
             }
         }
 
-        internal static string GetHostPostfix(Uri serverName)
+        internal static AuthenticationInformationRecord GetAuthenticationInformationFromUri(Uri serverName)
         {
             if (serverName == null) throw new ArgumentNullException(nameof(serverName));
             
@@ -197,24 +206,10 @@ namespace DaxStudio.Common
             if (!TryFindAuthenticationInformation(serverName, out record))
                 throw new ArgumentException($"Could not find authentication information for server: {serverName}", nameof(serverName));
 
-            return record?.DomainPostfix??string.Empty;
-        }
 
-        //internal static AuthenticationInformationRecord GetAuthenticationInformationFromDomainPostfix(string domainPostfix)
-        //{
-        //    var knownRecords = GetAuthenticationInformation();
-        //    foreach (var record in knownRecords)
-        //    {
-        //        if (record.DomainPostfix.Equals(domainPostfix,StringComparison.InvariantCultureIgnoreCase))
-        //        {
-        //            record.Authority = record.Authority.Replace("/common", "/organizations");
-        //            if (string.IsNullOrWhiteSpace(record.Authority)) {  record.Authority = DefaultAuthority; }
-        //            if (string.IsNullOrWhiteSpace(record.ApplicationId)) { record.ApplicationId = DefaultClientId; }
-        //            return record;
-        //        }
-        //    }
-        //    return (AuthenticationInformationRecord)null;
-        //}
+
+            return record;
+        }
 
         private static AuthenticationInformationRecord[] remoteSecurityConfig;
         private static AuthenticationInformationRecord[] embeddedSecurityConfig;
@@ -268,16 +263,32 @@ namespace DaxStudio.Common
                       AuthenticationInformationRecord[] knownRecords,
                       out AuthenticationInformationRecord record)
         {
+            var host = dataSource.Host;
             record = (AuthenticationInformationRecord)null;
             for (int index = 0; index < knownRecords.Length; ++index)
             {
-                if (dataSource.Host.EndsWith(knownRecords[index].DomainPostfix, StringComparison.InvariantCultureIgnoreCase)
+                if (host.EndsWith(knownRecords[index].DomainPostfix, StringComparison.InvariantCultureIgnoreCase)
                     && (record == null || knownRecords[index].DomainPostfix.Length > record.DomainPostfix.Length))
                 {
                     record = knownRecords[index];
                     record.Authority = record.Authority.Replace("/common", "/organizations");
-                    if (string.IsNullOrWhiteSpace(record.Authority)) { record.Authority = DefaultAuthority; }
-                    if (string.IsNullOrWhiteSpace(record.ApplicationId)) { record.ApplicationId = DefaultClientId; }
+                    if (string.IsNullOrWhiteSpace(record.Authority)) {
+                        Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No Authority found in config for {dataSource}, using default ADOMD Authority");
+                        record.Authority = DefaultAuthority; 
+                    }
+                    if (string.IsNullOrWhiteSpace(record.ApplicationId)) { 
+                        Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No ApplicationId found in config for {dataSource}, using default ADOMD ClientId");
+                        record.ApplicationId = DefaultClientId; 
+                    }
+                    if (string.IsNullOrWhiteSpace(record.ResourceId))
+                    {
+                        Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No Resource found in config for {dataSource}, generating from dataSource");
+                        record.ResourceId = string.Format("https://{0}", dataSource.Host);
+                    }
+                    else
+                    {
+                        record.ResourceId = new Uri(record.ResourceId).AbsoluteUri;
+                    }
                 }
             }
             return record != null;
@@ -433,21 +444,6 @@ namespace DaxStudio.Common
             return newToken;
         }
 
-
-        //public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId, string hostPostfix)
-        //{
-        //    // TODO
-        //    var context = new AccessTokenContext
-        //    {
-        //        Username = username,
-        //        TokenScope = scope,
-        //        TenantId = tenantId,
-        //        DomainPostfix = hostPostfix
-        //    };
-        //    var accessToken = new AccessToken(token, expiry, context);
-        //    return accessToken;
-        //}
-
         public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
         {
             var accessToken = new AccessToken(token, expiry, context);
@@ -469,7 +465,7 @@ namespace DaxStudio.Common
                 firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.CurrentCultureIgnoreCase));
             }
 
-            var scope = GetScope(token);
+            var scope = token.UserContext.Scope;
 
             try
             {
@@ -569,7 +565,21 @@ namespace DaxStudio.Common
         public string ApplicationId { get; internal set; }
 
         [DataMember(Name = "ResourceId", Order = 4, EmitDefaultValue = true)]
-        public string ResourceId { get; private set; }
+        public string ResourceId { get; internal set; }
+
+
+        internal IEnumerable<string> GetDefaultScopes()
+        {
+            return (IEnumerable<string>)new string[1]
+            {
+                string.Format("{0}/.default", ResourceId)
+            };
+        }
+    
+        internal string GetTokenCacheKey()
+        {
+            return string.Format((IFormatProvider)CultureInfo.InvariantCulture, "{0}|{1}|{2}", (object)this.Authority, (object)this.ApplicationId, (object)this.ResourceId);
+        }
     }
 
 }
