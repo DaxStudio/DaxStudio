@@ -1,15 +1,16 @@
 ﻿using DaxStudio.Common;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Utils;
 using Newtonsoft.Json;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Globalization;
-using DaxStudio.Interfaces;
-using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ResultsTargets
 {
@@ -141,7 +142,8 @@ namespace DaxStudio.UI.ResultsTargets
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
-                            runner.SetResultsMessage($"Query results written to file\n{fileName}", OutputTarget.File);
+                            runner.SetResultsMessage($"Query results written to file", OutputTarget.File, fileName);
+                            runner.OutputMessage(new FolderOutputMessage($"{Path.GetFileName(fileName)} saved", Path.GetDirectoryName(fileName)));
                             runner.ActivateOutput();
                         }
                     }

@@ -1,6 +1,7 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
@@ -116,7 +117,8 @@ namespace DaxStudio.UI.Model
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
-                            runner.SetResultsMessage($"Query results written to:\n{fileName}", OutputTarget.File);
+                            runner.SetResultsMessage($"Query results written to:", OutputTarget.File,fileName);
+                            runner.OutputMessage(new FolderOutputMessage($"{Path.GetFileName(fileName)} saved", Path.GetDirectoryName(fileName)));
                             runner.ActivateOutput();
                         }
                     }

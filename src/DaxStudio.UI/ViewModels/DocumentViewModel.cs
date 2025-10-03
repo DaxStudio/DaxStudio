@@ -30,6 +30,9 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Folding;
+using Microsoft.Identity.Client.NativeInterop;
+using Microsoft.PowerBI.Api.Models;
+using Microsoft.PowerBI.Api.Models.Credentials;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
@@ -2328,6 +2331,11 @@ namespace DaxStudio.UI.ViewModels
             OutputPane?.AddInformation(message);
         }
 
+        public void OutputMessage(OutputMessage message)
+        {
+            OutputPane?.AddMessage(message);
+        }
+
         public void OutputMessage(string message, double duration)
         {
             OutputPane?.AddSuccess(message, duration);
@@ -3073,27 +3081,37 @@ namespace DaxStudio.UI.ViewModels
         //
         public void SaveAs(SaveAsExtension saveAsExt)
         {
-            var fileWithoutExt = Path.GetFileNameWithoutExtension(FileName ?? _displayName);
-
-            // Configure save file dialog box
-            var dlg = new SaveFileDialog
+            try
             {
-                FileName = fileWithoutExt,
-                FilterIndex = (int)saveAsExt,
-                Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
-            };
+                var fileWithoutExt = Path.GetFileNameWithoutExtension(FileName ?? _displayName);
 
-            // Show save file dialog box
-            var result = dlg.ShowDialog();
+                // Configure save file dialog box
+                var dlg = new SaveFileDialog
+                {
+                    FileName = fileWithoutExt,
+                    FilterIndex = (int)saveAsExt,
+                    Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
+                };
 
-            // Process save file dialog box results 
-            if (result == true)
+                // Show save file dialog box
+                var result = dlg.ShowDialog();
+
+                // Process save file dialog box results 
+                if (result == true)
+                {
+                    // Save document 
+                    FileName = dlg.FileName;
+                    IsDiskFileName = true;
+                    DisplayName = Path.GetFileName(FileName);
+                    Save();
+                    _eventAggregator.PublishOnCurrentThreadAsync(new FolderOutputMessage($"{Path.GetFileName(dlg.FileName)} saved", Path.GetDirectoryName(dlg.FileName)));
+                }
+            }
+            catch (Exception ex)
             {
-                // Save document 
-                FileName = dlg.FileName;
-                IsDiskFileName = true;
-                DisplayName = Path.GetFileName(FileName);
-                Save();
+                // catch and report any errors while trying to save
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SaveAs), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
 
@@ -3715,6 +3733,13 @@ namespace DaxStudio.UI.ViewModels
             QueryResultsPane.ResultsIcon = icon;
         }
 
+        public void SetResultsMessage(string message, OutputTarget icon, string fileName)
+        {
+            QueryResultsPane.ResultsMessage = message;
+            QueryResultsPane.ResultsIcon = icon;
+            QueryResultsPane.ResultsFullFileName = fileName;
+        }
+
         public FindReplaceDialogViewModel FindReplaceDialog { get; set; }
         public GotoLineDialogViewModel GotoLineDialog { get; set; }
 
@@ -3851,6 +3876,26 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(OutputMessage message, CancellationToken cancellationToken)
         {
+
+            //if (message.MessageType == MessageType.Error)
+            //{
+
+
+            //    var loc = RegexHelper.GetQueryErrorLocation(message.Text);
+            //    if (loc.Line > 0 || loc.Column > 0)
+            //    {
+            //        var editor = GetEditor();
+            //        editor.Dispatcher.Invoke(() =>
+            //        {
+            //            editor.DisplayErrorMarkings(loc.Line, loc.Column, 1, message.Text);
+            //        });
+            //    }
+
+            //    if (message.ActivateOutput) ActivateOutput();
+            //}
+
+            OutputMessage(message);
+
             switch (message.MessageType)
             {
                 case MessageType.Error:
@@ -4675,6 +4720,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         await ExportAnalysisDataAsync(dlg.FileName, dictionaryPath, inputDictionaryPath);
                     }
+                    await _eventAggregator.PublishOnUIThreadAsync(new FolderOutputMessage($"{Path.GetFileName(dlg.FileName)} saved", Path.GetDirectoryName(dlg.FileName)));
                 }
                 finally
                 {

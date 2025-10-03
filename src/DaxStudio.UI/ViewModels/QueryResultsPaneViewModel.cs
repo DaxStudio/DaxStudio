@@ -541,6 +541,39 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ShowErrorMessage { get => !string.IsNullOrEmpty(ErrorMessage); }
         public TextLocation SelectionLocation { get; internal set; }
+        private string _resultsFullFileName;
+        public string ResultsFullFileName { get => _resultsFullFileName; 
+            internal set {
+                _resultsFullFileName = value;
+                var fileInfo = new System.IO.FileInfo(_resultsFullFileName);
+                ResultsFilePath = fileInfo.DirectoryName;
+                NotifyOfPropertyChange();
+            } 
+        }
+
+        private string _resultsFileName;
+        public string ResultsFileName
+        {
+            get => _resultsFileName;
+            internal set
+            {
+                _resultsFileName = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(() => ShowOpenFileLocation);
+            }
+        }
+
+        private string _resultsFilePath;
+        public string ResultsFilePath { get => _resultsFilePath; 
+            internal set { 
+                _resultsFilePath = value;
+                if (!_resultsFilePath.EndsWith("\\")) _resultsFilePath += "\\";
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(() => ShowOpenFileLocation);
+            } 
+        }
+
+        public bool ShowOpenFileLocation { get => !string.IsNullOrEmpty(ResultsFilePath) && System.IO.Directory.Exists(ResultsFilePath); }
 
         public void GotoError()
         {
@@ -559,6 +592,14 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(
                     new NavigateToLocationEvent(ErrorLocation.Line + lineOffset
                                                , ErrorLocation.Column + columnOffset));
+            }
+        }
+
+        public void OpenResultsFileLocation()
+        {
+            if (!string.IsNullOrEmpty(ResultsFilePath) && System.IO.Directory.Exists(ResultsFilePath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", ResultsFilePath);
             }
         }
     }

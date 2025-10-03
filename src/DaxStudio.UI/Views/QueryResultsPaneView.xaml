@@ -32,6 +32,28 @@
             <sel:ResultsGridCellTemplateSelector x:Key="ResultsGridCellTemplateSelector"/>
             <SolidColorBrush x:Key="SpinnerColorBrush" Color="White" />
 
+            <!-- Define the Hyperlink-Like Button Style -->
+            <Style x:Key="HyperlinkButtonStyle" TargetType="Button">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HotTrackBrushKey}}" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <TextBlock x:Name="TextBlock"
+                                Text="{TemplateBinding Content}"
+                                Foreground="{TemplateBinding Foreground}"
+                                Cursor="{TemplateBinding Cursor}" />
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="TextBlock" Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                                    <Setter TargetName="TextBlock" Property="TextDecorations" Value="Underline" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DefaultDataGridColumnHeaderStyle}">
                 <Setter Property="Padding" Value="6 0"/>
                 <Setter Property="MinHeight" Value="28"/>
@@ -269,7 +291,14 @@
                        Height="37"
                        Margin="0,0,10,0"
                        />
-                <TextBlock x:Name="ResultsMessage" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.Default.Fore}"></TextBlock>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock x:Name="ResultsMessage" VerticalAlignment="Center" Foreground="{DynamicResource Theme.Brush.Default.Fore}"></TextBlock>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding ShowOpenFileLocation, Converter={StaticResource BoolToVisibilityConverter}}">
+                        
+                        <Button cal:Message.Attach="[Click] = [OpenResultsFileLocation()]" Style="{StaticResource HyperlinkButtonStyle}" Content="{Binding ResultsFilePath}"/>
+                        <TextBlock x:Name="ResultsFileName" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
             <Label x:Name="SelectedWorkbook" Grid.Row="1" Padding="0 5 0 5" />
             <StackPanel Orientation="Horizontal" Grid.Row="2"

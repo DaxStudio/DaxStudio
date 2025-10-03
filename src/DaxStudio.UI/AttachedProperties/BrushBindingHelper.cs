@@ -38,6 +38,6 @@ namespace DaxStudio.UI.AttachedProperties
 
             return element.GetValue(ForegroundResourceKeyProperty);
         }
- 
+
     }
 }
