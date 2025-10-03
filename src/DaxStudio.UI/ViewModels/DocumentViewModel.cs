@@ -3078,27 +3078,37 @@ namespace DaxStudio.UI.ViewModels
         //
         public void SaveAs(SaveAsExtension saveAsExt)
         {
-            var fileWithoutExt = Path.GetFileNameWithoutExtension(FileName ?? _displayName);
-
-            // Configure save file dialog box
-            var dlg = new SaveFileDialog
+            try
             {
-                FileName = fileWithoutExt,
-                FilterIndex = (int)saveAsExt,
-                Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
-            };
+                var fileWithoutExt = Path.GetFileNameWithoutExtension(FileName ?? _displayName);
 
-            // Show save file dialog box
-            var result = dlg.ShowDialog();
+                // Configure save file dialog box
+                var dlg = new SaveFileDialog
+                {
+                    FileName = fileWithoutExt,
+                    FilterIndex = (int)saveAsExt,
+                    Filter = "DAX documents|*.dax|DAXX documents|*.daxx"
+                };
 
-            // Process save file dialog box results 
-            if (result == true)
+                // Show save file dialog box
+                var result = dlg.ShowDialog();
+
+                // Process save file dialog box results 
+                if (result == true)
+                {
+                    // Save document 
+                    FileName = dlg.FileName;
+                    IsDiskFileName = true;
+                    DisplayName = Path.GetFileName(FileName);
+                    Save();
+                    _eventAggregator.PublishOnCurrentThreadAsync(new FolderOutputMessage($"{Path.GetFileName(dlg.FileName)} saved", Path.GetDirectoryName(dlg.FileName)));
+                }
+            }
+            catch (Exception ex)
             {
-                // Save document 
-                FileName = dlg.FileName;
-                IsDiskFileName = true;
-                DisplayName = Path.GetFileName(FileName);
-                Save();
+                // catch and report any errors while trying to save
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SaveAs), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving: {ex.Message}"));
             }
         }
 
@@ -3718,6 +3728,13 @@ namespace DaxStudio.UI.ViewModels
         {
             QueryResultsPane.ResultsMessage = message;
             QueryResultsPane.ResultsIcon = icon;
+        }
+
+        public void SetResultsMessage(string message, OutputTarget icon, string fileName)
+        {
+            QueryResultsPane.ResultsMessage = message;
+            QueryResultsPane.ResultsIcon = icon;
+            QueryResultsPane.ResultsFullFileName = fileName;
         }
 
         public FindReplaceDialogViewModel FindReplaceDialog { get; set; }

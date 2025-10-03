@@ -41,6 +41,7 @@ namespace DaxStudio.UI.Interfaces
         bool ConnectedToPowerPivot { get; }
 
         void SetResultsMessage(string message, OutputTarget icon);
+        void SetResultsMessage(string message, OutputTarget icon, string fileName);
         IStatusBarMessage NewStatusBarMessage(string message);
         int RowCount { get; set; }
 
