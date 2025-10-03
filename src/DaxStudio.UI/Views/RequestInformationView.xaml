@@ -17,7 +17,7 @@
              d:DesignHeight="300" d:DesignWidth="400"
              Margin="0 -15 0 0"
              MinWidth="400"
-             MinHeight="300"
+             MinHeight="350"
             MaxWidth="600"
             MaxHeight="500">
     <ctrl:DaxStudioDialog.Resources>
@@ -75,6 +75,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -90,14 +91,17 @@
         <Label Content="Activity ID" 
                 Grid.Row="0"
                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-        <Label Content="Start Datetime" 
+        <Label Content="Request ID" 
                 Grid.Row="1"
                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-        <Label Content="Command Text" 
+        <Label Content="Start Datetime" 
                 Grid.Row="2"
                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-        <Label Content="Parameters"  Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}"
+        <Label Content="Command Text" 
                 Grid.Row="3"
+               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+        <Label Content="Parameters"  Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}"
+                Grid.Row="4"
                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
@@ -110,6 +114,16 @@
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
+            <TextBlock x:Name="RequestID"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+            <Button x:Name="CopyRequestID" Style="{StaticResource CopyButton}"
+                    cal:Message.Attach="[Event Click] = [Action Copy(RequestID)]"
+                    ToolTip="Copy RequestID to clipboard">
+                <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
+            </Button>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
             <TextBlock x:Name="StartDatetimeFormatted"
                        Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
             <Button x:Name="CopyStartDatetime" Style="{StaticResource CopyButton}"
@@ -118,7 +132,7 @@
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1">
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
             <TextBlock x:Name="CommandText" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="120" Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
             <Button x:Name="CopyCommandText" Style="{StaticResource CopyButton}"
                     cal:Message.Attach="[Event Click] = [Action Copy(CommandText)]"
@@ -127,7 +141,7 @@
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}">
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1" VerticalAlignment="Top" Visibility="{Binding ShowParameters, Converter={StaticResource BoolToCollapsedConverter}}">
             <TextBlock x:Name="Parameters" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
             <Button x:Name="CopyParameters" Style="{StaticResource CopyButton}"
                     cal:Message.Attach="[Event Click] = [Action Copy(Parameters)]" VerticalAlignment="Top" Margin="0 8 0 0"
@@ -135,7 +149,7 @@
                 <Image Source="{DynamicResource copy_toolbarDrawingImage}"/>
             </Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4" Grid.ColumnSpan="2">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Grid.ColumnSpan="2">
             <Button x:Name="Ok" Content="Ok" Margin="5,10" MinWidth="50" IsDefault="True" Style="{DynamicResource AccentButtonStyle}"/>
         </StackPanel>
     </Grid>

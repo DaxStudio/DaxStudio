@@ -1149,6 +1149,7 @@ namespace DaxStudio.UI.ViewModels
                             QueryEndDateTime = traceEvent.EndTime;
                             QueryStartDateTime = traceEvent.StartTime;
                             ActivityID = traceEvent.ActivityId;
+                            RequestID = traceEvent.RequestId;
                             UpdateTimelineTotalDuration(traceEvent);
                             break;
                         case DaxStudioTraceEventClass.QueryBegin:
@@ -1625,6 +1626,7 @@ namespace DaxStudio.UI.ViewModels
                 CommandText = this.CommandText,
                 ParallelStorageEngineEventsDetected = this.ParallelStorageEngineEventsDetected,
                 ActivityID = this.ActivityID,
+                RequestID = this.RequestID,
                 ErrorMessage = this.ErrorMessage,
                 TimelineTotalDuration = this.TimelineTotalDuration
             };
@@ -1894,6 +1896,17 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _activityId = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private string _requestId = string.Empty;
+        public string RequestID
+        {
+            get => _requestId;
+            set
+            {
+                _requestId = value;
                 NotifyOfPropertyChange();
             }
         }

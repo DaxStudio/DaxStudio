@@ -8,8 +8,10 @@ namespace DaxStudio.UI.Model
     {
         // 7 - added ObjectName
         // 8 - added ErrorMessage
-        public int FileFormatVersion { get { return 8; } }
+        // 9 - added RequestID 
+        public int FileFormatVersion { get { return 9; } }
         public string ActivityID { get; set; }
+        public string RequestID { get; set; }
         public long StorageEngineDuration {get;set;}
         public long StorageEngineNetParallelDuration { get; set; }
         public double  StorageEngineDurationPercentage { get;set; }

@@ -190,6 +190,7 @@ namespace DaxStudio.UI.ViewModels
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
                 {
                     ActivityID = traceEvent.ActivityId;
+                    RequestID = traceEvent.RequestId;
                     CommandText = traceEvent.TextData;
                     TotalDuration = traceEvent.Duration;
                     NotifyOfPropertyChange(() => TotalDuration);
@@ -359,6 +360,7 @@ namespace DaxStudio.UI.ViewModels
                 PhysicalQueryPlanRows = this.PhysicalQueryPlanRows,
                 LogicalQueryPlanRows = this.LogicalQueryPlanRows,
                 ActivityID = this.ActivityID,
+                RequestID = this.RequestID,
                 CommandText = this.CommandText,
                 Parameters = this.Parameters,
                 StartDatetime = this.StartDatetime
@@ -387,6 +389,7 @@ namespace DaxStudio.UI.ViewModels
             StartDatetime = m.StartDatetime;
             CommandText = m.CommandText;
             Parameters = m.Parameters;
+            RequestID = m.RequestID;
 
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
             NotifyOfPropertyChange(nameof(LogicalQueryPlanRows));
@@ -449,6 +452,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string ActivityID { get; set; }
 
+        public string RequestID { get; set; }
         public DateTime StartDatetime { get; set; }
 
         public string CommandText { get; set; }
