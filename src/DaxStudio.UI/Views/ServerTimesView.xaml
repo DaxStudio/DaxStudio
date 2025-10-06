@@ -61,16 +61,22 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                                 <RowDefinition/>
+                                <RowDefinition/>
                             </Grid.RowDefinitions>
                             <TextBlock>Start Time:</TextBlock>
-                            <TextBlock Grid.Row="1">Start Offset:</TextBlock>
-                            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                            <TextBlock Grid.Row="1">End Time:</TextBlock>
+                            <TextBlock Grid.Row="2">Start Offset:</TextBlock>
+                            <StackPanel Orientation="Horizontal" Grid.Row="3">
                                 <TextBlock>Duration:</TextBlock>
                                 <Border Background="{DynamicResource Theme.Brush.Accent}" Width="10" Margin="3"/>
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding StartTime,StringFormat='HH:mm:ss.fff' }"/>
-                            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding StartOffsetMs,StringFormat='#,0\m\s'}"/>
-                            <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Duration,StringFormat='#,0\m\s'}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding EndTime,StringFormat='HH:mm:ss.fff'}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding StartOffsetMs,StringFormat='#,0\m\s'}"/>
+                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
+                                <TextBlock Text="{Binding Duration,StringFormat='#,0\m\s'}"/>
+                                <TextBlock Margin="0 0 0 0" Text="{Binding DisplayDuration,StringFormat='\(#,0\m\s\)'}" FontStyle="Italic"/>
+                            </StackPanel>
                         </Grid>
                     </Setter.Value>
                 </Setter>
