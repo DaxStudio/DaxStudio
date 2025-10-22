@@ -174,5 +174,10 @@ namespace DaxStudio.CommandLine.UIStubs
                     throw new ArgumentOutOfRangeException("message.MessageType", message.MessageType, null);
             }
         }
+
+        public void SetResultsMessage(string message, OutputTarget icon, string fileName)
+        {
+            Log.Information(message);
+        }
     }
 }

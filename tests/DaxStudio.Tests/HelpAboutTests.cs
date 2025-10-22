@@ -22,7 +22,7 @@ namespace DaxStudio.Tests
                 var mockOptions = Substitute.For<IGlobalOptions>();
                 var hlp = new DaxStudio.UI.ViewModels.HelpAboutViewModel(stubEventAgg, stubVerChk, stubHost, mockOptions);
                 var ra = hlp.ReferencedAssemblies;
-                Assert.IsTrue(ra.Count >= 32);
+                Assert.IsGreaterThanOrEqualTo(32, ra.Count);
             }
         }
         [TestMethod]
@@ -40,7 +40,7 @@ namespace DaxStudio.Tests
                     System.Diagnostics.Debug.WriteLine(a.Key);
                 }
 
-                Assert.IsTrue(ra["DaxStudio.Interfaces"].Length > 0);
+                Assert.IsGreaterThan(0, ra["DaxStudio.Interfaces"].Length);
             }
         }
     }

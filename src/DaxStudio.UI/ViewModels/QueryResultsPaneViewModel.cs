@@ -1,10 +1,13 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using ICSharpCode.AvalonEdit.Document;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
@@ -534,8 +537,17 @@ namespace DaxStudio.UI.ViewModels
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
-                Clipboard.SetText(ErrorMessage);
-                _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
+                try
+                {
+                    Clipboard.SetText(ErrorMessage);
+                    _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
+                }
+                catch (Exception ex)
+                {
+                    var msg = $"Unable to copy error message to clipboard: {ex.Message}";
+                    _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    Log.Error(Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyError), msg);
+                }
             }
         }
 

@@ -145,7 +145,7 @@ SUMMARIZE (
         {
             var qi = new QueryInfo(testParam, new Mocks.MockEventAggregator());
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
-            Assert.AreEqual(14, qi.Parameters.Count);
+            Assert.HasCount(14, qi.Parameters);
         }
 
         [TestMethod]
@@ -156,7 +156,7 @@ table,
 table[email] = ""abcdefg @gmail.com"" || table[email] = @param)";
             var qi = new QueryInfo(testQuery2, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
-            Assert.AreEqual(1, qi.Parameters.Count);
+            Assert.HasCount(1, qi.Parameters);
         }
 
 
@@ -167,7 +167,7 @@ table[email] = ""abcdefg @gmail.com"" || table[email] = @param)";
 ADDCOLUMNS ( {""Hello""}, ""@test"", 42 )";
             var qi = new QueryInfo(testQuery, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
-            Assert.AreEqual(0, qi.Parameters.Count);
+            Assert.IsEmpty(qi.Parameters);
         }
 
         [TestMethod]
@@ -178,7 +178,7 @@ table,
 't@ble'[email] = ""abcdefg@gmail.com"" || table[email] = @param)";
             var qi = new QueryInfo(testQuery, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
-            Assert.AreEqual(1, qi.Parameters.Count);
+            Assert.HasCount(1, qi.Parameters);
         }
 
         [TestMethod]
@@ -189,7 +189,7 @@ table,
 table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
             var qi = new QueryInfo(testQuery, mockEventAggregator);
             //var dict = DaxHelper.ParseParams(testParam, new Mocks.MockEventAggregator() );
-            Assert.AreEqual(1, qi.Parameters.Count);
+            Assert.HasCount(1, qi.Parameters);
         }
 
         [TestMethod]
@@ -252,7 +252,7 @@ table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
             var finalQuery = qi.QueryWithMergedParameters;
 
             Assert.AreEqual("[value1]:\"Value1\" [value2]:\"Value2\" [value2]:(\"Value2\") [value1]:\"Value1\", \"Value1\"", finalQuery);
-            Assert.AreEqual(false, qi.NeedsParameterValues);
+            Assert.IsFalse(qi.NeedsParameterValues);
         }
 
         [TestMethod]
@@ -270,7 +270,7 @@ table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             var finalQuery = qi.QueryWithMergedParameters;
 
-            Assert.AreEqual(false, qi.NeedsParameterValues);
+            Assert.IsFalse(qi.NeedsParameterValues);
             Assert.AreEqual("evaluate {\"1\"}", finalQuery);
             
         }
@@ -318,7 +318,7 @@ table[em@il] = ""abcdefg@gmail.com"" || table[email] = @param)";
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             var finalQuery = qi.QueryWithMergedParameters;
 
-            Assert.AreEqual(false, qi.NeedsParameterValues);
+            Assert.IsFalse(qi.NeedsParameterValues);
             Assert.AreEqual("evaluate {1}", finalQuery);
 
         }
@@ -367,7 +367,7 @@ ORDER BY
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             var finalQuery = qi.QueryWithMergedParameters;
 
-            Assert.AreEqual(false, qi.NeedsParameterValues);
+            Assert.IsFalse(qi.NeedsParameterValues);
             Assert.AreEqual(expectedQuery, finalQuery);
 
         }
@@ -386,8 +386,8 @@ RETURN bracket
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             var finalQuery = qi.QueryWithMergedParameters;
 
-            Assert.AreEqual(true, qi.NeedsParameterValues);
-            Assert.AreEqual(1,qi.Parameters.Count);
+            Assert.IsTrue(qi.NeedsParameterValues);
+            Assert.HasCount(1, qi.Parameters);
             Assert.AreEqual("test", qi.Parameters["test"].Name);
 
         }
@@ -413,8 +413,8 @@ KEEPFILTERS( FILTER( ALL( Dates[Date] ) , Dates[Date] >= VALUE(@Start_Date) && D
             //var finalQuery = DaxHelper.replaceParamsInQuery(new StringBuilder(testQuery), dict);
             var finalQuery = qi.QueryWithMergedParameters;
 
-            Assert.AreEqual(true, qi.NeedsParameterValues);
-            Assert.AreEqual(3, qi.Parameters.Count);
+            Assert.IsTrue(qi.NeedsParameterValues);
+            Assert.HasCount(3, qi.Parameters);
             Assert.AreEqual("cust", qi.Parameters["cust"].Name);
             Assert.AreEqual("Start_Date", qi.Parameters["Start_Date"].Name);
             Assert.AreEqual("End_Date", qi.Parameters["End_Date"].Name);

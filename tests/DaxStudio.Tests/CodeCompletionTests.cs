@@ -12,12 +12,9 @@ using NSubstitute;
 
 namespace DaxStudio.Tests
 {
-    [TestClass]
+    [STATestClass]
     public class CodeCompletionTests
     {
-        
-
-       
 
         [TestMethod]
         public void TestCodeCompletionMidStatement()

@@ -51,7 +51,7 @@ namespace DaxStudio.Tests
             vm.ProcessAllEvents();
 
             // assert overlaps are detected
-            Assert.AreEqual(2, vm.StorageEngineEvents.Count);
+            Assert.HasCount(2, vm.StorageEngineEvents);
             Assert.AreEqual(75, vm.TotalDuration);
             Assert.AreEqual(35, vm.StorageEngineDuration);
             Assert.AreEqual(40, vm.FormulaEngineDuration);
@@ -74,7 +74,7 @@ namespace DaxStudio.Tests
             vm.ProcessAllEvents();
 
             // assert overlaps are detected
-            Assert.AreEqual(4, vm.StorageEngineEvents.Count);
+            Assert.HasCount(4, vm.StorageEngineEvents);
             Assert.AreEqual(75, vm.TotalDuration);
             // The test for StorageEngineNetParallelDuration is now obsolete
             Assert.AreEqual(40, vm.StorageEngineDuration); 
@@ -99,7 +99,7 @@ namespace DaxStudio.Tests
             vm.ProcessAllEvents();
 
             // assert overlaps are detected
-            Assert.AreEqual(4, vm.StorageEngineEvents.Count);
+            Assert.HasCount(4, vm.StorageEngineEvents);
             Assert.AreEqual(75, vm.TotalDuration);
 
 
@@ -108,7 +108,7 @@ namespace DaxStudio.Tests
             // The test for StorageEngineNetParallelDuration is now obsolete
             Assert.AreEqual(50, vm.StorageEngineNetParallelDuration, "If this returns 60 it is double counting overlapped events");
             Assert.AreEqual(25, vm.FormulaEngineDuration, "There should be 5ms at the start, 10ms in the middle and 20ms at the end");
-            Assert.AreEqual(true, vm.ParallelStorageEngineEventsDetected);
+            Assert.IsTrue(vm.ParallelStorageEngineEventsDetected);
         }
 
         [TestMethod]
@@ -125,7 +125,7 @@ namespace DaxStudio.Tests
            
             vm.ProcessAllEvents();
 
-            Assert.AreEqual(2, vm.StorageEngineEvents.Count);
+            Assert.HasCount(2, vm.StorageEngineEvents);
             Assert.AreEqual(75, vm.TotalDuration);
             Assert.AreEqual(35, vm.StorageEngineDuration);
             Assert.AreEqual(40, vm.FormulaEngineDuration);

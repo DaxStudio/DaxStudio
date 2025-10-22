@@ -158,7 +158,7 @@ namespace DaxStudio.Tests
 
 			Assert.AreEqual("Step 1", evt.Label);
 			Assert.AreEqual("AVERAGE(WorldBank[Value])", evt.Expression);
-			Assert.AreEqual(13, evt.Table.Rows.Count);
+			Assert.HasCount(13, evt.Table.Rows);
         }
 		[TestMethod]
 		public void ParseJson_1_input_8_output_Test() {
@@ -168,7 +168,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual("blah", evt.Label);
             Assert.AreEqual("FILTER('Product', 'Product'[Color] = [Value])", evt.Expression);
-            Assert.AreEqual(20, evt.Table.Rows.Count);
+            Assert.HasCount(20, evt.Table.Rows);
         }
 
 		[TestMethod]
@@ -180,7 +180,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual("customerLog", evt.Label);
             Assert.AreEqual("[Customer] & \", \" & [Country-Region]", evt.Expression);
-            Assert.AreEqual(5, evt.Table.Rows.Count);
+            Assert.HasCount(5, evt.Table.Rows);
         }
 
 

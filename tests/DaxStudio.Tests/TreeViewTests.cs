@@ -179,7 +179,7 @@ namespace DaxStudio.Tests
             var mockEventAggregator = Substitute.For<IEventAggregator>();
             var mockMetadata = Substitute.For<IMetadataPane>();
             var tt = m.TreeViewTables(_mockOptions, mockEventAggregator,mockMetadata);
-            Assert.AreEqual(7, tt.Count, "Correct Table Count");
+            Assert.HasCount(7, tt, "Correct Table Count");
 
 
             var tbl = tt.FirstOrDefault(x => x.Name == "Internet Sales");
@@ -188,7 +188,7 @@ namespace DaxStudio.Tests
  
             var folder = ((TreeViewColumn)tbl.Children.FirstOrDefault(x => ((TreeViewColumn)x).Name == "QTD Folder"));
             Assert.IsNotNull(folder, "Folder Object not found");
-            Assert.AreEqual(folder.Name,"QTD Folder");
+            Assert.AreEqual("QTD Folder", folder.Name);
 
             TreeViewColumn col = folder.Children.FirstOrDefault(x => x.Name == "Internet Current Quarter Margin") as TreeViewColumn;
             Assert.IsInstanceOfType(col, typeof(TreeViewColumn));

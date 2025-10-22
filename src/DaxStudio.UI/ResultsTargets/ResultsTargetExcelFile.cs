@@ -98,7 +98,6 @@ namespace DaxStudio.UI.ResultsTargets
 
                         using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
                         using (var xlsxWriter = new XlsxWriter( stream, 
-                                                                useZip64: runner.Options.XlsxUseZip64Compression ,  
                                                                 requireCellReferences: runner.Options.XlsxAlwaysWriteCellReferences))
                         {
                             while (moreResults)

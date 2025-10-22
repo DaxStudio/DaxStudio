@@ -162,7 +162,7 @@ namespace DaxStudio.Tests
             t.Wait();
             DaxStudio.UI.Model.DaxFormatterResult res = t.Result;
             Assert.AreEqual(0, res.FormattedDax.Length);
-            Assert.AreEqual(1, res.errors.Count);
+            Assert.HasCount(1, res.errors);
         }
 
         [TestMethod,Ignore]

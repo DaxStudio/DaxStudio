@@ -67,7 +67,7 @@ namespace DaxStudio.Tests
 			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions, mockWindowManager);
 			vm.TestPrepareLogicalQueryPlan(rawPlan);
 
-			Assert.AreEqual(21, vm.LogicalQueryPlanRows.Count);
+			Assert.HasCount(21, vm.LogicalQueryPlanRows);
 			Assert.AreEqual(22, vm.LogicalQueryPlanRows[0].NextSiblingRowNumber, "Row 1");
 			Assert.AreEqual(20, vm.LogicalQueryPlanRows[1].NextSiblingRowNumber, "Row 2");
 			Assert.AreEqual(14, vm.LogicalQueryPlanRows[2].NextSiblingRowNumber, "Row 3");
@@ -115,7 +115,7 @@ namespace DaxStudio.Tests
 			var vm = new QueryPlanTraceViewModelTester(mockEventAggregator, mockOptions,mockWindowManager);
 			vm.TestPrepareLogicalQueryPlan(rawPlan);
 
-			Assert.AreEqual(16, vm.LogicalQueryPlanRows.Count);
+			Assert.HasCount(16, vm.LogicalQueryPlanRows);
 			Assert.AreEqual(17, vm.LogicalQueryPlanRows[0].NextSiblingRowNumber, "Row 1");
 			Assert.AreEqual(17, vm.LogicalQueryPlanRows[1].NextSiblingRowNumber, "Row 2");
 			Assert.AreEqual(17, vm.LogicalQueryPlanRows[2].NextSiblingRowNumber, "Row 3");

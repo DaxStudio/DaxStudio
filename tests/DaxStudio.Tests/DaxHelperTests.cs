@@ -14,7 +14,7 @@ namespace DaxStudio.Tests
             var mockEventAgg = new Mocks.MockEventAggregator();
             var queryInfo = new QueryInfo(qry, mockEventAgg);
             
-            Assert.AreEqual(1, queryInfo.Parameters.Count);
+            Assert.HasCount(1, queryInfo.Parameters);
             Assert.AreEqual("param", queryInfo.Parameters["param"].Name);
         }
 
@@ -27,7 +27,7 @@ namespace DaxStudio.Tests
             var mockEventAgg = new Mocks.MockEventAggregator();
             var queryInfo = new QueryInfo(qry, mockEventAgg);
 
-            Assert.AreEqual(1, queryInfo.Parameters.Count);
+            Assert.HasCount(1, queryInfo.Parameters);
             Assert.AreEqual("param2", queryInfo.Parameters["param2"].Name);
         }
 
@@ -43,7 +43,7 @@ namespace DaxStudio.Tests
             var mockEventAgg = new Mocks.MockEventAggregator();
             var queryInfo = new QueryInfo(qry, mockEventAgg);
 
-            Assert.AreEqual(1, queryInfo.Parameters.Count);
+            Assert.HasCount(1, queryInfo.Parameters);
             Assert.AreEqual("param3", queryInfo.Parameters["param3"].Name);
         }
 
@@ -74,7 +74,7 @@ namespace DaxStudio.Tests
                 "IF(LEN(\"value3\")>0\n" +
                  ",FILTER(table, column = \"value3\"))";
 
-            Assert.AreEqual(1, queryInfo.Parameters.Count);
+            Assert.HasCount(1, queryInfo.Parameters);
             Assert.AreEqual("param3", queryInfo.Parameters["param3"].Name);
             StringAssertion.ShouldEqualWithDiff(expectedQry, queryInfo.QueryWithMergedParameters,DiffStyle.Full);
             

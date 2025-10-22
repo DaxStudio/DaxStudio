@@ -117,10 +117,10 @@
       <Version>4.0.230</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.104.1</Version>
+      <Version>19.106.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.104.1</Version>
+      <Version>19.106.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
       <Version>2.4.3</Version>

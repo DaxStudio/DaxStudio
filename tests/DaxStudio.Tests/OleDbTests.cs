@@ -16,12 +16,12 @@ namespace DaxStudio.Tests
             try
             {
                 conn.Open();
-                Assert.IsTrue(conn.State == System.Data.ConnectionState.Open);
+                Assert.AreEqual(System.Data.ConnectionState.Open, conn.State);
                 conn.Close();
             }
             catch (Exception ex)
             {
-                Assert.Fail("Exception Opening Connection: {0}", ex.Message);
+                Assert.Fail($"Exception Opening Connection: {ex.Message}");
             }
         }
 
