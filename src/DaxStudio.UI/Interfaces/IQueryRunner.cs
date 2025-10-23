@@ -1,5 +1,6 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using System.Collections.Generic;
 using System.Data;
@@ -24,6 +25,7 @@ namespace DaxStudio.UI.Interfaces
         DataSet ResultsDataSet { get; set; }
         void OutputMessage(string message);
         void OutputMessage(string message, double duration);
+        void OutputMessage(OutputMessage message);
         void OutputWarning(string warning);
         void OutputError(string errorMessage);
         void OutputError(string errorMessage, double duration);
@@ -39,6 +41,7 @@ namespace DaxStudio.UI.Interfaces
         bool ConnectedToPowerPivot { get; }
 
         void SetResultsMessage(string message, OutputTarget icon);
+        void SetResultsMessage(string message, OutputTarget icon, string fileName);
         IStatusBarMessage NewStatusBarMessage(string message);
         int RowCount { get; set; }
 

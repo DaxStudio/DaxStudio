@@ -11,9 +11,8 @@
              xmlns:behaviours="clr-namespace:DaxStudio.UI.Behaviours"
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-                               
-             mc:Ignorable="d" 
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties" xmlns:events="clr-namespace:DaxStudio.UI.Events"
+                               mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
         <conv:DateTimeToHhmmssConverter x:Key="DateTimeToHHHMMSS"></conv:DateTimeToHhmmssConverter>
@@ -46,7 +45,11 @@
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Padding" Value="8 0"/>
         </Style>
-
+        
+        <Style TargetType="{x:Type FlowDocument}">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
         <!-- BasedOn="{StaticResource {x:Type ListViewItem}}" 
         BasedOn="{StaticResource DefaultGridViewItemStyle}"
         -->
@@ -97,8 +100,62 @@
                             cal:Message.Attach="Clear()" />
                     </ContextMenu>
                 </ListView.ContextMenu>
-            <ListView.View>
-                <GridView>
+                <ListView.Resources>
+                    <DataTemplate DataType="{x:Type events:FolderOutputMessage}">
+                        <!--<controls:BindableRichTextBox 
+                            VerticalAlignment="Top"
+                            Margin="0,0,2,2"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            IsDocumentEnabled="True"
+                            IsReadOnly="True"
+                            IsReadOnlyCaretVisible="True"
+                            Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                            Document="{Binding Document, Mode=OneTime}"
+                            MaxHeight="100"
+                            VerticalScrollBarVisibility="Disabled"
+                            >
+                        </controls:BindableRichTextBox>-->
+                        <FlowDocumentScrollViewer Document="{Binding Document}"
+                                                  Margin="0,2"
+                                                  VerticalAlignment="Top"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  MaxHeight="100"
+                                                  FontFamily="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=FontFamily}"
+                                                  FontSize="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=FontSize}"/>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type events:LocationOutputMessage}">
+                        <FlowDocumentScrollViewer 
+                            VerticalAlignment="Top"
+                            Margin="0,2"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{DynamicResource Theme.Brush.Log.Error}"
+                            Document="{Binding Document, Mode=OneTime}"
+                            MaxHeight="100"
+                            VerticalScrollBarVisibility="Auto">
+                        </FlowDocumentScrollViewer>
+
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type events:OutputMessage}">
+                        <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                        <TextBlock TextWrapping="Wrap" 
+                               ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}"
+                               HorizontalAlignment="Stretch" 
+                               TextTrimming="None" 
+                               Text="{Binding Text, Mode=OneTime}"
+                               />
+                        </ScrollViewer>
+                    </DataTemplate>
+                </ListView.Resources>
+                <ListView.View>
+                    
+                    <GridView>
+                    
                     <!-- Icon -->
                     <GridViewColumn Header="" Width="Auto">
                         <GridViewColumn.CellTemplate>
@@ -147,7 +204,8 @@
                                 <Grid HorizontalAlignment="Right">
                                     <TextBlock  HorizontalAlignment="Right" 
                                             ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}"
-                                            Text="{Binding DurationString, Mode=OneTime}" ToolTip="{Binding DurationTooltip, Mode=OneTime}"/>
+                                            Text="{Binding DurationString, Mode=OneTime}" 
+                                            ToolTip="{Binding DurationTooltip, Mode=OneTime}"/>
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -159,20 +217,10 @@
                                 <TextBlock Text="Message" Padding="8 0" FontWeight="Bold"/>
                             </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
-                            <DataTemplate x:Name="Text">
-                                <Label 
-                                    cal:Message.Attach="[Event MouseDoubleClick] = [Action MessageDoubleClick($dataContext)]"
-                                    Background="Transparent"
-                                    VerticalAlignment="Top"
-                                    Margin="5,0,2,2"
-                                    Padding="0">
-                                    <TextBlock TextWrapping="Wrap" 
-                                               ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}"
-                                               HorizontalAlignment="Stretch" 
-                                               TextTrimming="None" 
-                                               Text="{Binding Text, Mode=OneTime}"/>
-                                </Label>
-                            </DataTemplate>
+                            
+                                <DataTemplate x:Name="Text" DataType="{x:Type events:LocationOutputMessage}">
+                                    <ContentControl Content="{Binding}" />
+                                </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                    

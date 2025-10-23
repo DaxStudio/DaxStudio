@@ -62,7 +62,7 @@
             <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="7,5" HorizontalAlignment="Center">
                 <Button x:Name="RemoveDirectQueryCode" IsDefault="True" FontSize="16" Style="{DynamicResource AccentButtonStyle}" Margin="4">_DAX Query Only</Button>
                 <Button x:Name="KeepDirectQueryCode"  FontSize="16" Style="{DynamicResource DefaultButtonStyle}" Margin="4">_Both DAX and DirectQuery</Button>
-                <Button x:Name="Cancel" IsCancel="True" FontSize="16" Style="{DynamicResource DefaultButtonStyle}" Margin="4">_Cancel</Button>
+                <Button x:Name="Close" IsCancel="True" FontSize="16" Style="{DynamicResource DefaultButtonStyle}" Margin="4">_Cancel</Button>
             </StackPanel>
         <ui:ToggleSwitch  x:Name="RememberChoice" Grid.Row="3" HorizontalAlignment="Center" Margin="10,10,10,20">
             <ui:ToggleSwitch.OnContent>

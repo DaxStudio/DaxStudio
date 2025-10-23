@@ -1,0 +1,36 @@
+﻿using DaxStudio.Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DaxStudio.Tests
+{
+    [TestClass]
+    public class AccessTokenTests
+    {
+        [TestMethod]
+        public void HostPostfixTest()
+        {
+            var testCases = new Dictionary<string, Tuple<string,string>>
+            {
+                { "asazure://swedencentral.asazure.windows.net/contoso", new Tuple<string,string>("asazure.windows.net", "cf710c6e-dfcc-4fa8-a093-d47294e44c66") },
+                { "asazure://southafricanorth.asazure.windows.net/contoso", new Tuple<string,string>("asazure.windows.net", "cf710c6e-dfcc-4fa8-a093-d47294e44c66") },
+                { "powerbi://api.powerbi.com/v1.0/myorg/Contoso", new Tuple<string,string>("api.powerbi.com", "cf710c6e-dfcc-4fa8-a093-d47294e44c66") },
+                { "powerbi://api.powerbi.com/v1.0/myorg/", new Tuple<string,string>("api.powerbi.com", "cf710c6e-dfcc-4fa8-a093-d47294e44c66") },
+                { "powerbi://pbidedicated.usgovcloudapi.net/myorg/", new Tuple<string,string>("pbidedicated.usgovcloudapi.net", "ec3681c2-6e7d-472a-b23b-8be15bd25c15") },
+                { "powerbi://api.powerbigov.us/v1.0/myorg/DanE%20PBICAT%20demo", new Tuple<string,string>("api.powerbigov.us", "ec3681c2-6e7d-472a-b23b-8be15bd25c15")  }
+            };
+
+            foreach (var testCase in testCases)
+            {
+                var found = DaxStudio.Common.EntraIdHelper.TryFindAuthenticationInformation(new Uri(testCase.Key),out var record);
+                Assert.IsTrue(found, $"Failed to find authentication information for {testCase.Key}");
+                Assert.AreEqual(testCase.Value.Item1, record.DomainPostfix, "DomainPostFix mismatch");
+                Assert.AreEqual(testCase.Value.Item2, record.ApplicationId,"ApplicationId mismatch");
+            }
+        }
+    }
+}

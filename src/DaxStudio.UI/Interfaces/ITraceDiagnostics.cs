@@ -8,5 +8,6 @@ namespace DaxStudio.UI.Interfaces
         DateTime StartDatetime { get; }
         string CommandText { get; set; }
         string Parameters { get;set; }
+        string RequestID { get; set; }
     }
 }

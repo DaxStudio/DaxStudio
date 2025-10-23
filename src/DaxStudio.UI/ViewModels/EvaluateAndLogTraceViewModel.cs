@@ -348,8 +348,13 @@ namespace DaxStudio.UI.ViewModels
             Label = item.Label;
             Expression = item.Expression;
             Notice = item.Notice;
-            var row1input = item.Data[0].Input;
-            var row1output = item.Data[0].Output;
+            var row1input = new List<object>() { "n/a" };
+            var row1output = new List<object>() { "n/a" };
+            if (item.Data != null)
+            {
+                row1input = item.Data[0].Input;
+                row1output = item.Data[0].Output;
+            }
             var inputIdx = 0;
             var outputIdx = 0;
             bool isScalar = false;

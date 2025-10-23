@@ -190,6 +190,7 @@ namespace DaxStudio.UI.ViewModels
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryEnd)
                 {
                     ActivityID = traceEvent.ActivityId;
+                    RequestID = traceEvent.RequestId;
                     CommandText = traceEvent.TextData;
                     TotalDuration = traceEvent.Duration;
                     NotifyOfPropertyChange(() => TotalDuration);
@@ -228,7 +229,7 @@ namespace DaxStudio.UI.ViewModels
             foreach (var row in logicalQueryPlanRows)
             {
 
-                if (row.Level <= prevLevel && siblingStack.Any())
+                if (row.Level <= prevLevel && siblingStack.Count > 0)
                 {
                     if (row.Level == prevLevel)
                     {
@@ -247,7 +248,7 @@ namespace DaxStudio.UI.ViewModels
                                 prev.NextSiblingRowNumber = row.RowNumber;
                             }
                             if (prev.Level <= row.Level) break;
-                            if (!siblingStack.Any()) break;
+                            if (siblingStack.Count == 0) break;
                         }
                     }
                     
@@ -259,7 +260,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // anything remaining on the stack will cover all operations 
-            while (siblingStack.Any())
+            while (siblingStack.Count > 0)
             {
                 var row = siblingStack.Pop();
                 row.NextSiblingRowNumber = prevRow.RowNumber + 1;
@@ -359,6 +360,7 @@ namespace DaxStudio.UI.ViewModels
                 PhysicalQueryPlanRows = this.PhysicalQueryPlanRows,
                 LogicalQueryPlanRows = this.LogicalQueryPlanRows,
                 ActivityID = this.ActivityID,
+                RequestID = this.RequestID,
                 CommandText = this.CommandText,
                 Parameters = this.Parameters,
                 StartDatetime = this.StartDatetime
@@ -387,6 +389,7 @@ namespace DaxStudio.UI.ViewModels
             StartDatetime = m.StartDatetime;
             CommandText = m.CommandText;
             Parameters = m.Parameters;
+            RequestID = m.RequestID;
 
             NotifyOfPropertyChange(nameof(PhysicalQueryPlanRows));
             NotifyOfPropertyChange(nameof(LogicalQueryPlanRows));
@@ -449,6 +452,7 @@ namespace DaxStudio.UI.ViewModels
 
         public string ActivityID { get; set; }
 
+        public string RequestID { get; set; }
         public DateTime StartDatetime { get; set; }
 
         public string CommandText { get; set; }

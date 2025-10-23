@@ -13,16 +13,20 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Xml;
 using Tom = Microsoft.AnalysisServices;
 
 namespace DaxStudio.Common
@@ -33,19 +37,19 @@ namespace DaxStudio.Common
         private static IPublicClientApplication _clientApp;
         //private static string ClientId = "90fd9dec-463e-4e03-8cbe-8f0baa9bb7e8";
         //private static string ClientId = "7f67af8a-fedc-4b08-8b4e-37c4d127b6cf";  // PBI Desktop Client ID
-        private static string ClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
-        private static string Instance = "https://login.microsoftonline.com/organizations";
+        private static string DefaultClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
+        private static string DefaultAuthority = "https://login.microsoftonline.com/organizations";
         
         private static Regex regexGuid = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
         private static IEnumerable<string> powerbiScope = new List<string>() { "https://analysis.windows.net/powerbi/api/.default" };
         private static IEnumerable<string> asazureScope = new List<string>() { "https://*.asazure.windows.net/.default" };
 
-        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,string tenantId)
+        public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
         {
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp(tenantId);
+            var app = await GetPublicClientAppAsync(context);
             IAccount firstAccount = null;
             var accounts = await app.GetAccountsAsync();
 
@@ -103,15 +107,25 @@ namespace DaxStudio.Common
             return authResult;
         }
 
-        public static IPublicClientApplication GetPublicClientApp(string tenantId)
+        public static async Task<IPublicClientApplication> GetPublicClientAppAsync(AccessTokenContext context)
         {
             //if (_clientApp != null) return _clientApp;
 
             BrokerOptions brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
 
-            var authority = ReplaceTenantInInstance(Instance, tenantId);
+           
+            if (!TryFindAuthenticationInformation(new Uri ($"powerbi://{context.DomainPostfix}"), out var authenticationInformation))
+                throw new ArgumentException($"Could not find authentication information for domain postfix: {context.DomainPostfix}", nameof(context.DomainPostfix));
 
-            _clientApp = PublicClientApplicationBuilder.Create(ClientId)
+            var defaultAuthority = authenticationInformation.Authority;
+
+            var authority = ReplaceTenantInInstance(defaultAuthority, context.TenantId);
+
+            var clientId = authenticationInformation.ApplicationId;
+
+            Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetPublicClientAppAsync), $"Using Authority: {authority}, ClientId: {clientId}, DomainPostfix: {context.DomainPostfix}, TenantId: {context.TenantId}");
+
+            _clientApp = PublicClientApplicationBuilder.Create(clientId)
                 //.WithAuthority($"{Instance}{Tenant}")
                 .WithAuthority(authority)
                 .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
@@ -119,13 +133,14 @@ namespace DaxStudio.Common
                 .WithBroker(brokerOptions)
                 .Build();
 
-            MsalCacheHelper cacheHelper = CreateCacheHelperAsync().GetAwaiter().GetResult();
+            MsalCacheHelper cacheHelper = await CreateCacheHelperAsync();
             
             // Let the cache helper handle MSAL's cache, otherwise the user will be prompted to sign-in every time.
             cacheHelper.RegisterCache(_clientApp.UserTokenCache);
 
             return _clientApp;
         }
+
 
         private static Uri ReplaceTenantInInstance(string instance, string tenantId)
         {
@@ -137,12 +152,32 @@ namespace DaxStudio.Common
             return new Uri(instance.Replace("organizations", tenantId));
         }
 
-        public static async Task<(AuthenticationResult,string)> PromptForAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, string serverName)
+        public static async Task<(AuthenticationResult,AccessTokenContext)> PromptForAccountAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope, string serverName)
         {
 
-            var scope = GetScope(tokenScope);
+            IEnumerable<string> scope = GetScope(tokenScope);
             var tenantId = GetTenantIdFromServerName(serverName);
-            var app = GetPublicClientApp(tenantId);
+
+            var authInfo = GetAuthenticationInformationFromUri(new Uri( serverName));
+
+            // override the scope if the authentication information contains a ResourceId
+            if (!string.IsNullOrEmpty(authInfo.ResourceId))
+                scope = authInfo.GetDefaultScopes();
+
+            var context = new AccessTokenContext
+            {
+                TokenScope = tokenScope,
+                TenantId = tenantId,
+                DomainPostfix = authInfo.DomainPostfix,
+                Scope = scope
+            };
+
+            if (Log.IsEnabled(Serilog.Events.LogEventLevel.Debug))
+                Log.Debug("{class} {method} Prompting user to sign-in interactively. Authority: {authority}, ClientId: {applicationId}, DomainPostfix: {domainPostfix}, TenantId: {tenantId} Scope: {@scope}",
+                            nameof(EntraIdHelper), nameof(PromptForAccountAsync), authInfo.Authority, authInfo.ApplicationId, authInfo.DomainPostfix, tenantId, scope);
+
+            var app = await GetPublicClientAppAsync(context);
+
             try
             {
                 var authResult = await app.AcquireTokenInteractive(scope)
@@ -152,14 +187,117 @@ namespace DaxStudio.Common
                             .WithPrompt(Prompt.SelectAccount)
                             .ExecuteAsync();
                 options.LastUsedUPN = authResult.Account.Username;
-                return (authResult, tenantId);
+                context.Username = authResult.Account.Username;
+                return (authResult, context);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), "Error getting user token interactively");
                 throw;
-                return (null, string.Empty);
+                return (null, null);
             }
+        }
+
+        internal static AuthenticationInformationRecord GetAuthenticationInformationFromUri(Uri serverName)
+        {
+            if (serverName == null) throw new ArgumentNullException(nameof(serverName));
+            
+            var record = (AuthenticationInformationRecord)null;
+            if (!TryFindAuthenticationInformation(serverName, out record))
+                throw new ArgumentException($"Could not find authentication information for server: {serverName}", nameof(serverName));
+
+
+
+            return record;
+        }
+
+        private static AuthenticationInformationRecord[] remoteSecurityConfig;
+        private static AuthenticationInformationRecord[] embeddedSecurityConfig;
+
+        private static AuthenticationInformationRecord[] GetAuthenticationInformation(        
+            bool isEmbeddedInfo)
+        {
+            if (isEmbeddedInfo)
+            {
+                Log.Verbose(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetAuthenticationInformation), "Getting authentication information from embedded config");
+                if (embeddedSecurityConfig == null)
+                {
+                    Assembly executingAssembly = Assembly.GetExecutingAssembly();
+                    using (Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(((IEnumerable<string>)executingAssembly.GetManifestResourceNames()).FirstOrDefault<string>((Func<string, bool>)(name => name.EndsWith("ASAzureSecurityConfig.xml")))))
+                        embeddedSecurityConfig = DeserializeAuthenticationInformation(manifestResourceStream);
+                }
+                return embeddedSecurityConfig;
+            }
+
+            Log.Verbose(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetAuthenticationInformation), "Getting authentication information from remote config");
+            if (remoteSecurityConfig == null)
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    try
+                    {
+                        using (Stream info = (Stream)new MemoryStream(webClient.DownloadData("https://global.asazure.windows.net/ASAzureSecurityConfig.xml")))
+                            remoteSecurityConfig = DeserializeAuthenticationInformation(info);
+                    }
+                    catch (WebException ex)
+                    {
+                        remoteSecurityConfig = new AuthenticationInformationRecord[0];
+                    }
+                }
+            }
+            return remoteSecurityConfig;
+        }
+
+  
+
+        internal static bool TryFindAuthenticationInformation(
+            Uri dataSource,
+            out AuthenticationInformationRecord record)
+        {
+            record = (AuthenticationInformationRecord)null;
+            return TryFindAuthenticationInformation(dataSource, GetAuthenticationInformation(true), out record) || TryFindAuthenticationInformation(dataSource, GetAuthenticationInformation(false), out record);
+        }
+
+        private static bool TryFindAuthenticationInformation(
+                      Uri dataSource,
+                      AuthenticationInformationRecord[] knownRecords,
+                      out AuthenticationInformationRecord record)
+        {
+            var host = dataSource.Host;
+            record = (AuthenticationInformationRecord)null;
+            for (int index = 0; index < knownRecords.Length; ++index)
+            {
+                if (host.EndsWith(knownRecords[index].DomainPostfix, StringComparison.InvariantCultureIgnoreCase)
+                    && (record == null || knownRecords[index].DomainPostfix.Length > record.DomainPostfix.Length))
+                {
+                    record = knownRecords[index];
+                    record.Authority = record.Authority.Replace("/common", "/organizations");
+                    if (string.IsNullOrWhiteSpace(record.Authority)) {
+                        Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No Authority found in config for {dataSource}, using default ADOMD Authority");
+                        record.Authority = DefaultAuthority; 
+                    }
+                    if (string.IsNullOrWhiteSpace(record.ApplicationId)) { 
+                        Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No ApplicationId found in config for {dataSource}, using default ADOMD ClientId");
+                        record.ApplicationId = DefaultClientId; 
+                    }
+                    if (string.IsNullOrWhiteSpace(record.ResourceId))
+                    {
+                        Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No Resource found in config for {dataSource}, generating from dataSource");
+                        record.ResourceId = string.Format("https://{0}", dataSource.Host);
+                    }
+                    else
+                    {
+                        record.ResourceId = new Uri(record.ResourceId).AbsoluteUri;
+                    }
+                }
+            }
+            return record != null;
+        }
+
+        private static AuthenticationInformationRecord[] DeserializeAuthenticationInformation(  Stream info)
+        {
+            using (XmlDictionaryReader textReader = XmlDictionaryReader.CreateTextReader(info, new XmlDictionaryReaderQuotas()))
+                return (AuthenticationInformationRecord[])new DataContractSerializer(typeof(AuthenticationInformationRecord[]), "AuthenticationInformations", string.Empty).ReadObject(textReader, true);
         }
 
         public static string GetTenantIdFromServerName(string serverName)
@@ -252,20 +390,6 @@ namespace DaxStudio.Common
             }
         }
 
-        public static async Task SignOutAsync()
-        {
-            // TODO - will the app still have the same list of accounts if we 
-            //        have connected to different tenants?
-            var app = GetPublicClientApp(string.Empty);
-
-
-            IAccount firstAccount = (await app.GetAccountsAsync()).FirstOrDefault();
-            if (firstAccount == null)
-            {
-                return;
-            }
-            await app.RemoveAsync(firstAccount);
-        }
 
         private static async Task<MsalCacheHelper> CreateCacheHelperAsync()
         {
@@ -284,12 +408,6 @@ namespace DaxStudio.Common
             return cacheHelper;
         }
 
-        public static async Task<IEnumerable<IAccount>> GetAccountsAsync()
-        {
-            var app = GetPublicClientApp(string.Empty);
-            var accounts = await app.GetAccountsAsync();
-            return accounts;
-        }
 
         private struct TokenDetails
         {
@@ -310,34 +428,20 @@ namespace DaxStudio.Common
             public AccessTokenContext UserContext;
         }
 
-        public static Tom.AccessToken RefreshToken(Tom.AccessToken token)
+        public static async Task<Tom.AccessToken> RefreshToken(Tom.AccessToken token)
         {
             var details = new TokenDetails(token);
-            var authResult = RefreshTokenInternal(details);
+            var authResult = await RefreshTokenInternalAsync(details);
             Tom.AccessToken newToken = new Tom.AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
 
-        public static AccessToken RefreshToken(AccessToken token)
+        public static async Task<AccessToken> RefreshToken(AccessToken token)
         {
             var details = new TokenDetails(token);
-            var authResult = RefreshTokenInternal(details);
+            var authResult = await RefreshTokenInternalAsync(details);
             AccessToken newToken = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
-        }
-
-
-        public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, string username, AccessTokenScope scope, string tenantId)
-        {
-            // TODO
-            var context = new AccessTokenContext
-            {
-                UserName = username,
-                TokenScope = scope,
-                TenantId = tenantId
-            };
-            var accessToken = new AccessToken(token, expiry, context);
-            return accessToken;
         }
 
         public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
@@ -346,14 +450,14 @@ namespace DaxStudio.Common
             return accessToken;
         }
 
-        private static AuthenticationResult RefreshTokenInternal(TokenDetails token)
+        private static async Task<AuthenticationResult> RefreshTokenInternalAsync(TokenDetails token)
         {
-            var lastUpn = (token.UserContext?.UserName) ?? string.Empty;
+            var lastUpn = (token.UserContext?.Username) ?? string.Empty;
 
             AuthenticationResult authResult = null;
-            var app = GetPublicClientApp(token.UserContext.TenantId);
+            var app = await GetPublicClientAppAsync(token.UserContext);
             IAccount firstAccount = null;
-            var accounts = app.GetAccountsAsync().Result;
+            var accounts = await app.GetAccountsAsync();
 
             // if the user signed-in before, try to get that account info from the cache
             if (!string.IsNullOrEmpty(lastUpn))
@@ -361,7 +465,7 @@ namespace DaxStudio.Common
                 firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.CurrentCultureIgnoreCase));
             }
 
-            var scope = GetScope(token);
+            var scope = token.UserContext.Scope;
 
             try
             {
@@ -444,4 +548,38 @@ namespace DaxStudio.Common
         [DataMember(Name = "tenantId")]
         public string TenantId { get; set; }
     }
+
+    [DataContract(Name = "AuthenticationInformation", Namespace = "")]
+    sealed class AuthenticationInformationRecord
+    {
+        [DataMember(Name = "DomainPostfix", Order = 0)]
+        public string DomainPostfix { get; private set; }
+
+        [DataMember(Name = "Authority", Order = 1)]
+        public string Authority { get; internal set; }
+
+        [DataMember(Name = "Authority.v2", Order = 2, EmitDefaultValue = true)]
+        public string Authority2 { get; private set; }
+
+        [DataMember(Name = "ApplicationId", Order = 3)]
+        public string ApplicationId { get; internal set; }
+
+        [DataMember(Name = "ResourceId", Order = 4, EmitDefaultValue = true)]
+        public string ResourceId { get; internal set; }
+
+
+        internal IEnumerable<string> GetDefaultScopes()
+        {
+            return (IEnumerable<string>)new string[1]
+            {
+                string.Format("{0}/.default", ResourceId)
+            };
+        }
+    
+        internal string GetTokenCacheKey()
+        {
+            return string.Format((IFormatProvider)CultureInfo.InvariantCulture, "{0}|{1}|{2}", (object)this.Authority, (object)this.ApplicationId, (object)this.ResourceId);
+        }
+    }
+
 }

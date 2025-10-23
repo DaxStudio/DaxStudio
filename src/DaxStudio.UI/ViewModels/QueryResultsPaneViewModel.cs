@@ -7,6 +7,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using ICSharpCode.AvalonEdit.Document;
 using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
@@ -299,15 +300,13 @@ namespace DaxStudio.UI.ViewModels
         private void CheckSelectionAndCopy(object source)
         {
             var selectionSet = false;
-            DataGrid grid = null;
             if (source == null) return;
             if (source is MenuItem menu)
             {
                 if (menu.Parent is ContextMenu ctxMenu)
                 {
-                    if (ctxMenu.PlacementTarget is DataGrid)
+                    if (ctxMenu.PlacementTarget is DataGrid grid)
                     {
-                        grid = (DataGrid)ctxMenu.PlacementTarget;
                         if (grid.SelectedCells.Count == 0)
                         {
                             // if this is a grid and nothing is selected
@@ -316,18 +315,20 @@ namespace DaxStudio.UI.ViewModels
                             grid.Focus();
                             selectionSet = true;
                         }
+
+                        ApplicationCommands.Copy.Execute(null, null);
+
+                        if (selectionSet)
+                        {
+                            // if we set the selection as part of the copy command 
+                            // then we should clear it
+                            grid.SelectedCells.Clear();
+                        }
                     }
                 }
             }
 
-            ApplicationCommands.Copy.Execute(null, null);
 
-            if (selectionSet)
-            {
-                // if we set the selection as part of the copy command 
-                // then we should clear it
-                grid.SelectedCells.Clear();
-            }
         }
 
         public void CopyingRowClipboardContent(object sender, DataGridRowClipboardEventArgs e)
@@ -541,16 +542,50 @@ namespace DaxStudio.UI.ViewModels
                     Clipboard.SetText(ErrorMessage);
                     _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Error, $"Failed to copy error message to clipboard: {ex.Message}"));
-                    Log.Error(ex, Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyError),"Failed to copy error message to clipboard");
+                    var msg = $"Unable to copy error message to clipboard: {ex.Message}";
+                    _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    Log.Error(Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyError), msg);
                 }
             }
         }
 
         public bool ShowErrorMessage { get => !string.IsNullOrEmpty(ErrorMessage); }
         public TextLocation SelectionLocation { get; internal set; }
+        private string _resultsFullFileName;
+        public string ResultsFullFileName { get => _resultsFullFileName; 
+            internal set {
+                _resultsFullFileName = value;
+                var fileInfo = new System.IO.FileInfo(_resultsFullFileName);
+                ResultsFilePath = fileInfo.DirectoryName;
+                NotifyOfPropertyChange();
+            } 
+        }
+
+        private string _resultsFileName;
+        public string ResultsFileName
+        {
+            get => _resultsFileName;
+            internal set
+            {
+                _resultsFileName = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(() => ShowOpenFileLocation);
+            }
+        }
+
+        private string _resultsFilePath;
+        public string ResultsFilePath { get => _resultsFilePath; 
+            internal set { 
+                _resultsFilePath = value;
+                if (!_resultsFilePath.EndsWith("\\")) _resultsFilePath += "\\";
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(() => ShowOpenFileLocation);
+            } 
+        }
+
+        public bool ShowOpenFileLocation { get => !string.IsNullOrEmpty(ResultsFilePath) && System.IO.Directory.Exists(ResultsFilePath); }
 
         public void GotoError()
         {
@@ -569,6 +604,14 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(
                     new NavigateToLocationEvent(ErrorLocation.Line + lineOffset
                                                , ErrorLocation.Column + columnOffset));
+            }
+        }
+
+        public void OpenResultsFileLocation()
+        {
+            if (!string.IsNullOrEmpty(ResultsFilePath) && System.IO.Directory.Exists(ResultsFilePath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", ResultsFilePath);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
@@ -97,7 +98,6 @@ namespace DaxStudio.UI.ResultsTargets
 
                         using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
                         using (var xlsxWriter = new XlsxWriter( stream, 
-                                                                useZip64: runner.Options.XlsxUseZip64Compression ,  
                                                                 requireCellReferences: runner.Options.XlsxAlwaysWriteCellReferences))
                         {
                             while (moreResults)
@@ -129,7 +129,8 @@ namespace DaxStudio.UI.ResultsTargets
                         sw.Stop();
                         durationMs = sw.ElapsedMilliseconds;
 
-                        runner.SetResultsMessage($"Query results written to:\n{fileName}", OutputTarget.File);
+                        runner.SetResultsMessage($"Query results written to:", OutputTarget.File, fileName);
+                        runner.OutputMessage(new FolderOutputMessage($"{Path.GetFileName(fileName)} saved", Path.GetDirectoryName(fileName)));
                         runner.ActivateOutput();
                     }
 

@@ -20,12 +20,10 @@ namespace DaxStudio.UI.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var columns = new ObservableCollection<DataGridColumn>();
-            var dv = value as DataView;
-            if (dv != null)
+            
+            if (value is DataView dv)
             {
-                var dg = new DataGrid();
-
-                //var gridView = new GridView();
+                
                 var cols = dv.ToTable().Columns;
                 foreach (DataColumn item in cols)
                 {
@@ -56,14 +54,10 @@ namespace DaxStudio.UI.Converters
                     var bindingPath = FixBindingPath(item.ColumnName);
 
                     var cellTemplate = new DataTemplate();
+                    Binding columnBinding = null;
+                    Binding clipboardBinding = null;
                     if (item.DataType == typeof(Byte[]))
                     {
-                        var style = new Style { TargetType = typeof(ToolTip) };
-                        
-                        //style.Setters.Add(new Setter { Property = TemplateProperty, Value = GetToolTip(dataTable) });
-                        //style.Setters.Add(new Setter { Property = OverridesDefaultStyleProperty, Value = true });
-                        //style.Setters.Add(new Setter { Property = System.Windows.Controls.ToolTip.HasDropShadowProperty, Value = true });
-                        //Resources.Add(typeof(ToolTip), style);
 
                         var cellImgBlock = new FrameworkElementFactory(typeof(Image));
                         var cellTooltip = new FrameworkElementFactory(typeof(ToolTip));
@@ -83,36 +77,53 @@ namespace DaxStudio.UI.Converters
                     else
                     {
                         var cellTxtBlock = new FrameworkElementFactory(typeof(TextBlock));
-                        // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
-                        var colBinding = new Binding(bindingPath);
-                        cellTxtBlock.SetBinding(TextBlock.TextProperty, colBinding);
-                        
-                        // TODO - this might work if I pass thru the data context as a parameter
-                        // then I could call a method on the viewModel
-                        //Button btn = new Button();
-                        //btn.Click += (s, e) => CancelSpid(0);
 
-
-                        // Bind FormatString if it exists
-                        if (item.ExtendedProperties[Constants.FormatString] != null)
-                            colBinding.StringFormat = item.ExtendedProperties[Constants.FormatString].ToString();
-                        // set culture if it exists
-                        if (item.ExtendedProperties[Constants.LocaleId] != null)
-                        {
-                            var cultureInfo = CultureInfo.InvariantCulture;
-                            try
-                            {
-                                cultureInfo = new CultureInfo((int)item.ExtendedProperties[Constants.LocaleId]);
-                            }
-                            catch { 
-                                // Do Nothing, just use the initialized value for cultureInfo 
-                            }
-                            colBinding.ConverterCulture = cultureInfo;
-                        }
                         cellTxtBlock.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
                         cellTxtBlock.SetValue(TextBlock.PaddingProperty, new Thickness(6, 3, 6, 0));
                         if (item.DataType != typeof(string)) cellTxtBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
-                        cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, colBinding );
+
+                        // Adding square brackets around the bind will escape any column names with the following "special" binding characters   . / ( ) [ ]
+                        try
+                        {
+                            columnBinding = new Binding(bindingPath);
+                            cellTxtBlock.SetBinding(TextBlock.TextProperty, columnBinding);
+
+                            // TODO - this might work if I pass thru the data context as a parameter
+                            // then I could call a method on the viewModel
+                            //Button btn = new Button();
+                            //btn.Click += (s, e) => CancelSpid(0);
+
+
+                            // Bind FormatString if it exists
+                            if (item.ExtendedProperties[Constants.FormatString] != null)
+                                columnBinding.StringFormat = item.ExtendedProperties[Constants.FormatString].ToString();
+                            // set culture if it exists
+                            if (item.ExtendedProperties[Constants.LocaleId] != null)
+                            {
+                                var cultureInfo = CultureInfo.InvariantCulture;
+                                try
+                                {
+                                    cultureInfo = new CultureInfo((int)item.ExtendedProperties[Constants.LocaleId]);
+                                }
+                                catch { 
+                                    // Do Nothing, just use the initialized value for cultureInfo 
+                                }
+                                columnBinding.ConverterCulture = cultureInfo;
+                            }
+
+                            cellTxtBlock.SetBinding(FrameworkElement.ToolTipProperty, columnBinding);
+                        }
+                        catch (Exception ex)
+                        {
+                            cellTxtBlock.SetValue(TextBlock.TextProperty, "Error: " + ex.Message);
+
+                            var errorBrushDynamicResource = new DynamicResourceExtension("Theme.Brush.Log.Error");
+                            cellTxtBlock.SetResourceReference(TextBlock.ForegroundProperty, errorBrushDynamicResource.ResourceKey);
+
+                            var fixedStringConverter = new FixedStringConverter();
+                            clipboardBinding =  new Binding {Converter = fixedStringConverter, ConverterParameter = "Error: " + ex.Message };
+
+                        }
                         cellTemplate.VisualTree = cellTxtBlock;
                         
                     }
@@ -120,15 +131,13 @@ namespace DaxStudio.UI.Converters
                     var dgc = new DataGridTemplateColumn
                     {
                         CellTemplate = cellTemplate,
-                        //    Width = Double.NaN,    
                         HeaderTemplate = hdrTemplate,
                         Header = item.Caption,
                         SortMemberPath = item.ColumnName,
-                        ClipboardContentBinding = new Binding(bindingPath)
+                        ClipboardContentBinding = (BindingBase)(columnBinding ?? clipboardBinding)
                     };
 
                     columns.Add(dgc);
-                    //dg.Columns.Add(gvc);
                 }
 
                 return columns;
@@ -154,6 +163,7 @@ namespace DaxStudio.UI.Converters
                     case ']':
                     case '[':
                     case '.':
+                    case '^':
                     case '\\': 
                         sb.Append(escape);
                         sb.Append(c);

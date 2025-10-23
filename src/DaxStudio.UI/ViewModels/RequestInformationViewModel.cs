@@ -21,12 +21,14 @@ namespace DaxStudio.UI.ViewModels
         public RequestInformationViewModel(ITraceDiagnostics diagnosticsProvider)
         {
             ActivityID = diagnosticsProvider.ActivityID;
+            RequestID = diagnosticsProvider.RequestID;
             StartDatetime = diagnosticsProvider.StartDatetime;
             CommandText = diagnosticsProvider.CommandText;
             Parameters = diagnosticsProvider.Parameters;
         }
 
         public string ActivityID { get ; set ; }
+        public string RequestID { get; set; }
         public DateTime StartDatetime { get;set; }
 
         public string StartDatetimeFormatted => StartDatetime.ToString("O");

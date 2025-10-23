@@ -674,8 +674,9 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var measure in measures)
                 {
-
-                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measure));
+                    var measureFullName = $"{measure.Table.DaxName}{measure.DaxName}";
+                    var formatStringFullName = $"{measure.Table.DaxName}{measure.FormatStringDaxName}";
+                    EventAggregator.PublishOnUIThreadAsync(new DefineMeasureOnEditor(measureFullName, measure.Expression, formatStringFullName, measure.FormatStringExpression));
                 }
             }
             catch (Exception ex)

@@ -153,5 +153,31 @@ namespace DaxStudio.CommandLine.UIStubs
         {
             // Not applicable for cmdline
         }
+
+        public void OutputMessage(OutputMessage message)
+        {
+            switch (message.MessageType)
+            {
+                case MessageType.Information:
+                    Log.Information(message.Text);
+                    break;
+                case MessageType.Success:
+                    Log.Information($"{message.Text} ({message.DurationString}ms)");
+                    break;
+                case MessageType.Warning:
+                    Log.Warning(message.Text);
+                    break;
+                case MessageType.Error:
+                    Log.Error($"{message.Text} ({message.DurationString}ms)");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("message.MessageType", message.MessageType, null);
+            }
+        }
+
+        public void SetResultsMessage(string message, OutputTarget icon, string fileName)
+        {
+            Log.Information(message);
+        }
     }
 }

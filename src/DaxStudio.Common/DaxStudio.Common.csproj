@@ -123,10 +123,10 @@
       <Version>1.5.0.20-commands</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.98.0.3</Version>
+      <Version>19.106.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.98.0.3</Version>
+      <Version>19.106.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel">
       <Version>2.23.0</Version>
@@ -137,30 +137,101 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Broker">
-      <Version>4.72.1</Version>
+      <Version>4.77.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
-      <Version>4.72.1</Version>
+      <Version>4.77.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.PowerBI.Api">
       <Version>4.22.0</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
+      <Version>13.0.4</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>4.3.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ASAzureSecurityConfig.xml">
+      <WebResourceUrl>https://global.asazure.windows.net/ASAzureSecurityConfig.xml</WebResourceUrl>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
+       Other similar extension points exist, see Microsoft.Common.targets.-->
   <Target Name="BeforeBuild">
+    <!-- Get the version of Microsoft.AnalysisServices.AdomdClient package reference -->
+    <ItemGroup>
+      <AdomdClientPackageRef Include="@(PackageReference)" Condition="'%(Identity)' == 'Microsoft.AnalysisServices.AdomdClient'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <AdomdClientVersion>%(AdomdClientPackageRef.Version)</AdomdClientVersion>
+      <AdomdClientPackagePath>$(NuGetPackageRoot)microsoft.analysisservices.adomdclient\$(AdomdClientVersion)\lib\net472\Microsoft.AnalysisServices.AdomdClient.dll</AdomdClientPackagePath>
+      <ResourceOutputDir>$(MSBuildProjectDirectory)\Resources</ResourceOutputDir>
+      <OutputFile>$(ResourceOutputDir)\ASAzureSecurityConfig.xml</OutputFile>
+    </PropertyGroup>
+    <!-- Ensure the Resources directory exists -->
+    <MakeDir Directories="$(ResourceOutputDir)" Condition="!Exists('$(ResourceOutputDir)')" />
+    <!-- Remove existing file if it exists to ensure fresh extraction -->
+    <Delete Files="$(OutputFile)" Condition="Exists('$(OutputFile)')" />
+    <Message Text="Assembly Path: $(AdomdClientPackagePath)" Importance="high" />
+    <Message Text="Output File: $(OutputFile)" Importance="high" />
+    <Message Text="AdomdClient Version: $(AdomdClientVersion)" Importance="high" />
+    <!-- Extract the embedded resource from the AdomdClient assembly using inline C# task -->
+    <ExtractEmbeddedResource AssemblyPath="$(AdomdClientPackagePath)" OutputPath="$(OutputFile)" Version="$(AdomdClientVersion)" Condition="Exists('$(AdomdClientPackagePath)')" />
+    <Message Text="ExtractEmbeddedResource task completed" Importance="high" />
+    <Warning Text="AdomdClient assembly not found at: $(AdomdClientPackagePath)" Condition="!Exists('$(AdomdClientPackagePath)')" />
   </Target>
+  <!-- Inline C# task to extract embedded resource -->
+  <UsingTask TaskName="ExtractEmbeddedResource" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <AssemblyPath ParameterType="System.String" Required="true" />
+      <OutputPath ParameterType="System.String" Required="true" />
+      <Version ParameterType="System.String" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Reflection" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        try
+        {
+            var assembly = Assembly.LoadFrom(AssemblyPath);
+            var resourceNames = assembly.GetManifestResourceNames();
+            var targetResource = resourceNames.FirstOrDefault(name => name.Contains("ASAzureSecurityConfig.xml"));
+            
+            if (targetResource != null)
+            {
+                using (var stream = assembly.GetManifestResourceStream(targetResource))
+                using (var reader = new StreamReader(stream))
+                {
+                    var content = reader.ReadToEnd();
+                    File.WriteAllText(OutputPath, content, System.Text.Encoding.UTF8);
+                }
+                
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"Successfully extracted ASAzureSecurityConfig.xml from AdomdClient v{Version ?? "unknown"} to {OutputPath}");
+                return true;
+            }
+            else
+            {
+                Log.LogWarning($"ASAzureSecurityConfig.xml resource not found in assembly {AssemblyPath}");
+                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"Available resources: {string.Join(", ", resourceNames)}");
+                return true; // Don't fail the build
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.LogError($"Failed to extract embedded resource: {ex.Message}");
+            return false; // Fail the task but continue build
+        }
+        ]]></Code>
+    </Task>
+  </UsingTask>
   <Target Name="AfterBuild">
   </Target>
-  -->
 </Project>

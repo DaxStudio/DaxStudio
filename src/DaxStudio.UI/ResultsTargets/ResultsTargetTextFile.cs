@@ -1,17 +1,26 @@
 ﻿using DaxStudio.Common;
+using DaxStudio.Interfaces;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Utils;
 using Newtonsoft.Json;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Globalization;
-using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {
+    internal enum ExportMode
+    {
+        Text,
+        Json,
+        Parquet
+    }
+
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetTextFile : IResultsTarget
     {
@@ -39,7 +48,7 @@ namespace DaxStudio.UI.ResultsTargets
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
                 DefaultExt = ".csv",
-                Filter = "Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv|Json file|*.json|Tab separated text file|*.txt|Custom Export Format (Configure in Options)|*.csv",
+                Filter = "Comma separated text file - UTF8|*.csv|Comma separated text file - Unicode|*.csv|Json file|*.json|Tab separated text file|*.txt|Parquet File|*.parquet|Custom Export Format (Configure in Options)|*.csv",
                 FilterIndex = runner.Options.DefaultTextFileType,
             };
 
@@ -67,14 +76,14 @@ namespace DaxStudio.UI.ResultsTargets
             if (result == true)
             {
                 
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     runner.ClearQueryResults();
                     var sw = Stopwatch.StartNew();
                     long durationMs = 0;
                     string sep = "\t";
                     bool shouldQuoteStrings = true; //default to quoting all string fields
-                    bool toJson = false;
+                    ExportMode exportMode = ExportMode.Text;
                     string decimalSep = CultureInfo.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
                     string isoDateFormat = string.Format(Constants.IsoDateMask, decimalSep);
                     Encoding enc = new UTF8Encoding(false);
@@ -91,12 +100,15 @@ namespace DaxStudio.UI.ResultsTargets
                             sep = CultureInfo.CurrentUICulture.TextInfo.ListSeparator;
                             break;
                         case 3:
-                            toJson = true;
+                            exportMode = ExportMode.Json;
                             break;
                         case 4: // tab separated
                             sep = "\t";
                             break;
-                        case 5:// custom export format
+                        case 5: // parquet
+                            exportMode = ExportMode.Parquet;
+                            break;
+                        case 6:// custom export format
                             sep = runner.Options.GetCustomCsvDelimiter();
                             enc = runner.Options.GetCustomCsvEncoding();
                             shouldQuoteStrings = runner.Options.CustomCsvQuoteStringFields;
@@ -114,18 +126,24 @@ namespace DaxStudio.UI.ResultsTargets
                             
                             runner.OutputMessage("Command Complete, writing output file");
 
-                            if (toJson)
+                            switch(exportMode)
                             {
-                                WriteToJsonFile(runner,fileName, reader, statusProgress);
+                                case ExportMode.Parquet:
+                                    await ParquetExporter.ExportDataReaderToParquetInChunksAsync(runner, fileName, reader, statusProgress);
+                                    break;
+                                case ExportMode.Json:
+                                    WriteToJsonFile(runner, fileName, reader, statusProgress);
+                                    break;
+                                default:
+                                    WriteToTextFile(runner, fileName, sep, shouldQuoteStrings, isoDateFormat, enc, reader, statusProgress);
+                                    break;
                             }
-                            else
-                            {
-                                WriteToTextFile(runner, fileName, sep, shouldQuoteStrings, isoDateFormat, enc, reader, statusProgress);
-                            }
+                            
                             sw.Stop();
                             durationMs = sw.ElapsedMilliseconds;
 
-                            runner.SetResultsMessage($"Query results written to file\n{fileName}", OutputTarget.File);
+                            runner.SetResultsMessage($"Query results written to file", OutputTarget.File, fileName);
+                            runner.OutputMessage(new FolderOutputMessage($"{Path.GetFileName(fileName)} saved", Path.GetDirectoryName(fileName)));
                             runner.ActivateOutput();
                         }
                     }

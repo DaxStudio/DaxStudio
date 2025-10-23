@@ -39,6 +39,18 @@
                 <sys:String>SQL</sys:String>
             </col:ArrayList>
 
+            <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Padding" Value="4 0 4 0"/>
+            </Style>
+
+            <Style x:Key="AlignLeft" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Padding" Value="4 0 4 0"/>
+            </Style>
+
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
@@ -59,6 +71,7 @@
                             VerticalAlignment="Center" 
                             HorizontalAlignment="Left"   
                             TextTrimming="CharacterEllipsis"
+                                   Padding="4 0 4 0"
                             ToolTip="{Binding QueryText, Mode=OneTime}">
                         </TextBlock>
 
@@ -158,6 +171,13 @@
                 Grid.Row="1"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
                 BorderBrush="{DynamicResource Theme.Brush.Control.Border}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                
                 <controls:DataGridCustomCopy x:Name="PerformanceData" 
 
                     filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True"
@@ -181,19 +201,22 @@
                     ClipboardCopyMode="IncludeHeader"
                     ScrollViewer.CanContentScroll="True"
                     VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Hidden"
                     FrozenColumnCount="1"
                     GridLinesVisibility="All" 
                     BorderThickness="1,0,0,0" BorderBrush="{x:Null}"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
                     IsReadOnly="True"
+                    behaviours:FooterWidthLinkBehavior.FooterGrid="{Binding ElementName=FooterGrid}"
                     >
 
             <DataGrid.Resources>
 
-                <Style TargetType="DataGrid" BasedOn="{StaticResource DefaultDataGridStyle}">
+                        <Style TargetType="{x:Type controls:DataGridCustomCopy}" BasedOn="{StaticResource DefaultDataGridStyle}">
                     <Setter Property="Background" Value="{DynamicResource Theme.Brush.Content.Back}"/>
-                </Style>
+
+                        </Style>
                 
                 <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
                     <Setter Property="Template">
@@ -219,10 +242,7 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                             <Setter Property="MinHeight" Value="20"/>
                         </Style>
-                <Style x:Key="AlignRight" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
-                    <Setter Property="HorizontalAlignment" Value="Right" />
-                            <Setter Property="VerticalAlignment" Value="Center" />
-                        </Style>
+
             </DataGrid.Resources>
 
             <DataGrid.ContextMenu>
@@ -235,10 +255,10 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
             
-            <DataGrid.CellStyle>
+            <!--<DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Padding" Value="5,0,5,0"/>
+                    --><!--<Setter Property="Padding" Value="5,0,5,0"/>--><!--
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type DataGridCell}">
@@ -253,7 +273,7 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
-            </DataGrid.CellStyle>
+            </DataGrid.CellStyle>-->
             <DataGrid.RowStyle>
                 <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
                     <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
@@ -273,6 +293,7 @@
                     Header="Visual" 
                     IsReadOnly="True" 
                     Width="90" 
+                    ElementStyle="{StaticResource AlignLeft}"
                     Binding="{Binding VisualName, Mode=OneTime}"
                     filter:DataGridColumnExtensions.IsContainsTextSearch="True"
                     />
@@ -281,14 +302,14 @@
                     Header="QueryStart" 
                     IsReadOnly="True" 
                     Width="80" 
-                    Binding="{Binding QueryStartTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+                     
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
                     filter:DataGridColumnExtensions.CustomBindingPath="QueryStartTime"/>
                 <DataGridTextColumn 
                     Header="QueryEnd" 
                     IsReadOnly="True" 
                     Width="80" 
-                    Binding="{Binding QueryEndTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+                    
                     filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"
                     filter:DataGridColumnExtensions.CustomBindingPath="QueryEndTime"/>
                 <!--<DataGridTextColumn Header="Type" IsReadOnly="True" Width="40" 
@@ -337,6 +358,85 @@
 
             </DataGrid.Columns>
         </controls:DataGridCustomCopy>
+                    
+                    <!-- Footer Grid -->
+                    <DataGrid x:Name="FooterGrid"
+                              Grid.Row="1"
+                              HeadersVisibility="None"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserResizeColumns="False"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Hidden"
+                              GridLinesVisibility="All"
+                              ItemsSource="{Binding FooterItem}">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <!--<DataGridTextColumn Header="StartTime" IsReadOnly="True" Width="65" Binding="{Binding StartTime, StringFormat='hh:mm:ss'}"  />-->
+                            <DataGridTextColumn 
+        Header="#" 
+        IsReadOnly="True" 
+                                ElementStyle="{StaticResource AlignLeft}"
+        />
+
+                            <DataGridTextColumn 
+        Header="Visual" 
+        IsReadOnly="True" 
+        Binding="{Binding VisualName, Mode=OneTime}"
+                                ElementStyle="{StaticResource AlignLeft}"
+        />
+
+                            <DataGridTextColumn 
+        Header="QueryStart" 
+        IsReadOnly="True" 
+                                ElementStyle="{StaticResource AlignLeft}"
+        Binding="{Binding QueryStartTime, StringFormat='hh:mm:ss', Mode=OneTime}"  
+        />
+                            <DataGridTextColumn 
+        Header="QueryEnd" 
+                                ElementStyle="{StaticResource AlignLeft}"
+        IsReadOnly="True" />
+                          
+                            <DataGridTextColumn  
+                        Header="Rows"
+                        IsReadOnly="True"
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        Binding="{Binding RowCount, StringFormat='#,0',Mode=OneTime}"                                    
+                        >
+
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Query Ms" IsReadOnly="True" 
+                        Binding="{Binding QueryDuration, StringFormat='#,0 ms', Mode=OneTime}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        />
+                            <DataGridTextColumn Header="Render Ms" IsReadOnly="True"
+                        Binding="{Binding RenderDuration, StringFormat='#,0 ms',Mode=OneTime}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        />
+                            <DataGridTextColumn Header="Total Ms" IsReadOnly="True" 
+                        Binding="{Binding TotalDuration, StringFormat='#,0 ms',Mode=OneTime}" 
+                        HeaderStyle="{StaticResource RightHeader}"
+                        ElementStyle="{StaticResource AlignRight}"
+                        />
+
+                            <DataGridTemplateColumn Header="Query" CellTemplate="{StaticResource QueryTextCell}" 
+                            
+                            ClipboardContentBinding="{Binding QueryTextQuoted, Mode=OneTime}"
+                            />
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </controls:ClipBorder>
         </Grid>
         

@@ -4,7 +4,6 @@ using System.Linq;
 using ADOTabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.UI.Extensions;
-using Moq;
 using DaxStudio.Tests.Utils;
 using MeasureMD = DaxStudio.Tests.Utils.MeasureMD;
 using MeasureTM = DaxStudio.Tests.Utils.MeasureTM;
@@ -14,6 +13,7 @@ using Caliburn.Micro;
 using ADOTabular.Interfaces;
 using ADOTabular.AdomdClientWrappers;
 using System.IO;
+using NSubstitute;
 
 namespace DaxStudio.Tests
 {
@@ -137,61 +137,64 @@ namespace DaxStudio.Tests
 
         private IADOTabularConnection MockConnection(string csdlFile)
         {
-            var mockConn = new Mock<IADOTabularConnection>();
+            var mockConn = Substitute.For<IADOTabularConnection>();
             var columnCollection = new Dictionary<string, ADOTabularColumn>();
             
-            mockConn.SetupGet(x => x.Columns).Returns(columnCollection);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false)).Returns(keywordDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false)).Returns(functionDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS")).Returns(dmvDataSet);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_CUBES", It.IsAny<AdomdRestrictionCollection>())).Returns(cubesDataSet);
-            mockConn.Setup(x => x.ShowHiddenObjects).Returns(true);
-            var mockDb = new Mock<ADOTabularDatabase>(mockConn.Object, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
-            mockDatabase = mockDb.Object;
-            mockConn.SetupGet(x => x.Database).Returns(mockDatabase);
-            mockConn.Setup(x => x.GetSchemaDataSet(
-                "MDSCHEMA_MEASURES", 
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)), 
-                false))
-                .Returns(measureDataSet_MD);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.Columns.Returns(columnCollection);
+            mockConn.GetSchemaDataSet("DISCOVER_KEYWORDS", null, false).Returns(keywordDataSet);
+            mockConn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Returns(functionDataSet);
+            mockConn.GetSchemaDataSet("DISCOVER_SCHEMA_ROWSETS").Returns(dmvDataSet);
+            mockConn.GetSchemaDataSet("MDSCHEMA_CUBES", Arg.Any<AdomdRestrictionCollection>()).Returns(cubesDataSet);
+            mockConn.ShowHiddenObjects.Returns(true);
+            var mockDb = Substitute.For<ADOTabularDatabase>(mockConn, "Adventure Works", "Adventure Works", new DateTime(2017, 7, 20), "1400", "*", "Test Description");
+            mockDatabase = mockDb;
+            mockConn.Database.Returns(mockDatabase);
+            mockConn.GetSchemaDataSet(
                 "MDSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
-                false))
+                Arg.Is<AdomdRestrictionCollection>(res => IsResellerSalesMeasureGroup(res)),
+                false)
+                .Returns(measureDataSet_MD);
+            mockConn.GetSchemaDataSet(
+                "MDSCHEMA_MEASURES",
+                Arg.Is<AdomdRestrictionCollection>(res => !IsResellerSalesMeasureGroup(res)),
+                false)
                 .Returns(measureDataSetEmpty);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "TMSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => IsResellerSalesTable(res))
-                ))
+                Arg.Is<AdomdRestrictionCollection>(res => IsResellerSalesTable(res))
+                )
                 .Returns(measureDataSet_TM);
-            mockConn.Setup(x => x.GetSchemaDataSet(
+            mockConn.GetSchemaDataSet(
                 "TMSCHEMA_MEASURES",
-                It.Is<AdomdRestrictionCollection>(res => !IsResellerSalesTable(res))
-                ))
+                Arg.Is<AdomdRestrictionCollection>(res => !IsResellerSalesTable(res))
+                )
                 .Returns(measureDataSetEmpty);
-            mockConn.Setup(x => x.GetSchemaDataSet("TMSCHEMA_TABLES", It.IsAny<AdomdRestrictionCollection>())).Returns(tablesDataSet);
-            mockConn.Setup(x => x.ServerVersion).Returns("15.0.0");
-            mockConn.SetupGet(x => x.Visitor).Returns(new MetaDataVisitorCSDL(mockConn.Object));
-
-            mockConn.SetupGet(x => x.Keywords).Returns(new ADOTabularKeywordCollection(mockConn.Object));
-            mockConn.SetupGet(x => x.AllFunctions).Returns(new List<string>());
-            mockConn.SetupGet(x => x.DynamicManagementViews).Returns( new ADOTabularDynamicManagementViewCollection(mockConn.Object));
-            mockConn.SetupGet(x => x.IsAdminConnection).Returns(true);
+            mockConn.GetSchemaDataSet("TMSCHEMA_TABLES", Arg.Any<AdomdRestrictionCollection>()).Returns(tablesDataSet);
+            mockConn.ServerVersion.Returns("15.0.0");
+            var visitor = new MetaDataVisitorCSDL(mockConn);
+            mockConn.Visitor.Returns(visitor);
+            var keywordCollection = new ADOTabularKeywordCollection(mockConn);
+            mockConn.Keywords.Returns(keywordCollection);
+            var emptyList = new List<string>();
+            mockConn.AllFunctions.Returns(emptyList);
+            var dmvs = new ADOTabularDynamicManagementViewCollection(mockConn);
+            mockConn.DynamicManagementViews.Returns(dmvs);
+            mockConn.IsAdminConnection.Returns(true);
             var csdlString = File.ReadAllText(csdlFile);
             var csdlDataSet = new DataSet();
             var csdlDataTable = new DataTable();
             csdlDataTable.Columns.Add("metadata", typeof(string));
             csdlDataTable.Rows.Add(csdlString);
             csdlDataSet.Tables.Add(csdlDataTable);
-            mockConn.Setup(x => x.GetSchemaDataSet("DISCOVER_CSDL_METADATA", It.IsAny<AdomdRestrictionCollection>())).Returns(csdlDataSet);
+            mockConn.GetSchemaDataSet("DISCOVER_CSDL_METADATA", Arg.Any<AdomdRestrictionCollection>()).Returns(csdlDataSet);
 
             var emptyDataset = new DataSet();
             var emptyDataTable = new DataTable();
             emptyDataset.Tables.Add(emptyDataTable);
-            mockConn.Setup(x => x.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", It.IsAny<AdomdRestrictionCollection>())).Returns(emptyDataset);
+            mockConn.GetSchemaDataSet("MDSCHEMA_HIERARCHIES", Arg.Any<AdomdRestrictionCollection>()).Returns(emptyDataset);
 
 
-            return mockConn.Object;
+            return mockConn;
         }
         #endregion
 
@@ -302,8 +305,8 @@ namespace DaxStudio.Tests
 
             var promoTable = tabs["Promotion"];
             Assert.IsNotNull(promoTable);
-            Assert.AreEqual(0, promoTable.Columns["PromotionName"].Variations.Count);
-            Assert.AreEqual(1, promoTable.Columns["StartDate"].Variations.Count);
+            Assert.IsEmpty(promoTable.Columns["PromotionName"].Variations);
+            Assert.HasCount(1, promoTable.Columns["StartDate"].Variations);
 
         }
 
@@ -337,7 +340,7 @@ namespace DaxStudio.Tests
             var paramTable = tabs["Slicer by number of days"];
             Assert.IsNotNull(paramTable);
             Assert.AreEqual(paramTable.Columns["Slicer by number of days Order"], paramTable.Columns["Slicer by number of days"].OrderBy);
-            Assert.AreEqual(true, paramTable.Columns["Slicer by number of days"].GroupBy.Count > 0, "The groupBy columns collection is not empty");
+            Assert.IsNotEmpty(paramTable.Columns["Slicer by number of days"].GroupBy, "The groupBy columns collection is not empty");
             Assert.AreEqual(paramTable.Columns["Slicer by number of days Fields"], paramTable.Columns["Slicer by number of days"].GroupBy[0]);
             //Assert.AreEqual(paramTable.Columns["QuarterNo"], paramTable.Columns["Quarter"].OrderBy);
             //Assert.IsNull(paramTable.Columns["QuarterNo"].OrderBy);
@@ -371,11 +374,11 @@ namespace DaxStudio.Tests
             ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
             //var tabs = new ADOTabularTableCollection(conn, m);
             Assert.AreEqual (13, m.Tables.Count);
-            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SubstituteWithIndex);
-            Assert.AreEqual(true, m.Capabilities.DAXFunctions.SummarizeColumns);
-            Assert.AreEqual(true, m.Capabilities.DAXFunctions.TreatAs);
-            Assert.AreEqual(true, m.Capabilities.Variables);
-            Assert.AreEqual(true, m.Capabilities.TableConstructor);
+            Assert.IsTrue(m.Capabilities.DAXFunctions.SubstituteWithIndex);
+            Assert.IsTrue(m.Capabilities.DAXFunctions.SummarizeColumns);
+            Assert.IsTrue(m.Capabilities.DAXFunctions.TreatAs);
+            Assert.IsTrue(m.Capabilities.Variables);
+            Assert.IsTrue(m.Capabilities.TableConstructor);
         }
 
         [TestMethod]
@@ -421,7 +424,7 @@ namespace DaxStudio.Tests
 
             Assert.AreEqual("Internet Sales", cmpyTab.Caption, "Table Name is correct");
             Assert.AreEqual("QTD Folder", cmpyTab.FolderItems[0].Name);
-            Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
+            Assert.HasCount(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems);
 
         }
 
@@ -442,10 +445,10 @@ namespace DaxStudio.Tests
 
             //var cmpyCol2 = cmpyTab.Columns["Internet Current Quarter Margin"];
 
-            Assert.AreEqual(1, tabDate.FolderItems.Count, "Table Name is correct");
+            Assert.HasCount(1, tabDate.FolderItems, "Table Name is correct");
             Assert.AreEqual("Calendar Folder", tabDate.FolderItems[0].Name);
             Assert.IsInstanceOfType(tabDate.Columns["Calendar"], typeof(ADOTabularHierarchy));
-            Assert.AreEqual(true, tabDate.Columns["Calendar"].IsInDisplayFolder);
+            Assert.IsTrue(tabDate.Columns["Calendar"].IsInDisplayFolder);
             //Assert.AreEqual(8, ((IADOTabularFolderReference)cmpyTab.FolderItems[0]).FolderItems.Count);
 
         }
@@ -475,12 +478,12 @@ namespace DaxStudio.Tests
              */
 
             Assert.AreEqual("Table1", cmpyTab.Caption, "Table Name is correct");
-            Assert.AreEqual(1, cmpyTab.FolderItems.Count);
+            Assert.HasCount(1, cmpyTab.FolderItems);
 
             var folder1 = ((IADOTabularFolderReference)cmpyTab.FolderItems[0]);
             Assert.AreEqual("Folder 1", folder1.Name);
 
-            Assert.AreEqual(2, folder1.FolderItems.Count);
+            Assert.HasCount(2, folder1.FolderItems);
             Assert.AreEqual("Measure_2", folder1.FolderItems[0].InternalReference);
             var folder2 = ((IADOTabularFolderReference)folder1.FolderItems[1]);
             Assert.AreEqual("Folder 2", folder2.Name);
@@ -516,12 +519,12 @@ namespace DaxStudio.Tests
              */
 
             Assert.AreEqual("Table1", cmpyTab.Caption, "Table Name is correct");
-            Assert.AreEqual(2, cmpyTab.FolderItems.Count);
+            Assert.HasCount(2, cmpyTab.FolderItems);
 
             var folder1 = ((IADOTabularFolderReference)cmpyTab.FolderItems[0]);
             Assert.AreEqual("Folder 1", folder1.Name);
 
-            Assert.AreEqual(1, folder1.FolderItems.Count);
+            Assert.HasCount(1, folder1.FolderItems);
             Assert.AreEqual("Measure", folder1.FolderItems[0].InternalReference);
             var folder2 = ((IADOTabularFolderReference)cmpyTab.FolderItems[1]);
             Assert.AreEqual("Folder 2", folder2.Name);
@@ -548,12 +551,12 @@ namespace DaxStudio.Tests
             v.GenerateTablesFromXmlReader(tabs, xr);
 
             Assert.AreEqual(6, tabs.Count, "Table count is correct");
-            Assert.AreEqual(1, tabs["Customer"].Relationships.Count, "Customer Table has incorrect relationship count");
-            Assert.AreEqual(0, tabs["Accounts"].Relationships.Count, "Accounts Table has incorrect relationship count");
-            Assert.AreEqual(1, tabs["Customer Geography"].Relationships.Count, "Customer Geography Table has incorrect relationship count");
+            Assert.HasCount(1, tabs["Customer"].Relationships, "Customer Table has incorrect relationship count");
+            Assert.IsEmpty(tabs["Accounts"].Relationships, "Accounts Table has incorrect relationship count");
+            Assert.HasCount(1, tabs["Customer Geography"].Relationships, "Customer Geography Table has incorrect relationship count");
             Assert.AreEqual("Both", tabs["Customer Geography"].Relationships[0].CrossFilterDirection, "Customer Geography Table has a Both crossfilter relationship");
-            Assert.AreEqual(1, tabs["Geography Population"].Relationships.Count, "Geography Table has incorrect relationship count");
-            Assert.AreEqual(2, tabs["Customer Accounts"].Relationships.Count, "Customer Accounts Table has incorrect relationship count");
+            Assert.HasCount(1, tabs["Geography Population"].Relationships, "Geography Table has incorrect relationship count");
+            Assert.HasCount(2, tabs["Customer Accounts"].Relationships, "Customer Accounts Table has incorrect relationship count");
             Assert.AreEqual("Both", tabs["Customer Accounts"].Relationships[0].CrossFilterDirection, "Customer Accounts Table has a Both crossfilter on relationship 0");
             Assert.AreEqual("", tabs["Customer Accounts"].Relationships[1].CrossFilterDirection, "Customer Accounts Table does not have a Both crossfilter on relationship 1");
 
@@ -623,8 +626,8 @@ namespace DaxStudio.Tests
             var cmpyTab = tabs["Date"];
 
 
-            Assert.AreEqual(true, cmpyTab.IsDateTable, "'Date' table is marked as date table");
-            Assert.AreEqual(false, tabs["Customer"].IsDateTable, "'Date' table is marked as date table");
+            Assert.IsTrue(cmpyTab.IsDateTable, "'Date' table is marked as date table");
+            Assert.IsFalse(tabs["Customer"].IsDateTable, "'Date' table is marked as date table");
 
         }
 
@@ -659,8 +662,8 @@ namespace DaxStudio.Tests
             Assert.AreEqual(24, tabs["Sales Territory"].Columns.Count());
             Assert.AreEqual(1, tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).Count());
             var h = (ADOTabularHierarchy) (tabs["Sales Territory"].Columns.Where((t) => t.ObjectType == ADOTabularObjectType.Hierarchy).First());
-            Assert.AreEqual(false, h.IsVisible);
-            Assert.AreEqual(3, h.Levels.Count);
+            Assert.IsFalse(h.IsVisible);
+            Assert.HasCount(3, h.Levels);
             Assert.AreEqual("Group", h.Levels[0].LevelName);
             Assert.AreEqual("Country", h.Levels[1].LevelName);
             Assert.AreEqual("Region", h.Levels[2].LevelName);
@@ -717,7 +720,7 @@ namespace DaxStudio.Tests
 
             var kw = connection.Keywords;
 
-            Assert.AreEqual(true, kw.Count == keywordDataSet.Tables[0].Rows.Count, "More than 5 keywords found");
+            Assert.AreEqual(keywordDataSet.Tables[0].Rows.Count, kw.Count, "More than 5 keywords found");
 
         }
 
@@ -758,7 +761,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void CreatePowerPivotConnection()
         {
-            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var mockEventAgg = Substitute.For<IEventAggregator>();
             var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=DAX Studio Test", "");
             Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=DAX Studio Test;Show Hidden Cubes=true", cnn.ConnectionString);
@@ -767,7 +770,7 @@ namespace DaxStudio.Tests
         [TestMethod]
         public void CreatePowerPivotConnectionWithFileName()
         {
-            var mockEventAgg = new Mock<IEventAggregator>().Object;
+            var mockEventAgg = Substitute.For<IEventAggregator>();
             var ppvt = new ProxyPowerPivot(mockEventAgg, 9000);
             var cnn = ppvt.GetPowerPivotConnection("Application Name=DAX Studio Test", "Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";");
             Assert.AreEqual("Data Source=http://localhost:9000/xmla;Application Name=DAX Studio Test;Workstation ID=\"c:\\test folder\\blah's folder\\test's crazy ;=-` file.xlsx\";Show Hidden Cubes=true", cnn.ConnectionString);
