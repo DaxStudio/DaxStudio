@@ -21,7 +21,7 @@ namespace DaxStudio.UI.Utils
         public static async Task ExportDataReaderToParquetInChunksAsync(Stream fileStream, IDataReader reader, Action<String> StatusCallback, Action<long,bool> ProgressCallback, Func<bool> IsCancelled, int chunkSize = 1000000)
         {
             int resultSetIndex = 1;
-            StatusCallback($"Starting export to parquet");
+            //StatusCallback($"Starting export to parquet");
 
 
             List<DataField> fields = CreateDataFieldsFromReader(reader);
@@ -73,7 +73,7 @@ namespace DaxStudio.UI.Utils
                         break;
 
                     outputRowCount += rowCount;
-                    StatusCallback($"Written {outputRowCount:n0} rows to the file output for query {resultSetIndex}");
+                    //StatusCallback($"Written {outputRowCount:n0} rows to the file output for query {resultSetIndex}");
 
                     var columns = new List<DataColumn>();
                     for (int i = 0; i < fields.Count; i++)

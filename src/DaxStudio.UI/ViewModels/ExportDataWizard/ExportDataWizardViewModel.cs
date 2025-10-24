@@ -327,7 +327,7 @@ namespace DaxStudio.UI.ViewModels
                                 Action<string> updateStatus = (s) => statusMsg.Update(s);
                                 Action<long, bool> updateProgress = (rowCount, isCancelled) =>
                                 {
-                                    table.RowCount = rowCount;
+                                    table.RowCount = rowCount + batchRows;
                                     table.Status = isCancelled ? ExportStatus.Cancelled : ExportStatus.Exporting;
                                     statusMsg.Update($"Exporting Table {tableCnt} of {totalTables} : {table.DaxName} ({rowCount + batchRows:N0} rows)");
                                     Document.RefreshElapsedTime();
@@ -859,7 +859,7 @@ namespace DaxStudio.UI.ViewModels
         {
             foreach (var tbl in Tables)
             {
-                if (tbl.Status == ExportStatus.Ready || tbl.Status != ExportStatus.Exporting)
+                if (tbl.Status == ExportStatus.Ready || tbl.Status == ExportStatus.Exporting)
                 {
                     tbl.Status = ExportStatus.Cancelled;
                 }
