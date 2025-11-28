@@ -67,7 +67,7 @@ xmlns=""http://www.w3.org/TR/REC-html40"">
 <xml id=docprops><o:DocumentProperties
   xmlns:o=""urn:schemas-microsoft-com:office:office""
   xmlns=""http://www.w3.org/TR/REC-html40"">
-  <o:Name>mtbsql608v-dev_mssqlinst01 PRS Model</o:Name>
+  <o:Name>DAX Studio Analyze in Excel PowerBI Model</o:Name>
  </o:DocumentProperties>
 </xml>";
         private static string odcBody = @"<xml id=msodc><odc:OfficeDataConnection
