@@ -76,13 +76,20 @@ namespace DaxStudio.UI.Utils
         }
     }
 
-    public class PowerBIHelper
+    public static class PowerBIHelper
     {
+
+        private static readonly List<PowerBIInstance> _instances = new List<PowerBIInstance>();
+        private static bool instancesLoaded = false;
         const int MaxParallelInstanceScans = 5;
 
-        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS)
+        public static List<PowerBIInstance> GetLocalInstances(bool includePBIRS, bool refreshList)
         {
-            List<PowerBIInstance> _instances = new List<PowerBIInstance>();
+            if (!refreshList && instancesLoaded)
+            {
+                Log.Debug("{class} {method} Returning cached PowerBI instances", nameof(PowerBIHelper), nameof(GetLocalInstances));
+                return _instances;
+            }
 
             var dict = ManagedIpHelper.GetExtendedTcpDictionary();
             var msmdsrvProcesses = Process.GetProcessesByName("msmdsrv");
@@ -96,16 +103,20 @@ namespace DaxStudio.UI.Utils
                 }
             };
 
+            _instances.Clear(); // clear the list before we start
+
             msmdsrvProcesses.ParallelForEachAsync(async proc => await myfunc(proc), MaxParallelInstanceScans).Wait();
 
             _instances.Sort(); // order by name
 
-            return _instances;    
+            instancesLoaded = true;
+
+            return _instances;
         }
 
         private static async Task<PowerBIInstance> GetInstanceDetailsAsync(bool includePBIRS, Dictionary<int, TcpRow> tcpPorts, Process proc, bool isAdmin)
         {
-            return await Task.Run<PowerBIInstance>(() => { 
+            return await Task.Run<PowerBIInstance>(() => {
                 PowerBIInstance instance = null;
                 int _port = 0;
                 string parentTitle = string.Empty; // $"localhost:{_port}";

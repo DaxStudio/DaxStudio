@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using DaxStudio.Controls.DataGridFilter.Querying;
 
 namespace DaxStudio.Controls.DataGridFilter
@@ -95,5 +97,45 @@ namespace DaxStudio.Controls.DataGridFilter
             target.SetValue(IsClearButtonVisibleProperty, value);
         }
 
+        public static readonly DependencyProperty HasActiveFiltersProperty =
+            DependencyProperty.RegisterAttached("HasActiveFilters",
+                typeof(bool), typeof(DataGridExtensions),
+                new FrameworkPropertyMetadata(false));
+
+        public static bool GetHasActiveFilters(DependencyObject target)
+        {
+            if (target == null) throw new ArgumentNullException(nameof(target));
+            return (bool)target.GetValue(HasActiveFiltersProperty);
+        }
+
+        public static void SetHasActiveFilters(DependencyObject target, bool value)
+        {
+            if (target == null) throw new ArgumentNullException(nameof(target));
+            target.SetValue(HasActiveFiltersProperty, value);
+        }
+
+        /// <summary>
+        /// Checks if the DataGrid has any active filters in any column
+        /// </summary>
+        /// <param name="dataGrid">The DataGrid to check</param>
+        /// <returns>True if any column has an active filter, false otherwise</returns>
+        public static bool CheckHasActiveFilters(DataGrid dataGrid)
+        {
+            if (dataGrid == null) return false;
+
+            var queryController = GetDataGridFilterQueryController(dataGrid);
+            if (queryController != null)
+            {
+                var filters = queryController.GetFiltersForColumns();
+                if (filters != null)
+                {
+                    return filters.Values.Any(filter => 
+                        !string.IsNullOrEmpty(filter.QueryString) || 
+                        !string.IsNullOrEmpty(filter.QueryStringTo));
+                }
+            }
+
+            return false;
+        }
     }
 }

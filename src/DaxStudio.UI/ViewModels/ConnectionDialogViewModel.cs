@@ -108,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => PowerBIInstanceDetected);
 
                 // look for local workspace instances
-                _powerBIInstances = PowerBIHelper.GetLocalInstances(false);
+                _powerBIInstances = PowerBIHelper.GetLocalInstances(false, true);
 
                 if (_powerBIInstances.Count == 0 )
                 {

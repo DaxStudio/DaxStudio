@@ -1,28 +1,28 @@
-﻿using AsyncAwaitBestPractices;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Windows.Threading;
-using ADOTabular;
-using Caliburn.Micro;
-using DaxStudio.UI.Events;
-using GongSolutions.Wpf.DragDrop;
-using Serilog;
-using DaxStudio.UI.Model;
-using System.Collections.Generic;
-using System;
-using System.Threading.Tasks;
-using DaxStudio.UI.Extensions;
-using DaxStudio.Interfaces;
-using System.Windows;
-using System.Diagnostics;
-using System.Windows.Input;
-using System.Windows.Media;
+﻿using ADOTabular;
 using ADOTabular.Interfaces;
+using AsyncAwaitBestPractices;
+using Caliburn.Micro;
+using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
+using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Model;
+using GongSolutions.Wpf.DragDrop;
 using Humanizer;
-using FocusManager = DaxStudio.UI.Utils.FocusManager;
+using Newtonsoft.Json.Linq;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using FocusManager = DaxStudio.UI.Utils.FocusManager;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -46,6 +46,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly IMetadataProvider _metadataProvider;
         private List<IExpandedItem> _expandedItems = new List<IExpandedItem>();
         private const int SAMPLE_ROWS = 5;
+        private CancellationTokenSource _columnTooltipCts;
 
         [ImportingConstructor]
         public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
@@ -168,7 +169,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedModel), $"Set Start {value?.Name??"<null>"}");
                 if (_selectedModel != value)
                 {
-                    IsBusy = true;
+                    SetBusy(true);
                     _selectedModel = value;
                     NotifyOfPropertyChange(nameof(SelectedModel));
                     
@@ -179,7 +180,8 @@ namespace DaxStudio.UI.ViewModels
                     _metadataProvider.SetSelectedModelAsync(SelectedModel).ContinueWith((prev) => {
                         Log.Verbose(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), "SelectedModel.Set", "Clearing IsBusy in continuation");
                         NotifyOfPropertyChange(nameof(Tables));
-                        IsBusy = false; }
+                        SetBusy(false); 
+                    }
                     ).SafeFireAndForget();
                     
                 }
@@ -218,7 +220,7 @@ namespace DaxStudio.UI.ViewModels
 
                         var sw = new Stopwatch();
                         sw.Start();
-                        IsBusy = true;
+                        SetBusy(true);
                         IsNotifying = false;
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(RefreshTablesAsync), "Starting Refresh of Tables ");
                         _treeViewTables = _metadataProvider.GetTreeViewTables(this, _options);
@@ -239,7 +241,7 @@ namespace DaxStudio.UI.ViewModels
                         IsNotifying = true;
                         Refresh(); // force all data bindings to update
                         NotifyOfPropertyChange(nameof(Tables));
-                        IsBusy = false;
+                        SetBusy(false);
                         await EventAggregator.PublishOnUIThreadAsync(new MetadataLoadedEvent(ActiveDocument, SelectedModel));
                     }
 
@@ -372,7 +374,7 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(nameof(SelectedDatabase));
                     var _step = "start";
                     Task.Run(() => {
-                        IsBusy = true;
+                        SetBusy(true);
                         _step = "step 1";
                         _metadataProvider.SetSelectedDatabase(_selectedDatabase);
                         _step = "step 2";
@@ -394,12 +396,12 @@ namespace DaxStudio.UI.ViewModels
                         _step = "step 10";
                         ModelList = _metadataProvider.GetModels();
                         _step = "step 11";
-                        IsBusy = false;
+                        SetBusy( false);
                     }).SafeFireAndForget(onException: ex =>
                     {
                         Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SelectedDatabase), $"error setting Selected Database ({_step})");
                         EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error setting selected database ({_step}): {ex.Message} "));
-                        IsBusy = false;
+                        SetBusy( false);
                     });
 
                 }
@@ -487,13 +489,26 @@ namespace DaxStudio.UI.ViewModels
         public bool IsBusy
         {
             get => _isBusyCnt != 0;
-            set
-            {
-                if (value) Interlocked.Increment(ref _isBusyCnt);
-                else Interlocked.Decrement(ref _isBusyCnt);
-                Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(IsBusy), $"Cnt: {_isBusyCnt}");
-                NotifyOfPropertyChange();
-            }
+            //private set
+            //{
+            //    if (value) Interlocked.Increment(ref _isBusyCnt);
+            //    else Interlocked.Decrement(ref _isBusyCnt);
+            //    Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(IsBusy), $"Cnt: {_isBusyCnt}");
+            //    NotifyOfPropertyChange();
+            //}
+        }
+
+        public  void SetBusy(bool value, [CallerMemberName] string caller = null)
+        {
+            if (value) Interlocked.Increment(ref _isBusyCnt);
+            else Interlocked.Decrement(ref _isBusyCnt);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(MetadataPaneViewModel), nameof(SetBusy), $"Cnt: {_isBusyCnt} | Caller: {caller}");
+            NotifyOfPropertyChange(() => IsBusy);
+        }
+
+        private string GetCaller([CallerMemberName] string caller = null)
+        {
+            return caller ?? "Unknown";
         }
         public string BusyMessage => "Loading";
 
@@ -572,25 +587,52 @@ namespace DaxStudio.UI.ViewModels
         public void ColumnTooltipOpening(TreeViewColumn column)
         {
             if (column == null) return;
-
             if (column?.Column?.GetType() != typeof(ADOTabularColumn)) return;
             ADOTabularColumn col = (ADOTabularColumn)column?.Column;
-            
             if (col.ObjectType != ADOTabularObjectType.Column) return;
-            // TODO - make an option for the sample size
             if (_options == null) return;
-            if (_options.ShowTooltipSampleData && !column.HasSampleData) _metadataProvider.UpdateColumnSampleData(column,SAMPLE_ROWS) ;
-            if (_options.ShowTooltipBasicStats && !column.HasBasicStats) _metadataProvider.UpdateColumnBasicStats(column); 
+
+            // Cancel any previous tooltip operations
+            _columnTooltipCts?.Cancel();
+            _columnTooltipCts = new CancellationTokenSource();
+            var token = _columnTooltipCts.Token;
+            var tasks = new List<Task>();
+            if (_options.ShowTooltipSampleData && !column.HasSampleData)
+            {
+                var sampleTask =  _metadataProvider.UpdateColumnSampleDataAsync(column, SAMPLE_ROWS, token);
+                sampleTask.OnTimeout(task => { 
+                    _metadataProvider.CancelUpdatingColumnSampleData();
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Timeout while updating column sample data"));
+                }, 5000).FireAndForget();
+                
+
+            }
+            if (_options.ShowTooltipBasicStats && !column.HasBasicStats)
+            {
+                var statTask = _metadataProvider.UpdateColumnBasicStatsAsync(column, token);
+                statTask.OnTimeout(task => { 
+                    _metadataProvider.CancelUpdatingColumnBasicStats();
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Timeout while updating column basic stats"));
+                }, 5000).FireAndForget();
+            }
+
+
         }
 
         public void TableTooltipOpening(TreeViewTable table)
         {
             if (table == null) return;
 
-            // TODO - make an option for the sample size
             if (_options == null) return;
 
-            if (_options.ShowTooltipBasicStats && !table.HasBasicStats) _metadataProvider.UpdateTableBasicStats(table);
+            if (_options.ShowTooltipBasicStats && !table.HasBasicStats) {
+
+                var task = _metadataProvider.UpdateTableBasicStatsAsync(table); 
+                task.OnTimeout((task) => {                     
+                    _metadataProvider.CancelUpdatingTableBasicStats();
+                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Timeout while updating table basic stats"));
+                }, 5000).FireAndForget();
+            }
         }
 
         internal void ChangeDatabase(string databaseName)

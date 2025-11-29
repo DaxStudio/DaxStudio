@@ -1223,7 +1223,7 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     if (message == null) return;
-                    MetadataPane.IsBusy = true;
+                    MetadataPane.SetBusy(true);
 
                     await Task.Run(async () =>
                     {
@@ -1238,28 +1238,34 @@ namespace DaxStudio.UI.ViewModels
                         if (Connection.Databases.Count > 1 && string.IsNullOrEmpty(message.DatabaseName) && Options.ShowDatabaseDialogOnConnect)
                         {
                             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Start Showing Database Dialog");
-                            await Application.Current.Dispatcher.InvokeAsync(async () =>
+                            try
                             {
-                                try
+                                var dialog = new DatabaseDialogViewModel(Connection.Databases);
+                                await Application.Current.Dispatcher.InvokeAsync(async () =>
                                 {
-                                    var dialog = new DatabaseDialogViewModel(Connection.Databases);
                                     await _windowManager.ShowDialogBoxAsync(dialog);
-                                    if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                                });    
+                                    
+                                if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                                {
+                                    await Task.Run(() =>
                                     {
+                                        Task.Yield();
                                         Connection.SetSelectedDatabase(dialog.SelectedDatabase.Name);
                                         MetadataPane.SelectDatabaseByName(dialog.SelectedDatabase.Name);
-                                        await MetadataPane.RefreshTablesAsync();
-                                    }
+                                    });
+                                    await MetadataPane.RefreshTablesAsync();
                                 }
-                                catch (Exception ex)
-                                {
-                                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
-                                    var msg = $"The following error occurred while setting the active database: {ex.Message}";
-                                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
-                                    OutputError(msg);
-                                    ActivateOutput();
-                                }
-                            });
+                            }
+                            catch (Exception ex)
+                            {
+                                await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
+                                var msg = $"The following error occurred while setting the active database: {ex.Message}";
+                                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
+                                OutputError(msg);
+                                ActivateOutput();
+                            }
+                            
                             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "End Showing Database Dialog");
                         }
 
@@ -1331,7 +1337,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 finally
                 {
-                    MetadataPane.IsBusy = false;
+                    MetadataPane.SetBusy(false);
                 }
             }
             if (Connection.Databases.Count == 0)
@@ -3391,7 +3397,7 @@ namespace DaxStudio.UI.ViewModels
                     message.FileName = String.Empty;
                     return;
                 }
-                var instances = PowerBIHelper.GetLocalInstances(false);
+                var instances = PowerBIHelper.GetLocalInstances(false,false);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
                 message.FileName = selectedInstance.Name;
             }

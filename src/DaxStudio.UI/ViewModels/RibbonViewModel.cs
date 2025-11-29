@@ -141,20 +141,17 @@ namespace DaxStudio.UI.ViewModels
             await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
         }
 
-        public async void NewQueryWithCurrentConnection(bool copyContent = false)
+        public void NewQueryWithCurrentConnection(bool copyContent = false)
         {
             if (ActiveDocument == null) return;
-            try
-            {
-                await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent));
-            }
-            catch (Exception ex)
-            {
-                var msg = "Error opening new document with current connection";
-                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(NewQueryWithCurrentConnection), msg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"{msg}\n{ex.Message}"));
-
-            }
+            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent)).ContinueWith((precedent) => { 
+                if (precedent.IsFaulted)
+                {
+                    var msg = "Error opening new document with current connection";
+                    Log.Error(precedent.Exception, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(NewQueryWithCurrentConnection), msg);
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"{msg}\n{precedent.Exception.Message}"));
+                }
+            });
         }
 
         public bool CanNewQueryWithCurrentConnection => ActiveDocument != null && ActiveDocument.IsConnected;

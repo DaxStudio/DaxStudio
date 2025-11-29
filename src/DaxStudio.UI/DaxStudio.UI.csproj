@@ -298,6 +298,7 @@
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
       <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\PhysicalQueryPlanTreeGrid.cs" />
     <Compile Include="Controls\StorageEngineTime.xaml.cs">
       <DependentUpon>StorageEngineTime.xaml</DependentUpon>
     </Compile>
@@ -310,6 +311,8 @@
     <Compile Include="Conventions\VisibilityBindingConvention.cs" />
     <Compile Include="Converters\ActiveDocumentConverter.cs" />
     <Compile Include="Converters\AllNumericConverter.cs" />
+    <Compile Include="Converters\AncestorRecordsImageResourceConverter.cs" />
+    <Compile Include="Converters\AncestorRecordsColorConverter.cs" />
     <Compile Include="Converters\BoolNotConverter.cs" />
     <Compile Include="Converters\BoolToCollapsedConverter.cs" />
     <Compile Include="Converters\BoolToDoubleConverter.cs" />
@@ -382,6 +385,7 @@
     <Compile Include="Events\VpaViewExpandedEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
+    <Compile Include="Extensions\DataGridExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\FileExtensions.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
@@ -392,6 +396,7 @@
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="Interfaces\IPowerBIPerformanceData.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
+    <Compile Include="Interfaces\IQueryPlanTreeNode.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="Interfaces\ITraceWatcherData.cs" />
@@ -1490,6 +1495,9 @@
     </PackageReference>
     <PackageReference Include="Dax.Vpax.Obfuscator">
       <Version>1.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="DaxStudio.Controls">
+      <Version>0.1.6</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.1</Version>

@@ -784,6 +784,7 @@
                                                 HorizontalAlignment="Right" 
                                                 VerticalAlignment="Top"
                                                 Width="500"
+                                                    
                                                 Margin="0,12,21,0" 
                                                 Grid.Column="1" Grid.Row="1"
                                                 cal:View.Model="{Binding FindReplaceDialog}" cal:View.ApplyConventions="true"/>

@@ -20,6 +20,7 @@ using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Enums;
+using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
 
 namespace DaxStudio.UI.ViewModels
 {
