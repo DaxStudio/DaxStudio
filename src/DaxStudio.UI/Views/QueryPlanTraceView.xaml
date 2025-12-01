@@ -14,12 +14,20 @@
              xmlns:ctrls="clr-namespace:DaxStudio.Controls;assembly=DaxStudio.Controls"
              xmlns:filter="clr-namespace:DaxStudio.Controls.DataGridFilter;assembly=DaxStudio.Controls.DataGridFilter"
              xmlns:uictrl="clr-namespace:DaxStudio.UI.Controls"
-
+             xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
+
+
+
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+
+                <!-- Design-time only fallback - loads Light theme in designer -->
+                <local:DesignTimeResourceDictionary 
+                    DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Resources/DesignTimeResources.xaml"/>
+
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LabelSpinnerStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>

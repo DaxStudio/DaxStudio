@@ -14,11 +14,18 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
-
             <ResourceDictionary.MergedDictionaries>
-                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
-                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
-                <ResourceDictionary  Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml"/>
+                <!-- Design-time only fallback - loads Light theme in designer -->
+                <local:DesignTimeResourceDictionary 
+                    DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Resources/DesignTimeResources.xaml"/>
+                
+                <!-- These are still here for IntelliSense but DesignTimeResourceDictionary prevents runtime loading -->
+                <local:DesignTimeResourceDictionary 
+                    DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+                <local:DesignTimeResourceDictionary 
+                    DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
+                
+                <!-- Your other runtime dictionaries -->
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/GalleryItem.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/DropDownButton.xaml" />
