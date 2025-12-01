@@ -1076,11 +1076,17 @@ namespace DaxStudio.UI.Model
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
 
             if (message.ServerType == ServerType.Offline)
+            {
                 await OpenOfflineConnectionAsync(message);
+                // Don't publish ConnectionOpenedEvent again for offline connections
+                // as it would clear the metadata that was just populated by ConnectionChangedEvent
+            }
             else
+            {
                 await OpenOnlineConnectionAsync(message, uniqueId);
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+            }
 
-            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
             await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
 
