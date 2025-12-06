@@ -16,19 +16,19 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Design-time only fallback - loads Light theme in designer -->
-                <local:DesignTimeResourceDictionary 
-                    DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Resources/DesignTimeResources.xaml"/>
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Resources/DesignTimeResources.xaml"/>
                 
                 <!-- These are still here for IntelliSense but DesignTimeResourceDictionary prevents runtime loading -->
-                <local:DesignTimeResourceDictionary 
-                    DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
-                <local:DesignTimeResourceDictionary 
-                    DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/Fluent;component/Themes/Generic.xaml"/>
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
                 
                 <!-- Your other runtime dictionaries -->
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/ListViewStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/LoadingPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/GalleryItem.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/FluentRibbon/DropDownButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter"/>
@@ -800,9 +800,64 @@
                                             </ListView.ItemTemplate>
                                                 
                                         </ListView>
-                                </Grid>
                             
-
+                            
+    <!-- Loading Overlay -->
+    <Grid Grid.Row="0" Grid.RowSpan="4" 
+          Panel.ZIndex="1000"
+          Visibility="{Binding IsLoadingRecentFile, Converter={StaticResource BoolToVisibilityConverter}}"
+          Background="#80000000">
+        <Border Background="{DynamicResource Theme.Brush.Default.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.Dialog.Border}"
+                BorderThickness="0"
+                CornerRadius="8"
+                Padding="32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="400"
+                MaxWidth="500">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="Black" Opacity="{DynamicResource Theme.DropShadow.Opacity}"/>
+            </Border.Effect>
+            <StackPanel>
+                <!-- Header with icon and title -->
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 24">
+                    <Image Source="{DynamicResource daxDrawingImage}" 
+                           Width="32" 
+                           Height="32"
+                           Margin="0 0 8 0"/>
+                    <TextBlock Text="Opening File" 
+                               FontSize="28" 
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Content -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 8">
+                    <ProgressBar 
+                        Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                        Width="24"
+                        Height="24"
+                        Margin="0 0 10 0"
+                        IsIndeterminate="True"/>
+                    <TextBlock Text="{Binding LoadingFileName}" 
+                               FontSize="16"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="350"/>
+                </StackPanel>
+                
+                <TextBlock Text="Please wait while the file is being loaded..."
+                           FontSize="12"
+                           Foreground="{DynamicResource Theme.Brush.Muted.Fore}"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+                            </Grid>
 
                         </Fluent:BackstageTabItem>
                         <!--<Fluent:Button x:Name="NewQuery" Header="New Query"></Fluent:Button>-->

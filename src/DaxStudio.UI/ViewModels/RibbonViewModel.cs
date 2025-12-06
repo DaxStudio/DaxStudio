@@ -986,6 +986,14 @@ namespace DaxStudio.UI.ViewModels
             {
                 AddToRecentFiles(message.FileName);
                 RefreshRibbonButtonEnabledStatus();
+                
+                // Close backstage if it was opened from recent files
+                if (_backstageToClose != null && IsLoadingRecentFile)
+                {
+                    _backstageToClose.IsOpen = false;
+                    _backstageToClose = null;
+                    IsLoadingRecentFile = false;
+                }
             }
             catch (Exception ex)
             {
@@ -1010,13 +1018,50 @@ namespace DaxStudio.UI.ViewModels
             }
             return Task.CompletedTask;
         }
-
         public void OpenRecentFile(DaxFile file, FrameworkElement backstage)
         {
-            
             Fluent.Backstage item = GetBackStageParent(backstage as FrameworkElement) as Fluent.Backstage;
             OpenRecentFile(file, item);
+        }
 
+        public async Task OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
+        {
+            if (file == null) return;
+            if (RecentFileNoLongerExists(file)) return;
+
+            try
+            {
+                // Store backstage reference to close it later
+                _backstageToClose = backstage;
+                
+                // Show loading indicator in backstage
+                IsLoadingRecentFile = true;
+                LoadingFileName = file.FileAndExtension;
+                await Dispatcher.Yield();
+
+                // Give UI a chance to update
+                await Task.Delay(50); // Small delay to ensure loading UI shows
+
+
+                MoveFileToTopOfRecentList(file);
+
+                // Load the file - this will happen async
+                await Dispatcher.CurrentDispatcher.InvokeAsync( async () =>
+                {
+                await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file.FullPath));
+                }, DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(OpenRecentFile), "Error opening recent file");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening file: {ex.Message}"));
+                
+                // Make sure to clean up on error
+                if (backstage != null)
+                    backstage.IsOpen = false;
+                IsLoadingRecentFile = false;
+                _backstageToClose = null;
+            }
         }
 
         public FrameworkElement GetBackStageParent(FrameworkElement element)
@@ -1028,21 +1073,35 @@ namespace DaxStudio.UI.ViewModels
         }
 
 
-        public void OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
-        {
-            // if a user clicks on the edge of the recent files list
-            // it's possible to hit this method with no selected file
-            // if this happens we need to exit here and ignore the click
-            if (file == null) return;
+        //public async Task OpenRecentFile(DaxFile file, Fluent.Backstage backstage)
+        //{
+        //    // if a user clicks on the edge of the recent files list
+        //    // it's possible to hit this method with no selected file
+        //    // if this happens we need to exit here and ignore the click
+        //    if (file == null) return;
 
-            // Check if the file exists before attempting to open it
-            if (RecentFileNoLongerExists(file)) return;
+        //    // Check if the file exists before attempting to open it
+        //    if (RecentFileNoLongerExists(file)) return;
 
-            // otherwise clost the backstage menu and open the file
-            backstage.IsOpen = false;
-            MoveFileToTopOfRecentList(file);
-            _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file.FullPath));
-        }
+        //    // otherwise clost the backstage menu and open the file
+        //    backstage.IsOpen = false;
+            
+        //    // allow the UI to process events
+        //    //await Task.Yield();
+        //    await Dispatcher.Yield(DispatcherPriority.Render);
+
+        //    // Load file on UI thread (required for WPF operations)
+        //    // but with lower priority so backstage closes first
+        //    await Dispatcher.CurrentDispatcher.InvokeAsync(
+        //        async () => await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file.FullPath)),
+        //        DispatcherPriority.Background
+        //    );
+
+        //    MoveFileToTopOfRecentList(file);
+        //}
+
+
+
 
         private bool RecentFileNoLongerExists(DaxFile file)
         {
@@ -1282,6 +1341,9 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private UITheme _theme = UITheme.Auto; // default to auto theme
+        private bool _isLoadingRecentFile;
+        private string _loadingFileName;
+        private Fluent.Backstage _backstageToClose;
         public UITheme Theme
         {
             get => _theme;
@@ -1387,7 +1449,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-
         public async void RunBenchmark()
         {
             await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.QueryBenchmark));
@@ -1491,9 +1552,28 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public bool CanDiscoverQueryDependencies => CanRunQuery;
+        public bool IsLoadingRecentFile
+        {
+            get => _isLoadingRecentFile;
+            set
+            {
+                _isLoadingRecentFile = value;
+                NotifyOfPropertyChange(() => IsLoadingRecentFile);
+            }
+        }
+        public string LoadingFileName
+        {
+            get => _loadingFileName;
+            set
+            {
+                _loadingFileName = value;
+                NotifyOfPropertyChange(() => LoadingFileName);
+            }
+        }
         public void DiscoverQueryDependencies()
         {
             ActiveDocument?.DiscoverQueryDependencies();
         }
+
     }
 }

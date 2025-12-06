@@ -3187,11 +3187,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadFile(string fileName)
         {
-            using (new StatusBarMessage(this, $"Loading file: {FileName}..."))
+            using (new StatusBarMessage(this, $"Loading file: {fileName}..."))
             {
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), $"Loading file: {fileName}");
 
-                if (File.Exists(FileName))
+                if (File.Exists(fileName))
                 {
                     FileName = fileName;
                     DisplayName = Path.GetFileName(FileName);
@@ -3214,39 +3214,61 @@ namespace DaxStudio.UI.ViewModels
                     {
                         _isLoadingFile = true;
 
-                        if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                        // Run file I/O on background thread
+                        Task.Run(() =>
                         {
-
-                            using (var package = LoadPackageFile())
+                            if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                             {
-                                LoadState(package);
+                                using (var package = LoadPackageFile())
+                                {
+                                    // LoadState needs UI thread access for some operations
+                                    Execute.OnUIThread(() => LoadState(package));
+                                }
                             }
-                        }
-                        else
+                            else
+                            {
+                                LoadSingleFile();
+                                // LoadState needs UI thread access for some operations
+                                Execute.OnUIThread(() => LoadState());
+                            }
+                        }).ContinueWith(t =>
                         {
-                            LoadSingleFile();
-                            LoadState();
-                        }
+                            // Handle completion on UI thread
+                            if (t.IsFaulted)
+                            {
+                                Log.Error(t.Exception, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
+                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {t.Exception?.InnerException?.Message ?? t.Exception?.Message}"));
+                            }
+                            else
+                            {
+                                _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(fileName));
+                            }
+
+                            _isLoadingFile = false;
+                            IsDirty = false;
+                            State = DocumentState.Loaded;
+                            
+                        }, TaskScheduler.FromCurrentSynchronizationContext());
+                        
+                        // Return immediately - completion happens in continuation
+                        return;
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
                         _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
-                    }
-                    finally
-                    {
                         _isLoadingFile = false;
                     }
                 }
                 else
                 {
-                    Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
-                    OutputError(string.Format("The file '{0}' was not found", FileName));
+                    Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {fileName}");
+                    OutputError(string.Format("The file '{0}' was not found", fileName));
                 }
-
 
                 IsDirty = false;
                 State = DocumentState.Loaded;
+                
             }
         }
 
@@ -3254,43 +3276,58 @@ namespace DaxStudio.UI.ViewModels
         {
             Package package = null;
 
-            var editor = GetEditor();
-
+            // Open package and read contents on background thread
             package = Package.Open(FileName, FileMode.Open, FileAccess.Read);
 
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
             if (!package.PartExists(uriTom)) return package;
 
             var part = package.GetPart(uriTom);
+            
+            // Read the stream on background thread
+            string fileContents;
             using (StreamReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
             {
-                // put contents in edit window
-                editor.Dispatcher.Invoke(() =>
-                {
-                    editor.Document.BeginUpdate();
-                    editor.Document.Text = tr.ReadToEnd();
-                    editor.Document.EndUpdate();
-                });
-
+                fileContents = tr.ReadToEnd();
             }
 
-            return package;
-
-        }
-
-        private void LoadSingleFile()
-        {
-            using (StreamReader tr = new StreamReader(FileName, true))
+            // Update editor on UI thread
+            Execute.OnUIThread(() =>
             {
                 var editor = GetEditor();
                 // put contents in edit window
                 editor.Dispatcher.Invoke(() =>
                 {
                     editor.Document.BeginUpdate();
-                    editor.Document.Text = tr.ReadToEnd();
+                    editor.Document.Text = fileContents;
                     editor.Document.EndUpdate();
                 });
+            });
+
+            return package;
+        }
+
+        private void LoadSingleFile()
+        {
+            // Read file on background thread (we're already on background thread from LoadFile)
+            string fileContents;
+            using (StreamReader tr = new StreamReader(FileName, true))
+            {
+                fileContents = tr.ReadToEnd();
             }
+            
+            // Update editor on UI thread
+            Execute.OnUIThread(() =>
+            {
+                var editor = GetEditor();
+                // put contents in edit window
+                editor.Dispatcher.Invoke(() =>
+                {
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = fileContents;
+                    editor.Document.EndUpdate();
+                });
+            });
         }
 
         public new string DisplayName

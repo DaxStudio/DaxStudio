@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style x:Key="LoadingPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Default.Back}"/>
+        <Setter Property="Opacity" Value="0.95"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+
+</ResourceDictionary>
