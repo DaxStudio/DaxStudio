@@ -36,6 +36,18 @@ namespace DaxStudio.UI.Model
         public int FailedParseQueries { get; set; }
 
         /// <summary>
+        /// Number of SE queries that were cache hits.
+        /// These are not counted in StorageEngineQueryCount in Server Timings.
+        /// </summary>
+        public int CacheHitQueries { get; set; }
+
+        /// <summary>
+        /// Number of batch SE events.
+        /// These are counted in StorageEngineQueryCount in Server Timings but don't have parseable queries.
+        /// </summary>
+        public int BatchEventCount { get; set; }
+
+        /// <summary>
         /// Total CPU time (ms) across all SE queries.
         /// Used to calculate CPU percentage per table.
         /// </summary>
@@ -138,6 +150,8 @@ namespace DaxStudio.UI.Model
             TotalSEQueriesAnalyzed = 0;
             SuccessfullyParsedQueries = 0;
             FailedParseQueries = 0;
+            CacheHitQueries = 0;
+            BatchEventCount = 0;
         }
     }
 

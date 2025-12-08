@@ -314,6 +314,13 @@ namespace DaxStudio.UI.Utils
                 ParseCallbacks(xmSql, analysis);
 
                 analysis.SuccessfullyParsedQueries++;
+                
+                // Track cache hits separately (they don't count toward SE query count in Server Timings)
+                if (_currentQueryIsCacheHit)
+                {
+                    analysis.CacheHitQueries++;
+                }
+                
                 return true;
             }
             catch (Exception ex)

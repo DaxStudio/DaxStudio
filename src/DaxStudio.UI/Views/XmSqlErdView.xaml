@@ -115,7 +115,7 @@
                                 <StackPanel>
                                     <TextBlock Text="Click for table details, double-click to toggle collapse, drag to move" FontWeight="SemiBold"/>
                                     <TextBlock Text="{Binding HeatLevelText, StringFormat='Heat Level: {0}'}" Margin="0,4,0,0"/>
-                                    <TextBlock Text="{Binding HeatAccessibilityIcon}" FontFamily="Segoe UI Symbol" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding HeatAccessibilityIcon}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Border.ToolTip>
                             <Grid>
@@ -177,7 +177,6 @@
                                                FontSize="8"
                                                Foreground="White"
                                                Opacity="0.9"
-                                               FontFamily="Segoe UI Symbol"
                                                VerticalAlignment="Center"/>
                                 </Border>
                                 
@@ -294,6 +293,35 @@
                                            Visibility="{Binding HasHighDuration, Converter={StaticResource BoolToCollapsedConverter}}"
                                            ToolTip="High duration (1s+) may indicate performance concerns"
                                            VerticalAlignment="Center"/>
+                                
+                                <!-- CPU Time info inline -->
+                                <TextBlock Text="  |  " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="CPU: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalCpuFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighCpu}" Value="True">
+                                                    <Setter Property="Foreground" Value="#D84315"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⚡" FontSize="10" Foreground="#D84315"
+                                           Visibility="{Binding HasHighCpu, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High CPU time (100ms+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                         
@@ -336,6 +364,35 @@
                                 <TextBlock Text=" ⏱" FontSize="10" Foreground="#C62828"
                                            Visibility="{Binding HasHighDuration, Converter={StaticResource BoolToCollapsedConverter}}"
                                            ToolTip="High duration (1s+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
+                                
+                                <!-- CPU Time info inline -->
+                                <TextBlock Text="  |  " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="CPU: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalCpuFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighCpu}" Value="True">
+                                                    <Setter Property="Foreground" Value="#D84315"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⚡" FontSize="10" Foreground="#D84315"
+                                           Visibility="{Binding HasHighCpu, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High CPU time (100ms+) may indicate performance concerns"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -905,12 +962,11 @@
                 
                 <!-- Right side: Heat Map toggle buttons -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,4,0">
-                    <TextBlock Text="(green→red)" 
+                    <TextBlock Text="Heat:" 
                                Margin="0,0,4,0" 
                                VerticalAlignment="Center" 
-                               FontStyle="Italic"
-                               FontSize="10"
-                               Opacity="0.6"
+                               FontWeight="SemiBold"
+                               FontSize="11"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     <ToggleButton Style="{StaticResource TraceToggleButton}"
                                   IsChecked="{Binding IsHeatMapModeRowCount}"
@@ -1336,8 +1392,8 @@
                                        ToolTip="DAX callback - indicates reduced SE efficiency"/>
                         </StackPanel>
                     
-                        <!-- Heat indicator -->
-                        <StackPanel Orientation="Horizontal">
+                        <!-- Heat indicator with dynamic mode text -->
+                        <StackPanel Orientation="Horizontal" ToolTip="{Binding HeatMapModeDescription}">
                             <Border Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0" VerticalAlignment="Center">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -1347,7 +1403,9 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                             </Border>
-                            <TextBlock Text="Heat = Usage" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                            <TextBlock Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center">
+                                <Run Text="Heat = "/><Run Text="{Binding HeatMapLegendText, Mode=OneWay}"/>
+                            </TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </Grid>

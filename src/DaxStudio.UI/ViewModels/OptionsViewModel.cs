@@ -399,6 +399,24 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
             }
         }
+
+        private SEDependenciesHeatMapMode _seDependenciesHeatMapMode = SEDependenciesHeatMapMode.CpuTime;
+        [Category("Server Timings")]
+        [SortOrder(11)]
+        [DisplayName("SE Dependencies Heat Map Mode")]
+        [Description("This setting controls what metric is used to color table headers in the Storage Engine Dependencies view. CPU Time (default) is usually the most useful for identifying performance bottlenecks.")]
+        [DataMember, DefaultValue(SEDependenciesHeatMapMode.CpuTime)]
+        public SEDependenciesHeatMapMode SEDependenciesHeatMapMode
+        {
+            get => _seDependenciesHeatMapMode;
+            set
+            {
+                _seDependenciesHeatMapMode = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(SEDependenciesHeatMapMode), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
         #endregion
 
         #region Query Plan properties

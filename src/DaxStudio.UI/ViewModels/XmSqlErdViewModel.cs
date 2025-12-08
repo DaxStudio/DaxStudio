@@ -1,5 +1,7 @@
 using Caliburn.Micro;
 using DaxStudio.Common.Enums;
+using DaxStudio.Interfaces;
+using DaxStudio.Interfaces.Enums;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
@@ -15,27 +17,6 @@ using System.Windows.Media;
 namespace DaxStudio.UI.ViewModels
 {
     /// <summary>
-    /// Defines what metric is used for the table header heat map coloring.
-    /// </summary>
-    public enum HeatMapMode
-    {
-        /// <summary>
-        /// Color based on how many times the table appears in SE queries (Hit Count).
-        /// </summary>
-        HitCount,
-        
-        /// <summary>
-        /// Color based on CPU time consumed by queries on this table.
-        /// </summary>
-        CpuTime,
-        
-        /// <summary>
-        /// Color based on total rows scanned by queries on this table.
-        /// </summary>
-        RowCount
-    }
-
-    /// <summary>
     /// ViewModel for the xmSQL ERD (Entity Relationship Diagram) visualization.
     /// This displays tables, columns, and relationships extracted from Server Timing events.
     /// This is a dockable tool window that can be resized, floated, or maximized.
@@ -46,12 +27,27 @@ namespace DaxStudio.UI.ViewModels
     {
         private readonly XmSqlParser _parser;
         private XmSqlAnalysis _analysis;
+        private IGlobalOptions _options;
+
+        /// <summary>
+        /// Gets the global options instance, lazily loaded via IoC.
+        /// </summary>
+        private IGlobalOptions Options
+        {
+            get
+            {
+                if (_options == null) _options = IoC.Get<IGlobalOptions>();
+                return _options;
+            }
+        }
 
         [ImportingConstructor]
         public XmSqlErdViewModel()
         {
             _parser = new XmSqlParser();
             _analysis = new XmSqlAnalysis();
+            // Initialize heat map mode from persisted options
+            _heatMapMode = Options.SEDependenciesHeatMapMode;
         }
 
         #region ToolWindowBase Implementation
@@ -97,9 +93,11 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Summary text showing counts and total CPU.
+        /// The SE query count matches Server Timings: parsed queries - cache hits + batch events.
         /// </summary>
         public string SummaryText => _analysis != null
-            ? $"{Tables.Count} Tables, {Tables.SelectMany(t => t.Columns).Count()} Columns, {Relationships.Count} Relationships (from {_analysis.SuccessfullyParsedQueries:N0} SE queries" +
+            ? $"{Tables.Count} Tables, {Tables.SelectMany(t => t.Columns).Count()} Columns, {Relationships.Count} Relationships (from {_analysis.SuccessfullyParsedQueries - _analysis.CacheHitQueries + _analysis.BatchEventCount:N0} SE queries" +
+              (_analysis.CacheHitQueries > 0 ? $", {_analysis.CacheHitQueries:N0} cache" : "") +
               (_analysis.TotalCpuTimeMs > 0 ? $", {FormatDurationStatic(_analysis.TotalCpuTimeMs)} total CPU)" : ")")
             : "No data";
 
@@ -299,11 +297,12 @@ namespace DaxStudio.UI.ViewModels
 
         #region Heat Map Mode
 
-        private HeatMapMode _heatMapMode = HeatMapMode.HitCount;
+        private SEDependenciesHeatMapMode _heatMapMode = SEDependenciesHeatMapMode.CpuTime;
         /// <summary>
         /// The metric used for table header heat map coloring.
+        /// Persisted to options so the user's preference is remembered.
         /// </summary>
-        public HeatMapMode HeatMapMode
+        public SEDependenciesHeatMapMode HeatMapMode
         {
             get => _heatMapMode;
             set
@@ -311,6 +310,8 @@ namespace DaxStudio.UI.ViewModels
                 if (_heatMapMode != value)
                 {
                     _heatMapMode = value;
+                    // Persist to options
+                    Options.SEDependenciesHeatMapMode = value;
                     NotifyOfPropertyChange();
                     NotifyOfPropertyChange(nameof(IsHeatMapModeHitCount));
                     NotifyOfPropertyChange(nameof(IsHeatMapModeCpuTime));
@@ -327,8 +328,8 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public bool IsHeatMapModeHitCount
         {
-            get => _heatMapMode == HeatMapMode.HitCount;
-            set { if (value) HeatMapMode = HeatMapMode.HitCount; }
+            get => _heatMapMode == SEDependenciesHeatMapMode.HitCount;
+            set { if (value) HeatMapMode = SEDependenciesHeatMapMode.HitCount; }
         }
 
         /// <summary>
@@ -336,8 +337,8 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public bool IsHeatMapModeCpuTime
         {
-            get => _heatMapMode == HeatMapMode.CpuTime;
-            set { if (value) HeatMapMode = HeatMapMode.CpuTime; }
+            get => _heatMapMode == SEDependenciesHeatMapMode.CpuTime;
+            set { if (value) HeatMapMode = SEDependenciesHeatMapMode.CpuTime; }
         }
 
         /// <summary>
@@ -345,8 +346,8 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public bool IsHeatMapModeRowCount
         {
-            get => _heatMapMode == HeatMapMode.RowCount;
-            set { if (value) HeatMapMode = HeatMapMode.RowCount; }
+            get => _heatMapMode == SEDependenciesHeatMapMode.RowCount;
+            set { if (value) HeatMapMode = SEDependenciesHeatMapMode.RowCount; }
         }
 
         /// <summary>
@@ -354,9 +355,9 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public string HeatMapModeDescription => _heatMapMode switch
         {
-            HeatMapMode.HitCount => "Table colors show how frequently each table appears in SE queries",
-            HeatMapMode.CpuTime => "Table colors show CPU time consumed by queries on each table",
-            HeatMapMode.RowCount => "Table colors show total rows scanned from each table",
+            SEDependenciesHeatMapMode.HitCount => "Table colors show how frequently each table appears in SE queries",
+            SEDependenciesHeatMapMode.CpuTime => "Table colors show CPU time consumed by queries on each table",
+            SEDependenciesHeatMapMode.RowCount => "Table colors show total rows scanned from each table",
             _ => "Table colors indicate relative activity"
         };
 
@@ -365,26 +366,26 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public string HeatMapLegendText => _heatMapMode switch
         {
-            HeatMapMode.HitCount => "Hits",
-            HeatMapMode.CpuTime => "CPU",
-            HeatMapMode.RowCount => "Rows",
+            SEDependenciesHeatMapMode.HitCount => "Hits",
+            SEDependenciesHeatMapMode.CpuTime => "CPU",
+            SEDependenciesHeatMapMode.RowCount => "Rows",
             _ => "Activity"
         };
 
         /// <summary>
         /// Sets heat map mode to Hit Count.
         /// </summary>
-        public void SetHeatMapModeHitCount() => HeatMapMode = HeatMapMode.HitCount;
+        public void SetHeatMapModeHitCount() => HeatMapMode = SEDependenciesHeatMapMode.HitCount;
 
         /// <summary>
         /// Sets heat map mode to CPU Time.
         /// </summary>
-        public void SetHeatMapModeCpuTime() => HeatMapMode = HeatMapMode.CpuTime;
+        public void SetHeatMapModeCpuTime() => HeatMapMode = SEDependenciesHeatMapMode.CpuTime;
 
         /// <summary>
         /// Sets heat map mode to Row Count.
         /// </summary>
-        public void SetHeatMapModeRowCount() => HeatMapMode = HeatMapMode.RowCount;
+        public void SetHeatMapModeRowCount() => HeatMapMode = SEDependenciesHeatMapMode.RowCount;
 
         #endregion
 
@@ -580,14 +581,25 @@ namespace DaxStudio.UI.ViewModels
                 // Calculate total CPU from all scan events (not batch rollups)
                 // This is used to calculate CPU percentage per table
                 long totalCpu = 0;
+                
+                // Track batch events separately - they count toward SE query count but don't have parseable queries
+                int batchEventCount = 0;
 
                 // Parse each SE event's query
                 foreach (var evt in events)
                 {
+                    // Count batch events toward SE query total (they're counted in Server Timings)
+                    // but don't try to parse them as they don't have meaningful query text
+                    if (evt.IsBatchEvent)
+                    {
+                        batchEventCount++;
+                        continue;
+                    }
+                    
                     // Only parse scan events that have query text
-                    // Skip Internal and Batch events as they don't represent actual user queries
+                    // Skip Internal events as they don't represent actual user queries
                     if (evt.IsScanEvent && !string.IsNullOrWhiteSpace(evt.Query) 
-                        && !evt.IsInternalEvent && !evt.IsBatchEvent)
+                        && !evt.IsInternalEvent)
                     {
                         // Track total CPU for percentage calculations
                         if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
@@ -609,6 +621,9 @@ namespace DaxStudio.UI.ViewModels
                         _parser.ParseQueryWithMetrics(evt.Query, _analysis, metrics);
                     }
                 }
+                
+                // Add batch event count to analysis for accurate SE query count matching Server Timings
+                _analysis.BatchEventCount = batchEventCount;
 
                 // Store total CPU in analysis for reference
                 _analysis.TotalCpuTimeMs = totalCpu;
@@ -759,7 +774,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Tables.Count == 0) return;
 
-            const double tableWidth = 200;
+            const double tableWidth = 220;
             const double tableHeight = 180;
             const double headerHeight = 75; // Fixed header area (title, metrics, etc.)
             const double columnsHeight = tableHeight - headerHeight; // Height for columns area
@@ -2564,7 +2579,7 @@ namespace DaxStudio.UI.ViewModels
 
             switch (_heatMapMode)
             {
-                case HeatMapMode.CpuTime:
+                case SEDependenciesHeatMapMode.CpuTime:
                     {
                         // Calculate heat based on CPU time
                         long maxCpu = Tables.Max(t => t.TotalCpuTimeMs);
@@ -2579,7 +2594,7 @@ namespace DaxStudio.UI.ViewModels
                         }
                         break;
                     }
-                case HeatMapMode.RowCount:
+                case SEDependenciesHeatMapMode.RowCount:
                     {
                         // Calculate heat based on total rows scanned
                         long maxRows = Tables.Max(t => t.TotalEstimatedRows);
@@ -2839,6 +2854,21 @@ namespace DaxStudio.UI.ViewModels
         /// Whether this table has high duration (>100ms total).
         /// </summary>
         public bool HasHighDuration => TotalDurationMs >= 100;
+
+        /// <summary>
+        /// Formatted string for total CPU time.
+        /// </summary>
+        public string TotalCpuFormatted => FormatDuration(TotalCpuTimeMs);
+        
+        /// <summary>
+        /// Whether this table has CPU time data.
+        /// </summary>
+        public bool HasCpuData => TotalCpuTimeMs > 0;
+        
+        /// <summary>
+        /// Whether this table has high CPU time (>100ms total).
+        /// </summary>
+        public bool HasHighCpu => TotalCpuTimeMs >= 100;
 
         #region Cache Hit/Miss Tracking
         
@@ -3167,18 +3197,19 @@ namespace DaxStudio.UI.ViewModels
         public string HeatLevelPercent => $"{(_heatLevel * 100):0}%";
 
         /// <summary>
-        /// Gets an accessibility icon based on heat level.
-        /// Uses different shapes: ○ (low) → ◐ (medium) → ● (high)
+        /// Gets an accessibility indicator based on heat level.
+        /// Shows ascending bars to represent intensity - like a signal strength indicator.
         /// </summary>
         public string HeatAccessibilityIcon
         {
             get
             {
-                if (_heatLevel >= 0.8) return "●●●"; // Hot - 3 filled
-                if (_heatLevel >= 0.6) return "●●○"; // Warm - 2 filled
-                if (_heatLevel >= 0.4) return "●○○"; // Medium - 1 filled
-                if (_heatLevel >= 0.2) return "◐○○"; // Cool - half filled
-                return "○○○"; // Low - empty
+                // Using ascending bar indicator like signal strength
+                if (_heatLevel >= 0.8) return "▁▃▅▇"; // Hot - full signal
+                if (_heatLevel >= 0.6) return "▁▃▅"; // Warm - 3 bars
+                if (_heatLevel >= 0.4) return "▁▃"; // Medium - 2 bars
+                if (_heatLevel >= 0.2) return "▁"; // Cool - 1 bar
+                return ""; // Low - no indicator
             }
         }
 
@@ -3190,18 +3221,26 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Gets the heat color brush based on heat level.
-        /// Uses blue (cool) to orange (hot) gradient for better accessibility.
-        /// This color scheme is more distinguishable for color-blind users.
+        /// Uses green (cool) to yellow to orange to red (hot) gradient matching the legend.
         /// </summary>
         public System.Windows.Media.SolidColorBrush HeatColor
         {
             get
             {
-                // Use blue (cool) to orange (hot) - more accessible than green-to-red
-                // Blue: H=210, Orange: H=30
-                // Interpolate: low heat = blue (210°), high heat = orange (30°)
-                double hue = 210 - (_heatLevel * 180); // 210 -> 30
-                var color = HslToRgb(hue, 0.65, 0.5);
+                // Use green (120°) -> yellow (60°) -> orange (30°) -> red (0°)
+                // This matches the legend gradient shown in the status bar
+                double hue;
+                if (_heatLevel <= 0.5)
+                {
+                    // Green (120) to Yellow (60) for first half
+                    hue = 120 - (_heatLevel * 2 * 60); // 120 -> 60
+                }
+                else
+                {
+                    // Yellow (60) to Red (0) for second half
+                    hue = 60 - ((_heatLevel - 0.5) * 2 * 60); // 60 -> 0
+                }
+                var color = HslToRgb(hue, 0.7, 0.45);
                 return new System.Windows.Media.SolidColorBrush(color);
             }
         }
@@ -3357,7 +3396,7 @@ namespace DaxStudio.UI.ViewModels
             set { _y = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CenterY)); }
         }
 
-        private double _width = 180;
+        private double _width = 220;
         public double Width
         {
             get => _width;

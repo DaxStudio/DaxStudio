@@ -168,6 +168,7 @@ namespace DaxStudio.Interfaces
         int DefaultTextFileType { get; set; }
 
         StorageEventTimelineStyle StorageEventHeatmapStyle { get; set; }
+        SEDependenciesHeatMapMode SEDependenciesHeatMapMode { get; set; }
         bool ExportServerTimingDetailsToFolder { get; set; }
 
         TextFileType CmdLineTextFileType { get; set; }
