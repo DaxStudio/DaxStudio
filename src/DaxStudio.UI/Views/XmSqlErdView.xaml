@@ -833,6 +833,15 @@
                 </Button>
                 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        ToolTip="Export detailed debug info about SE events (for troubleshooting parser issues)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🐛" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Debug</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
                         ToolTip="Copy diagram as image to clipboard (paste into email, Teams, etc.)">
                     <StackPanel Orientation="Horizontal">

@@ -9,11 +9,62 @@ namespace DaxStudio.UI.Utils
 {
     /// <summary>
     /// Parses xmSQL queries from Server Timing events to extract table, column, and relationship information.
+    /// Also parses DirectQuery SQL to extract table dependencies from external data sources.
     /// Includes lineage tracking to resolve temporary/intermediate tables back to physical tables.
     /// </summary>
     public class XmSqlParser
     {
-        // Regex patterns for parsing xmSQL
+        // ==================== SQL (DirectQuery) PATTERNS ====================
+        // These patterns match T-SQL syntax used in DirectQuery events
+        // RAW SQL format uses subselect blocks like:
+        // (
+        //   select [$Table].[Column1] as [Column1], ...
+        //   from [dbo].[TableName] as [$Table]
+        // )
+        
+        // Matches a complete subselect block with columns and table
+        // Captures everything between "select" and "from [schema].[table] as [$Table]"
+        private static readonly Regex SqlSubselectBlockPattern = new Regex(
+            @"\(\s*select\s+(?<columns>.*?)\s+from\s+\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+as\s+\[\$Table\]\s*\)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        // Matches column references in subselect: [$Table].[ColumnName] as [ColumnName]
+        private static readonly Regex SqlTableColumnPattern = new Regex(
+            @"\[\$Table\]\s*\.\s*\[(?<column>[^\]]+)\]\s+as\s+\[[^\]]+\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // PRIMARY PATTERN for RAW SQL: from [dbo].[TableName] as [$Table]
+        // This is the most reliable pattern - matches "from [schema].[table] as"
+        private static readonly Regex SqlFromTablePattern = new Regex(
+            @"\bfrom\s+\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+as\s+",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Matches SQL table with schema and alias: ([dbo].[TableName]) AS [t4]
+        // For formatted SQL that wraps table in parens
+        private static readonly Regex SqlTableInParensPattern = new Regex(
+            @"\(\s*\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s*\)\s*AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Matches SQL JOIN with schema.table: INNER JOIN [dbo].[TableName] AS [alias]
+        // JOIN keyword ensures this is a table reference, not a column
+        private static readonly Regex SqlJoinTablePattern = new Regex(
+            @"\bJOIN\s+\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Matches bare SQL table reference: [dbo].[TableName] AS [alias]
+        // For tables in FROM clause that aren't wrapped in parens or after JOIN
+        private static readonly Regex SqlBareTablePattern = new Regex(
+            @"(?<!\])\s*\[(?<schema>dbo|sys)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Matches SQL ON clause for joins: ON ( [t8].[Axis_Date] = [t7].[Date] )
+        // Used to extract relationships between tables
+        private static readonly Regex SqlOnClausePattern = new Regex(
+            @"\bon\s+\(?\s*\[(?<leftAlias>[^\]]+)\]\s*\.\s*\[(?<leftCol>[^\]]+)\]\s*=\s*\[(?<rightAlias>[^\]]+)\]\s*\.\s*\[(?<rightCol>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // ==================== xmSQL PATTERNS ====================
+        // These patterns match xmSQL syntax used in VertiPaq SE events
 
         // Matches table and column references like 'TableName'[ColumnName] or 'Table Name'[Column Name]
         private static readonly Regex TableColumnPattern = new Regex(
@@ -328,6 +379,163 @@ namespace DaxStudio.UI.Utils
                 Log.Warning(ex, "Failed to parse xmSQL query: {Query}", xmSql.Substring(0, Math.Min(100, xmSql.Length)));
                 analysis.FailedParseQueries++;
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Parses a DirectQuery SQL query to extract table dependencies, columns, and relationships.
+        /// DirectQuery events contain T-SQL syntax with [schema].[table] format.
+        /// </summary>
+        /// <param name="sql">The SQL query text to parse.</param>
+        /// <param name="analysis">The analysis object to add results to.</param>
+        /// <param name="metrics">SE event metrics including duration data.</param>
+        /// <returns>True if parsing was successful, false otherwise.</returns>
+        public bool ParseDirectQuerySql(string sql, XmSqlAnalysis analysis, SeEventMetrics metrics)
+        {
+            if (string.IsNullOrWhiteSpace(sql))
+                return false;
+
+            try
+            {
+                analysis.TotalSEQueriesAnalyzed++;
+                _currentQueryEstimatedRows = metrics?.EstimatedRows;
+                _currentQueryDurationMs = metrics?.DurationMs;
+                _currentQueryIsCacheHit = metrics?.IsCacheHit ?? false;
+                _currentQueryCpuTimeMs = metrics?.CpuTimeMs;
+                _currentQueryCpuFactor = metrics?.CpuFactor;
+                _currentQueryNetParallelDurationMs = metrics?.NetParallelDurationMs;
+                _currentQueryId = metrics?.QueryId ?? 0;
+
+                // Use the new multi-pass parser for DirectQuery SQL
+                var dqParser = new DirectQuerySqlParser(sql);
+                dqParser.Parse();
+
+                // Transfer results to analysis
+                foreach (var tableName in dqParser.Tables.Keys)
+                {
+                    var dqTable = dqParser.Tables[tableName];
+                    var table = analysis.GetOrAddTable(tableName);
+                    if (table != null)
+                    {
+                        table.IsFromTable = true;
+                        table.HitCount++;
+                        table.QueryCount++;
+                        TrackTableMetrics(table);
+
+                        // Only add columns that are actually used (not all columns from subselect)
+                        foreach (var colInfo in dqTable.Columns.Values)
+                        {
+                            var column = table.GetOrAddColumn(colInfo.Name);
+                            if (column != null)
+                            {
+                                foreach (var usage in colInfo.Usages)
+                                {
+                                    column.AddUsage(usage);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Transfer relationships
+                foreach (var rel in dqParser.Relationships)
+                {
+                    // Check if relationship already exists (either direction)
+                    bool exists = analysis.Relationships.Any(r =>
+                        (r.FromTable.Equals(rel.FromTable, StringComparison.OrdinalIgnoreCase) &&
+                         r.FromColumn.Equals(rel.FromColumn, StringComparison.OrdinalIgnoreCase) &&
+                         r.ToTable.Equals(rel.ToTable, StringComparison.OrdinalIgnoreCase) &&
+                         r.ToColumn.Equals(rel.ToColumn, StringComparison.OrdinalIgnoreCase)) ||
+                        (r.FromTable.Equals(rel.ToTable, StringComparison.OrdinalIgnoreCase) &&
+                         r.FromColumn.Equals(rel.ToColumn, StringComparison.OrdinalIgnoreCase) &&
+                         r.ToTable.Equals(rel.FromTable, StringComparison.OrdinalIgnoreCase) &&
+                         r.ToColumn.Equals(rel.FromColumn, StringComparison.OrdinalIgnoreCase)));
+
+                    if (!exists)
+                    {
+                        analysis.Relationships.Add(new XmSqlRelationship
+                        {
+                            FromTable = rel.FromTable,
+                            FromColumn = rel.FromColumn,
+                            ToTable = rel.ToTable,
+                            ToColumn = rel.ToColumn,
+                            JoinType = rel.JoinType
+                        });
+                    }
+                }
+
+                analysis.SuccessfullyParsedQueries++;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to parse DirectQuery SQL: {Query}", sql.Substring(0, Math.Min(100, sql.Length)));
+                analysis.FailedParseQueries++;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Helper to track metrics on a table from the current query.
+        /// </summary>
+        private void TrackTableMetrics(XmSqlTableInfo table)
+        {
+            if (table == null) return;
+
+            // Track cache hits/misses
+            if (_currentQueryIsCacheHit)
+            {
+                table.CacheHits++;
+            }
+            else
+            {
+                table.CacheMisses++;
+            }
+
+            // Track estimated rows
+            if (_currentQueryEstimatedRows.HasValue && _currentQueryEstimatedRows.Value > 0)
+            {
+                table.TotalEstimatedRows += _currentQueryEstimatedRows.Value;
+                if (_currentQueryEstimatedRows.Value > table.MaxEstimatedRows)
+                {
+                    table.MaxEstimatedRows = _currentQueryEstimatedRows.Value;
+                }
+            }
+
+            // Track duration
+            if (_currentQueryDurationMs.HasValue && _currentQueryDurationMs.Value > 0)
+            {
+                table.TotalDurationMs += _currentQueryDurationMs.Value;
+                if (_currentQueryDurationMs.Value > table.MaxDurationMs)
+                {
+                    table.MaxDurationMs = _currentQueryDurationMs.Value;
+                }
+            }
+
+            // Track parallelism metrics
+            if (_currentQueryCpuTimeMs.HasValue && _currentQueryCpuTimeMs.Value > 0)
+            {
+                table.TotalCpuTimeMs += _currentQueryCpuTimeMs.Value;
+            }
+
+            if (_currentQueryNetParallelDurationMs.HasValue && _currentQueryNetParallelDurationMs.Value > 0)
+            {
+                table.TotalParallelDurationMs += _currentQueryNetParallelDurationMs.Value;
+            }
+
+            if (_currentQueryCpuFactor.HasValue && _currentQueryCpuFactor.Value > 1.0)
+            {
+                table.ParallelQueryCount++;
+                if (_currentQueryCpuFactor.Value > table.MaxCpuFactor)
+                {
+                    table.MaxCpuFactor = _currentQueryCpuFactor.Value;
+                }
+            }
+
+            // Track query IDs
+            if (_currentQueryId > 0)
+            {
+                table.QueryIds.Add(_currentQueryId);
             }
         }
 

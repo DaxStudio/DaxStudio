@@ -145,6 +145,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        /// <summary>
+        /// Returns true for DirectQuery events (SQL queries to external data sources).
+        /// These contain SQL syntax, not xmSQL, so they need different parsing.
+        /// </summary>
+        public bool IsDirectQueryEvent
+        {
+            get
+            {
+                return this.Class == DaxStudioTraceEventClass.DirectQueryBegin
+                    || this.Class == DaxStudioTraceEventClass.DirectQueryEnd;
+            }
+        }
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 

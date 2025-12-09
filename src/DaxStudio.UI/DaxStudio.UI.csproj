@@ -627,6 +627,8 @@
     <Compile Include="Utils\ClipboardHelper.cs" />
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
+    <Compile Include="Utils\DirectQuerySqlParser.cs" />
+    <Compile Include="Utils\SqlBlockParser.cs" />
     <Compile Include="Utils\XmSqlParser.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />

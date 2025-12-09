@@ -28,6 +28,7 @@ namespace DaxStudio.UI.ViewModels
         private readonly XmSqlParser _parser;
         private XmSqlAnalysis _analysis;
         private IGlobalOptions _options;
+        private List<TraceStorageEngineEvent> _rawEvents;  // Stored for debug export
 
         /// <summary>
         /// Gets the global options instance, lazily loaded via IoC.
@@ -573,6 +574,9 @@ namespace DaxStudio.UI.ViewModels
 
             try
             {
+                // Store events for debug export
+                _rawEvents = events.ToList();
+
                 // Clear previous analysis
                 _analysis = new XmSqlAnalysis();
                 Tables.Clear();
@@ -596,28 +600,44 @@ namespace DaxStudio.UI.ViewModels
                         continue;
                     }
                     
-                    // Only parse scan events that have query text
                     // Skip Internal events as they don't represent actual user queries
-                    if (evt.IsScanEvent && !string.IsNullOrWhiteSpace(evt.Query) 
-                        && !evt.IsInternalEvent)
-                    {
-                        // Track total CPU for percentage calculations
-                        if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
-                        {
-                            totalCpu += evt.CpuTime.Value;
-                        }
+                    if (evt.IsInternalEvent)
+                        continue;
 
-                        // Build full metrics including cache hit status and parallelism data
-                        var metrics = new XmSqlParser.SeEventMetrics
-                        {
-                            QueryId = evt.RowNumber,  // Track which query this is for Query Plan Integration
-                            EstimatedRows = evt.EstimatedRows,
-                            DurationMs = evt.Duration,
-                            IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
-                            CpuTimeMs = evt.CpuTime,
-                            CpuFactor = evt.CpuFactor,
-                            NetParallelDurationMs = evt.NetParallelDuration
-                        };
+                    // Skip events without query text
+                    if (string.IsNullOrWhiteSpace(evt.Query))
+                        continue;
+
+                    // Track total CPU for percentage calculations
+                    if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
+                    {
+                        totalCpu += evt.CpuTime.Value;
+                    }
+
+                    // Build full metrics including cache hit status and parallelism data
+                    var metrics = new XmSqlParser.SeEventMetrics
+                    {
+                        QueryId = evt.RowNumber,  // Track which query this is for Query Plan Integration
+                        EstimatedRows = evt.EstimatedRows,
+                        DurationMs = evt.Duration,
+                        IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
+                        CpuTimeMs = evt.CpuTime,
+                        CpuFactor = evt.CpuFactor,
+                        NetParallelDurationMs = evt.NetParallelDuration
+                    };
+
+                    // Parse based on event type
+                    if (evt.IsDirectQueryEvent)
+                    {
+                        // DirectQuery events contain T-SQL syntax for external data sources
+                        // Use TextData (raw SQL) which has consistent "from [schema].[table] as" format
+                        // rather than Query (formatted) which varies
+                        var sqlText = !string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query;
+                        _parser.ParseDirectQuerySql(sqlText, _analysis, metrics);
+                    }
+                    else if (evt.IsScanEvent)
+                    {
+                        // VertiPaq SE events contain xmSQL syntax
                         _parser.ParseQueryWithMetrics(evt.Query, _analysis, metrics);
                     }
                 }
@@ -1658,6 +1678,158 @@ namespace DaxStudio.UI.ViewModels
         public void CopyImageToClipboard()
         {
             CopyImageRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Exports detailed debug information about all SE events to a text file.
+        /// This includes raw event data, parsed results, and alias mappings for troubleshooting.
+        /// </summary>
+        public void ExportDebugInfo()
+        {
+            if (_rawEvents == null || !_rawEvents.Any())
+            {
+                MessageBox.Show("No events to export. Run a query first.", "Export Debug Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Text files|*.txt|All files|*.*",
+                Title = "Export SE Dependencies Debug Info",
+                FileName = $"SEDependencies_Debug_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine("========================================");
+                    sb.AppendLine("SE DEPENDENCIES DEBUG EXPORT");
+                    sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    sb.AppendLine("========================================");
+                    sb.AppendLine();
+
+                    // Summary
+                    sb.AppendLine("=== SUMMARY ===");
+                    sb.AppendLine($"Total Events: {_rawEvents.Count}");
+                    sb.AppendLine($"Scan Events (xmSQL): {_rawEvents.Count(e => e.IsScanEvent && !e.IsDirectQueryEvent)}");
+                    sb.AppendLine($"DirectQuery Events (SQL): {_rawEvents.Count(e => e.IsDirectQueryEvent)}");
+                    sb.AppendLine($"Batch Events: {_rawEvents.Count(e => e.IsBatchEvent)}");
+                    sb.AppendLine($"Internal Events: {_rawEvents.Count(e => e.IsInternalEvent)}");
+                    sb.AppendLine($"Tables Found: {_analysis?.Tables?.Count ?? 0}");
+                    sb.AppendLine($"Relationships Found: {_analysis?.Relationships?.Count ?? 0}");
+                    sb.AppendLine();
+
+                    // Parsed Tables
+                    sb.AppendLine("=== PARSED TABLES ===");
+                    if (_analysis?.Tables != null)
+                    {
+                        foreach (var table in _analysis.Tables.Values.OrderBy(t => t.TableName))
+                        {
+                            sb.AppendLine($"  [{table.TableName}]");
+                            sb.AppendLine($"    HitCount: {table.HitCount}, QueryCount: {table.QueryCount}");
+                            sb.AppendLine($"    IsFromTable: {table.IsFromTable}, IsJoinedTable: {table.IsJoinedTable}");
+                            sb.AppendLine($"    Columns ({table.Columns.Count}):");
+                            foreach (var col in table.Columns.Values.OrderBy(c => c.ColumnName))
+                            {
+                                sb.AppendLine($"      - {col.ColumnName} [{col.UsageTypes}]");
+                            }
+                        }
+                    }
+                    sb.AppendLine();
+
+                    // Parsed Relationships
+                    sb.AppendLine("=== PARSED RELATIONSHIPS ===");
+                    if (_analysis?.Relationships != null)
+                    {
+                        foreach (var rel in _analysis.Relationships)
+                        {
+                            sb.AppendLine($"  [{rel.FromTable}].[{rel.FromColumn}] --{rel.JoinType}--> [{rel.ToTable}].[{rel.ToColumn}]");
+                        }
+                    }
+                    sb.AppendLine();
+
+                    // Raw Events
+                    sb.AppendLine("=== RAW EVENTS ===");
+                    int eventNum = 0;
+                    foreach (var evt in _rawEvents)
+                    {
+                        eventNum++;
+                        sb.AppendLine($"--- Event #{eventNum} ---");
+                        sb.AppendLine($"  Class: {evt.Class}");
+                        sb.AppendLine($"  Subclass: {evt.Subclass}");
+                        sb.AppendLine($"  RowNumber: {evt.RowNumber}");
+                        sb.AppendLine($"  Duration: {evt.Duration} ms");
+                        sb.AppendLine($"  CpuTime: {evt.CpuTime} ms");
+                        sb.AppendLine($"  EstimatedRows: {evt.EstimatedRows}");
+                        sb.AppendLine($"  IsScanEvent: {evt.IsScanEvent}");
+                        sb.AppendLine($"  IsDirectQueryEvent: {evt.IsDirectQueryEvent}");
+                        sb.AppendLine($"  IsBatchEvent: {evt.IsBatchEvent}");
+                        sb.AppendLine($"  IsInternalEvent: {evt.IsInternalEvent}");
+                        
+                        sb.AppendLine($"  Query (formatted):");
+                        if (!string.IsNullOrWhiteSpace(evt.Query))
+                        {
+                            foreach (var line in evt.Query.Split('\n'))
+                            {
+                                sb.AppendLine($"    {line.TrimEnd()}");
+                            }
+                        }
+                        else
+                        {
+                            sb.AppendLine("    (empty)");
+                        }
+                        
+                        sb.AppendLine($"  TextData (raw):");
+                        if (!string.IsNullOrWhiteSpace(evt.TextData))
+                        {
+                            foreach (var line in evt.TextData.Split('\n'))
+                            {
+                                sb.AppendLine($"    {line.TrimEnd()}");
+                            }
+                        }
+                        else
+                        {
+                            sb.AppendLine("    (empty)");
+                        }
+                        
+                        // For DirectQuery events, show block parser analysis
+                        if (evt.IsDirectQueryEvent && !string.IsNullOrWhiteSpace(evt.TextData))
+                        {
+                            sb.AppendLine($"  Block Parser Analysis:");
+                            try
+                            {
+                                var blockParser = new Utils.SqlBlockParser(evt.TextData);
+                                var root = blockParser.Parse();
+                                if (root != null)
+                                {
+                                    sb.AppendLine(blockParser.GetAliasSummary());
+                                }
+                            }
+                            catch (Exception parseEx)
+                            {
+                                sb.AppendLine($"    Error parsing: {parseEx.Message}");
+                            }
+                        }
+                        
+                        sb.AppendLine();
+                    }
+
+                    System.IO.File.WriteAllText(dialog.FileName, sb.ToString());
+                    
+                    // Open the file
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = dialog.FileName,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to export debug info: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         #endregion
