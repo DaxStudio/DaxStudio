@@ -426,6 +426,25 @@ namespace DaxStudio.UI.Views
             }
         }
 
+        private void Relationship_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is ErdRelationshipViewModel relVm)
+            {
+                if (DataContext is XmSqlErdViewModel erdVm)
+                {
+                    erdVm.OnRelationshipMouseEnter(relVm);
+                }
+            }
+        }
+
+        private void Relationship_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (DataContext is XmSqlErdViewModel erdVm)
+            {
+                erdVm.OnRelationshipMouseLeave();
+            }
+        }
+
         private void TableHeader_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is ErdTableViewModel tableVm)

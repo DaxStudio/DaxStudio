@@ -769,7 +769,105 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             
+            // Calculate offsets for parallel relationship lines
+            CalculateParallelRelationshipOffsets();
+            
             Log.Debug("Total relationship VMs created: {Count}", Relationships.Count);
+        }
+
+        /// <summary>
+        /// Calculates offsets for relationships between the same pair of tables.
+        /// This prevents multiple relationships from overlapping by spacing them apart.
+        /// </summary>
+        private void CalculateParallelRelationshipOffsets()
+        {
+            const double ParallelGap = 25; // Gap between parallel relationship lines
+            
+            // Group relationships by table pair (order-independent)
+            var tablePairGroups = Relationships
+                .GroupBy(r => 
+                {
+                    // Create a consistent key regardless of direction
+                    var tables = new[] { r.FromTable, r.ToTable }.OrderBy(t => t, StringComparer.OrdinalIgnoreCase).ToArray();
+                    return $"{tables[0]}|{tables[1]}";
+                })
+                .Where(g => g.Count() > 1) // Only process groups with multiple relationships
+                .ToList();
+            
+            foreach (var group in tablePairGroups)
+            {
+                var rels = group.ToList();
+                int count = rels.Count;
+                
+                // Calculate offsets to center the group
+                // For 2 relationships: offsets are -12.5, +12.5
+                // For 3 relationships: offsets are -25, 0, +25
+                for (int i = 0; i < count; i++)
+                {
+                    double offset = (i - (count - 1) / 2.0) * ParallelGap;
+                    rels[i].ParallelOffset = offset;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when mouse enters a relationship line. Highlights the columns involved.
+        /// </summary>
+        public void OnRelationshipMouseEnter(ErdRelationshipViewModel relationship)
+        {
+            if (relationship == null) return;
+            
+            // Highlight the relationship line
+            relationship.IsHighlighted = true;
+            
+            // Highlight the columns involved in this relationship
+            var fromTable = Tables.FirstOrDefault(t => t.TableName.Equals(relationship.FromTable, StringComparison.OrdinalIgnoreCase));
+            var toTable = Tables.FirstOrDefault(t => t.TableName.Equals(relationship.ToTable, StringComparison.OrdinalIgnoreCase));
+            
+            if (fromTable != null)
+            {
+                var col = fromTable.Columns.FirstOrDefault(c => 
+                    c.ColumnName.Equals(relationship.FromColumn, StringComparison.OrdinalIgnoreCase));
+                if (col != null) col.IsHighlighted = true;
+            }
+            
+            if (toTable != null)
+            {
+                var col = toTable.Columns.FirstOrDefault(c => 
+                    c.ColumnName.Equals(relationship.ToColumn, StringComparison.OrdinalIgnoreCase));
+                if (col != null) col.IsHighlighted = true;
+            }
+            
+            // Dim other relationships
+            foreach (var rel in Relationships)
+            {
+                if (rel != relationship)
+                {
+                    rel.IsDimmed = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when mouse leaves a relationship line. Clears highlighting.
+        /// </summary>
+        public void OnRelationshipMouseLeave()
+        {
+            // Clear all column highlighting
+            foreach (var table in Tables)
+            {
+                foreach (var col in table.Columns)
+                {
+                    col.IsHighlighted = false;
+                }
+            }
+            
+            // Clear relationship highlighting and dimming
+            foreach (var rel in Relationships)
+            {
+                rel.IsHighlighted = false;
+                rel.IsDimmed = false;
+            }
         }
 
         /// <summary>
@@ -803,7 +901,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Tables.Count == 0) return;
 
-            const double tableWidth = 220;
+            const double tableWidth = 260;
             const double tableHeight = 180;
             const double headerHeight = 75; // Fixed header area (title, metrics, etc.)
             const double columnsHeight = tableHeight - headerHeight; // Height for columns area
@@ -3578,7 +3676,7 @@ namespace DaxStudio.UI.ViewModels
             set { _y = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(CenterY)); }
         }
 
-        private double _width = 220;
+        private double _width = 260;
         public double Width
         {
             get => _width;
@@ -3814,6 +3912,16 @@ namespace DaxStudio.UI.ViewModels
             get => _isSearchMatch;
             set { _isSearchMatch = value; NotifyOfPropertyChange(); }
         }
+
+        private bool _isHighlighted;
+        /// <summary>
+        /// Whether this column is highlighted (part of a hovered relationship).
+        /// </summary>
+        public bool IsHighlighted
+        {
+            get => _isHighlighted;
+            set { _isHighlighted = value; NotifyOfPropertyChange(); }
+        }
     }
 
     /// <summary>
@@ -3931,6 +4039,16 @@ namespace DaxStudio.UI.ViewModels
             set { _isQueryFiltered = value; NotifyOfPropertyChange(); }
         }
 
+        private double _parallelOffset;
+        /// <summary>
+        /// Offset for parallel relationship lines when multiple relationships exist between the same tables.
+        /// </summary>
+        public double ParallelOffset
+        {
+            get => _parallelOffset;
+            set { _parallelOffset = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(PathData)); }
+        }
+
         #endregion
 
         // Line path coordinates
@@ -4004,6 +4122,7 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Path data for drawing the relationship line (bezier curve).
         /// Adapts to horizontal or vertical orientation based on edge types.
+        /// Supports parallel offset for multiple relationships between same tables.
         /// </summary>
         public string PathData
         {
@@ -4012,13 +4131,17 @@ namespace DaxStudio.UI.ViewModels
                 // Determine if this is a horizontal or vertical relationship
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
                 
+                // Apply parallel offset perpendicular to the line direction
+                double offsetX = isVertical ? _parallelOffset : 0;
+                double offsetY = isVertical ? 0 : _parallelOffset;
+                
                 if (isVertical)
                 {
                     // Vertical bezier curve (for top/bottom connections)
                     double midY = (StartY + EndY) / 2;
                     return string.Format(System.Globalization.CultureInfo.InvariantCulture,
                         "M {0},{1} C {2},{3} {4},{5} {6},{7}",
-                        StartX, StartY, StartX, midY, EndX, midY, EndX, EndY);
+                        StartX + offsetX, StartY, StartX + offsetX, midY, EndX + offsetX, midY, EndX + offsetX, EndY);
                 }
                 else
                 {
@@ -4026,16 +4149,33 @@ namespace DaxStudio.UI.ViewModels
                     double midX = (StartX + EndX) / 2;
                     return string.Format(System.Globalization.CultureInfo.InvariantCulture,
                         "M {0},{1} C {2},{3} {4},{5} {6},{7}",
-                        StartX, StartY, midX, StartY, midX, EndY, EndX, EndY);
+                        StartX, StartY + offsetY, midX, StartY + offsetY, midX, EndY + offsetY, EndX, EndY + offsetY);
                 }
             }
         }
 
         /// <summary>
-        /// Label position (middle of the line).
+        /// Label position (middle of the line), accounting for parallel offset.
         /// </summary>
-        public double LabelX => (StartX + EndX) / 2;
-        public double LabelY => (StartY + EndY) / 2 - 10;
+        public double LabelX
+        {
+            get
+            {
+                bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
+                double offsetX = isVertical ? _parallelOffset : 0;
+                return (StartX + EndX) / 2 + offsetX;
+            }
+        }
+        
+        public double LabelY
+        {
+            get
+            {
+                bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
+                double offsetY = isVertical ? 0 : _parallelOffset;
+                return (StartY + EndY) / 2 - 10 + offsetY;
+            }
+        }
 
         /// <summary>
         /// Updates the path based on table positions.
