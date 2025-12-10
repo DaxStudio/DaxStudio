@@ -7,6 +7,7 @@
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:enums="clr-namespace:DaxStudio.Interfaces.Enums;assembly=DaxStudio.Interfaces"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource Theme.Brush.Content.Back}"
@@ -23,6 +24,7 @@
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter" />
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             
             <!-- Column Item Style -->
@@ -206,7 +208,7 @@
                             </Grid>
                         </Border>
                         
-                        <!-- Date Table / Field Parameter / Private / Hidden indicators -->
+                        <!-- Storage Mode / VPA Stats / Field Parameter / Private / Hidden indicators -->
                         <Border Grid.Row="1"
                                 Padding="8,2"
                                 Background="{DynamicResource Theme.Brush.MenuBar.Back}">
@@ -214,9 +216,6 @@
                                 <Style TargetType="Border">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsDateTable}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
                                         <DataTrigger Binding="{Binding IsVisible}" Value="False">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
@@ -235,32 +234,46 @@
                                         <DataTrigger Binding="{Binding HasHierarchies}" Value="True">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
+                                        <!-- VPA enrichment triggers -->
+                                        <DataTrigger Binding="{Binding HasStorageModeInfo}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding HasVertipaqStats}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📅 Date Table" FontSize="10" 
-                                           Foreground="#4CAF50"
-                                           Visibility="{Binding IsDateTable, Converter={StaticResource BoolToCollapsedConverter}}"
-                                           VerticalAlignment="Center"/>
-                                <!-- Separator after Date Table -->
-                                <TextBlock Text="  |  " FontSize="10" 
-                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                                           VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding IsDateTable}" Value="True"/>
-                                                        <Condition Binding="{Binding IsVisible}" Value="False"/>
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </MultiDataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
+                                <!-- Storage Mode Indicator (from VPA enrichment) - FIRST -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="{Binding StorageModeColor}"
+                                           Visibility="{Binding HasStorageModeInfo, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="Storage Mode">
+                                    <Run Text="{Binding StorageModeIcon, Mode=OneWay}"/>
+                                    <Run Text="{Binding StorageMode, Mode=OneWay}"/>
+                                </TextBlock>
+                                <!-- VPA Stats: Row Count (from VPA enrichment) -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="#2196F3"
+                                           Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="Row Count (from Vertipaq Analyzer)">
+                                    <Run Text="📊"/>
+                                    <Run Text="{Binding FormattedRowCount, Mode=OneWay}"/>
+                                </TextBlock>
+                                <!-- VPA Stats: Table Size (from VPA enrichment) -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="#9C27B0"
+                                           Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="Table Size (from Vertipaq Analyzer)">
+                                    <Run Text="💾"/>
+                                    <Run Text="{Binding FormattedTableSize, Mode=OneWay}"/>
                                 </TextBlock>
                                 <!-- Field Parameter Table Indicator -->
                                 <TextBlock Text="⚡ Field Parameter" FontSize="10" 
@@ -346,6 +359,7 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="🔑" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0"/>
                                             <Image Grid.Column="1"
@@ -361,6 +375,15 @@
                                                        VerticalAlignment="Center"
                                                        Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                                        ToolTip="{Binding Tooltip}"/>
+                                            <!-- VPA Cardinality for key columns -->
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding DisplayedStat}"
+                                                       FontSize="9"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,2,0"
+                                                       Foreground="#2196F3"
+                                                       ToolTip="{Binding DisplayedStatTooltip}"
+                                                       Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -484,6 +507,16 @@
                                                                Foreground="#FF9800"
                                                                ToolTip="{Binding SortByColumnName, StringFormat='Sorted by: {0}'}"
                                                                Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    
+                                                    <!-- VPA Stat Indicator -->
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding DisplayedStat}"
+                                                               FontSize="9"
+                                                               VerticalAlignment="Center"
+                                                               Margin="4,0,2,0"
+                                                               Foreground="#2196F3"
+                                                               ToolTip="{Binding DisplayedStatTooltip}"
+                                                               Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -1050,6 +1083,46 @@
                             ToolTip="Reset zoom to 100%"/>
                 </StackPanel>
                 
+                <!-- Column Stat Display dropdown (visible when VPA data available) -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasVertipaqData, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="4,0,0,0">
+                    <TextBlock Text="Stat:" VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ComboBox SelectedItem="{Binding ColumnStatDisplay, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Padding="4,2"
+                              MinWidth="85"
+                              ToolTip="Choose which statistic to show on columns after View Metrics (VPA)">
+                        <ComboBox.Items>
+                            <enums:DiagramColumnStatDisplay>None</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Cardinality</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Size</enums:DiagramColumnStatDisplay>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
+                
+                <!-- Column Sort Order dropdown (visible when VPA data available) -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasVertipaqData, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="4,0,0,0">
+                    <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ComboBox SelectedItem="{Binding ColumnSortOrder, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Padding="4,2"
+                              MinWidth="95"
+                              ToolTip="Sort columns within tables by name or by statistic (descending)">
+                        <ComboBox.Items>
+                            <enums:DiagramColumnSortOrder>Name</enums:DiagramColumnSortOrder>
+                            <enums:DiagramColumnSortOrder>CardinalityDesc</enums:DiagramColumnSortOrder>
+                            <enums:DiagramColumnSortOrder>SizeDesc</enums:DiagramColumnSortOrder>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
+                
                 <!-- Table filter dropdown -->
                 <ComboBox DockPanel.Dock="Right"
                           SelectedIndex="{Binding TableFilter}"
@@ -1307,7 +1380,8 @@
         </Border>
         
         <!-- Status Bar -->
-        <Border Grid.Row="2" 
+        <Border x:Name="StatusBar"
+                Grid.Row="2" 
                 BorderThickness="0,1,0,0" 
                 BorderBrush="{DynamicResource Theme.Brush.MenuBar.Border}"
                 Background="{DynamicResource Theme.Brush.MenuBar.Back}"
@@ -1337,21 +1411,24 @@
                 
                 <!-- Legend -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <!-- Table Types -->
-                    <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
-                    <TextBlock Text="Table" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
-                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                    
-                    <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                    <TextBlock Text="Date" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
-                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                    
-                    <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                    <TextBlock Text="Measures" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="10"
-                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                    
-                    <!-- Separator -->
-                    <Border Width="1" Height="14" Background="#888888" Margin="0,0,16,0"/>
+                    <!-- Table Types (shown when storage mode data is NOT available) -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToNotCollapsedConverter}}">
+                        <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
+                        <TextBlock Text="Table" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Date" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Measures" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <!-- Separator -->
+                        <Border Width="1" Height="14" Background="#888888" Margin="0,0,16,0"/>
+                    </StackPanel>
                     
                     <!-- Relationship Types -->
                     <TextBlock Text="▶" FontSize="10" Foreground="#666666" VerticalAlignment="Center" Margin="0,0,4,0"/>
@@ -1377,6 +1454,33 @@
                     </Border>
                     <TextBlock Text="Inactive" VerticalAlignment="Center" FontSize="10"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    
+                    <!-- Storage Mode Legend (shown when storage mode data is available) -->
+                    <StackPanel Orientation="Horizontal" 
+                                Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <!-- Separator -->
+                        <Border Width="1" Height="14" Background="#888888" Margin="16,0,16,0"/>
+                        
+                        <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Import" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#FF9800" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="DirectQuery" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="DirectLake" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Dual" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#E91E63" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Hybrid" VerticalAlignment="Center" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>

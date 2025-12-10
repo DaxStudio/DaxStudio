@@ -120,6 +120,8 @@
     <Compile Include="Enums\CsvCustomEncodingType.cs" />
     <Compile Include="Enums\DaxFormatStyle.cs" />
     <Compile Include="Enums\DelimiterType.cs" />
+    <Compile Include="Enums\DiagramColumnSortOrder.cs" />
+    <Compile Include="Enums\DiagramColumnStatDisplay.cs" />
     <Compile Include="Enums\MultipleQueriesDetectedOnPaste.cs" />
     <Compile Include="Enums\QueryEndSounds.cs" />
     <Compile Include="Enums\SEDependenciesHeatMapMode.cs" />

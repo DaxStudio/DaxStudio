@@ -119,6 +119,8 @@ namespace DaxStudio.Interfaces
         bool ShowCopyMetricsComments { get; set; }
         bool VpaxIncludeTom { get; set; }
         bool ShowModelDiagram { get; set; }
+        DiagramColumnStatDisplay DiagramColumnStatDisplay { get; set; }
+        DiagramColumnSortOrder DiagramColumnSortOrder { get; set; }
       
         
         

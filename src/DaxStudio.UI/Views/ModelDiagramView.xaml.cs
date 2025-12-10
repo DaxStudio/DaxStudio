@@ -130,46 +130,75 @@ namespace DaxStudio.UI.Views
         }
 
         /// <summary>
+        /// Renders the diagram content to a bitmap, optionally including the status bar legend.
+        /// </summary>
+        /// <param name="includeStatusBar">Whether to include the status bar with legend at the bottom.</param>
+        /// <returns>A RenderTargetBitmap containing the rendered content.</returns>
+        private RenderTargetBitmap RenderDiagramToBitmap(bool includeStatusBar = true)
+        {
+            // Use DiagramGrid to capture both relationships and tables (not just DiagramCanvas which is tables only)
+            var grid = DiagramGrid;
+            if (grid == null) return null;
+
+            // Get the actual size of the content
+            var bounds = VisualTreeHelper.GetDescendantBounds(grid);
+            if (bounds.IsEmpty)
+            {
+                bounds = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
+            }
+
+            var dpi = 96d;
+            var diagramWidth = (int)System.Math.Max(bounds.Width + 40, grid.ActualWidth);
+            var diagramHeight = (int)System.Math.Max(bounds.Height + 40, grid.ActualHeight);
+
+            // Calculate status bar height if included
+            var statusBarHeight = 0;
+            if (includeStatusBar && StatusBar != null && StatusBar.Visibility == Visibility.Visible)
+            {
+                StatusBar.Measure(new Size(diagramWidth, double.PositiveInfinity));
+                statusBarHeight = (int)System.Math.Max(StatusBar.ActualHeight, StatusBar.DesiredSize.Height);
+                if (statusBarHeight < 24) statusBarHeight = 30; // Minimum height for readability
+            }
+
+            var renderWidth = diagramWidth;
+            var renderHeight = diagramHeight + statusBarHeight;
+
+            var renderTarget = new RenderTargetBitmap(
+                renderWidth, renderHeight,
+                dpi, dpi,
+                PixelFormats.Pbgra32);
+
+            var drawingVisual = new DrawingVisual();
+            using (var dc = drawingVisual.RenderOpen())
+            {
+                // Draw white background
+                dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, renderWidth, renderHeight));
+
+                // Draw the diagram grid content (includes relationships, tables, and annotations)
+                var gridBrush = new VisualBrush(grid);
+                dc.DrawRectangle(gridBrush, null, new Rect(0, 0, grid.ActualWidth, grid.ActualHeight));
+
+                // Draw the status bar at the bottom if included
+                if (statusBarHeight > 0 && StatusBar != null)
+                {
+                    var statusBarBrush = new VisualBrush(StatusBar);
+                    dc.DrawRectangle(statusBarBrush, null, new Rect(0, diagramHeight, renderWidth, statusBarHeight));
+                }
+            }
+
+            renderTarget.Render(drawingVisual);
+            return renderTarget;
+        }
+
+        /// <summary>
         /// Handles export request from ViewModel by rendering the canvas to a PNG file.
         /// </summary>
         private void OnExportRequested(object sender, string filePath)
         {
             try
             {
-                // Use DiagramGrid to capture both relationships and tables (not just DiagramCanvas which is tables only)
-                var grid = DiagramGrid;
-                if (grid == null) return;
-
-                // Get the actual size of the content
-                var bounds = VisualTreeHelper.GetDescendantBounds(grid);
-                if (bounds.IsEmpty)
-                {
-                    bounds = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
-                }
-
-                // Create a render target with proper DPI
-                var dpi = 96d;
-                var renderWidth = (int)System.Math.Max(bounds.Width + 40, grid.ActualWidth);
-                var renderHeight = (int)System.Math.Max(bounds.Height + 40, grid.ActualHeight);
-
-                var renderTarget = new RenderTargetBitmap(
-                    renderWidth, renderHeight,
-                    dpi, dpi,
-                    PixelFormats.Pbgra32);
-
-                // Create a visual brush to render from the grid with background
-                var drawingVisual = new DrawingVisual();
-                using (var dc = drawingVisual.RenderOpen())
-                {
-                    // Draw white background
-                    dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, renderWidth, renderHeight));
-
-                    // Draw the grid content (includes relationships, tables, and annotations)
-                    var visualBrush = new VisualBrush(grid);
-                    dc.DrawRectangle(visualBrush, null, new Rect(0, 0, grid.ActualWidth, grid.ActualHeight));
-                }
-
-                renderTarget.Render(drawingVisual);
+                var renderTarget = RenderDiagramToBitmap(includeStatusBar: true);
+                if (renderTarget == null) return;
 
                 // Encode to PNG
                 var encoder = new PngBitmapEncoder();
@@ -195,34 +224,8 @@ namespace DaxStudio.UI.Views
         {
             try
             {
-                // Use DiagramGrid to capture both relationships and tables (not just DiagramCanvas which is tables only)
-                var grid = DiagramGrid;
-                if (grid == null) return;
-
-                var bounds = VisualTreeHelper.GetDescendantBounds(grid);
-                if (bounds.IsEmpty)
-                {
-                    bounds = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
-                }
-
-                var dpi = 96d;
-                var renderWidth = (int)System.Math.Max(bounds.Width + 40, grid.ActualWidth);
-                var renderHeight = (int)System.Math.Max(bounds.Height + 40, grid.ActualHeight);
-
-                var renderTarget = new RenderTargetBitmap(
-                    renderWidth, renderHeight,
-                    dpi, dpi,
-                    PixelFormats.Pbgra32);
-
-                var drawingVisual = new DrawingVisual();
-                using (var dc = drawingVisual.RenderOpen())
-                {
-                    dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, renderWidth, renderHeight));
-                    var visualBrush = new VisualBrush(grid);
-                    dc.DrawRectangle(visualBrush, null, new Rect(0, 0, grid.ActualWidth, grid.ActualHeight));
-                }
-
-                renderTarget.Render(drawingVisual);
+                var renderTarget = RenderDiagramToBitmap(includeStatusBar: true);
+                if (renderTarget == null) return;
 
                 Clipboard.SetImage(renderTarget);
             }

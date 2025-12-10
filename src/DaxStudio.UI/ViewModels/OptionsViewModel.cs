@@ -1552,6 +1552,40 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private DiagramColumnStatDisplay _diagramColumnStatDisplay;
+        [DataMember, DefaultValue(DiagramColumnStatDisplay.Cardinality)]
+        [Category("Preview")]
+        [DisplayName("Model Diagram Column Stat")]
+        [Description("Choose which statistic to display on columns in the Model Diagram after running View Metrics (VPA). Options: None, Cardinality, or Size.")]
+        public DiagramColumnStatDisplay DiagramColumnStatDisplay
+        {
+            get => _diagramColumnStatDisplay;
+            set
+            {
+                _diagramColumnStatDisplay = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(DiagramColumnStatDisplay), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => DiagramColumnStatDisplay);
+            }
+        }
+
+        private DiagramColumnSortOrder _diagramColumnSortOrder;
+        [DataMember, DefaultValue(DiagramColumnSortOrder.Name)]
+        [Category("Preview")]
+        [DisplayName("Model Diagram Column Sort")]
+        [Description("Choose how to sort columns in the Model Diagram tables. Sort by Cardinality or Size requires View Metrics (VPA) data.")]
+        public DiagramColumnSortOrder DiagramColumnSortOrder
+        {
+            get => _diagramColumnSortOrder;
+            set
+            {
+                _diagramColumnSortOrder = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(DiagramColumnSortOrder), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => DiagramColumnSortOrder);
+            }
+        }
+
 
         private bool _showKeyBindings;
         [DataMember, DefaultValue(false)]

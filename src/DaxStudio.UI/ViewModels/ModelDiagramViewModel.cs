@@ -1,7 +1,9 @@
 using ADOTabular;
 using Caliburn.Micro;
+using Dax.ViewModel;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using Newtonsoft.Json;
@@ -25,7 +27,9 @@ namespace DaxStudio.UI.ViewModels
     /// </summary>
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
-    public class ModelDiagramViewModel : ToolWindowBase, IHandle<MetadataLoadedEvent>
+    public class ModelDiagramViewModel : ToolWindowBase, 
+        IHandle<MetadataLoadedEvent>,
+        IHandle<ViewMetricsCompleteEvent>
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IMetadataProvider _metadataProvider;
@@ -94,11 +98,29 @@ namespace DaxStudio.UI.ViewModels
         public BindableCollection<ModelDiagramAnnotationViewModel> Annotations { get; } = new BindableCollection<ModelDiagramAnnotationViewModel>();
 
         /// <summary>
-        /// Summary text showing counts.
+        /// Summary text showing counts and enrichment status.
         /// </summary>
-        public string SummaryText => _model != null
-            ? $"{Tables.Count} Tables, {Tables.Sum(t => t.ColumnCount)} Columns, {Relationships.Count} Relationships"
-            : "No data";
+        public string SummaryText
+        {
+            get
+            {
+                if (_model == null) return "No data";
+                
+                var summary = $"{Tables.Count} Tables, {Tables.Sum(t => t.ColumnCount)} Columns, {Relationships.Count} Relationships";
+                
+                // Add enrichment indicators
+                if (HasVertipaqData)
+                {
+                    summary += " 📊"; // VPA stats loaded
+                }
+                if (HasStorageModeData)
+                {
+                    summary += " 💾"; // Storage mode info loaded
+                }
+                
+                return summary;
+            }
+        }
 
         /// <summary>
         /// Whether there is data to display.
@@ -321,7 +343,7 @@ namespace DaxStudio.UI.ViewModels
                 // Re-sort columns in all tables
                 foreach (var table in Tables)
                 {
-                    table.UpdateColumnSort(_sortKeyColumnsFirst);
+                    table.UpdateColumnSort(_sortKeyColumnsFirst, _options.DiagramColumnSortOrder);
                 }
             }
         }
@@ -3441,6 +3463,222 @@ namespace DaxStudio.UI.ViewModels
             return System.Threading.Tasks.Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Handles the ViewMetricsCompleteEvent to enrich the diagram with Vertipaq Analyzer data.
+        /// </summary>
+        public System.Threading.Tasks.Task HandleAsync(ViewMetricsCompleteEvent message, System.Threading.CancellationToken cancellationToken)
+        {
+            if (message?.VpaModel != null && Tables.Count > 0)
+            {
+                Log.Information("{class} {method} Enriching diagram with VPA data", nameof(ModelDiagramViewModel), nameof(HandleAsync));
+                EnrichFromVertipaq(message.VpaModel);
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        #endregion
+
+        #region Enrichment (Admin/VPA Data)
+
+        private bool _hasVertipaqData;
+        /// <summary>
+        /// Whether Vertipaq Analyzer data has been loaded into the diagram.
+        /// </summary>
+        public bool HasVertipaqData
+        {
+            get => _hasVertipaqData;
+            private set { _hasVertipaqData = value; NotifyOfPropertyChange(); }
+        }
+
+        private bool _hasStorageModeData;
+        /// <summary>
+        /// Whether storage mode data (from TOM/BIM) has been loaded into the diagram.
+        /// </summary>
+        public bool HasStorageModeData
+        {
+            get => _hasStorageModeData;
+            private set { _hasStorageModeData = value; NotifyOfPropertyChange(); }
+        }
+
+        /// <summary>
+        /// Gets or sets which statistic to display on columns after VPA enrichment.
+        /// This property persists to user options.
+        /// </summary>
+        public DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay ColumnStatDisplay
+        {
+            get => _options.DiagramColumnStatDisplay;
+            set
+            {
+                if (_options.DiagramColumnStatDisplay != value)
+                {
+                    _options.DiagramColumnStatDisplay = value;
+                    NotifyOfPropertyChange();
+                    // Update all columns to reflect the change
+                    foreach (var table in Tables)
+                    {
+                        foreach (var col in table.Columns)
+                        {
+                            col.NotifyStatDisplayChanged();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the sort order for columns in tables.
+        /// This property persists to user options.
+        /// </summary>
+        public DaxStudio.Interfaces.Enums.DiagramColumnSortOrder ColumnSortOrder
+        {
+            get => _options.DiagramColumnSortOrder;
+            set
+            {
+                if (_options.DiagramColumnSortOrder != value)
+                {
+                    _options.DiagramColumnSortOrder = value;
+                    NotifyOfPropertyChange();
+                    // Re-sort columns in all tables
+                    foreach (var table in Tables)
+                    {
+                        table.UpdateColumnSort(_sortKeyColumnsFirst, value);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears all enrichment data from tables and columns.
+        /// Called when loading a new model.
+        /// </summary>
+        public void ClearEnrichmentData()
+        {
+            foreach (var table in Tables)
+            {
+                table.ClearEnrichmentData();
+                foreach (var col in table.Columns)
+                {
+                    col.ClearEnrichmentData();
+                }
+            }
+            HasVertipaqData = false;
+            HasStorageModeData = false;
+            NotifyOfPropertyChange(nameof(SummaryText));
+        }
+
+        /// <summary>
+        /// Enriches the diagram with Vertipaq Analyzer statistics.
+        /// Called when VPA completes or when user requests stats refresh.
+        /// </summary>
+        /// <param name="vpaModel">The Vertipaq Analyzer model with statistics.</param>
+        public void EnrichFromVertipaq(VpaModel vpaModel)
+        {
+            if (vpaModel?.Tables == null)
+            {
+                Log.Warning("{class} {method} VpaModel or Tables is null", nameof(ModelDiagramViewModel), nameof(EnrichFromVertipaq));
+                return;
+            }
+
+            int enrichedTables = 0;
+            int enrichedColumns = 0;
+
+            foreach (var table in Tables)
+            {
+                // Find matching VPA table (by name)
+                var vpaTable = vpaModel.Tables.FirstOrDefault(t => 
+                    string.Equals(t.TableName, table.TableName, StringComparison.OrdinalIgnoreCase));
+
+                if (vpaTable != null)
+                {
+                    // Enrich table with VPA stats
+                    table.RowCount = vpaTable.RowsCount;
+                    table.TableSizeBytes = vpaTable.TableSize;
+                    table.PercentOfDatabase = vpaTable.PercentageDatabase;
+                    table.SegmentCount = vpaTable.SegmentsNumber;
+                    table.PartitionCount = (int)vpaTable.PartitionsNumber;
+                    table.ReferentialIntegrityViolations = vpaTable.ReferentialIntegrityViolationCount;
+
+                    // Determine storage mode from partitions
+                    var storageMode = DetermineStorageMode(vpaTable);
+                    if (!string.IsNullOrEmpty(storageMode))
+                    {
+                        table.StorageMode = storageMode;
+                    }
+
+                    enrichedTables++;
+
+                    // Enrich columns
+                    foreach (var column in table.Columns)
+                    {
+                        // Skip measures and hierarchies - they don't have VPA column data
+                        if (column.IsMeasure || column.IsHierarchy) continue;
+
+                        var vpaColumn = vpaTable.Columns.FirstOrDefault(c =>
+                            string.Equals(c.ColumnName, column.ColumnName, StringComparison.OrdinalIgnoreCase));
+
+                        if (vpaColumn != null)
+                        {
+                            column.Cardinality = vpaColumn.ColumnCardinality;
+                            column.ColumnSizeBytes = vpaColumn.TotalSize;
+                            column.Encoding = vpaColumn.Encoding;
+                            column.PercentOfTable = vpaColumn.PercentageTable;
+                            column.DataSizeBytes = vpaColumn.DataSize;
+                            column.DictionarySizeBytes = vpaColumn.DictionarySize;
+                            enrichedColumns++;
+                        }
+                    }
+                }
+            }
+
+            HasVertipaqData = enrichedTables > 0;
+            if (enrichedTables > 0)
+            {
+                HasStorageModeData = Tables.Any(t => t.HasStorageModeInfo);
+                
+                // Notify all columns to refresh their displayed stat
+                foreach (var table in Tables)
+                {
+                    foreach (var col in table.Columns)
+                    {
+                        col.NotifyStatDisplayChanged();
+                    }
+                }
+            }
+
+            Log.Information("{class} {method} Enriched {tables} tables and {columns} columns with VPA data",
+                nameof(ModelDiagramViewModel), nameof(EnrichFromVertipaq), enrichedTables, enrichedColumns);
+
+            // Update summary to reflect enrichment
+            NotifyOfPropertyChange(nameof(SummaryText));
+        }
+
+        /// <summary>
+        /// Determines the storage mode for a table from its VPA partitions.
+        /// </summary>
+        private string DetermineStorageMode(VpaTable vpaTable)
+        {
+            if (vpaTable?.Partitions == null || !vpaTable.Partitions.Any())
+                return null;
+
+            string mode = null;
+            foreach (var partition in vpaTable.Partitions)
+            {
+                var partitionMode = partition.PartitionMode?.ParseStorageMode();
+                
+                if (string.IsNullOrEmpty(mode))
+                {
+                    mode = partitionMode;
+                }
+                else if (!string.Equals(mode, partitionMode, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Mixed modes = Hybrid
+                    return "Hybrid";
+                }
+            }
+
+            return mode;
+        }
+
         #endregion
 
         #region Export
@@ -3645,53 +3883,81 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Updates the column sort order.
         /// Note: Hierarchy levels are NOT sorted - they remain attached to their parent hierarchy.
-        /// We rebuild the list by regenerating from source to preserve hierarchy structure.
+        /// This method re-sorts the EXISTING columns to preserve VPA enrichment data.
         /// </summary>
-        public void UpdateColumnSort(bool sortKeyColumnsFirst)
+        public void UpdateColumnSort(bool sortKeyColumnsFirst, DaxStudio.Interfaces.Enums.DiagramColumnSortOrder sortOrder = DaxStudio.Interfaces.Enums.DiagramColumnSortOrder.Name)
         {
             _sortKeyColumnsFirst = sortKeyColumnsFirst;
             
-            // Preserve IsRelationshipColumn flags from existing columns
-            var relationshipColumnNames = new HashSet<string>(
-                Columns.Where(c => c.IsRelationshipColumn).Select(c => c.ColumnName),
-                StringComparer.OrdinalIgnoreCase);
+            // Get the existing columns (preserving all their enrichment data)
+            var existingColumns = Columns.ToList();
             
-            // Regenerate the columns list from source to preserve hierarchy structure
-            var newColumns = GetSortedColumns().ToList();
-            
-            // Restore IsRelationshipColumn flags
-            foreach (var col in newColumns)
+            // Build a mapping of hierarchy levels to their parent hierarchy
+            // Levels appear immediately after their parent hierarchy in the list
+            var hierarchyLevelToParent = new Dictionary<ModelDiagramColumnViewModel, ModelDiagramColumnViewModel>();
+            ModelDiagramColumnViewModel currentHierarchy = null;
+            foreach (var col in existingColumns)
             {
-                if (relationshipColumnNames.Contains(col.ColumnName))
+                if (col.IsHierarchy)
                 {
-                    col.IsRelationshipColumn = true;
+                    currentHierarchy = col;
+                }
+                else if (col.IsHierarchyLevel && currentHierarchy != null)
+                {
+                    hierarchyLevelToParent[col] = currentHierarchy;
+                }
+                else
+                {
+                    // Reset if we hit a non-hierarchy-level column
+                    currentHierarchy = null;
                 }
             }
             
-            // Now apply the actual sorting based on sortKeyColumnsFirst
-            // Separate hierarchy levels - they should stay with their parent hierarchy, not be re-sorted
-            var hierarchyLevelColumns = newColumns.Where(c => c.IsHierarchyLevel).ToList();
-            var nonHierarchyLevelColumns = newColumns.Where(c => !c.IsHierarchyLevel).ToList();
+            // Separate hierarchy levels from regular columns
+            var hierarchyLevelColumns = existingColumns.Where(c => c.IsHierarchyLevel).ToList();
+            var nonHierarchyLevelColumns = existingColumns.Where(c => !c.IsHierarchyLevel).ToList();
             
+            // Apply the sort based on sortOrder parameter
             List<ModelDiagramColumnViewModel> sortedNonHierarchy;
+            
+            // First level sort: Columns -> Hierarchies -> Measures
+            // Second level sort depends on sortKeyColumnsFirst and sortOrder
+            var baseSort = nonHierarchyLevelColumns
+                .OrderBy(c => c.ObjectType == ADOTabularObjectType.Column ? 0 : 
+                              c.ObjectType == ADOTabularObjectType.Hierarchy || c.ObjectType == ADOTabularObjectType.UnnaturalHierarchy ? 1 : 2);
+            
             if (sortKeyColumnsFirst)
             {
-                // Sort relationship columns first, then by caption
-                sortedNonHierarchy = nonHierarchyLevelColumns
-                    .OrderBy(c => c.ObjectType == ADOTabularObjectType.Column ? 0 : 
-                                  c.ObjectType == ADOTabularObjectType.Hierarchy || c.ObjectType == ADOTabularObjectType.UnnaturalHierarchy ? 1 : 2)
-                    .ThenByDescending(c => c.IsRelationshipColumn)
-                    .ThenBy(c => c.Caption)
-                    .ToList();
+                // Sort relationship columns first
+                baseSort = baseSort.ThenByDescending(c => c.IsRelationshipColumn);
             }
-            else
+            
+            // Apply the stat-based or name-based sort
+            switch (sortOrder)
             {
-                // Sort alphabetically by caption
-                sortedNonHierarchy = nonHierarchyLevelColumns
-                    .OrderBy(c => c.ObjectType == ADOTabularObjectType.Column ? 0 : 
-                                  c.ObjectType == ADOTabularObjectType.Hierarchy || c.ObjectType == ADOTabularObjectType.UnnaturalHierarchy ? 1 : 2)
-                    .ThenBy(c => c.Caption)
-                    .ToList();
+                case DaxStudio.Interfaces.Enums.DiagramColumnSortOrder.CardinalityDesc:
+                    // Sort by cardinality descending (nulls go to end), then by name
+                    sortedNonHierarchy = baseSort
+                        .ThenByDescending(c => c.Cardinality ?? 0)
+                        .ThenBy(c => c.Caption)
+                        .ToList();
+                    break;
+                    
+                case DaxStudio.Interfaces.Enums.DiagramColumnSortOrder.SizeDesc:
+                    // Sort by size descending (nulls go to end), then by name
+                    sortedNonHierarchy = baseSort
+                        .ThenByDescending(c => c.ColumnSizeBytes ?? 0)
+                        .ThenBy(c => c.Caption)
+                        .ToList();
+                    break;
+                    
+                case DaxStudio.Interfaces.Enums.DiagramColumnSortOrder.Name:
+                default:
+                    // Sort alphabetically by caption
+                    sortedNonHierarchy = baseSort
+                        .ThenBy(c => c.Caption)
+                        .ToList();
+                    break;
             }
             
             // Rebuild the final list, inserting hierarchy levels after their parent hierarchies
@@ -3703,15 +3969,19 @@ namespace DaxStudio.UI.ViewModels
                 // If this is a hierarchy, find and add its levels right after
                 if (col.IsHierarchy)
                 {
-                    // Find levels that were originally added for this hierarchy
-                    // They should be in hierarchyLevelColumns in the order they were added
-                    // We need to identify which levels belong to this hierarchy
-                    // For now, since we regenerated from source, the levels should follow immediately
+                    // Find levels that belong to this hierarchy
+                    var levels = hierarchyLevelColumns
+                        .Where(l => hierarchyLevelToParent.TryGetValue(l, out var parent) && parent == col)
+                        .ToList();
+                    
+                    foreach (var level in levels)
+                    {
+                        finalColumns.Add(level);
+                    }
                 }
             }
             
-            // Add hierarchy levels at the end if they weren't inserted
-            // This is a fallback - ideally they should be inserted after their parent hierarchy
+            // Add any remaining hierarchy levels at the end (fallback for orphaned levels)
             foreach (var level in hierarchyLevelColumns)
             {
                 if (!finalColumns.Contains(level))
@@ -3925,6 +4195,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Tooltip with table details matching metadata pane style.
+        /// Includes enrichment data when available.
         /// </summary>
         public string Tooltip
         {
@@ -3936,11 +4207,34 @@ namespace DaxStudio.UI.ViewModels
                 if (Caption != TableName)
                     sb.AppendLine($"Name: {TableName}");
                 
+                // Enrichment: Storage mode (if available)
+                if (HasStorageModeInfo)
+                    sb.AppendLine($"{StorageModeIcon} {StorageMode}");
+                
                 sb.AppendLine($"Columns: {ColumnCount}");
                 sb.AppendLine($"Measures: {MeasureCount}");
                 if (HierarchyCount > 0)
                     sb.AppendLine($"Hierarchies: {HierarchyCount}");
                 sb.AppendLine($"Relationships: {RelationshipCount}");
+                
+                // Enrichment: Vertipaq stats (if available)
+                if (HasVertipaqStats)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("─── Statistics ───");
+                    if (_rowCount.HasValue)
+                        sb.AppendLine($"Rows: {FormattedRowCount}");
+                    if (_tableSizeBytes.HasValue)
+                        sb.AppendLine($"Size: {FormattedTableSize}");
+                    if (_percentOfDatabase.HasValue)
+                        sb.AppendLine($"% of Database: {FormattedPercentOfDatabase}");
+                    if (_partitionCount.HasValue)
+                        sb.AppendLine($"Partitions: {_partitionCount.Value}");
+                    if (_segmentCount.HasValue)
+                        sb.AppendLine($"Segments: {_segmentCount.Value}");
+                    if (HasReferentialIntegrityIssues)
+                        sb.AppendLine($"⚠️ RI Violations: {_referentialIntegrityViolations.Value:N0}");
+                }
                 
                 // Table type indicators
                 if (IsDateTable)
@@ -3970,14 +4264,21 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Header background color based on table type.
-        /// Keeping it simple - Date Tables are green, hidden tables are gray, everything else is blue.
-        /// Colors reserved for future storage mode visualization.
+        /// Header background color based on table type and storage mode.
+        /// When storage mode is available (admin), uses storage mode colors.
+        /// Otherwise falls back to: Date Tables = green, hidden = gray, default = blue.
         /// </summary>
         public string HeaderColor
         {
             get
             {
+                // If storage mode is available, use storage mode colors
+                if (HasStorageModeInfo)
+                {
+                    return StorageModeColor;
+                }
+                
+                // Fallback to type-based colors
                 if (IsDateTable) return "#4CAF50"; // Green for date tables
                 if (!IsVisible) return "#9E9E9E"; // Gray for hidden tables
                 return "#2196F3"; // Blue default
@@ -4197,6 +4498,258 @@ namespace DaxStudio.UI.ViewModels
         }
 
         #endregion
+
+        #region Optional Enrichment Properties (Admin/VPA)
+
+        // These properties are optionally populated when:
+        // - User has admin access (for storage mode from BIM/TOM)
+        // - User runs Vertipaq Analyzer (for row counts, sizes, etc.)
+        // If not populated, the UI shows the base model without these details.
+
+        private string _storageMode;
+        /// <summary>
+        /// Storage mode for this table (Import, DirectQuery, DirectLake, Dual, Hybrid).
+        /// Requires admin access to BIM/TOM to determine.
+        /// </summary>
+        public string StorageMode
+        {
+            get => _storageMode;
+            set 
+            { 
+                _storageMode = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(HasStorageModeInfo));
+                NotifyOfPropertyChange(nameof(StorageModeIcon));
+                NotifyOfPropertyChange(nameof(StorageModeColor));
+                NotifyOfPropertyChange(nameof(HeaderColor));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Whether storage mode information is available.
+        /// </summary>
+        public bool HasStorageModeInfo => !string.IsNullOrEmpty(_storageMode);
+
+        /// <summary>
+        /// Icon representing the storage mode.
+        /// </summary>
+        public string StorageModeIcon
+        {
+            get
+            {
+                return _storageMode?.ToUpperInvariant() switch
+                {
+                    "IMPORT" => "💾",
+                    "DIRECTQUERY" => "⚡",
+                    "DIRECTLAKE" => "🌊",
+                    "DUAL" => "🔄",
+                    "HYBRID" => "🔀",
+                    _ => ""
+                };
+            }
+        }
+
+        /// <summary>
+        /// Color associated with the storage mode (for badges/indicators).
+        /// </summary>
+        public string StorageModeColor
+        {
+            get
+            {
+                return _storageMode?.ToUpperInvariant() switch
+                {
+                    "IMPORT" => "#4CAF50",      // Green - data is local
+                    "DIRECTQUERY" => "#FF9800", // Orange - live query
+                    "DIRECTLAKE" => "#2196F3",  // Blue - DirectLake
+                    "DUAL" => "#9C27B0",        // Purple - both modes
+                    "HYBRID" => "#E91E63",      // Pink - mixed partitions
+                    _ => "#9E9E9E"              // Gray - unknown
+                };
+            }
+        }
+
+        private int? _partitionCount;
+        /// <summary>
+        /// Number of partitions in this table.
+        /// Requires admin access to BIM/TOM.
+        /// </summary>
+        public int? PartitionCount
+        {
+            get => _partitionCount;
+            set 
+            { 
+                _partitionCount = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        private long? _rowCount;
+        /// <summary>
+        /// Number of rows in this table.
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public long? RowCount
+        {
+            get => _rowCount;
+            set 
+            { 
+                _rowCount = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(HasVertipaqStats));
+                NotifyOfPropertyChange(nameof(FormattedRowCount));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Formatted row count for display (e.g., "1.2M rows").
+        /// </summary>
+        public string FormattedRowCount => _rowCount.HasValue ? FormatNumber(_rowCount.Value) : null;
+
+        private long? _tableSizeBytes;
+        /// <summary>
+        /// Total size of this table in bytes (memory footprint).
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public long? TableSizeBytes
+        {
+            get => _tableSizeBytes;
+            set 
+            { 
+                _tableSizeBytes = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(FormattedTableSize));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Formatted table size for display (e.g., "12.5 MB").
+        /// </summary>
+        public string FormattedTableSize => _tableSizeBytes.HasValue ? FormatBytes(_tableSizeBytes.Value) : null;
+
+        private double? _percentOfDatabase;
+        /// <summary>
+        /// Percentage of total database size this table represents.
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public double? PercentOfDatabase
+        {
+            get => _percentOfDatabase;
+            set 
+            { 
+                _percentOfDatabase = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(FormattedPercentOfDatabase));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Formatted percentage of database for display.
+        /// </summary>
+        public string FormattedPercentOfDatabase => _percentOfDatabase.HasValue 
+            ? $"{_percentOfDatabase.Value:P1}" 
+            : null;
+
+        private int? _segmentCount;
+        /// <summary>
+        /// Number of segments in this table.
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public int? SegmentCount
+        {
+            get => _segmentCount;
+            set 
+            { 
+                _segmentCount = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        private long? _referentialIntegrityViolations;
+        /// <summary>
+        /// Number of referential integrity violations for relationships from this table.
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public long? ReferentialIntegrityViolations
+        {
+            get => _referentialIntegrityViolations;
+            set 
+            { 
+                _referentialIntegrityViolations = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(HasReferentialIntegrityIssues));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Whether this table has referential integrity violations.
+        /// </summary>
+        public bool HasReferentialIntegrityIssues => _referentialIntegrityViolations.HasValue && _referentialIntegrityViolations.Value > 0;
+
+        /// <summary>
+        /// Whether Vertipaq Analyzer statistics are available for this table.
+        /// </summary>
+        public bool HasVertipaqStats => _rowCount.HasValue || _tableSizeBytes.HasValue;
+
+        /// <summary>
+        /// Clears all enrichment data (e.g., when loading a new model).
+        /// </summary>
+        public void ClearEnrichmentData()
+        {
+            _storageMode = null;
+            _partitionCount = null;
+            _rowCount = null;
+            _tableSizeBytes = null;
+            _percentOfDatabase = null;
+            _segmentCount = null;
+            _referentialIntegrityViolations = null;
+            
+            NotifyOfPropertyChange(nameof(StorageMode));
+            NotifyOfPropertyChange(nameof(HasStorageModeInfo));
+            NotifyOfPropertyChange(nameof(HasVertipaqStats));
+            NotifyOfPropertyChange(nameof(HeaderColor));
+            NotifyOfPropertyChange(nameof(Tooltip));
+        }
+
+        /// <summary>
+        /// Formats a byte count for display.
+        /// </summary>
+        private static string FormatBytes(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int suffixIndex = 0;
+            double size = bytes;
+            
+            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+            {
+                size /= 1024;
+                suffixIndex++;
+            }
+            
+            return $"{size:N1} {suffixes[suffixIndex]}";
+        }
+
+        /// <summary>
+        /// Formats a large number for compact display.
+        /// </summary>
+        private static string FormatNumber(long number)
+        {
+            if (number >= 1_000_000_000)
+                return $"{number / 1_000_000_000.0:N1}B";
+            if (number >= 1_000_000)
+                return $"{number / 1_000_000.0:N1}M";
+            if (number >= 1_000)
+                return $"{number / 1_000.0:N1}K";
+            return number.ToString("N0");
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -4411,9 +4964,13 @@ namespace DaxStudio.UI.ViewModels
                     sb.AppendLine("🔀 Field Parameter");
                 
                 // Add statistics from metadata (like the metadata pane tooltip)
+                // Use Vertipaq stats if available, otherwise fall back to CSDL values
                 if (!IsMeasure && !IsHierarchy)
                 {
-                    if (DistinctValues > 0)
+                    // Prefer Vertipaq cardinality if available
+                    if (_cardinality.HasValue)
+                        sb.AppendLine($"Cardinality: {FormattedCardinality}");
+                    else if (DistinctValues > 0)
                         sb.AppendLine($"Distinct Values: {DistinctValues:N0}");
                     
                     if (!string.IsNullOrEmpty(MinValue))
@@ -4421,6 +4978,19 @@ namespace DaxStudio.UI.ViewModels
                     
                     if (!string.IsNullOrEmpty(MaxValue))
                         sb.AppendLine($"Max Value: {MaxValue}");
+                }
+                
+                // Enrichment: Vertipaq stats (if available)
+                if (HasVertipaqStats)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("─── Statistics ───");
+                    if (_columnSizeBytes.HasValue)
+                        sb.AppendLine($"Size: {FormattedColumnSize}");
+                    if (_percentOfTable.HasValue)
+                        sb.AppendLine($"% of Table: {FormattedPercentOfTable}");
+                    if (!string.IsNullOrEmpty(_encoding))
+                        sb.AppendLine($"Encoding: {_encoding}");
                 }
                 
                 // Add measure expression preview (first 100 chars)
@@ -4547,6 +5117,253 @@ namespace DaxStudio.UI.ViewModels
             get => _isHighlighted;
             set { _isHighlighted = value; NotifyOfPropertyChange(); }
         }
+
+        #region Optional Enrichment Properties (VPA)
+
+        // These properties are optionally populated when Vertipaq Analyzer is run.
+        // If not populated, the UI shows the base column information.
+
+        private long? _cardinality;
+        /// <summary>
+        /// Cardinality (distinct value count) from Vertipaq Analyzer.
+        /// More accurate than the CSDL DistinctValues for some scenarios.
+        /// </summary>
+        public long? Cardinality
+        {
+            get => _cardinality;
+            set 
+            { 
+                _cardinality = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(HasVertipaqStats));
+                NotifyOfPropertyChange(nameof(FormattedCardinality));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Formatted cardinality for display.
+        /// </summary>
+        public string FormattedCardinality => _cardinality.HasValue ? FormatNumber(_cardinality.Value) : null;
+
+        private long? _columnSizeBytes;
+        /// <summary>
+        /// Total size of this column in bytes (memory footprint).
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public long? ColumnSizeBytes
+        {
+            get => _columnSizeBytes;
+            set 
+            { 
+                _columnSizeBytes = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(FormattedColumnSize));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Formatted column size for display (e.g., "1.5 MB").
+        /// </summary>
+        public string FormattedColumnSize => _columnSizeBytes.HasValue ? FormatBytes(_columnSizeBytes.Value) : null;
+
+        private string _encoding;
+        /// <summary>
+        /// Column encoding type (Hash, Value, RunLength).
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public string Encoding
+        {
+            get => _encoding;
+            set 
+            { 
+                _encoding = value; 
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        private double? _percentOfTable;
+        /// <summary>
+        /// Percentage of table size this column represents.
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public double? PercentOfTable
+        {
+            get => _percentOfTable;
+            set 
+            { 
+                _percentOfTable = value; 
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(FormattedPercentOfTable));
+                NotifyOfPropertyChange(nameof(Tooltip));
+            }
+        }
+
+        /// <summary>
+        /// Formatted percentage of table for display.
+        /// </summary>
+        public string FormattedPercentOfTable => _percentOfTable.HasValue 
+            ? $"{_percentOfTable.Value:P1}" 
+            : null;
+
+        private long? _dataSizeBytes;
+        /// <summary>
+        /// Data size portion of the column (vs dictionary).
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public long? DataSizeBytes
+        {
+            get => _dataSizeBytes;
+            set 
+            { 
+                _dataSizeBytes = value; 
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private long? _dictionarySizeBytes;
+        /// <summary>
+        /// Dictionary size portion of the column.
+        /// Populated from Vertipaq Analyzer statistics.
+        /// </summary>
+        public long? DictionarySizeBytes
+        {
+            get => _dictionarySizeBytes;
+            set 
+            { 
+                _dictionarySizeBytes = value; 
+                NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
+        /// Whether Vertipaq Analyzer statistics are available for this column.
+        /// </summary>
+        public bool HasVertipaqStats => _cardinality.HasValue || _columnSizeBytes.HasValue;
+
+        /// <summary>
+        /// Gets the currently displayed statistic text based on user preference.
+        /// Returns the appropriate formatted value based on Options.DiagramColumnStatDisplay.
+        /// </summary>
+        public string DisplayedStat
+        {
+            get
+            {
+                if (!HasVertipaqStats) return null;
+                
+                switch (_options?.DiagramColumnStatDisplay ?? DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Cardinality)
+                {
+                    case DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.None:
+                        return null;
+                    case DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Size:
+                        return FormattedColumnSize;
+                    case DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Cardinality:
+                    default:
+                        return FormattedCardinality;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the tooltip for the displayed stat.
+        /// </summary>
+        public string DisplayedStatTooltip
+        {
+            get
+            {
+                if (!HasVertipaqStats) return null;
+                
+                switch (_options?.DiagramColumnStatDisplay ?? DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Cardinality)
+                {
+                    case DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.None:
+                        return null;
+                    case DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Size:
+                        return $"Column size: {FormattedColumnSize}";
+                    case DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Cardinality:
+                    default:
+                        return $"Cardinality: {FormattedCardinality}";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Should the stat display be visible based on user preference?
+        /// </summary>
+        public bool ShowStatDisplay
+        {
+            get
+            {
+                if (!HasVertipaqStats) return false;
+                return (_options?.DiagramColumnStatDisplay ?? DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.Cardinality) 
+                    != DaxStudio.Interfaces.Enums.DiagramColumnStatDisplay.None;
+            }
+        }
+
+        /// <summary>
+        /// Called when the stat display preference changes to refresh bindings.
+        /// </summary>
+        public void NotifyStatDisplayChanged()
+        {
+            NotifyOfPropertyChange(nameof(DisplayedStat));
+            NotifyOfPropertyChange(nameof(DisplayedStatTooltip));
+            NotifyOfPropertyChange(nameof(ShowStatDisplay));
+        }
+
+        /// <summary>
+        /// Clears all enrichment data.
+        /// </summary>
+        public void ClearEnrichmentData()
+        {
+            _cardinality = null;
+            _columnSizeBytes = null;
+            _encoding = null;
+            _percentOfTable = null;
+            _dataSizeBytes = null;
+            _dictionarySizeBytes = null;
+            
+            NotifyOfPropertyChange(nameof(Cardinality));
+            NotifyOfPropertyChange(nameof(ColumnSizeBytes));
+            NotifyOfPropertyChange(nameof(Encoding));
+            NotifyOfPropertyChange(nameof(PercentOfTable));
+            NotifyOfPropertyChange(nameof(HasVertipaqStats));
+            NotifyOfPropertyChange(nameof(Tooltip));
+        }
+
+        /// <summary>
+        /// Formats a byte count for display.
+        /// </summary>
+        private static string FormatBytes(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int suffixIndex = 0;
+            double size = bytes;
+            
+            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+            {
+                size /= 1024;
+                suffixIndex++;
+            }
+            
+            return $"{size:N1} {suffixes[suffixIndex]}";
+        }
+
+        /// <summary>
+        /// Formats a large number for compact display.
+        /// </summary>
+        private static string FormatNumber(long number)
+        {
+            if (number >= 1_000_000_000)
+                return $"{number / 1_000_000_000.0:N1}B";
+            if (number >= 1_000_000)
+                return $"{number / 1_000_000.0:N1}M";
+            if (number >= 1_000)
+                return $"{number / 1_000.0:N1}K";
+            return number.ToString("N0");
+        }
+
+        #endregion
     }
 
     /// <summary>

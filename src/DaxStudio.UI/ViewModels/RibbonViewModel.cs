@@ -1198,6 +1198,13 @@ namespace DaxStudio.UI.ViewModels
                 var diagramViewModel = new ModelDiagramViewModel(_eventAggregator, metadataProvider, Options);
                 diagramViewModel.LoadFromModel(model);
 
+                // Check if VPA data already exists and enrich the diagram
+                var vpaView = ActiveDocument.ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
+                if (vpaView?.ViewModel != null)
+                {
+                    diagramViewModel.EnrichFromVertipaq(vpaView.ViewModel);
+                }
+
                 // Publish event to show the tool window in the docking panel
                 _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
             }
