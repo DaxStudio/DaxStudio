@@ -1,8 +1,10 @@
 using Caliburn.Micro;
+using Dax.ViewModel;
 using DaxStudio.Common.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.QueryTrace;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
@@ -23,11 +25,12 @@ namespace DaxStudio.UI.ViewModels
     /// </summary>
     [PartCreationPolicy(CreationPolicy.NonShared)]
     [Export]
-    public class XmSqlErdViewModel : ToolWindowBase
+    public class XmSqlErdViewModel : ToolWindowBase, IHandle<ViewMetricsCompleteEvent>
     {
         private readonly XmSqlParser _parser;
         private XmSqlAnalysis _analysis;
         private IGlobalOptions _options;
+        private IEventAggregator _eventAggregator;
         private List<TraceStorageEngineEvent> _rawEvents;  // Stored for debug export
 
         /// <summary>
@@ -43,10 +46,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [ImportingConstructor]
-        public XmSqlErdViewModel()
+        public XmSqlErdViewModel(IEventAggregator eventAggregator)
         {
             _parser = new XmSqlParser();
             _analysis = new XmSqlAnalysis();
+            _eventAggregator = eventAggregator;
+            _eventAggregator.SubscribeOnPublishedThread(this);
             // Initialize heat map mode from persisted options
             _heatMapMode = Options.SEDependenciesHeatMapMode;
         }
@@ -295,6 +300,116 @@ namespace DaxStudio.UI.ViewModels
                 UpdateBottleneckHighlighting();
             }
         }
+
+        #region VPA Enrichment (Column Stats)
+
+        private bool _hasVertipaqData;
+        /// <summary>
+        /// Whether Vertipaq Analyzer data has been loaded into the diagram.
+        /// </summary>
+        public bool HasVertipaqData
+        {
+            get => _hasVertipaqData;
+            private set { _hasVertipaqData = value; NotifyOfPropertyChange(); }
+        }
+
+        /// <summary>
+        /// Gets or sets which statistic to display on columns after VPA enrichment.
+        /// This property uses the same option as the Model Diagram for consistency.
+        /// </summary>
+        public DiagramColumnStatDisplay ColumnStatDisplay
+        {
+            get => Options.DiagramColumnStatDisplay;
+            set
+            {
+                if (Options.DiagramColumnStatDisplay != value)
+                {
+                    Options.DiagramColumnStatDisplay = value;
+                    NotifyOfPropertyChange();
+                    // Update all columns to reflect the change
+                    foreach (var table in Tables)
+                    {
+                        foreach (var col in table.Columns)
+                        {
+                            col.NotifyStatDisplayChanged();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ViewMetricsCompleteEvent to enrich the diagram with Vertipaq Analyzer data.
+        /// </summary>
+        public System.Threading.Tasks.Task HandleAsync(ViewMetricsCompleteEvent message, System.Threading.CancellationToken cancellationToken)
+        {
+            if (message?.VpaModel != null && Tables.Count > 0)
+            {
+                Log.Information("{class} {method} Enriching SE dependencies diagram with VPA data", nameof(XmSqlErdViewModel), nameof(HandleAsync));
+                EnrichFromVertipaq(message.VpaModel);
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Enriches the diagram with Vertipaq Analyzer statistics.
+        /// </summary>
+        public void EnrichFromVertipaq(VpaModel vpaModel)
+        {
+            if (vpaModel == null) return;
+
+            int enrichedColumns = 0;
+            
+            foreach (var table in Tables)
+            {
+                // Find the matching VPA table
+                var vpaTable = vpaModel.Tables.FirstOrDefault(t => 
+                    t.TableName.Equals(table.TableName, StringComparison.OrdinalIgnoreCase));
+                
+                if (vpaTable != null)
+                {
+                    // Enrich table stats
+                    table.SetVertipaqStats(vpaTable.RowsCount, vpaTable.TableSize);
+                    
+                    // Enrich each column
+                    foreach (var col in table.Columns)
+                    {
+                        var vpaColumn = vpaTable.Columns.FirstOrDefault(c =>
+                            c.ColumnName.Equals(col.ColumnName, StringComparison.OrdinalIgnoreCase));
+                        
+                        if (vpaColumn != null)
+                        {
+                            col.SetVertipaqStats(vpaColumn.ColumnCardinality, vpaColumn.TotalSize);
+                            enrichedColumns++;
+                        }
+                    }
+                }
+            }
+
+            HasVertipaqData = enrichedColumns > 0;
+            Log.Information("{class} {method} Enriched {count} columns with VPA data", 
+                nameof(XmSqlErdViewModel), nameof(EnrichFromVertipaq), enrichedColumns);
+            
+            NotifyOfPropertyChange(nameof(SummaryText));
+        }
+
+        /// <summary>
+        /// Clears VPA enrichment data from all tables and columns.
+        /// </summary>
+        public void ClearVertipaqData()
+        {
+            foreach (var table in Tables)
+            {
+                table.ClearVertipaqStats();
+                foreach (var col in table.Columns)
+                {
+                    col.ClearVertipaqStats();
+                }
+            }
+            HasVertipaqData = false;
+        }
+
+        #endregion
 
         #region Heat Map Mode
 
@@ -3804,6 +3919,75 @@ namespace DaxStudio.UI.ViewModels
         public double MiniMapHeight => Math.Max(3, Height * _miniMapScaleY);
 
         #endregion
+
+        #region VPA Enrichment (Column Stats)
+
+        private long? _vpaRowCount;
+        private long? _vpaTableSize;
+
+        /// <summary>
+        /// Sets VPA statistics for this table.
+        /// </summary>
+        public void SetVertipaqStats(long rowCount, long tableSize)
+        {
+            _vpaRowCount = rowCount;
+            _vpaTableSize = tableSize;
+            NotifyOfPropertyChange(nameof(VpaRowCount));
+            NotifyOfPropertyChange(nameof(VpaTableSize));
+            NotifyOfPropertyChange(nameof(VpaTableSizeFormatted));
+            NotifyOfPropertyChange(nameof(HasVertipaqStats));
+        }
+
+        /// <summary>
+        /// Clears VPA statistics from this table.
+        /// </summary>
+        public void ClearVertipaqStats()
+        {
+            _vpaRowCount = null;
+            _vpaTableSize = null;
+            NotifyOfPropertyChange(nameof(VpaRowCount));
+            NotifyOfPropertyChange(nameof(VpaTableSize));
+            NotifyOfPropertyChange(nameof(VpaTableSizeFormatted));
+            NotifyOfPropertyChange(nameof(HasVertipaqStats));
+        }
+
+        /// <summary>
+        /// VPA row count (total rows in table from model metadata).
+        /// </summary>
+        public long? VpaRowCount => _vpaRowCount;
+
+        /// <summary>
+        /// VPA table size in bytes (total size from model metadata).
+        /// </summary>
+        public long? VpaTableSize => _vpaTableSize;
+
+        /// <summary>
+        /// Formatted VPA table size.
+        /// </summary>
+        public string VpaTableSizeFormatted => _vpaTableSize.HasValue 
+            ? FormatBytes(_vpaTableSize.Value) 
+            : string.Empty;
+
+        /// <summary>
+        /// Whether VPA stats are available for this table.
+        /// </summary>
+        public bool HasVertipaqStats => _vpaRowCount.HasValue || _vpaTableSize.HasValue;
+
+        /// <summary>
+        /// Formats bytes to human-readable format (KB, MB, GB).
+        /// </summary>
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes >= 1_073_741_824)
+                return $"{bytes / 1_073_741_824.0:0.#} GB";
+            if (bytes >= 1_048_576)
+                return $"{bytes / 1_048_576.0:0.#} MB";
+            if (bytes >= 1024)
+                return $"{bytes / 1024.0:0.#} KB";
+            return $"{bytes} B";
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -3922,6 +4106,174 @@ namespace DaxStudio.UI.ViewModels
             get => _isHighlighted;
             set { _isHighlighted = value; NotifyOfPropertyChange(); }
         }
+
+        #region VPA Enrichment (Column Stats)
+
+        private IGlobalOptions _options;
+        private long? _cardinality;
+        private long? _columnSizeBytes;
+
+        /// <summary>
+        /// Gets the global options instance, lazily loaded via IoC.
+        /// </summary>
+        private IGlobalOptions Options
+        {
+            get
+            {
+                if (_options == null) _options = IoC.Get<IGlobalOptions>();
+                return _options;
+            }
+        }
+
+        /// <summary>
+        /// Sets VPA statistics for this column.
+        /// </summary>
+        public void SetVertipaqStats(long cardinality, long columnSizeBytes)
+        {
+            _cardinality = cardinality;
+            _columnSizeBytes = columnSizeBytes;
+            NotifyOfPropertyChange(nameof(Cardinality));
+            NotifyOfPropertyChange(nameof(ColumnSizeBytes));
+            NotifyOfPropertyChange(nameof(HasVertipaqStats));
+            NotifyOfPropertyChange(nameof(DisplayedStat));
+            NotifyOfPropertyChange(nameof(DisplayedStatTooltip));
+            NotifyOfPropertyChange(nameof(ShowStatDisplay));
+        }
+
+        /// <summary>
+        /// Clears VPA statistics from this column.
+        /// </summary>
+        public void ClearVertipaqStats()
+        {
+            _cardinality = null;
+            _columnSizeBytes = null;
+            NotifyOfPropertyChange(nameof(Cardinality));
+            NotifyOfPropertyChange(nameof(ColumnSizeBytes));
+            NotifyOfPropertyChange(nameof(HasVertipaqStats));
+            NotifyOfPropertyChange(nameof(DisplayedStat));
+            NotifyOfPropertyChange(nameof(DisplayedStatTooltip));
+            NotifyOfPropertyChange(nameof(ShowStatDisplay));
+        }
+
+        /// <summary>
+        /// Notifies that the stat display preference has changed.
+        /// </summary>
+        public void NotifyStatDisplayChanged()
+        {
+            NotifyOfPropertyChange(nameof(DisplayedStat));
+            NotifyOfPropertyChange(nameof(DisplayedStatTooltip));
+            NotifyOfPropertyChange(nameof(ShowStatDisplay));
+        }
+
+        /// <summary>
+        /// Column cardinality (unique values) from VPA.
+        /// </summary>
+        public long? Cardinality => _cardinality;
+
+        /// <summary>
+        /// Column size in bytes from VPA.
+        /// </summary>
+        public long? ColumnSizeBytes => _columnSizeBytes;
+
+        /// <summary>
+        /// Whether VPA stats are available for this column.
+        /// </summary>
+        public bool HasVertipaqStats => _cardinality.HasValue || _columnSizeBytes.HasValue;
+
+        /// <summary>
+        /// Returns the appropriate formatted value based on Options.DiagramColumnStatDisplay.
+        /// </summary>
+        public string DisplayedStat
+        {
+            get
+            {
+                if (!HasVertipaqStats) return null;
+                switch (Options?.DiagramColumnStatDisplay ?? DiagramColumnStatDisplay.Cardinality)
+                {
+                    case DiagramColumnStatDisplay.None:
+                        return null;
+                    case DiagramColumnStatDisplay.Size:
+                        return FormattedSize;
+                    case DiagramColumnStatDisplay.Cardinality:
+                    default:
+                        return FormattedCardinality;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tooltip for the displayed stat.
+        /// </summary>
+        public string DisplayedStatTooltip
+        {
+            get
+            {
+                if (!HasVertipaqStats) return null;
+                switch (Options?.DiagramColumnStatDisplay ?? DiagramColumnStatDisplay.Cardinality)
+                {
+                    case DiagramColumnStatDisplay.None:
+                        return null;
+                    case DiagramColumnStatDisplay.Size:
+                        return $"Column Size: {FormattedSize}";
+                    case DiagramColumnStatDisplay.Cardinality:
+                    default:
+                        return $"Cardinality: {FormattedCardinality}";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Whether to show the stat display (has stats and not set to None).
+        /// </summary>
+        public bool ShowStatDisplay
+        {
+            get
+            {
+                return HasVertipaqStats && 
+                    (Options?.DiagramColumnStatDisplay ?? DiagramColumnStatDisplay.Cardinality) 
+                        != DiagramColumnStatDisplay.None;
+            }
+        }
+
+        /// <summary>
+        /// Formatted cardinality value (e.g., "1.2K", "5.5M").
+        /// </summary>
+        public string FormattedCardinality
+        {
+            get
+            {
+                if (!_cardinality.HasValue) return string.Empty;
+                var val = _cardinality.Value;
+                if (val >= 1_000_000_000)
+                    return $"{val / 1_000_000_000.0:0.#}B";
+                if (val >= 1_000_000)
+                    return $"{val / 1_000_000.0:0.#}M";
+                if (val >= 1_000)
+                    return $"{val / 1_000.0:0.#}K";
+                return val.ToString("N0");
+            }
+        }
+
+        /// <summary>
+        /// Formatted column size (e.g., "1.2 MB", "500 KB").
+        /// </summary>
+        public string FormattedSize
+        {
+            get
+            {
+                if (!_columnSizeBytes.HasValue) return string.Empty;
+                var bytes = _columnSizeBytes.Value;
+                if (bytes >= 1_073_741_824)
+                    return $"{bytes / 1_073_741_824.0:0.#} GB";
+                if (bytes >= 1_048_576)
+                    return $"{bytes / 1_048_576.0:0.#} MB";
+                if (bytes >= 1024)
+                    return $"{bytes / 1024.0:0.#} KB";
+                return $"{bytes} B";
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>

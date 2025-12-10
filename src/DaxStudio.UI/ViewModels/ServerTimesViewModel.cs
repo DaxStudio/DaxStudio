@@ -2018,7 +2018,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Starting with {AllStorageEngineEvents.Count} events");
                 
-                var erdViewModel = new XmSqlErdViewModel();
+                var erdViewModel = new XmSqlErdViewModel(_eventAggregator);
                 erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
                 
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Analysis complete: {erdViewModel.Tables.Count} tables found");

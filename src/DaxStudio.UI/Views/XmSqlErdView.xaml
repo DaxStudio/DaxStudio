@@ -7,6 +7,7 @@
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
+             xmlns:enums="clr-namespace:DaxStudio.Interfaces.Enums;assembly=DaxStudio.Interfaces"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource Theme.Brush.Content.Back}">
@@ -598,6 +599,7 @@
                                                     <ColumnDefinition Width="Auto" MinWidth="12"/>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 
                                                 <!-- Usage Icons using Path geometry (renders reliably) -->
@@ -667,6 +669,17 @@
                                                            Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}"
                                                            VerticalAlignment="Center"
                                                            Margin="4,0,0,0"/>
+                                                
+                                                <!-- VPA Stat Display (Cardinality or Size) -->
+                                                <TextBlock Grid.Column="3"
+                                                           Text="{Binding DisplayedStat}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           Opacity="0.6"
+                                                           Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                           VerticalAlignment="Center"
+                                                           ToolTip="{Binding DisplayedStatTooltip}"
+                                                           Margin="4,0,2,0"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -713,6 +726,7 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <!-- Key icon (golden - simple key shape) -->
                                                 <Grid Grid.Column="0" Width="14" Height="14" Margin="0,0,4,0">
@@ -735,6 +749,16 @@
                                                            VerticalAlignment="Center"
                                                            Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                                            ToolTip="{Binding UsageTooltip}"/>
+                                                <!-- VPA Stat Display (Cardinality or Size) -->
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding DisplayedStat}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           Opacity="0.6"
+                                                           Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                           VerticalAlignment="Center"
+                                                           ToolTip="{Binding DisplayedStatTooltip}"
+                                                           Margin="4,0,2,0"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -873,6 +897,26 @@
                         <TextBlock>Keys First</TextBlock>
                     </StackPanel>
                 </ToggleButton>
+                
+                <!-- Column Stat Display dropdown (visible when VPA data available) -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasVertipaqData, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="8,0,0,0">
+                    <TextBlock Text="Stat:" VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ComboBox SelectedItem="{Binding ColumnStatDisplay, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Padding="4,2"
+                              MinWidth="85"
+                              ToolTip="Choose which statistic to show on columns after View Metrics (VPA)">
+                        <ComboBox.Items>
+                            <enums:DiagramColumnStatDisplay>None</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Cardinality</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Size</enums:DiagramColumnStatDisplay>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
                 
                 <!-- Search Box -->
                 <Border DockPanel.Dock="Left" 
