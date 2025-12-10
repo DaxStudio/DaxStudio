@@ -108,7 +108,7 @@ namespace DaxStudio.UI.ViewModels
         private static string FormatDurationStatic(long ms)
         {
             if (ms >= 60000)
-                return $"{ms / 60000.0:0.#}m";
+                return $"{ms / 1000.0:0.#}s";
             if (ms >= 1000)
                 return $"{ms / 1000.0:0.#}s";
             return $"{ms}ms";
@@ -3279,7 +3279,7 @@ namespace DaxStudio.UI.ViewModels
         private static string FormatDuration(long ms)
         {
             if (ms >= 60000)
-                return $"{ms / 60000.0:0.#}m";
+                return $"{ms / 1000.0:0.#}s";
             if (ms >= 1000)
                 return $"{ms / 1000.0:0.#}s";
             return $"{ms}ms";
