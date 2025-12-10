@@ -50,16 +50,18 @@ namespace DaxStudio.UI.Utils
         // ==================== REGEX PATTERNS ====================
 
         // Pattern 1: Subselect block with [$Table] and eventual alias
-        // (select [$Table].[col1] as [c1], ... from [dbo].[TableName] as [$Table]) AS [t4]
+        // (select [$Table].[col1] as [c1], ... from [schema].[TableName] as [$Table]) AS [t4]
         // Also handles extra wrapper parens: ((...)) AS [t4]
+        // Supports any schema name
         private static readonly Regex SubselectWithDollarTablePattern = new Regex(
             @"\(\s*\(*\s*select\s+(?<columns>.*?)\s+from\s+\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+as\s+\[\$Table\]\s*\)\s*\)*\s*AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-        // Pattern 2: Direct table reference [dbo].[TableName] AS [alias]
+        // Pattern 2: Direct table reference [schema].[TableName] AS [alias]
         // Handles both standalone and in JOIN context
+        // Supports any schema name (dbo, sys, gold, raw, staging, etc.)
         private static readonly Regex DirectTableAliasPattern = new Regex(
-            @"\[(?<schema>dbo|sys)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            @"\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Pattern 3: Column definition in subselect [$Table].[ColumnName] as [alias]
@@ -90,6 +92,55 @@ namespace DaxStudio.UI.Utils
         // Pattern 8: Composite alias assignment ) AS [semijoin1] or ) AS [basetable0]
         private static readonly Regex CompositeAliasPattern = new Regex(
             @"\)\s*AS\s+\[(?<alias>semijoin\d+|basetable\d+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 9: Schema-less table reference (no dot) - [TableName] AS [alias]
+        // Some DirectQuery sources use simple table names without schema
+        private static readonly Regex SchemalessTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+\[(?<table>[^\]\.]+)\]\s+(?:AS\s+)?\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 10: OPENQUERY pattern - OPENQUERY(LinkedServer, 'SELECT ... FROM table')
+        private static readonly Regex OpenQueryPattern = new Regex(
+            @"OPENQUERY\s*\(\s*\[?(?<server>[^\],\)]+)\]?\s*,\s*'(?<innerQuery>[^']+)'",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        // Pattern 11: 4-part naming - [server].[database].[schema].[table] AS [alias]
+        private static readonly Regex FourPartNamePattern = new Regex(
+            @"\[(?<server>[^\]]+)\]\.\[(?<database>[^\]]+)\]\.\[(?<schema>[^\]]+)\]\.\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 12: 3-part naming - [database].[schema].[table] AS [alias]
+        private static readonly Regex ThreePartNamePattern = new Regex(
+            @"(?<!\.)\[(?<database>[^\]]+)\]\.\[(?<schema>[^\]]+)\]\.\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 13: Unbracketed table names - FROM schema.table AS alias (no brackets)
+        // Common in PostgreSQL, MySQL, Databricks, Snowflake, etc.
+        private static readonly Regex UnbracketedTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+(?<schema>\w+)\.(?<table>\w+)\s+(?:AS\s+)?(?<alias>\w+)(?=\s|$|,|\))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 14: Unbracketed table without schema - FROM table AS alias
+        private static readonly Regex UnbracketedSimpleTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+(?<table>\w+)\s+(?:AS\s+)?(?<alias>\w+)(?=\s+(?:ON|WHERE|INNER|LEFT|RIGHT|FULL|CROSS|GROUP|ORDER|HAVING|\)|$))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 15: Quoted table names with double quotes (common in PostgreSQL, Oracle)
+        private static readonly Regex DoubleQuotedTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+""(?<schema>[^""]+)""\s*\.\s*""(?<table>[^""]+)""\s+(?:AS\s+)?""?(?<alias>\w+)""?",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 16: Backtick quoted tables (MySQL, BigQuery)
+        private static readonly Regex BacktickTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+`(?<schema>[^`]+)`\s*\.\s*`(?<table>[^`]+)`\s+(?:AS\s+)?`?(?<alias>\w+)`?",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Pattern 17: Simple bracketed table without schema - [Table Name] AS [alias]
+        // Very common in DirectQuery to SQL Server/Azure SQL without explicit schema
+        // Note: Table name can contain spaces. Matches anywhere, not just after FROM/JOIN
+        private static readonly Regex SimpleBracketedTablePattern = new Regex(
+            @"(?<!\[)\[(?<table>[^\]\.]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public DirectQuerySqlParser(string sql)
@@ -227,6 +278,235 @@ namespace DaxStudio.UI.Utils
                         IsBaseTable = false,
                         SourceAliases = new List<string>()
                     };
+                }
+            }
+
+            // Pattern 4-part naming: [server].[database].[schema].[table] AS [alias]
+            var fourPartMatches = FourPartNamePattern.Matches(_sql);
+            foreach (Match match in fourPartMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 4-part: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern 3-part naming: [database].[schema].[table] AS [alias]
+            var threePartMatches = ThreePartNamePattern.Matches(_sql);
+            foreach (Match match in threePartMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 3-part: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern schema-less: FROM [TableName] AS [alias] or JOIN [TableName] [alias]
+            var schemalessMatches = SchemalessTablePattern.Matches(_sql);
+            foreach (Match match in schemalessMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+                // Skip if table name contains a dot (it was part of a schema.table pattern)
+                if (tableName.Contains("."))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 schemaless: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // OPENQUERY pattern - extract tables from inner SQL
+            var openQueryMatches = OpenQueryPattern.Matches(_sql);
+            foreach (Match match in openQueryMatches)
+            {
+                var server = match.Groups["server"].Value;
+                var innerQuery = match.Groups["innerQuery"].Value;
+                
+                // Try to extract table name from inner query (simple FROM clause)
+                var innerFromMatch = Regex.Match(innerQuery, 
+                    @"\bFROM\s+(?:\[?(?<schema>\w+)\]?\.)?\[?(?<table>\w+)\]?",
+                    RegexOptions.IgnoreCase);
+                
+                if (innerFromMatch.Success)
+                {
+                    var tableName = innerFromMatch.Groups["table"].Value;
+                    if (!string.IsNullOrEmpty(tableName))
+                    {
+                        EnsureTable(tableName);
+                        Log.Debug("Pass1 OPENQUERY: Found table {Table} from server {Server}", tableName, server);
+                    }
+                }
+            }
+
+            // Pattern: Unbracketed schema.table (PostgreSQL, MySQL, Databricks, Snowflake style)
+            var unbracketedMatches = UnbracketedTablePattern.Matches(_sql);
+            foreach (Match match in unbracketedMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                // Skip SQL keywords that might be captured
+                if (IsReservedWord(alias) || IsReservedWord(tableName))
+                    continue;
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 unbracketed: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern: Unbracketed simple table (no schema)
+            var unbracketedSimpleMatches = UnbracketedSimpleTablePattern.Matches(_sql);
+            foreach (Match match in unbracketedSimpleMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (IsReservedWord(alias) || IsReservedWord(tableName))
+                    continue;
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 unbracketed-simple: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern: Double-quoted tables (PostgreSQL, Oracle)
+            var doubleQuotedMatches = DoubleQuotedTablePattern.Matches(_sql);
+            foreach (Match match in doubleQuotedMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 double-quoted: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern: Backtick-quoted tables (MySQL, BigQuery)
+            var backtickMatches = BacktickTablePattern.Matches(_sql);
+            foreach (Match match in backtickMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 backtick: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern 17: Simple bracketed table without schema [Table Name] AS [alias]
+            // This is very common in DirectQuery to SQL Server/Azure SQL
+            // Run LAST so it doesn't interfere with more specific patterns
+            var simpleBracketedMatches = SimpleBracketedTablePattern.Matches(_sql);
+            foreach (Match match in simpleBracketedMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                // Skip $Table references (those are internal to subselects)
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Skip aliases that look like output column aliases (a0, c0, etc.)
+                if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                    continue;
+
+                // Skip if we already have this alias
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                // Skip if the "table" name is actually a column pattern (like t4.Column)
+                // This can happen due to the regex being broad
+                if (tableName.StartsWith("t") && Regex.IsMatch(tableName, @"^t\d+$", RegexOptions.IgnoreCase))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 simple-bracketed: [{Alias}] -> {Table}", alias, tableName);
                 }
             }
 
@@ -424,17 +704,23 @@ namespace DaxStudio.UI.Utils
         }
 
         /// <summary>
-        /// Pass 3: Extract columns from ON, GROUP BY, and SELECT clauses.
+        /// Pass 3: Extract columns from ON, WHERE, GROUP BY, aggregates, and SELECT clauses.
         /// </summary>
         private void Pass3_ExtractUsedColumns()
         {
-            // Extract from ON clauses
+            // Extract from ON clauses (join columns)
             var onMatches = OnConditionPattern.Matches(_sql);
             foreach (Match match in onMatches)
             {
                 AddColumnUsage(match.Groups["leftAlias"].Value, match.Groups["leftCol"].Value, XmSqlColumnUsage.Join);
                 AddColumnUsage(match.Groups["rightAlias"].Value, match.Groups["rightCol"].Value, XmSqlColumnUsage.Join);
             }
+
+            // Extract from WHERE clauses (filter columns)
+            ExtractWhereClauseColumns();
+
+            // Extract from aggregate functions (SUM, COUNT, etc.)
+            ExtractAggregateColumns();
 
             // Extract from GROUP BY clauses
             var groupByMatches = GroupByColumnPattern.Matches(_sql);
@@ -445,6 +731,116 @@ namespace DaxStudio.UI.Utils
                 foreach (Match colRef in colRefs)
                 {
                     AddColumnUsage(colRef.Groups["alias"].Value, colRef.Groups["col"].Value, XmSqlColumnUsage.GroupBy);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Extract columns from WHERE clauses.
+        /// </summary>
+        private void ExtractWhereClauseColumns()
+        {
+            // Find WHERE clause(s) - can be multiple in nested subqueries
+            // Pattern: WHERE ... (until GROUP BY, ORDER BY, HAVING, or end of subquery)
+            var wherePattern = new Regex(
+                @"\bWHERE\s+(?<conditions>.*?)(?=\bGROUP\s+BY\b|\bORDER\s+BY\b|\bHAVING\b|\)\s*(?:AS|INNER|LEFT|RIGHT|FULL|CROSS|$)|\)\s*$)",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            var whereMatches = wherePattern.Matches(_sql);
+            foreach (Match whereMatch in whereMatches)
+            {
+                var conditions = whereMatch.Groups["conditions"].Value;
+                
+                // Extract column references [alias].[column] from the WHERE clause
+                var colRefPattern = new Regex(@"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]", RegexOptions.IgnoreCase);
+                var colRefs = colRefPattern.Matches(conditions);
+                
+                foreach (Match colRef in colRefs)
+                {
+                    var alias = colRef.Groups["alias"].Value;
+                    var col = colRef.Groups["col"].Value;
+                    
+                    // Skip if the alias looks like an output alias (a0, c0, etc.)
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+                    
+                    AddColumnUsage(alias, col, XmSqlColumnUsage.Filter);
+                }
+            }
+
+            // Also look for simple comparisons that might not have alias prefix
+            // e.g., WHERE [Column] = value or WHERE [Column] IN (...)
+            var simpleWherePattern = new Regex(
+                @"\bWHERE\b.*?\[(?<col>[^\]\.]+)\]\s*(?:=|<>|!=|<|>|<=|>=|IN\s*\(|LIKE|IS\s+(?:NOT\s+)?NULL|BETWEEN)",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            
+            var simpleMatches = simpleWherePattern.Matches(_sql);
+            foreach (Match match in simpleMatches)
+            {
+                // These are harder to resolve without alias, but we can try
+                // to find them in the context
+                var col = match.Groups["col"].Value;
+                // For now, just log that we found a potential filter column
+                Log.Debug("Found potential unaliased filter column: {Column}", col);
+            }
+        }
+
+        /// <summary>
+        /// Extract columns from aggregate functions (SUM, COUNT, AVG, MIN, MAX, etc.)
+        /// </summary>
+        private void ExtractAggregateColumns()
+        {
+            // Pattern for aggregate functions with column references
+            // Matches: COUNT_BIG(DISTINCT [t4].[Column]), SUM([t4].[Amount]), AVG([alias].[col]), etc.
+            var aggregatePattern = new Regex(
+                @"\b(?<func>COUNT_BIG|COUNT|SUM|AVG|MIN|MAX|STDEV|STDEVP|VAR|VARP|CHECKSUM_AGG)\s*\(\s*(?:DISTINCT\s+)?(?:\[(?<alias>[^\]]+)\]\s*\.\s*)?\[(?<col>[^\]]+)\]",
+                RegexOptions.IgnoreCase);
+
+            var matches = aggregatePattern.Matches(_sql);
+            foreach (Match match in matches)
+            {
+                var func = match.Groups["func"].Value.ToUpperInvariant();
+                var alias = match.Groups["alias"].Value;
+                var col = match.Groups["col"].Value;
+
+                // All aggregate functions use the Aggregate usage type
+                XmSqlColumnUsage usage = XmSqlColumnUsage.Aggregate;
+
+                if (!string.IsNullOrEmpty(alias) && !string.IsNullOrEmpty(col))
+                {
+                    // Skip output aliases like a0, c0
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+
+                    AddColumnUsage(alias, col, usage);
+                    Log.Debug("Found aggregate column: {Func}([{Alias}].[{Col}])", func, alias, col);
+                }
+                else if (!string.IsNullOrEmpty(col))
+                {
+                    // Column without alias - try to find it
+                    Log.Debug("Found unaliased aggregate column: {Func}([{Col}])", func, col);
+                }
+            }
+
+            // Also look for CASE WHEN expressions with column references
+            var casePattern = new Regex(
+                @"\bCASE\s+WHEN\s+\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]",
+                RegexOptions.IgnoreCase);
+
+            var caseMatches = casePattern.Matches(_sql);
+            foreach (Match match in caseMatches)
+            {
+                var alias = match.Groups["alias"].Value;
+                var col = match.Groups["col"].Value;
+
+                if (!string.IsNullOrEmpty(alias) && !string.IsNullOrEmpty(col))
+                {
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+
+                    // CASE WHEN typically used for conditional aggregation or filtering
+                    AddColumnUsage(alias, col, XmSqlColumnUsage.Aggregate);
+                    Log.Debug("Found CASE WHEN column: [{Alias}].[{Col}]", alias, col);
                 }
             }
         }
@@ -617,6 +1013,80 @@ namespace DaxStudio.UI.Utils
         {
             public string TableName { get; set; }
             public string ColumnName { get; set; }
+        }
+
+        // Common SQL reserved words to exclude when pattern matching unbracketed tables
+        private static readonly HashSet<string> ReservedWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "SELECT", "FROM", "WHERE", "AND", "OR", "NOT", "IN", "IS", "NULL", "LIKE",
+            "INNER", "LEFT", "RIGHT", "OUTER", "FULL", "CROSS", "JOIN", "ON",
+            "GROUP", "BY", "HAVING", "ORDER", "ASC", "DESC", "LIMIT", "TOP", "OFFSET",
+            "UNION", "ALL", "DISTINCT", "AS", "INTO", "VALUES", "INSERT", "UPDATE", "DELETE",
+            "SET", "CREATE", "ALTER", "DROP", "TABLE", "INDEX", "VIEW", "PROCEDURE",
+            "FUNCTION", "TRIGGER", "DATABASE", "SCHEMA", "COLUMN", "CONSTRAINT",
+            "PRIMARY", "KEY", "FOREIGN", "REFERENCES", "UNIQUE", "CHECK", "DEFAULT",
+            "CASE", "WHEN", "THEN", "ELSE", "END", "CAST", "CONVERT", "COALESCE",
+            "COUNT", "SUM", "AVG", "MIN", "MAX", "OVER", "PARTITION", "ROW_NUMBER",
+            "TRUE", "FALSE", "WITH", "RECURSIVE", "EXISTS", "ANY", "SOME",
+            "BETWEEN", "ESCAPE", "USING", "NATURAL"
+        };
+
+        private static bool IsReservedWord(string word)
+        {
+            return ReservedWords.Contains(word);
+        }
+
+        #endregion
+
+        #region Diagnostics
+
+        /// <summary>
+        /// Gets diagnostic information about what was parsed.
+        /// </summary>
+        public string GetDiagnostics()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("=== ALIAS MAP ===");
+            foreach (var kvp in _aliasMap)
+            {
+                if (kvp.Value.IsBaseTable)
+                    sb.AppendLine($"  [{kvp.Key}] -> {kvp.Value.BaseTableName}");
+                else
+                    sb.AppendLine($"  [{kvp.Key}] -> (composite)");
+            }
+            
+            sb.AppendLine();
+            sb.AppendLine("=== COLUMN ALIAS MAP ===");
+            foreach (var kvp in _columnAliasMap)
+            {
+                sb.AppendLine($"  [{kvp.Key}] -> {kvp.Value.TableName}.{kvp.Value.ColumnName}");
+            }
+            
+            sb.AppendLine();
+            sb.AppendLine("=== TABLES FOUND ===");
+            foreach (var table in Tables.Keys)
+            {
+                sb.AppendLine($"  {table}");
+            }
+            
+            sb.AppendLine();
+            sb.AppendLine("=== RELATIONSHIPS FOUND ===");
+            foreach (var rel in Relationships)
+            {
+                sb.AppendLine($"  [{rel.FromTable}].[{rel.FromColumn}] -> [{rel.ToTable}].[{rel.ToColumn}]");
+            }
+            
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets a sample of the SQL for debugging (first N characters).
+        /// </summary>
+        public string GetSqlSample(int length = 200)
+        {
+            if (string.IsNullOrEmpty(_sql))
+                return "(empty)";
+            return _sql.Length <= length ? _sql : _sql.Substring(0, length) + "...";
         }
 
         #endregion

@@ -605,8 +605,17 @@ namespace DaxStudio.UI.ViewModels
                         continue;
 
                     // Skip events without query text
-                    if (string.IsNullOrWhiteSpace(evt.Query))
+                    // For DirectQuery events, check TextData which has the SQL
+                    // For Scan events, check Query which has the xmSQL
+                    if (evt.IsDirectQueryEvent)
+                    {
+                        if (string.IsNullOrWhiteSpace(evt.TextData) && string.IsNullOrWhiteSpace(evt.Query))
+                            continue;
+                    }
+                    else if (string.IsNullOrWhiteSpace(evt.Query))
+                    {
                         continue;
+                    }
 
                     // Track total CPU for percentage calculations
                     if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
@@ -1794,18 +1803,19 @@ namespace DaxStudio.UI.ViewModels
                             sb.AppendLine("    (empty)");
                         }
                         
-                        // For DirectQuery events, show block parser analysis
+                        // For DirectQuery events, show full parser analysis
                         if (evt.IsDirectQueryEvent && !string.IsNullOrWhiteSpace(evt.TextData))
                         {
-                            sb.AppendLine($"  Block Parser Analysis:");
+                            sb.AppendLine($"  DirectQuery Parser Analysis:");
                             try
                             {
-                                var blockParser = new Utils.SqlBlockParser(evt.TextData);
-                                var root = blockParser.Parse();
-                                if (root != null)
-                                {
-                                    sb.AppendLine(blockParser.GetAliasSummary());
-                                }
+                                // Run the full DirectQuery parser
+                                var dqParser = new Utils.DirectQuerySqlParser(evt.TextData);
+                                dqParser.Parse();
+                                sb.AppendLine(dqParser.GetDiagnostics());
+                                
+                                // Also show SQL sample for context
+                                sb.AppendLine($"  SQL Sample: {dqParser.GetSqlSample(300)}");
                             }
                             catch (Exception parseEx)
                             {

@@ -115,8 +115,30 @@ namespace DaxStudio.UI.Utils
             @"\[(?<sourceAlias>[^\]]+)\]\s*\.\s*\[(?<sourceCol>[^\]]+)\]\s+AS\s+\[(?<outputAlias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        // Direct table reference - [schema].[table] AS [alias] - accepts any schema name
         private static readonly Regex DirectTablePattern = new Regex(
-            @"\[(?<schema>dbo|sys)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            @"\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Schema-less table reference - just [table] AS [alias] after FROM/JOIN
+        private static readonly Regex SchemalessTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+\[(?<table>[^\]\.]+)\]\s+(?:AS\s+)?\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // 3-part naming: [database].[schema].[table] AS [alias]
+        private static readonly Regex ThreePartTablePattern = new Regex(
+            @"(?<!\.)\[(?<database>[^\]]+)\]\.\[(?<schema>[^\]]+)\]\.\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // 4-part naming: [server].[database].[schema].[table] AS [alias]
+        private static readonly Regex FourPartTablePattern = new Regex(
+            @"\[(?<server>[^\]]+)\]\.\[(?<database>[^\]]+)\]\.\[(?<schema>[^\]]+)\]\.\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Simple bracketed table without schema - [Table Name] AS [alias]
+        // Common in DirectQuery to SQL Server/Azure SQL without explicit schema
+        private static readonly Regex SimpleBracketedTablePattern = new Regex(
+            @"(?<!\[)\[(?<table>[^\]\.]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex JoinPattern = new Regex(
@@ -168,9 +190,57 @@ namespace DaxStudio.UI.Utils
 
         /// <summary>
         /// Find direct table references like [dbo].[TableName] AS [alias] that aren't [$Table] subselects.
+        /// Also handles schema-less tables and 3-part/4-part naming.
         /// </summary>
         private void FindDirectTableReferences()
         {
+            // 4-part naming first (most specific): [server].[database].[schema].[table] AS [alias]
+            var fourPartMatches = FourPartTablePattern.Matches(_sql);
+            foreach (Match match in fourPartMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (_blocksByAlias.ContainsKey(alias))
+                    continue;
+
+                var virtualBlock = new SqlBlock
+                {
+                    Alias = alias,
+                    BlockType = "directTable",
+                    BaseTable = tableName,
+                    Depth = -1
+                };
+                _blocksByAlias[alias] = virtualBlock;
+                Log.Debug("Found 4-part table reference: [{Alias}] -> {Table}", alias, tableName);
+            }
+
+            // 3-part naming: [database].[schema].[table] AS [alias]
+            var threePartMatches = ThreePartTablePattern.Matches(_sql);
+            foreach (Match match in threePartMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (_blocksByAlias.ContainsKey(alias))
+                    continue;
+
+                var virtualBlock = new SqlBlock
+                {
+                    Alias = alias,
+                    BlockType = "directTable",
+                    BaseTable = tableName,
+                    Depth = -1
+                };
+                _blocksByAlias[alias] = virtualBlock;
+                Log.Debug("Found 3-part table reference: [{Alias}] -> {Table}", alias, tableName);
+            }
+
+            // 2-part naming: [schema].[table] AS [alias]
             var directMatches = DirectTablePattern.Matches(_sql);
             foreach (Match match in directMatches)
             {
@@ -196,6 +266,62 @@ namespace DaxStudio.UI.Utils
                 _blocksByAlias[alias] = virtualBlock;
                 
                 Log.Debug("Found direct table reference: [{Alias}] -> {Table}", alias, tableName);
+            }
+
+            // Schema-less tables: FROM [table] AS [alias] or JOIN [table] [alias]
+            var schemalessMatches = SchemalessTablePattern.Matches(_sql);
+            foreach (Match match in schemalessMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (_blocksByAlias.ContainsKey(alias))
+                    continue;
+                // Skip if table name looks like it has a dot (partial match issue)
+                if (tableName.Contains("."))
+                    continue;
+
+                var virtualBlock = new SqlBlock
+                {
+                    Alias = alias,
+                    BlockType = "directTable",
+                    BaseTable = tableName,
+                    Depth = -1
+                };
+                _blocksByAlias[alias] = virtualBlock;
+                Log.Debug("Found schemaless table reference: [{Alias}] -> {Table}", alias, tableName);
+            }
+
+            // Simple bracketed tables: [Table Name] AS [alias]
+            // Run last so it doesn't interfere with more specific patterns
+            var simpleBracketedMatches = SimpleBracketedTablePattern.Matches(_sql);
+            foreach (Match match in simpleBracketedMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                // Skip aliases that look like output column aliases (a0, c0, etc.)
+                if (System.Text.RegularExpressions.Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                    continue;
+                if (_blocksByAlias.ContainsKey(alias))
+                    continue;
+                // Skip if the "table" name is actually an alias pattern (like t4)
+                if (tableName.StartsWith("t") && System.Text.RegularExpressions.Regex.IsMatch(tableName, @"^t\d+$", RegexOptions.IgnoreCase))
+                    continue;
+
+                var virtualBlock = new SqlBlock
+                {
+                    Alias = alias,
+                    BlockType = "directTable",
+                    BaseTable = tableName,
+                    Depth = -1
+                };
+                _blocksByAlias[alias] = virtualBlock;
+                Log.Debug("Found simple bracketed table reference: [{Alias}] -> {Table}", alias, tableName);
             }
         }
 
