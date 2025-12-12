@@ -1838,6 +1838,7 @@ namespace DaxStudio.UI.ViewModels
                     if (col.UsageTypes.HasFlag(XmSqlColumnUsage.Filter)) usages.Add("Filter");
                     if (col.UsageTypes.HasFlag(XmSqlColumnUsage.Join)) usages.Add("Join");
                     if (col.UsageTypes.HasFlag(XmSqlColumnUsage.Aggregate)) usages.Add($"Aggregate({string.Join(",", col.AggregationTypes)})");
+                    if (col.UsageTypes.HasFlag(XmSqlColumnUsage.Expression)) usages.Add("Expr");
 
                     text.AppendLine($"  [{col.ColumnName}] - {string.Join(", ", usages)} (Hit Count: {col.HitCount})");
                 }
@@ -4009,6 +4010,7 @@ namespace DaxStudio.UI.ViewModels
         public bool IsFilterColumn => _columnInfo.UsageTypes.HasFlag(XmSqlColumnUsage.Filter);
         public bool IsSelectColumn => _columnInfo.UsageTypes.HasFlag(XmSqlColumnUsage.Select);
         public bool IsAggregateColumn => _columnInfo.UsageTypes.HasFlag(XmSqlColumnUsage.Aggregate);
+        public bool IsExpressionColumn => _columnInfo.UsageTypes.HasFlag(XmSqlColumnUsage.Expression);
 
         /// <summary>
         /// Whether this column has a DAX callback.
@@ -4082,6 +4084,7 @@ namespace DaxStudio.UI.ViewModels
                 if (IsFilterColumn) tips.Add("🔍 Filter");
                 if (IsAggregateColumn) tips.Add("📊 Aggregate (" + AggregationText + ")");
                 if (IsSelectColumn) tips.Add("✓ Selected");
+                if (IsExpressionColumn) tips.Add("📐 Expression");
                 if (HasCallback) tips.Add("⚡ Callback (" + CallbackType + ")");
                 return tips.Count > 0 ? string.Join("\n", tips) : "No usage detected";
             }

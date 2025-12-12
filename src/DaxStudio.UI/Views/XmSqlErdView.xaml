@@ -634,6 +634,11 @@
                                                     <Path Data="M0,5 L3,8 L9,2 L10,3 L3,10 L-1,6 Z"
                                                           Fill="#32CD32" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
                                                           Visibility="{Binding IsSelectColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Function/Expr icon (teal - for WITH $Expr expressions) -->
+                                                    <Path Data="M1,2 L1,8 M0,3 L2,3 M0,7 L2,7 M4,0 L4,3 L6,5 L4,7 L4,10 M8,0 L8,3 L6,5 L8,7 L8,10"
+                                                          Stroke="#00CED1" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsExpressionColumn, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                          ToolTip="Used in WITH expression (calculated measure)"/>
                                                     <!-- Lightning bolt icon for Callback (orange/red - indicates performance issue) -->
                                                     <Path Data="M7,0 L3,5 L5,5 L2,10 L8,4 L5,4 Z"
                                                           Fill="#FF5722" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"

@@ -122,6 +122,21 @@ namespace DaxStudio.UI.Utils
             @"\b(?:VAND|VOR)\b",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        // ==================== WITH EXPRESSION PATTERNS ====================
+
+        // Matches WITH clause containing $Expr definitions:
+        // WITH $Expr0 := ( PFCAST ( 'Sales'[Quantity] AS INT ) * PFCAST ( 'Sales'[Net Price] AS INT ) )
+        // Captures the entire expression block after the :=
+        private static readonly Regex WithExpressionPattern = new Regex(
+            @"\bWITH\b(?<withBlock>.*?)\bSELECT\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        // Matches individual $ExprN definition within a WITH block
+        // $Expr0 := ( expression content )
+        private static readonly Regex ExprDefinitionPattern = new Regex(
+            @"\$Expr\d+\s*:=\s*\((?<expression>.*?)\)(?=\s*(?:\$Expr|\bSELECT\b|$))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
         // ==================== FILTER VALUE EXTRACTION PATTERNS ====================
 
         // Matches equality comparisons: 'Table'[Column] = value or 'Table'[Column] = 'string value'
@@ -336,6 +351,9 @@ namespace DaxStudio.UI.Utils
 
                 // First pass: Build temp table lineage map
                 BuildTempTableLineage(xmSql);
+
+                // Parse WITH $Expr expressions (columns used in calculated expressions)
+                ParseWithExpressions(xmSql, analysis);
 
                 // Parse FROM clause (base table)
                 ParseFromClause(xmSql, analysis);
@@ -619,6 +637,54 @@ namespace DaxStudio.UI.Utils
                     {
                         table.QueryIds.Add(_currentQueryId);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parses WITH $Expr expressions to identify columns used in calculated expressions.
+        /// These are typically used for measure calculations like:
+        /// WITH $Expr0 := ( PFCAST ( 'Sales'[Quantity] AS INT ) * PFCAST ( 'Sales'[Net Price] AS INT ) )
+        /// </summary>
+        private void ParseWithExpressions(string xmSql, XmSqlAnalysis analysis)
+        {
+            // First check if there's a WITH block before SELECT
+            var withMatch = WithExpressionPattern.Match(xmSql);
+            if (!withMatch.Success)
+                return;
+
+            var withBlock = withMatch.Groups["withBlock"].Value;
+            
+            // The WITH block may not have formal $Expr definitions, just look for all table[column] references
+            // in the content between WITH and SELECT, as these are used in expressions
+            var columnMatches = TableColumnPattern.Matches(withBlock);
+            foreach (Match match in columnMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var columnName = match.Groups["column"].Value;
+
+                // Skip $Expr references - these are expression aliases, not columns
+                if (columnName.StartsWith("$Expr", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Resolve temp table references to physical tables
+                var resolved = ResolveToPhysicalColumn(tableName, columnName);
+                if (resolved.HasValue && !IsTempTable(resolved.Value.Table))
+                {
+                    tableName = resolved.Value.Table;
+                    columnName = resolved.Value.Column;
+                }
+                else if (IsTempTable(tableName))
+                {
+                    // Couldn't resolve and it's a temp table - skip
+                    continue;
+                }
+
+                var table = analysis.GetOrAddTable(tableName);
+                if (table != null)
+                {
+                    var column = table.GetOrAddColumn(columnName);
+                    column?.AddUsage(XmSqlColumnUsage.Expression);
                 }
             }
         }

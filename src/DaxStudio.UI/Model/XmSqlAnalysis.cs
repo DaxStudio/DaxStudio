@@ -461,7 +461,8 @@ namespace DaxStudio.UI.Model
         Join = 4,        // Column is used in a JOIN/ON clause
         GroupBy = 8,     // Column is used for grouping
         Aggregate = 16,  // Column has an aggregation function applied
-        OrderBy = 32     // Column is used in ORDER BY
+        OrderBy = 32,    // Column is used in ORDER BY
+        Expression = 64  // Column is used in a WITH $Expr expression (calculated measure)
     }
 
     /// <summary>

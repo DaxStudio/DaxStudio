@@ -165,6 +165,52 @@ FROM 'Sales';";
         }
 
         [TestMethod]
+        public void ParseQueryWithWithExpression()
+        {
+            // Arrange - WITH $Expr contains columns used in calculated expressions
+            string xmSql = @"SET DC_KIND=""AUTO"";
+WITH
+    $Expr0 := ( PFCAST ( 'Sales'[Quantity] AS INT ) * PFCAST ( 'Sales'[Net Price] AS INT ) )
+SELECT
+    'Sales'[StoreKey],
+    'Product'[Brand],
+    SUM ( @$Expr0 )
+FROM 'Sales'
+    LEFT OUTER JOIN 'Date'
+        ON 'Sales'[Order Date]='Date'[Date]
+    LEFT OUTER JOIN 'Product'
+        ON 'Sales'[ProductKey]='Product'[ProductKey]
+WHERE
+    'Date'[Day of Week Number] = 4;";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            // Assert
+            Assert.IsTrue(result);
+            
+            // Check Sales table has expression columns
+            Assert.IsTrue(analysis.Tables.ContainsKey("Sales"));
+            var salesTable = analysis.Tables["Sales"];
+            
+            // These columns are in the WITH expression
+            Assert.IsTrue(salesTable.Columns.ContainsKey("Quantity"), "Quantity column should be found from WITH expression");
+            Assert.IsTrue(salesTable.Columns["Quantity"].UsageTypes.HasFlag(XmSqlColumnUsage.Expression), 
+                "Quantity should be marked as Expression usage");
+            
+            Assert.IsTrue(salesTable.Columns.ContainsKey("Net Price"), "Net Price column should be found from WITH expression");
+            Assert.IsTrue(salesTable.Columns["Net Price"].UsageTypes.HasFlag(XmSqlColumnUsage.Expression),
+                "Net Price should be marked as Expression usage");
+            
+            // These columns are in the SELECT (not the WITH)
+            Assert.IsTrue(salesTable.Columns.ContainsKey("StoreKey"), "StoreKey should be in SELECT");
+            Assert.IsTrue(salesTable.Columns["StoreKey"].UsageTypes.HasFlag(XmSqlColumnUsage.Select),
+                "StoreKey should be marked as Select usage");
+        }
+
+        [TestMethod]
         public void ParseMultipleQueries()
         {
             // Arrange
