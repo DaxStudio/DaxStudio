@@ -177,54 +177,59 @@
                 </i:Interaction.Triggers>
             </RadioButton>
 
-            <ComboBox 
+            <Grid Grid.Column="1" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox 
                               x:Name="cboServers" 
                               VerticalAlignment="Center"  
                               IsEditable="True"  
 							  ItemsSource="{Binding RecentServers}"
                               HorizontalAlignment="Stretch"
-                              Grid.Column="1"
-                              Grid.Row="1"
+                              Grid.Column="0"
+                    
 							  Text="{Binding DataSource, UpdateSourceTrigger=PropertyChanged}" 
 							  IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}" 
-							  ap:InitialFocusExtentions.SelectAllAndFocus="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="2"
+							  ap:InitialFocusExtentions.SelectAllAndFocus="{Binding SelectedServerSetFocus}" Grid.ColumnSpan="1"
                               ap:DataSourcePasteHandlerHelper.PasteHandler="{Binding DataSourcePasted}"
                               >
 
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="SelectionChanged">
-                        <cal:Action.Target>
-                            <cal:ActionMessage MethodName="ClearDatabases"/>
-                        </cal:Action.Target>
-                    </i:EventTrigger>
-                    <i:EventTrigger EventName="KeyUp">
-                        <cal:Action.Target>
-                            <cal:ActionMessage MethodName="ClearDatabases"/>
-                        </cal:Action.Target>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-                <ComboBox.Resources>
-                    <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
-                        <VisualBrush.Visual>
-                            <TextBlock FontStyle="Italic" Text="Type or select from list"/>
-                        </VisualBrush.Visual>
-                    </VisualBrush>
-                </ComboBox.Resources>
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                        
-                            <TextBlock Text="{Binding .}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-                            <Button Content="X" Grid.Column="1" 
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <cal:Action.Target>
+                                <cal:ActionMessage MethodName="ClearDatabases"/>
+                            </cal:Action.Target>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="KeyUp">
+                            <cal:Action.Target>
+                                <cal:ActionMessage MethodName="ClearDatabases"/>
+                            </cal:Action.Target>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <ComboBox.Resources>
+                        <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left">
+                            <VisualBrush.Visual>
+                                <TextBlock FontStyle="Italic" Text="Type or select from list"/>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </ComboBox.Resources>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="{Binding .}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                <Button Content="X" Grid.Column="1" 
                                     Command="{Binding DataContext.DeleteServerCommand,RelativeSource={RelativeSource AncestorType=vw:ConnectionDialogView}}"
                                     CommandParameter="{Binding .}"
                                     Style="{StaticResource DeleteButtonStyle}"
                                     ToolTip="Delete this server from the list">
-                                <!--<Button.Template>
+                                    <!--<Button.Template>
                                     <ControlTemplate>
                                         <Border x:Name="imgBorder">
                                         <Image Source="{DynamicResource closeDrawingImage}"/>
@@ -232,15 +237,27 @@
                                     </ControlTemplate>
                                 </Button.Template>-->
 
-                            </Button>
-                        </Grid>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
 
-                <i:Interaction.Behaviors>
-                    <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
-                </i:Interaction.Behaviors>
-            </ComboBox>
+                    <i:Interaction.Behaviors>
+                        <beh:BindableFocusBehavior HasFocus="{Binding IsChecked, ElementName=rdoTabularServer}"/>
+                    </i:Interaction.Behaviors>
+                </ComboBox>
+                
+                <Button Content="Browse"
+                        Grid.Column="1"
+                        Visibility="{Binding ShowBrowseWorkspacesButton, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="5,0,0,0"
+                            x:Name="btnRefreshServers" 
+                            VerticalAlignment="Center" 
+                            Width="70" 
+                            IsEnabled="{Binding IsChecked, ElementName=rdoTabularServer}"
+                            cal:Message.Attach="[Event Click]=[BrowseWorkspaces()]"
+                            />
+            </Grid>
 
             <!-- PowerPivot -->
             <RadioButton HorizontalAlignment="Left" 

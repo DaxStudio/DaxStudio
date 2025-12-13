@@ -107,6 +107,45 @@ namespace DaxStudio.Common
             return authResult;
         }
 
+        /// <summary>
+        /// Creates an AccessTokenContext for a given token scope using the Power BI API endpoint as the default server
+        /// </summary>
+        /// <param name="tokenScope">The scope for which to create the context</param>
+        /// <returns>An AccessTokenContext configured for the specified scope</returns>
+        public static AccessTokenContext CreateDefaultContext(AccessTokenScope tokenScope)
+        {
+            // Use the Power BI API endpoint as the default for context creation
+            var defaultServerName = "powerbi://api.powerbi.com";
+            
+            try
+            {
+                var tenantId = string.Empty; // Empty tenant ID will use the default/organizations endpoint
+                var authInfo = GetAuthenticationInformationFromUri(new Uri(defaultServerName));
+                
+                IEnumerable<string> scope = GetScope(tokenScope);
+                
+                // Override the scope if the authentication information contains a ResourceId
+                if (!string.IsNullOrEmpty(authInfo.ResourceId))
+                    scope = authInfo.GetDefaultScopes();
+                
+                var context = new AccessTokenContext
+                {
+                    TokenScope = tokenScope,
+                    TenantId = tenantId,
+                    DomainPostfix = authInfo.DomainPostfix,
+                    Scope = scope
+                };
+                
+                return context;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(CreateDefaultContext), 
+                    $"Error creating default context for {tokenScope}");
+                throw;
+            }
+        }
+
         public static async Task<IPublicClientApplication> GetPublicClientAppAsync(AccessTokenContext context)
         {
             //if (_clientApp != null) return _clientApp;

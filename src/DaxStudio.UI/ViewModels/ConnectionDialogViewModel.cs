@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Media;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
@@ -37,6 +38,7 @@ namespace DaxStudio.UI.ViewModels
         private static PowerBIInstance _pbiLoadingInstance = new PowerBIInstance("Loading...", -1, EmbeddedSSASIcon.Loading);
         private static PowerBIInstance _pbiNoneInstance = new PowerBIInstance("<no running PBI/SSDT windows found>", -1, EmbeddedSSASIcon.None);
         private ISettingProvider SettingProvider { get; }
+        private readonly IWindowManager _windowManager;
 
 
         public ConnectionDialogViewModel(string connectionString
@@ -45,7 +47,8 @@ namespace DaxStudio.UI.ViewModels
             , bool hasPowerPivotModel
             , DocumentViewModel document
             , ISettingProvider settingProvider
-            , IGlobalOptions options) 
+            , IGlobalOptions options
+            , IWindowManager windowManager) 
         {
             try
             {
@@ -54,6 +57,7 @@ namespace DaxStudio.UI.ViewModels
                 _connectionString = connectionString;
                 _activeDocument = document;
                 SettingProvider = settingProvider;
+                _windowManager = windowManager;
                 _ppvtRegex = new Regex(@"http://localhost:\d{4}/xmla", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 PowerPivotEnabled = true;
                 Host = host;
@@ -947,6 +951,41 @@ namespace DaxStudio.UI.ViewModels
             SettingProvider.SaveServerMRUList(null);
         }
 
+        public async void BrowseWorkspaces()
+        {
+            BrowseWorkspacesViewModel browseWorkspacesDialog = null;
+            try
+            {
+                browseWorkspacesDialog = new BrowseWorkspacesViewModel(Options);
+                _eventAggregator.SubscribeOnPublishedThread(browseWorkspacesDialog);
+
+                await _windowManager.ShowDialogBoxAsync(browseWorkspacesDialog, settings: new Dictionary<string, object>
+                {
+                    { "WindowStyle", WindowStyle.None},
+                    { "ShowInTaskbar", false},
+                    { "ResizeMode", ResizeMode.NoResize},
+                    { "Background", Brushes.Transparent},
+                    { "AllowsTransparency",true}
+                });
+
+                if (browseWorkspacesDialog.Result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrEmpty(browseWorkspacesDialog.SelectedWorkspace.Name))
+                {
+                    // Set the data source to the selected workspace
+                    DataSource = $"powerbi://api.powerbi.com/v1.0/myorg/{browseWorkspacesDialog.SelectedWorkspace.Name}";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(BrowseWorkspaces), ex.Message);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error browsing workspaces: {ex.Message}"));
+            }
+            finally
+            {
+                if (browseWorkspacesDialog != null)
+                    _eventAggregator.Unsubscribe(browseWorkspacesDialog);
+            }
+        }
+
         public Task HandleAsync(RefreshConnectionDialogEvent message, CancellationToken cancellationToken)
         {
             try
@@ -971,6 +1010,19 @@ namespace DaxStudio.UI.ViewModels
 
             }
             return Task.CompletedTask;
+        }
+
+        public bool ShowBrowseWorkspacesButton
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+                //return Options.PowerBIServiceEnabled;
+            }
         }
     } 
      

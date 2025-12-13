@@ -14,6 +14,8 @@ using System.Windows.Data;
 using System.Diagnostics;
 using DaxStudio.Interfaces;
 using DaxStudio.Common;
+using Serilog;
+using System.Collections.Generic;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -21,27 +23,79 @@ namespace DaxStudio.UI.ViewModels
     {
         private AuthenticationResult _authResult;
         private IntPtr? _viewHwnd;
+        private PowerBIEnvironment _environment;
+        
         public BrowseWorkspacesViewModel(IGlobalOptions options)
         {
             Options = options;
             WorkspacesView = CollectionViewSource.GetDefaultView(Workspaces);
             WorkspacesView.Filter = UserFilter;
             WorkspacesView.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            
+            // Detect Power BI environment (Public, GCC, China, etc.)
+            _environment = PowerBIEnvironment.Public; // Default to public cloud
         }
 
         public IGlobalOptions Options { get; }
         public ICollectionView WorkspacesView { get; }
 
-        public Workspace SelectedWorkspace { get; set; }
+        private Workspace _selectedWorkspace;
+        public Workspace SelectedWorkspace { get => _selectedWorkspace; set {
+                _selectedWorkspace = value;
+                NotifyOfPropertyChange(nameof(CanConnect));
+            } 
+        }
+
+        public bool IsListEnabled { get; set; } = true;
 
         public AuthenticationResult AuthenticationResult { get => _authResult; }
+        
+        public PowerBIEnvironment Environment 
+        { 
+            get => _environment;
+            private set
+            {
+                _environment = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(EnvironmentName));
+            }
+        }
+        
+        public string EnvironmentName => _environment?.Name ?? "Power BI";
+        
+        private string _userAvatar;
+        public string UserAvatar
+        {
+            get => _userAvatar;
+            private set
+            {
+                _userAvatar = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(HasAvatar));
+            }
+        }
+        
+        public bool HasAvatar => !string.IsNullOrEmpty(UserAvatar);
 
         public bool UserFilter(object db)
         {
-            if (String.IsNullOrEmpty(SearchCriteria))
-                return true;
-            else
-                return (((Workspace)db).Name.IndexOf(SearchCriteria, StringComparison.OrdinalIgnoreCase) >= 0);
+            var workspace = (Workspace)db;
+            
+            // Filter by search criteria
+            if (!String.IsNullOrEmpty(SearchCriteria))
+            {
+                if (workspace.Name.IndexOf(SearchCriteria, StringComparison.OrdinalIgnoreCase) < 0)
+                    return false;
+            }
+            
+            // Filter by premium capacity if requested
+            if (ShowPremiumOnly)
+            {
+                if (!(workspace.IsOnPremiumCapacity ?? false))
+                    return false;
+            }
+            
+            return true;
         }
 
         public bool HasSearchCriteria => !string.IsNullOrEmpty(SearchCriteria);
@@ -76,7 +130,7 @@ namespace DaxStudio.UI.ViewModels
             
             // first get the authentication token
             AccountStatus = "Connecting...";
-            AccessTokenContext context = null; 
+            AccessTokenContext context = EntraIdHelper.CreateDefaultContext(AccessTokenScope.PowerBI);
             // getting workspaces only requires PowerBI scope, so we can use the same token for switching accounts
             if (switchAccount)
             {
@@ -98,14 +152,92 @@ namespace DaxStudio.UI.ViewModels
             Workspaces.Clear();
             AccountName = _authResult.Account.Username;
 
-            // then get the workspaces
-            var ws = await PbiServiceHelper.GetWorkspacesAsync(_authResult);
-            var orderedList = ws.OrderBy(ws => ws.Name);
-            foreach (var w in orderedList)
+            // Load user avatar asynchronously (don't block on this)
+            _ = LoadUserAvatarAsync();
+
+            try
             {
-                Workspaces.Add(w);
+                List<Workspace> ws;
+                
+                // Detect Power BI environment from the endpoint
+                var clusterEndpoint = _environment?.ServiceEndpoint ?? "https://api.powerbi.com";
+                
+                // Use direct REST API approach (similar to Bravo) for more detailed information
+                // Fallback to SDK if direct API fails
+                try
+                {
+                    Log.Debug(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(GetWorkspacesAsync), 
+                        $"Attempting to get workspaces using direct REST API for {_environment?.Name ?? "Public Cloud"}");
+                    ws = await PbiServiceHelper.GetWorkspacesDirectAsync(_authResult, clusterEndpoint);
+                }
+                catch (Exception directApiEx)
+                {
+                    Log.Warning(directApiEx, Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(GetWorkspacesAsync), 
+                        "Direct REST API failed, falling back to SDK");
+                    ws = await PbiServiceHelper.GetWorkspacesAsync(_authResult);
+                }
+                
+                // Filter out My Workspace and empty/invalid entries, then sort by name
+                var orderedList = ws.Where(w => !string.IsNullOrEmpty(w.Name) 
+                                              && w.Id != Guid.Empty
+                                              && w.Name != "My Workspace")
+                                    .OrderBy(w => w.Name);
+                
+                foreach (var w in orderedList)
+                {
+                    Workspaces.Add(w);
+                }
+                
+                if (Workspaces.Count == 0)
+                {
+                    ErrorMessage = "No workspaces found. You may not have access to any Power BI workspaces, or only have access to 'My Workspace'.";
+                }
+                else
+                {
+                    Log.Information(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(GetWorkspacesAsync), 
+                        $"Successfully loaded {Workspaces.Count} workspaces from {_environment?.Name ?? "Power BI"}");
+                }
             }
-            IsBusy = false;
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(GetWorkspacesAsync), 
+                    $"Error loading workspaces: {ex.Message}");
+                ErrorMessage = $"Error loading workspaces: {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+        
+        private async Task LoadUserAvatarAsync()
+        {
+            try
+            {
+                if (_authResult == null || string.IsNullOrEmpty(_authResult.Account?.Username))
+                    return;
+                
+                Log.Debug(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
+                    $"Loading avatar for {_authResult.Account.Username}");
+                
+                var avatar = await PbiServiceHelper.GetAccountAvatarAsync(
+                    _authResult, 
+                    _authResult.Account.Username, 
+                    _environment);
+                
+                if (!string.IsNullOrEmpty(avatar))
+                {
+                    UserAvatar = avatar;
+                    Log.Debug(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
+                        "Successfully loaded user avatar");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't fail if avatar can't be loaded, just log it
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
+                    $"Failed to load user avatar: {ex.Message}");
+            }
         }
 
         public ObservableCollection<Workspace> Workspaces { get; set; } = new ObservableCollection<Workspace>();
@@ -117,6 +249,32 @@ namespace DaxStudio.UI.ViewModels
             {
                 _accountName = value;
                 NotifyOfPropertyChange();
+            }
+        }
+
+        private string _errorMessage = string.Empty;
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            private set
+            {
+                _errorMessage = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(HasError));
+            }
+        }
+
+        public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
+
+        private bool _showPremiumOnly = false;
+        public bool ShowPremiumOnly
+        {
+            get => _showPremiumOnly;
+            set
+            {
+                _showPremiumOnly = value;
+                NotifyOfPropertyChange();
+                WorkspacesView.Refresh();
             }
         }
 
@@ -146,10 +304,42 @@ namespace DaxStudio.UI.ViewModels
 
         public void Connect()
         {
-            //if (SelectedWorkspace == null) return;
+            if (SelectedWorkspace.Id == Guid.Empty || string.IsNullOrEmpty(SelectedWorkspace.Name))
+            {
+                ErrorMessage = "Please select a workspace to connect to.";
+                return;
+            }
+            
+            // Log the connection string that will be generated
+            var connectionString = SelectedWorkspace.GetConnectionString(_environment);
+            Log.Information(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(Connect), 
+                $"Connecting to workspace '{SelectedWorkspace.Name}' using connection string: {connectionString}");
+            
             Result = System.Windows.Forms.DialogResult.OK;
             this.TryCloseAsync();
         }
+        
+        /// <summary>
+        /// Gets the Power BI connection string for the selected workspace
+        /// </summary>
+        public string SelectedWorkspaceConnectionString
+        {
+            get
+            {
+                if (SelectedWorkspace.Id == Guid.Empty || string.IsNullOrEmpty(SelectedWorkspace.Name))
+                    return string.Empty;
+                
+                return SelectedWorkspace.GetConnectionString(_environment);
+            }
+        }
+
+        public async void RefreshWorkspaces()
+        {
+            ErrorMessage = string.Empty;
+            await GetWorkspacesAsync(_viewHwnd, false);
+        }
+
+        public bool CanConnect => SelectedWorkspace.Id != Guid.Empty && !string.IsNullOrEmpty(SelectedWorkspace.Name);
 
         public override void Close()
         {

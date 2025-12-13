@@ -1418,7 +1418,7 @@ namespace DaxStudio.UI.ViewModels
                 await Execute.OnUIThreadAsync(async () =>
                 {
                     IsConnectionDialogOpen = true;
-                    var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
+                    var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options, _windowManager);
 
                     await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
                                         {
