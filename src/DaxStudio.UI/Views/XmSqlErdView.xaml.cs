@@ -115,43 +115,54 @@ namespace DaxStudio.UI.Views
         }
 
         /// <summary>
-        /// Handles export request from ViewModel by rendering the canvas to a PNG file.
+        /// Handles export request from ViewModel by rendering the diagram to a PNG file.
+        /// Includes the diagram, status bar, and detail panel (if visible).
         /// </summary>
         private void OnExportRequested(object sender, string filePath)
         {
             try
             {
-                // Find the canvas to render - use the DiagramCanvas named in XAML
-                var canvas = DiagramCanvas;
-                if (canvas == null) return;
+                // Use DiagramGrid which includes canvas, status bar, and detail panel
+                var contentGrid = DiagramGrid;
+                if (contentGrid == null) return;
+
+                // Measure and arrange to ensure accurate rendering
+                contentGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                contentGrid.Arrange(new Rect(contentGrid.DesiredSize));
 
                 // Get the actual size of the content
-                var bounds = VisualTreeHelper.GetDescendantBounds(canvas);
-                if (bounds.IsEmpty) 
+                var renderWidth = (int)contentGrid.ActualWidth;
+                var renderHeight = (int)contentGrid.ActualHeight;
+                
+                if (renderWidth <= 0 || renderHeight <= 0)
                 {
-                    bounds = new Rect(0, 0, canvas.ActualWidth, canvas.ActualHeight);
+                    System.Windows.MessageBox.Show("No content to export.", "Export Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
 
                 // Create a render target with proper DPI
                 var dpi = 96d;
-                var renderWidth = (int)System.Math.Max(bounds.Width + 40, canvas.ActualWidth);
-                var renderHeight = (int)System.Math.Max(bounds.Height + 40, canvas.ActualHeight);
-                
                 var renderTarget = new RenderTargetBitmap(
                     renderWidth, renderHeight,
                     dpi, dpi,
                     PixelFormats.Pbgra32);
 
-                // Create a visual brush to render from the canvas with background
+                // Create a visual brush to render the entire content area
                 var drawingVisual = new DrawingVisual();
                 using (var dc = drawingVisual.RenderOpen())
                 {
                     // Draw white background
                     dc.DrawRectangle(System.Windows.Media.Brushes.White, null, new Rect(0, 0, renderWidth, renderHeight));
                     
-                    // Draw the canvas content
-                    var visualBrush = new VisualBrush(canvas);
-                    dc.DrawRectangle(visualBrush, null, new Rect(0, 0, canvas.ActualWidth, canvas.ActualHeight));
+                    // Draw the entire content grid (diagram + status bar + detail panel)
+                    var visualBrush = new VisualBrush(contentGrid)
+                    {
+                        Stretch = Stretch.None,
+                        AlignmentX = AlignmentX.Left,
+                        AlignmentY = AlignmentY.Top
+                    };
+                    dc.DrawRectangle(visualBrush, null, new Rect(0, 0, renderWidth, renderHeight));
                 }
                 
                 renderTarget.Render(drawingVisual);
@@ -175,41 +186,48 @@ namespace DaxStudio.UI.Views
 
         /// <summary>
         /// Handles copy image to clipboard request from ViewModel.
+        /// Includes the diagram, status bar, and detail panel (if visible).
         /// </summary>
         private void OnCopyImageRequested(object sender, EventArgs e)
         {
             try
             {
-                var canvas = DiagramCanvas;
-                if (canvas == null) return;
+                // Use DiagramGrid which includes canvas, status bar, and detail panel
+                var contentGrid = DiagramGrid;
+                if (contentGrid == null) return;
+
+                // Measure and arrange to ensure accurate rendering
+                contentGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                contentGrid.Arrange(new Rect(contentGrid.DesiredSize));
 
                 // Get the actual size of the content
-                var bounds = VisualTreeHelper.GetDescendantBounds(canvas);
-                if (bounds.IsEmpty) 
-                {
-                    bounds = new Rect(0, 0, canvas.ActualWidth, canvas.ActualHeight);
-                }
+                var renderWidth = (int)contentGrid.ActualWidth;
+                var renderHeight = (int)contentGrid.ActualHeight;
+                
+                if (renderWidth <= 0 || renderHeight <= 0) return;
 
                 // Create a render target with proper DPI
                 var dpi = 96d;
-                var renderWidth = (int)System.Math.Max(bounds.Width + 40, canvas.ActualWidth);
-                var renderHeight = (int)System.Math.Max(bounds.Height + 40, canvas.ActualHeight);
-                
                 var renderTarget = new RenderTargetBitmap(
                     renderWidth, renderHeight,
                     dpi, dpi,
                     PixelFormats.Pbgra32);
 
-                // Create a visual brush to render from the canvas with background
+                // Create a visual brush to render the entire content area
                 var drawingVisual = new DrawingVisual();
                 using (var dc = drawingVisual.RenderOpen())
                 {
                     // Draw white background
                     dc.DrawRectangle(System.Windows.Media.Brushes.White, null, new Rect(0, 0, renderWidth, renderHeight));
                     
-                    // Draw the canvas content
-                    var visualBrush = new VisualBrush(canvas);
-                    dc.DrawRectangle(visualBrush, null, new Rect(0, 0, canvas.ActualWidth, canvas.ActualHeight));
+                    // Draw the entire content grid (diagram + status bar + detail panel)
+                    var visualBrush = new VisualBrush(contentGrid)
+                    {
+                        Stretch = Stretch.None,
+                        AlignmentX = AlignmentX.Left,
+                        AlignmentY = AlignmentY.Top
+                    };
+                    dc.DrawRectangle(visualBrush, null, new Rect(0, 0, renderWidth, renderHeight));
                 }
                 
                 renderTarget.Render(drawingVisual);

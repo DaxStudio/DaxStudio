@@ -1067,14 +1067,14 @@
         </ctrl:ClipBorder>
         
         <!-- Main Content Area with Detail Panel on Right -->
-        <Grid Grid.Row="1">
+        <Grid x:Name="DiagramGrid" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
             <!-- Left: Canvas and Status Bar -->
-            <Grid Grid.Column="0">
+            <Grid x:Name="DiagramWithStatusBar" Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
