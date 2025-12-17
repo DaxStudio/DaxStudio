@@ -54,6 +54,28 @@ namespace DaxStudio.UI.Model
         public long TotalCpuTimeMs { get; set; }
 
         /// <summary>
+        /// Total CPU time (ms) from VertiPaq Scan events only.
+        /// This is the real CPU time - DirectQuery events don't report actual CPU.
+        /// </summary>
+        public long TotalScanCpuTimeMs { get; set; }
+
+        /// <summary>
+        /// Total duration (ms) from DirectQuery SQL events only.
+        /// DirectQuery CPU values are unreliable (just copy Duration), so we only track duration.
+        /// </summary>
+        public long TotalDirectQueryDurationMs { get; set; }
+
+        /// <summary>
+        /// Number of DirectQuery SQL events.
+        /// </summary>
+        public int DirectQueryEventCount { get; set; }
+
+        /// <summary>
+        /// Number of VertiPaq Scan events (excludes cache hits).
+        /// </summary>
+        public int ScanEventCount { get; set; }
+
+        /// <summary>
         /// Gets the count of unique tables found.
         /// </summary>
         public int UniqueTablesCount => Tables.Count;
@@ -220,6 +242,18 @@ namespace DaxStudio.UI.Model
         /// Total CPU time (ms) across all SE queries for this table.
         /// </summary>
         public long TotalCpuTimeMs { get; set; }
+
+        /// <summary>
+        /// Total CPU time (ms) from VertiPaq Scan events only for this table.
+        /// DirectQuery events don't report actual CPU, so we track them separately.
+        /// </summary>
+        public long TotalScanCpuTimeMs { get; set; }
+
+        /// <summary>
+        /// Total duration (ms) from DirectQuery SQL events only for this table.
+        /// DirectQuery CPU values just copy Duration, so we only track duration.
+        /// </summary>
+        public long TotalDirectQueryDurationMs { get; set; }
 
         /// <summary>
         /// Total parallel duration (ms) across all SE queries for this table.

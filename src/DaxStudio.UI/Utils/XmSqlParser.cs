@@ -280,6 +280,9 @@ namespace DaxStudio.UI.Utils
         // Stores whether current query was a cache hit
         private bool _currentQueryIsCacheHit;
 
+        // Stores whether current query is a DirectQuery SQL event
+        private bool _currentQueryIsDirectQuery;
+
         // Stores parallelism metrics for current query
         private long? _currentQueryCpuTimeMs;
         private double? _currentQueryCpuFactor;
@@ -341,10 +344,17 @@ namespace DaxStudio.UI.Utils
                 _currentQueryEstimatedRows = metrics?.EstimatedRows;
                 _currentQueryDurationMs = metrics?.DurationMs;
                 _currentQueryIsCacheHit = metrics?.IsCacheHit ?? false;
+                _currentQueryIsDirectQuery = false;  // This is a Scan event
                 _currentQueryCpuTimeMs = metrics?.CpuTimeMs;
                 _currentQueryCpuFactor = metrics?.CpuFactor;
                 _currentQueryNetParallelDurationMs = metrics?.NetParallelDurationMs;
                 _currentQueryId = metrics?.QueryId ?? 0;
+
+                // Track Scan event count
+                if (!_currentQueryIsCacheHit)
+                {
+                    analysis.ScanEventCount++;
+                }
 
                 // Initialize lineage tracking for this query
                 _tempTableLineage = new Dictionary<string, TempTableLineage>(StringComparer.OrdinalIgnoreCase);
@@ -419,10 +429,18 @@ namespace DaxStudio.UI.Utils
                 _currentQueryEstimatedRows = metrics?.EstimatedRows;
                 _currentQueryDurationMs = metrics?.DurationMs;
                 _currentQueryIsCacheHit = metrics?.IsCacheHit ?? false;
+                _currentQueryIsDirectQuery = true;  // This is a DirectQuery SQL event
                 _currentQueryCpuTimeMs = metrics?.CpuTimeMs;
                 _currentQueryCpuFactor = metrics?.CpuFactor;
                 _currentQueryNetParallelDurationMs = metrics?.NetParallelDurationMs;
                 _currentQueryId = metrics?.QueryId ?? 0;
+
+                // Track DirectQuery event count and duration
+                analysis.DirectQueryEventCount++;
+                if (_currentQueryDurationMs.HasValue && _currentQueryDurationMs.Value > 0)
+                {
+                    analysis.TotalDirectQueryDurationMs += _currentQueryDurationMs.Value;
+                }
 
                 // Use the new multi-pass parser for DirectQuery SQL
                 var dqParser = new DirectQuerySqlParser(sql);
@@ -545,12 +563,24 @@ namespace DaxStudio.UI.Utils
                 {
                     table.MaxDurationMs = _currentQueryDurationMs.Value;
                 }
+
+                // Track DirectQuery duration separately (CPU values are unreliable for DQ)
+                if (_currentQueryIsDirectQuery)
+                {
+                    table.TotalDirectQueryDurationMs += _currentQueryDurationMs.Value;
+                }
             }
 
             // Track parallelism metrics
             if (_currentQueryCpuTimeMs.HasValue && _currentQueryCpuTimeMs.Value > 0)
             {
                 table.TotalCpuTimeMs += _currentQueryCpuTimeMs.Value;
+
+                // Only track Scan CPU separately (DirectQuery CPU is just a copy of Duration - not real CPU)
+                if (!_currentQueryIsDirectQuery)
+                {
+                    table.TotalScanCpuTimeMs += _currentQueryCpuTimeMs.Value;
+                }
             }
 
             if (_currentQueryNetParallelDurationMs.HasValue && _currentQueryNetParallelDurationMs.Value > 0)

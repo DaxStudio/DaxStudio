@@ -5,6 +5,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
@@ -98,13 +99,16 @@ namespace DaxStudio.UI.ViewModels
         public BindableCollection<ErdRelationshipViewModel> Relationships { get; } = new BindableCollection<ErdRelationshipViewModel>();
 
         /// <summary>
-        /// Summary text showing counts and total CPU.
+        /// Summary text showing counts, Scan CPU, and DirectQuery duration.
         /// The SE query count matches Server Timings: parsed queries - cache hits + batch events.
+        /// Shows Scan CPU (real CPU from VertiPaq) separately from DirectQuery duration.
         /// </summary>
         public string SummaryText => _analysis != null
             ? $"{Tables.Count} Tables, {Tables.SelectMany(t => t.Columns).Count()} Columns, {Relationships.Count} Relationships (from {_analysis.SuccessfullyParsedQueries - _analysis.CacheHitQueries + _analysis.BatchEventCount:N0} SE queries" +
               (_analysis.CacheHitQueries > 0 ? $", {_analysis.CacheHitQueries:N0} cache" : "") +
-              (_analysis.TotalCpuTimeMs > 0 ? $", {FormatDurationStatic(_analysis.TotalCpuTimeMs)} total CPU)" : ")")
+              (_analysis.TotalScanCpuTimeMs > 0 ? $", {FormatDurationStatic(_analysis.TotalScanCpuTimeMs)} Scan CPU" : "") +
+              (_analysis.TotalDirectQueryDurationMs > 0 ? $", {FormatDurationStatic(_analysis.TotalDirectQueryDurationMs)} DQ" : "") +
+              ")"
             : "No data";
 
         /// <summary>
@@ -131,6 +135,22 @@ namespace DaxStudio.UI.ViewModels
             if (bytes >= 1024)
                 return $"{bytes / 1024.0:0.#} KB";
             return $"{bytes} B";
+        }
+
+        /// <summary>
+        /// Gets an icon for a storage mode.
+        /// </summary>
+        private static string GetStorageModeIcon(string storageMode)
+        {
+            switch (storageMode?.ToLowerInvariant())
+            {
+                case "import": return "💾";
+                case "directquery": return "⚡";
+                case "directlake": return "🌊";
+                case "dual": return "🔀";
+                case "hybrid": return "🔄";
+                default: return "📋";
+            }
         }
 
         /// <summary>
@@ -368,7 +388,7 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Enriches the diagram with Vertipaq Analyzer statistics.
         /// </summary>
-        public void EnrichFromVertipaq(VpaModel vpaModel)
+        public void EnrichFromVertipaq(VpaModel vpaModel, Microsoft.AnalysisServices.Tabular.Database tomDatabase = null)
         {
             if (vpaModel == null) return;
 
@@ -384,6 +404,13 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // Enrich table stats
                     table.SetVertipaqStats(vpaTable.RowsCount, vpaTable.TableSize);
+                    
+                    // Enrich partition info - try to get expressions from TOM Database if available
+                    var storageMode = DetermineStorageMode(vpaTable);
+                    var partitionCount = vpaTable.PartitionsNumber;
+                    var partitionDetails = GetPartitionDetails(vpaTable, tomDatabase);
+                    
+                    table.SetVertipaqPartitionInfo(storageMode, (int)partitionCount, partitionDetails);
                     
                     // Enrich each column
                     foreach (var col in table.Columns)
@@ -408,6 +435,80 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Gets partition details from VPA data, enriched with expressions from TOM Database if available.
+        /// </summary>
+        private List<(string Name, string Mode, long Rows, long Size, string Expression)> GetPartitionDetails(
+            VpaTable vpaTable, Microsoft.AnalysisServices.Tabular.Database tomDatabase)
+        {
+            if (vpaTable?.Partitions == null)
+                return null;
+
+            // Try to get the TOM table for partition expressions
+            Microsoft.AnalysisServices.Tabular.Table tomTable = null;
+            if (tomDatabase?.Model?.Tables != null)
+            {
+                tomTable = tomDatabase.Model.Tables.FirstOrDefault(t => 
+                    t.Name.Equals(vpaTable.TableName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return vpaTable.Partitions
+                .Select(p => {
+                    // Try to get the M expression from TOM
+                    string expression = null;
+                    if (tomTable?.Partitions != null)
+                    {
+                        var tomPartition = tomTable.Partitions.FirstOrDefault(tp => 
+                            tp.Name.Equals(p.PartitionName, StringComparison.OrdinalIgnoreCase));
+                        
+                        if (tomPartition?.Source is Microsoft.AnalysisServices.Tabular.MPartitionSource mSource)
+                        {
+                            expression = mSource.Expression;
+                        }
+                        else if (tomPartition?.Source is Microsoft.AnalysisServices.Tabular.QueryPartitionSource qSource)
+                        {
+                            expression = qSource.Query;
+                        }
+                    }
+                    
+                    return (
+                        Name: p.PartitionName,
+                        Mode: p.PartitionMode?.ParseStorageMode() ?? "Unknown",
+                        Rows: p.RowsCount,
+                        Size: p.DataSize,
+                        Expression: expression
+                    );
+                })
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines the storage mode for a table from its VPA partitions.
+        /// </summary>
+        private string DetermineStorageMode(VpaTable vpaTable)
+        {
+            if (vpaTable?.Partitions == null || !vpaTable.Partitions.Any())
+                return null;
+
+            string mode = null;
+            foreach (var partition in vpaTable.Partitions)
+            {
+                var partitionMode = partition.PartitionMode?.ParseStorageMode();
+                
+                if (string.IsNullOrEmpty(mode))
+                {
+                    mode = partitionMode;
+                }
+                else if (!string.Equals(mode, partitionMode, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Mixed modes = Hybrid
+                    return "Hybrid";
+                }
+            }
+
+            return mode;
+        }
+
+        /// <summary>
         /// Clears VPA enrichment data from all tables and columns.
         /// </summary>
         public void ClearVertipaqData()
@@ -415,6 +516,7 @@ namespace DaxStudio.UI.ViewModels
             foreach (var table in Tables)
             {
                 table.ClearVertipaqStats();
+                table.ClearVertipaqPartitionInfo();
                 foreach (var col in table.Columns)
                 {
                     col.ClearVertipaqStats();
@@ -448,7 +550,8 @@ namespace DaxStudio.UI.ViewModels
                 if (vpaView?.ViewModel != null)
                 {
                     Log.Information("{class} {method} Found existing VPA data, enriching diagram", nameof(XmSqlErdViewModel), nameof(TryEnrichFromExistingVpaData));
-                    EnrichFromVertipaq(vpaView.ViewModel);
+                    // Pass both the VPA model and the TOM Database (for partition expressions)
+                    EnrichFromVertipaq(vpaView.ViewModel, vpaView.Database);
                 }
                 else
                 {
@@ -525,7 +628,7 @@ namespace DaxStudio.UI.ViewModels
         public string HeatMapModeDescription => _heatMapMode switch
         {
             SEDependenciesHeatMapMode.HitCount => "Table colors show how frequently each table appears in SE queries",
-            SEDependenciesHeatMapMode.CpuTime => "Table colors show CPU time consumed by queries on each table",
+            SEDependenciesHeatMapMode.CpuTime => "Table colors show Scan CPU time (excludes DirectQuery - CPU not available)",
             SEDependenciesHeatMapMode.RowCount => "Table colors show total rows scanned from each table",
             _ => "Table colors indicate relative activity"
         };
@@ -536,7 +639,7 @@ namespace DaxStudio.UI.ViewModels
         public string HeatMapLegendText => _heatMapMode switch
         {
             SEDependenciesHeatMapMode.HitCount => "Hits",
-            SEDependenciesHeatMapMode.CpuTime => "CPU",
+            SEDependenciesHeatMapMode.CpuTime => "Scan CPU",
             SEDependenciesHeatMapMode.RowCount => "Rows",
             _ => "Activity"
         };
@@ -750,9 +853,11 @@ namespace DaxStudio.UI.ViewModels
                 Tables.Clear();
                 Relationships.Clear();
 
-                // Calculate total CPU from all scan events (not batch rollups)
-                // This is used to calculate CPU percentage per table
+                // Calculate total CPU from all events and track Scan CPU separately
+                // DirectQuery CPU values are unreliable (just copy of Duration), so we track Scan CPU separately
                 long totalCpu = 0;
+                long totalScanCpu = 0;
+                long totalDirectQueryDuration = 0;
                 
                 // Track batch events separately - they count toward SE query count but don't have parseable queries
                 int batchEventCount = 0;
@@ -789,6 +894,18 @@ namespace DaxStudio.UI.ViewModels
                     if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
                     {
                         totalCpu += evt.CpuTime.Value;
+                        
+                        // Only count Scan events toward Scan CPU (DirectQuery CPU is just Duration copy)
+                        if (evt.IsScanEvent)
+                        {
+                            totalScanCpu += evt.CpuTime.Value;
+                        }
+                    }
+
+                    // Track DirectQuery duration separately
+                    if (evt.IsDirectQueryEvent && evt.Duration.HasValue && evt.Duration.Value > 0)
+                    {
+                        totalDirectQueryDuration += evt.Duration.Value;
                     }
 
                     // Build full metrics including cache hit status and parallelism data
@@ -824,6 +941,8 @@ namespace DaxStudio.UI.ViewModels
 
                 // Store total CPU in analysis for reference
                 _analysis.TotalCpuTimeMs = totalCpu;
+                _analysis.TotalScanCpuTimeMs = totalScanCpu;
+                _analysis.TotalDirectQueryDurationMs = totalDirectQueryDuration;
 
                 // Create view models for tables
                 CreateTableViewModels();
@@ -831,8 +950,8 @@ namespace DaxStudio.UI.ViewModels
                 // Auto-hide mini-map for small diagrams (fewer than 10 tables)
                 ShowMiniMap = Tables.Count >= 10;
 
-                // Calculate CPU percentages for each table
-                CalculateCpuPercentages(totalCpu);
+                // Calculate CPU percentages for each table (use Scan CPU only for accurate percentages)
+                CalculateCpuPercentages(totalScanCpu > 0 ? totalScanCpu : totalCpu);
 
                 // Calculate heat map levels
                 CalculateHeatLevels();
@@ -861,17 +980,19 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Calculates CPU percentage for each table based on total CPU time.
+        /// Calculates CPU percentage for each table based on total Scan CPU time.
+        /// Uses Scan CPU for accuracy (DirectQuery CPU is unreliable).
         /// </summary>
-        private void CalculateCpuPercentages(long totalCpu)
+        private void CalculateCpuPercentages(long totalScanCpu)
         {
-            if (totalCpu <= 0) return;
+            if (totalScanCpu <= 0) return;
 
             foreach (var table in Tables)
             {
-                if (table.TotalCpuTimeMs > 0)
+                // Use Scan CPU for percentage (DirectQuery CPU is unreliable)
+                if (table.TotalScanCpuTimeMs > 0)
                 {
-                    table.CpuPercentage = (double)table.TotalCpuTimeMs / totalCpu * 100.0;
+                    table.CpuPercentage = (double)table.TotalScanCpuTimeMs / totalScanCpu * 100.0;
                 }
             }
         }
@@ -2784,10 +2905,14 @@ namespace DaxStudio.UI.ViewModels
                 sb.AppendLine($"Max Single Query: {table.MaxDurationMs}ms");
             }
             
-            // CPU
-            if (table.TotalCpuTimeMs > 0)
+            // CPU - Show Scan CPU (real CPU) vs DirectQuery duration (DQ CPU is unreliable)
+            if (table.TotalScanCpuTimeMs > 0)
             {
-                sb.AppendLine($"CPU Time: {table.TotalCpuTimeMs:N0}ms ({table.CpuPercentageFormatted} of total)");
+                sb.AppendLine($"Scan CPU: {table.TotalScanCpuTimeMs:N0}ms ({table.CpuPercentageFormatted} of total)");
+            }
+            if (table.TotalDirectQueryDurationMs > 0)
+            {
+                sb.AppendLine($"DQ Duration: {table.TotalDirectQueryDurationMs:N0}ms (CPU not available for DQ)");
             }
             
             // Parallelism
@@ -2933,6 +3058,81 @@ namespace DaxStudio.UI.ViewModels
                     var col = isFrom ? rel.FromColumn : rel.ToColumn;
                     sb.AppendLine($"{direction} {otherTable}");
                     sb.AppendLine($"   via [{col}], {rel.JoinTypeText}, {rel.CardinalityText}");
+                }
+            }
+            
+            // Partition Information (when available from VPA) - at bottom due to verbose M expressions
+            if (table.HasVpaPartitionInfo)
+            {
+                sb.AppendLine();
+                sb.AppendLine("───────────────────────────────────────────");
+                sb.AppendLine("📁 PARTITION INFO");
+                sb.AppendLine("───────────────────────────────────────────");
+                
+                // Storage mode with icon
+                var modeIcon = GetStorageModeIcon(table.VpaStorageMode);
+                sb.AppendLine($"Storage Mode: {modeIcon} {table.VpaStorageMode}");
+                
+                // Partition count
+                if (table.VpaPartitionCount.HasValue)
+                {
+                    sb.AppendLine($"Partitions: {table.VpaPartitionCount.Value}");
+                }
+                
+                // For DirectQuery or Hybrid modes, mention the data source
+                if (table.IsDirectQuery && !string.IsNullOrEmpty(table.DirectQuerySource))
+                {
+                    sb.AppendLine($"DQ Source: {table.DirectQuerySource}");
+                }
+                
+                // Show partition details
+                if (table.VpaPartitions != null && table.VpaPartitions.Count > 0)
+                {
+                    // For single partition, show expression inline if available
+                    if (table.VpaPartitions.Count == 1)
+                    {
+                        var p = table.VpaPartitions[0];
+                        if (!string.IsNullOrWhiteSpace(p.Expression))
+                        {
+                            sb.AppendLine();
+                            sb.AppendLine("M Expression:");
+                            // Truncate long expressions for display
+                            var expr = p.Expression.Trim();
+                            if (expr.Length > 500)
+                            {
+                                sb.AppendLine(expr.Substring(0, 500) + "...");
+                            }
+                            else
+                            {
+                                sb.AppendLine(expr);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Multiple partitions - show breakdown
+                        sb.AppendLine("Partition breakdown:");
+                        foreach (var p in table.VpaPartitions.OrderByDescending(x => x.Rows).Take(5))
+                        {
+                            var pIcon = GetStorageModeIcon(p.Mode);
+                            sb.AppendLine($"  {pIcon} {p.Name}: {p.Rows:N0} rows ({FormatBytes(p.Size)})");
+                            
+                            // Show expression preview if available
+                            if (!string.IsNullOrWhiteSpace(p.Expression))
+                            {
+                                var exprPreview = p.Expression.Trim();
+                                if (exprPreview.Length > 100)
+                                    exprPreview = exprPreview.Substring(0, 100) + "...";
+                                // Replace newlines with space for preview
+                                exprPreview = exprPreview.Replace("\r\n", " ").Replace("\n", " ");
+                                sb.AppendLine($"      {exprPreview}");
+                            }
+                        }
+                        if (table.VpaPartitions.Count > 5)
+                        {
+                            sb.AppendLine($"  ... and {table.VpaPartitions.Count - 5} more partitions");
+                        }
+                    }
                 }
             }
             
@@ -3096,6 +3296,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Calculates heat levels for all tables based on the selected heat map mode.
+        /// For CPU heat map, uses Scan CPU only (DirectQuery CPU is unreliable).
         /// </summary>
         private void CalculateHeatLevels()
         {
@@ -3105,15 +3306,17 @@ namespace DaxStudio.UI.ViewModels
             {
                 case SEDependenciesHeatMapMode.CpuTime:
                     {
-                        // Calculate heat based on CPU time
-                        long maxCpu = Tables.Max(t => t.TotalCpuTimeMs);
-                        long minCpu = Tables.Min(t => t.TotalCpuTimeMs);
+                        // Calculate heat based on Scan CPU time (excludes DirectQuery - CPU values are unreliable)
+                        // Fall back to total CPU if no Scan CPU is available
+                        long maxCpu = Tables.Max(t => t.TotalScanCpuTimeMs > 0 ? t.TotalScanCpuTimeMs : t.TotalCpuTimeMs);
+                        long minCpu = Tables.Min(t => t.TotalScanCpuTimeMs > 0 ? t.TotalScanCpuTimeMs : t.TotalCpuTimeMs);
                         long range = maxCpu - minCpu;
 
                         foreach (var table in Tables)
                         {
+                            long tableCpu = table.TotalScanCpuTimeMs > 0 ? table.TotalScanCpuTimeMs : table.TotalCpuTimeMs;
                             table.HeatLevel = range > 0
-                                ? (double)(table.TotalCpuTimeMs - minCpu) / range
+                                ? (double)(tableCpu - minCpu) / range
                                 : 0.5;
                         }
                         break;
@@ -3381,18 +3584,21 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Formatted string for total CPU time.
+        /// Shows Scan CPU (DirectQuery tables will show DQ duration instead).
         /// </summary>
-        public string TotalCpuFormatted => FormatDuration(TotalCpuTimeMs);
+        public string TotalCpuFormatted => TotalScanCpuTimeMs > 0 
+            ? FormatDuration(TotalScanCpuTimeMs)
+            : (TotalDirectQueryDurationMs > 0 ? $"DQ: {FormatDuration(TotalDirectQueryDurationMs)}" : "");
         
         /// <summary>
-        /// Whether this table has CPU time data.
+        /// Whether this table has CPU time data (either Scan CPU or DQ Duration).
         /// </summary>
-        public bool HasCpuData => TotalCpuTimeMs > 0;
+        public bool HasCpuData => TotalScanCpuTimeMs > 0 || TotalDirectQueryDurationMs > 0;
         
         /// <summary>
-        /// Whether this table has high CPU time (>100ms total).
+        /// Whether this table has high CPU time (>100ms Scan CPU or DQ Duration).
         /// </summary>
-        public bool HasHighCpu => TotalCpuTimeMs >= 100;
+        public bool HasHighCpu => TotalScanCpuTimeMs >= 100 || TotalDirectQueryDurationMs >= 100;
 
         #region Cache Hit/Miss Tracking
         
@@ -3470,6 +3676,18 @@ namespace DaxStudio.UI.ViewModels
         public long TotalCpuTimeMs => _tableInfo.TotalCpuTimeMs;
         
         /// <summary>
+        /// Total CPU time (ms) from VertiPaq Scan events only (excludes DirectQuery).
+        /// This is the accurate CPU metric - DirectQuery CPU values are unreliable.
+        /// </summary>
+        public long TotalScanCpuTimeMs => _tableInfo.TotalScanCpuTimeMs;
+        
+        /// <summary>
+        /// Total duration (ms) from DirectQuery SQL events only.
+        /// DirectQuery CPU is unreliable, so we track duration instead.
+        /// </summary>
+        public long TotalDirectQueryDurationMs => _tableInfo.TotalDirectQueryDurationMs;
+        
+        /// <summary>
         /// Total parallel duration saved (ms) from parallel execution.
         /// </summary>
         public long TotalParallelDurationMs => _tableInfo.TotalParallelDurationMs;
@@ -3537,10 +3755,13 @@ namespace DaxStudio.UI.ViewModels
         
         /// <summary>
         /// Tooltip for CPU hotspot badge.
+        /// Shows Scan CPU for accuracy (DirectQuery CPU is unreliable).
         /// </summary>
-        public string CpuHotspotTooltip => TotalCpuTimeMs > 0 
-            ? $"CPU: {FormatDuration(TotalCpuTimeMs)} ({CpuPercentage:0.0}% of total)"
-            : "No CPU data";
+        public string CpuHotspotTooltip => TotalScanCpuTimeMs > 0 
+            ? $"Scan CPU: {FormatDuration(TotalScanCpuTimeMs)} ({CpuPercentage:0.0}% of total)"
+            : (TotalDirectQueryDurationMs > 0 
+                ? $"DQ Duration: {FormatDuration(TotalDirectQueryDurationMs)} (CPU not available)"
+                : "No CPU data");
         
         #endregion
 
@@ -4115,6 +4336,61 @@ namespace DaxStudio.UI.ViewModels
                 return $"{bytes / 1024.0:0.#} KB";
             return $"{bytes} B";
         }
+
+        #endregion
+
+        #region VPA Partition Info
+
+        private string _vpaStorageMode;
+        private int? _vpaPartitionCount;
+        private List<(string Name, string Mode, long Rows, long Size, string Expression)> _vpaPartitions;
+
+        /// <summary>
+        /// Sets VPA partition information for this table.
+        /// </summary>
+        public void SetVertipaqPartitionInfo(string storageMode, int partitionCount, 
+            IEnumerable<(string Name, string Mode, long Rows, long Size, string Expression)> partitions)
+        {
+            _vpaStorageMode = storageMode;
+            _vpaPartitionCount = partitionCount;
+            _vpaPartitions = partitions?.ToList();
+            NotifyOfPropertyChange(nameof(VpaStorageMode));
+            NotifyOfPropertyChange(nameof(VpaPartitionCount));
+            NotifyOfPropertyChange(nameof(HasVpaPartitionInfo));
+        }
+
+        /// <summary>
+        /// Clears VPA partition information from this table.
+        /// </summary>
+        public void ClearVertipaqPartitionInfo()
+        {
+            _vpaStorageMode = null;
+            _vpaPartitionCount = null;
+            _vpaPartitions = null;
+            NotifyOfPropertyChange(nameof(VpaStorageMode));
+            NotifyOfPropertyChange(nameof(VpaPartitionCount));
+            NotifyOfPropertyChange(nameof(HasVpaPartitionInfo));
+        }
+
+        /// <summary>
+        /// VPA storage mode (Import, DirectQuery, DirectLake, Dual, Hybrid).
+        /// </summary>
+        public string VpaStorageMode => _vpaStorageMode;
+
+        /// <summary>
+        /// Number of partitions in this table from VPA data.
+        /// </summary>
+        public int? VpaPartitionCount => _vpaPartitionCount;
+
+        /// <summary>
+        /// Detailed partition information (name, mode, rows, size, expression).
+        /// </summary>
+        public IReadOnlyList<(string Name, string Mode, long Rows, long Size, string Expression)> VpaPartitions => _vpaPartitions;
+
+        /// <summary>
+        /// Whether VPA partition info is available for this table.
+        /// </summary>
+        public bool HasVpaPartitionInfo => !string.IsNullOrEmpty(_vpaStorageMode);
 
         #endregion
     }
