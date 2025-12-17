@@ -88,6 +88,29 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
+                        <!-- Horizontal Resize Grip - overlays right edge of table -->
+                        <Border Grid.RowSpan="6"
+                                Width="8"
+                                HorizontalAlignment="Right"
+                                Margin="0,0,-4,0"
+                                Background="Transparent"
+                                Cursor="SizeWE"
+                                MouseLeftButtonDown="HorizontalResizeGrip_MouseLeftButtonDown"
+                                MouseMove="HorizontalResizeGrip_MouseMove"
+                                MouseLeftButtonUp="HorizontalResizeGrip_MouseLeftButtonUp"
+                                ToolTip="Drag to resize table width">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        
                         <!-- Table Header with Heat Map Color and Accessibility Pattern -->
                         <Grid Grid.Row="0">
                             <!-- Background with heat color -->

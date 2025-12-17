@@ -450,6 +450,23 @@ namespace DaxStudio.UI.Utils
                                 {
                                     column.AddUsage(usage);
                                 }
+                                
+                                // Transfer aggregation types
+                                foreach (var aggType in colInfo.AggregationTypes)
+                                {
+                                    column.AddAggregation(aggType);
+                                }
+                                
+                                // Transfer filter values and operators
+                                foreach (var filterValue in colInfo.FilterValues)
+                                {
+                                    var op = colInfo.FilterOperators.FirstOrDefault() ?? "=";
+                                    column.AddFilterValue(filterValue, op);
+                                }
+                                foreach (var filterOp in colInfo.FilterOperators)
+                                {
+                                    column.FilterOperators.Add(filterOp);
+                                }
                             }
                         }
                     }

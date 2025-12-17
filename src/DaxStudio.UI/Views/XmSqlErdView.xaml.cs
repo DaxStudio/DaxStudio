@@ -548,6 +548,63 @@ namespace DaxStudio.UI.Views
 
         #endregion
 
+        #region Horizontal Table Resize (Width)
+
+        private bool _isHorizontalResizing;
+        private Point _horizontalResizeStartPoint;
+        private double _resizeStartWidth;
+        private ErdTableViewModel _horizontalResizingTable;
+
+        private void HorizontalResizeGrip_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is ErdTableViewModel tableVm)
+            {
+                _coordinateRoot = FindCoordinateRoot(element);
+                if (_coordinateRoot == null) return;
+
+                _isHorizontalResizing = true;
+                _horizontalResizeStartPoint = e.GetPosition(_coordinateRoot);
+                _resizeStartWidth = tableVm.Width;
+                _horizontalResizingTable = tableVm;
+                element.CaptureMouse();
+                e.Handled = true;
+            }
+        }
+
+        private void HorizontalResizeGrip_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isHorizontalResizing && _horizontalResizingTable != null && _coordinateRoot != null)
+            {
+                var currentPosition = e.GetPosition(_coordinateRoot);
+                var deltaX = currentPosition.X - _horizontalResizeStartPoint.X;
+                
+                // Update the table width (with minimum constraint)
+                var newWidth = Math.Max(150, _resizeStartWidth + deltaX);
+                _horizontalResizingTable.Width = newWidth;
+                
+                // Update relationship lines connected to this table
+                if (DataContext is XmSqlErdViewModel erdVm)
+                {
+                    erdVm.OnTablePositionChanged(_horizontalResizingTable);
+                }
+                e.Handled = true;
+            }
+        }
+
+        private void HorizontalResizeGrip_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isHorizontalResizing && sender is FrameworkElement element)
+            {
+                _isHorizontalResizing = false;
+                _horizontalResizingTable = null;
+                _coordinateRoot = null;
+                element.ReleaseMouseCapture();
+                e.Handled = true;
+            }
+        }
+
+        #endregion
+
         #region Mini-map Navigation
 
         private bool _isMiniMapDragging;

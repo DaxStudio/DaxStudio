@@ -58,10 +58,11 @@ namespace DaxStudio.UI.Utils
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
         // Pattern 2: Direct table reference [schema].[TableName] AS [alias]
-        // Handles both standalone and in JOIN context
+        // MUST match only after FROM or JOIN to avoid matching column aliases in SELECT clauses
+        // e.g., "[t4].[Date] AS [c107]" in SELECT should NOT be matched as a table
         // Supports any schema name (dbo, sys, gold, raw, staging, etc.)
         private static readonly Regex DirectTableAliasPattern = new Regex(
-            @"\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            @"(?:FROM|JOIN)\s+\[(?<schema>[^\]]+)\]\s*\.\s*\[(?<table>[^\]]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Pattern 3: Column definition in subselect [$Table].[ColumnName] as [alias]
@@ -138,9 +139,10 @@ namespace DaxStudio.UI.Utils
 
         // Pattern 17: Simple bracketed table without schema - [Table Name] AS [alias]
         // Very common in DirectQuery to SQL Server/Azure SQL without explicit schema
-        // Note: Table name can contain spaces. Matches anywhere, not just after FROM/JOIN
+        // MUST match only after FROM or JOIN to avoid matching column aliases in SELECT clauses
+        // e.g., "[PODs Key] AS [a0]" should NOT be matched as a table
         private static readonly Regex SimpleBracketedTablePattern = new Regex(
-            @"(?<!\[)\[(?<table>[^\]\.]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
+            @"(?:FROM|JOIN)\s+\[(?<table>[^\]\.]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public DirectQuerySqlParser(string sql)
@@ -736,7 +738,7 @@ namespace DaxStudio.UI.Utils
         }
 
         /// <summary>
-        /// Extract columns from WHERE clauses.
+        /// Extract columns from WHERE clauses, including filter values.
         /// </summary>
         private void ExtractWhereClauseColumns()
         {
@@ -751,19 +753,102 @@ namespace DaxStudio.UI.Utils
             {
                 var conditions = whereMatch.Groups["conditions"].Value;
                 
-                // Extract column references [alias].[column] from the WHERE clause
-                var colRefPattern = new Regex(@"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]", RegexOptions.IgnoreCase);
-                var colRefs = colRefPattern.Matches(conditions);
+                // Pattern 1: [alias].[column] = N'value' or = 'value' or = number
+                var equalityPattern = new Regex(
+                    @"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]\s*(?<op>=|<>|!=|<|>|<=|>=)\s*(?:N)?(?:'(?<strval>[^']*)'|(?<numval>-?[\d\.]+))",
+                    RegexOptions.IgnoreCase);
                 
-                foreach (Match colRef in colRefs)
+                foreach (Match match in equalityPattern.Matches(conditions))
+                {
+                    var alias = match.Groups["alias"].Value;
+                    var col = match.Groups["col"].Value;
+                    var op = match.Groups["op"].Value;
+                    var value = match.Groups["strval"].Success ? match.Groups["strval"].Value : match.Groups["numval"].Value;
+                    
+                    // Skip output aliases like a0, c0
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+                    
+                    AddColumnUsage(alias, col, XmSqlColumnUsage.Filter, filterValue: value, filterOp: op);
+                    Log.Debug("Found filter: [{Alias}].[{Col}] {Op} '{Val}'", alias, col, op, value);
+                }
+                
+                // Pattern 2: [alias].[column] IN (value1, value2, ...)
+                var inPattern = new Regex(
+                    @"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]\s+IN\s*\(\s*(?<values>[^)]+)\)",
+                    RegexOptions.IgnoreCase);
+                
+                foreach (Match match in inPattern.Matches(conditions))
+                {
+                    var alias = match.Groups["alias"].Value;
+                    var col = match.Groups["col"].Value;
+                    var valuesStr = match.Groups["values"].Value;
+                    
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+                    
+                    // Extract individual values from the IN clause
+                    var valueMatches = Regex.Matches(valuesStr, @"(?:N)?'([^']*)'|(-?[\d\.]+)");
+                    foreach (Match valMatch in valueMatches)
+                    {
+                        var value = valMatch.Groups[1].Success ? valMatch.Groups[1].Value : valMatch.Groups[2].Value;
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            AddColumnUsage(alias, col, XmSqlColumnUsage.Filter, filterValue: value, filterOp: "IN");
+                        }
+                    }
+                    Log.Debug("Found IN filter: [{Alias}].[{Col}] IN (...{Count} values)", alias, col, valueMatches.Count);
+                }
+                
+                // Pattern 3: [alias].[column] LIKE pattern
+                var likePattern = new Regex(
+                    @"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]\s+LIKE\s+(?:N)?'(?<pattern>[^']*)'",
+                    RegexOptions.IgnoreCase);
+                
+                foreach (Match match in likePattern.Matches(conditions))
+                {
+                    var alias = match.Groups["alias"].Value;
+                    var col = match.Groups["col"].Value;
+                    var pattern = match.Groups["pattern"].Value;
+                    
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+                    
+                    AddColumnUsage(alias, col, XmSqlColumnUsage.Filter, filterValue: pattern, filterOp: "LIKE");
+                    Log.Debug("Found LIKE filter: [{Alias}].[{Col}] LIKE '{Pattern}'", alias, col, pattern);
+                }
+                
+                // Pattern 4: [alias].[column] = CAST('value' AS type) - common for datetime comparisons
+                var castPattern = new Regex(
+                    @"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]\s*(?<op>=|<>|!=|<|>|<=|>=)\s*CAST\s*\(\s*'(?<val>[^']+)'\s+AS\s+(?<type>\w+)\s*\)",
+                    RegexOptions.IgnoreCase);
+                
+                foreach (Match match in castPattern.Matches(conditions))
+                {
+                    var alias = match.Groups["alias"].Value;
+                    var col = match.Groups["col"].Value;
+                    var op = match.Groups["op"].Value;
+                    var value = match.Groups["val"].Value;
+                    var type = match.Groups["type"].Value;
+                    
+                    if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                        continue;
+                    
+                    AddColumnUsage(alias, col, XmSqlColumnUsage.Filter, filterValue: value, filterOp: op);
+                    Log.Debug("Found CAST filter: [{Alias}].[{Col}] {Op} CAST('{Val}' AS {Type})", alias, col, op, value, type);
+                }
+                
+                // Pattern 5: Column references that we couldn't extract values for (still track as Filter)
+                var colRefPattern = new Regex(@"\[(?<alias>[^\]]+)\]\s*\.\s*\[(?<col>[^\]]+)\]", RegexOptions.IgnoreCase);
+                foreach (Match colRef in colRefPattern.Matches(conditions))
                 {
                     var alias = colRef.Groups["alias"].Value;
                     var col = colRef.Groups["col"].Value;
                     
-                    // Skip if the alias looks like an output alias (a0, c0, etc.)
                     if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
                         continue;
                     
+                    // Just add as filter usage - values may have been added above
                     AddColumnUsage(alias, col, XmSqlColumnUsage.Filter);
                 }
             }
@@ -777,10 +862,7 @@ namespace DaxStudio.UI.Utils
             var simpleMatches = simpleWherePattern.Matches(_sql);
             foreach (Match match in simpleMatches)
             {
-                // These are harder to resolve without alias, but we can try
-                // to find them in the context
                 var col = match.Groups["col"].Value;
-                // For now, just log that we found a potential filter column
                 Log.Debug("Found potential unaliased filter column: {Column}", col);
             }
         }
@@ -792,16 +874,22 @@ namespace DaxStudio.UI.Utils
         {
             // Pattern for aggregate functions with column references
             // Matches: COUNT_BIG(DISTINCT [t4].[Column]), SUM([t4].[Amount]), AVG([alias].[col]), etc.
+            // Captures DISTINCT keyword separately to identify DISTINCTCOUNT operations
             var aggregatePattern = new Regex(
-                @"\b(?<func>COUNT_BIG|COUNT|SUM|AVG|MIN|MAX|STDEV|STDEVP|VAR|VARP|CHECKSUM_AGG)\s*\(\s*(?:DISTINCT\s+)?(?:\[(?<alias>[^\]]+)\]\s*\.\s*)?\[(?<col>[^\]]+)\]",
+                @"\b(?<func>COUNT_BIG|COUNT|SUM|AVG|MIN|MAX|STDEV|STDEVP|VAR|VARP|CHECKSUM_AGG)\s*\(\s*(?<distinct>DISTINCT\s+)?(?:\[(?<alias>[^\]]+)\]\s*\.\s*)?\[(?<col>[^\]]+)\]",
                 RegexOptions.IgnoreCase);
 
             var matches = aggregatePattern.Matches(_sql);
             foreach (Match match in matches)
             {
                 var func = match.Groups["func"].Value.ToUpperInvariant();
+                var hasDistinct = match.Groups["distinct"].Success;
                 var alias = match.Groups["alias"].Value;
                 var col = match.Groups["col"].Value;
+
+                // If DISTINCT is present, report as DISTINCT (corresponds to DISTINCTCOUNT in DAX)
+                // The COUNT_BIG/COUNT wrapper is just for handling large values
+                var aggregationType = hasDistinct ? "DISTINCT" : func;
 
                 // All aggregate functions use the Aggregate usage type
                 XmSqlColumnUsage usage = XmSqlColumnUsage.Aggregate;
@@ -812,13 +900,33 @@ namespace DaxStudio.UI.Utils
                     if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
                         continue;
 
-                    AddColumnUsage(alias, col, usage);
-                    Log.Debug("Found aggregate column: {Func}([{Alias}].[{Col}])", func, alias, col);
+                    AddColumnUsage(alias, col, usage, aggregationType: aggregationType);
+                    Log.Debug("Found aggregate column: {Func}({Distinct}[{Alias}].[{Col}])", func, hasDistinct ? "DISTINCT " : "", alias, col);
                 }
                 else if (!string.IsNullOrEmpty(col))
                 {
-                    // Column without alias - try to find it
-                    Log.Debug("Found unaliased aggregate column: {Func}([{Col}])", func, col);
+                    // Column without table alias - might be a column alias we can resolve
+                    // e.g., COUNT_BIG(DISTINCT [a0]) where [a0] is an alias for a column
+                    Log.Debug("Found unaliased aggregate column: {Func}({Distinct}[{Col}])", func, hasDistinct ? "DISTINCT " : "", col);
+                    
+                    // Try to resolve [col] as a column alias through the column alias map
+                    // Search for any mapping ending with .[col]
+                    ColumnMapping resolved = null;
+                    foreach (var kvp in _columnAliasMap)
+                    {
+                        if (kvp.Key.EndsWith($".{col}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            resolved = kvp.Value;
+                            break;
+                        }
+                    }
+                    
+                    if (resolved != null)
+                    {
+                        EnsureTableColumn(resolved.TableName, resolved.ColumnName, usage, aggregationType: aggregationType);
+                        Log.Debug("Resolved aggregate column alias [{Col}] -> {Table}.{ActualCol}", 
+                            col, resolved.TableName, resolved.ColumnName);
+                    }
                 }
             }
 
@@ -839,7 +947,7 @@ namespace DaxStudio.UI.Utils
                         continue;
 
                     // CASE WHEN typically used for conditional aggregation or filtering
-                    AddColumnUsage(alias, col, XmSqlColumnUsage.Aggregate);
+                    AddColumnUsage(alias, col, XmSqlColumnUsage.Aggregate, aggregationType: "CASE");
                     Log.Debug("Found CASE WHEN column: [{Alias}].[{Col}]", alias, col);
                 }
             }
@@ -894,12 +1002,12 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        private void AddColumnUsage(string alias, string columnOrAlias, XmSqlColumnUsage usage)
+        private void AddColumnUsage(string alias, string columnOrAlias, XmSqlColumnUsage usage, string aggregationType = null, string filterValue = null, string filterOp = null)
         {
             var resolved = ResolveColumn(alias, columnOrAlias);
             if (resolved != null)
             {
-                EnsureTableColumn(resolved.TableName, resolved.ColumnName, usage);
+                EnsureTableColumn(resolved.TableName, resolved.ColumnName, usage, aggregationType, filterValue, filterOp);
             }
         }
 
@@ -976,7 +1084,7 @@ namespace DaxStudio.UI.Utils
             }
         }
 
-        private void EnsureTableColumn(string tableName, string columnName, XmSqlColumnUsage usage)
+        private void EnsureTableColumn(string tableName, string columnName, XmSqlColumnUsage usage, string aggregationType = null, string filterValue = null, string filterOp = null)
         {
             EnsureTable(tableName);
             var table = Tables[tableName];
@@ -987,6 +1095,18 @@ namespace DaxStudio.UI.Utils
                 table.Columns[columnName] = column;
             }
             column.Usages.Add(usage);
+            
+            // Track aggregation type if provided
+            if (!string.IsNullOrEmpty(aggregationType))
+            {
+                column.AddAggregation(aggregationType);
+            }
+            
+            // Track filter value if provided
+            if (!string.IsNullOrEmpty(filterValue))
+            {
+                column.AddFilterValue(filterValue, filterOp ?? "=");
+            }
         }
 
         private XmSqlJoinType DetermineJoinType(int position)
@@ -1109,10 +1229,55 @@ namespace DaxStudio.UI.Utils
     {
         public string Name { get; }
         public HashSet<XmSqlColumnUsage> Usages { get; } = new HashSet<XmSqlColumnUsage>();
+        
+        /// <summary>
+        /// Filter values applied to this column.
+        /// </summary>
+        public List<string> FilterValues { get; } = new List<string>();
+        
+        /// <summary>
+        /// Filter operators used with this column (=, IN, >, <, etc.)
+        /// </summary>
+        public HashSet<string> FilterOperators { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        /// <summary>
+        /// Aggregation functions applied to this column (SUM, COUNT, etc.)
+        /// </summary>
+        public HashSet<string> AggregationTypes { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public DqColumnInfo(string name)
         {
             Name = name;
+        }
+        
+        /// <summary>
+        /// Adds a filter value to this column.
+        /// </summary>
+        public void AddFilterValue(string value, string op = "=")
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                // Limit total filter values to avoid memory issues
+                if (FilterValues.Count < 50 && !FilterValues.Contains(value))
+                {
+                    FilterValues.Add(value);
+                }
+                if (!string.IsNullOrWhiteSpace(op))
+                {
+                    FilterOperators.Add(op.Trim());
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Adds an aggregation function to this column.
+        /// </summary>
+        public void AddAggregation(string aggregationType)
+        {
+            if (!string.IsNullOrWhiteSpace(aggregationType))
+            {
+                AggregationTypes.Add(aggregationType.Trim().ToUpperInvariant());
+            }
         }
     }
 

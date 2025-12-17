@@ -120,6 +120,20 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Formats bytes to human-readable format (KB, MB, GB).
+        /// </summary>
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes >= 1_073_741_824)
+                return $"{bytes / 1_073_741_824.0:0.#} GB";
+            if (bytes >= 1_048_576)
+                return $"{bytes / 1_048_576.0:0.#} MB";
+            if (bytes >= 1024)
+                return $"{bytes / 1024.0:0.#} KB";
+            return $"{bytes} B";
+        }
+
+        /// <summary>
         /// Whether there is data to display.
         /// </summary>
         public bool HasData => Tables.Count > 0;
@@ -407,6 +421,45 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             HasVertipaqData = false;
+        }
+
+        /// <summary>
+        /// Tries to get existing VPA data from the active document and enrich the diagram.
+        /// This is called after analysis to pick up VPA data that was already loaded
+        /// (e.g., when opening a .daxx file that contains both Server Timings and VPA data).
+        /// </summary>
+        private void TryEnrichFromExistingVpaData()
+        {
+            try
+            {
+                // Try to get the DocumentTabViewModel which holds the active document
+                var conductor = IoC.Get<IConductor>() as DocumentTabViewModel;
+                var activeDocument = conductor?.ActiveDocument;
+                
+                if (activeDocument == null)
+                {
+                    Log.Debug("{class} {method} No active document found", nameof(XmSqlErdViewModel), nameof(TryEnrichFromExistingVpaData));
+                    return;
+                }
+
+                // Look for an existing VertiPaqAnalyzerViewModel in the document's tool windows
+                var vpaView = activeDocument.ToolWindows?.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
+                
+                if (vpaView?.ViewModel != null)
+                {
+                    Log.Information("{class} {method} Found existing VPA data, enriching diagram", nameof(XmSqlErdViewModel), nameof(TryEnrichFromExistingVpaData));
+                    EnrichFromVertipaq(vpaView.ViewModel);
+                }
+                else
+                {
+                    Log.Debug("{class} {method} No VPA data available in active document", nameof(XmSqlErdViewModel), nameof(TryEnrichFromExistingVpaData));
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't fail if we can't get VPA data - it's optional enrichment
+                Log.Warning(ex, "{class} {method} Failed to get existing VPA data", nameof(XmSqlErdViewModel), nameof(TryEnrichFromExistingVpaData));
+            }
         }
 
         #endregion
@@ -792,6 +845,9 @@ namespace DaxStudio.UI.ViewModels
 
                 // Gather available query IDs for query plan integration
                 GatherAvailableQueryIds();
+
+                // Try to enrich with existing VPA data (e.g., from .daxx file)
+                TryEnrichFromExistingVpaData();
 
                 NotifyOfPropertyChange(nameof(Analysis));
                 NotifyOfPropertyChange(nameof(SummaryText));
@@ -2580,6 +2636,25 @@ namespace DaxStudio.UI.ViewModels
                 sb.AppendLine();
             }
             
+            // VPA Statistics (when available)
+            // Note: For DirectQuery tables, VPA stats may be incomplete/misleading
+            if (column.HasVertipaqStats && !table.IsDirectQuery)
+            {
+                sb.AppendLine("───────────────────────────────────────────");
+                sb.AppendLine("📊 VERTIPAQ ANALYZER STATS");
+                sb.AppendLine("───────────────────────────────────────────");
+                
+                if (column.Cardinality.HasValue)
+                {
+                    sb.AppendLine($"Cardinality: {column.Cardinality.Value:N0} distinct values");
+                }
+                if (column.ColumnSizeBytes.HasValue)
+                {
+                    sb.AppendLine($"Column Size: {FormatBytes(column.ColumnSizeBytes.Value)}");
+                }
+                sb.AppendLine();
+            }
+            
             // Parent table context
             sb.AppendLine("───────────────────────────────────────────");
             sb.AppendLine("📋 TABLE CONTEXT");
@@ -2601,6 +2676,11 @@ namespace DaxStudio.UI.ViewModels
             if (table.HasCacheData)
             {
                 sb.AppendLine($"Cache Hit Rate: {table.CacheHitRateFormatted}");
+            }
+            // Only show VPA summary for non-DirectQuery tables (DQ tables may have incomplete stats)
+            if (table.HasVertipaqStats && !table.IsDirectQuery)
+            {
+                sb.AppendLine($"💡 VPA Stats: {table.VpaRowCount:N0} rows, {table.VpaTableSizeFormatted}");
             }
             
             SelectedDetailInfo = sb.ToString();
@@ -2641,6 +2721,49 @@ namespace DaxStudio.UI.ViewModels
                 sb.AppendLine($"Query IDs: {table.QueryIdsFormatted}");
             }
             sb.AppendLine();
+            
+            // VPA Statistics (when available)
+            // Note: For DirectQuery tables, VPA stats may be incomplete or misleading
+            // because VPA doesn't always collect stats from DQ sources
+            if (table.HasVertipaqStats && !table.IsDirectQuery)
+            {
+                sb.AppendLine("───────────────────────────────────────────");
+                sb.AppendLine("📊 VERTIPAQ ANALYZER STATS");
+                sb.AppendLine("───────────────────────────────────────────");
+                
+                if (table.VpaRowCount.HasValue)
+                {
+                    sb.AppendLine($"Table Rows: {table.VpaRowCount.Value:N0}");
+                }
+                if (table.VpaTableSize.HasValue)
+                {
+                    sb.AppendLine($"Table Size: {table.VpaTableSizeFormatted}");
+                }
+                
+                // Calculate and show columns with VPA stats
+                var columnsWithVpa = table.Columns.Where(c => c.HasVertipaqStats).ToList();
+                if (columnsWithVpa.Any())
+                {
+                    var totalColumnSize = columnsWithVpa.Sum(c => c.ColumnSizeBytes ?? 0);
+                    sb.AppendLine($"Column Data: {FormatBytes(totalColumnSize)} ({columnsWithVpa.Count} columns)");
+                    
+                    // Show top 3 columns by size
+                    var topColumns = columnsWithVpa
+                        .Where(c => c.ColumnSizeBytes.HasValue)
+                        .OrderByDescending(c => c.ColumnSizeBytes.Value)
+                        .Take(3)
+                        .ToList();
+                    if (topColumns.Any())
+                    {
+                        sb.AppendLine("Top columns by size:");
+                        foreach (var col in topColumns)
+                        {
+                            sb.AppendLine($"  • {col.ColumnName}: {FormatBytes(col.ColumnSizeBytes.Value)}");
+                        }
+                    }
+                }
+                sb.AppendLine();
+            }
             
             // Performance metrics
             sb.AppendLine("───────────────────────────────────────────");
@@ -2772,8 +2895,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 foreach (var col in filterCols.Take(3))
                 {
-                    var valCount = col.HasFilterValues ? $" ({col.FilterValues.Count} values)" : "";
-                    sb.AppendLine($"   • {col.ColumnName}{valCount}");
+                    var details = new List<string>();
+                    if (col.FilterOperators.Any())
+                        details.Add(string.Join("/", col.FilterOperators));
+                    if (col.HasFilterValues)
+                        details.Add($"{col.FilterValues.Count} values");
+                    var detailStr = details.Any() ? $" ({string.Join(", ", details)})" : "";
+                    sb.AppendLine($"   • {col.ColumnName}{detailStr}");
                 }
                 if (filterCols.Count > 3) sb.AppendLine($"   ... +{filterCols.Count - 3} more");
             }
