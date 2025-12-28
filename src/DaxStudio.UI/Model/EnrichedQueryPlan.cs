@@ -105,6 +105,11 @@ namespace DaxStudio.UI.Model
         public PlanState State { get; set; } = PlanState.Raw;
 
         /// <summary>
+        /// Error message if State is Error.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
         /// Total number of nodes in the plan.
         /// </summary>
         public int NodeCount => AllNodes?.Count ?? 0;
@@ -177,6 +182,11 @@ namespace DaxStudio.UI.Model
         /// <summary>
         /// Layout positions calculated, ready for rendering.
         /// </summary>
-        LayoutComplete
+        LayoutComplete,
+
+        /// <summary>
+        /// An error occurred during enrichment.
+        /// </summary>
+        Error
     }
 }

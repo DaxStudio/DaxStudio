@@ -19,7 +19,6 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
             <conv:BoolToHiddenConverter x:Key="BoolToHiddenConverter" />
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
@@ -1292,14 +1291,14 @@
 
         <!-- Busy overlay -->
         <Border Grid.Row="1" Grid.RowSpan="2"
-                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToHiddenConverter}}"
                 Style="{StaticResource BusyPanel}">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <ProgressBar x:Name="spinner"
                              Style="{StaticResource MaterialDesignCircularProgressBar}"
                              Width="24" Height="24"
                              Margin="0 0 10 0"
-                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToHiddenConverter}}"/>
                 <Label x:Name="BusyMessage" Style="{StaticResource SpinnerLabel}"/>
             </StackPanel>
         </Border>

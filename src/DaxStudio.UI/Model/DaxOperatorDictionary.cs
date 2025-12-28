@@ -23,7 +23,7 @@ namespace DaxStudio.UI.Model
     /// </summary>
     public static class DaxOperatorDictionary
     {
-        private static readonly Dictionary<string, DaxOperatorInfo> _operators = new Dictionary<string, DaxOperatorInfo>
+        private static readonly Dictionary<string, DaxOperatorInfo> _operators = new Dictionary<string, DaxOperatorInfo>(System.StringComparer.OrdinalIgnoreCase)
         {
             // Iteration Operators (Physical Plan)
             ["AddColumns"] = new DaxOperatorInfo
@@ -856,6 +856,20 @@ namespace DaxStudio.UI.Model
                 Category = "Time Intelligence",
                 Engine = EngineType.FormulaEngine,
                 DaxGuideUrl = "https://dax.guide/lastdate/"
+            },
+            ["TableToScalar"] = new DaxOperatorInfo
+            {
+                DisplayName = "Table To Scalar",
+                Description = "Converts a single-row, single-column table to a scalar value. Used internally for time intelligence functions.",
+                Category = "Conversion",
+                Engine = EngineType.FormulaEngine
+            },
+            ["ColPosition"] = new DaxOperatorInfo
+            {
+                DisplayName = "Column Position",
+                Description = "Returns the ordinal position of a value within a column. Used for sorting and ranking operations.",
+                Category = "Lookup",
+                Engine = EngineType.FormulaEngine
             }
         };
 
@@ -869,16 +883,9 @@ namespace DaxStudio.UI.Model
             if (string.IsNullOrEmpty(operatorName))
                 return null;
 
-            // Try exact match first
+            // Dictionary uses OrdinalIgnoreCase comparer, so lookup is case-insensitive
             if (_operators.TryGetValue(operatorName, out var info))
                 return info;
-
-            // Try case-insensitive match
-            foreach (var kvp in _operators)
-            {
-                if (string.Equals(kvp.Key, operatorName, System.StringComparison.OrdinalIgnoreCase))
-                    return kvp.Value;
-            }
 
             // Try partial match for composite operators like "ProjectionSpool<ProjectFusion<Copy>>"
             foreach (var kvp in _operators)

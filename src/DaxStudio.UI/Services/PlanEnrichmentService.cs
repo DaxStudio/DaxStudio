@@ -48,49 +48,58 @@ namespace DaxStudio.UI.Services
                     State = PlanState.Raw
                 };
 
-                var rows = rawPlan?.ToList();
-                if (rows == null || rows.Count == 0)
+                try
                 {
-                    Log.Debug("PlanEnrichmentService: No rows in physical plan");
-                    return plan;
+                    var rows = rawPlan?.ToList();
+                    if (rows == null || rows.Count == 0)
+                    {
+                        Log.Debug("PlanEnrichmentService: No rows in physical plan");
+                        return plan;
+                    }
+
+                    // Step 1: Parse and build tree structure
+                    var nodes = BuildTreeFromRows(rows);
+                    plan.AllNodes = nodes;
+                    plan.RootNode = GetEffectiveRootNode(nodes);
+                    plan.State = PlanState.Parsed;
+
+                    // Step 2: Resolve column names
+                    if (columnResolver?.IsInitialized == true)
+                    {
+                        ResolveColumnNames(nodes, columnResolver);
+                    }
+
+                    // Step 3: Correlate timing data
+                    if (timingEvents != null)
+                    {
+                        CorrelateTimingData(plan, timingEvents.ToList());
+                    }
+
+                    // Step 4: Calculate cost percentages
+                    CalculateCostPercentages(plan);
+
+                    // Step 5: Determine engine types
+                    AssignEngineTypes(nodes);
+
+                    // Step 6: Detect performance issues
+                    var issues = _issueDetector.DetectIssues(plan);
+                    foreach (var issue in issues)
+                    {
+                        plan.Issues.Add(issue);
+                        var affectedNode = plan.FindNodeById(issue.AffectedNodeId);
+                        affectedNode?.Issues.Add(issue);
+                    }
+
+                    plan.State = PlanState.Enriched;
+                    Log.Debug("PlanEnrichmentService: Enriched physical plan with {NodeCount} nodes and {IssueCount} issues",
+                        plan.NodeCount, plan.IssueCount);
                 }
-
-                // Step 1: Parse and build tree structure
-                var nodes = BuildTreeFromRows(rows);
-                plan.AllNodes = nodes;
-                plan.RootNode = GetEffectiveRootNode(nodes);
-                plan.State = PlanState.Parsed;
-
-                // Step 2: Resolve column names
-                if (columnResolver?.IsInitialized == true)
+                catch (Exception ex)
                 {
-                    ResolveColumnNames(nodes, columnResolver);
+                    Log.Error(ex, "PlanEnrichmentService: Error enriching physical plan");
+                    plan.State = PlanState.Error;
+                    plan.ErrorMessage = ex.Message;
                 }
-
-                // Step 3: Correlate timing data
-                if (timingEvents != null)
-                {
-                    CorrelateTimingData(plan, timingEvents.ToList());
-                }
-
-                // Step 4: Calculate cost percentages
-                CalculateCostPercentages(plan);
-
-                // Step 5: Determine engine types
-                AssignEngineTypes(nodes);
-
-                // Step 6: Detect performance issues
-                var issues = _issueDetector.DetectIssues(plan);
-                foreach (var issue in issues)
-                {
-                    plan.Issues.Add(issue);
-                    var affectedNode = plan.FindNodeById(issue.AffectedNodeId);
-                    affectedNode?.Issues.Add(issue);
-                }
-
-                plan.State = PlanState.Enriched;
-                Log.Debug("PlanEnrichmentService: Enriched physical plan with {NodeCount} nodes and {IssueCount} issues",
-                    plan.NodeCount, plan.IssueCount);
 
                 return plan;
             }).ConfigureAwait(false);
@@ -114,43 +123,52 @@ namespace DaxStudio.UI.Services
                     State = PlanState.Raw
                 };
 
-                var rows = rawPlan?.ToList();
-                if (rows == null || rows.Count == 0)
+                try
                 {
-                    Log.Debug("PlanEnrichmentService: No rows in logical plan");
-                    return plan;
+                    var rows = rawPlan?.ToList();
+                    if (rows == null || rows.Count == 0)
+                    {
+                        Log.Debug("PlanEnrichmentService: No rows in logical plan");
+                        return plan;
+                    }
+
+                    // Build tree from rows (logical plans have same structure)
+                    var nodes = BuildTreeFromQueryPlanRows(rows);
+                    plan.AllNodes = nodes;
+                    plan.RootNode = GetEffectiveRootNode(nodes);
+                    plan.State = PlanState.Parsed;
+
+                    // Resolve column names
+                    if (columnResolver?.IsInitialized == true)
+                    {
+                        ResolveColumnNames(nodes, columnResolver);
+                    }
+
+                    // Correlate timing data (xmSQL, durations) from SE events
+                    CorrelateTimingData(plan, timingEvents?.ToList());
+
+                    // Assign engine types based on operator dictionary
+                    AssignEngineTypes(nodes);
+
+                    // Detect performance issues (same as physical plan)
+                    var issues = _issueDetector.DetectIssues(plan);
+                    foreach (var issue in issues)
+                    {
+                        plan.Issues.Add(issue);
+                        var affectedNode = plan.FindNodeById(issue.AffectedNodeId);
+                        affectedNode?.Issues.Add(issue);
+                    }
+
+                    plan.State = PlanState.Enriched;
+                    Log.Debug("PlanEnrichmentService: Enriched logical plan with {NodeCount} nodes and {IssueCount} issues",
+                        plan.NodeCount, plan.IssueCount);
                 }
-
-                // Build tree from rows (logical plans have same structure)
-                var nodes = BuildTreeFromQueryPlanRows(rows);
-                plan.AllNodes = nodes;
-                plan.RootNode = GetEffectiveRootNode(nodes);
-                plan.State = PlanState.Parsed;
-
-                // Resolve column names
-                if (columnResolver?.IsInitialized == true)
+                catch (Exception ex)
                 {
-                    ResolveColumnNames(nodes, columnResolver);
+                    Log.Error(ex, "PlanEnrichmentService: Error enriching logical plan");
+                    plan.State = PlanState.Error;
+                    plan.ErrorMessage = ex.Message;
                 }
-
-                // Correlate timing data (xmSQL, durations) from SE events
-                CorrelateTimingData(plan, timingEvents?.ToList());
-
-                // Assign engine types based on operator dictionary
-                AssignEngineTypes(nodes);
-
-                // Detect performance issues (same as physical plan)
-                var issues = _issueDetector.DetectIssues(plan);
-                foreach (var issue in issues)
-                {
-                    plan.Issues.Add(issue);
-                    var affectedNode = plan.FindNodeById(issue.AffectedNodeId);
-                    affectedNode?.Issues.Add(issue);
-                }
-
-                plan.State = PlanState.Enriched;
-                Log.Debug("PlanEnrichmentService: Enriched logical plan with {NodeCount} nodes and {IssueCount} issues",
-                    plan.NodeCount, plan.IssueCount);
 
                 return plan;
             }).ConfigureAwait(false);
@@ -878,7 +896,8 @@ namespace DaxStudio.UI.Services
                 }
 
                 // Fallback: pattern-based heuristic for operators not in dictionary
-                var op = node.Operation ?? string.Empty;
+                // node.Operation is guaranteed non-null here (ExtractOperatorName would have returned null otherwise)
+                var op = node.Operation;
                 var opUpper = op.ToUpperInvariant();
 
                 if (opUpper.Contains("DIRECTQUERY"))

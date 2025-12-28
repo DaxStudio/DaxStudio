@@ -19,11 +19,6 @@ namespace DaxStudio.UI.Services
             @"\$?Column\d+",
             RegexOptions.Compiled);
 
-        // Pattern to match bracketed column references like: ['TableName'[ColumnName]]
-        private static readonly Regex BracketedColumnPattern = new Regex(
-            @"'\[([^\]]+)\]\[([^\]]+)\]'",
-            RegexOptions.Compiled);
-
         /// <summary>
         /// Gets whether the resolver has been initialized with column metadata.
         /// </summary>

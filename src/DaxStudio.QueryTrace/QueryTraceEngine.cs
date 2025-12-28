@@ -234,13 +234,13 @@ namespace DaxStudio.QueryTrace
                     Log.Debug("SetupTraceEvents: Skipping {Event} - already in trace", eventClass);
                     continue;
                 }
-                if (!_connectionManager.SupportedTraceEventClasses.ContainsKey(eventClass))
+                if (!_connectionManager.SupportedTraceEventClasses.TryGetValue(eventClass, out var supportedTraceEvent))
                 {
                     Log.Warning("SetupTraceEvents: Skipping {Event} - not supported by connection", eventClass);
                     continue;
                 }
 
-                var trcEvent = TraceEventFactory.Create(amoEventClass, _connectionManager.SupportedTraceEventClasses[eventClass]);
+                var trcEvent = TraceEventFactory.Create(amoEventClass, supportedTraceEvent);
                 trace.Events.Add(trcEvent);
                 Log.Debug("SetupTraceEvents: Added {Event} to trace", eventClass);
             }

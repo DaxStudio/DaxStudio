@@ -50,6 +50,13 @@ namespace DaxStudio.UI.Views
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
+            // Unsubscribe from ViewModel events to prevent memory leaks
+            if (DataContext is VisualQueryPlanViewModel vm)
+            {
+                vm.PlanLayoutUpdated -= OnPlanLayoutUpdated;
+                vm.NodeScrollRequested -= OnNodeScrollRequested;
+            }
+
             if (PlanScrollViewer != null)
             {
                 PlanScrollViewer.PreviewMouseLeftButtonDown -= ScrollViewer_PreviewMouseLeftButtonDown;

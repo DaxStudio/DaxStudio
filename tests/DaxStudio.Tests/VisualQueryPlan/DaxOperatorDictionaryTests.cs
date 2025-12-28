@@ -791,5 +791,46 @@ namespace DaxStudio.Tests.VisualQueryPlan
         }
 
         #endregion
+
+        #region New Operators Tests
+
+        [TestMethod]
+        public void GetOperatorInfo_TableToScalar_ReturnsCorrectInfo()
+        {
+            // Act
+            var info = DaxOperatorDictionary.GetOperatorInfo("TableToScalar");
+
+            // Assert
+            Assert.IsNotNull(info);
+            Assert.AreEqual("Table To Scalar", info.DisplayName);
+            Assert.AreEqual("Conversion", info.Category);
+        }
+
+        [TestMethod]
+        public void GetOperatorInfo_ColPosition_ReturnsCorrectInfo()
+        {
+            // Act
+            var info = DaxOperatorDictionary.GetOperatorInfo("ColPosition");
+
+            // Assert
+            Assert.IsNotNull(info);
+            Assert.AreEqual("Column Position", info.DisplayName);
+            Assert.AreEqual("Lookup", info.Category);
+        }
+
+        [TestMethod]
+        public void GetDisplayName_ColPositionWithColumn_ReturnsColumnPosition()
+        {
+            // Arrange - ColPosition operators include column references
+            var operatorName = "ColPosition<'Production ProductCategory'[Name]>";
+
+            // Act
+            var displayName = DaxOperatorDictionary.GetDisplayName(operatorName);
+
+            // Assert
+            Assert.AreEqual("Column Position", displayName);
+        }
+
+        #endregion
     }
 }

@@ -83,10 +83,7 @@ python build.py restore        # Restore NuGet packages
 & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" src/DaxStudio.Standalone/DaxStudio.Standalone.csproj -t:Restore -p:Configuration=Debug -v:minimal
 ```
 
-**Run DaxStudio:**
-```powershell
-Start-Process "C:\Users\eugme\Documents\GitHub\DaxStudio\src\bin\Debug\DaxStudio.exe"
-```
+**Run DaxStudio:** Use `python build.py run` (the PowerShell `Start-Process` command doesn't work from Claude Code's bash environment).
 
 **Executable location:** `src\bin\Debug\DaxStudio.exe`
 
