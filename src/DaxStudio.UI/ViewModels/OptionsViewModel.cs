@@ -1586,6 +1586,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private DiagramLayoutAlgorithm _diagramLayoutAlgorithm;
+        [DataMember, DefaultValue(DiagramLayoutAlgorithm.Auto)]
+        [Category("Preview")]
+        [DisplayName("Model Diagram Layout")]
+        [Description("Choose the layout algorithm for arranging tables in the Model Diagram. Auto selects based on table count: Hierarchy (≤15), Grid (16-50), Clustered (>50).")]
+        public DiagramLayoutAlgorithm DiagramLayoutAlgorithm
+        {
+            get => _diagramLayoutAlgorithm;
+            set
+            {
+                _diagramLayoutAlgorithm = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(DiagramLayoutAlgorithm), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => DiagramLayoutAlgorithm);
+            }
+        }
+
 
         private bool _showKeyBindings;
         [DataMember, DefaultValue(false)]

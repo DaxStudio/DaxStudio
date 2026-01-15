@@ -936,6 +936,15 @@
                 </Button>
                 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        ToolTip="Export detailed debug information to a text file for troubleshooting">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🐛" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Debug</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
                         ToolTip="Copy diagram as image to clipboard">
                     <StackPanel Orientation="Horizontal">
@@ -946,12 +955,27 @@
                 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action AutoArrange]"
-                        ToolTip="Automatically arrange tables">
+                        ToolTip="Automatically arrange tables using the selected layout algorithm">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⊞" FontSize="14" Margin="0,0,4,0"/>
                         <TextBlock>Layout</TextBlock>
                     </StackPanel>
                 </Button>
+                
+                <!-- Layout Algorithm dropdown -->
+                <ComboBox DockPanel.Dock="Left"
+                          SelectedItem="{Binding LayoutAlgorithm, Mode=TwoWay}"
+                          ToolTip="Select the layout algorithm for table arrangement:&#x0a;• Auto: Automatically selects based on table count&#x0a;• Hierarchy: Layered layout showing relationship hierarchy (best for small models)&#x0a;• Grid: Compact grid layout (best for medium models)&#x0a;• Clustered: Cluster-based compact layout (best for large models)"
+                          Margin="4,0"
+                          VerticalAlignment="Center"
+                          Width="85">
+                    <ComboBox.Items>
+                        <enums:DiagramLayoutAlgorithm>Auto</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>Hierarchy</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>Grid</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>Clustered</enums:DiagramLayoutAlgorithm>
+                    </ComboBox.Items>
+                </ComboBox>
                 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action UndoLayout]"

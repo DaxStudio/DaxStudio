@@ -36,6 +36,8 @@ namespace DaxStudio.UI.ViewModels
         private readonly IGlobalOptions _options;
         private ADOTabularModel _model;
         private string _currentModelKey;
+        private Dax.ViewModel.VpaModel _vpaModel;
+        private bool _isOfflineMode;
 
         /// <summary>
         /// Path to the layout cache file.
@@ -104,7 +106,7 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                if (_model == null) return "No data";
+                if (Tables.Count == 0) return "No data";
                 
                 var summary = $"{Tables.Count} Tables, {Tables.Sum(t => t.ColumnCount)} Columns, {Relationships.Count} Relationships";
                 
@@ -116,6 +118,12 @@ namespace DaxStudio.UI.ViewModels
                 if (HasStorageModeData)
                 {
                     summary += " 💾"; // Storage mode info loaded
+                }
+                
+                // Indicate offline mode
+                if (_model == null)
+                {
+                    summary += " (Offline)";
                 }
                 
                 return summary;
@@ -824,6 +832,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 _model = model;
                 _currentModelKey = GenerateModelKey(model);
+                _vpaModel = null;
+                _isOfflineMode = false;
 
                 // Stage 1: Clear existing data (must be on UI thread)
                 await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -1456,6 +1466,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 _model = model;
                 _currentModelKey = GenerateModelKey(model);
+                _vpaModel = null;
+                _isOfflineMode = false;
                 Tables.Clear();
                 Relationships.Clear();
                 Annotations.Clear();
@@ -1541,6 +1553,180 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Loads the diagram from VPA (VertiPaq Analyzer) data when offline.
+        /// This allows viewing the model diagram from .daxx files without a live connection.
+        /// </summary>
+        /// <param name="vpaModel">The VPA model containing table, column, and relationship metadata.</param>
+        public void LoadFromVpaModel(VpaModel vpaModel)
+        {
+            if (vpaModel?.Tables == null)
+            {
+                Log.Warning("{class} {method} VpaModel or Tables is null", nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel));
+                return;
+            }
+
+            if (IsLoading) return;
+
+            try
+            {
+                IsLoading = true;
+                LoadingMessage = "Loading from offline data...";
+
+                Log.Information("{class} {method} Loading diagram from VPA data with {tableCount} tables",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), vpaModel.Tables.Count());
+
+                // Clear existing data
+                Tables.Clear();
+                Relationships.Clear();
+                Annotations.Clear();
+
+                // Store VPA model reference for debugging
+                _vpaModel = vpaModel;
+                _isOfflineMode = true;;
+
+                // Generate a model key from VPA data
+                var tableNames = string.Join("|", vpaModel.Tables.OrderBy(t => t.TableName).Select(t => t.TableName));
+                var hash = tableNames.GetHashCode().ToString("X8");
+                _currentModelKey = $"VPA_{hash}";
+
+                // Create table ViewModels from VPA tables
+                var tableDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
+                var showHidden = ShowHiddenObjects;
+                var sortKeyColumnsFirst = _sortKeyColumnsFirst;
+
+                foreach (var vpaTable in vpaModel.Tables)
+                {
+                    // Note: VpaTable doesn't expose IsHidden, so we show all tables in offline mode
+                    var tableVm = new ModelDiagramTableViewModel(vpaTable, showHidden, _options, sortKeyColumnsFirst);
+                    Tables.Add(tableVm);
+                    tableDict[vpaTable.TableName] = tableVm;
+                }
+
+                // Create relationship ViewModels from VPA relationships
+                var processedRelationships = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var relationshipVms = new List<ModelDiagramRelationshipViewModel>();
+
+                foreach (var vpaTable in vpaModel.Tables)
+                {
+                    foreach (var vpaRel in vpaTable.RelationshipsFrom)
+                    {
+                        // Parse DAX column names: 'TableName'[ColumnName]
+                        var (fromTableName, fromColumnName) = ParseDaxColumnName(vpaRel.FromColumnName);
+                        var (toTableName, toColumnName) = ParseDaxColumnName(vpaRel.ToColumnName);
+
+                        if (string.IsNullOrEmpty(fromTableName) || string.IsNullOrEmpty(toTableName)) continue;
+
+                        // Create a normalized key to prevent duplicates
+                        var relKey = string.Compare(fromTableName, toTableName, StringComparison.OrdinalIgnoreCase) <= 0
+                            ? $"{fromTableName}|{fromColumnName}|{toTableName}|{toColumnName}"
+                            : $"{toTableName}|{toColumnName}|{fromTableName}|{fromColumnName}";
+
+                        if (processedRelationships.Contains(relKey)) continue;
+                        processedRelationships.Add(relKey);
+
+                        // Find the table and column ViewModels
+                        if (!tableDict.TryGetValue(fromTableName, out var fromTableVm)) continue;
+                        if (!tableDict.TryGetValue(toTableName, out var toTableVm)) continue;
+
+                        var fromColumnVm = fromTableVm.Columns.FirstOrDefault(c =>
+                            string.Equals(c.ColumnName, fromColumnName, StringComparison.OrdinalIgnoreCase));
+                        var toColumnVm = toTableVm.Columns.FirstOrDefault(c =>
+                            string.Equals(c.ColumnName, toColumnName, StringComparison.OrdinalIgnoreCase));
+
+                        if (fromColumnVm == null || toColumnVm == null) continue;
+
+                        // Create an ADOTabularRelationship to wrap the VPA data
+                        // Detect BiDi from RelationshipFromToName - it contains ↔ for BiDi, ← for single direction
+                        var isBiDi = vpaRel.RelationshipFromToName?.Contains("↔") == true;
+                        var crossFilterDirection = isBiDi ? "Both" : "Single";
+                        
+                        var adoRel = new ADOTabularRelationship
+                        {
+                            FromTable = null, // Not needed for diagram - we use table VMs
+                            ToTable = null,
+                            FromColumn = fromColumnName,
+                            ToColumn = toColumnName,
+                            FromColumnMultiplicity = "*", // VPA RelationshipsFrom are typically M:1
+                            ToColumnMultiplicity = "1",
+                            CrossFilterDirection = crossFilterDirection,
+                            IsActive = vpaRel.IsActive
+                        };
+
+                        var relVm = new ModelDiagramRelationshipViewModel(adoRel, fromTableVm, toTableVm);
+                        relationshipVms.Add(relVm);
+
+                        // Track relationship counts per table
+                        fromTableVm.RelationshipCount++;
+                        toTableVm.RelationshipCount++;
+                    }
+                }
+
+                // Add all relationships
+                Relationships.AddRange(relationshipVms);
+
+                // Now enrich with full VPA stats since we already have the data
+                EnrichFromVertipaq(vpaModel);
+
+                // Calculate parallel offsets for relationships between the same table pairs
+                CalculateParallelRelationshipOffsets();
+
+                // Try to load saved layout, otherwise use auto-layout
+                if (!TryLoadSavedLayout())
+                {
+                    LayoutDiagram();
+                }
+
+                Log.Information("{class} {method} Loaded {tableCount} tables and {relCount} relationships from VPA data",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), Tables.Count, Relationships.Count);
+
+                NotifyOfPropertyChange(nameof(SummaryText));
+                NotifyOfPropertyChange(nameof(HasData));
+                NotifyOfPropertyChange(nameof(NoData));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading Model Diagram from offline data: {ex.Message}"));
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Parses a DAX column name in the format 'TableName'[ColumnName] into its components.
+        /// </summary>
+        private (string TableName, string ColumnName) ParseDaxColumnName(string daxColumnName)
+        {
+            if (string.IsNullOrEmpty(daxColumnName)) return (null, null);
+
+            try
+            {
+                // Format: 'TableName'[ColumnName]
+                var match = System.Text.RegularExpressions.Regex.Match(daxColumnName, @"^'([^']+)'\[([^\]]+)\]$");
+                if (match.Success)
+                {
+                    return (match.Groups[1].Value, match.Groups[2].Value);
+                }
+
+                // Alternative format without quotes: TableName[ColumnName]
+                match = System.Text.RegularExpressions.Regex.Match(daxColumnName, @"^([^\[]+)\[([^\]]+)\]$");
+                if (match.Success)
+                {
+                    return (match.Groups[1].Value, match.Groups[2].Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "{class} {method} Failed to parse DAX column name: {name}",
+                    nameof(ModelDiagramViewModel), nameof(ParseDaxColumnName), daxColumnName);
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
         /// Generates a unique key for the model based on server and database.
         /// </summary>
         private string GenerateModelKey(ADOTabularModel model)
@@ -1553,25 +1739,54 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Layouts the diagram using the appropriate algorithm based on model size.
-        /// - For smaller models (≤50 tables): Sugiyama-style layered algorithm (better hierarchy visualization)
-        /// - For larger models (>50 tables): Cluster-based compact algorithm (better space utilization)
+        /// Layouts the diagram using the appropriate algorithm based on user selection or model size.
+        /// Algorithm selection:
+        /// - Auto: Hierarchy (≤15 tables), Grid (16-50 tables), Clustered (>50 tables)
+        /// - Hierarchy: Sugiyama-style layered algorithm - best for showing relationship hierarchy
+        /// - Grid: Compact grid layout - best for medium models with many disconnected tables
+        /// - Clustered: Cluster-based compact algorithm - best for large models
         /// </summary>
         private void LayoutDiagram()
         {
             if (Tables.Count == 0) return;
 
-            const int LargeModelThreshold = 50;
+            var algorithm = _options?.DiagramLayoutAlgorithm ?? DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Auto;
 
-            if (Tables.Count <= LargeModelThreshold)
+            // Determine which algorithm to use
+            if (algorithm == DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Auto)
             {
-                // Use Sugiyama-style algorithm for smaller models - better hierarchy
-                LayoutDiagramSugiyama();
+                // Auto-select based on table count
+                if (Tables.Count <= 15)
+                {
+                    LayoutDiagramSugiyama(); // Hierarchy - best for small models
+                }
+                else if (Tables.Count <= 50)
+                {
+                    LayoutDiagramGrid(); // Grid - best for medium models
+                }
+                else
+                {
+                    LayoutDiagramClustered(); // Clustered - best for large models
+                }
             }
             else
             {
-                // Use cluster-based algorithm for larger models - more compact
-                LayoutDiagramClustered();
+                // Use explicitly selected algorithm
+                switch (algorithm)
+                {
+                    case DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Hierarchy:
+                        LayoutDiagramSugiyama();
+                        break;
+                    case DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Grid:
+                        LayoutDiagramGrid();
+                        break;
+                    case DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Clustered:
+                        LayoutDiagramClustered();
+                        break;
+                    default:
+                        LayoutDiagramSugiyama();
+                        break;
+                }
             }
         }
 
@@ -1597,6 +1812,122 @@ namespace DaxStudio.UI.ViewModels
             AssignCoordinates(layers, tableWidth, tableHeight, horizontalSpacing, verticalSpacing, padding);
 
             // Calculate canvas size to fit all tables
+            var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
+            var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
+            CanvasWidth = Math.Max(100, maxX + padding);
+            CanvasHeight = Math.Max(100, maxY + padding);
+
+            // Update relationship line positions
+            foreach (var rel in Relationships)
+            {
+                rel.UpdatePath();
+            }
+        }
+
+        /// <summary>
+        /// Layouts the diagram using a compact grid algorithm.
+        /// Better for medium-sized models (15-50 tables) where many tables may be disconnected.
+        /// Places related tables near each other but uses a grid structure to avoid excessive horizontal spread.
+        /// </summary>
+        private void LayoutDiagramGrid()
+        {
+            const double tableWidth = 200;
+            const double tableHeight = 180;
+            const double horizontalSpacing = 80;
+            const double verticalSpacing = 100;
+            const double padding = 50;
+
+            // Build neighbor map for relationship awareness
+            var neighbors = BuildNeighborMap();
+            
+            // Group tables by their connectivity
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var groups = new List<List<ModelDiagramTableViewModel>>();
+            
+            // Find connected components
+            foreach (var table in Tables)
+            {
+                if (visited.Contains(table.TableName)) continue;
+                
+                var group = new List<ModelDiagramTableViewModel>();
+                var queue = new Queue<ModelDiagramTableViewModel>();
+                queue.Enqueue(table);
+                visited.Add(table.TableName);
+                
+                while (queue.Count > 0)
+                {
+                    var current = queue.Dequeue();
+                    group.Add(current);
+                    
+                    if (neighbors.TryGetValue(current.TableName, out var currentNeighbors))
+                    {
+                        foreach (var neighborName in currentNeighbors)
+                        {
+                            if (!visited.Contains(neighborName))
+                            {
+                                var neighbor = Tables.FirstOrDefault(t => 
+                                    string.Equals(t.TableName, neighborName, StringComparison.OrdinalIgnoreCase));
+                                if (neighbor != null)
+                                {
+                                    visited.Add(neighborName);
+                                    queue.Enqueue(neighbor);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (group.Count > 0)
+                {
+                    groups.Add(group);
+                }
+            }
+            
+            // Sort groups by size (largest first) for better placement
+            groups = groups.OrderByDescending(g => g.Count).ToList();
+            
+            // Calculate optimal grid dimensions based on total tables
+            // Aim for a roughly square layout with slight preference for wider
+            int totalTables = Tables.Count;
+            int columns = (int)Math.Ceiling(Math.Sqrt(totalTables * 1.5)); // Slightly wider than square
+            columns = Math.Max(3, Math.Min(columns, 8)); // Between 3 and 8 columns
+            
+            // Place groups in the grid, keeping related tables together
+            double currentX = padding;
+            double currentY = padding;
+            int columnIndex = 0;
+            double maxHeightInRow = 0;
+            
+            foreach (var group in groups)
+            {
+                // Sort tables within group: fact tables (more relationships) in center
+                var sortedGroup = group
+                    .OrderByDescending(t => neighbors.TryGetValue(t.TableName, out var n) ? n.Count : 0)
+                    .ToList();
+                
+                foreach (var table in sortedGroup)
+                {
+                    // Check if we need to wrap to next row
+                    if (columnIndex >= columns)
+                    {
+                        columnIndex = 0;
+                        currentX = padding;
+                        currentY += maxHeightInRow + verticalSpacing;
+                        maxHeightInRow = 0;
+                    }
+                    
+                    table.X = currentX;
+                    table.Y = currentY;
+                    table.Width = tableWidth;
+                    table.Height = tableHeight;
+                    
+                    maxHeightInRow = Math.Max(maxHeightInRow, tableHeight);
+                    currentX += tableWidth + horizontalSpacing;
+                    columnIndex++;
+                }
+            }
+            
+            // Calculate canvas size
             var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
             var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
             CanvasWidth = Math.Max(100, maxX + padding);
@@ -3548,6 +3879,149 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Gets or sets the layout algorithm for table arrangement.
+        /// This property persists to user options.
+        /// </summary>
+        public DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm LayoutAlgorithm
+        {
+            get => _options.DiagramLayoutAlgorithm;
+            set
+            {
+                if (_options.DiagramLayoutAlgorithm != value)
+                {
+                    _options.DiagramLayoutAlgorithm = value;
+                    NotifyOfPropertyChange();
+                    
+                    // Re-layout the diagram with the new algorithm
+                    if (Tables.Count > 0)
+                    {
+                        SaveLayoutForUndo(); // Save current state for undo
+                        LayoutDiagram();
+                        CalculateParallelRelationshipOffsets();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Exports detailed debug information about the Model Diagram to a text file.
+        /// This includes table, column, and relationship data for troubleshooting.
+        /// </summary>
+        public void ExportDebugInfo()
+        {
+            if (Tables.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No model data to export. Load a model first.", "Export Debug Info", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                return;
+            }
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Text files|*.txt|All files|*.*",
+                Title = "Export Model Diagram Debug Info",
+                FileName = $"ModelDiagram_Debug_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine("========================================");
+                    sb.AppendLine("MODEL DIAGRAM DEBUG EXPORT");
+                    sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    sb.AppendLine("========================================");
+                    sb.AppendLine();
+
+                    // Summary
+                    sb.AppendLine("=== SUMMARY ===");
+                    sb.AppendLine($"Model Key: {_currentModelKey}");
+                    sb.AppendLine($"Is Offline (VPA): {_isOfflineMode}");
+                    sb.AppendLine($"Tables: {Tables.Count}");
+                    sb.AppendLine($"Relationships: {Relationships.Count}");
+                    sb.AppendLine($"Has VPA Data: {HasVertipaqData}");
+                    sb.AppendLine($"Has Storage Mode Data: {HasStorageModeData}");
+                    sb.AppendLine($"Layout Algorithm: {_options?.DiagramLayoutAlgorithm}");
+                    sb.AppendLine();
+
+                    // Tables
+                    sb.AppendLine("=== TABLES ===");
+                    foreach (var table in Tables.OrderBy(t => t.TableName))
+                    {
+                        sb.AppendLine($"  [{table.TableName}]");
+                        sb.AppendLine($"    IsVisible: {table.IsVisible}, IsDateTable: {table.IsDateTable}");
+                        sb.AppendLine($"    IsCollapsed: {table.IsCollapsed}, RelationshipCount: {table.RelationshipCount}");
+                        sb.AppendLine($"    Position: X={table.X:F0}, Y={table.Y:F0}, W={table.Width:F0}, H={table.Height:F0}");
+                        sb.AppendLine($"    StorageMode: {table.StorageMode}");
+                        sb.AppendLine($"    RowCount: {table.RowCount}, TableSizeBytes: {table.TableSizeBytes}");
+                        sb.AppendLine($"    Columns ({table.Columns.Count}):");
+                        foreach (var col in table.Columns.Take(20)) // Limit to first 20 columns
+                        {
+                            sb.AppendLine($"      - {col.ColumnName} ({col.DataTypeName}) [IsKey:{col.IsKey}, IsMeasure:{col.IsMeasure}, IsRelCol:{col.IsRelationshipColumn}]");
+                        }
+                        if (table.Columns.Count > 20)
+                        {
+                            sb.AppendLine($"      ... and {table.Columns.Count - 20} more columns");
+                        }
+                    }
+                    sb.AppendLine();
+
+                    // Relationships
+                    sb.AppendLine("=== RELATIONSHIPS ===");
+                    foreach (var rel in Relationships)
+                    {
+                        sb.AppendLine($"  [{rel.FromTable}].[{rel.FromColumn}] --> [{rel.ToTable}].[{rel.ToColumn}]");
+                        sb.AppendLine($"    Cardinality: {rel.FromCardinality}:{rel.ToCardinality}");
+                        sb.AppendLine($"    IsActive: {rel.IsActive}");
+                        sb.AppendLine($"    IsBidirectional: {rel.IsBidirectional}");
+                        sb.AppendLine($"    IsManyToMany: {rel.IsManyToMany}");
+                        sb.AppendLine($"    IsVisible: {rel.IsVisible}");
+                        sb.AppendLine($"    HasCenterIndicators: {rel.HasCenterIndicators}");
+                        sb.AppendLine($"    CrossFilterDirection (raw): {rel.CrossFilterDirectionRaw}");
+                    }
+                    sb.AppendLine();
+
+                    // VPA Relationship info (if available and offline)
+                    if (_isOfflineMode && _vpaModel != null)
+                    {
+                        sb.AppendLine("=== VPA RELATIONSHIP RAW DATA ===");
+                        try
+                        {
+                            foreach (var vpaTable in _vpaModel.Tables)
+                            {
+                                foreach (var vpaRel in vpaTable.RelationshipsFrom)
+                                {
+                                    sb.AppendLine($"  VpaRelationship:");
+                                    sb.AppendLine($"    FromColumnName: {vpaRel.FromColumnName}");
+                                    sb.AppendLine($"    ToColumnName: {vpaRel.ToColumnName}");
+                                    sb.AppendLine($"    RelationshipFromToName: {vpaRel.RelationshipFromToName}");
+                                    sb.AppendLine($"    IsActive: {vpaRel.IsActive}");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sb.AppendLine($"  Error reading VPA relationships: {ex.Message}");
+                        }
+                    }
+
+                    System.IO.File.WriteAllText(dialog.FileName, sb.ToString());
+                    
+                    // Open the file
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = dialog.FileName,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Failed to export debug info: {ex.Message}", "Export Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+            }
+        }
+
+        /// <summary>
         /// Clears all enrichment data from tables and columns.
         /// Called when loading a new model.
         /// </summary>
@@ -3733,6 +4207,16 @@ namespace DaxStudio.UI.ViewModels
         private readonly IMetadataProvider _metadataProvider;
         private readonly IGlobalOptions _options;
         private bool _sortKeyColumnsFirst = false;
+        
+        // Backing fields for VPA-only construction (when _table is null)
+        private readonly string _vpaTableName;
+        private readonly string _vpaCaption;
+        private readonly string _vpaDescription;
+        private readonly bool _vpaIsVisible;
+        private readonly bool _vpaIsDateTable;
+        private readonly string _vpaDataCategory;
+        private readonly bool _vpaIsPrivate;
+        private readonly bool _isFromVpa;
 
         public ModelDiagramTableViewModel(ADOTabularTable table, bool showHiddenObjects, IMetadataProvider metadataProvider, IGlobalOptions options, bool sortKeyColumnsFirst = false)
         {
@@ -3741,6 +4225,7 @@ namespace DaxStudio.UI.ViewModels
             _metadataProvider = metadataProvider;
             _options = options;
             _sortKeyColumnsFirst = sortKeyColumnsFirst;
+            _isFromVpa = false;
             Columns = new BindableCollection<ModelDiagramColumnViewModel>(GetSortedColumns());
             
             // DEBUG: Log special table type detection
@@ -3766,6 +4251,59 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} Table '{table}': Has 'Ordinal' column - potential Calculation Group",
                     nameof(ModelDiagramTableViewModel), ".ctor", table.Caption);
             }
+        }
+
+        /// <summary>
+        /// Constructor for creating a table from VPA (VertiPaq Analyzer) data when offline.
+        /// </summary>
+        public ModelDiagramTableViewModel(VpaTable vpaTable, bool showHiddenObjects, IGlobalOptions options, bool sortKeyColumnsFirst = false)
+        {
+            _table = null; // No ADOTabular table when loading from VPA
+            _showHiddenObjects = showHiddenObjects;
+            _metadataProvider = null;
+            _options = options;
+            _sortKeyColumnsFirst = sortKeyColumnsFirst;
+            _isFromVpa = true;
+            
+            // Store VPA data in backing fields
+            _vpaTableName = vpaTable.TableName;
+            _vpaCaption = vpaTable.TableName; // VPA doesn't distinguish caption
+            _vpaDescription = null; // VPA doesn't have description
+            _vpaIsVisible = true; // VPA doesn't expose IsHidden at table level, assume visible
+            _vpaIsDateTable = vpaTable.IsDateTable == true; // VpaTable has nullable bool IsDateTable
+            _vpaDataCategory = null; // VPA doesn't have data category
+            _vpaIsPrivate = false; // VPA doesn't track private
+            
+            // Create columns from VPA data
+            Columns = new BindableCollection<ModelDiagramColumnViewModel>(GetColumnsFromVpa(vpaTable, showHiddenObjects, options));
+            
+            Log.Information("{class} {method} Created table from VPA: '{table}' with {colCount} columns",
+                nameof(ModelDiagramTableViewModel), ".ctor(VPA)", _vpaTableName, Columns.Count);
+        }
+
+        /// <summary>
+        /// Creates column ViewModels from VPA table data.
+        /// </summary>
+        private IEnumerable<ModelDiagramColumnViewModel> GetColumnsFromVpa(VpaTable vpaTable, bool showHiddenObjects, IGlobalOptions options)
+        {
+            var result = new List<ModelDiagramColumnViewModel>();
+            
+            foreach (var vpaCol in vpaTable.Columns)
+            {
+                // Skip RowNumber columns
+                if (vpaCol.ColumnName.StartsWith("RowNumber-")) continue;
+                
+                // Skip hidden columns if not showing hidden
+                if (!showHiddenObjects && vpaCol.IsHidden) continue;
+                
+                var colVm = new ModelDiagramColumnViewModel(vpaCol, options);
+                result.Add(colVm);
+            }
+            
+            // Sort: columns first (by name), then measures (by name)
+            return result
+                .OrderBy(c => c.IsMeasure ? 1 : 0)
+                .ThenBy(c => c.Caption);
         }
 
         /// <summary>
@@ -4001,14 +4539,14 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(KeyColumns));
         }
 
-        public string TableName => _table.Name;
-        public string Caption => _table.Caption;
-        public string Description => _table.Description;
-        public bool IsVisible => _table.IsVisible;
-        public bool IsDateTable => _table.IsDateTable;
-        public string DataCategory => _table.DataCategory;
-        public int ColumnCount => Columns.Count(c => c.ObjectType == ADOTabularObjectType.Column);
-        public int MeasureCount => Columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure);
+        public string TableName => _isFromVpa ? _vpaTableName : _table.Name;
+        public string Caption => _isFromVpa ? _vpaCaption : _table.Caption;
+        public string Description => _isFromVpa ? _vpaDescription : _table.Description;
+        public bool IsVisible => _isFromVpa ? _vpaIsVisible : _table.IsVisible;
+        public bool IsDateTable => _isFromVpa ? _vpaIsDateTable : _table.IsDateTable;
+        public string DataCategory => _isFromVpa ? _vpaDataCategory : _table.DataCategory;
+        public int ColumnCount => Columns.Count(c => c.ObjectType == ADOTabularObjectType.Column || (!c.IsMeasure && !c.IsHierarchy));
+        public int MeasureCount => Columns.Count(c => c.ObjectType == ADOTabularObjectType.Measure || c.IsMeasure);
         public int HierarchyCount => Columns.Count(c => c.IsHierarchy);
 
         /// <summary>
@@ -4030,7 +4568,7 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Whether this table is marked as private.
         /// </summary>
-        public bool IsPrivate => _table.Private;
+        public bool IsPrivate => _isFromVpa ? _vpaIsPrivate : _table.Private;
 
         /// <summary>
         /// Whether this table is a Field Parameter table.
@@ -4041,6 +4579,9 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
+                // VPA mode: We don't have enough metadata to detect field parameters
+                if (_isFromVpa) return false;
+                
                 // Primary detection methods
                 if (_table.ShowAsVariationsOnly) return true;
                 if (_table.Columns.Any(c => c.Variations != null && c.Variations.Count > 0)) return true;
@@ -4087,16 +4628,23 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
+                // VPA mode: Check using columns in our collection
+                if (_isFromVpa)
+                {
+                    var hasOrdinalColumn = Columns.Any(c => c.ColumnName.Equals("Ordinal", StringComparison.OrdinalIgnoreCase));
+                    return hasOrdinalColumn && ColumnCount == 2;
+                }
+                
                 // Calculation groups have a specific structure:
                 // 1. An "Ordinal" column (always present)
                 // 2. A "Name" column (named after the calc group or just "Name")
                 // 3. Typically only 2 columns total
                 var columns = _table.Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column).ToList();
-                var hasOrdinalColumn = columns.Any(c => c.Name.Equals("Ordinal", StringComparison.OrdinalIgnoreCase));
+                var hasOrdinal = columns.Any(c => c.Name.Equals("Ordinal", StringComparison.OrdinalIgnoreCase));
                 
                 // Calc groups have exactly 2 columns: the name column and ordinal
                 // They may also have calculation items as measures
-                return hasOrdinalColumn && columns.Count == 2;
+                return hasOrdinal && columns.Count == 2;
             }
         }
 
@@ -4764,6 +5312,15 @@ namespace DaxStudio.UI.ViewModels
         private bool _updatingSampleData;
         private bool _sampleDataLoadFailed; // Prevent retrying on error
         private const int SAMPLE_ROWS = 10;
+        
+        // Backing fields for VPA-only construction
+        private readonly string _vpaColumnName;
+        private readonly string _vpaCaption;
+        private readonly string _vpaDataTypeName;
+        private readonly bool _vpaIsVisible;
+        private readonly bool _vpaIsMeasure;
+        private readonly bool _vpaIsKey;
+        private readonly bool _isFromVpa;
 
         public ModelDiagramColumnViewModel(ADOTabularColumn column, IMetadataProvider metadataProvider, IGlobalOptions options, bool isHierarchyLevel = false, string hierarchyLevelName = null)
         {
@@ -4772,7 +5329,38 @@ namespace DaxStudio.UI.ViewModels
             _options = options;
             _sampleData = new List<string>();
             IsHierarchyLevel = isHierarchyLevel;
+            _isFromVpa = false;
             HierarchyLevelName = hierarchyLevelName;
+        }
+
+        /// <summary>
+        /// Constructor for creating a column from VPA (VertiPaq Analyzer) data when offline.
+        /// </summary>
+        public ModelDiagramColumnViewModel(VpaColumn vpaColumn, IGlobalOptions options)
+        {
+            _column = null;
+            _metadataProvider = null;
+            _options = options;
+            _sampleData = new List<string>();
+            _isFromVpa = true;
+            
+            // Store VPA data in backing fields
+            _vpaColumnName = vpaColumn.ColumnName;
+            _vpaCaption = vpaColumn.ColumnName; // VPA doesn't distinguish caption
+            _vpaDataTypeName = vpaColumn.DataType;
+            _vpaIsVisible = !vpaColumn.IsHidden;
+            // VpaColumn doesn't have ColumnType - detect measures by checking if ColumnExpression exists
+            // and DataType is empty/null (measures don't have a data type in VPA)
+            _vpaIsMeasure = !string.IsNullOrEmpty(vpaColumn.ColumnExpression) && string.IsNullOrEmpty(vpaColumn.DataType);
+            _vpaIsKey = vpaColumn.IsKey; // VpaColumn does have IsKey
+            
+            // Pre-populate VPA stats
+            Cardinality = vpaColumn.ColumnCardinality;
+            ColumnSizeBytes = vpaColumn.TotalSize;
+            Encoding = vpaColumn.Encoding;
+            PercentOfTable = vpaColumn.PercentageTable;
+            DataSizeBytes = vpaColumn.DataSize;
+            DictionarySizeBytes = vpaColumn.DictionarySize;
         }
 
         /// <summary>
@@ -4785,33 +5373,35 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public string HierarchyLevelName { get; }
 
-        public string ColumnName => _column.Name;
-        public string Caption => _column.Caption;
-        public string Description => _column.Description;
-        public bool IsVisible => _column.IsVisible;
-        public ADOTabularObjectType ObjectType => _column.ObjectType;
-        public string DataTypeName => _column.DataTypeName;
-        public bool IsKey => _column.IsKey;
+        public string ColumnName => _isFromVpa ? _vpaColumnName : _column.Name;
+        public string Caption => _isFromVpa ? _vpaCaption : _column.Caption;
+        public string Description => _isFromVpa ? null : _column.Description;
+        public bool IsVisible => _isFromVpa ? _vpaIsVisible : _column.IsVisible;
+        public ADOTabularObjectType ObjectType => _isFromVpa 
+            ? (_vpaIsMeasure ? ADOTabularObjectType.Measure : ADOTabularObjectType.Column) 
+            : _column.ObjectType;
+        public string DataTypeName => _isFromVpa ? _vpaDataTypeName : _column.DataTypeName;
+        public bool IsKey => _isFromVpa ? _vpaIsKey : _column.IsKey;
 
         /// <summary>
         /// Whether this column has a "Sort By" column defined.
         /// </summary>
-        public bool HasSortByColumn => _column.OrderBy != null;
+        public bool HasSortByColumn => !_isFromVpa && _column?.OrderBy != null;
 
         /// <summary>
         /// The name of the column this is sorted by (if any).
         /// </summary>
-        public string SortByColumnName => _column.OrderBy?.Name;
+        public string SortByColumnName => _isFromVpa ? null : _column?.OrderBy?.Name;
 
         /// <summary>
         /// Whether this column has variations (field parameters).
         /// </summary>
-        public bool HasVariations => _column.Variations != null && _column.Variations.Count > 0;
+        public bool HasVariations => !_isFromVpa && _column?.Variations != null && _column.Variations.Count > 0;
 
         /// <summary>
         /// The measure expression (for measures only).
         /// </summary>
-        public string MeasureExpression => _column.MeasureExpression;
+        public string MeasureExpression => _isFromVpa ? null : _column?.MeasureExpression;
         
         private bool _isRelationshipColumn;
         /// <summary>
@@ -4857,6 +5447,12 @@ namespace DaxStudio.UI.ViewModels
                     return "hierarchyDrawingImage";
 
                 // Regular columns - based on data type
+                if (_isFromVpa)
+                {
+                    // Use string-based data type for VPA
+                    return GetIconFromDataTypeName(_vpaDataTypeName, suffix);
+                }
+                
                 return _column.DataType switch
                 {
                     Microsoft.AnalysisServices.Tabular.DataType.Boolean => $"boolean{suffix}",
@@ -4871,6 +5467,23 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Gets icon resource key from data type name string (for VPA mode).
+        /// </summary>
+        private string GetIconFromDataTypeName(string dataTypeName, string suffix)
+        {
+            if (string.IsNullOrEmpty(dataTypeName)) return $"column{suffix}";
+            
+            var lowerType = dataTypeName.ToLowerInvariant();
+            if (lowerType.Contains("bool")) return $"boolean{suffix}";
+            if (lowerType.Contains("date") || lowerType.Contains("time")) return $"datetime{suffix}";
+            if (lowerType.Contains("double") || lowerType.Contains("decimal") || lowerType.Contains("float") || lowerType.Contains("currency")) return $"double{suffix}";
+            if (lowerType.Contains("int") || lowerType.Contains("whole")) return $"number{suffix}";
+            if (lowerType.Contains("string") || lowerType.Contains("text")) return $"string{suffix}";
+            
+            return $"column{suffix}";
+        }
+
+        /// <summary>
         /// Short data type indicator for compact display.
         /// </summary>
         public string DataTypeIndicator
@@ -4879,6 +5492,11 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (IsMeasure) return "fx";
                 if (IsHierarchy) return "H";
+                
+                if (_isFromVpa)
+                {
+                    return GetDataTypeIndicatorFromName(_vpaDataTypeName);
+                }
                 
                 return _column.DataType switch
                 {
@@ -4894,6 +5512,23 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Gets data type indicator from type name string (for VPA mode).
+        /// </summary>
+        private string GetDataTypeIndicatorFromName(string dataTypeName)
+        {
+            if (string.IsNullOrEmpty(dataTypeName)) return "";
+            
+            var lowerType = dataTypeName.ToLowerInvariant();
+            if (lowerType.Contains("bool")) return "T/F";
+            if (lowerType.Contains("date") || lowerType.Contains("time")) return "📅";
+            if (lowerType.Contains("double") || lowerType.Contains("decimal") || lowerType.Contains("float") || lowerType.Contains("currency")) return "#.#";
+            if (lowerType.Contains("int") || lowerType.Contains("whole")) return "123";
+            if (lowerType.Contains("string") || lowerType.Contains("text")) return "abc";
+            
+            return "";
+        }
+
+        /// <summary>
         /// Background color for the data type indicator.
         /// </summary>
         public string DataTypeColor
@@ -4903,6 +5538,11 @@ namespace DaxStudio.UI.ViewModels
                 if (IsMeasure) return "#FF9800";  // Orange for measures
                 if (IsHierarchy) return "#9C27B0";  // Purple for hierarchies
                 if (IsKey) return "#F44336";  // Red for keys
+                
+                if (_isFromVpa)
+                {
+                    return GetDataTypeColorFromName(_vpaDataTypeName);
+                }
                 
                 return _column.DataType switch
                 {
@@ -4915,6 +5555,23 @@ namespace DaxStudio.UI.ViewModels
                     _ => "#9E9E9E"  // Grey
                 };
             }
+        }
+
+        /// <summary>
+        /// Gets data type color from type name string (for VPA mode).
+        /// </summary>
+        private string GetDataTypeColorFromName(string dataTypeName)
+        {
+            if (string.IsNullOrEmpty(dataTypeName)) return "#9E9E9E";
+            
+            var lowerType = dataTypeName.ToLowerInvariant();
+            if (lowerType.Contains("bool")) return "#4CAF50";  // Green
+            if (lowerType.Contains("date") || lowerType.Contains("time")) return "#2196F3";  // Blue
+            if (lowerType.Contains("double") || lowerType.Contains("decimal") || lowerType.Contains("float") || lowerType.Contains("currency")) return "#9C27B0";  // Purple
+            if (lowerType.Contains("int") || lowerType.Contains("whole")) return "#673AB7";  // Deep Purple
+            if (lowerType.Contains("string") || lowerType.Contains("text")) return "#607D8B";  // Blue Grey
+            
+            return "#9E9E9E";  // Grey
         }
 
         /// <summary>
@@ -5085,10 +5742,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         // Expose additional column metadata properties for tooltip
-        public string FormatString => _column.FormatString;
-        public long DistinctValues => _column.DistinctValues;
-        public string MinValue => _column.MinValue;
-        public string MaxValue => _column.MaxValue;
+        public string FormatString => _isFromVpa ? null : _column?.FormatString;
+        public long DistinctValues => _isFromVpa ? 0 : _column?.DistinctValues ?? 0;
+        public string MinValue => _isFromVpa ? null : _column?.MinValue;
+        public string MaxValue => _isFromVpa ? null : _column?.MaxValue;
 
         private bool _showDataType;
         public bool ShowDataType
@@ -5385,9 +6042,9 @@ namespace DaxStudio.UI.ViewModels
         public ModelDiagramTableViewModel FromTableViewModel => _fromTable;
         public ModelDiagramTableViewModel ToTableViewModel => _toTable;
 
-        public string FromTable => _relationship.FromTable?.Name;
+        public string FromTable => _relationship.FromTable?.Name ?? _fromTable?.TableName;
         public string FromColumn => _relationship.FromColumn;
-        public string ToTable => _relationship.ToTable?.Name;
+        public string ToTable => _relationship.ToTable?.Name ?? _toTable?.TableName;
         public string ToColumn => _relationship.ToColumn;
         public bool IsActive => _relationship.IsActive;
 
@@ -5432,6 +6089,11 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public bool IsBidirectional =>
             string.Equals(_relationship.CrossFilterDirection, "Both", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Raw cross-filter direction value from the relationship (for debugging).
+        /// </summary>
+        public string CrossFilterDirectionRaw => _relationship.CrossFilterDirection;
 
         /// <summary>
         /// Inverse of IsActive for binding convenience.

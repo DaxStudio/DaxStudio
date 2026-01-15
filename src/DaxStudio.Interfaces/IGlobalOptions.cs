@@ -121,6 +121,7 @@ namespace DaxStudio.Interfaces
         bool ShowModelDiagram { get; set; }
         DiagramColumnStatDisplay DiagramColumnStatDisplay { get; set; }
         DiagramColumnSortOrder DiagramColumnSortOrder { get; set; }
+        DiagramLayoutAlgorithm DiagramLayoutAlgorithm { get; set; }
       
         
         

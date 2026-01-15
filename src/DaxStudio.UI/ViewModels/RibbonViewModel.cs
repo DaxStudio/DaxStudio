@@ -48,6 +48,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<UpdateGlobalOptions>
         , IHandle<UpdateHotkeys>
         , IHandle<SetRunStyleEvent>
+        , IHandle<ViewMetricsCompleteEvent>
 
         //        , IViewAware
     {
@@ -1175,34 +1176,59 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowModelDiagramEnabled => Options.ShowModelDiagram;
 
         /// <summary>
-        /// Whether we can show the Model Diagram (connected and feature enabled).
+        /// Whether the active document has VPA (VertiPaq Analyzer) data available.
+        /// This allows the Model Diagram to work with offline .daxx files.
         /// </summary>
-        public bool CanShowModelDiagram => IsActiveDocumentConnected && ShowModelDiagramEnabled;
+        private bool HasVpaData => ActiveDocument?.ToolWindows?.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) is VertiPaqAnalyzerViewModel vpa && vpa.ViewModel != null;
+
+        /// <summary>
+        /// Whether we can show the Model Diagram.
+        /// Enabled when connected to a model OR when VPA data is available (offline .daxx files).
+        /// </summary>
+        public bool CanShowModelDiagram => (IsActiveDocumentConnected || HasVpaData) && ShowModelDiagramEnabled;
 
         /// <summary>
         /// Shows the Model Diagram tool window.
+        /// When connected, loads from the live model. When offline with VPA data, loads from VPA.
         /// </summary>
         public void ShowModelDiagram()
         {
             if (ActiveDocument == null) return;
             try
             {
-                var model = ActiveDocument.Connection?.SelectedModel;
-                if (model == null)
-                {
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No model selected. Please connect to a model first."));
-                    return;
-                }
-
-                var metadataProvider = ActiveDocument.Connection as IMetadataProvider;
-                var diagramViewModel = new ModelDiagramViewModel(_eventAggregator, metadataProvider, Options);
-                diagramViewModel.LoadFromModel(model);
-
-                // Check if VPA data already exists and enrich the diagram
+                var diagramViewModel = new ModelDiagramViewModel(_eventAggregator, ActiveDocument.Connection as IMetadataProvider, Options);
+                
+                // Check for VPA data first (works for both online and offline)
                 var vpaView = ActiveDocument.ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
-                if (vpaView?.ViewModel != null)
+                
+                if (IsActiveDocumentConnected)
                 {
-                    diagramViewModel.EnrichFromVertipaq(vpaView.ViewModel);
+                    // Online: Load from live model
+                    var model = ActiveDocument.Connection?.SelectedModel;
+                    if (model == null)
+                    {
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No model selected. Please connect to a model first."));
+                        return;
+                    }
+
+                    diagramViewModel.LoadFromModel(model);
+
+                    // Enrich with VPA data if available
+                    if (vpaView?.ViewModel != null)
+                    {
+                        diagramViewModel.EnrichFromVertipaq(vpaView.ViewModel);
+                    }
+                }
+                else if (vpaView?.ViewModel != null)
+                {
+                    // Offline: Load from VPA data (e.g., .daxx file)
+                    Log.Information("{class} {method} Loading Model Diagram from offline VPA data", nameof(RibbonViewModel), nameof(ShowModelDiagram));
+                    diagramViewModel.LoadFromVpaModel(vpaView.ViewModel);
+                }
+                else
+                {
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No model data available. Please connect to a model or open a file with VPA data."));
+                    return;
                 }
 
                 // Publish event to show the tool window in the docking panel
@@ -1549,6 +1575,17 @@ namespace DaxStudio.UI.ViewModels
         public void DiscoverQueryDependencies()
         {
             ActiveDocument?.DiscoverQueryDependencies();
+        }
+
+        /// <summary>
+        /// Handles the ViewMetricsCompleteEvent to update CanShowModelDiagram when VPA data becomes available.
+        /// This enables the Model Diagram button for offline .daxx files that contain VPA data.
+        /// </summary>
+        public Task HandleAsync(ViewMetricsCompleteEvent message, CancellationToken cancellationToken)
+        {
+            // Notify that Model Diagram availability may have changed
+            NotifyOfPropertyChange(() => CanShowModelDiagram);
+            return Task.CompletedTask;
         }
     }
 }

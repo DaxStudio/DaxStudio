@@ -10,6 +10,6 @@
         public string ToColumnMultiplicity { get; set; }
         public string ToColumn { get; set; }
         public string CrossFilterDirection { get; set; }
-        public bool IsActive { get; internal set; }
+        public bool IsActive { get; set; }
     }
 }
