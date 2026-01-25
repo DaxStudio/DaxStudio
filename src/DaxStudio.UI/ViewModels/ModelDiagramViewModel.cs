@@ -1624,16 +1624,41 @@ namespace DaxStudio.UI.ViewModels
                         if (processedRelationships.Contains(relKey)) continue;
                         processedRelationships.Add(relKey);
 
-                        // Find the table and column ViewModels
+                        // Find the table ViewModels
                         if (!tableDict.TryGetValue(fromTableName, out var fromTableVm)) continue;
                         if (!tableDict.TryGetValue(toTableName, out var toTableVm)) continue;
 
+                        // Find column ViewModels - if missing (hidden columns), create them dynamically
                         var fromColumnVm = fromTableVm.Columns.FirstOrDefault(c =>
                             string.Equals(c.ColumnName, fromColumnName, StringComparison.OrdinalIgnoreCase));
                         var toColumnVm = toTableVm.Columns.FirstOrDefault(c =>
                             string.Equals(c.ColumnName, toColumnName, StringComparison.OrdinalIgnoreCase));
 
-                        if (fromColumnVm == null || toColumnVm == null) continue;
+                        // If relationship columns are hidden in VPA, create placeholder columns for the diagram
+                        // This ensures relationships are visible even when the underlying columns are hidden
+                        if (fromColumnVm == null)
+                        {
+                            // Try to find the VPA column to get its type info
+                            var vpaCol = vpaTable.Columns.FirstOrDefault(c => 
+                                string.Equals(c.ColumnName, fromColumnName, StringComparison.OrdinalIgnoreCase));
+                            fromColumnVm = new ModelDiagramColumnViewModel(fromColumnName, vpaCol, _options);
+                            fromColumnVm.IsRelationshipColumn = true;
+                            fromTableVm.Columns.Add(fromColumnVm);
+                            Log.Debug("VPA: Created placeholder column {Table}.{Column} for relationship", fromTableName, fromColumnName);
+                        }
+                        
+                        if (toColumnVm == null)
+                        {
+                            // Try to find the VPA column in the target table
+                            var targetVpaTable = vpaModel.Tables.FirstOrDefault(t => 
+                                string.Equals(t.TableName, toTableName, StringComparison.OrdinalIgnoreCase));
+                            var vpaCol = targetVpaTable?.Columns.FirstOrDefault(c => 
+                                string.Equals(c.ColumnName, toColumnName, StringComparison.OrdinalIgnoreCase));
+                            toColumnVm = new ModelDiagramColumnViewModel(toColumnName, vpaCol, _options);
+                            toColumnVm.IsRelationshipColumn = true;
+                            toTableVm.Columns.Add(toColumnVm);
+                            Log.Debug("VPA: Created placeholder column {Table}.{Column} for relationship", toTableName, toColumnName);
+                        }
 
                         // Create an ADOTabularRelationship to wrap the VPA data
                         // Detect BiDi from RelationshipFromToName - it contains ↔ for BiDi, ← for single direction
@@ -5361,6 +5386,45 @@ namespace DaxStudio.UI.ViewModels
             PercentOfTable = vpaColumn.PercentageTable;
             DataSizeBytes = vpaColumn.DataSize;
             DictionarySizeBytes = vpaColumn.DictionarySize;
+        }
+
+        /// <summary>
+        /// Constructor for creating a placeholder column for hidden relationship columns in VPA mode.
+        /// When columns involved in relationships are hidden, we still need to create them for the diagram.
+        /// </summary>
+        /// <param name="columnName">The column name from the relationship definition</param>
+        /// <param name="vpaColumn">Optional VPA column data if available (may be null for completely hidden columns)</param>
+        /// <param name="options">Global options</param>
+        public ModelDiagramColumnViewModel(string columnName, VpaColumn vpaColumn, IGlobalOptions options)
+        {
+            _column = null;
+            _metadataProvider = null;
+            _options = options;
+            _sampleData = new List<string>();
+            _isFromVpa = true;
+            
+            // Store column info - use VPA data if available, otherwise use just the name
+            _vpaColumnName = columnName;
+            _vpaCaption = columnName;
+            _vpaIsVisible = false; // These are hidden relationship columns
+            _vpaIsMeasure = false; // Relationship columns are never measures
+            
+            if (vpaColumn != null)
+            {
+                _vpaDataTypeName = vpaColumn.DataType;
+                _vpaIsKey = vpaColumn.IsKey;
+                Cardinality = vpaColumn.ColumnCardinality;
+                ColumnSizeBytes = vpaColumn.TotalSize;
+                Encoding = vpaColumn.Encoding;
+                PercentOfTable = vpaColumn.PercentageTable;
+                DataSizeBytes = vpaColumn.DataSize;
+                DictionarySizeBytes = vpaColumn.DictionarySize;
+            }
+            else
+            {
+                _vpaDataTypeName = null;
+                _vpaIsKey = false;
+            }
         }
 
         /// <summary>

@@ -145,6 +145,14 @@ namespace DaxStudio.UI.Utils
             @"(?:FROM|JOIN)\s+\[(?<table>[^\]\.]+)\]\s+AS\s+\[(?<alias>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        // Pattern 18: Parameterized/function table reference - [Table Name](function_call) AS [alias]
+        // Used in some DirectQuery scenarios where the table takes parameters
+        // Example: [Annspire Last Transaction Time](recordref('ParameterRecord')) AS [t15]
+        // Uses non-greedy .*? to handle nested parentheses in function calls
+        private static readonly Regex ParameterizedTablePattern = new Regex(
+            @"(?:FROM|JOIN)\s+\[(?<table>[^\]]+)\]\s*\(.*?\)\s+AS\s+\[(?<alias>[^\]]+)\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
         public DirectQuerySqlParser(string sql)
         {
             _sql = sql ?? string.Empty;
@@ -471,6 +479,40 @@ namespace DaxStudio.UI.Utils
                         BaseTableName = tableName
                     };
                     Log.Debug("Pass1 backtick: [{Alias}] -> {Table}", alias, tableName);
+                }
+            }
+
+            // Pattern 18: Parameterized/function table reference [Table Name](params) AS [alias]
+            // This handles DirectQuery scenarios where the table takes parameters
+            // e.g., [Annspire Last Transaction Time](recordref('ParameterRecord')) AS [t15]
+            // Run BEFORE simple bracketed to catch this more specific pattern first
+            var parameterizedMatches = ParameterizedTablePattern.Matches(_sql);
+            foreach (Match match in parameterizedMatches)
+            {
+                var tableName = match.Groups["table"].Value;
+                var alias = match.Groups["alias"].Value;
+
+                // Skip $Table references (those are internal to subselects)
+                if (alias.Equals("$Table", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Skip aliases that look like output column aliases (a0, c0, etc.)
+                if (Regex.IsMatch(alias, @"^[ac]\d+$", RegexOptions.IgnoreCase))
+                    continue;
+
+                // Skip if we already have this alias
+                if (_aliasMap.ContainsKey(alias))
+                    continue;
+
+                if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(alias))
+                {
+                    EnsureTable(tableName);
+                    _aliasMap[alias] = new AliasInfo
+                    {
+                        IsBaseTable = true,
+                        BaseTableName = tableName
+                    };
+                    Log.Debug("Pass1 parameterized: [{Alias}] -> {Table}", alias, tableName);
                 }
             }
 
