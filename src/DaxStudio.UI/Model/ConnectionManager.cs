@@ -944,26 +944,76 @@ namespace DaxStudio.UI.Model
             Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
             scanMeasures.Enqueue(modelMeasures.First(m => m.Name == measureName));
 
-            while (scanMeasures.Count > 0)
+            // Track user-defined functions to process separately
+            Queue<string> scanFunctions = new Queue<string>();
+            HashSet<string> processedFunctions = new HashSet<string>();
+
+            while (scanMeasures.Count > 0 || scanFunctions.Count > 0)
             {
-                var measure = scanMeasures.Dequeue();
-                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
-                dependentMeasures.Add(measure);
-
-                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
-
-                using (var dr = ExecuteReader(dmvDependency, null))
+                // Process measures
+                if (scanMeasures.Count > 0)
                 {
-                    while (dr.Read())
+                    var measure = scanMeasures.Dequeue();
+                    if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                    dependentMeasures.Add(measure);
+
+                    // Query for both MEASURE and FUNCTION dependencies
+                    var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+                    using (var dr = ExecuteReader(dmvDependency, null))
                     {
-                        var referencedObjectType = dr.GetString(0);
-                        if (referencedObjectType != "MEASURE") continue;
-                        // var referencedTable = dr.GetString(1);
-                        var referencedMeasureName = dr.GetString(2);
-                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        while (dr.Read())
                         {
-                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
-                            scanMeasures.Enqueue(dependentMeasure);
+                            var referencedObjectType = dr.GetString(0);
+                            var referencedObjectName = dr.GetString(2);
+
+                            if (referencedObjectType == "MEASURE")
+                            {
+                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
+                                {
+                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
+                                    scanMeasures.Enqueue(dependentMeasure);
+                                }
+                            }
+                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
+                            {
+                                // Add user-defined functions to be processed recursively
+                                scanFunctions.Enqueue(referencedObjectName);
+                                processedFunctions.Add(referencedObjectName);
+                            }
+                        }
+                    }
+                }
+
+                // Process user-defined functions
+                if (scanFunctions.Count > 0)
+                {
+                    var functionName = scanFunctions.Dequeue();
+
+                    // Query dependencies of the user-defined function
+                    var dmvFunctionDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{functionName.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+                    using (var dr = ExecuteReader(dmvFunctionDependency, null))
+                    {
+                        while (dr.Read())
+                        {
+                            var referencedObjectType = dr.GetString(0);
+                            var referencedObjectName = dr.GetString(2);
+
+                            if (referencedObjectType == "MEASURE")
+                            {
+                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
+                                {
+                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
+                                    scanMeasures.Enqueue(dependentMeasure);
+                                }
+                            }
+                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
+                            {
+                                // Recursively process nested user-defined functions
+                                scanFunctions.Enqueue(referencedObjectName);
+                                processedFunctions.Add(referencedObjectName);
+                            }
                         }
                     }
                 }
@@ -1507,7 +1557,24 @@ namespace DaxStudio.UI.Model
         {
             var restriction = new AdomdRestriction("QUERY", queryText);
             var restrictions = new AdomdRestrictionCollection() { restriction};
-            return _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
+            DataSet ds =  _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
+            DataTable t = ds.Tables[0];
+            List<ADOTabularMeasure> measures = new List<ADOTabularMeasure>();
+            foreach (DataRow row in t.Rows)
+            {
+                var refObjType = row["REFERENCED_OBJECT_TYPE"].ToString();
+                if (refObjType == "MEASURE" || refObjType == "FUNCTION")
+                {
+                    measures.AddRange(FindDependentMeasures(row["REFERENCED_OBJECT"].ToString()));
+                    
+                }
+            }
+            foreach (var m in measures)
+            {
+                t.Rows.Add(new[] { "QUERY", "MEASURE", m.Table.Name, m.Name, m.Expression });
+            }
+
+            return ds;
         }
 
         public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
