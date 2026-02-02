@@ -30,6 +30,7 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Folding;
+
 using Microsoft.Identity.Client.NativeInterop;
 using Microsoft.PowerBI.Api.Models;
 using Microsoft.PowerBI.Api.Models.Credentials;
@@ -61,6 +62,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using static Microsoft.IO.RecyclableMemoryStreamManager;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using Constants = DaxStudio.Common.Constants;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
@@ -134,10 +136,10 @@ namespace DaxStudio.UI.ViewModels
         private readonly RibbonViewModel _ribbon;
         private readonly Guid _uniqueId;
         private IQueryHistoryEvent _currentQueryDetails;
-        private DocumentViewModel _sourceDocument;
         private ISettingProvider SettingProvider { get; }
         private static readonly ImageSourceConverter ImgSourceConverter = new ImageSourceConverter();
         private bool _isSubscribed;
+        private Application _app;
 
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager
@@ -155,7 +157,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _host = host;
                 _eventAggregator = eventAggregator;
-
+                _app = Application.Current;
                 _windowManager = windowManager;
                 _ribbon = ribbon;
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
@@ -302,7 +304,7 @@ namespace DaxStudio.UI.ViewModels
 
         private DAXEditorControl.DAXEditor _editor;
 
-
+        internal NewDocumentParameters NewDocumentParameters { get; set; } = new NewDocumentParameters();
         #region "Event Handlers"
         /// <summary>
         /// Initialization that requires a reference to the editor control needs to happen here
@@ -348,19 +350,26 @@ namespace DaxStudio.UI.ViewModels
                         break;
                 }
 
-                if (_sourceDocument != null)
+                if (NewDocumentParameters.SourceDocument != null)
                 {
-                    await CopyConnectionAsync(_sourceDocument);
-
+                    await CopyConnectionAsync(NewDocumentParameters.SourceDocument);
+                }
+                else
+                {
+                    await ConnectToServerAsync();
                 }
 
-                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+
+                    await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 // set the document content to the query parameter
                 if (!string.IsNullOrEmpty(Application.Current.Args().Query))
                 {
                     EditorText = Application.Current.Args().Query;
                     Application.Current.Args().Query = String.Empty;
+                    return;
                 }
+
+                if (NewDocumentParameters.CopyContent) CopyContent(NewDocumentParameters.SourceDocument);
             }
             catch (Exception ex)
             {
@@ -371,6 +380,45 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Finished");
             }
+        }
+
+        internal async Task ConnectToServerAsync()
+        {
+            var server = _app.Args().Server;
+
+            if (!string.IsNullOrEmpty(server) && !_app.Properties.Contains("InitialQueryConnected"))
+            {
+                // we only want to run this code to default connection to the server name and database arguments
+                // on the first window that is connected. After that the user can use the copy connection option
+                // so if they start a new window chances are that they want to connect to another source
+                // Setting this property on the app means this code should only run once
+                _app.Properties.Add("InitialQueryConnected", true);
+
+                var database = _app.Args().Database;
+                var initialCatalog = string.Empty;
+                if (!string.IsNullOrEmpty(database)) initialCatalog = $";Initial Catalog={database}";
+                Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ConnectToServerAsync), $"Connecting to Server: {server} Database:{database}");
+                var token = default(Adomd.AccessToken);
+                if (server.RequiresEntraAuth())
+                {
+                    // prompt for access token
+                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var (authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
+                }
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}",
+                                                                        false,
+                                                                        string.Empty,
+                                                                        database,
+                                                                        server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop : ADOTabular.Enums.ServerType.AnalysisServices,
+                                                                        server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase),
+                                                                        database ?? string.Empty
+                                                                        , token));
+                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+
+            }
+            else
+                await ChangeConnectionAsync();
         }
 
         private void RemoveShiftEnterBinding(InputBindingCollection inputBindings)
@@ -415,7 +463,6 @@ namespace DaxStudio.UI.ViewModels
                 , cnn.Database.Name
                 , cnn.AccessToken));
 
-            _sourceDocument = null;
         }
 
         private void OnKeyUp(object sender, KeyEventArgs e)
@@ -980,13 +1027,13 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
             try
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Starting for: {DisplayName}");
                 _logger.Info("In OnActivate");
-                await base.OnActivateAsync(cancellationToken);
+                await base.OnActivatedAsync(cancellationToken);
 
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Updating EventAggregator Subscriptions");
                 UnsubscribeAll();
@@ -3131,12 +3178,12 @@ namespace DaxStudio.UI.ViewModels
                 LoadFile(FileName);
             });
 
-            // todo - should we be checking for exceptions in this continuation
-            if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
-                && !FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-            {
-                await ChangeConnectionAsync();
-            }
+            //// todo - should we be checking for exceptions in this continuation
+            //if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
+            //    && !FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    await ChangeConnectionAsync();
+            //}
 
             // todo - should we be checking for exceptions in this continuation
             IsDirty = false;
@@ -5460,6 +5507,11 @@ namespace DaxStudio.UI.ViewModels
                 OutputError($"Error discovering query dependencies:\n{ex.Message}");
                 ActivateOutput();
             }
+        }
+
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+            throw new NotImplementedException();
         }
     }
 }

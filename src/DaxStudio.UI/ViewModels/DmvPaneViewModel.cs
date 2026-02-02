@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ADOTabular;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
 using DaxStudio.UI.Events;
 using System.ComponentModel;
-using System.Collections;
 using System.Windows.Data;
-using System.Windows.Threading;
 using System.Collections.ObjectModel;
-using System.Windows.Media;
 using DaxStudio.Interfaces;
 using ADOTabular.Interfaces;
 using System.Threading;
@@ -55,11 +49,6 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public ObservableCollection<IDmv> DmvQueries {get;}
-
-        //public ADOTabularDynamicManagementViewCollection DmvQueries
-        //{
-        //    get { return Connection == null ? null: Connection.DynamicManagementViews; }
-        //}
 
         public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {

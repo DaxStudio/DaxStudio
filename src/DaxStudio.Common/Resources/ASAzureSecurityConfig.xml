@@ -98,6 +98,13 @@
     <ResourceId>https://mil.analysis.usgovcloudapi.net/powerbi/api</ResourceId>
   </AuthenticationInformation>
   <AuthenticationInformation>
+    <DomainPostfix>canaryhighapi.high.powerbigov.us</DomainPostfix>
+    <Authority>https://login.microsoftonline.us/common</Authority>
+    <Authority.v2>https://login.microsoftonline.us/organizations</Authority.v2>
+    <ApplicationId>ec3681c2-6e7d-472a-b23b-8be15bd25c15</ApplicationId>
+    <ResourceId>https://canaryhigh.analysis.usgovcloudapi.net/powerbi/api</ResourceId>
+  </AuthenticationInformation>
+  <AuthenticationInformation>
     <DomainPostfix>api.high.powerbigov.us</DomainPostfix>
     <Authority>https://login.microsoftonline.us/common</Authority>
     <Authority.v2>https://login.microsoftonline.us/organizations</Authority.v2>

@@ -219,11 +219,11 @@ namespace DaxStudio.UI.ViewModels
                 
                 Log.Debug(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
                     $"Loading avatar for {_authResult.Account.Username}");
-                
-                var avatar = await PbiServiceHelper.GetAccountAvatarAsync(
-                    _authResult, 
-                    _authResult.Account.Username, 
-                    _environment);
+
+                var avatar = await PbiServiceHelper.GetAccountAvatarAsync();
+                    //_authResult, 
+                    //_authResult.Account.Username, 
+                    //_environment);
                 
                 if (!string.IsNullOrEmpty(avatar))
                 {

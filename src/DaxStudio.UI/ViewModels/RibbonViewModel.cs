@@ -1018,7 +1018,7 @@ namespace DaxStudio.UI.ViewModels
             }
             return Task.CompletedTask;
         }
-        public void OpenRecentFile(DaxFile file, FrameworkElement backstage)
+        public async void OpenRecentFile(DaxFile file, FrameworkElement backstage)
         {
             Fluent.Backstage item = GetBackStageParent(backstage as FrameworkElement) as Fluent.Backstage;
             OpenRecentFile(file, item);

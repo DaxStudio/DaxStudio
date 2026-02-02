@@ -603,7 +603,7 @@ namespace DaxStudio.UI.Model
                     _sampleDataConnection?.TryCancel();
                     //_sampleDataConnection?.TryClose();
 
-                    if (column.SampleData.Any()) return; // if we already have sample data then don't do anything
+                    if (column.SampleData.Count != 0) return; // if we already have sample data then don't do anything
                     lock (_sampleDataLock)
                     {
                         using (_sampleDataConnection = _dmvConnection.Clone())

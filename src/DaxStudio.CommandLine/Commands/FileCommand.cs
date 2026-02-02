@@ -11,6 +11,7 @@ using System.IO;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.CommandLine.UIStubs;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -68,7 +69,7 @@ namespace DaxStudio.CommandLine.Commands
 
         
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
             Log.Information("Starting File command");

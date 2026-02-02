@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.Converters;
@@ -46,7 +47,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, (Settings)settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
             Log.Information("Starting [yellow]EXPORT CSV[/] Command");

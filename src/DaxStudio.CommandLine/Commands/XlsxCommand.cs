@@ -9,6 +9,7 @@ using DaxStudio.UI.Model;
 using Caliburn.Micro;
 using DaxStudio.CommandLine.UIStubs;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -63,7 +64,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting XLSX command");
             if (settings.File != null && settings.Query == null)

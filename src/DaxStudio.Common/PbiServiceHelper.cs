@@ -6,7 +6,7 @@ using Microsoft.Identity.Client.Broker;
 using Microsoft.Identity.Client.Extensions.Msal;
 using Microsoft.PowerBI.Api;
 using Microsoft.PowerBI.Api.Models;
-using Microsoft.Rest;
+using Azure.Core;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -27,6 +27,7 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
+using Microsoft.PowerBI.Api.Models.Credentials;
 
 namespace DaxStudio.Common
 {
@@ -187,42 +188,41 @@ namespace DaxStudio.Common
             
             try
             {
-                TokenCredentials creds = new TokenCredentials(token.AccessToken, "Bearer");
+                //TokenCredential creds = new TokenCredential(token.AccessToken, "Bearer");
 
-                using (var client = new PowerBIClient(creds))
+                var client = new PowerBIClient(token.AccessToken);
+                
+                // Set default top value if not provided
+                var topValue = top ?? 5000;
+                
+                Groups grps;
+                
+                // Apply filter if provided
+                if (!string.IsNullOrEmpty(filter))
                 {
-                    // Set default top value if not provided
-                    var topValue = top ?? 5000;
-                    
-                    Groups grps;
-                    
-                    // Apply filter if provided
-                    if (!string.IsNullOrEmpty(filter))
-                    {
-                        grps = await client.Groups.GetGroupsAsync(filter: filter, top: topValue);
-                    }
-                    else
-                    {
-                        grps = await client.Groups.GetGroupsAsync(top: topValue);
-                    }
-
-                    foreach (var grp in grps.Value)
-                    {
-                        workspaces.Add(new Workspace
-                        {
-                            Name = grp.Name,
-                            Id = grp.Id,
-                            IsOnPremiumCapacity = grp.IsOnDedicatedCapacity,
-                            CapacityId = grp.CapacityId,
-                            Description = string.Empty, // Not available in SDK Group object
-                            Type = string.Empty,        // Not available in SDK Group object
-                            State = string.Empty        // Not available in SDK Group object
-                        });
-                    }
-                    
-                    Log.Information(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetWorkspacesAsync), 
-                        $"Retrieved {workspaces.Count} workspaces from Power BI Service using SDK");
+                    grps = await client.Groups.GetGroupsAsync(filter: filter, top: topValue);
                 }
+                else
+                {
+                    grps = await client.Groups.GetGroupsAsync(top: topValue);
+                }
+
+                foreach (var grp in grps.Value)
+                {
+                    workspaces.Add(new Workspace
+                    {
+                        Name = grp.Name,
+                        Id = grp.Id,
+                        IsOnPremiumCapacity = grp.IsOnDedicatedCapacity,
+                        CapacityId = grp.CapacityId,
+                        Description = string.Empty, // Not available in SDK Group object
+                        Type = string.Empty,        // Not available in SDK Group object
+                        State = string.Empty        // Not available in SDK Group object
+                    });
+                }
+                
+                Log.Information(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetWorkspacesAsync), 
+                    $"Retrieved {workspaces.Count} workspaces from Power BI Service using SDK");
             }
             catch (Exception ex)
             {
@@ -302,28 +302,35 @@ namespace DaxStudio.Common
         }
 
         /// <summary>
-        /// Gets the user's avatar/profile photo from Power BI
+        /// Gets the user's avatar/profile photo from Microsoft Graph API
+        /// This requires a token with the User.Read or User.ReadBasic.All scope
         /// </summary>
-        /// <param name="token">Authentication token</param>
-        /// <param name="userPrincipalName">The user's UPN (email)</param>
-        /// <param name="environment">Power BI environment</param>
+        /// <param name="userPrincipalName">The user's UPN (email), or "me" for the current user</param>
         /// <returns>Base64 encoded image string with data URI prefix (e.g., "data:image/png;base64,...")</returns>
-        public static async Task<string> GetAccountAvatarAsync(AuthenticationResult token, string userPrincipalName, PowerBIEnvironment environment = null)
+        public static async Task<string> GetAccountAvatarAsync(string userPrincipalName = "me")
         {
-            environment = environment ?? PowerBIEnvironment.Public;
-            
             try
             {
+                // Get a token specifically for Microsoft Graph
+                var graphToken = await GetGraphTokenAsync();
+                if (graphToken == null)
+                {
+                    Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync),
+                        "Unable to acquire Microsoft Graph token");
+                    return null;
+                }
+
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.DefaultRequestHeaders.Accept.Clear();
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", graphToken.AccessToken);
                     
-                    var requestPath = $"powerbi/version/201606/resource/userPhoto/?userId={Uri.EscapeDataString(userPrincipalName)}";
-                    var requestUri = new Uri(new Uri(environment.ServiceEndpoint), requestPath);
+                    // Use "me" or specific user UPN
+                    var userId = string.IsNullOrEmpty(userPrincipalName) ? "me" : userPrincipalName;
+                    var requestUri = $"https://graph.microsoft.com/v1.0/users/{userId}/photo/$value";
                     
                     Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
-                        $"Requesting user avatar from {requestUri}");
+                        $"Requesting user avatar from Microsoft Graph");
                     
                     using (var response = await httpClient.GetAsync(requestUri).ConfigureAwait(false))
                     {
@@ -340,14 +347,14 @@ namespace DaxStudio.Common
                                     "data:{0};base64,{1}", imageMimeType, imageBase64String);
                                 
                                 Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
-                                    "Successfully retrieved user avatar");
+                                    "Successfully retrieved user avatar from Microsoft Graph");
                                 
                                 return encodedImage;
                             }
                         }
                         
                         Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
-                            $"Failed to get user avatar: {response.StatusCode}");
+                            $"Failed to get user avatar from Microsoft Graph: {response.StatusCode}");
                         return null;
                     }
                 }
@@ -355,7 +362,7 @@ namespace DaxStudio.Common
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
-                    $"Error retrieving user avatar: {ex.Message}");
+                    $"Error retrieving user avatar from Microsoft Graph: {ex.Message}");
                 return null;
             }
             
@@ -364,6 +371,91 @@ namespace DaxStudio.Common
                 return ImageCodecInfo.GetImageDecoders()
                     .FirstOrDefault((c) => c.FormatID == bitmap.RawFormat.Guid)?.MimeType 
                     ?? "image/png";
+            }
+        }
+
+        private static IPublicClientApplication _graphClientApp;
+        
+        /// <summary>
+        /// Gets an authentication token for Microsoft Graph API
+        /// </summary>
+        private static async Task<AuthenticationResult> GetGraphTokenAsync()
+        {
+            try
+            {
+                // Create a separate MSAL client for Microsoft Graph if it doesn't exist
+                if (_graphClientApp == null)
+                {
+                    var authority = "https://login.microsoftonline.com/organizations";
+                    // Use Microsoft's well-known Graph Explorer client ID which has Graph API permissions
+                    // This is a public client app ID that Microsoft provides for Graph API access
+                    var clientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e"; // Microsoft Graph Command Line Tools
+                    
+                    // Don't use WAM broker for Graph API calls to avoid configuration issues
+                    // WAM requires the app to be specifically configured in Azure AD
+                    _graphClientApp = PublicClientApplicationBuilder.Create(clientId)
+                        .WithAuthority(authority)
+                        .WithDefaultRedirectUri()
+                        .Build();
+
+                    // Use the same cache as the main application
+                    var storageProperties = new StorageCreationPropertiesBuilder(
+                        "DaxStudio.msalcache.bin",
+                        MsalCacheHelper.UserRootDirectory)
+                        .Build();
+
+                    var cacheHelper = await MsalCacheHelper.CreateAsync(
+                        storageProperties,
+                        new TraceSource("MSAL.CacheTrace"))
+                        .ConfigureAwait(false);
+
+                    cacheHelper.RegisterCache(_graphClientApp.UserTokenCache);
+                }
+
+                var accounts = await _graphClientApp.GetAccountsAsync();
+                var firstAccount = accounts.FirstOrDefault();
+
+                // Use specific scope instead of .default to avoid permission issues
+                var graphScope = new[] { "User.Read" };
+
+                if (firstAccount != null)
+                {
+                    // Try silent authentication first
+                    try
+                    {
+                        return await _graphClientApp.AcquireTokenSilent(graphScope, firstAccount).ExecuteAsync();
+                    }
+                    catch (MsalUiRequiredException)
+                    {
+                        Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
+                            "Silent token acquisition failed, attempting interactive authentication");
+                        
+                        // Try interactive authentication as a fallback
+                        try
+                        {
+                            return await _graphClientApp.AcquireTokenInteractive(graphScope)
+                                .WithAccount(firstAccount)
+                                .WithPrompt(Prompt.NoPrompt) // Try without prompting first
+                                .ExecuteAsync();
+                        }
+                        catch
+                        {
+                            Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
+                                "Interactive authentication without prompt failed");
+                            return null;
+                        }
+                    }
+                }
+
+                Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
+                    "No cached account found for Microsoft Graph");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
+                    $"Error acquiring Graph token: {ex.Message}");
+                return null;
             }
         }
 

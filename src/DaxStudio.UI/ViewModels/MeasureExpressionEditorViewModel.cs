@@ -278,9 +278,14 @@ namespace DaxStudio.UI.ViewModels
             return Task.CompletedTask;
         }
 
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+            // do nothing
+        }
+
         public bool IsMeasureExpressionBlank => string.IsNullOrEmpty( MeasureExpression.Text ) && !IsNewMeasure;
 
-        bool _isNewMeasure = false;
+        bool _isNewMeasure;
         public bool IsNewMeasure { get => _isNewMeasure;
             internal set { 
             _isNewMeasure = value;
