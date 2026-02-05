@@ -1661,9 +1661,43 @@ namespace DaxStudio.UI.ViewModels
                         }
 
                         // Create an ADOTabularRelationship to wrap the VPA data
-                        // Detect BiDi from RelationshipFromToName - it contains ↔ for BiDi, ← for single direction
-                        var isBiDi = vpaRel.RelationshipFromToName?.Contains("↔") == true;
+                        // Parse RelationshipFromToName to extract cardinality and cross-filter direction
+                        // Format: "Table[Column] <from_card><direction><to_card> Table[Column]"
+                        // Where: ∞ = Many, 1 = One, ↔ = BiDi, ← = Single direction
+                        var relName = vpaRel.RelationshipFromToName ?? "";
+                        var isBiDi = relName.Contains("↔");
                         var crossFilterDirection = isBiDi ? "Both" : "Single";
+                        
+                        // Extract cardinality from RelationshipFromToName
+                        // The cardinality symbols appear between ] and [ in the format: ] symbol←symbol [
+                        // ∞ (infinity) indicates Many, 1 indicates One
+                        var fromMultiplicity = "*"; // Default to Many
+                        var toMultiplicity = "1";   // Default to One
+                        
+                        // Look for the cardinality symbols in the relationship name
+                        // Format examples: "Table[Col] ∞←1 Table[Col]" or "Table[Col] 1↔1 Table[Col]" or "Table[Col] ∞↔∞ Table[Col]"
+                        if (relName.Contains("∞←1") || relName.Contains("∞↔1"))
+                        {
+                            fromMultiplicity = "*";
+                            toMultiplicity = "1";
+                        }
+                        else if (relName.Contains("1←∞") || relName.Contains("1↔∞"))
+                        {
+                            fromMultiplicity = "1";
+                            toMultiplicity = "*";
+                        }
+                        else if (relName.Contains("∞←∞") || relName.Contains("∞↔∞"))
+                        {
+                            // Many-to-Many relationship
+                            fromMultiplicity = "*";
+                            toMultiplicity = "*";
+                        }
+                        else if (relName.Contains("1←1") || relName.Contains("1↔1"))
+                        {
+                            // One-to-One relationship
+                            fromMultiplicity = "1";
+                            toMultiplicity = "1";
+                        }
                         
                         var adoRel = new ADOTabularRelationship
                         {
@@ -1671,8 +1705,8 @@ namespace DaxStudio.UI.ViewModels
                             ToTable = null,
                             FromColumn = fromColumnName,
                             ToColumn = toColumnName,
-                            FromColumnMultiplicity = "*", // VPA RelationshipsFrom are typically M:1
-                            ToColumnMultiplicity = "1",
+                            FromColumnMultiplicity = fromMultiplicity,
+                            ToColumnMultiplicity = toMultiplicity,
                             CrossFilterDirection = crossFilterDirection,
                             IsActive = vpaRel.IsActive
                         };
