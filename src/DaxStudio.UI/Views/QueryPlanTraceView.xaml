@@ -19,8 +19,6 @@
              d:DesignHeight="300" d:DesignWidth="600" >
     <UserControl.Resources>
 
-
-
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
 
@@ -165,9 +163,13 @@
                 </Style.Triggers>
             </Style>
 
-            <Style x:Key="TreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="uictrl:PhysicalQueryPlanTreeGrid" />
+            <Style x:Key="TreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="uictrl:PhysicalQueryPlanTreeGrid">
+                <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            </Style>
 
-            <Style x:Key="LogicalTreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="ctrls:TreeGrid" />
+            <Style x:Key="LogicalTreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="ctrls:TreeGrid">
+                <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            </Style>
 
         </ResourceDictionary>
         
@@ -254,34 +256,43 @@
                               IsChecked="{Binding ShowLogicalQueryPlan}"
                               Style="{StaticResource TraceToggleButton}"
                               IsEnabled="{Binding CanHideLogicalQueryPlan}"
-                              Margin="2 2 0 2">
-                            <TextBlock>Logical Plan</TextBlock>
-                        </ToggleButton>
-                        <ToggleButton Style="{StaticResource TraceToggleButton}" 
-                              Margin="0 2 2 2" 
+                              Margin="2 2 0 2"
+                              Padding="2">
+                        <TextBlock VerticalAlignment="Center">Logical Plan</TextBlock>
+                    </ToggleButton>
+                    
+                    <ToggleButton Style="{StaticResource TraceToggleButton}" 
+                              Margin="4 2 4 2" 
+                              Padding="1"
                               ToolTip="Show Filters for Logical Query Plan" 
                               IsChecked="{Binding ShowLogicalQueryPlanFilters}"
-                              IsEnabled="{Binding CanHidePhysicalQueryPlan}">
-                            <Image Source="{DynamicResource filter_toolbarDrawingImage}"
+                              IsEnabled="{Binding ShowLogicalQueryPlan}">
+                        <Image Source="{DynamicResource filter_toolbarDrawingImage}"
                                RenderOptions.BitmapScalingMode="HighQuality"
                                Height="16"
-                               Width="16"/>
-                        </ToggleButton>
-                    </StackPanel>
+                               Width="16"
+                               Margin="0"/>
+                    </ToggleButton>
+                </StackPanel>
                 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" >
                     <ToggleButton x:Name="ShowPhysicalPlan" 
                               Style="{StaticResource TraceToggleButton}"
                               IsChecked="{Binding ShowPhysicalQueryPlan}"
                               IsEnabled="{Binding CanHidePhysicalQueryPlan}"
-                              Margin="2 2 0 2">
-                        <TextBlock>Physical Plan</TextBlock>
+                              Margin="2 2 0 2"
+                              Padding="2">
+                        <TextBlock VerticalAlignment="Center">Physical Plan</TextBlock>
                     </ToggleButton>
-                    <ToggleButton Style="{StaticResource TraceToggleButton}" 
-                                  Margin="0 2 2 2" 
-                                  ToolTip="Show Filters for Physical Query Plan" 
-                                  IsChecked="{Binding ShowPhysicalQueryPlanFilters}"
-                                  IsEnabled="{Binding CanHideLogicalQueryPlan}">
+                    
+                    <ToggleButton 
+                        x:Name="ShowPhysicalQueryPlanFilters"
+                        Style="{StaticResource TraceToggleButton}" 
+                        Margin="4 2 4 2" 
+                        Padding="1"
+                        ToolTip="Show Filters for Physical Query Plan" 
+                        IsChecked="{Binding ShowPhysicalQueryPlanFilters}"
+                        IsEnabled="{Binding ShowPhysicalQueryPlan}">
                         <Image Source="{DynamicResource filter_toolbarDrawingImage}"
                                RenderOptions.BitmapScalingMode="HighQuality"
                                Height="16"
@@ -305,6 +316,7 @@
                     FrozenColumnCount="2"
                     GridLinesVisibility="None" 
                     AlternationCount="2"
+                    HorizontalScrollBarVisibility="Auto"
                     SelectedValue="{Binding SelectedPhysicalQueryPlanRow}"
                     cal:Message.Attach="[Event Sorting] = [Action OnSorting($source, $eventArgs)]"
                     RowStyle="{StaticResource DefaultDataGridRowStyle}"
@@ -326,13 +338,7 @@
                 <uictrl:PhysicalQueryPlanTreeGrid.ContextMenu>
                     <ContextMenu cal:Action.TargetWithoutContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                         <Separator/>
-                        <!--<MenuItem Header="Show Descendants with Higher Record Counts" 
-                              Command="{Binding PlacementTarget.ExecuteCustomDescendantFilter, 
-                                  RelativeSource={RelativeSource FindAncestor, 
-                                  AncestorType={x:Type ContextMenu}}}"
-                              CommandParameter="{Binding PlacementTarget.SelectedItem, 
-                                  RelativeSource={RelativeSource FindAncestor, 
-                                  AncestorType={x:Type ContextMenu}}}"/>-->
+
                         <MenuItem Header="Drill In"
                                   cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
                                   cal:Message.Attach="[Event Click] = [Action DrillIn($dataContext)]"
@@ -384,26 +390,22 @@
                                             </MultiBinding>
                                         </Image.Source>
                                     </Image>
-                                    <!-- Visibility="{Binding Data.Records, Converter={StaticResource BoolToVisibilityConverter}}"-->
+                                    
                                 </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!-- ShowTreeLines="{Binding Path=(filter:DataGridExtensions.HasActiveFilters), ElementName=PhysicalQueryPlan}" -->
+                    
                     <ctrls:TreeColumn 
                         Header="Physical Query Plan"
                         TextPath="Data.Operation"
-                        Width="*"
+                        Width="Auto"
                         ClipboardContentBinding="{Binding Data.IndentedOperation}"
                         filter:DataGridColumnExtensions.CustomBindingPath="Data.Operation"
                         filter:DataGridColumnExtensions.IsContainsTextSearch="True"
                         ShowTreeLines="{Binding DataContext.ShowPhysicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}, Mode=OneWay}"
                         ShowExpander="{Binding DataContext.ShowPhysicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}, Mode=OneWay}"
                         >
-                        <!-- 
-                        ShowTreeLines="{Binding Path=(filter:DataGridExtensions.HasActiveFilters), ElementName=PhysicalTreeGrid}"
-                        ShowTreeLines="{Binding Path=DataContext.IsSortedByRowNumber, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}}"
-                        -->
 
                         <ctrls:TreeColumn.TreeLineStyle>
                             <Style TargetType="ctrls:TreeCell">
@@ -432,99 +434,7 @@
 
                 </uictrl:PhysicalQueryPlanTreeGrid.Columns>
             </uictrl:PhysicalQueryPlanTreeGrid>
-            <!--<DataGrid 
-                  SelectedItem="{Binding SelectedPhysicalRow}" 
-                  HorizontalAlignment="Stretch" 
-                  AlternationCount="2"
-                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
-                  Background="{DynamicResource Theme.Brush.Content.Back}"
-                  AutoGenerateColumns="False"
-                  behaviours:GridViewColumnResize.Enabled="True" 
-                  VerticalAlignment="Stretch" 
-                  Width="Auto"
-                  ItemsSource="{Binding PhysicalQueryPlanRows}" 
-                  SelectionMode="Extended"
-                  SelectionUnit="FullRow"
-                  HeadersVisibility="Column"
-                  FrozenColumnCount="2"
-                  ClipboardCopyMode="IncludeHeader"
-                  GridLinesVisibility="None" 
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                RowStyle="{StaticResource DefaultDataGridRowStyle}"
-                  >
-
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    --><!--<DataGridTextColumn ap:DataGridColumnVisibilityProperty.Visibility="{Binding Path=ShowQueryPlanNextLine, RelativeSource={RelativeSource AncestorType=controls:ZoomableUserControl}}"  Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
-                    <DataGridTextColumn ap:DataGridColumnVisibilityProperty.Visibility="{Binding Path=ShowQueryPlanLineLevel, RelativeSource={RelativeSource AncestorType=controls:ZoomableUserControl}}"  Header="Lvl" Width="60" Binding="{Binding Level}"/>--><!--
-                    <DataGridTextColumn Header="Records" IsReadOnly="True" Width="75" Binding="{Binding Records, StringFormat='#,0'}" ElementStyle="{StaticResource AlignRight}" />
-                    <DataGridTemplateColumn Header="Physical Query Plan" behaviours:GridViewColumnResize.Width="1*"  
-                                    IsReadOnly="True" ClipboardContentBinding="{Binding IndentedOperation}" >
-                        <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Border Width="2"
-                                               BorderThickness="1 0 0 0"
-                                            Margin="{Binding Path=SelectedItem.Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource BorderIndentSize}, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                            HorizontalAlignment="Left">
-                                    <Border.Visibility>
-                                        <MultiBinding Converter="{StaticResource QueryPlanSelectionConverter}">
-                                            <Binding Path="SelectedItem" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                            <Binding Path="RowNumber"/>
-                                        </MultiBinding>
-                                    </Border.Visibility>
-                                    <Border.BorderBrush>
-                                        <VisualBrush>
-                                            <VisualBrush.Visual>
-                                                <Rectangle StrokeDashArray="4 2" Stroke="Gray" StrokeThickness="1"
-                  Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
-                  Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
-                                            </VisualBrush.Visual>
-                                        </VisualBrush>
-                                    </Border.BorderBrush>
-                                </Border>
-                                <TextBlock 
-                                        Margin="{Binding Path=Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource IndentSize}}"
-                                         Text="{Binding Operation}">
-                                        <TextBlock.Style>
-                                            <Style TargetType="{x:Type TextBlock}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding HighlightRow}" Value="True">
-                                                        <Setter Property="FontWeight" Value="Bold"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                                <Setter Property="Padding" Value="4 4 8 4"/>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                            </Grid>
-                        </DataTemplate>
-
-                        </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                
-            </DataGrid.Columns>
-                --><!--<DataGrid.RowStyle>
-                    <Style TargetType="{x:Type DataGridRow}"  BasedOn="{StaticResource DefaultDataGridRowStyle}">
-                        <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
-                    </Style>
-                </DataGrid.RowStyle>--><!--
-                
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Command="Copy">
-                            <MenuItem.Icon>
-                                <Image Source="{DynamicResource copyDrawingImage}"/>
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <Separator/>
-                        <MenuItem Command="SelectAll"></MenuItem>
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
-            </DataGrid>-->
+            
         </controls:ClipBorder>
         <GridSplitter Grid.Row="3" Height="5"  ResizeDirection="Rows" 
             Grid.Column="0"
@@ -547,6 +457,7 @@
                 FrozenColumnCount="1"
                 GridLinesVisibility="None" 
                 AlternationCount="2"
+                HorizontalScrollBarVisibility="Auto"
                 RowStyle="{StaticResource DefaultDataGridRowStyle}"
                 AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
                 Background="{DynamicResource Theme.Brush.Content.Back}"
@@ -558,7 +469,7 @@
                 filter:DataGridExtensions.IsFilterVisible="{Binding ShowLogicalQueryPlanFilters}" 
                 filter:DataGridExtensions.HasActiveFilters="{Binding HasLogicalFilterActive, Mode=OneWayToSource}"
                 ColumnHeaderStyle="{StaticResource {ComponentResourceKey 
-                        TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
+                TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
                 ResourceId=DataGridHeaderFilterControlStyle}}"
                 >
                 <ctrls:TreeGrid.Columns>
@@ -567,7 +478,7 @@
                     
                     <ctrls:TreeColumn 
                         Header="Logical Query Plan"
-                        Width="*"
+                        Width="Auto"
                         IsReadOnly="True"
                         TextPath="Data.Operation"
                         ClipboardContentBinding="{Binding Data.IndentedOperation}"
@@ -586,84 +497,7 @@
                     
                 </ctrls:TreeGrid.Columns>
             </ctrls:TreeGrid>
-            <!--<DataGrid 
-                  SelectedItem="{Binding SelectedLogicalRow}" 
-                  HorizontalAlignment="Stretch" 
-                  AutoGenerateColumns="False"
-                  behaviours:GridViewColumnResize.Enabled="True" 
-                  VerticalAlignment="Stretch"  
-                  Width="Auto"
-                  ItemsSource="{Binding LogicalQueryPlanRows}" 
-                  SelectionMode="Extended"
-                  SelectionUnit="FullRow"
-                  HeadersVisibility="Column"
-                  FrozenColumnCount="1"
-                  ClipboardCopyMode="IncludeHeader"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  GridLinesVisibility="None" 
-                  AlternationCount="2"
-                  RowStyle="{StaticResource DefaultDataGridRowStyle}"
-                  AlternatingRowBackground="{DynamicResource Theme.Brush.Table.Alternate}"
-                  Background="{DynamicResource Theme.Brush.Content.Back}" >
-
-
-
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" />
-                    --><!--<DataGridTextColumn Visibility="{Binding ShowQueryPlanNextLine, Converter={StaticResource BoolToVisibilityConverter}}" Header="Next" Width="60" Binding="{Binding NextSiblingRowNumber}"/>
-                    <DataGridTextColumn Visibility="{Binding ShowQueryPlanLineLevel, Converter={StaticResource BoolToVisibilityConverter}}" Header="Lvl" Width="60" Binding="{Binding Level}"/>--><!--
-                    <DataGridTemplateColumn Header="Logical Query Plan" behaviours:GridViewColumnResize.Width="1*" 
-                                    IsReadOnly="True"  ClipboardContentBinding="{Binding IndentedOperation}">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Border Width="2"
-                                               BorderThickness="1 0 0 0"
-                                            Margin="{Binding Path=SelectedItem.Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource BorderIndentSize}, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                            HorizontalAlignment="Left">
-                                        <Border.Visibility>
-                                            <MultiBinding Converter="{StaticResource QueryPlanSelectionConverter}">
-                                                <Binding Path="SelectedItem" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                                <Binding Path="RowNumber"/>
-                                            </MultiBinding>
-                                        </Border.Visibility>
-                                        <Border.BorderBrush>
-                                            <VisualBrush>
-                                                <VisualBrush.Visual>
-                                                    <Rectangle StrokeDashArray="4 2" Stroke="Gray" StrokeThickness="1"
-                  Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
-                  Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
-                                                </VisualBrush.Visual>
-                                            </VisualBrush>
-                                        </Border.BorderBrush>
-                                    </Border>
-                                    <TextBlock 
-                                        Margin="{Binding Path=Level, Converter={StaticResource QueryPlanMarginConverter}, ConverterParameter={StaticResource IndentSize}}"
-                                        Style="{StaticResource AlignLeft}" Text="{Binding Operation}"/>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            --><!--<DataGrid.RowStyle>
-                <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DefaultDataGridRowStyle}">
-                    <EventSetter Event="Control.RequestBringIntoView" Handler="DataGrid_RequestBringIntoView"  />
-                </Style>
-            </DataGrid.RowStyle>--><!--
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Command="Copy">
-                        <MenuItem.Icon>
-                            <Image Source="{DynamicResource copyDrawingImage}"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <Separator/>
-                    <MenuItem Command="SelectAll"></MenuItem>
-                </ContextMenu>
-            </DataGrid.ContextMenu>
-        </DataGrid>-->
+            
         </controls:ClipBorder>
         
         <!-- Busy overlay -->
