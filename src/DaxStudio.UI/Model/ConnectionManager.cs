@@ -47,6 +47,7 @@ namespace DaxStudio.UI.Model
         , IMetadataProvider
         , IConnection
         , IModelIntellisenseProvider
+        , IDisposable
     {
         public bool IsConnecting { get; private set; }
 
@@ -1408,6 +1409,8 @@ namespace DaxStudio.UI.Model
         }
         private object _supportedTraceEventClassesLock = new object();
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> _supportedTraceEventClasses;
+        private bool disposedValue;
+
         public Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses
         {
             get
@@ -1579,6 +1582,35 @@ namespace DaxStudio.UI.Model
 
         public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _connection?.Dispose();
+                    _dmvConnection?.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~ConnectionManager()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 
 }

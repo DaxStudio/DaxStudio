@@ -2,7 +2,7 @@
 using Caliburn.Micro;
 namespace DaxStudio.UI.Interfaces
 {
-    public interface IToolWindow
+    public interface IToolWindow:IScreen
     {
         string Title { get;  }
         string DefaultDockingPane { get; }

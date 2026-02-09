@@ -30,7 +30,6 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Folding;
-
 using Microsoft.Identity.Client.NativeInterop;
 using Microsoft.PowerBI.Api.Models;
 using Microsoft.PowerBI.Api.Models.Credentials;
@@ -119,6 +118,7 @@ namespace DaxStudio.UI.ViewModels
         , IGuardClose
         , IDocumentToExport
         , IHaveStatusBar
+        , IDisposable
 
     {
         // Changed from the original Unicode - if required we could make this an optional setting in future
@@ -127,7 +127,7 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
-        private IObservableCollection<object> _toolWindows;
+        private IObservableCollection<IScreen> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
         private readonly IDaxStudioHost _host;
@@ -801,8 +801,8 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Properties added to this collection populate the available tool windows inside the document pane
         /// </summary>
-        public IObservableCollection<object> ToolWindows =>
-            _toolWindows ?? (_toolWindows = new BindableCollection<object>
+        public IObservableCollection<IScreen> ToolWindows =>
+            (IObservableCollection<IScreen>)(_toolWindows ?? (_toolWindows = new BindableCollection<IScreen>
             {
                 MetadataPane,
                 FunctionPane,
@@ -811,7 +811,7 @@ namespace DaxStudio.UI.ViewModels
                 QueryResultsPane,
                 QueryHistoryPane,
                 QueryBuilder
-            });
+            }));
 
         public void OpenQueryBuilder()
         {
@@ -965,6 +965,10 @@ namespace DaxStudio.UI.ViewModels
                 StopFoldingManager();
 
                 IsClosing = close;
+                if (close)
+                {
+                    Dispose();
+                }
 
             }
             catch (Exception ex)
@@ -5160,6 +5164,8 @@ namespace DaxStudio.UI.ViewModels
         public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.DaxStudioGenericTheme();// AvalonDock.Themes.GenericTheme();
 
         private bool _showMeasureExpressionEditor;
+        private bool disposedValue;
+
         public bool ShowMeasureExpressionEditor
         {
             get => _showMeasureExpressionEditor;
@@ -5512,6 +5518,32 @@ namespace DaxStudio.UI.ViewModels
         public void DropHint(IDropHintInfo dropHintInfo)
         {
             throw new NotImplementedException();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // dispose managed state (managed objects)
+                    Connection?.Dispose();
+
+                    // TODO: cleanup toolwindows
+                    //foreach (var tw in ToolWindows)
+                    //{
+                    //}
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
