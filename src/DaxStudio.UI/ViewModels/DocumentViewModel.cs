@@ -100,6 +100,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<SetSelectedWorksheetEvent>
         , IHandle<ShowMeasureExpressionEditor>
         , IHandle<ShowTraceWindowEvent>
+        , IHandle<ShowTablesInModelDiagramEvent>
         , IHandle<ShowToolWindowEvent>
         , IHandle<TraceWatcherToggleEvent>
         , IHandle<TraceChangedEvent>
@@ -4383,6 +4384,55 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ShowTraceWindowEvent message, CancellationToken cancellationToken)
         {
             if (!ToolWindows.Contains(message.TraceWatcher)) ToolWindows.Add(message.TraceWatcher);
+            return Task.CompletedTask;
+        }
+
+        public Task HandleAsync(ShowTablesInModelDiagramEvent message, CancellationToken cancellationToken)
+        {
+            if (message?.TableNames == null) return Task.CompletedTask;
+
+            try
+            {
+                // Find existing Model Diagram in tool windows
+                var diagramVm = ToolWindows.OfType<ModelDiagramViewModel>().FirstOrDefault();
+
+                if (diagramVm == null)
+                {
+                    // Create a new Model Diagram and load model data
+                    diagramVm = new ModelDiagramViewModel(_eventAggregator, Connection as IMetadataProvider, Options);
+
+                    var model = Connection?.SelectedModel;
+                    if (model == null)
+                    {
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Cannot open Model Diagram: no model selected."));
+                        return Task.CompletedTask;
+                    }
+
+                    // Store pending filter before loading so it's applied when loading completes
+                    diagramVm.HandleAsync(message, cancellationToken);
+                    diagramVm.LoadFromModel(model);
+
+                    // Enrich with VPA data if available
+                    var vpView = ToolWindows.OfType<VertiPaqAnalyzerViewModel>().FirstOrDefault();
+                    if (vpView?.ViewModel != null)
+                    {
+                        diagramVm.EnrichFromVertipaq(vpView.ViewModel);
+                    }
+
+                    ToolWindows.Add(diagramVm);
+                }
+
+                diagramVm.Activate();
+
+                // If diagram already has tables loaded, the ModelDiagramViewModel's own
+                // IHandle<ShowTablesInModelDiagramEvent> handler will apply the filter directly
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync(ShowTablesInModelDiagramEvent)", ex.Message);
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening Model Diagram\n{ex.Message}"));
+            }
+
             return Task.CompletedTask;
         }
 

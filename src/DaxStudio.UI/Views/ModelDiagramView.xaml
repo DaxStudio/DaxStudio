@@ -101,6 +101,7 @@
                                     <MenuItem Header="Expand" Click="ExpandTable_Click"/>
                                     <Separator/>
                                     <MenuItem Header="Show Related Tables" Click="ShowRelatedTables_Click" ToolTip="Show tables directly connected to this table"/>
+                                    <MenuItem Header="Isolate Connected Tables" Click="IsolateRelatedTables_Click" ToolTip="Show only this table and all tables reachable through relationships, hiding everything else"/>
                                     <MenuItem Header="Hide This Table" Click="HideThisTable_Click" ToolTip="Hide this table from the diagram"/>
                                     <MenuItem Header="Hide Unselected Tables" Click="HideUnselectedTables_Click" ToolTip="Hide all tables except selected ones"/>
                                     <Separator/>
@@ -361,7 +362,21 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="🔑" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                                            <TextBlock Grid.Column="0" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value=""/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsKey}" Value="True">
+                                                                <Setter Property="Text" Value="🔑"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsRelationshipColumn}" Value="True">
+                                                                <Setter Property="Text" Value="🔗"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
                                             <Image Grid.Column="1"
                                                    ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
                                                    Width="12" Height="12"

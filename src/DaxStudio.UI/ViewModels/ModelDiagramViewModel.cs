@@ -29,7 +29,8 @@ namespace DaxStudio.UI.ViewModels
     [Export]
     public class ModelDiagramViewModel : ToolWindowBase, 
         IHandle<MetadataLoadedEvent>,
-        IHandle<ViewMetricsCompleteEvent>
+        IHandle<ViewMetricsCompleteEvent>,
+        IHandle<ShowTablesInModelDiagramEvent>
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IMetadataProvider _metadataProvider;
@@ -38,6 +39,7 @@ namespace DaxStudio.UI.ViewModels
         private string _currentModelKey;
         private Dax.ViewModel.VpaModel _vpaModel;
         private bool _isOfflineMode;
+        private ShowTablesInModelDiagramEvent _pendingTableFilter;
 
         /// <summary>
         /// Path to the layout cache file.
@@ -931,11 +933,25 @@ namespace DaxStudio.UI.ViewModels
                 await Task.Yield(); // Allow UI to render progress
 
                 // Build dictionaries for O(1) lookups
-                var tableDict = tableVms.ToDictionary(t => t.TableName, StringComparer.OrdinalIgnoreCase);
+                // Use safe construction to handle potential duplicate keys (e.g., hierarchy levels with same name as columns)
+                var tableDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
+                foreach (var tableVm in tableVms)
+                {
+                    if (!tableDict.ContainsKey(tableVm.TableName))
+                        tableDict[tableVm.TableName] = tableVm;
+                    else
+                        Log.Warning("{class} {method} Duplicate table name '{tableName}' - skipping", nameof(ModelDiagramViewModel), nameof(LoadFromModelAsync), tableVm.TableName);
+                }
                 var columnDicts = new Dictionary<string, Dictionary<string, ModelDiagramColumnViewModel>>(StringComparer.OrdinalIgnoreCase);
                 foreach (var tableVm in tableVms)
                 {
-                    columnDicts[tableVm.TableName] = tableVm.Columns.ToDictionary(c => c.ColumnName, StringComparer.OrdinalIgnoreCase);
+                    var colDict = new Dictionary<string, ModelDiagramColumnViewModel>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var col in tableVm.Columns)
+                    {
+                        if (!colDict.ContainsKey(col.ColumnName))
+                            colDict[col.ColumnName] = col;
+                    }
+                    columnDicts[tableVm.TableName] = colDict;
                 }
 
                 // Track relationship counts per table
@@ -1038,22 +1054,18 @@ namespace DaxStudio.UI.ViewModels
                 // Pass startCollapsed to ensure we don't override the collapsed state for large models
                 bool layoutLoaded = TryLoadSavedLayout(preserveCollapsedState: startCollapsed);
 
-                const int LargeModelThreshold = 50;
-
                 if (!layoutLoaded)
                 {
-                    if (tableVms.Count <= LargeModelThreshold)
-                    {
-                        // For smaller models, use Sugiyama algorithm (better hierarchy)
-                        LayoutDiagramSugiyama();
-                    }
-                    else
-                    {
-                        // For larger models, use cluster-based algorithm (more compact)
-                        var layoutData = CalculateLayoutPositions(tableVms, allRelationships);
-                        ApplyLayoutPositions(layoutData);
-                        UpdateAllRelationships();
-                    }
+                    // Use the user's selected layout algorithm (respects dropdown setting)
+                    LayoutDiagram();
+                }
+
+                // Safety check: if layout failed (all tables at 0,0), force a grid layout
+                if (!ValidateLayoutPositions())
+                {
+                    Log.Warning("{class} {method} Layout validation failed - all tables at origin. Forcing grid layout.",
+                        nameof(ModelDiagramViewModel), nameof(LoadFromModelAsync));
+                    LayoutDiagramGrid();
                 }
 
                 var layoutTime = stageStopwatch.ElapsedMilliseconds;
@@ -1082,6 +1094,9 @@ namespace DaxStudio.UI.ViewModels
                     NotifyOfPropertyChange(nameof(SummaryText));
                     NotifyOfPropertyChange(nameof(HasData));
                     NotifyOfPropertyChange(nameof(NoData));
+
+                    // Apply any pending table filter that arrived while loading
+                    ApplyPendingTableFilter();
                 });
             }
             catch (Exception ex)
@@ -1125,7 +1140,11 @@ namespace DaxStudio.UI.ViewModels
             // Build relationship graph from Relationships ViewModels
             var tableSet = new HashSet<string>(tableVms.Select(t => t.TableName), StringComparer.OrdinalIgnoreCase);
             var neighbors = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            var tableVmDict = tableVms.ToDictionary(t => t.TableName, StringComparer.OrdinalIgnoreCase);
+            var tableVmDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in tableVms)
+            {
+                if (!tableVmDict.ContainsKey(t.TableName)) tableVmDict[t.TableName] = t;
+            }
             
             foreach (var table in tableVms)
             {
@@ -1277,7 +1296,11 @@ namespace DaxStudio.UI.ViewModels
             // Build relationship graph from the pre-loaded relationship data
             var tableSet = new HashSet<string>(tableVms.Select(t => t.TableName), StringComparer.OrdinalIgnoreCase);
             var neighbors = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            var tableVmDict = tableVms.ToDictionary(t => t.TableName, StringComparer.OrdinalIgnoreCase);
+            var tableVmDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in tableVms)
+            {
+                if (!tableVmDict.ContainsKey(t.TableName)) tableVmDict[t.TableName] = t;
+            }
             
             foreach (var table in tableVms)
             {
@@ -1428,6 +1451,19 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Validates that the layout positions are sensible (not all at origin).
+        /// Returns true if layout is valid, false if all tables are at (0,0).
+        /// </summary>
+        private bool ValidateLayoutPositions()
+        {
+            if (Tables.Count <= 1) return true;
+            
+            // Check that at least half the tables have been positioned away from the origin
+            int positioned = Tables.Count(t => t.X > 0 || t.Y > 0);
+            return positioned > Tables.Count / 2;
+        }
+
+        /// <summary>
         /// Applies pre-calculated layout positions to tables.
         /// Must be called on UI thread.
         /// </summary>
@@ -1482,7 +1518,15 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 // Create a dictionary for O(1) table lookups (performance optimization for large models)
-                var tableDict = Tables.ToDictionary(t => t.TableName, StringComparer.OrdinalIgnoreCase);
+                // Use safe construction to handle potential duplicate keys
+                var tableDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
+                foreach (var tv in Tables)
+                {
+                    if (!tableDict.ContainsKey(tv.TableName))
+                        tableDict[tv.TableName] = tv;
+                    else
+                        Log.Warning("{class} {method} Duplicate table name '{tableName}' - skipping", nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), tv.TableName);
+                }
 
                 // Create view models for relationships
                 // Relationships are stored on individual tables, so we need to gather from all tables
@@ -1541,6 +1585,9 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(SummaryText));
                 NotifyOfPropertyChange(nameof(HasData));
                 NotifyOfPropertyChange(nameof(NoData));
+
+                // Apply any pending table filter that arrived while loading
+                ApplyPendingTableFilter();
             }
             catch (Exception ex)
             {
@@ -3080,38 +3127,150 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Shows tables that are directly related to the specified table.
+        /// Finds all tables reachable from the specified table via relationships (transitive closure).
+        /// Uses BFS to traverse the relationship graph.
+        /// </summary>
+        private HashSet<string> FindRelatedTablesClosure(string startTableName)
+        {
+            var relatedTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(startTableName)) return relatedTables;
+
+            var neighbors = BuildNeighborMap();
+            var queue = new Queue<string>();
+            queue.Enqueue(startTableName);
+            relatedTables.Add(startTableName);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                if (neighbors.TryGetValue(current, out var currentNeighbors))
+                {
+                    foreach (var neighbor in currentNeighbors)
+                    {
+                        if (relatedTables.Add(neighbor))
+                        {
+                            queue.Enqueue(neighbor);
+                        }
+                    }
+                }
+            }
+
+            return relatedTables;
+        }
+
+        /// <summary>
+        /// Finds all tables directly related (1-hop) to the specified table.
+        /// </summary>
+        private HashSet<string> FindDirectlyRelatedTables(string tableName)
+        {
+            var relatedTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(tableName)) return relatedTables;
+
+            relatedTables.Add(tableName);
+            foreach (var rel in Relationships)
+            {
+                if (string.Equals(rel.FromTable, tableName, StringComparison.OrdinalIgnoreCase))
+                    relatedTables.Add(rel.ToTable ?? "");
+                else if (string.Equals(rel.ToTable, tableName, StringComparison.OrdinalIgnoreCase))
+                    relatedTables.Add(rel.FromTable ?? "");
+            }
+
+            return relatedTables;
+        }
+
+        /// <summary>
+        /// Shows tables that are directly related to the specified table (unhides them).
         /// </summary>
         public void ShowRelatedTables(ModelDiagramTableViewModel table)
         {
             if (table == null) return;
 
-            // Find all tables connected via relationships
-            var relatedTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            relatedTables.Add(table.TableName);
+            var relatedTables = FindDirectlyRelatedTables(table.TableName);
 
-            foreach (var rel in Relationships)
-            {
-                if (string.Equals(rel.FromTable, table.TableName, StringComparison.OrdinalIgnoreCase))
-                {
-                    relatedTables.Add(rel.ToTable ?? "");
-                }
-                else if (string.Equals(rel.ToTable, table.TableName, StringComparison.OrdinalIgnoreCase))
-                {
-                    relatedTables.Add(rel.FromTable ?? "");
-                }
-            }
-
-            // Show all related tables
             foreach (var t in Tables)
             {
                 if (relatedTables.Contains(t.TableName))
-                {
                     t.IsHidden = false;
-                }
             }
 
             RefreshLayout();
+        }
+
+        /// <summary>
+        /// Isolates the specified table and all tables reachable through relationships,
+        /// hiding everything else. Uses transitive closure to find the full connected subgraph.
+        /// </summary>
+        public void IsolateRelatedTables(ModelDiagramTableViewModel table)
+        {
+            if (table == null) return;
+
+            SaveLayoutForUndo();
+            var relatedTables = FindRelatedTablesClosure(table.TableName);
+
+            foreach (var t in Tables)
+            {
+                t.IsHidden = !relatedTables.Contains(t.TableName);
+            }
+
+            ClearSelection();
+            RefreshLayout();
+            SaveCurrentLayout();
+        }
+
+        /// <summary>
+        /// Shows only the specified set of tables, hiding all others.
+        /// Optionally includes tables that bridge them via relationships.
+        /// Used by Server Timings integration to show query-dependent tables.
+        /// </summary>
+        /// <param name="tableNames">The table names to show.</param>
+        /// <param name="includeRelated">If true, also show tables connected via relationships to form a complete subgraph.</param>
+        public void ShowOnlyTables(IEnumerable<string> tableNames, bool includeRelated = false)
+        {
+            if (tableNames == null) return;
+
+            SaveLayoutForUndo();
+
+            var tablesToShow = new HashSet<string>(tableNames, StringComparer.OrdinalIgnoreCase);
+
+            if (includeRelated)
+            {
+                // Also include tables that lie on relationship paths between the specified tables
+                var neighbors = BuildNeighborMap();
+                var expanded = new HashSet<string>(tablesToShow, StringComparer.OrdinalIgnoreCase);
+
+                // For each specified table, add its direct neighbors that are also neighbors of other specified tables
+                // This connects the subgraph without pulling in unrelated tables
+                foreach (var tableName in tablesToShow)
+                {
+                    if (neighbors.TryGetValue(tableName, out var tableNeighbors))
+                    {
+                        foreach (var neighbor in tableNeighbors)
+                        {
+                            expanded.Add(neighbor);
+                        }
+                    }
+                }
+                tablesToShow = expanded;
+            }
+
+            int hiddenCount = 0;
+            foreach (var table in Tables)
+            {
+                bool shouldShow = tablesToShow.Contains(table.TableName);
+                table.IsHidden = !shouldShow;
+                if (!shouldShow) hiddenCount++;
+            }
+
+            // Reset filter dropdown (we're doing a custom filter)
+            _tableFilter = 0;
+            NotifyOfPropertyChange(nameof(TableFilter));
+
+            ClearSelection();
+            RefreshLayout();
+
+            Log.Information("{class} {method} Showing {shown} of {total} tables ({hidden} hidden)",
+                nameof(ModelDiagramViewModel), nameof(ShowOnlyTables),
+                Tables.Count - hiddenCount, Tables.Count, hiddenCount);
         }
 
         /// <summary>
@@ -3681,6 +3840,18 @@ namespace DaxStudio.UI.ViewModels
         {
             if (string.IsNullOrEmpty(_currentModelKey) || Tables.Count == 0) return;
 
+            // Don't save if most tables are at origin - the layout hasn't been applied yet
+            if (Tables.Count > 1)
+            {
+                int atOrigin = Tables.Count(t => t.X == 0 && t.Y == 0);
+                if (atOrigin > Tables.Count / 2)
+                {
+                    Log.Warning("{class} {method} Refusing to save layout: {atOrigin}/{total} tables at origin",
+                        nameof(ModelDiagramViewModel), nameof(SaveCurrentLayout), atOrigin, Tables.Count);
+                    return;
+                }
+            }
+
             try
             {
                 // Load existing layouts
@@ -3747,6 +3918,19 @@ namespace DaxStudio.UI.ViewModels
             {
                 var layouts = LoadLayoutCache();
                 if (!layouts.TryGetValue(_currentModelKey, out var layoutData)) return false;
+
+                // Validate saved layout isn't corrupted (most positions at 0,0)
+                if (layoutData.TablePositions.Count > 1)
+                {
+                    int atOrigin = layoutData.TablePositions.Values.Count(p => p.X == 0 && p.Y == 0);
+                    // If more than half the tables are at the origin, the layout is corrupted
+                    if (atOrigin > layoutData.TablePositions.Count / 2)
+                    {
+                        Log.Warning("{class} {method} Saved layout has {atOrigin}/{total} tables at origin (0,0) - discarding corrupted layout for model '{model}'",
+                            nameof(ModelDiagramViewModel), nameof(TryLoadSavedLayout), atOrigin, layoutData.TablePositions.Count, _currentModelKey);
+                        return false;
+                    }
+                }
 
                 // Apply saved positions
                 bool anyApplied = false;
@@ -3864,6 +4048,44 @@ namespace DaxStudio.UI.ViewModels
                 EnrichFromVertipaq(message.VpaModel);
             }
             return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Handles the ShowTablesInModelDiagramEvent from Server Timings or SE Dependencies.
+        /// Filters the model diagram to show only the specified tables (and optionally their relationship neighbors).
+        /// </summary>
+        public System.Threading.Tasks.Task HandleAsync(ShowTablesInModelDiagramEvent message, System.Threading.CancellationToken cancellationToken)
+        {
+            if (message?.TableNames == null) return System.Threading.Tasks.Task.CompletedTask;
+
+            if (Tables.Count > 0)
+            {
+                Log.Information("{class} {method} Filtering diagram to {count} tables",
+                    nameof(ModelDiagramViewModel), nameof(HandleAsync), message.TableNames.Count());
+                ShowOnlyTables(message.TableNames, message.IncludeRelated);
+            }
+            else
+            {
+                // Diagram is still loading — store the filter to apply when loading completes
+                Log.Information("{class} {method} Diagram not loaded yet, storing pending table filter ({count} tables)",
+                    nameof(ModelDiagramViewModel), nameof(HandleAsync), message.TableNames.Count());
+                _pendingTableFilter = message;
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Applies any pending table filter that was received while the diagram was still loading.
+        /// </summary>
+        private void ApplyPendingTableFilter()
+        {
+            if (_pendingTableFilter != null)
+            {
+                Log.Information("{class} {method} Applying pending table filter ({count} tables)",
+                    nameof(ModelDiagramViewModel), nameof(ApplyPendingTableFilter), _pendingTableFilter.TableNames.Count());
+                ShowOnlyTables(_pendingTableFilter.TableNames, _pendingTableFilter.IncludeRelated);
+                _pendingTableFilter = null;
+            }
         }
 
         #endregion
@@ -4001,6 +4223,9 @@ namespace DaxStudio.UI.ViewModels
                     sb.AppendLine($"Has VPA Data: {HasVertipaqData}");
                     sb.AppendLine($"Has Storage Mode Data: {HasStorageModeData}");
                     sb.AppendLine($"Layout Algorithm: {_options?.DiagramLayoutAlgorithm}");
+                    sb.AppendLine($"CSDL Version: {_model?.CSDLVersion ?? 0}");
+                    sb.AppendLine($"Raw ADOTabular Relationship Total: {_model?.Tables?.Sum(t => t.Relationships?.Count ?? 0) ?? -1}");
+                    sb.AppendLine($"Model-level Relationships: {_model?.Relationships?.Count ?? -1}");
                     sb.AppendLine();
 
                     // Tables
@@ -4037,6 +4262,70 @@ namespace DaxStudio.UI.ViewModels
                         sb.AppendLine($"    IsVisible: {rel.IsVisible}");
                         sb.AppendLine($"    HasCenterIndicators: {rel.HasCenterIndicators}");
                         sb.AppendLine($"    CrossFilterDirection (raw): {rel.CrossFilterDirectionRaw}");
+                    }
+                    sb.AppendLine();
+
+                    // Raw ADOTabular relationship diagnostics
+                    sb.AppendLine("=== RAW ADOTABULAR RELATIONSHIP DIAGNOSTICS ===");
+                    if (_model != null)
+                    {
+                        sb.AppendLine($"  CSDL Version: {_model.CSDLVersion}");
+                        sb.AppendLine($"  CSDL Version >= 2.5 (required for relationships): {_model.CSDLVersion >= 2.5}");
+                        sb.AppendLine($"  Model-level Relationships.Count: {_model.Relationships?.Count ?? -1}");
+                        sb.AppendLine($"  Model.Tables.Count: {_model.Tables?.Count ?? -1}");
+                        sb.AppendLine();
+                        
+                        int totalRawRels = 0;
+                        int tablesWithRels = 0;
+                        try
+                        {
+                            foreach (var table in _model.Tables)
+                            {
+                                var relCount = table.Relationships?.Count ?? 0;
+                                totalRawRels += relCount;
+                                if (relCount > 0)
+                                {
+                                    tablesWithRels++;
+                                    sb.AppendLine($"  Table [{table.Name}]: {relCount} relationship(s)");
+                                    foreach (var rel in table.Relationships)
+                                    {
+                                        sb.AppendLine($"    - InternalName: {rel.InternalName}");
+                                        sb.AppendLine($"      FromTable: {rel.FromTable?.Name ?? "(null)"}, FromColumn: {rel.FromColumn ?? "(null)"}");
+                                        sb.AppendLine($"      ToTable: {rel.ToTable?.Name ?? "(null)"}, ToColumn: {rel.ToColumn ?? "(null)"}");
+                                        sb.AppendLine($"      IsActive: {rel.IsActive}, CrossFilter: {rel.CrossFilterDirection}");
+                                        sb.AppendLine($"      FromMultiplicity: {rel.FromColumnMultiplicity ?? "(null)"}, ToMultiplicity: {rel.ToColumnMultiplicity ?? "(null)"}");
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sb.AppendLine($"  Error reading raw table relationships: {ex.Message}");
+                        }
+                        
+                        sb.AppendLine();
+                        sb.AppendLine($"  TOTALS: {totalRawRels} raw relationships across {tablesWithRels} tables");
+                        
+                        if (totalRawRels == 0)
+                        {
+                            sb.AppendLine();
+                            sb.AppendLine("  *** WARNING: Zero raw relationships found in ADOTabular model ***");
+                            if (_model.CSDLVersion < 2.5)
+                            {
+                                sb.AppendLine("  *** LIKELY CAUSE: CSDLVersion < 2.5 — relationship parsing is skipped ***");
+                                sb.AppendLine("  *** The CSDL metadata from this server may not include relationship info ***");
+                            }
+                            else
+                            {
+                                sb.AppendLine("  *** CSDLVersion is >= 2.5 so relationships SHOULD have been parsed ***");
+                                sb.AppendLine("  *** Possible causes: CSDL XML missing AssociationSet elements, ***");
+                                sb.AppendLine("  *** or table name resolution failed in BuildRelationshipFromAssociationSet ***");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendLine("  _model is null (offline mode or model not loaded)");
                     }
                     sb.AppendLine();
 
@@ -4286,30 +4575,6 @@ namespace DaxStudio.UI.ViewModels
             _sortKeyColumnsFirst = sortKeyColumnsFirst;
             _isFromVpa = false;
             Columns = new BindableCollection<ModelDiagramColumnViewModel>(GetSortedColumns());
-            
-            // DEBUG: Log special table type detection
-            Log.Information("{class} {method} Table '{table}': ShowAsVariationsOnly={showVar}, DataCategory='{dataCat}', IsFieldParameterTable={isFP}, IsCalculationGroup={isCG}, Private={priv}",
-                nameof(ModelDiagramTableViewModel), ".ctor",
-                table.Caption, table.ShowAsVariationsOnly, table.DataCategory ?? "(null)", 
-                IsFieldParameterTable, IsCalculationGroup, table.Private);
-            
-            // DEBUG: Log column details including Variations for special table detection
-            foreach (var col in table.Columns.Take(5)) // Just first 5 to avoid log spam
-            {
-                var hasVariations = col.Variations != null && col.Variations.Count > 0;
-                Log.Information("{class} {method} Table '{table}' Column '{col}': Contents='{contents}', ObjectType={type}, HasVariations={hasVar}, VariationCount={varCount}",
-                    nameof(ModelDiagramTableViewModel), ".ctor",
-                    table.Caption, col.Caption, col.Contents ?? "(null)", col.ObjectType, 
-                    hasVariations, col.Variations?.Count ?? 0);
-            }
-            
-            // DEBUG: Check for Ordinal column (common in Calc Groups)
-            var hasOrdinalColumn = table.Columns.Any(c => c.Name.Equals("Ordinal", StringComparison.OrdinalIgnoreCase));
-            if (hasOrdinalColumn)
-            {
-                Log.Information("{class} {method} Table '{table}': Has 'Ordinal' column - potential Calculation Group",
-                    nameof(ModelDiagramTableViewModel), ".ctor", table.Caption);
-            }
         }
 
         /// <summary>
@@ -4789,16 +5054,31 @@ namespace DaxStudio.UI.ViewModels
 
         public BindableCollection<ModelDiagramColumnViewModel> Columns { get; }
 
+        private const int CollapsedFallbackColumnCount = 3;
+
         /// <summary>
         /// Key and relationship columns (for collapsed view).
         /// Shows columns marked as keys OR columns used in relationships.
+        /// Falls back to showing the first few non-measure columns if no key/relationship columns exist,
+        /// so collapsed tables aren't empty rectangles.
         /// </summary>
-        public IEnumerable<ModelDiagramColumnViewModel> KeyColumns => Columns.Where(c => c.IsKey || c.IsRelationshipColumn);
+        public IEnumerable<ModelDiagramColumnViewModel> KeyColumns
+        {
+            get
+            {
+                var keyAndRelCols = Columns.Where(c => c.IsKey || c.IsRelationshipColumn).ToList();
+                if (keyAndRelCols.Count > 0) return keyAndRelCols;
+
+                // Fallback: show first few non-measure columns so collapsed tables aren't empty
+                return Columns.Where(c => !c.IsMeasure).Take(CollapsedFallbackColumnCount);
+            }
+        }
 
         /// <summary>
-        /// Whether this table has any key or relationship columns.
+        /// Whether this table has columns to show in collapsed view.
+        /// True when there are key/relationship columns, or any non-measure columns to use as fallback.
         /// </summary>
-        public bool HasKeyColumns => Columns.Any(c => c.IsKey || c.IsRelationshipColumn);
+        public bool HasKeyColumns => Columns.Any(c => c.IsKey || c.IsRelationshipColumn) || Columns.Any(c => !c.IsMeasure);
 
         /// <summary>
         /// Tooltip with table details matching metadata pane style.
@@ -4992,6 +5272,11 @@ namespace DaxStudio.UI.ViewModels
         {
             // Count key columns AND relationship columns (shown in collapsed view)
             int keyCount = Columns.Count(c => c.IsKey || c.IsRelationshipColumn);
+            if (keyCount == 0)
+            {
+                // Fallback: count first few non-measure columns
+                keyCount = Math.Min(CollapsedFallbackColumnCount, Columns.Count(c => !c.IsMeasure));
+            }
             if (keyCount == 0) return CollapsedHeaderHeight;
             return CollapsedHeaderHeight + 6 + (keyCount * KeyColumnRowHeight); // 6 = padding
         }

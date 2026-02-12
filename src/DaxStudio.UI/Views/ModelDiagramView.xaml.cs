@@ -1373,6 +1373,18 @@ namespace DaxStudio.UI.Views
             }
         }
 
+        private void IsolateRelatedTables_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem && 
+                menuItem.Parent is ContextMenu contextMenu && 
+                contextMenu.PlacementTarget is FrameworkElement element &&
+                element.DataContext is ModelDiagramTableViewModel tableVm &&
+                DataContext is ModelDiagramViewModel vm)
+            {
+                vm.IsolateRelatedTables(tableVm);
+            }
+        }
+
         private void HideThisTable_Click(object sender, RoutedEventArgs e)
         {
             if (sender is MenuItem menuItem && 

@@ -1989,6 +1989,30 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
+        /// Publishes an event to show only the tables from this SE analysis in the Model Diagram.
+        /// This lets users see the model relationships for query-dependent tables.
+        /// </summary>
+        public void ShowInModelDiagram()
+        {
+            if (_analysis == null || _analysis.Tables.Count == 0)
+            {
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                    "No table references found. Run a query with Server Timings first."));
+                return;
+            }
+
+            var tableNames = _analysis.Tables.Keys.ToList();
+            Log.Information("{class} {method} Sending {count} tables to Model Diagram: {tables}",
+                nameof(XmSqlErdViewModel), nameof(ShowInModelDiagram),
+                tableNames.Count, string.Join(", ", tableNames));
+
+            _eventAggregator.PublishOnUIThreadAsync(
+                new ShowTablesInModelDiagramEvent(tableNames, includeRelated: true));
+        }
+
+        public bool CanShowInModelDiagram => _analysis?.Tables?.Count > 0;
+
+        /// <summary>
         /// Copies the ERD summary to clipboard.
         /// </summary>
         public void CopyToClipboard()
