@@ -131,7 +131,7 @@ namespace DaxStudio.Controls.PropertyGrid
                     // skip properties that depend on an environment variable with a zero or missing value
                     if (envVar != null && !string.IsNullOrEmpty(envVar.VariableName))
                     {
-                        var envValue = Environment.GetEnvironmentVariable(envVar.VariableName).Trim();
+                        var envValue = (Environment.GetEnvironmentVariable(envVar.VariableName)??string.Empty).Trim();
                         if (string.IsNullOrEmpty(envValue) || envValue == "0")
                         {
                             continue;
