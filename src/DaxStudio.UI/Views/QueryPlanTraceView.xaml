@@ -171,6 +171,22 @@
                 <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             </Style>
 
+            <!-- Custom style for filter toggle buttons that maintains background when disabled -->
+            <Style x:Key="FilterToggleButtonStyle" BasedOn="{StaticResource TraceToggleButton}" TargetType="ToggleButton">
+                <Style.Triggers>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <!--<Condition Property="IsChecked" Value="False"/>-->
+                            <Condition Property="IsEnabled" Value="False"/>
+                        </MultiTrigger.Conditions>
+                        <Setter Property="Opacity" Value="0.3"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="IsHitTestVisible" Value="False"/>
+                    </MultiTrigger>
+                    
+                    
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
         
     </UserControl.Resources>
@@ -257,16 +273,17 @@
                               Style="{StaticResource TraceToggleButton}"
                               IsEnabled="{Binding CanHideLogicalQueryPlan}"
                               Margin="2 2 0 2"
-                              Padding="2">
+                              Padding="4 4 28 4">
                         <TextBlock VerticalAlignment="Center">Logical Plan</TextBlock>
                     </ToggleButton>
                     
-                    <ToggleButton Style="{StaticResource TraceToggleButton}" 
-                              Margin="4 2 4 2" 
-                              Padding="1"
-                              ToolTip="Show Filters for Logical Query Plan" 
-                              IsChecked="{Binding ShowLogicalQueryPlanFilters}"
-                              IsEnabled="{Binding ShowLogicalQueryPlan}">
+                    <ToggleButton 
+                        Style="{StaticResource FilterToggleButtonStyle}" 
+                        Margin="-24 2 4 2" 
+                        Padding="1"
+                        ToolTip="Show Filters for Logical Query Plan" 
+                        IsChecked="{Binding ShowLogicalQueryPlanFilters}"
+                        IsEnabled="{Binding ShowLogicalQueryPlan}">
                         <Image Source="{DynamicResource filter_toolbarDrawingImage}"
                                RenderOptions.BitmapScalingMode="HighQuality"
                                Height="16"
@@ -281,14 +298,14 @@
                               IsChecked="{Binding ShowPhysicalQueryPlan}"
                               IsEnabled="{Binding CanHidePhysicalQueryPlan}"
                               Margin="2 2 0 2"
-                              Padding="2">
+                              Padding="4 4 28 4">
                         <TextBlock VerticalAlignment="Center">Physical Plan</TextBlock>
                     </ToggleButton>
                     
                     <ToggleButton 
                         x:Name="ShowPhysicalQueryPlanFilters"
-                        Style="{StaticResource TraceToggleButton}" 
-                        Margin="4 2 4 2" 
+                        Style="{StaticResource FilterToggleButtonStyle}" 
+                        Margin="-24 2 4 2" 
                         Padding="1"
                         ToolTip="Show Filters for Physical Query Plan" 
                         IsChecked="{Binding ShowPhysicalQueryPlanFilters}"
