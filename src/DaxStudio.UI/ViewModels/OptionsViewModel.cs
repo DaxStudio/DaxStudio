@@ -2617,9 +2617,9 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
-            await base.OnActivateAsync(cancellationToken);
+            await base.OnActivatedAsync(cancellationToken);
             Refresh();
             // trigger an update of the current properties pane by faking a category change
             NotifyOfPropertyChange(nameof(SelectedCategory));

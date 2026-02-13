@@ -15,6 +15,7 @@
              xmlns:views="clr-namespace:DaxStudio.UI.Views"
              xmlns:selectors="clr-namespace:DaxStudio.UI.TemplateSelectors"
              xmlns:utils="clr-namespace:DaxStudio.UI.Utils" 
+             xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
              xmlns:ui="http://schemas.modernwpf.com/2019"
              Background="{DynamicResource Theme.Brush.StatusBar.Back}"
              mc:Ignorable="d" 
@@ -27,9 +28,10 @@
             <local:BoolToNotHiddenConverter x:Key="BoolToNotHiddenConverter"/>
             <avalonDockConverters:ActivateCommandLayoutItemFromLayoutModelConverter x:Key="ActivateCommandLayoutItemFromLayoutModelConverter" />
             <!-- Ensure Proxy.Value is never null by binding to the UserControl itself -->
-            <ui:BindingProxy x:Key="Proxy"
-                             Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
-
+            <!--<ui:BindingProxy x:Key="Proxy"
+                             Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />-->
+            <controls:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            
             <Style x:Key="CloseButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BorderThickness" Value="1" />
@@ -633,7 +635,9 @@
                     <MenuItem Command="{Binding Path=CloseAllCommand}" Header="{x:Static avalonDockProperties:Resources.Document_CloseAll}" />
                     <MenuItem Command="{Binding Path=FloatCommand}" Header="{x:Static avalonDockProperties:Resources.Document_Float}" />
                     <MenuItem Command="{Binding Path=DockAsDocumentCommand}" Header="{x:Static avalonDockProperties:Resources.Document_DockAsDocument}" />
-                    <MenuItem Header="Duplicate" cal:Message.Attach="DuplicateTab($dataContext)" />
+                    <MenuItem Header="Duplicate" 
+                              cal:Action.TargetWithoutContext="{Binding Source={StaticResource Proxy}, Path=Data}"
+                              cal:Message.Attach="DuplicateTab($dataContext)" />
                     <MenuItem
 			Command="{Binding Path=NewHorizontalTabGroupCommand}"
 			Header="{x:Static avalonDockProperties:Resources.Document_NewHorizontalTabGroup}"

@@ -50,19 +50,16 @@ namespace DaxStudio.UI.Utils
     }
 
 
-
-
-
-      /// <summary>
-      /// A command whose sole purpose is to 
-      /// relay its functionality to other
-      /// objects by invoking delegates. The
-      /// default return value for the CanExecute
-      /// method is 'true'.
-      /// 
-      /// Source: http://www.codeproject.com/Articles/31837/Creating-an-Internationalized-Wizard-in-WPF
-      /// </summary>
-    internal class RelayCommand<T> : ICommand
+    /// <summary>
+    /// A command whose sole purpose is to 
+    /// relay its functionality to other
+    /// objects by invoking delegates. The
+    /// default return value for the CanExecute
+    /// method is 'true'.
+    /// 
+    /// Source: http://www.codeproject.com/Articles/31837/Creating-an-Internationalized-Wizard-in-WPF
+    /// </summary>
+    public class RelayCommand<T> : ICommand
     {
         #region Fields
         private readonly Action<T> mExecute;

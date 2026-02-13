@@ -212,9 +212,9 @@ namespace DaxStudio.UI.ViewModels
             return;
         }
         
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
-            await base.OnActivateAsync(cancellationToken);
+            await base.OnActivatedAsync(cancellationToken);
             await _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent(),cancellationToken);
         }
 
@@ -755,6 +755,11 @@ namespace DaxStudio.UI.ViewModels
             // TODO we should look at looping over all files, but currently this does not work,
             //      it appears that the second file starts to open before the first has finished opening 
             //      and we endup with errors or incorrectly loaded files.
+        }
+
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+            // do nothing
         }
     }
 

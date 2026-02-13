@@ -299,6 +299,7 @@
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
       <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\PhysicalQueryPlanTreeGrid.cs" />
     <Compile Include="Controls\StorageEngineTime.xaml.cs">
       <DependentUpon>StorageEngineTime.xaml</DependentUpon>
     </Compile>
@@ -311,6 +312,8 @@
     <Compile Include="Conventions\VisibilityBindingConvention.cs" />
     <Compile Include="Converters\ActiveDocumentConverter.cs" />
     <Compile Include="Converters\AllNumericConverter.cs" />
+    <Compile Include="Converters\AncestorRecordsImageResourceConverter.cs" />
+    <Compile Include="Converters\AncestorRecordsColorConverter.cs" />
     <Compile Include="Converters\BoolNotConverter.cs" />
     <Compile Include="Converters\BoolToCollapsedConverter.cs" />
     <Compile Include="Converters\BoolToDoubleConverter.cs" />
@@ -384,6 +387,7 @@
     <Compile Include="Events\VpaViewExpandedEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
     <Compile Include="Extensions\ConcurrentQueueExtensions.cs" />
+    <Compile Include="Extensions\DataGridExtensions.cs" />
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\FileExtensions.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
@@ -394,6 +398,7 @@
     <Compile Include="Interfaces\IHaveTraceWatchers.cs" />
     <Compile Include="Interfaces\IPowerBIPerformanceData.cs" />
     <Compile Include="Interfaces\IQueryPlanRow.cs" />
+    <Compile Include="Interfaces\IQueryPlanTreeNode.cs" />
     <Compile Include="Interfaces\ITraceDiagnostics.cs" />
     <Compile Include="Interfaces\ITraceWatcher.cs" />
     <Compile Include="Interfaces\ITraceWatcherData.cs" />
@@ -520,6 +525,7 @@
     <Compile Include="Events\LoadQueryHistoryAsyncEvent.cs" />
     <Compile Include="Model\IndentFoldingStrategy.cs" />
     <Compile Include="Model\JumpListHelper.cs" />
+    <Compile Include="Model\NewDocumentParameters.cs" />
     <Compile Include="Model\PowerBIPerformanceData.cs" />
     <Compile Include="Model\QueryBeginEvent.cs" />
     <Compile Include="Model\QueryBuilder\ADOTabularColumnStub.cs" />
@@ -993,6 +999,9 @@
     <Page Include="Resources\Styles\ListViewStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\LoadingPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles\ToggleSwitchSmall.xaml">
       <SubType>Designer</SubType>
@@ -1490,31 +1499,34 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncAwaitBestPractices">
-      <Version>9.0.0</Version>
+      <Version>10.0.0</Version>
     </PackageReference>
     <PackageReference Include="AvalonEdit">
       <Version>6.3.1.120</Version>
     </PackageReference>
     <PackageReference Include="Caliburn.Micro">
-      <Version>4.0.230</Version>
+      <Version>5.0.258</Version>
     </PackageReference>
     <PackageReference Include="CsvHelper">
       <Version>33.1.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Model.Extractor">
-      <Version>1.11.0</Version>
+      <Version>1.12.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewModel">
-      <Version>1.11.0</Version>
+      <Version>1.12.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.ViewVpaExport">
-      <Version>1.11.0</Version>
+      <Version>1.12.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax">
-      <Version>1.11.0</Version>
+      <Version>1.12.0</Version>
     </PackageReference>
     <PackageReference Include="Dax.Vpax.Obfuscator">
       <Version>1.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="DaxStudio.Controls">
+      <Version>0.1.6</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.1</Version>
@@ -1529,25 +1541,25 @@
       <Version>9.0.4</Version>
     </PackageReference>
     <PackageReference Include="gong-wpf-dragdrop">
-      <Version>3.2.1</Version>
+      <Version>4.0.0</Version>
     </PackageReference>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
-      <Version>1.1.0</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Humanizer">
-      <Version>2.14.1</Version>
+      <Version>3.0.1</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
-      <Version>2.0.0</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>9.0.10</Version>
+      <Version>10.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>9.0.0</Version>
+      <Version>10.0.102</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -1558,19 +1570,19 @@
       <Version>3.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
-      <Version>4.77.1</Version>
+      <Version>4.82.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.PowerBI.Api">
-      <Version>4.22.0</Version>
+      <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="ModernWpfUI">
       <Version>0.9.6</Version>
     </PackageReference>
     <PackageReference Include="Parquet.Net">
-      <Version>5.2.0</Version>
+      <Version>5.5.0</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.6.4</Version>
+      <Version>8.6.5</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
       <Version>4.3.0</Version>

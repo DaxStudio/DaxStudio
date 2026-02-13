@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Linq;
 
 namespace DaxStudio.Controls.PropertyGrid
 {
@@ -126,7 +127,21 @@ namespace DaxStudio.Controls.PropertyGrid
 
                 foreach (var prop in newSource.GetType().GetProperties())
                 {
+                    var envVar = prop.GetCustomAttribute<EnvironmentVariableAttribute>();
+                    // skip properties that depend on an environment variable with a zero or missing value
+                    if (envVar != null && !string.IsNullOrEmpty(envVar.VariableName))
+                    {
+                        var envValue = Environment.GetEnvironmentVariable(envVar.VariableName).Trim();
+                        if (string.IsNullOrEmpty(envValue) || envValue == "0")
+                        {
+                            continue;
+                        }
+                    }
+
                     var dispName = prop.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+                    //skip properties that do not have a display name defined
+                    if (dispName == null) continue;
+
                     var catName = prop.GetCustomAttribute(typeof(CategoryAttribute)) as CategoryAttribute;
                     var subCatName = prop.GetCustomAttribute(typeof(SubcategoryAttribute)) as SubcategoryAttribute;
                     var sortOrder = prop.GetCustomAttribute<SortOrderAttribute>();
@@ -134,18 +149,10 @@ namespace DaxStudio.Controls.PropertyGrid
                     var minValue = prop.GetCustomAttribute(typeof(MinValueAttribute)) as MinValueAttribute;
                     var maxValue = prop.GetCustomAttribute(typeof(MaxValueAttribute)) as MaxValueAttribute;
                     var enumDisplay = prop.GetCustomAttribute(typeof(EnumDisplayAttribute)) as EnumDisplayAttribute;
+                    
                     var t = prop.GetType();
 
-                    //Type[] typeArgs = { prop.PropertyType };
-                    //Type d1 = typeof(PropertyBinding<>);
-                    //Type constructed = d1.MakeGenericType(typeArgs);
-                    //var o = Activator.CreateInstance(constructed);
-                    //var binding = (PropertyBindingBase)o;
-
                     var binding = new PropertyBinding<object>();
-
-                    //skip properties that do not have a display name defined
-                    if (dispName == null) continue;
 
                     binding.DisplayName = dispName.DisplayName;
 

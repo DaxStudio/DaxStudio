@@ -9,6 +9,7 @@ using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;
 using DaxStudio.CommandLine.Attributes;
 using DaxStudio.CommandLine.Helpers;
+using System.Threading;
 
 
 namespace DaxStudio.CommandLine.Commands
@@ -80,7 +81,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context,(Settings)settings);
         }
 
-        public override int Execute(CommandContext context, Settings settings)
+        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             VersionInfo.Output();
             AnsiConsole.MarkupLine("Starting VPAX command");

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using ADOTabular.Interfaces;
+using System.Threading;
 
 namespace DaxStudio.UI.Interfaces
 {
@@ -23,9 +24,10 @@ namespace DaxStudio.UI.Interfaces
         ADOTabularModel SelectedModel { get; }
         string SelectedModelName { get; }
 
-        Task UpdateColumnSampleData(ITreeviewColumn column, int sampleSize);
-        Task UpdateColumnBasicStats(ITreeviewColumn column);
+        Task UpdateColumnSampleDataAsync(ITreeviewColumn column, int sampleSize, CancellationToken cancellationToken);
+        Task UpdateColumnBasicStatsAsync(ITreeviewColumn column, CancellationToken cancellationToken);
         Task<List<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize);
+      
         bool IsPowerPivot { get; }
         bool IsPowerBIorSSDT { get; }
         bool IsConnected { get; }
@@ -35,8 +37,11 @@ namespace DaxStudio.UI.Interfaces
         string ExpandDependentMeasure(string measureName, bool ignoreNonUniqueMeasureNames);
         List<ADOTabularMeasure> FindDependentMeasures(string measureName);
         IEnumerable<IFilterableTreeViewItem> GetTreeViewTables(IMetadataPane metadataPaneViewModel, IGlobalOptions options);
-        void UpdateTableBasicStats(DaxStudio.UI.Model.TreeViewTable table);
+        Task UpdateTableBasicStatsAsync(DaxStudio.UI.Model.TreeViewTable table);
+        void CancelUpdatingTableBasicStats();
 
         List<string> GetRoles();
+        void CancelUpdatingColumnSampleData();
+        void CancelUpdatingColumnBasicStats();
     }
 }

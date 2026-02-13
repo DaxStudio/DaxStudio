@@ -107,7 +107,7 @@ namespace ADOTabular
                         measure.DataType = (Microsoft.AnalysisServices.Tabular.DataType)Enum.Parse(typeof(Microsoft.AnalysisServices.Tabular.DataType), m.DataType);
                         // TODO - add display folder handling
                         ProcessDisplayFolders(t, m, measure);
-                        expressionDict.Add(m.MeasureName.Name, m.MeasureExpression.Expression);
+                        expressionDict.Add(m.MeasureName.Name, m.MeasureExpression?.Expression??string.Empty);
                         if (!string.IsNullOrEmpty(m.FormatStringExpression?.Expression))
                         {
                             formatStringExpressionsDict.Add(m.MeasureName.Name, m.FormatStringExpression.Expression);
@@ -126,7 +126,7 @@ namespace ADOTabular
             return ret;
         }
 
-        private void ProcessDisplayFolders(ADOTabularTable table, Dax.Metadata.Measure sourceMeasure, ADOTabularColumn targetMeasure)
+        private static void ProcessDisplayFolders(ADOTabularTable table, Dax.Metadata.Measure sourceMeasure, ADOTabularColumn targetMeasure)
         {
             var folderPath = sourceMeasure.DisplayFolder.Note;
             if (string.IsNullOrEmpty(folderPath)) return;
@@ -139,7 +139,7 @@ namespace ADOTabular
             
         }
 
-        private IADOTabularFolderReference GetDisplayFolder(IADOTabularObjectReference table, string folderPath)
+        private static IADOTabularFolderReference GetDisplayFolder(IADOTabularObjectReference table, string folderPath)
         {
             List<IADOTabularObjectReference> folderItems = null; 
 

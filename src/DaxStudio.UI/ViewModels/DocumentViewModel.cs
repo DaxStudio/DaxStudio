@@ -61,6 +61,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using static Microsoft.IO.RecyclableMemoryStreamManager;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using Constants = DaxStudio.Common.Constants;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
@@ -119,6 +120,7 @@ namespace DaxStudio.UI.ViewModels
         , IGuardClose
         , IDocumentToExport
         , IHaveStatusBar
+        , IDisposable
 
     {
         // Changed from the original Unicode - if required we could make this an optional setting in future
@@ -127,7 +129,7 @@ namespace DaxStudio.UI.ViewModels
 
         private readonly IWindowManager _windowManager;
         private readonly IEventAggregator _eventAggregator;
-        private IObservableCollection<object> _toolWindows;
+        private IObservableCollection<IScreen> _toolWindows;
         private BindableCollection<ITraceWatcher> _traceWatchers;
         private bool _queryRunning;
         private readonly IDaxStudioHost _host;
@@ -136,10 +138,10 @@ namespace DaxStudio.UI.ViewModels
         private readonly RibbonViewModel _ribbon;
         private readonly Guid _uniqueId;
         private IQueryHistoryEvent _currentQueryDetails;
-        private DocumentViewModel _sourceDocument;
         private ISettingProvider SettingProvider { get; }
         private static readonly ImageSourceConverter ImgSourceConverter = new ImageSourceConverter();
         private bool _isSubscribed;
+        private Application _app;
 
         [ImportingConstructor]
         public DocumentViewModel(IWindowManager windowManager
@@ -157,7 +159,7 @@ namespace DaxStudio.UI.ViewModels
 
                 _host = host;
                 _eventAggregator = eventAggregator;
-
+                _app = Application.Current;
                 _windowManager = windowManager;
                 _ribbon = ribbon;
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
@@ -304,7 +306,7 @@ namespace DaxStudio.UI.ViewModels
 
         private DAXEditorControl.DAXEditor _editor;
 
-
+        internal NewDocumentParameters NewDocumentParameters { get; set; } = new NewDocumentParameters();
         #region "Event Handlers"
         /// <summary>
         /// Initialization that requires a reference to the editor control needs to happen here
@@ -350,19 +352,26 @@ namespace DaxStudio.UI.ViewModels
                         break;
                 }
 
-                if (_sourceDocument != null)
+                if (NewDocumentParameters.SourceDocument != null)
                 {
-                    await CopyConnectionAsync(_sourceDocument);
-
+                    await CopyConnectionAsync(NewDocumentParameters.SourceDocument);
+                }
+                else
+                {
+                    await ConnectToServerAsync();
                 }
 
-                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+
+                    await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
                 // set the document content to the query parameter
                 if (!string.IsNullOrEmpty(Application.Current.Args().Query))
                 {
                     EditorText = Application.Current.Args().Query;
                     Application.Current.Args().Query = String.Empty;
+                    return;
                 }
+
+                if (NewDocumentParameters.CopyContent) CopyContent(NewDocumentParameters.SourceDocument);
             }
             catch (Exception ex)
             {
@@ -373,6 +382,45 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnViewLoaded), "Finished");
             }
+        }
+
+        internal async Task ConnectToServerAsync()
+        {
+            var server = _app.Args().Server;
+
+            if (!string.IsNullOrEmpty(server) && !_app.Properties.Contains("InitialQueryConnected"))
+            {
+                // we only want to run this code to default connection to the server name and database arguments
+                // on the first window that is connected. After that the user can use the copy connection option
+                // so if they start a new window chances are that they want to connect to another source
+                // Setting this property on the app means this code should only run once
+                _app.Properties.Add("InitialQueryConnected", true);
+
+                var database = _app.Args().Database;
+                var initialCatalog = string.Empty;
+                if (!string.IsNullOrEmpty(database)) initialCatalog = $";Initial Catalog={database}";
+                Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ConnectToServerAsync), $"Connecting to Server: {server} Database:{database}");
+                var token = default(Adomd.AccessToken);
+                if (server.RequiresEntraAuth())
+                {
+                    // prompt for access token
+                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    var (authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
+                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
+                }
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}",
+                                                                        false,
+                                                                        string.Empty,
+                                                                        database,
+                                                                        server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop : ADOTabular.Enums.ServerType.AnalysisServices,
+                                                                        server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase),
+                                                                        database ?? string.Empty
+                                                                        , token));
+                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+
+            }
+            else
+                await ChangeConnectionAsync();
         }
 
         private void RemoveShiftEnterBinding(InputBindingCollection inputBindings)
@@ -417,7 +465,6 @@ namespace DaxStudio.UI.ViewModels
                 , cnn.Database.Name
                 , cnn.AccessToken));
 
-            _sourceDocument = null;
         }
 
         private void OnKeyUp(object sender, KeyEventArgs e)
@@ -756,8 +803,8 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Properties added to this collection populate the available tool windows inside the document pane
         /// </summary>
-        public IObservableCollection<object> ToolWindows =>
-            _toolWindows ?? (_toolWindows = new BindableCollection<object>
+        public IObservableCollection<IScreen> ToolWindows =>
+            (IObservableCollection<IScreen>)(_toolWindows ?? (_toolWindows = new BindableCollection<IScreen>
             {
                 MetadataPane,
                 FunctionPane,
@@ -766,7 +813,7 @@ namespace DaxStudio.UI.ViewModels
                 QueryResultsPane,
                 QueryHistoryPane,
                 QueryBuilder
-            });
+            }));
 
         public void OpenQueryBuilder()
         {
@@ -920,6 +967,10 @@ namespace DaxStudio.UI.ViewModels
                 StopFoldingManager();
 
                 IsClosing = close;
+                if (close)
+                {
+                    Dispose();
+                }
 
             }
             catch (Exception ex)
@@ -982,13 +1033,13 @@ namespace DaxStudio.UI.ViewModels
 
 
 
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
             try
             {
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Starting for: {DisplayName}");
                 _logger.Info("In OnActivate");
-                await base.OnActivateAsync(cancellationToken);
+                await base.OnActivatedAsync(cancellationToken);
 
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Updating EventAggregator Subscriptions");
                 UnsubscribeAll();
@@ -1225,7 +1276,7 @@ namespace DaxStudio.UI.ViewModels
                 try
                 {
                     if (message == null) return;
-                    MetadataPane.IsBusy = true;
+                    MetadataPane.SetBusy(true);
 
                     await Task.Run(async () =>
                     {
@@ -1240,28 +1291,34 @@ namespace DaxStudio.UI.ViewModels
                         if (Connection.Databases.Count > 1 && string.IsNullOrEmpty(message.DatabaseName) && Options.ShowDatabaseDialogOnConnect)
                         {
                             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Start Showing Database Dialog");
-                            await Application.Current.Dispatcher.InvokeAsync(async () =>
+                            try
                             {
-                                try
+                                var dialog = new DatabaseDialogViewModel(Connection.Databases);
+                                await Application.Current.Dispatcher.InvokeAsync(async () =>
                                 {
-                                    var dialog = new DatabaseDialogViewModel(Connection.Databases);
                                     await _windowManager.ShowDialogBoxAsync(dialog);
-                                    if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                                });    
+                                    
+                                if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                                {
+                                    await Task.Run(() =>
                                     {
+                                        Task.Yield();
                                         Connection.SetSelectedDatabase(dialog.SelectedDatabase.Name);
                                         MetadataPane.SelectDatabaseByName(dialog.SelectedDatabase.Name);
-                                        await MetadataPane.RefreshTablesAsync();
-                                    }
+                                    });
+                                    await MetadataPane.RefreshTablesAsync();
                                 }
-                                catch (Exception ex)
-                                {
-                                    await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
-                                    var msg = $"The following error occurred while setting the active database: {ex.Message}";
-                                    Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
-                                    OutputError(msg);
-                                    ActivateOutput();
-                                }
-                            });
+                            }
+                            catch (Exception ex)
+                            {
+                                await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
+                                var msg = $"The following error occurred while setting the active database: {ex.Message}";
+                                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
+                                OutputError(msg);
+                                ActivateOutput();
+                            }
+                            
                             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "End Showing Database Dialog");
                         }
 
@@ -1333,7 +1390,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 finally
                 {
-                    MetadataPane.IsBusy = false;
+                    MetadataPane.SetBusy(false);
                 }
             }
             if (Connection.Databases.Count == 0)
@@ -1414,7 +1471,7 @@ namespace DaxStudio.UI.ViewModels
                 await Execute.OnUIThreadAsync(async () =>
                 {
                     IsConnectionDialogOpen = true;
-                    var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options);
+                    var connDialog = new ConnectionDialogViewModel(connStr, _host, _eventAggregator, hasPowerPivotModel, this, SettingProvider, Options, _windowManager);
 
                     await _windowManager.ShowDialogAsync(connDialog, settings: new Dictionary<string, object>
                                         {
@@ -3127,12 +3184,12 @@ namespace DaxStudio.UI.ViewModels
                 LoadFile(FileName);
             });
 
-            // todo - should we be checking for exceptions in this continuation
-            if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
-                && !FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-            {
-                await ChangeConnectionAsync();
-            }
+            //// todo - should we be checking for exceptions in this continuation
+            //if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
+            //    && !FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    await ChangeConnectionAsync();
+            //}
 
             // todo - should we be checking for exceptions in this continuation
             IsDirty = false;
@@ -3183,11 +3240,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void LoadFile(string fileName)
         {
-            using (new StatusBarMessage(this, $"Loading file: {FileName}..."))
+            using (new StatusBarMessage(this, $"Loading file: {fileName}..."))
             {
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), $"Loading file: {fileName}");
 
-                if (File.Exists(FileName))
+                if (File.Exists(fileName))
                 {
                     FileName = fileName;
                     DisplayName = Path.GetFileName(FileName);
@@ -3210,39 +3267,61 @@ namespace DaxStudio.UI.ViewModels
                     {
                         _isLoadingFile = true;
 
-                        if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                        // Run file I/O on background thread
+                        Task.Run(() =>
                         {
-
-                            using (var package = LoadPackageFile())
+                            if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                             {
-                                LoadState(package);
+                                using (var package = LoadPackageFile())
+                                {
+                                    // LoadState needs UI thread access for some operations
+                                    Execute.OnUIThread(() => LoadState(package));
+                                }
                             }
-                        }
-                        else
+                            else
+                            {
+                                LoadSingleFile();
+                                // LoadState needs UI thread access for some operations
+                                Execute.OnUIThread(() => LoadState());
+                            }
+                        }).ContinueWith(t =>
                         {
-                            LoadSingleFile();
-                            LoadState();
-                        }
+                            // Handle completion on UI thread
+                            if (t.IsFaulted)
+                            {
+                                Log.Error(t.Exception, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
+                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {t.Exception?.InnerException?.Message ?? t.Exception?.Message}"));
+                            }
+                            else
+                            {
+                                _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(fileName));
+                            }
+
+                            _isLoadingFile = false;
+                            IsDirty = false;
+                            State = DocumentState.Loaded;
+                            
+                        }, TaskScheduler.FromCurrentSynchronizationContext());
+                        
+                        // Return immediately - completion happens in continuation
+                        return;
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
                         _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.Message}"));
-                    }
-                    finally
-                    {
                         _isLoadingFile = false;
                     }
                 }
                 else
                 {
-                    Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {FileName}");
-                    OutputError(string.Format("The file '{0}' was not found", FileName));
+                    Log.Warning("{class} {method} {message}", "DocumentViewModel", "LoadFile", $"File not found {fileName}");
+                    OutputError(string.Format("The file '{0}' was not found", fileName));
                 }
-
 
                 IsDirty = false;
                 State = DocumentState.Loaded;
+                
             }
         }
 
@@ -3250,43 +3329,58 @@ namespace DaxStudio.UI.ViewModels
         {
             Package package = null;
 
-            var editor = GetEditor();
-
+            // Open package and read contents on background thread
             package = Package.Open(FileName, FileMode.Open, FileAccess.Read);
 
             Uri uriTom = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.Query, UriKind.Relative));
             if (!package.PartExists(uriTom)) return package;
 
             var part = package.GetPart(uriTom);
+            
+            // Read the stream on background thread
+            string fileContents;
             using (StreamReader tr = new StreamReader(part.GetStream(), Encoding.UTF8))
             {
-                // put contents in edit window
-                editor.Dispatcher.Invoke(() =>
-                {
-                    editor.Document.BeginUpdate();
-                    editor.Document.Text = tr.ReadToEnd();
-                    editor.Document.EndUpdate();
-                });
-
+                fileContents = tr.ReadToEnd();
             }
 
-            return package;
-
-        }
-
-        private void LoadSingleFile()
-        {
-            using (StreamReader tr = new StreamReader(FileName, true))
+            // Update editor on UI thread
+            Execute.OnUIThread(() =>
             {
                 var editor = GetEditor();
                 // put contents in edit window
                 editor.Dispatcher.Invoke(() =>
                 {
                     editor.Document.BeginUpdate();
-                    editor.Document.Text = tr.ReadToEnd();
+                    editor.Document.Text = fileContents;
                     editor.Document.EndUpdate();
                 });
+            });
+
+            return package;
+        }
+
+        private void LoadSingleFile()
+        {
+            // Read file on background thread (we're already on background thread from LoadFile)
+            string fileContents;
+            using (StreamReader tr = new StreamReader(FileName, true))
+            {
+                fileContents = tr.ReadToEnd();
             }
+            
+            // Update editor on UI thread
+            Execute.OnUIThread(() =>
+            {
+                var editor = GetEditor();
+                // put contents in edit window
+                editor.Dispatcher.Invoke(() =>
+                {
+                    editor.Document.BeginUpdate();
+                    editor.Document.Text = fileContents;
+                    editor.Document.EndUpdate();
+                });
+            });
         }
 
         public new string DisplayName
@@ -3393,7 +3487,7 @@ namespace DaxStudio.UI.ViewModels
                     message.FileName = String.Empty;
                     return;
                 }
-                var instances = PowerBIHelper.GetLocalInstances(false);
+                var instances = PowerBIHelper.GetLocalInstances(false,false);
                 var selectedInstance = instances.FirstOrDefault(i => i.Port == port);
                 message.FileName = selectedInstance.Name;
             }
@@ -5132,6 +5226,8 @@ namespace DaxStudio.UI.ViewModels
         public AvalonDock.Themes.Theme AvalonDockTheme => new AvalonDock.Themes.DaxStudioGenericTheme();// AvalonDock.Themes.GenericTheme();
 
         private bool _showMeasureExpressionEditor;
+        private bool disposedValue;
+
         public bool ShowMeasureExpressionEditor
         {
             get => _showMeasureExpressionEditor;
@@ -5479,6 +5575,37 @@ namespace DaxStudio.UI.ViewModels
                 OutputError($"Error discovering query dependencies:\n{ex.Message}");
                 ActivateOutput();
             }
+        }
+
+        public void DropHint(IDropHintInfo dropHintInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // dispose managed state (managed objects)
+                    Connection?.Dispose();
+
+                    // TODO: cleanup toolwindows
+                    //foreach (var tw in ToolWindows)
+                    //{
+                    //}
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

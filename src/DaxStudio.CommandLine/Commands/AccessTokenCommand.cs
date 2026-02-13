@@ -2,6 +2,7 @@
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
+using System.Threading;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -17,7 +18,7 @@ namespace DaxStudio.CommandLine.Commands
             // No validation needed for this command
             return ValidationResult.Success();
         }
-        public override int Execute(CommandContext context, Settings settings)
+        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {            
             var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
             Console.Write(accessToken.Token);

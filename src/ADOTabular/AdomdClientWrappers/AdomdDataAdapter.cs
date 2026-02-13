@@ -18,21 +18,19 @@ namespace ADOTabular.AdomdClientWrappers
         public AdomdDataAdapter(AdomdCommand command)
         {
             Contract.Requires(command != null, "The command parameter must not be null");
-
             
-                _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter
-                {
-                    SelectCommand = (Microsoft.AnalysisServices.AdomdClient.AdomdCommand)command.InternalCommand
-                };
-            
-            
+            _obj = new Microsoft.AnalysisServices.AdomdClient.AdomdDataAdapter
+            {
+                SelectCommand = (Microsoft.AnalysisServices.AdomdClient.AdomdCommand)command.InternalCommand
+            };
         }
         
 
        public void Fill(DataTable tbl)
        {
+           Contract.Requires(tbl != null, "DataTable must not be null");
            
-               _obj.Fill(tbl);
+           _obj.Fill(tbl);
            
        }
 

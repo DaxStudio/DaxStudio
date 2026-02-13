@@ -20,10 +20,6 @@ using System.Threading.Tasks;
 using AvalonDock.Controls;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
-using System.Windows.Controls;
-using Microsoft.AnalysisServices.AdomdClient;
-using DaxStudio.Common.Extensions;
-using DaxStudio.UI.Utils;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -72,7 +68,8 @@ namespace DaxStudio.UI.ViewModels
             _app = Application.Current;
         }
 
-        protected override async Task OnInitializeAsync(CancellationToken cancellationToken)
+        
+        protected override async Task OnInitializedAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -109,6 +106,7 @@ namespace DaxStudio.UI.ViewModels
                     Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
                     await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
                 }
+
             }
             catch (Exception ex)
             {
@@ -127,42 +125,6 @@ namespace DaxStudio.UI.ViewModels
 
         public DocumentViewModel ActiveDocument => this.ActiveItem as DocumentViewModel;
 
-        //public DocumentViewModel ActiveDocument
-        //{
-        //    get => _activeDocument;
-        //    set
-        //    {
-        //        try
-        //        {
-        //            if (_activeDocument == value)
-        //                return;  // this item is already active
-        //            if (this.Items.Count == 0)
-        //            {
-        //                _activeDocument = null;
-        //                return;  // no items in collection usually means we are shutting down
-        //            }
-        //            Log.Debug("{Class} {Event} {Document}", nameof(DocumentTabViewModel), "ActiveDocument:Set", value?.DisplayName);
-        //            lock (_activeDocumentLock)
-        //            {
-        //                _activeDocument = value;
-
-        //                NotifyOfPropertyChange(() => ActiveDocument);
-
-        //                if (ActiveDocument == null) return;
-
-        //                var docs = GetChildren();
-        //                docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
-
-        //                _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), "ActiveDocument.Set", "error setting ActiveDocument");
-        //        }
-        //    }
-        //}
-
         protected override async Task ChangeActiveItemAsync(IScreen newItem, bool closePrevious, CancellationToken cancellationToken)
         {
             try
@@ -170,7 +132,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Starting setting ActiveDocument");
                 //ActiveDocument = newItem as DocumentViewModel;
                 var docs = GetChildren();
-                if (docs.Count() == 0 && newItem is DocumentViewModel doc && doc.IsClosing ) { return; }
+                if (!docs.Any() && newItem is DocumentViewModel doc && doc.IsClosing ) { return; }
                 docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
                 await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
 
@@ -310,32 +272,14 @@ namespace DaxStudio.UI.ViewModels
                 _documentCount = GetMaxDocNumber();
                 _documentCount++;
                 newDoc.DisplayName = $"Query{_documentCount}.dax";
-
+                newDoc.NewDocumentParameters = new NewDocumentParameters
+                {
+                    SourceDocument = sourceDocument,
+                    CopyContent = copyContent
+                };
                 Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Adding new document to tabs collection");
 
                 await ActivateItemAsync(newDoc);
-
-                new System.Action(CleanActiveDocument).BeginOnUIThread();
-
-                await Task.Yield();
-
-                bool flowControl = await WaitForViewToLoad(newDoc);
-                if (!flowControl)
-                {
-                    return;
-                }
-
-                if (sourceDocument == null
-                    || sourceDocument.Connection.IsConnected == false)
-                {
-                    await ConnectToServerAsync();
-                }
-                else
-                {
-                    await ActiveDocument.CopyConnectionAsync(sourceDocument);
-                    if (copyContent) ActiveDocument.CopyContent(sourceDocument);
-                }
-
 
             }
             catch (Exception ex)
@@ -344,29 +288,6 @@ namespace DaxStudio.UI.ViewModels
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening new document\n{ex.Message}"));
             }
 
-        }
-
-        private async Task<bool> WaitForViewToLoad(DocumentViewModel newDoc)
-        {
-            // wait for the view to be attached before we proceed
-            object view = null;
-            int viewRetryCount = 0;
-            while (view == null && viewRetryCount < 10)
-            {
-                view = newDoc.GetView();
-                // wait 100ms for the view to be attached before trying again
-                if (view == null) await Task.Delay(100);
-                viewRetryCount++;
-            }
-
-            if (view == null)
-            {
-                Log.Error(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Failed to get view for new document after 10 attempts");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Failed to open new document. Please try again."));
-                return false;
-            }
-
-            return true;
         }
 
         private int GetMaxDocNumber()
@@ -385,40 +306,8 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task ConnectToServerAsync()
         {
-            if (!string.IsNullOrEmpty(_app.Args().Server) && !_app.Properties.Contains("InitialQueryConnected"))
-            {
-                // we only want to run this code to default connection to the server name and database arguments
-                // on the first window that is connected. After that the user can use the copy connection option
-                // so if they start a new window chances are that they want to connect to another source
-                // Setting this property on the app means this code should only run once
-                _app.Properties.Add("InitialQueryConnected", true);
+            await ActiveDocument?.ConnectToServerAsync();
 
-                var server = _app.Args().Server;
-                var database = _app.Args().Database;
-                var initialCatalog = string.Empty;
-                if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
-                Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ConnectToServerAsync), $"Connecting to Server: {server} Database:{database}");
-                var token = default(AccessToken);
-                if (server.RequiresEntraAuth())
-                {
-                    // prompt for access token
-                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var (authResult,context) = await EntraIdHelper.PromptForAccountAsync(hwnd, _options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
-                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
-                }
-                await _eventAggregator.PublishOnUIThreadAsync(new ConnectEvent($"Data Source={server}{initialCatalog}", 
-                                                                        false, 
-                                                                        string.Empty, 
-                                                                        database,
-                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop: ADOTabular.Enums.ServerType.AnalysisServices,
-                                                                        server.Trim().StartsWith("localhost:",StringComparison.OrdinalIgnoreCase),
-                                                                        _app.Args().Database??string.Empty
-                                                                        ,token));
-                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
-              
-            }
-            else
-                await ChangeConnectionAsync();
         }
 
         private void CleanActiveDocument()
@@ -563,7 +452,7 @@ namespace DaxStudio.UI.ViewModels
                 
                 var filesToRecover = message.AutoSaveMasterIndex.Values.Where(i => i.ShouldRecover && i.IsCurrentVersion).SelectMany(entry => entry.Files).ToList();
 
-                if (!filesToRecover.Any())
+                if (filesToRecover.Count == 0)
                 {
                     Log.Information(Constants.LogMessageTemplate, nameof(DocumentViewModel), "Handle<AutoSaveRecoveryEvent>", "no files found that need to be recovered");
 
@@ -668,8 +557,6 @@ namespace DaxStudio.UI.ViewModels
 
             }
         }
-
-        
 
         public async Task DuplicateTab(object tab)
         {

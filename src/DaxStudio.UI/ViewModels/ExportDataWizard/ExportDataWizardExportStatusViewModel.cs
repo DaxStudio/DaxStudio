@@ -51,9 +51,9 @@ namespace DaxStudio.UI.ViewModels
             await Wizard.TryCloseAsync(true);
         }
 
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
-            await base.OnActivateAsync(cancellationToken);
+            await base.OnActivatedAsync(cancellationToken);
             NotifyOfPropertyChange(nameof(CanRequestCancel));
             Wizard.EventAggregator.SubscribeOnPublishedThread(this);
         }

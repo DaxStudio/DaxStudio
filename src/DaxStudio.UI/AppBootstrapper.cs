@@ -22,6 +22,7 @@ using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Conventions;
+using System.Threading.Tasks;
 
 namespace DaxStudio.UI
 {
@@ -38,16 +39,12 @@ namespace DaxStudio.UI
             base.Initialize();
 	    }
 
-        protected override void OnStartup(object sender, StartupEventArgs e)
+        protected override async void OnStartup(object sender, StartupEventArgs e)
         {
             AssemblyLoader.PreJitControls();
-            
+            await DisplayRootViewForAsync<IShell>(null);
         }
 
-        public void DisplayShell()
-        {
-            Application.Dispatcher.Invoke(() => base.DisplayRootViewForAsync<IShell>(null));
-        }
 
         protected override void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
@@ -113,7 +110,7 @@ namespace DaxStudio.UI
 	                AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
 	                );
 	            //_container = new CompositionContainer(catalog,true);
-                _container = new CompositionContainer(catalog);
+                _container = new CompositionContainer(catalog, true);
 	            var batch = new CompositionBatch();
 
                 batch.AddExportedValue<IWindowManager>(new WindowManager());

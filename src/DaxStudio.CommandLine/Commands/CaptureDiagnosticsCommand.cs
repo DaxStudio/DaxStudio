@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AnalysisServices.AdomdClient;
 using DaxStudio.CommandLine.UIStubs;
+using System.Threading;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -33,7 +34,7 @@ namespace DaxStudio.CommandLine.Commands
             public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new System.NotImplementedException(); }
         }
 
-        public override int Execute(CommandContext context, Settings settings)
+        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting Capture Diagnostics command");
             if (settings.File != null && settings.Query == null)

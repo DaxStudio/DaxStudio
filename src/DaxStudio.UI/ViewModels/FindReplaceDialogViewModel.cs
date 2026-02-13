@@ -42,7 +42,7 @@ namespace DaxStudio.UI.ViewModels
             IsVisible = false;
         }
 
-        protected override async Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
             await Task.Delay(100); // let the screen draw for the first time before we try and set the focus
             this.SetFocus(() => TextToFind);

@@ -189,7 +189,7 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
-        private async void BenchmarkingComplete()
+        private async Task BenchmarkingComplete()
         {
             _stopwatch?.Stop();
             // Stop listening to events
@@ -364,7 +364,7 @@ namespace DaxStudio.UI.ViewModels
             } 
             else
             {
-                BenchmarkingComplete();
+                await BenchmarkingComplete();
             }
 
         }

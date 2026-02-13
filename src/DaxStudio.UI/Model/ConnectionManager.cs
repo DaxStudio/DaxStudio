@@ -26,6 +26,7 @@ using ADOTabular.Interfaces;
 using DaxStudio.Common;
 using ADOTabular.Extensions;
 using TaskExtensions = DaxStudio.UI.Extensions.TaskExtensions;
+using System.Threading;
 
 namespace DaxStudio.UI.Model
 {
@@ -46,6 +47,7 @@ namespace DaxStudio.UI.Model
         , IMetadataProvider
         , IConnection
         , IModelIntellisenseProvider
+        , IDisposable
     {
         public bool IsConnecting { get; private set; }
 
@@ -589,33 +591,37 @@ namespace DaxStudio.UI.Model
 
         public string SelectedModelName { get; set; }
 
-
-        public async Task UpdateColumnSampleData(ITreeviewColumn column, int sampleSize) 
+        private ADOTabularConnection _sampleDataConnection;
+        private readonly object _sampleDataLock = new object();
+        public async Task UpdateColumnSampleDataAsync(ITreeviewColumn column, int sampleSize, CancellationToken cancellationToken) 
         {
 
             column.UpdatingSampleData = true;
             try
             {
                 await Task.Run(() => {
-                    using (var newConn = _dmvConnection.Clone())
+                    // cancel any existing sample data connection
+                    _sampleDataConnection?.TryCancel();
+                    //_sampleDataConnection?.TryClose();
+
+                    if (column.SampleData.Count != 0) return; // if we already have sample data then don't do anything
+                    lock (_sampleDataLock)
                     {
-                        column.SampleData?.Clear();
-                        try
+                        using (_sampleDataConnection = _dmvConnection.Clone())
                         {
-                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(newConn, sampleSize));
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleData), "Error getting sample data");
-                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error getting sample data for tooltip\n{ex.Message}"));
+                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(_sampleDataConnection, sampleSize));
                         }
                     }
-                });
+                }, cancellationToken);
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
             }
             catch (Exception ex)
             {
                 var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
-                Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleData), errorMsg);
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), errorMsg);
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
             }
             finally
@@ -624,6 +630,7 @@ namespace DaxStudio.UI.Model
             }
 
         }
+
 
         public async Task<List<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize)
         {
@@ -646,7 +653,20 @@ namespace DaxStudio.UI.Model
             });
         }
 
-        public async Task UpdateColumnBasicStats(ITreeviewColumn column)
+        public void CancelUpdatingColumnSampleData()
+        {
+            if (_sampleDataConnection != null)
+            {
+                _sampleDataConnection.Cancel();
+                _sampleDataConnection.Close();
+                _sampleDataConnection.Dispose();
+                _sampleDataConnection = null;
+            }
+        }
+
+        private ADOTabularConnection _basicStatConnection;
+        private readonly object _basicStatsLock = new object();
+        public async Task UpdateColumnBasicStatsAsync(ITreeviewColumn column, CancellationToken cancellationToken)
         {
 
       
@@ -654,14 +674,25 @@ namespace DaxStudio.UI.Model
             try
             {
                 await Task.Run(() => {
-                    using (var newConn = _dmvConnection.Clone())
+                    
+                     _basicStatConnection?.TryCancel(); // cancel any existing basic stats connection
+                     //_basicStatConnection?.TryClose();
+
+                    lock (_basicStatsLock)
                     {
-                        column.InternalColumn.UpdateBasicStats(newConn);
-                        column.MinValue = column.InternalColumn.MinValue;
-                        column.MaxValue = column.InternalColumn.MaxValue;
-                        column.DistinctValues = column.InternalColumn.DistinctValues;
+                        using (_basicStatConnection = _dmvConnection.Clone())
+                        {
+                            column.InternalColumn.UpdateBasicStats(_basicStatConnection);
+                            column.MinValue = column.InternalColumn.MinValue;
+                            column.MaxValue = column.InternalColumn.MaxValue;
+                            column.DistinctValues = column.InternalColumn.DistinctValues;
+                        }
                     }
-                });
+                }, cancellationToken); // add cancellation token
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
             }
             catch (Exception ex)
             {
@@ -670,6 +701,17 @@ namespace DaxStudio.UI.Model
             finally
             {
                 column.UpdatingBasicStats = false;
+            }
+        }
+
+        public void CancelUpdatingColumnBasicStats()
+        {
+            if (_basicStatConnection != null)
+            {
+                _basicStatConnection.Cancel();
+                _basicStatConnection.Close();
+                _basicStatConnection.Dispose();
+                _basicStatConnection = null;
             }
         }
 
@@ -925,26 +967,76 @@ namespace DaxStudio.UI.Model
             Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
             scanMeasures.Enqueue(modelMeasures.First(m => m.Name == measureName));
 
-            while (scanMeasures.Count > 0)
+            // Track user-defined functions to process separately
+            Queue<string> scanFunctions = new Queue<string>();
+            HashSet<string> processedFunctions = new HashSet<string>();
+
+            while (scanMeasures.Count > 0 || scanFunctions.Count > 0)
             {
-                var measure = scanMeasures.Dequeue();
-                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
-                dependentMeasures.Add(measure);
-
-                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
-
-                using (var dr = ExecuteReader(dmvDependency, null))
+                // Process measures
+                if (scanMeasures.Count > 0)
                 {
-                    while (dr.Read())
+                    var measure = scanMeasures.Dequeue();
+                    if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                    dependentMeasures.Add(measure);
+
+                    // Query for both MEASURE and FUNCTION dependencies
+                    var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+                    using (var dr = ExecuteReader(dmvDependency, null))
                     {
-                        var referencedObjectType = dr.GetString(0);
-                        if (referencedObjectType != "MEASURE") continue;
-                        // var referencedTable = dr.GetString(1);
-                        var referencedMeasureName = dr.GetString(2);
-                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        while (dr.Read())
                         {
-                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
-                            scanMeasures.Enqueue(dependentMeasure);
+                            var referencedObjectType = dr.GetString(0);
+                            var referencedObjectName = dr.GetString(2);
+
+                            if (referencedObjectType == "MEASURE")
+                            {
+                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
+                                {
+                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
+                                    scanMeasures.Enqueue(dependentMeasure);
+                                }
+                            }
+                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
+                            {
+                                // Add user-defined functions to be processed recursively
+                                scanFunctions.Enqueue(referencedObjectName);
+                                processedFunctions.Add(referencedObjectName);
+                            }
+                        }
+                    }
+                }
+
+                // Process user-defined functions
+                if (scanFunctions.Count > 0)
+                {
+                    var functionName = scanFunctions.Dequeue();
+
+                    // Query dependencies of the user-defined function
+                    var dmvFunctionDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{functionName.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+                    using (var dr = ExecuteReader(dmvFunctionDependency, null))
+                    {
+                        while (dr.Read())
+                        {
+                            var referencedObjectType = dr.GetString(0);
+                            var referencedObjectName = dr.GetString(2);
+
+                            if (referencedObjectType == "MEASURE")
+                            {
+                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
+                                {
+                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
+                                    scanMeasures.Enqueue(dependentMeasure);
+                                }
+                            }
+                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
+                            {
+                                // Recursively process nested user-defined functions
+                                scanFunctions.Enqueue(referencedObjectName);
+                                processedFunctions.Add(referencedObjectName);
+                            }
                         }
                     }
                 }
@@ -1057,11 +1149,17 @@ namespace DaxStudio.UI.Model
             await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
 
             if (message.ServerType == ServerType.Offline)
+            {
                 await OpenOfflineConnectionAsync(message);
+                // Don't publish ConnectionOpenedEvent again for offline connections
+                // as it would clear the metadata that was just populated by ConnectionChangedEvent
+            }
             else
+            {
                 await OpenOnlineConnectionAsync(message, uniqueId);
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+            }
 
-            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
             await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
             await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
 
@@ -1189,18 +1287,28 @@ namespace DaxStudio.UI.Model
             });
         }
 
-        public async void UpdateTableBasicStats(TreeViewTable table)
+        private ADOTabularConnection _tableStatsConnection;
+        private readonly object _tableStatsLock = new object();
+        public async Task UpdateTableBasicStatsAsync(TreeViewTable table)
         {
             table.UpdatingBasicStats = true;
             try
             {
                 await Task.Run(() => {
-                    using (var newConn = _dmvConnection.Clone())
+                    _tableStatsConnection?.TryCancel(); // cancel any existing table stats connection
+                    //_tableStatsConnection?.TryClose();
+                    lock (_tableStatsLock)
                     {
-                        table.UpdateBasicStats(newConn);
-;
+                        using (_tableStatsConnection = _dmvConnection.Clone())
+                        {
+                            table.UpdateBasicStats(_tableStatsConnection);
+                        }
                     }
                 });
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
             }
             catch (Exception ex)
             {
@@ -1209,6 +1317,17 @@ namespace DaxStudio.UI.Model
             finally
             {
                 table.UpdatingBasicStats = false;
+            }
+        }
+
+        public void CancelUpdatingTableBasicStats()
+        {
+            if (_tableStatsConnection != null)
+            {
+                _tableStatsConnection.Cancel();
+                _tableStatsConnection.Close();
+                _tableStatsConnection.Dispose();
+                _tableStatsConnection = null;
             }
         }
 
@@ -1312,6 +1431,8 @@ namespace DaxStudio.UI.Model
         }
         private object _supportedTraceEventClassesLock = new object();
         private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> _supportedTraceEventClasses;
+        private bool disposedValue;
+
         public Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses
         {
             get
@@ -1461,11 +1582,57 @@ namespace DaxStudio.UI.Model
         {
             var restriction = new AdomdRestriction("QUERY", queryText);
             var restrictions = new AdomdRestrictionCollection() { restriction};
-            return _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
+            DataSet ds =  _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
+            DataTable t = ds.Tables[0];
+            List<ADOTabularMeasure> measures = new List<ADOTabularMeasure>();
+            foreach (DataRow row in t.Rows)
+            {
+                var refObjType = row["REFERENCED_OBJECT_TYPE"].ToString();
+                if (refObjType == "MEASURE" || refObjType == "FUNCTION")
+                {
+                    measures.AddRange(FindDependentMeasures(row["REFERENCED_OBJECT"].ToString()));
+                    
+                }
+            }
+            foreach (var m in measures)
+            {
+                t.Rows.Add(new[] { "QUERY", "MEASURE", m.Table.Name, m.Name, m.Expression });
+            }
+
+            return ds;
         }
 
         public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _connection?.Dispose();
+                    _dmvConnection?.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~ConnectionManager()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 
 }

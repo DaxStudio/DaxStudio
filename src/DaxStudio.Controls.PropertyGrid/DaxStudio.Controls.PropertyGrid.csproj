@@ -70,6 +70,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\EnvironmentVariableAttribute.cs" />
     <Compile Include="Attributes\SortOrderAttribute.cs" />
     <Compile Include="Attributes\MaxValueAttribute.cs" />
     <Compile Include="Attributes\MinValueAttribute.cs" />
@@ -95,7 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>9.0.0</Version>
+      <Version>10.0.102</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

@@ -24,6 +24,7 @@ using Serilog;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.UI.Extensions;
+using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
 
 namespace DaxStudio.UI.ViewModels
 {

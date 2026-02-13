@@ -141,10 +141,8 @@ namespace DaxStudio.Standalone
 
             if (!App.Args().ShowHelp)
             {
-
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
-                bootstrapper.DisplayShell();
                 App.Run();
             }
 

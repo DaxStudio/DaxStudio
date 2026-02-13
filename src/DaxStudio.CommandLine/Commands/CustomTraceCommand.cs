@@ -67,7 +67,7 @@ namespace DaxStudio.CommandLine.Commands
         private StatusContext statusContext;
         private static CustomTraceViewModel customTracer;
 
-        public override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting [yellow]Custom Trace[/] Command");
 

@@ -1,7 +1,5 @@
-﻿using ADOTabular.Enums;
-using System;
+﻿using System;
 using System.Data;
-using System.Threading;
 
 namespace ADOTabular.AdomdClientWrappers
 {
@@ -15,9 +13,10 @@ namespace ADOTabular.AdomdClientWrappers
             _command = command;
         }
 
+        AdomdClientWrappers.AdomdConnection _internalConnection;
         public AdomdConnection Connection
         {
-
+            get { return _internalConnection; }
             set
             {
                 if (value == null) { 
@@ -28,6 +27,7 @@ namespace ADOTabular.AdomdClientWrappers
                 if (_command == null)
                     _command = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
                 _command.Connection = (Microsoft.AnalysisServices.AdomdClient.AdomdConnection)value.UnderlyingConnection;
+                _internalConnection = new AdomdConnection((Microsoft.AnalysisServices.AdomdClient.AdomdConnection)value.UnderlyingConnection);
             }
         }
 

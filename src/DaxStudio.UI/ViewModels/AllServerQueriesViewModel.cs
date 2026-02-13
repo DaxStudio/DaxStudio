@@ -368,7 +368,7 @@ namespace DaxStudio.UI.ViewModels
         public override void ClearFilters()
         {
             var vw = GetView() as Views.AllServerQueriesView;
-            var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.QueryEvents);
+            var controller = DaxStudio.Controls.DataGridFilter.DataGridExtensions.GetDataGridFilterQueryController(vw.QueryEvents);
             controller.ClearFilter();
         }
 
@@ -448,7 +448,7 @@ namespace DaxStudio.UI.ViewModels
         public void SetDefaultFilter(string column, string value)
         {
             var vw = this.GetView() as Views.AllServerQueriesView;
-            var controller = DataGridExtensions.GetDataGridFilterQueryController(vw.QueryEvents);
+            var controller = DaxStudio.Controls.DataGridFilter.DataGridExtensions.GetDataGridFilterQueryController(vw.QueryEvents);
             var filters = controller.GetFiltersForColumns();
 
             var columnFilter = filters.FirstOrDefault(w => w.Key == column);
