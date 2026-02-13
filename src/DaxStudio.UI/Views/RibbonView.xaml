@@ -1491,6 +1491,27 @@
                     </Fluent:Button.ToolTip>
                 </Fluent:Button>
             </Fluent:RibbonGroupBox>
+            
+            <!-- Model Diagram (Preview Feature) -->
+            <Fluent:RibbonGroupBox Header="Model" 
+                                   Visibility="{Binding ShowModelDiagramEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Fluent:Button Name="ShowModelDiagram"
+                               Header="Model Diagram"
+                               KeyTip="MD"
+                               cal:Message.Attach="[Event Click] = [Action ShowModelDiagram()]"
+                               Icon="{DynamicResource hierarchyDrawingImage}"
+                               LargeIcon="{DynamicResource hierarchyDrawingImage}"
+                               Margin="4,0"
+                               SizeDefinition="Large,Large,Small">
+                    <Fluent:Button.ToolTip>
+                        <Fluent:ScreenTip Title="Model Diagram (Preview)"
+                                   Text="Displays a visual diagram of the connected model showing tables, columns, and relationships. Tables can be moved by dragging."
+                                   DisableReason="You must be connected to a model to view the diagram."
+                                   ></Fluent:ScreenTip>
+                    </Fluent:Button.ToolTip>
+                </Fluent:Button>
+            </Fluent:RibbonGroupBox>
+            
             <Fluent:RibbonGroupBox Header="Export" >
                 <Fluent:Button Name="ExportAllData"
                                    Header="Export Data"

@@ -1,0 +1,1597 @@
+<UserControl x:Class="DaxStudio.UI.Views.XmSqlErdView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
+             xmlns:enums="clr-namespace:DaxStudio.Interfaces.Enums;assembly=DaxStudio.Interfaces"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource Theme.Brush.Content.Back}">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
+            <conv:HeatLevelToColorConverter x:Key="HeatLevelToColorConverter" />
+            
+            <!-- Column Item Style -->
+            <Style x:Key="ColumnItemStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Table.Border}"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Setter Property="Padding" Value="6,2"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                        <Setter Property="Background" Value="#4D0078D4"/>
+                        <Setter Property="BorderBrush" Value="#FF0078D4"/>
+                        <Setter Property="BorderThickness" Value="2,1,2,1"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Table Card Template with Heat Map, Selection, and Drag support -->
+            <DataTemplate x:Key="TableCardTemplate" DataType="{x:Type vm:ErdTableViewModel}">
+                <Border x:Name="TableBorder"
+                        CornerRadius="4"
+                        Width="{Binding Width}"
+                        Height="{Binding Height}"
+                        MinHeight="80"
+                        Background="{DynamicResource Theme.Brush.Content.Back}"
+                        Cursor="Hand"
+                        MouseLeftButtonDown="Table_MouseLeftButtonDown"
+                        MouseLeftButtonUp="Table_MouseLeftButtonUp"
+                        MouseMove="Table_MouseMove">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSearchMatch}" Value="False">
+                                    <Setter Property="Opacity" Value="0.35"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsBottleneck}" Value="True">
+                                    <Setter Property="BorderThickness" Value="3"/>
+                                    <Setter Property="BorderBrush" Value="#FF5722"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsQueryFiltered}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsQueryHighlighted}" Value="True">
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="Shadow" BlurRadius="8" ShadowDepth="2" Opacity="0.3" Direction="315"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Horizontal Resize Grip - overlays right edge of table -->
+                        <Border Grid.RowSpan="6"
+                                Width="8"
+                                HorizontalAlignment="Right"
+                                Margin="0,0,-4,0"
+                                Background="Transparent"
+                                Cursor="SizeWE"
+                                MouseLeftButtonDown="HorizontalResizeGrip_MouseLeftButtonDown"
+                                MouseMove="HorizontalResizeGrip_MouseMove"
+                                MouseLeftButtonUp="HorizontalResizeGrip_MouseLeftButtonUp"
+                                ToolTip="Drag to resize table width">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        
+                        <!-- Table Header with Heat Map Color and Accessibility Pattern -->
+                        <Grid Grid.Row="0">
+                            <!-- Background with heat color -->
+                            <Border CornerRadius="4,4,0,0"
+                                    Background="{Binding HeatColor}"/>
+                            
+                            <!-- Diagonal stripe pattern overlay for accessibility (varies with heat level) -->
+                            <Border CornerRadius="4,4,0,0"
+                                    Opacity="{Binding HeatPatternOpacity}">
+                                <Border.Background>
+                                    <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
+                                        <DrawingBrush.Drawing>
+                                            <GeometryDrawing>
+                                                <GeometryDrawing.Pen>
+                                                    <Pen Brush="White" Thickness="2"/>
+                                                </GeometryDrawing.Pen>
+                                                <GeometryDrawing.Geometry>
+                                                    <LineGeometry StartPoint="0,8" EndPoint="8,0"/>
+                                                </GeometryDrawing.Geometry>
+                                            </GeometryDrawing>
+                                        </DrawingBrush.Drawing>
+                                    </DrawingBrush>
+                                </Border.Background>
+                            </Border>
+                            
+                            <!-- Header content -->
+                            <Border CornerRadius="4,4,0,0"
+                                Padding="8,4"
+                                Background="Transparent"
+                                MouseLeftButtonDown="TableHeader_MouseLeftButtonDown"
+                                MouseLeftButtonUp="TableHeader_MouseLeftButtonUp"
+                                Cursor="Hand">
+                            <Border.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="Click for table details, double-click to toggle collapse, drag to move" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding HeatLevelText, StringFormat='Heat Level: {0}'}" Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding HeatAccessibilityIcon}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border.ToolTip>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Collapse/Expand Toggle -->
+                                <Border Grid.Column="0" 
+                                        Background="Transparent" 
+                                        Cursor="Hand"
+                                        Margin="0,0,4,0"
+                                        MouseLeftButtonDown="CollapseToggle_MouseLeftButtonDown"
+                                        ToolTip="Toggle collapse">
+                                    <Path Width="10" Height="10" Stretch="Uniform" Fill="White">
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Setter Property="Data" Value="M0,0 L8,4 L0,8 Z"/>
+                                                <Setter Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="90" CenterX="5" CenterY="5"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                                        <Setter Property="RenderTransform">
+                                                            <Setter.Value>
+                                                                <RotateTransform Angle="0" CenterX="5" CenterY="5"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                </Border>
+                                
+                                <!-- Table Name -->
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding TableName}"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           ToolTip="{Binding TableName}"/>
+                                
+                                <!-- Heat Accessibility Indicator (shows intensity without relying on color) -->
+                                <Border Grid.Column="2"
+                                        Background="Transparent"
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center"
+                                        ToolTip="{Binding HeatLevelText, StringFormat='Load: {0}'}">
+                                    <TextBlock Text="{Binding HeatAccessibilityIcon}"
+                                               FontSize="8"
+                                               Foreground="White"
+                                               Opacity="0.9"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                
+                                <!-- Hit Count Badge -->
+                                <Border Grid.Column="3"
+                                        Background="White"
+                                        CornerRadius="8"
+                                        Padding="6,1"
+                                        Margin="4,0,0,0"
+                                        Opacity="0.9"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding HitCount}"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"
+                                               Foreground="#333"/>
+                                </Border>
+                                
+                                <!-- Bottleneck Rank Badge (only shown when IsBottleneck is true) -->
+                                <Border Grid.Column="4"
+                                        Background="#FF5722"
+                                        CornerRadius="10"
+                                        Padding="6,2"
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Visibility="{Binding IsBottleneck, Converter={StaticResource BoolToCollapsedConverter}}"
+                                        ToolTip="Performance bottleneck rank (1 = slowest)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="🔥" FontSize="10" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding BottleneckRank}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"
+                                                   Margin="2,0,0,0"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- CPU Hotspot Badge (shown when table uses >= 50% of total CPU) -->
+                                <Border Grid.Column="5"
+                                        Background="#D32F2F"
+                                        CornerRadius="10"
+                                        Padding="6,2"
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Visibility="{Binding IsCpuHotspot, Converter={StaticResource BoolToCollapsedConverter}}"
+                                        ToolTip="{Binding CpuHotspotTooltip}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="⚡" FontSize="10" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding CpuPercentageFormatted}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"
+                                                   Margin="2,0,0,0"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                        </Grid>
+                        
+                        <!-- Row Count Info (shown if data available) -->
+                        <Border Grid.Row="1"
+                                Padding="8,2"
+                                Visibility="{Binding HasRowCountData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                Background="{DynamicResource Theme.Brush.MenuBar.Back}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Rows: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalRowsFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighRowCount}" Value="True">
+                                                    <Setter Property="Foreground" Value="#E65100"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⚠" FontSize="10" Foreground="#E65100"
+                                           Visibility="{Binding HasHighRowCount, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High row count (100K+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
+                                
+                                <!-- Duration info inline with row count -->
+                                <TextBlock Text="  |  " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasDurationData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="Duration: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasDurationData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalDurationFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           Visibility="{Binding HasDurationData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighDuration}" Value="True">
+                                                    <Setter Property="Foreground" Value="#C62828"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⏱" FontSize="10" Foreground="#C62828"
+                                           Visibility="{Binding HasHighDuration, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High duration (1s+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
+                                
+                                <!-- CPU Time info inline -->
+                                <TextBlock Text="  |  " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="CPU: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalCpuFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighCpu}" Value="True">
+                                                    <Setter Property="Foreground" Value="#D84315"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⚡" FontSize="10" Foreground="#D84315"
+                                           Visibility="{Binding HasHighCpu, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High CPU time (100ms+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Duration-only row (when no row count data but has duration) -->
+                        <Border Grid.Row="2"
+                                Padding="8,2"
+                                Background="{DynamicResource Theme.Brush.MenuBar.Back}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding HasRowCountData}" Value="False"/>
+                                                <Condition Binding="{Binding HasDurationData}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Duration: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalDurationFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighDuration}" Value="True">
+                                                    <Setter Property="Foreground" Value="#C62828"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⏱" FontSize="10" Foreground="#C62828"
+                                           Visibility="{Binding HasHighDuration, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High duration (1s+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
+                                
+                                <!-- CPU Time info inline -->
+                                <TextBlock Text="  |  " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="CPU: " FontSize="10" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalCpuFormatted}" 
+                                           FontSize="10" FontWeight="SemiBold"
+                                           Visibility="{Binding HasCpuData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasHighCpu}" Value="True">
+                                                    <Setter Property="Foreground" Value="#D84315"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text=" ⚡" FontSize="10" Foreground="#D84315"
+                                           Visibility="{Binding HasHighCpu, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           ToolTip="High CPU time (100ms+) may indicate performance concerns"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- SE Event Data Row (Cache, Queries, Parallelism, CPU) -->
+                        <Border Grid.Row="3"
+                                Padding="8,2"
+                                Background="{DynamicResource Theme.Brush.MenuBar.Back}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding HasCacheData}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding HasParallelData}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding HasSignificantCpu}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Cache Hit Indicator -->
+                                <StackPanel Orientation="Horizontal" 
+                                            Visibility="{Binding HasCacheData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                            ToolTip="{Binding CacheTooltip}">
+                                    <TextBlock Text="Cache: " FontSize="9" 
+                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CacheHitRateFormatted}" 
+                                               FontSize="9" FontWeight="SemiBold"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasGoodCacheRate}" Value="True">
+                                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding HasPoorCacheRate}" Value="True">
+                                                        <Setter Property="Foreground" Value="#C62828"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!-- Cache indicator icon -->
+                                    <TextBlock FontSize="9" VerticalAlignment="Center" Margin="2,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value=""/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasGoodCacheRate}" Value="True">
+                                                        <Setter Property="Text" Value=" ✓"/>
+                                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding HasPoorCacheRate}" Value="True">
+                                                        <Setter Property="Text" Value=" ✗"/>
+                                                        <Setter Property="Foreground" Value="#C62828"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                                
+                                <!-- Separator -->
+                                <TextBlock Text="  |  " FontSize="9" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding HasCacheData}" Value="True"/>
+                                                        <Condition Binding="{Binding HasParallelData}" Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                
+                                <!-- Parallelism Indicator -->
+                                <StackPanel Orientation="Horizontal" 
+                                            Visibility="{Binding HasParallelData, Converter={StaticResource BoolToCollapsedConverter}}"
+                                            ToolTip="{Binding ParallelismTooltip}">
+                                    <TextBlock Text="⚡" FontSize="9" 
+                                               Foreground="#1565C0"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CpuFactorFormatted}" 
+                                               FontSize="9" FontWeight="SemiBold"
+                                               Margin="2,0,0,0"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#1565C0"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasHighParallelism}" Value="True">
+                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock FontSize="8" 
+                                               Text=" parallel"
+                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <!-- Query Count (shown when no cache/parallel data but has query count) -->
+                                <StackPanel Orientation="Horizontal" 
+                                            ToolTip="{Binding QueryCountTooltip}">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding HasCacheData}" Value="False"/>
+                                                        <Condition Binding="{Binding HasParallelData}" Value="False"/>
+                                                        <Condition Binding="{Binding HasQueryCountData}" Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <TextBlock Text="Queries: " FontSize="9" 
+                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding QueryCount}" 
+                                               FontSize="9" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                
+                                <!-- Query IDs (for Query Plan Integration) -->
+                                <TextBlock FontSize="8" 
+                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                           Text="{Binding QueryIdsFormatted}"
+                                           ToolTip="SE Query IDs that accessed this table"
+                                           Visibility="{Binding HasQueryIds, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Columns List (collapsible) -->
+                        <ScrollViewer Grid.Row="4" 
+                                      VerticalScrollBarVisibility="Auto"
+                                      MaxHeight="{Binding ColumnsHeight}">
+                            <ScrollViewer.Style>
+                                <Style TargetType="ScrollViewer">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ScrollViewer.Style>
+                            <ItemsControl ItemsSource="{Binding Columns}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:ErdColumnViewModel}">
+                                        <Border MouseLeftButtonDown="Column_MouseLeftButtonDown"
+                                                Cursor="Hand">
+                                            <Border.Style>
+                                                <Style TargetType="Border" BasedOn="{StaticResource ColumnItemStyle}">
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSearchMatch}" Value="False">
+                                                            <Setter Property="Opacity" Value="0.4"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" MinWidth="12"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <!-- Usage Icons using Path geometry (renders reliably) -->
+                                                <StackPanel Grid.Column="0" 
+                                                            Orientation="Horizontal" 
+                                                            VerticalAlignment="Center"
+                                                            Margin="2,0,4,0"
+                                                            ToolTip="{Binding UsageTooltip}">
+                                                    <!-- Key icon for Join (golden - simple key shape) -->
+                                                    <Grid Width="14" Height="14" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsJoinColumn, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                        <Ellipse Width="8" Height="8" Fill="#DAA520" 
+                                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0"/>
+                                                        <Ellipse Width="4" Height="4" Fill="{DynamicResource Theme.Brush.Content.Back}" 
+                                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,2,0,0"/>
+                                                        <Rectangle Width="8" Height="3" Fill="#DAA520" 
+                                                                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                                                        <Rectangle Width="2" Height="3" Fill="#DAA520" 
+                                                                   HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,1,2"/>
+                                                        <Rectangle Width="2" Height="3" Fill="#DAA520" 
+                                                                   HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,2"/>
+                                                    </Grid>
+                                                    <!-- Funnel/Filter icon (purple) -->
+                                                    <Path Data="M0,0 L10,0 L6,5 L6,9 L4,10 L4,5 Z"
+                                                          Fill="#9932CC" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsFilterColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Sum/Sigma icon (blue) -->
+                                                    <Path Data="M0,0 L8,0 L8,2 L3,2 L6,5 L3,8 L8,8 L8,10 L0,10 L0,8 L4,5 L0,2 Z"
+                                                          Fill="#1E90FF" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Checkmark icon (green) -->
+                                                    <Path Data="M0,5 L3,8 L9,2 L10,3 L3,10 L-1,6 Z"
+                                                          Fill="#32CD32" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsSelectColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Function/Expr icon (teal - for WITH $Expr expressions) -->
+                                                    <Path Data="M1,2 L1,8 M0,3 L2,3 M0,7 L2,7 M4,0 L4,3 L6,5 L4,7 L4,10 M8,0 L8,3 L6,5 L8,7 L8,10"
+                                                          Stroke="#00CED1" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsExpressionColumn, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                          ToolTip="Used in WITH expression (calculated measure)"/>
+                                                    <!-- Lightning bolt icon for Callback (orange/red - indicates performance issue) -->
+                                                    <Path Data="M7,0 L3,5 L5,5 L2,10 L8,4 L5,4 Z"
+                                                          Fill="#FF5722" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding HasCallback, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                          ToolTip="DAX Callback - reduces Storage Engine efficiency"/>
+                                                </StackPanel>
+                                                
+                                                <!-- Column Name -->
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding ColumnName}"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           Opacity="0.9"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"
+                                                           ToolTip="{Binding ColumnName}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsJoinColumn}" Value="True">
+                                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                
+                                                <!-- Aggregation Badge -->
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding AggregationText}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource Theme.Brush.Log.Warning}"
+                                                           Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="4,0,0,0"/>
+                                                
+                                                <!-- VPA Stat Display (Cardinality or Size) -->
+                                                <TextBlock Grid.Column="3"
+                                                           Text="{Binding DisplayedStat}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           Opacity="0.6"
+                                                           Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                           VerticalAlignment="Center"
+                                                           ToolTip="{Binding DisplayedStatTooltip}"
+                                                           Margin="4,0,2,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        
+                        <!-- Key Columns (shown when collapsed) -->
+                        <Border Grid.Row="4" 
+                                CornerRadius="0,0,4,4"
+                                Background="{DynamicResource Theme.Brush.Content.Back}"
+                                Padding="4,2">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsCollapsed}" Value="True"/>
+                                                <Condition Binding="{Binding HasKeyColumns}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ItemsControl ItemsSource="{Binding KeyColumns}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:ErdColumnViewModel}">
+                                        <Border Margin="0,1" Padding="2,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                            <Setter Property="Background" Value="#4D0078D4"/>
+                                                            <Setter Property="BorderBrush" Value="#FF0078D4"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- Key icon (golden - simple key shape) -->
+                                                <Grid Grid.Column="0" Width="14" Height="14" Margin="0,0,4,0">
+                                                    <Ellipse Width="8" Height="8" Fill="#DAA520" 
+                                                             HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0"/>
+                                                    <Ellipse Width="4" Height="4" Fill="{DynamicResource Theme.Brush.Content.Back}" 
+                                                             HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,2,0,0"/>
+                                                    <Rectangle Width="8" Height="3" Fill="#DAA520" 
+                                                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                                                    <Rectangle Width="2" Height="3" Fill="#DAA520" 
+                                                               HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,1,2"/>
+                                                    <Rectangle Width="2" Height="3" Fill="#DAA520" 
+                                                               HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,2"/>
+                                                </Grid>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding ColumnName}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           ToolTip="{Binding UsageTooltip}"/>
+                                                <!-- VPA Stat Display (Cardinality or Size) -->
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding DisplayedStat}"
+                                                           FontSize="9"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           Opacity="0.6"
+                                                           Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToCollapsedConverter}}"
+                                                           VerticalAlignment="Center"
+                                                           ToolTip="{Binding DisplayedStatTooltip}"
+                                                           Margin="4,0,2,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                        
+                        <!-- Resize Grip (only visible when not collapsed) -->
+                        <Border Grid.Row="5" 
+                                Height="8"
+                                CornerRadius="0,0,4,4"
+                                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                Cursor="SizeNS"
+                                MouseLeftButtonDown="ResizeGrip_MouseLeftButtonDown"
+                                MouseMove="ResizeGrip_MouseMove"
+                                MouseLeftButtonUp="ResizeGrip_MouseLeftButtonUp"
+                                ToolTip="Drag to resize columns area">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <!-- Grip indicator lines -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Rectangle Width="20" Height="2" Fill="#999" Margin="0,0,0,0" RadiusX="1" RadiusY="1"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+                
+                <!-- Visual states for selection/highlighting -->
+                <DataTemplate.Triggers>
+                    <!-- Selected state -->
+                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <Setter TargetName="TableBorder" Property="BorderBrush" Value="#FF0078D4"/>
+                        <Setter TargetName="TableBorder" Property="BorderThickness" Value="3"/>
+                    </DataTrigger>
+                    
+                    <!-- Dimmed state -->
+                    <DataTrigger Binding="{Binding IsDimmed}" Value="True">
+                        <Setter TargetName="TableBorder" Property="Opacity" Value="0.4"/>
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Toolbar -->
+        <ctrl:ClipBorder Grid.Row="0"
+                         CornerRadius="4"
+                         Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                         Margin="0,0,0,8">
+            <DockPanel LastChildFill="False">
+                
+                <!-- Left side buttons -->
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ClearSelection]"
+                        ToolTip="Clear table selection and highlighting">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}" Margin="0,0,4,0"/>
+                        <TextBlock>Clear</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyToClipboard]"
+                        ToolTip="Copy diagram summary as text to clipboard">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}" Margin="0,0,4,0"/>
+                        <TextBlock>Copy Text</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportToImage]"
+                        ToolTip="Export diagram as PNG image file">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource save_toolbarDrawingImage}" Margin="0,0,4,0"/>
+                        <TextBlock>Export</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        ToolTip="Export detailed debug info about SE events (for troubleshooting parser issues)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🐛" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Debug</TextBlock>
+                    </StackPanel>
+                </Button>
+
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ShowInModelDiagram]"
+                        IsEnabled="{Binding CanShowInModelDiagram}"
+                        ToolTip="Show these tables in the Model Diagram to view model relationships">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔗" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Model Diagram</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
+                        ToolTip="Copy diagram as image to clipboard (paste into email, Teams, etc.)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📋" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Copy Image</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ZoomToFit]"
+                        ToolTip="Zoom to fit all tables in view">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⊡" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Fit</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding ShowMiniMap}"
+                              ToolTip="Toggle mini-map navigation panel">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗺" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Map</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding SortKeyColumnsFirst}"
+                              ToolTip="Sort key/join columns first (then alphabetically)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔑" FontSize="12" Margin="0,0,4,0"/>
+                        <TextBlock>Keys First</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                
+                <!-- Column Stat Display dropdown (visible when VPA data available) -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasVertipaqData, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="8,0,0,0">
+                    <TextBlock Text="Stat:" VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ComboBox SelectedItem="{Binding ColumnStatDisplay, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Padding="4,2"
+                              MinWidth="85"
+                              ToolTip="Choose which statistic to show on columns after View Metrics (VPA)">
+                        <ComboBox.Items>
+                            <enums:DiagramColumnStatDisplay>None</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Cardinality</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Size</enums:DiagramColumnStatDisplay>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
+                
+                <!-- Search Box -->
+                <Border DockPanel.Dock="Left" 
+                        Margin="8,4,4,4"
+                        BorderBrush="{DynamicResource Theme.Brush.Table.Border}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Background="{DynamicResource Theme.Brush.Content.Back}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="{DynamicResource filter_toolbarDrawingImage}" 
+                               Width="14" Height="14" Margin="6,0,4,0" VerticalAlignment="Center" Opacity="0.6"/>
+                        <TextBox x:Name="SearchTextBox" Grid.Column="1"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalAlignment="Center"
+                                 Padding="0,4"
+                                 ToolTip="Search for tables or columns"/>
+                        <TextBlock Grid.Column="1" 
+                                   Text="Search..." 
+                                   Foreground="Gray" 
+                                   IsHitTestVisible="False"
+                                   VerticalAlignment="Center"
+                                   Margin="0,4">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Grid.Column="2" 
+                                Content="✕" 
+                                FontSize="10"
+                                Padding="4,2"
+                                Margin="2"
+                                Visibility="{Binding SearchText.Length, Converter={StaticResource BoolToCollapsedConverter}}"
+                                cal:Message.Attach="[Event Click] = [Action ClearSearch]"
+                                ToolTip="Clear search"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Query Plan Integration Filter (conditional) -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                            Visibility="{Binding HasMultipleQueries, Converter={StaticResource BoolToCollapsedConverter}}"
+                            Margin="4,0,0,0">
+                    <TextBlock Text="SE Query:" 
+                               Margin="8,0,4,0" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <Button Style="{StaticResource TraceButton}"
+                            Content="◀" 
+                            Padding="4,2" 
+                            MinWidth="24"
+                            cal:Message.Attach="[Event Click] = [Action PreviousQuery]"
+                            ToolTip="{Binding QueryFilterDetails}"/>
+                    <Border Background="{DynamicResource Theme.Brush.StatusBar.Back}" 
+                            BorderBrush="{DynamicResource Theme.Brush.Table.Border}"
+                            BorderThickness="1"
+                            CornerRadius="2" 
+                            Padding="8,2" 
+                            Margin="2,4"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding QueryFilterText}" 
+                                   MinWidth="40" 
+                                   TextAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <Button Style="{StaticResource TraceButton}"
+                            Content="▶" 
+                            Padding="4,2" 
+                            MinWidth="24"
+                            cal:Message.Attach="[Event Click] = [Action NextQuery]"
+                            ToolTip="Next SE query"/>
+                    <Button Style="{StaticResource TraceButton}"
+                            Content="All" 
+                            Padding="4,2"
+                            cal:Message.Attach="[Event Click] = [Action ClearQueryFilter]"
+                            ToolTip="Show all queries"/>
+                </StackPanel>
+                
+                <!-- Right side: Heat Map toggle buttons -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,4,0">
+                    <TextBlock Text="Heat:" 
+                               Margin="0,0,4,0" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               FontSize="11"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ToggleButton Style="{StaticResource TraceToggleButton}"
+                                  IsChecked="{Binding IsHeatMapModeRowCount}"
+                                  ToolTip="Color tables by total rows scanned">
+                        <TextBlock>Rows</TextBlock>
+                    </ToggleButton>
+                    <ToggleButton Style="{StaticResource TraceToggleButton}"
+                                  IsChecked="{Binding IsHeatMapModeCpuTime}"
+                                  ToolTip="Color tables by total CPU time">
+                        <TextBlock>CPU</TextBlock>
+                    </ToggleButton>
+                    <ToggleButton Style="{StaticResource TraceToggleButton}"
+                                  IsChecked="{Binding IsHeatMapModeHitCount}"
+                                  ToolTip="Color tables by SE query hit count">
+                        <TextBlock>Hits</TextBlock>
+                    </ToggleButton>
+                </StackPanel>
+
+            </DockPanel>
+        </ctrl:ClipBorder>
+        
+        <!-- Main Content Area with Detail Panel on Right -->
+        <Grid x:Name="DiagramGrid" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left: Canvas and Status Bar -->
+            <Grid x:Name="DiagramWithStatusBar" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+        
+                <!-- Main Canvas Area with Mini-map Overlay -->
+                <Grid Grid.Row="0">
+                    <ScrollViewer x:Name="MainScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              Background="{DynamicResource Theme.Brush.Content.Back}"
+                              PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                              ScrollChanged="MainScrollViewer_ScrollChanged">
+            <Grid x:Name="DiagramCanvas"
+                  MinWidth="{Binding ActualWidth, ElementName=MainScrollViewer}"
+                  MinHeight="{Binding ActualHeight, ElementName=MainScrollViewer}"
+                  Width="{Binding CanvasWidth}" 
+                  Height="{Binding CanvasHeight}"
+                  MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                  MouseMove="Canvas_MouseMove"
+                  MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                  Background="{DynamicResource Theme.Brush.Content.Back}">
+                <Grid.LayoutTransform>
+                    <ScaleTransform x:Name="CanvasScaleTransform" ScaleX="1" ScaleY="1"/>
+                </Grid.LayoutTransform>
+                
+                <!-- Context Menu for Canvas -->
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Auto-Arrange Layout" cal:Message.Attach="[Event Click] = [Action ResetLayout]">
+                            <MenuItem.Icon>
+                                <Path Data="M3,3 L10,3 L10,10 L3,10 Z M13,3 L20,3 L20,10 L13,10 Z M3,13 L10,13 L10,20 L3,20 Z M13,13 L20,13 L20,20 L13,20 Z" 
+                                      Fill="{DynamicResource Theme.Brush.Default.Fore}" Stretch="Uniform" Width="16" Height="16"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Collapse All Tables" cal:Message.Attach="[Event Click] = [Action CollapseAll]"/>
+                        <MenuItem Header="Expand All Tables" cal:Message.Attach="[Event Click] = [Action ExpandAll]"/>
+                        <Separator/>
+                        <MenuItem Header="Clear Selection" cal:Message.Attach="[Event Click] = [Action ClearSelection]"/>
+                        <MenuItem Header="Clear Details Panel" cal:Message.Attach="[Event Click] = [Action ClearDetailSelection]"/>
+                        <Separator/>
+                        <MenuItem Header="Export to Image..." cal:Message.Attach="[Event Click] = [Action ExportToImage]">
+                            <MenuItem.Icon>
+                                <Path Data="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" 
+                                      Fill="{DynamicResource Theme.Brush.Default.Fore}" Stretch="Uniform" Width="16" Height="16"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Copy Summary to Clipboard" cal:Message.Attach="[Event Click] = [Action CopyToClipboard]">
+                            <MenuItem.Icon>
+                                <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" 
+                                      Fill="{DynamicResource Theme.Brush.Default.Fore}" Stretch="Uniform" Width="16" Height="16"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Zoom">
+                            <MenuItem Header="Zoom In" cal:Message.Attach="[Event Click] = [Action ZoomIn]"/>
+                            <MenuItem Header="Zoom Out" cal:Message.Attach="[Event Click] = [Action ZoomOut]"/>
+                            <MenuItem Header="Zoom to Fit" cal:Message.Attach="[Event Click] = [Action ZoomToFit]"/>
+                            <MenuItem Header="Reset Zoom (100%)" cal:Message.Attach="[Event Click] = [Action ResetZoom]"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Toggle Bottleneck Highlighting" cal:Message.Attach="[Event Click] = [Action ToggleBottlenecks]"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                
+                <!-- Relationship Lines Layer (behind tables) -->
+                <ItemsControl ItemsSource="{Binding Relationships}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas Background="Transparent"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <!-- Position at 0,0 - the Path uses absolute coordinates -->
+                            <Setter Property="Canvas.Left" Value="0"/>
+                            <Setter Property="Canvas.Top" Value="0"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:ErdRelationshipViewModel}">
+                            <!-- Use a Grid instead of Canvas so Path can use absolute coords -->
+                            <Grid>
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsQueryFiltered}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <!-- Relationship Line -->
+                                <Path StrokeThickness="2"
+                                      StrokeDashArray="4 2"
+                                      Cursor="Hand"
+                                      MouseLeftButtonDown="Relationship_MouseLeftButtonDown"
+                                      MouseEnter="Relationship_MouseEnter"
+                                      MouseLeave="Relationship_MouseLeave"
+                                      Data="{Binding PathData}">
+                                    <Path.Style>
+                                        <Style TargetType="Path">
+                                            <Setter Property="Stroke" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                            <Setter Property="Opacity" Value="1"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                    <Setter Property="Stroke" Value="#FF0078D4"/>
+                                                    <Setter Property="StrokeThickness" Value="3"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsDimmed}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.3"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
+                                    <Path.ToolTip>
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold">
+                                                <Run Text="{Binding FromTable, Mode=OneWay}"/>.<Run Text="{Binding FromColumn, Mode=OneWay}"/>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding JoinTypeText}" Foreground="Gray"/>
+                                            <TextBlock FontWeight="SemiBold">
+                                                <Run Text="{Binding ToTable, Mode=OneWay}"/>.<Run Text="{Binding ToColumn, Mode=OneWay}"/>
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Hit Count: "/><Run Text="{Binding HitCount, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Path.ToolTip>
+                                </Path>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- Relationship Labels Layer (separate so they appear on top) -->
+                <ItemsControl ItemsSource="{Binding Relationships}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding LabelX}"/>
+                            <Setter Property="Canvas.Top" Value="{Binding LabelY}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:ErdRelationshipViewModel}">
+                            <Border Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                                    CornerRadius="3"
+                                    Padding="4,1">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsQueryFiltered}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- Cardinality indicators -->
+                                    <TextBlock Text="{Binding CardinalityText}"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource Theme.Brush.Accent}"
+                                               Margin="0,0,4,0"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding CardinalityText}" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    
+                                    <!-- Join Type -->
+                                    <TextBlock Text="{Binding JoinTypeText}"
+                                               FontSize="9"
+                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                                    
+                                    <!-- Bidirectional indicator -->
+                                    <TextBlock Text=" ↔"
+                                               FontSize="10"
+                                               Foreground="#FF5722"
+                                               FontWeight="Bold"
+                                               ToolTip="Bi-directional cross-filtering"
+                                               Margin="2,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding IsBidirectional, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                    
+                                    <!-- M:M Warning indicator -->
+                                    <TextBlock Text=" ⚠"
+                                               FontSize="9"
+                                               Foreground="#E65100"
+                                               ToolTip="Many-to-Many relationship"
+                                               Margin="2,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding IsManyToMany, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- Tables Layer -->
+                <ItemsControl ItemsSource="{Binding Tables}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <StaticResource ResourceKey="TableCardTemplate"/>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+            </Grid>
+        </ScrollViewer>
+        
+            <!-- Mini-map Overlay (in bottom-right corner) -->
+            <Border x:Name="MiniMapBorder"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,20,20"
+                    Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                    BorderBrush="{DynamicResource Theme.Brush.Table.Border}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="4"
+                    Opacity="0.9"
+                    Visibility="{Binding ShowMiniMap, Converter={StaticResource BoolToCollapsedConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Mini-map Header -->
+                    <Border Grid.Row="0" 
+                            Background="{DynamicResource Theme.Brush.Accent}"
+                            CornerRadius="3,3,0,0"
+                            Padding="4,2"
+                            Margin="-4,-4,-4,4">
+                        <Grid>
+                            <TextBlock Text="Overview"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       HorizontalAlignment="Left"/>
+                            <Button Content="✕"
+                                    FontSize="10"
+                                    HorizontalAlignment="Right"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="White"
+                                    Cursor="Hand"
+                                    cal:Message.Attach="[Event Click] = [Action ToggleMiniMap]"
+                                    ToolTip="Close mini-map"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Mini-map Canvas -->
+                    <Canvas x:Name="MiniMapCanvas"
+                            Grid.Row="1"
+                            Width="150"
+                            Height="100"
+                            Background="#1A1A1A"
+                            ClipToBounds="True"
+                            MouseLeftButtonDown="MiniMap_MouseLeftButtonDown"
+                            MouseMove="MiniMap_MouseMove"
+                            MouseLeftButtonUp="MiniMap_MouseLeftButtonUp"
+                            Cursor="Hand">
+                        
+                        <!-- Mini-map tables (drawn as simple rectangles) -->
+                        <ItemsControl ItemsSource="{Binding Tables}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding MiniMapX}"/>
+                                    <Setter Property="Canvas.Top" Value="{Binding MiniMapY}"/>
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Rectangle Width="{Binding MiniMapWidth}"
+                                               Height="{Binding MiniMapHeight}"
+                                               Fill="{Binding HeatColor}"
+                                               Opacity="0.8">
+                                        <Rectangle.Style>
+                                            <Style TargetType="Rectangle">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Stroke" Value="#FF0078D4"/>
+                                                        <Setter Property="StrokeThickness" Value="1"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Rectangle.Style>
+                                    </Rectangle>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <!-- Viewport rectangle (shows visible area) -->
+                        <Rectangle x:Name="MiniMapViewport"
+                                   Stroke="#FF0078D4"
+                                   StrokeThickness="1"
+                                   Fill="Transparent"
+                                   StrokeDashArray="2 2"/>
+                    </Canvas>
+                </Grid>
+            </Border>
+            </Grid>
+        
+            <!-- Status Bar -->
+            <ctrl:ClipBorder Grid.Row="1"
+                             CornerRadius="4"
+                             Background="{DynamicResource Theme.Brush.StatusBar.Back}"
+                             Margin="0,8,0,0"
+                             Padding="10,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding SummaryText}"
+                               Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}"
+                               VerticalAlignment="Center"/>
+                
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Legend: " 
+                                   Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    
+                        <!-- Join Key -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <Grid Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center">
+                                <Ellipse Width="7" Height="7" Fill="#DAA520" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource Theme.Brush.StatusBar.Back}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,2,0,0"/>
+                                <Rectangle Width="6" Height="2" Fill="#DAA520" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,1,0,0"/>
+                                <Rectangle Width="2" Height="2" Fill="#DAA520" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,1,2"/>
+                            </Grid>
+                            <TextBlock Text="Join Key" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    
+                        <!-- Filter -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <Path Data="M0,0 L10,0 L6,5 L6,9 L4,10 L4,5 Z"
+                                  Fill="#9932CC" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="Filter" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    
+                        <!-- Aggregate -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <Path Data="M0,0 L8,0 L8,2 L3,2 L6,5 L3,8 L8,8 L8,10 L0,10 L0,8 L4,5 L0,2 Z"
+                                  Fill="#1E90FF" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="Aggregate" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    
+                        <!-- Select -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <Path Data="M0,5 L3,8 L9,2 L10,3 L3,10 L-1,6 Z"
+                                  Fill="#32CD32" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="Select" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    
+                        <!-- Callback -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                            <Path Data="M7,0 L3,5 L5,5 L2,10 L8,4 L5,4 Z"
+                                  Fill="#FF5722" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="Callback" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"
+                                       ToolTip="DAX callback - indicates reduced SE efficiency"/>
+                        </StackPanel>
+                    
+                        <!-- Heat indicator with dynamic mode text -->
+                        <StackPanel Orientation="Horizontal" ToolTip="{Binding HeatMapModeDescription}">
+                            <Border Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0" VerticalAlignment="Center">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#4CAF50" Offset="0"/>
+                                        <GradientStop Color="#FFC107" Offset="0.5"/>
+                                        <GradientStop Color="#F44336" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <TextBlock Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center">
+                                <Run Text="Heat = "/><Run Text="{Binding HeatMapLegendText, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </ctrl:ClipBorder>
+        </Grid>
+        
+        <!-- Detail Panel on Right (shows when column, table, or relationship is clicked) -->
+        <ctrl:ClipBorder Grid.Column="1"
+                         CornerRadius="4"
+                         Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                         Margin="8,0,0,0"
+                         Width="{Binding DetailPanelWidth}"
+                         Visibility="{Binding HasSelectedDetail, Converter={StaticResource BoolToCollapsedConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Resize Grip on left edge -->
+                <Border Grid.Column="0"
+                        Width="8"
+                        Background="{DynamicResource Theme.Brush.StatusBar.Back}"
+                        Cursor="SizeWE"
+                        MouseLeftButtonDown="DetailPanel_ResizeStart"
+                        MouseMove="DetailPanel_ResizeMove"
+                        MouseLeftButtonUp="DetailPanel_ResizeEnd"
+                        ToolTip="Drag to resize">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Rectangle Width="3" Height="40" Fill="#888" RadiusX="1" RadiusY="1"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Content Column -->
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header with title and close button -->
+                    <Grid Grid.Row="0" Margin="10,8,10,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Details" 
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                               VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                            Content="✕"
+                            FontSize="10"
+                            Width="20" Height="20"
+                            VerticalAlignment="Center"
+                            cal:Message.Attach="[Event Click] = [Action ClearDetailSelection]"
+                            ToolTip="Close details panel"/>
+                    </Grid>
+                
+                    <!-- Content -->
+                    <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto"
+                              Margin="10,8,10,8">
+                        <TextBlock Text="{Binding SelectedDetailInfo}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                               FontFamily="Consolas"
+                               FontSize="11"
+                               TextWrapping="NoWrap"/>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </ctrl:ClipBorder>
+        </Grid>
+        
+        <!-- Loading Overlay -->
+        <Grid Grid.Row="1"
+              Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}"
+              Background="#80000000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Analyzing SE Events..."
+                           Foreground="White"
+                           FontSize="16"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+        
+        <!-- No Data Message -->
+        <TextBlock Grid.Row="1"
+                   Text="No SE query data to analyze. Run a query with Server Timings enabled, then click 'Show Dependencies' to see the diagram."
+                   Visibility="{Binding NoData, Converter={StaticResource BoolToVisibilityConverter}}"
+                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   Margin="40"/>
+    </Grid>
+</UserControl>

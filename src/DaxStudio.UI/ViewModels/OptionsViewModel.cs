@@ -399,6 +399,24 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
             }
         }
+
+        private SEDependenciesHeatMapMode _seDependenciesHeatMapMode = SEDependenciesHeatMapMode.CpuTime;
+        [Category("Server Timings")]
+        [SortOrder(11)]
+        [DisplayName("SE Dependencies Heat Map Mode")]
+        [Description("This setting controls what metric is used to color table headers in the Storage Engine Dependencies view. CPU Time (default) is usually the most useful for identifying performance bottlenecks.")]
+        [DataMember, DefaultValue(SEDependenciesHeatMapMode.CpuTime)]
+        public SEDependenciesHeatMapMode SEDependenciesHeatMapMode
+        {
+            get => _seDependenciesHeatMapMode;
+            set
+            {
+                _seDependenciesHeatMapMode = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(SEDependenciesHeatMapMode), value, _isInitializing, this);
+                NotifyOfPropertyChange();
+            }
+        }
         #endregion
 
         #region Query Plan properties
@@ -1517,7 +1535,73 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showModelDiagram;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show Model Diagram")]
+        [Description("Enable the Model Diagram feature to visualize the data model structure including tables, columns, and relationships.")]
+        public bool ShowModelDiagram
+        {
+            get => _showModelDiagram;
+            set
+            {
+                _showModelDiagram = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowModelDiagram), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowModelDiagram);
+            }
+        }
 
+        private DiagramColumnStatDisplay _diagramColumnStatDisplay;
+        [DataMember, DefaultValue(DiagramColumnStatDisplay.Cardinality)]
+        [Category("Preview")]
+        [DisplayName("Model Diagram Column Stat")]
+        [Description("Choose which statistic to display on columns in the Model Diagram after running View Metrics (VPA). Options: None, Cardinality, or Size.")]
+        public DiagramColumnStatDisplay DiagramColumnStatDisplay
+        {
+            get => _diagramColumnStatDisplay;
+            set
+            {
+                _diagramColumnStatDisplay = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(DiagramColumnStatDisplay), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => DiagramColumnStatDisplay);
+            }
+        }
+
+        private DiagramColumnSortOrder _diagramColumnSortOrder;
+        [DataMember, DefaultValue(DiagramColumnSortOrder.Name)]
+        [Category("Preview")]
+        [DisplayName("Model Diagram Column Sort")]
+        [Description("Choose how to sort columns in the Model Diagram tables. Sort by Cardinality or Size requires View Metrics (VPA) data.")]
+        public DiagramColumnSortOrder DiagramColumnSortOrder
+        {
+            get => _diagramColumnSortOrder;
+            set
+            {
+                _diagramColumnSortOrder = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(DiagramColumnSortOrder), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => DiagramColumnSortOrder);
+            }
+        }
+
+        private DiagramLayoutAlgorithm _diagramLayoutAlgorithm;
+        [DataMember, DefaultValue(DiagramLayoutAlgorithm.Auto)]
+        [Category("Preview")]
+        [DisplayName("Model Diagram Layout")]
+        [Description("Choose the layout algorithm for arranging tables in the Model Diagram. Auto selects based on table count: Hierarchy (≤15), Grid (16-50), Clustered (>50).")]
+        public DiagramLayoutAlgorithm DiagramLayoutAlgorithm
+        {
+            get => _diagramLayoutAlgorithm;
+            set
+            {
+                _diagramLayoutAlgorithm = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(DiagramLayoutAlgorithm), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => DiagramLayoutAlgorithm);
+            }
+        }
 
 
         private bool _showKeyBindings;
@@ -1626,6 +1710,25 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ShowStorageEngineNetParallelDuration), value, _isInitializing, this);
                 NotifyOfPropertyChange(() => ShowStorageEngineNetParallelDuration);
+            }
+
+        }
+
+        private bool _showStorageEngineDependencies;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show Storage Engine Dependencies")]
+        [Description("Show the Dependencies button in Server Timings to visualize table/column relationships from SE queries.")]
+        public bool ShowStorageEngineDependencies
+        {
+            get => _showStorageEngineDependencies;
+
+            set
+            {
+                _showStorageEngineDependencies = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowStorageEngineDependencies), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowStorageEngineDependencies);
             }
 
         }

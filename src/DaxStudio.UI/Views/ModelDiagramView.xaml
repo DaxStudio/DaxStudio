@@ -1,0 +1,1574 @@
+<UserControl x:Class="DaxStudio.UI.Views.ModelDiagramView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
+             xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
+             xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:enums="clr-namespace:DaxStudio.Interfaces.Enums;assembly=DaxStudio.Interfaces"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="{DynamicResource Theme.Brush.Content.Back}"
+             Focusable="True"
+             PreviewKeyDown="UserControl_PreviewKeyDown">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter" />
+            <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
+            <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
+            <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            
+            <!-- Column Item Style -->
+            <Style x:Key="ColumnItemStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Table.Border}"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Setter Property="Padding" Value="6,2"/>
+            </Style>
+
+            <!-- Table Card Template -->
+            <DataTemplate x:Key="TableCardTemplate" DataType="{x:Type vm:ModelDiagramTableViewModel}">
+                <Grid Width="{Binding Width}" Height="{Binding Height}" MinWidth="150" MinHeight="32">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsHidden}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Border x:Name="TableBorder"
+                            CornerRadius="4"
+                            Background="{DynamicResource Theme.Brush.Content.Back}"
+                            Cursor="Hand"
+                            MouseLeftButtonDown="Table_MouseLeftButtonDown"
+                            MouseLeftButtonUp="Table_MouseLeftButtonUp"
+                            MouseMove="Table_MouseMove">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSearchMatch}" Value="False">
+                                    <Setter Property="Opacity" Value="0.35"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                    <Setter Property="BorderBrush" Value="#FF5722"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="Shadow" BlurRadius="8" ShadowDepth="2" Opacity="0.3" Direction="315"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Table Header -->
+                        <Border Grid.Row="0" 
+                                CornerRadius="4,4,0,0"
+                                Padding="8,4"
+                                Background="{Binding HeaderColor}"
+                                MouseLeftButtonDown="TableHeader_MouseLeftButtonDown"
+                                Cursor="Hand"
+                                ToolTip="{Binding Tooltip}">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy Table Name" Click="CopyTableName_Click"/>
+                                    <MenuItem Header="Copy DAX Reference" Click="CopyTableDaxName_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Jump to Metadata Pane" Click="JumpToMetadata_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Collapse" Click="CollapseTable_Click"/>
+                                    <MenuItem Header="Expand" Click="ExpandTable_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Show Related Tables" Click="ShowRelatedTables_Click" ToolTip="Show tables directly connected to this table"/>
+                                    <MenuItem Header="Isolate Connected Tables" Click="IsolateRelatedTables_Click" ToolTip="Show only this table and all tables reachable through relationships, hiding everything else"/>
+                                    <MenuItem Header="Hide This Table" Click="HideThisTable_Click" ToolTip="Hide this table from the diagram"/>
+                                    <MenuItem Header="Hide Unselected Tables" Click="HideUnselectedTables_Click" ToolTip="Hide all tables except selected ones"/>
+                                    <Separator/>
+                                    <MenuItem Header="Show All Tables" Click="ShowAllTables_Click" ToolTip="Show all hidden tables"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Collapse/Expand Toggle -->
+                                <Border Grid.Column="0" 
+                                        Background="Transparent" 
+                                        Cursor="Hand"
+                                        Margin="0,0,4,0"
+                                        MouseLeftButtonDown="CollapseToggle_MouseLeftButtonDown"
+                                        ToolTip="Toggle collapse">
+                                    <Path Width="10" Height="10" Stretch="Uniform" Fill="White">
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Setter Property="Data" Value="M0,0 L8,4 L0,8 Z"/>
+                                                <Setter Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="90" CenterX="5" CenterY="5"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                                        <Setter Property="RenderTransform">
+                                                            <Setter.Value>
+                                                                <RotateTransform Angle="0" CenterX="5" CenterY="5"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                </Border>
+                                
+                                <!-- Table Name -->
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Caption}"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           ToolTip="{Binding TableName}"/>
+                                
+                                <!-- Column/Measure/Relationship Count -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="4,0,0,0">
+                                    <Border Background="White"
+                                            CornerRadius="8"
+                                            Padding="4,1"
+                                            Opacity="0.9"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding ColumnCount, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="📋" FontSize="9"/>
+                                            <TextBlock Text="{Binding ColumnCount}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#333"
+                                                       Margin="2,0,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="White"
+                                            CornerRadius="8"
+                                            Padding="4,1"
+                                            Margin="4,0,0,0"
+                                            Opacity="0.9"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding MeasureCount, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="📊" FontSize="9"/>
+                                            <TextBlock Text="{Binding MeasureCount}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#333"
+                                                       Margin="2,0,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <!-- Relationship Count Badge -->
+                                    <Border Background="#E3F2FD"
+                                            CornerRadius="8"
+                                            Padding="4,1"
+                                            Margin="4,0,0,0"
+                                            Opacity="0.9"
+                                            VerticalAlignment="Center"
+                                            ToolTip="Number of relationships"
+                                            Visibility="{Binding RelationshipCount, Converter={StaticResource BoolToCollapsedConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🔗" FontSize="9"/>
+                                            <TextBlock Text="{Binding RelationshipCount}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#1565C0"
+                                                       Margin="2,0,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Storage Mode / VPA Stats / Field Parameter / Private / Hidden indicators -->
+                        <Border Grid.Row="1"
+                                Padding="8,2"
+                                Background="{DynamicResource Theme.Brush.MenuBar.Back}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsFieldParameterTable}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsCalculationGroup}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsPrivate}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsMeasureOnlyTable}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding HasHierarchies}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <!-- VPA enrichment triggers -->
+                                        <DataTrigger Binding="{Binding HasStorageModeInfo}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding HasVertipaqStats}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Storage Mode Indicator (from VPA enrichment) - FIRST -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="{Binding StorageModeColor}"
+                                           Visibility="{Binding HasStorageModeInfo, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="Storage Mode">
+                                    <Run Text="{Binding StorageModeIcon, Mode=OneWay}"/>
+                                    <Run Text="{Binding StorageMode, Mode=OneWay}"/>
+                                </TextBlock>
+                                <!-- VPA Stats: Row Count (from VPA enrichment) -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="#2196F3"
+                                           Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="Row Count (from Vertipaq Analyzer)">
+                                    <Run Text="📊"/>
+                                    <Run Text="{Binding FormattedRowCount, Mode=OneWay}"/>
+                                </TextBlock>
+                                <!-- VPA Stats: Table Size (from VPA enrichment) -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="#9C27B0"
+                                           Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="Table Size (from Vertipaq Analyzer)">
+                                    <Run Text="💾"/>
+                                    <Run Text="{Binding FormattedTableSize, Mode=OneWay}"/>
+                                </TextBlock>
+                                <!-- Field Parameter Table Indicator -->
+                                <TextBlock Text="⚡ Field Parameter" FontSize="10" 
+                                           Foreground="#FF9800"
+                                           Visibility="{Binding IsFieldParameterTable, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="This is a Field Parameter table"/>
+                                <!-- Calculation Group Indicator -->
+                                <TextBlock Text="🧮 Calc Group" FontSize="10" 
+                                           Foreground="#673AB7"
+                                           Visibility="{Binding IsCalculationGroup, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="This is a Calculation Group table"/>
+                                <!-- Measure-Only Table Indicator -->
+                                <TextBlock Text="📊 Measures Only" FontSize="10" 
+                                           Foreground="#9C27B0"
+                                           Visibility="{Binding IsMeasureOnlyTable, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="This table contains only measures (no data columns)"/>
+                                <!-- Hierarchy Indicator -->
+                                <TextBlock FontSize="10" 
+                                           Foreground="#00BCD4"
+                                           Visibility="{Binding HasHierarchies, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="This table contains hierarchies">
+                                    <Run Text="🏛️"/>
+                                    <Run Text="{Binding HierarchyCount, Mode=OneWay}"/>
+                                    <Run Text=" Hierarchies"/>
+                                </TextBlock>
+                                <!-- Private Table Indicator -->
+                                <TextBlock Text="🔒 Private" FontSize="10" 
+                                           Foreground="#607D8B"
+                                           Visibility="{Binding IsPrivate, Converter={StaticResource BoolToCollapsedConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0"
+                                           ToolTip="This table is marked as private"/>
+                                <!-- Hidden Indicator -->
+                                <TextBlock Text="👁 Hidden" FontSize="10" 
+                                           Foreground="#9E9E9E"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Key Columns (shown when collapsed) -->
+                        <Border Grid.Row="2" 
+                                CornerRadius="0,0,4,4"
+                                Background="{DynamicResource Theme.Brush.Content.Back}"
+                                Padding="4,2">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsCollapsed}" Value="True"/>
+                                                <Condition Binding="{Binding HasKeyColumns}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ItemsControl ItemsSource="{Binding KeyColumns}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}">
+                                        <Grid Margin="0,1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value=""/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsKey}" Value="True">
+                                                                <Setter Property="Text" Value="🔑"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsRelationshipColumn}" Value="True">
+                                                                <Setter Property="Text" Value="🔗"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Image Grid.Column="1"
+                                                   ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
+                                                   Width="12" Height="12"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,3,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Caption}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                       ToolTip="{Binding Tooltip}"/>
+                                            <!-- VPA Cardinality for key columns -->
+                                            <TextBlock Grid.Column="3"
+                                                       Text="{Binding DisplayedStat}"
+                                                       FontSize="9"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,2,0"
+                                                       Foreground="#2196F3"
+                                                       ToolTip="{Binding DisplayedStatTooltip}"
+                                                       Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                        
+                        <!-- Columns List (hidden when collapsed) -->
+                        <Border Grid.Row="2" 
+                                CornerRadius="0,0,4,4"
+                                Background="{DynamicResource Theme.Brush.Content.Back}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding Columns}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}">
+                                            <Border ToolTip="{Binding Tooltip}" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Copy Column Name" Click="CopyColumnName_Click"/>
+                                                        <MenuItem Header="Copy DAX Reference" Click="CopyColumnDaxName_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Border.Style>
+                                                    <Style TargetType="Border" BasedOn="{StaticResource ColumnItemStyle}">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSearchMatch}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.4"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.6"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                                <Setter Property="Background" Value="#4000D7FF"/>
+                                                                <Setter Property="BorderBrush" Value="#00D7FF"/>
+                                                                <Setter Property="BorderThickness" Value="2,1,2,1"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid>
+                                                    <Grid.Style>
+                                                        <Style TargetType="Grid">
+                                                            <Setter Property="Margin" Value="0"/>
+                                                            <Style.Triggers>
+                                                                <!-- Indent hierarchy level columns -->
+                                                                <DataTrigger Binding="{Binding IsHierarchyLevel}" Value="True">
+                                                                    <Setter Property="Margin" Value="12,0,0,0"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Grid.Style>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <!-- Column Type Icon with Key Indicator -->
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                                                        <!-- Key indicator using a simple path icon -->
+                                                        <Grid Width="12" Height="12" Margin="0,0,2,0"
+                                                              VerticalAlignment="Center"
+                                                              Visibility="{Binding IsKey, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                              ToolTip="Key column">
+                                                            <Path Data="M7,0 L9,2 L9,4 L7,4 L7,6 L9,6 L9,8 L7,8 L7,10 L5,10 L5,8 L3,8 L3,6 L5,6 L5,4 L3,4 L3,2 L5,0 Z M6,1 L5,2 L5,3 L7,3 L7,2 L6,1 Z"
+                                                                  Fill="#FFB300"
+                                                                  Stretch="Uniform"/>
+                                                        </Grid>
+                                                        <!-- Hierarchy level indicator -->
+                                                        <TextBlock Text="└"
+                                                                   FontSize="10"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="0,0,2,0"
+                                                                   Foreground="#9C27B0"
+                                                                   Visibility="{Binding IsHierarchyLevel, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                        <Image ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
+                                                               Width="14" Height="14"
+                                                               VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    
+                                                    <!-- Column Name -->
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Caption}"
+                                                               FontSize="11"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource Theme.Brush.Default.Fore}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="FontWeight" Value="Normal"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsKey}" Value="True">
+                                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsMeasure}" Value="True">
+                                                                        <Setter Property="FontStyle" Value="Italic"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    
+                                                    <!-- Sort By Column Indicator -->
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="↕"
+                                                               FontSize="10"
+                                                               VerticalAlignment="Center"
+                                                               Margin="4,0,2,0"
+                                                               Foreground="#FF9800"
+                                                               ToolTip="{Binding SortByColumnName, StringFormat='Sorted by: {0}'}"
+                                                               Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    
+                                                    <!-- VPA Stat Indicator -->
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding DisplayedStat}"
+                                                               FontSize="9"
+                                                               VerticalAlignment="Center"
+                                                               Margin="4,0,2,0"
+                                                               Foreground="#2196F3"
+                                                               ToolTip="{Binding DisplayedStatTooltip}"
+                                                               Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                        
+                        <!-- Group Indicator (shown when table has a group) -->
+                        <Border Grid.Row="3"
+                                Height="4"
+                                CornerRadius="0,0,4,4"
+                                Background="{Binding GroupColor}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasGroup}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.ToolTip>
+                                <TextBlock Text="{Binding Group, StringFormat='Group: {0}'}"/>
+                            </Border.ToolTip>
+                        </Border>
+                    </Grid>
+                </Border>
+                
+                <!-- Resize Handle (Right Edge) -->
+                <Rectangle Width="6" 
+                           HorizontalAlignment="Right" 
+                           VerticalAlignment="Stretch"
+                           Fill="Transparent"
+                           Cursor="SizeWE"
+                           MouseLeftButtonDown="ResizeRight_MouseLeftButtonDown"
+                           MouseLeftButtonUp="Resize_MouseLeftButtonUp"
+                           MouseMove="ResizeRight_MouseMove"/>
+                
+                <!-- Resize Handle (Bottom Edge) -->
+                <Rectangle Height="6" 
+                           HorizontalAlignment="Stretch" 
+                           VerticalAlignment="Bottom"
+                           Fill="Transparent"
+                           Cursor="SizeNS"
+                           MouseLeftButtonDown="ResizeBottom_MouseLeftButtonDown"
+                           MouseLeftButtonUp="Resize_MouseLeftButtonUp"
+                           MouseMove="ResizeBottom_MouseMove"/>
+                
+                <!-- Resize Handle (Bottom-Right Corner) -->
+                <Rectangle Width="10" Height="10"
+                           HorizontalAlignment="Right" 
+                           VerticalAlignment="Bottom"
+                           Fill="Transparent"
+                           Cursor="SizeNWSE"
+                           MouseLeftButtonDown="ResizeCorner_MouseLeftButtonDown"
+                           MouseLeftButtonUp="Resize_MouseLeftButtonUp"
+                           MouseMove="ResizeCorner_MouseMove"/>
+                </Grid>
+            </DataTemplate>
+
+            <!-- Relationship Line Template -->
+            <DataTemplate x:Key="RelationshipLineTemplate" DataType="{x:Type vm:ModelDiagramRelationshipViewModel}">
+                <Canvas>
+                    <Canvas.Style>
+                        <Style TargetType="Canvas">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasValidPositions}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsDimmed}" Value="True">
+                                    <Setter Property="Opacity" Value="0.2"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Canvas.Style>
+                    
+                    <!-- Invisible hit area for clicking and hovering (wider than visible line) -->
+                    <Path Data="{Binding PathData}"
+                          Stroke="Transparent"
+                          StrokeThickness="12"
+                          Cursor="Hand"
+                          MouseLeftButtonDown="Relationship_MouseLeftButtonDown"
+                          MouseEnter="Relationship_MouseEnter"
+                          MouseLeave="Relationship_MouseLeave"
+                          ToolTip="{Binding Tooltip}"/>
+                    
+                    <!-- Relationship Path (main line) -->
+                    <Path Data="{Binding PathData}"
+                          StrokeThickness="2"
+                          IsHitTestVisible="False"
+                          ToolTip="{Binding Tooltip}">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Setter Property="Stroke" Value="#666666"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Stroke" Value="#2196F3"/>
+                                        <Setter Property="StrokeThickness" Value="3"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                        <Setter Property="Stroke" Value="#FF5722"/>
+                                        <Setter Property="StrokeThickness" Value="3"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                        <Setter Property="Stroke" Value="#999999"/>
+                                        <Setter Property="StrokeDashArray" Value="4,2"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsManyToMany}" Value="True">
+                                        <Setter Property="Stroke" Value="#E91E63"/>
+                                    </DataTrigger>
+                                    <!-- Bi-directional relationships get a distinct teal color -->
+                                    <DataTrigger Binding="{Binding IsBidirectional}" Value="True">
+                                        <Setter Property="Stroke" Value="#00897B"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                    
+                    <!-- "From" Cardinality (1 or *) - positioned near start of line -->
+                    <Border Canvas.Left="{Binding FromCardinalityX}"
+                            Canvas.Top="{Binding FromCardinalityY}"
+                            Background="{DynamicResource Theme.Brush.Content.Back}"
+                            CornerRadius="3"
+                            Padding="3,1"
+                            BorderThickness="1"
+                            BorderBrush="#888888"
+                            MinWidth="16"
+                            MinHeight="18"
+                            Cursor="Hand"
+                            MouseEnter="Relationship_MouseEnter"
+                            MouseLeave="Relationship_MouseLeave"
+                            MouseLeftButtonDown="Relationship_MouseLeftButtonDown">
+                        <TextBlock Text="{Binding FromCardinality}"
+                                   FontSize="{Binding FromCardinalityFontSize}"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                   ToolTip="{Binding FromCardinalityTooltip}"/>
+                    </Border>
+                    
+                    <!-- "To" Cardinality (1 or *) - positioned near end of line -->
+                    <Border Canvas.Left="{Binding ToCardinalityX}"
+                            Canvas.Top="{Binding ToCardinalityY}"
+                            Background="{DynamicResource Theme.Brush.Content.Back}"
+                            CornerRadius="3"
+                            Padding="3,1"
+                            BorderThickness="1"
+                            BorderBrush="#888888"
+                            MinWidth="16"
+                            MinHeight="18"
+                            Cursor="Hand"
+                            MouseEnter="Relationship_MouseEnter"
+                            MouseLeave="Relationship_MouseLeave"
+                            MouseLeftButtonDown="Relationship_MouseLeftButtonDown">
+                        <TextBlock Text="{Binding ToCardinality}"
+                                   FontSize="{Binding ToCardinalityFontSize}"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                   ToolTip="{Binding ToCardinalityTooltip}"/>
+                    </Border>
+                    
+                    <!-- Center indicator panel (filter direction and BiDi, M:M, Inactive labels) -->
+                    <!-- Use a Canvas to position, then RenderTransform to center the border on the point -->
+                    <Border Canvas.Left="{Binding LabelX}"
+                            Canvas.Top="{Binding LabelY}"
+                            Background="{DynamicResource Theme.Brush.Content.Back}"
+                            CornerRadius="3"
+                            Padding="3,2"
+                            BorderThickness="1"
+                            BorderBrush="#888888"
+                            RenderTransformOrigin="0,0"
+                            Visibility="{Binding HasValidPositions, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Cursor="Hand"
+                            MouseEnter="Relationship_MouseEnter"
+                            MouseLeave="Relationship_MouseLeave"
+                            MouseLeftButtonDown="Relationship_MouseLeftButtonDown">
+                        <Border.RenderTransform>
+                            <!-- Use a binding-friendly approach: translate by half width/height -->
+                            <TranslateTransform X="-15" Y="-10"/>
+                        </Border.RenderTransform>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Reverse filter direction chevrons (for BiDi - pointing toward To table) -->
+                            <Grid Width="14" Height="14" Margin="0,0,0,0"
+                                  Visibility="{Binding IsBidirectional, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  ToolTip="Filter flows both directions (bi-directional)">
+                                <Grid.RenderTransform>
+                                    <RotateTransform Angle="{Binding ReverseFilterDirectionAngle}" CenterX="7" CenterY="7"/>
+                                </Grid.RenderTransform>
+                                <!-- Double chevron pointing right >> (rotated for reverse) -->
+                                <Path Data="M 2,3 L 7,7 L 2,11 M 6,3 L 11,7 L 6,11" 
+                                      Stroke="#555555"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round"/>
+                            </Grid>
+                            <!-- Filter direction chevrons (pointing toward From table) -->
+                            <Grid Width="14" Height="14" Margin="0,0,2,0"
+                                  ToolTip="Filter direction">
+                                <Grid.RenderTransform>
+                                    <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
+                                </Grid.RenderTransform>
+                                <!-- Double chevron pointing right >> -->
+                                <Path Data="M 2,3 L 7,7 L 2,11 M 6,3 L 11,7 L 6,11" 
+                                      Stroke="#555555"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round"/>
+                            </Grid>
+                            <!-- Many-to-Many indicator -->
+                            <TextBlock Text="M:M"
+                                       FontSize="9"
+                                       FontWeight="SemiBold"
+                                       Foreground="#E91E63"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,2,0"
+                                       ToolTip="Many-to-Many relationship"
+                                       Visibility="{Binding IsManyToMany, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <!-- Inactive indicator -->
+                            <TextBlock Text="Inactive"
+                                       FontSize="9"
+                                       FontStyle="Italic"
+                                       Foreground="#999999"
+                                       VerticalAlignment="Center"
+                                       ToolTip="This relationship is inactive"
+                                       Visibility="{Binding IsInactive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </Border>
+                </Canvas>
+            </DataTemplate>
+            
+            <!-- Annotation Template -->
+            <DataTemplate x:Key="AnnotationTemplate" DataType="{x:Type vm:ModelDiagramAnnotationViewModel}">
+                <Border Width="{Binding Width}" 
+                        Height="{Binding Height}"
+                        MinWidth="80" 
+                        MinHeight="30"
+                        CornerRadius="4"
+                        Padding="6"
+                        Cursor="SizeAll"
+                        MouseLeftButtonDown="Annotation_MouseLeftButtonDown"
+                        MouseLeftButtonUp="Annotation_MouseLeftButtonUp"
+                        MouseMove="Annotation_MouseMove">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding BackgroundColor}"/>
+                    </Border.Background>
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect ShadowDepth="2" Opacity="0.2" BlurRadius="4"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Border.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Edit" Click="AnnotationEdit_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Bold" IsCheckable="True" IsChecked="{Binding IsBold, Mode=TwoWay}" Checked="AnnotationFormatChanged" Unchecked="AnnotationFormatChanged"/>
+                            <MenuItem Header="Italic" IsCheckable="True" IsChecked="{Binding IsItalic, Mode=TwoWay}" Checked="AnnotationFormatChanged" Unchecked="AnnotationFormatChanged"/>
+                            <MenuItem Header="Font Size">
+                                <MenuItem Header="Small (9)" Click="AnnotationFontSize9_Click"/>
+                                <MenuItem Header="Normal (11)" Click="AnnotationFontSize11_Click"/>
+                                <MenuItem Header="Medium (14)" Click="AnnotationFontSize14_Click"/>
+                                <MenuItem Header="Large (18)" Click="AnnotationFontSize18_Click"/>
+                                <MenuItem Header="Extra Large (24)" Click="AnnotationFontSize24_Click"/>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="Color">
+                                <MenuItem Header="Yellow" Click="AnnotationColorYellow_Click" Tag="#FFFDE7"/>
+                                <MenuItem Header="Blue" Click="AnnotationColorBlue_Click" Tag="#E3F2FD"/>
+                                <MenuItem Header="Green" Click="AnnotationColorGreen_Click" Tag="#E8F5E9"/>
+                                <MenuItem Header="Pink" Click="AnnotationColorPink_Click" Tag="#FCE4EC"/>
+                                <MenuItem Header="Orange" Click="AnnotationColorOrange_Click" Tag="#FFF3E0"/>
+                                <MenuItem Header="White" Click="AnnotationColorWhite_Click" Tag="#FFFFFF"/>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="Delete" Click="AnnotationDelete_Click"/>
+                        </ContextMenu>
+                    </Border.ContextMenu>
+                    <Grid>
+                        <!-- Display mode: TextBlock -->
+                        <TextBlock Text="{Binding Text}"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="CharacterEllipsis"
+                                   FontSize="{Binding FontSize}"
+                                   FontWeight="{Binding FontWeight}"
+                                   FontStyle="{Binding FontStyle}"
+                                   Foreground="#333333"
+                                   VerticalAlignment="Top">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <!-- Edit mode: TextBox -->
+                        <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 FontSize="{Binding FontSize}"
+                                 FontWeight="{Binding FontWeight}"
+                                 FontStyle="{Binding FontStyle}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Stretch"
+                                 LostFocus="AnnotationTextBox_LostFocus"
+                                 PreviewKeyDown="AnnotationTextBox_KeyDown"
+                                 ToolTip="Ctrl+B: Bold, Ctrl+I: Italic, Ctrl++/-: Font size">
+                            <TextBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Cut" Command="ApplicationCommands.Cut"/>
+                                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"/>
+                                    <MenuItem Header="Paste" Command="ApplicationCommands.Paste"/>
+                                    <Separator/>
+                                    <MenuItem Header="Bold" IsCheckable="True" IsChecked="{Binding IsBold, Mode=TwoWay}" Checked="AnnotationFormatChanged" Unchecked="AnnotationFormatChanged" InputGestureText="Ctrl+B"/>
+                                    <MenuItem Header="Italic" IsCheckable="True" IsChecked="{Binding IsItalic, Mode=TwoWay}" Checked="AnnotationFormatChanged" Unchecked="AnnotationFormatChanged" InputGestureText="Ctrl+I"/>
+                                    <MenuItem Header="Font Size">
+                                        <MenuItem Header="Small (9)" Click="AnnotationFontSize9_Click"/>
+                                        <MenuItem Header="Normal (11)" Click="AnnotationFontSize11_Click"/>
+                                        <MenuItem Header="Medium (14)" Click="AnnotationFontSize14_Click"/>
+                                        <MenuItem Header="Large (18)" Click="AnnotationFontSize18_Click"/>
+                                        <MenuItem Header="Extra Large (24)" Click="AnnotationFontSize24_Click"/>
+                                    </MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Color">
+                                        <MenuItem Header="Yellow" Click="AnnotationColorYellow_Click"/>
+                                        <MenuItem Header="Blue" Click="AnnotationColorBlue_Click"/>
+                                        <MenuItem Header="Green" Click="AnnotationColorGreen_Click"/>
+                                        <MenuItem Header="Pink" Click="AnnotationColorPink_Click"/>
+                                        <MenuItem Header="Orange" Click="AnnotationColorOrange_Click"/>
+                                        <MenuItem Header="White" Click="AnnotationColorWhite_Click"/>
+                                    </MenuItem>
+                                    <Separator/>
+                                    <MenuItem Header="Delete" Click="AnnotationDelete_Click"/>
+                                </ContextMenu>
+                            </TextBox.ContextMenu>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <!-- Resize handle -->
+                        <Polygon Points="0,10 10,10 10,0"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Bottom"
+                                 Fill="#CCCCCC"
+                                 Cursor="SizeNWSE"
+                                 MouseLeftButtonDown="AnnotationResize_MouseLeftButtonDown"
+                                 MouseLeftButtonUp="AnnotationResize_MouseLeftButtonUp"
+                                 MouseMove="AnnotationResize_MouseMove"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Toolbar -->
+        <Border Grid.Row="0" 
+                CornerRadius="4"
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                Margin="0,0,0,8">
+            <DockPanel LastChildFill="False">
+                
+                <!-- Left side buttons -->
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ClearSelection]"
+                        ToolTip="Clear table selection">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource clear_toolbarDrawingImage}" Margin="0,0,4,0"/>
+                        <TextBlock>Clear</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportToImage]"
+                        ToolTip="Export diagram as PNG image file">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource save_toolbarDrawingImage}" Margin="0,0,4,0"/>
+                        <TextBlock>Export</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        ToolTip="Export detailed debug information to a text file for troubleshooting">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🐛" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Debug</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
+                        ToolTip="Copy diagram as image to clipboard">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📋" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Clipboard</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action AutoArrange]"
+                        ToolTip="Automatically arrange tables using the selected layout algorithm">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⊞" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Layout</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <!-- Layout Algorithm dropdown -->
+                <ComboBox DockPanel.Dock="Left"
+                          SelectedItem="{Binding LayoutAlgorithm, Mode=TwoWay}"
+                          ToolTip="Select the layout algorithm for table arrangement:&#x0a;• Auto: Automatically selects based on table count&#x0a;• Hierarchy: Layered layout showing relationship hierarchy (best for small models)&#x0a;• Grid: Compact grid layout (best for medium models)&#x0a;• Clustered: Cluster-based compact layout (best for large models)"
+                          Margin="4,0"
+                          VerticalAlignment="Center"
+                          Width="85">
+                    <ComboBox.Items>
+                        <enums:DiagramLayoutAlgorithm>Auto</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>Hierarchy</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>Grid</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>Clustered</enums:DiagramLayoutAlgorithm>
+                    </ComboBox.Items>
+                </ComboBox>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action UndoLayout]"
+                        IsEnabled="{Binding CanUndoLayout}"
+                        ToolTip="Undo last layout change (Ctrl+Z)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="↩" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Undo</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ZoomToFit]"
+                        ToolTip="Zoom to fit all tables">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⊡" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Fit</TextBlock>
+                    </StackPanel>
+                </Button>
+                
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding ShowMiniMap}"
+                              ToolTip="Toggle mini-map navigation panel">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗺" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Map</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding ShowHiddenObjects}"
+                              ToolTip="Show hidden tables and columns">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="👁" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock>Hidden</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding SnapToGrid}"
+                              ToolTip="Snap tables to grid when dragging">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⊡" FontSize="12" Margin="0,0,4,0"/>
+                        <TextBlock>Snap</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                
+                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
+                              IsChecked="{Binding SortKeyColumnsFirst, Mode=TwoWay}"
+                              ToolTip="Sort related columns first - columns used in relationships (then alphabetically)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔗" FontSize="12" Margin="0,0,4,0"/>
+                        <TextBlock>Related First</TextBlock>
+                    </StackPanel>
+                </ToggleButton>
+                
+                <!-- Search Box -->
+                <Border DockPanel.Dock="Left" 
+                        Margin="8,4,4,4"
+                        BorderBrush="{DynamicResource Theme.Brush.Table.Border}"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Background="{DynamicResource Theme.Brush.Content.Back}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="{DynamicResource filter_toolbarDrawingImage}" 
+                               Width="14" Height="14" Margin="6,0,4,0" VerticalAlignment="Center" Opacity="0.6"/>
+                        <TextBox x:Name="SearchTextBox" Grid.Column="1"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalAlignment="Center"
+                                 Padding="0,4"
+                                 ToolTip="Search for tables or columns"/>
+                        <TextBlock Grid.Column="1" 
+                                   Text="Search..." 
+                                   Foreground="Gray" 
+                                   IsHitTestVisible="False"
+                                   VerticalAlignment="Center"
+                                   Margin="0,4">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchTextBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Grid.Column="2" 
+                                Content="✕" 
+                                FontSize="10"
+                                Padding="4,2"
+                                Margin="2"
+                                Visibility="{Binding SearchText.Length, Converter={StaticResource BoolToCollapsedConverter}}"
+                                cal:Message.Attach="[Event Click] = [Action ClearSearch]"
+                                ToolTip="Clear search"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Right side: Zoom controls -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,4,0">
+                    <Button Style="{StaticResource TraceButton}"
+                            cal:Message.Attach="[Event Click] = [Action ZoomOut]"
+                            Content="-" 
+                            Padding="8,2"
+                            ToolTip="Zoom out"/>
+                    <TextBlock Text="{Binding Scale, StringFormat='{}{0:P0}'}"
+                               VerticalAlignment="Center"
+                               Width="40"
+                               TextAlignment="Center"
+                               Margin="2,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <Button Style="{StaticResource TraceButton}"
+                            cal:Message.Attach="[Event Click] = [Action ZoomIn]"
+                            Content="+" 
+                            Padding="8,2"
+                            ToolTip="Zoom in"/>
+                    <Button Style="{StaticResource TraceButton}"
+                            cal:Message.Attach="[Event Click] = [Action ResetZoom]"
+                            Content="100%" 
+                            Padding="4,2"
+                            ToolTip="Reset zoom to 100%"/>
+                </StackPanel>
+                
+                <!-- Column Stat Display dropdown (visible when VPA data available) -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasVertipaqData, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="4,0,0,0">
+                    <TextBlock Text="Stat:" VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ComboBox SelectedItem="{Binding ColumnStatDisplay, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Padding="4,2"
+                              MinWidth="85"
+                              ToolTip="Choose which statistic to show on columns after View Metrics (VPA)">
+                        <ComboBox.Items>
+                            <enums:DiagramColumnStatDisplay>None</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Cardinality</enums:DiagramColumnStatDisplay>
+                            <enums:DiagramColumnStatDisplay>Size</enums:DiagramColumnStatDisplay>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
+                
+                <!-- Column Sort Order dropdown (visible when VPA data available) -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasVertipaqData, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="4,0,0,0">
+                    <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    <ComboBox SelectedItem="{Binding ColumnSortOrder, Mode=TwoWay}"
+                              VerticalAlignment="Center"
+                              Padding="4,2"
+                              MinWidth="95"
+                              ToolTip="Sort columns within tables by name or by statistic (descending)">
+                        <ComboBox.Items>
+                            <enums:DiagramColumnSortOrder>Name</enums:DiagramColumnSortOrder>
+                            <enums:DiagramColumnSortOrder>CardinalityDesc</enums:DiagramColumnSortOrder>
+                            <enums:DiagramColumnSortOrder>SizeDesc</enums:DiagramColumnSortOrder>
+                        </ComboBox.Items>
+                    </ComboBox>
+                </StackPanel>
+                
+                <!-- Table filter dropdown -->
+                <ComboBox DockPanel.Dock="Right"
+                          SelectedIndex="{Binding TableFilter}"
+                          Margin="4"
+                          Padding="4,2"
+                          ToolTip="Filter tables by type">
+                    <ComboBoxItem Content="All Tables"/>
+                    <ComboBoxItem Content="Date Tables"/>
+                </ComboBox>
+                
+                <!-- Perspective selector dropdown -->
+                <ComboBox DockPanel.Dock="Right"
+                          ItemsSource="{Binding AvailablePerspectives}"
+                          SelectedItem="{Binding SelectedPerspective, Mode=TwoWay}"
+                          Visibility="{Binding HasPerspectives, Converter={StaticResource BoolToVisibilityConverter}}"
+                          MinWidth="120"
+                          MaxWidth="200"
+                          Margin="4"
+                          Padding="4,2"
+                          ToolTip="Switch between model perspectives">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊" Margin="0,0,4,0" FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPerspective}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="🔍" Margin="0,0,4,0" FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPerspective}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Caption}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+            </DockPanel>
+        </Border>
+        
+        <!-- Main Canvas Area -->
+        <ScrollViewer x:Name="MainScrollViewer" 
+                      Grid.Row="1"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                      Background="{DynamicResource Theme.Brush.Content.Back}">
+            <Grid x:Name="DiagramGrid"
+                  MinWidth="{Binding ActualWidth, ElementName=MainScrollViewer}"
+                  MinHeight="{Binding ActualHeight, ElementName=MainScrollViewer}"
+                  Width="{Binding CanvasWidth}" 
+                  Height="{Binding CanvasHeight}"
+                  Background="{DynamicResource Theme.Brush.Content.Back}"
+                  MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                  MouseLeftButtonUp="Canvas_MouseLeftButtonUp"
+                  MouseMove="Canvas_MouseMove">
+                <Grid.LayoutTransform>
+                    <ScaleTransform x:Name="CanvasScaleTransform" ScaleX="1" ScaleY="1"/>
+                </Grid.LayoutTransform>
+                
+                <!-- Context Menu for Canvas -->
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add Annotation" Click="AddAnnotation_Click" 
+                                  ToolTip="Add a text annotation to the diagram"/>
+                        <Separator/>
+                        <MenuItem Header="Expand All Tables" cal:Message.Attach="ExpandAll"/>
+                        <MenuItem Header="Collapse All Tables" cal:Message.Attach="CollapseAll"/>
+                        <Separator/>
+                        <MenuItem Header="Undo Layout" cal:Message.Attach="UndoLayout" 
+                                  IsEnabled="{Binding CanUndoLayout}"
+                                  InputGestureText="Ctrl+Z"
+                                  ToolTip="Undo last layout change"/>
+                        <Separator/>
+                        <MenuItem Header="Select All" cal:Message.Attach="SelectAllTables" InputGestureText="Ctrl+A"/>
+                        <MenuItem Header="Clear Selection" cal:Message.Attach="ClearSelection" InputGestureText="Esc"/>
+                        <MenuItem Header="Highlight Path Between Tables" cal:Message.Attach="HighlightPath"
+                                  IsEnabled="{Binding CanHighlightPath}"
+                                  InputGestureText="Ctrl+P"
+                                  ToolTip="Select exactly 2 tables to highlight the shortest path between them"/>
+                        <Separator/>
+                        <MenuItem Header="Hide Selected Tables" cal:Message.Attach="HideSelectedTables" InputGestureText="Delete"/>
+                        <MenuItem Header="Hide Non-Selected Tables" cal:Message.Attach="HideNonSelectedTables" 
+                                  IsEnabled="{Binding HasSelection}"
+                                  ToolTip="Hide all tables except the selected ones"/>
+                        <MenuItem Header="Show All Tables" cal:Message.Attach="ShowAllTables" 
+                                  ToolTip="Show all hidden tables"/>
+                        <Separator/>
+                        <MenuItem Header="Layout">
+                            <MenuItem Header="Auto Arrange" cal:Message.Attach="AutoArrange" ToolTip="Re-arrange tables using automatic layout"/>
+                            <MenuItem Header="Undo Layout" cal:Message.Attach="UndoLayout" 
+                                      IsEnabled="{Binding CanUndoLayout}"
+                                      InputGestureText="Ctrl+Z"/>
+                            <Separator/>
+                            <MenuItem Header="Arrange by Group" cal:Message.Attach="ArrangeByGroup" ToolTip="Arrange tables in rows by their group"/>
+                            <Separator/>
+                            <MenuItem Header="Clear Saved Layout" cal:Message.Attach="ClearSavedLayout" ToolTip="Remove saved layout and use auto-arrange"/>
+                        </MenuItem>
+                        <MenuItem Header="Grouping">
+                            <MenuItem Header="Auto-Group by Prefix" cal:Message.Attach="AutoGroupByPrefix" ToolTip="Automatically group tables by name prefix (e.g., Dim_, Fact_)"/>
+                            <MenuItem Header="Clear All Groups" cal:Message.Attach="ClearAllGroups"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Zoom">
+                            <MenuItem Header="Zoom to Fit All" cal:Message.Attach="ZoomToFit"/>
+                            <MenuItem Header="Zoom to Selection" cal:Message.Attach="ZoomToSelection" 
+                                      ToolTip="Zoom and center on selected tables"/>
+                            <MenuItem Header="Reset to 100%" cal:Message.Attach="ResetZoom"/>
+                            <Separator/>
+                            <MenuItem Header="50%" cal:Message.Attach="SetZoom(0.5)"/>
+                            <MenuItem Header="75%" cal:Message.Attach="SetZoom(0.75)"/>
+                            <MenuItem Header="100%" cal:Message.Attach="SetZoom(1.0)"/>
+                            <MenuItem Header="125%" cal:Message.Attach="SetZoom(1.25)"/>
+                            <MenuItem Header="150%" cal:Message.Attach="SetZoom(1.5)"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Export as Image..." cal:Message.Attach="ExportToImage"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                
+                <!-- Relationship Lines (drawn first, behind tables) -->
+                <ItemsControl ItemsSource="{Binding Relationships}"
+                              ItemTemplate="{StaticResource RelationshipLineTemplate}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas x:Name="RelationshipsCanvas"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+                
+                <!-- Table Cards -->
+                <ItemsControl x:Name="DiagramCanvas"
+                              ItemsSource="{Binding Tables}"
+                              ItemTemplate="{StaticResource TableCardTemplate}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                </ItemsControl>
+                
+                <!-- Annotations (on top of tables) -->
+                <ItemsControl x:Name="AnnotationsCanvas"
+                              ItemsSource="{Binding Annotations}"
+                              ItemTemplate="{StaticResource AnnotationTemplate}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                </ItemsControl>
+                
+                <!-- Selection Rectangle (for drag-select) -->
+                <Canvas x:Name="SelectionCanvas" IsHitTestVisible="False">
+                    <Rectangle x:Name="SelectionRect" 
+                               Fill="#202196F3" 
+                               Stroke="#2196F3" 
+                               StrokeThickness="1"
+                               Visibility="Collapsed"/>
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
+        
+        <!-- Mini-Map Panel (overlay in bottom-right corner) -->
+        <Border Grid.Row="1"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="10"
+                Width="200" Height="150"
+                Background="{DynamicResource Theme.Brush.Content.Back}"
+                BorderBrush="{DynamicResource Theme.Brush.MenuBar.Border}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Visibility="{Binding ShowMiniMap, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.3"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                        Padding="4,2">
+                    <TextBlock Text="Overview" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                </Border>
+                <Viewbox Grid.Row="1" Stretch="Uniform" Margin="4">
+                    <Canvas x:Name="MiniMapCanvas"
+                            Width="{Binding CanvasWidth}"
+                            Height="{Binding CanvasHeight}"
+                            Background="Transparent"
+                            ClipToBounds="True"
+                            MouseLeftButtonDown="MiniMap_MouseLeftButtonDown">
+                        <!-- Mini representations of tables -->
+                        <ItemsControl ItemsSource="{Binding Tables}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Rectangle Width="{Binding Width}" 
+                                               Height="{Binding Height}"
+                                               Fill="{Binding HeaderColor}"
+                                               Opacity="0.7"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <!-- Viewport indicator -->
+                        <Rectangle x:Name="MiniMapViewport"
+                                   Stroke="#FF5722"
+                                   StrokeThickness="2"
+                                   Fill="#10FF5722"/>
+                    </Canvas>
+                </Viewbox>
+            </Grid>
+        </Border>
+        
+        <!-- Status Bar -->
+        <Border x:Name="StatusBar"
+                Grid.Row="2" 
+                BorderThickness="0,1,0,0" 
+                BorderBrush="{DynamicResource Theme.Brush.MenuBar.Border}"
+                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="{Binding SummaryText}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                
+                <!-- Loading Stats (timing info) -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding LoadingStats}"
+                           VerticalAlignment="Center"
+                           FontSize="10"
+                           Opacity="0.7"
+                           Margin="16,0,0,0"
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                           Visibility="{Binding LoadingStats, Converter={StaticResource StringToVisibilityConverter}}"
+                           ToolTip="Time taken to load and render the diagram"/>
+                
+                <!-- Legend -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Table Types (shown when storage mode data is NOT available) -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToNotCollapsedConverter}}">
+                        <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
+                        <TextBlock Text="Table" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Date" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Measures" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <!-- Separator -->
+                        <Border Width="1" Height="14" Background="#888888" Margin="0,0,16,0"/>
+                    </StackPanel>
+                    
+                    <!-- Relationship Types -->
+                    <TextBlock Text="▶" FontSize="10" Foreground="#666666" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock Text="Filter" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    
+                    <TextBlock Text="↔" FontSize="12" FontWeight="Bold" Foreground="#4CAF50" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock Text="Bi-Di" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    
+                    <TextBlock Text="⚠" FontSize="10" Foreground="#E91E63" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock Text="M:M" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    
+                    <Border Width="20" Height="2" Margin="0,0,4,0" VerticalAlignment="Center">
+                        <Border.Background>
+                            <VisualBrush TileMode="Tile" Viewport="0,0,4,4" ViewportUnits="Absolute">
+                                <VisualBrush.Visual>
+                                    <Rectangle Width="2" Height="2" Fill="#AAAAAA"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Border.Background>
+                    </Border>
+                    <TextBlock Text="Inactive" VerticalAlignment="Center" FontSize="10"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    
+                    <!-- Storage Mode Legend (shown when storage mode data is available) -->
+                    <StackPanel Orientation="Horizontal" 
+                                Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <!-- Separator -->
+                        <Border Width="1" Height="14" Background="#888888" Margin="16,0,16,0"/>
+                        
+                        <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Import" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#FF9800" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="DirectQuery" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="DirectLake" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Dual" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="#E91E63" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Hybrid" VerticalAlignment="Center" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Loading Overlay -->
+        <Border Grid.Row="1" 
+                Background="#80000000"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!-- Spinner animation -->
+                <Border Width="40" Height="40" Margin="0,0,0,16">
+                    <Border.RenderTransform>
+                        <RotateTransform x:Name="SpinnerRotation" CenterX="20" CenterY="20"/>
+                    </Border.RenderTransform>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Border.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                     From="0" To="360" Duration="0:0:1"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <Ellipse Stroke="White" StrokeThickness="4" StrokeDashArray="3,2" Opacity="0.8"/>
+                </Border>
+                <TextBlock Text="{Binding LoadingMessage}" 
+                           Foreground="White" 
+                           FontSize="16"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding LoadingStats}" 
+                           Foreground="White" 
+                           FontSize="10"
+                           Opacity="0.7"
+                           Margin="0,8,0,0"
+                           HorizontalAlignment="Center"
+                           Visibility="{Binding LoadingStats, Converter={StaticResource StringToVisibilityConverter}}"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- No Data Message -->
+        <Border Grid.Row="1" 
+                Visibility="{Binding NoData, Converter={StaticResource BoolToCollapsedConverter}}">
+            <TextBlock Text="Connect to a model to view the diagram" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       FontSize="14"
+                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                       Opacity="0.6"/>
+        </Border>
+    </Grid>
+</UserControl>

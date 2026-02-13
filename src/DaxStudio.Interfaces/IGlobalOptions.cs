@@ -118,6 +118,10 @@ namespace DaxStudio.Interfaces
         // Preview Features
         bool ShowCopyMetricsComments { get; set; }
         bool VpaxIncludeTom { get; set; }
+        bool ShowModelDiagram { get; set; }
+        DiagramColumnStatDisplay DiagramColumnStatDisplay { get; set; }
+        DiagramColumnSortOrder DiagramColumnSortOrder { get; set; }
+        DiagramLayoutAlgorithm DiagramLayoutAlgorithm { get; set; }
       
         
         
@@ -127,6 +131,7 @@ namespace DaxStudio.Interfaces
         bool EnablePasteFileOnExistingWindow { get; set; }
         bool ShowTotalDirectQueryDuration { get; set; }
         bool ShowStorageEngineNetParallelDuration { get; set; }
+        bool ShowStorageEngineDependencies { get; set; }
 
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
@@ -166,6 +171,7 @@ namespace DaxStudio.Interfaces
         int DefaultTextFileType { get; set; }
 
         StorageEventTimelineStyle StorageEventHeatmapStyle { get; set; }
+        SEDependenciesHeatMapMode SEDependenciesHeatMapMode { get; set; }
         bool ExportServerTimingDetailsToFolder { get; set; }
 
         TextFileType CmdLineTextFileType { get; set; }

@@ -270,6 +270,7 @@
     <Compile Include="AttachedProperties\DefaultButton.cs" />
     <Compile Include="AttachedProperties\HyperlinkExtensions.cs" />
     <Compile Include="AttachedProperties\LayoutAnchorablePaneAutoHideMinWidthHelper.cs" />
+    <Compile Include="AttachedProperties\LazyToolTipHelper.cs" />
     <Compile Include="AttachedProperties\DataGridHorizontalScroll.cs" />
     <Compile Include="AttachedProperties\ListViewExtenders.cs" />
     <Compile Include="AttachedProperties\KeyboardFocusWithinObserver.cs" />
@@ -381,6 +382,7 @@
     <Compile Include="Events\SetRunStyleEvent.cs" />
     <Compile Include="Events\ThemeChangedEvent.cs" />
     <Compile Include="Events\ToggleCommentEvent.cs" />
+    <Compile Include="Events\ShowTablesInModelDiagramEvent.cs" />
     <Compile Include="Events\ViewMetricsCompleteEvent.cs" />
     <Compile Include="Events\VpaViewExpandedEvent.cs" />
     <Compile Include="Extensions\ADOTabularTableExtensions.cs" />
@@ -483,6 +485,7 @@
     <Compile Include="Events\RecoverNextAutoSaveFileEvent.cs" />
     <Compile Include="Events\RefreshOutputTargetsEvent.cs" />
     <Compile Include="Events\ServerTimingsEvent.cs" />
+    <Compile Include="Events\ShowToolWindowEvent.cs" />
     <Compile Include="Events\ShowTraceWindowEvent.cs" />
     <Compile Include="Events\SizeUnitsUpdatedEvent.cs" />
     <Compile Include="Events\StartAutoSaveTimerEvent.cs" />
@@ -512,6 +515,7 @@
     <Compile Include="Model\AggregateRewriteSummary.cs" />
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
+    <Compile Include="Model\XmSqlAnalysis.cs" />
     <Compile Include="Model\CaptureDiagnosticsSource.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ClipboardTextProvider.cs" />
@@ -630,6 +634,9 @@
     <Compile Include="Utils\ClipboardHelper.cs" />
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
+    <Compile Include="Utils\DirectQuerySqlParser.cs" />
+    <Compile Include="Utils\SqlBlockParser.cs" />
+    <Compile Include="Utils\XmSqlParser.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
     <Compile Include="Utils\HighContrastHelper.cs" />
@@ -665,6 +672,7 @@
     <Compile Include="Utils\ApplicationCloseCheck.cs" />
     <Compile Include="TemplateSelectors\ToolWindowTemplateSelector.cs" />
     <Compile Include="Converters\BoolToHiddenConverter.cs" />
+    <Compile Include="Converters\HeatLevelToColorConverter.cs" />
     <Compile Include="Extensions\DatabaseCollectionExtensions.cs" />
     <Compile Include="Extensions\DataTableExtensions.cs" />
     <Compile Include="DaxStudioDockingManager.cs" />
@@ -843,6 +851,8 @@
     <Compile Include="Events\QueryStartedEvent.cs" />
     <Compile Include="ViewModels\ServerTimesViewModel.cs" />
     <Compile Include="ViewModels\ServerTimingDetailsViewModel.cs" />
+    <Compile Include="ViewModels\XmSqlErdViewModel.cs" />
+    <Compile Include="ViewModels\ModelDiagramViewModel.cs" />
     <Compile Include="ViewModels\StatusBarViewModel.cs" />
     <Compile Include="ViewModels\ToolPaneBaseViewModel.cs" />
     <Compile Include="ViewModels\DocumentTabViewModel.cs" />
@@ -917,6 +927,12 @@
     </Compile>
     <Compile Include="Views\ServerTimesView.xaml.cs">
       <DependentUpon>ServerTimesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\XmSqlErdView.xaml.cs">
+      <DependentUpon>XmSqlErdView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ModelDiagramView.xaml.cs">
+      <DependentUpon>ModelDiagramView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\StatusBarView.xaml.cs">
       <DependentUpon>StatusBarView.xaml</DependentUpon>
@@ -1322,6 +1338,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\XmSqlErdView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ModelDiagramView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ShellView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1345,6 +1369,7 @@
       <SubType>Designer</SubType>
     </None>
     <Compile Include="Events\CloseTraceWindowEvent.cs" />
+    <Compile Include="Events\NavigateToMetadataItemEvent.cs" />
     <None Include="ApplicationInsights.config" />
     <None Include="DaxStudio.UI.ruleset" />
     <None Include="Properties\Settings.settings">

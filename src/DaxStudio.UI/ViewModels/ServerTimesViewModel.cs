@@ -145,6 +145,19 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        /// <summary>
+        /// Returns true for DirectQuery events (SQL queries to external data sources).
+        /// These contain SQL syntax, not xmSQL, so they need different parsing.
+        /// </summary>
+        public bool IsDirectQueryEvent
+        {
+            get
+            {
+                return this.Class == DaxStudioTraceEventClass.DirectQueryBegin
+                    || this.Class == DaxStudioTraceEventClass.DirectQueryEnd;
+            }
+        }
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
@@ -750,6 +763,8 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowTotalDirectQueryDuration => Options.ShowTotalDirectQueryDuration;
 
         public bool ShowStorageEngineNetParallelDuration => Options.ShowStorageEngineNetParallelDuration;
+
+        public bool ShowStorageEngineDependencies => Options.ShowStorageEngineDependencies;
 
         public override string TraceStatusText
         {
@@ -1786,6 +1801,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
             NotifyOfPropertyChange(nameof(CanExport));
             NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
+            NotifyOfPropertyChange(nameof(CanShowQueryDependencies));
         }
 
         public void Copy()
@@ -1991,6 +2007,101 @@ namespace DaxStudio.UI.ViewModels
 
             });
         }
+
+        /// <summary>
+        /// Shows the Storage Engine Dependencies (ERD) diagram for all SE events.
+        /// Opens as a dockable tool window that can be resized, floated, or maximized.
+        /// </summary>
+        public void ShowQueryDependencies()
+        {
+            try
+            {
+                Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Starting with {AllStorageEngineEvents.Count} events");
+                
+                var erdViewModel = new XmSqlErdViewModel(_eventAggregator);
+                erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
+                
+                Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Analysis complete: {erdViewModel.Tables.Count} tables found");
+                
+                // Publish event to show the tool window in the docking panel
+                _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(erdViewModel));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), "Error showing Query Dependencies");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error showing Storage Engine Dependencies\n{ex.Message}"));
+            }
+        }
+
+        public bool CanShowQueryDependencies => AllStorageEngineEvents.Count > 0;
+
+        /// <summary>
+        /// Shows the tables referenced by SE queries in the Model Diagram.
+        /// Parses SE event queries to extract table names, then publishes an event
+        /// to have the Model Diagram filter to just those tables.
+        /// </summary>
+        public void ShowInModelDiagram()
+        {
+            try
+            {
+                Log.Information("{class} {method} Extracting table names from {count} SE events",
+                    nameof(ServerTimesViewModel), nameof(ShowInModelDiagram), AllStorageEngineEvents.Count);
+
+                // Parse SE events to extract table names using XmSqlParser
+                var parser = new XmSqlParser();
+                var analysis = new XmSqlAnalysis();
+
+                foreach (var evt in AllStorageEngineEvents)
+                {
+                    if (evt.IsBatchEvent || evt.IsInternalEvent) continue;
+
+                    var metrics = new XmSqlParser.SeEventMetrics
+                    {
+                        EstimatedRows = evt.EstimatedRows,
+                        DurationMs = evt.Duration,
+                        IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
+                        CpuTimeMs = evt.CpuTime
+                    };
+
+                    if (evt.IsDirectQueryEvent)
+                    {
+                        var sqlText = !string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query;
+                        if (!string.IsNullOrWhiteSpace(sqlText))
+                            parser.ParseDirectQuerySql(sqlText, analysis, metrics);
+                    }
+                    else if (evt.IsScanEvent && !string.IsNullOrWhiteSpace(evt.Query))
+                    {
+                        parser.ParseQueryWithMetrics(evt.Query, analysis, metrics);
+                    }
+                }
+
+                var tableNames = analysis.Tables.Keys.ToList();
+
+                if (tableNames.Count == 0)
+                {
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                        "No table references found in Storage Engine queries."));
+                    return;
+                }
+
+                Log.Information("{class} {method} Found {count} tables: {tables}",
+                    nameof(ServerTimesViewModel), nameof(ShowInModelDiagram),
+                    tableNames.Count, string.Join(", ", tableNames));
+
+                // Publish event to filter Model Diagram to these tables
+                _eventAggregator.PublishOnUIThreadAsync(
+                    new ShowTablesInModelDiagramEvent(tableNames, includeRelated: true));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel),
+                    nameof(ShowInModelDiagram), "Error showing tables in Model Diagram");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,
+                    $"Error showing tables in Model Diagram\n{ex.Message}"));
+            }
+        }
+
+        public bool CanShowInModelDiagram => AllStorageEngineEvents.Count > 0;
 
         public bool ShowTimelineOnRows { get => this.StorageEventTimelineStyle != StorageEventTimelineStyle.None; }
 

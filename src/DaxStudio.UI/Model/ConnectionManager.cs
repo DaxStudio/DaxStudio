@@ -631,6 +631,28 @@ namespace DaxStudio.UI.Model
 
         }
 
+
+        public async Task<List<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize)
+        {
+            if (column == null) return new List<string>();
+            
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using (var newConn = _dmvConnection.Clone())
+                    {
+                        return column.GetSampleData(newConn, sampleSize);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Error getting sample data for column {ColumnName}", column.Name);
+                    return new List<string>();
+                }
+            });
+        }
+
         public void CancelUpdatingColumnSampleData()
         {
             if (_sampleDataConnection != null)

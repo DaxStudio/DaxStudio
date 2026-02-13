@@ -94,7 +94,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => GroupedPartitions);
                 NotifyOfPropertyChange(() => SummaryViewModel);
                 IsBusy = false;
-                _eventAggregator.PublishOnUIThreadAsync(new ViewMetricsCompleteEvent());
+                // Pass the VpaModel in the event so other views can enrich their data
+                _eventAggregator.PublishOnUIThreadAsync(new ViewMetricsCompleteEvent(_viewModel));
             }
         }
 

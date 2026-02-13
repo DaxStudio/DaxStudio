@@ -38,6 +38,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<ConnectionOpenedEvent>
         , IHandle<ConnectFailedEvent>
         , IHandle<TablesRefreshedEvent>
+        , IHandle<NavigateToMetadataItemEvent>
         //, IDragSource
         , IMetadataPane
     {
@@ -1199,6 +1200,65 @@ namespace DaxStudio.UI.ViewModels
         public async Task HandleAsync(TablesRefreshedEvent message, CancellationToken cancellationToken)
         {
             await RefreshTablesAsync();
+        }
+
+        /// <summary>
+        /// Handles navigation to a specific table (and optionally column) in the metadata pane.
+        /// Expands the table and selects it/the column.
+        /// </summary>
+        public Task HandleAsync(NavigateToMetadataItemEvent message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(message.TableName)) return Task.CompletedTask;
+                if (Tables == null) return Task.CompletedTask;
+
+                // Find the table in the tree
+                var table = Tables.FirstOrDefault(t => 
+                    t.Name.Equals(message.TableName, StringComparison.OrdinalIgnoreCase) ||
+                    (t is TreeViewTable tvt && tvt.Caption.Equals(message.TableName, StringComparison.OrdinalIgnoreCase)));
+
+                if (table == null) return Task.CompletedTask;
+
+                // Expand the table
+                table.IsExpanded = true;
+
+                // If no column specified, select the table
+                if (string.IsNullOrEmpty(message.ColumnName))
+                {
+                    // Collapse other tables for clarity
+                    foreach (var otherTable in Tables.Where(t => t != table))
+                    {
+                        otherTable.IsExpanded = false;
+                    }
+                    table.IsSelected = true;
+                }
+                else
+                {
+                    // Find and select the column
+                    var column = table.Children?.FirstOrDefault(c => 
+                        c.Name.Equals(message.ColumnName, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (column != null)
+                    {
+                        column.IsSelected = true;
+                    }
+                    else
+                    {
+                        table.IsSelected = true;
+                    }
+                }
+
+                Log.Debug("{Class} {Method} Navigated to table: {TableName}, column: {ColumnName}", 
+                    nameof(MetadataPaneViewModel), nameof(HandleAsync), message.TableName, message.ColumnName ?? "(none)");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{Class} {Method} Error navigating to metadata item", 
+                    nameof(MetadataPaneViewModel), nameof(HandleAsync));
+            }
+
+            return Task.CompletedTask;
         }
 
         public bool ShowDataRefreshMenu

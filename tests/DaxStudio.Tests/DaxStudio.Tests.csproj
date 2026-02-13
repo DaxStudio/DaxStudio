@@ -133,6 +133,7 @@
     <Compile Include="ServerNameConverterTests.cs" />
     <Compile Include="DebugCommasTest.cs" />
     <Compile Include="ServerTimingsTests.cs" />
+    <Compile Include="XmSqlParserTests.cs" />
     <Compile Include="UriParserTests.cs" />
     <Compile Include="Utils\DmvHelpers.cs" />
     <Compile Include="TreeViewTests.cs" />
