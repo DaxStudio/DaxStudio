@@ -8,6 +8,7 @@
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:enums="clr-namespace:DaxStudio.Interfaces.Enums;assembly=DaxStudio.Interfaces"
+             xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource Theme.Brush.Content.Back}"
@@ -21,6 +22,8 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/MetadataToolTipStyles.xaml" />
+                <local:DesignTimeResourceDictionary DesignTimeSource="pack://application:,,,/DaxStudio.UI;component/Theme/Light.DaxStudio.Theme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter" />
@@ -28,6 +31,283 @@
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             
+            <!-- Diagram Table Tooltip Template (uses shared styles from MetadataToolTipStyles) -->
+            <DataTemplate x:Key="DiagramTableToolTipTemplate">
+                <Border Padding="8">
+                    <Grid MaxWidth="450">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition Height="12"/>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Text="{Binding Caption}" 
+                                   Grid.ColumnSpan="3" 
+                                   FontSize="16"
+                                   FontWeight="Bold"/>
+                        <TextBlock Text="{Binding DaxName}" 
+                                   Grid.Row="1"
+                                   Grid.ColumnSpan="3"/>
+                        <TextBlock Text="{Binding Description}"  
+                                   Visibility="{Binding Converter={StaticResource BoolToVisibilityConverter},Path=ShowDescription}"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Grid.Row="2"
+                                   Grid.ColumnSpan="3"
+                                   Margin="0 4 0 12"/>
+
+                        <!-- Row 3 is a spacer -->
+
+                        <!-- Type -->
+                        <TextBlock Text="Type"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   VerticalAlignment="Center"
+                                   Grid.Row="4"/>
+                        <Image Grid.Row="4" Grid.Column="1" Margin="2,1,3,1"
+                               ap:ImageBindingHelper.SourceAccentResourceKey="{Binding TreeviewImage}" />
+                        <TextBlock Grid.Row="4"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Foreground="{DynamicResource Theme.Brush.Accent}"
+                                   Text="Table"/>
+
+                        <TextBlock Text="Columns"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="5"/>
+                        <TextBlock Grid.Row="5"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding ColumnCount, StringFormat={}{0:N0}}"/>
+
+                        <TextBlock Text="Measures"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="6"/>
+                        <TextBlock Grid.Row="6"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding MeasureCount, StringFormat={}{0:N0}}"/>
+
+                        <TextBlock Text="Relationships"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="7"/>
+                        <TextBlock Grid.Row="7"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding RelationshipCount, StringFormat={}{0:N0}}"/>
+
+                        <!-- VPA Rows -->
+                        <TextBlock Text="Rows"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="8"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="8"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding FormattedRowCount}"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- VPA Size -->
+                        <TextBlock Text="Size"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="9"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="9"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding FormattedTableSize}"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Storage Mode -->
+                        <TextBlock Text="Storage Mode"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="10"
+                                   Visibility="{Binding HasStorageModeInfo, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="10"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Foreground="{DynamicResource Theme.Brush.Accent}"
+                                   Visibility="{Binding HasStorageModeInfo, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Run Text="{Binding StorageModeIcon, Mode=OneWay}"/>
+                            <Run Text="{Binding StorageMode, Mode=OneWay}"/>
+                        </TextBlock>
+
+                        <!-- Table Type Indicators -->
+                        <StackPanel Grid.Row="11" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0 8 0 0">
+                            <TextBlock Text="📅 Date Table  " FontSize="11" Visibility="{Binding IsDateTable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="⚡ Field Parameter  " FontSize="11" Visibility="{Binding IsFieldParameterTable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="🧮 Calc Group  " FontSize="11" Visibility="{Binding IsCalculationGroup, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="📊 Measures Only  " FontSize="11" Visibility="{Binding IsMeasureOnlyTable, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="🔒 Private  " FontSize="11" Visibility="{Binding IsPrivate, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Row borders -->
+                        <Border Grid.Row="4" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="5" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="6" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="7" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="8" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Border Grid.Row="9" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Border Grid.Row="10" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasStorageModeInfo, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <!-- Diagram Column Tooltip Template (uses shared styles from MetadataToolTipStyles) -->
+            <DataTemplate x:Key="DiagramColumnToolTipTemplate">
+                <Border Padding="8">
+                    <Grid MaxWidth="400">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition Height="12"/>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Text="{Binding Caption}" 
+                                   Grid.ColumnSpan="3" 
+                                   FontSize="14"
+                                   FontWeight="Bold"/>
+                        <TextBlock Text="{Binding ColumnName}" 
+                                   Grid.Row="1"
+                                   Grid.ColumnSpan="3"
+                                   Foreground="{DynamicResource MutedTextBrush}"/>
+                        <TextBlock Text="{Binding Description}"  
+                                   Visibility="{Binding Description, Converter={StaticResource StringToVisibilityConverter}}"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Grid.Row="2"
+                                   Grid.ColumnSpan="3"
+                                   FontStyle="Italic"
+                                   Margin="0 4 0 12"/>
+
+                        <!-- Row 3 is a spacer -->
+
+                        <!-- Type -->
+                        <TextBlock Text="Type"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="4"/>
+                        <Image ap:ImageBindingHelper.SourceResourceKey="{Binding ObjectTypeImage}"
+                               Width="16" Height="16" Margin="0"
+                               Grid.Row="4" Grid.Column="1"/>
+                        <TextBlock Grid.Row="4" Grid.Column="2">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource ToolTipValue}">
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                    <Setter Property="Text" Value="Column"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMeasure}" Value="True">
+                                            <Setter Property="Text" Value="Measure"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsHierarchy}" Value="True">
+                                            <Setter Property="Text" Value="Hierarchy"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <!-- Data Type -->
+                        <TextBlock Text="Data Type"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="5"
+                                   Visibility="{Binding DataTypeName, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <Image ap:ImageBindingHelper.SourceAccentResourceKey="{Binding TreeviewImage}"
+                               Width="16" Height="16" Margin="0"
+                               Grid.Row="5" Grid.Column="1"
+                               Visibility="{Binding DataTypeName, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding DataTypeName}"
+                                   Foreground="{DynamicResource Theme.Brush.Accent}"
+                                   Visibility="{Binding DataTypeName, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                        <!-- Format String -->
+                        <TextBlock Text="Format"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="6"
+                                   Visibility="{Binding FormatString, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding FormatString}"
+                                   Visibility="{Binding FormatString, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                        <!-- Cardinality / Distinct Values -->
+                        <TextBlock Text="Cardinality"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="7"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="7" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding FormattedCardinality}"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Column Size -->
+                        <TextBlock Text="Size"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="8"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="8" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding FormattedColumnSize}"
+                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Encoding -->
+                        <TextBlock Text="Encoding"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="9"
+                                   Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="9" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding Encoding}"
+                                   Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                        <!-- Key/Relationship indicators -->
+                        <StackPanel Grid.Row="10" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0 8 0 0">
+                            <TextBlock Text="🔑 Key  " FontSize="11" Visibility="{Binding IsKey, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="🔗 Relationship  " FontSize="11" Visibility="{Binding IsRelationshipColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="↕ Sorted by: " FontSize="11" Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="{Binding SortByColumnName}" FontSize="11" Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Row borders -->
+                        <Border Grid.Row="4" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="5" Style="{StaticResource ToolTipBorder}" Visibility="{Binding DataTypeName, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <Border Grid.Row="6" Style="{StaticResource ToolTipBorder}" Visibility="{Binding FormatString, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <Border Grid.Row="7" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Border Grid.Row="8" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Border Grid.Row="9" Style="{StaticResource ToolTipBorder}" Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
             <!-- Column Item Style -->
             <Style x:Key="ColumnItemStyle" TargetType="Border">
                 <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Table.Border}"/>
@@ -90,7 +370,12 @@
                                 Background="{Binding HeaderColor}"
                                 MouseLeftButtonDown="TableHeader_MouseLeftButtonDown"
                                 Cursor="Hand"
-                                ToolTip="{Binding Tooltip}">
+                                ToolTipService.ShowDuration="60000">
+                            <Border.ToolTip>
+                                <ToolTip>
+                                    <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramTableToolTipTemplate}"/>
+                                </ToolTip>
+                            </Border.ToolTip>
                             <Border.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Copy Table Name" Click="CopyTableName_Click"/>
@@ -390,7 +675,13 @@
                                                        TextTrimming="CharacterEllipsis"
                                                        VerticalAlignment="Center"
                                                        Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                                                       ToolTip="{Binding Tooltip}"/>
+                                                       ToolTipService.ShowDuration="60000">
+                                                <TextBlock.ToolTip>
+                                                    <ToolTip>
+                                                        <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramColumnToolTipTemplate}"/>
+                                                    </ToolTip>
+                                                </TextBlock.ToolTip>
+                                            </TextBlock>
                                             <!-- VPA Cardinality for key columns -->
                                             <TextBlock Grid.Column="3"
                                                        Text="{Binding DisplayedStat}"
@@ -425,7 +716,13 @@
                                 <ItemsControl ItemsSource="{Binding Columns}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}">
-                                            <Border ToolTip="{Binding Tooltip}" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+                                            <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    ToolTipService.ShowDuration="60000">
+                                                <Border.ToolTip>
+                                                    <ToolTip>
+                                                        <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramColumnToolTipTemplate}"/>
+                                                    </ToolTip>
+                                                </Border.ToolTip>
                                                 <Border.ContextMenu>
                                                     <ContextMenu>
                                                         <MenuItem Header="Copy Column Name" Click="CopyColumnName_Click"/>

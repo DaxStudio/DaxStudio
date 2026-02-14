@@ -4864,8 +4864,19 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public string TableName => _isFromVpa ? _vpaTableName : _table.Name;
+        public string DaxName => _isFromVpa ? _vpaTableName : _table.DaxName;
         public string Caption => _isFromVpa ? _vpaCaption : _table.Caption;
         public string Description => _isFromVpa ? _vpaDescription : _table.Description;
+        public bool ShowDescription => !string.IsNullOrEmpty(Description);
+        public string TreeviewImage
+        {
+            get
+            {
+                if (!IsVisible || IsPrivate) return "tableHiddenDrawingImage";
+                if (IsDateTable) return "date_tableDrawingImage";
+                return "tableDrawingImage";
+            }
+        }
         public bool IsVisible => _isFromVpa ? _vpaIsVisible : _table.IsVisible;
         public bool IsDateTable => _isFromVpa ? _vpaIsDateTable : _table.IsDateTable;
         public string DataCategory => _isFromVpa ? _vpaDataCategory : _table.DataCategory;
@@ -5810,6 +5821,56 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public bool IsHierarchy => ObjectType == ADOTabularObjectType.Hierarchy 
                                 || ObjectType == ADOTabularObjectType.UnnaturalHierarchy;
+
+        /// <summary>
+        /// The object type name for display (Column, Measure, Hierarchy).
+        /// Matches the MetadataPaneView tooltip binding.
+        /// </summary>
+        public string ObjectTypeName
+        {
+            get
+            {
+                if (IsMeasure) return "Measure";
+                if (IsHierarchy) return "Hierarchy";
+                if (IsHierarchyLevel) return "Column";
+                return "Column";
+            }
+        }
+
+        /// <summary>
+        /// The accent-colored object type image resource key.
+        /// Matches the MetadataPaneView tooltip binding (e.g., "measure_accentDrawingImage").
+        /// </summary>
+        public string ObjectTypeImage => ObjectTypeName.ToLower() + "_accentDrawingImage";
+
+        /// <summary>
+        /// The data-type-specific image resource key for the Data Type row icon.
+        /// Matches the MetadataPaneView tooltip binding using SourceAccentResourceKey.
+        /// </summary>
+        public string TreeviewImage
+        {
+            get
+            {
+                var suffix = IsVisible ? "DrawingImage" : "HiddenDrawingImage";
+
+                if (IsHierarchy)
+                    return "hierarchyDrawingImage";
+
+                if (_isFromVpa)
+                    return GetIconFromDataTypeName(_vpaDataTypeName, suffix);
+
+                return _column?.DataType switch
+                {
+                    Microsoft.AnalysisServices.Tabular.DataType.Boolean => $"boolean{suffix}",
+                    Microsoft.AnalysisServices.Tabular.DataType.DateTime => $"datetime{suffix}",
+                    Microsoft.AnalysisServices.Tabular.DataType.Double => $"double{suffix}",
+                    Microsoft.AnalysisServices.Tabular.DataType.Decimal => $"double{suffix}",
+                    Microsoft.AnalysisServices.Tabular.DataType.Int64 => $"number{suffix}",
+                    Microsoft.AnalysisServices.Tabular.DataType.String => $"string{suffix}",
+                    _ => $"column{suffix}"
+                };
+            }
+        }
 
         /// <summary>
         /// Icon resource key based on column type and data type.

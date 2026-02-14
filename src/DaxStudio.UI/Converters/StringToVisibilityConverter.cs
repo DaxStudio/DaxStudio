@@ -10,6 +10,10 @@ namespace DaxStudio.UI.Converters
 
             public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
             {
+                if (value == null)
+                {
+                    return Visibility.Collapsed;
+                }
                 if (value is string @string &&  string.IsNullOrWhiteSpace(@string))
                 {
                     return Visibility.Collapsed;
