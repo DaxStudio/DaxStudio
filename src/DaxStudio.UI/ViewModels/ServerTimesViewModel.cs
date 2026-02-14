@@ -765,7 +765,7 @@ namespace DaxStudio.UI.ViewModels
         public bool ShowStorageEngineNetParallelDuration => Options.ShowStorageEngineNetParallelDuration;
 
         public bool ShowStorageEngineDependencies => Options.ShowStorageEngineDependencies;
-
+        public bool ShowInModelDiagramVisible => Options.ShowModelDiagram;
         public override string TraceStatusText
         {
             get
@@ -793,6 +793,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
             NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
+            NotifyOfPropertyChange(nameof(ShowStorageEngineDependencies));
+            NotifyOfPropertyChange(nameof(ShowInModelDiagramVisible));
         }
 
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)

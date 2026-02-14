@@ -1494,11 +1494,12 @@
             
             <!-- Model Diagram (Preview Feature) -->
             <Fluent:RibbonGroupBox Header="Model" 
-                                   Visibility="{Binding ShowModelDiagramEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                   Visibility="{Binding CanShowModelDiagram, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Fluent:Button Name="ShowModelDiagram"
                                Header="Model Diagram"
                                KeyTip="MD"
                                cal:Message.Attach="[Event Click] = [Action ShowModelDiagram()]"
+                               IsEnabled="{Binding ShowModelDiagramEnabled}"
                                Icon="{DynamicResource hierarchyDrawingImage}"
                                LargeIcon="{DynamicResource hierarchyDrawingImage}"
                                Margin="4,0"

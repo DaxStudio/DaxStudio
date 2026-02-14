@@ -24,13 +24,11 @@
     <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}"  options:Freeze="true"/>
 
 
-
-    <!-- Note: ToolTips render in a separate visual tree (Popup), so they cannot find ancestors 
-         in the main window. Using static scale of 1 instead of attempting ancestor binding. -->
     <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource DefaultToolTipStyle}">
         <Setter Property="LayoutTransform">
             <Setter.Value>
-                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                <ScaleTransform ScaleX="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}" 
+                                ScaleY="{Binding DataContext.Scale,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ctrl:ZoomableUserControl}}}"/>
             </Setter.Value>
         </Setter>
     </Style>

@@ -391,6 +391,7 @@
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action ShowInModelDiagram]"
                         IsEnabled="{Binding CanShowInModelDiagram}"
+                        Visibility="{Binding ShowInModelDiagramVisible, Converter={StaticResource BoolToCollapsedConverter}}"
                         ToolTip="Show query-dependent tables in the Model Diagram to view model relationships">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="🔗" FontSize="14" Margin="0 0 4 0"/>
