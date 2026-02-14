@@ -391,6 +391,7 @@
     <Compile Include="Extensions\DaxStudioWindowManager.cs" />
     <Compile Include="Extensions\FileExtensions.cs" />
     <Compile Include="Extensions\HyperlinkExtensions.cs" />
+    <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Extensions\StoreageModeExtensions.cs" />
     <Compile Include="Interfaces\ICancellable.cs" />
     <Compile Include="Interfaces\IExportDataDetails.cs" />

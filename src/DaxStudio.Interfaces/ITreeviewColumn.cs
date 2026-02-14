@@ -1,12 +1,13 @@
 ﻿using ADOTabular.Interfaces;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace DaxStudio.Interfaces
 {
     public interface ITreeviewColumn
     {
         IADOTabularColumn InternalColumn { get; }
-        List<string> SampleData { get;  }
+        ObservableCollection<string> SampleData { get;  }
         string MinValue { get; set; }
         string MaxValue { get; set; }
         long DistinctValues { get; set; }

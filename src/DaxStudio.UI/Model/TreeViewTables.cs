@@ -12,6 +12,7 @@ using DaxStudio.UI.Interfaces;
 using Serilog;
 using DaxStudio.UI.Utils;
 using ADOTabular.Interfaces;
+using System.Collections.ObjectModel;
 
 namespace DaxStudio.UI.Model
 {
@@ -435,7 +436,7 @@ namespace DaxStudio.UI.Model
 
         private IADOTabularColumn _column;
         private IADOTabularFolderReference _folder;
-        private List<string> _sampleData;
+        private ObservableCollection<string> _sampleData;
         private bool _updatingBasicStats;
         private bool _updatingSampleData;
         private string _minValue = string.Empty;
@@ -446,7 +447,7 @@ namespace DaxStudio.UI.Model
         public TreeViewColumn(ADOTabularColumn column, GetChildrenDelegate getChildren, IGlobalOptions options, IEventAggregator eventAggregator, IMetadataPane metadataPane) : base(column.Table, getChildren, options, eventAggregator, metadataPane)
         {
             _eventAggregator = eventAggregator;
-            _sampleData = new List<string>();
+            _sampleData = new ObservableCollection<string>();
             Column = column;
             _column = column;
             Options = options;
@@ -739,7 +740,7 @@ namespace DaxStudio.UI.Model
             return String.IsNullOrEmpty(criteria) || Caption.IndexOf(criteria, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
-        public List<string> SampleData
+        public ObservableCollection<string> SampleData
         {
             get { return _sampleData; }
             set
@@ -756,6 +757,7 @@ namespace DaxStudio.UI.Model
                 _updatingSampleData = value;
                 NotifyOfPropertyChange(() => UpdatingSampleData);
                 NotifyOfPropertyChange(() => ShowSampleData);
+                NotifyOfPropertyChange(() => SampleData);
             }
         }
 

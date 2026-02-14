@@ -607,9 +607,14 @@ namespace DaxStudio.UI.Model
                     if (column.SampleData.Count != 0) return; // if we already have sample data then don't do anything
                     lock (_sampleDataLock)
                     {
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), "Updating sample data");
                         using (_sampleDataConnection = _dmvConnection.Clone())
                         {
-                            column.SampleData?.AddRange(column.InternalColumn.GetSampleData(_sampleDataConnection, sampleSize));
+                            var sampleData = column.InternalColumn.GetSampleData(_sampleDataConnection, sampleSize);
+                            Execute.OnUIThread(() =>
+                            {
+                                column.SampleData?.AddRange(sampleData);
+                            });
                         }
                     }
                 }, cancellationToken);
@@ -626,6 +631,7 @@ namespace DaxStudio.UI.Model
             }
             finally
             {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), "Setting UpdatingSampleData = False");
                 column.UpdatingSampleData = false;
             }
 
