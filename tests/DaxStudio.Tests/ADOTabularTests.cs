@@ -628,7 +628,8 @@ namespace DaxStudio.Tests
 
             Assert.IsTrue(cmpyTab.IsDateTable, "'Date' table is marked as date table");
             Assert.IsFalse(tabs["Customer"].IsDateTable, "'Date' table is marked as date table");
-
+            Assert.IsTrue(cmpyTab.Columns["Date"].IsKey);
+            Assert.IsFalse(cmpyTab.Columns["DateKey"].IsKey);
         }
 
 

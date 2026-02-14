@@ -292,8 +292,8 @@ namespace ADOTabular
                 var toTomTable = table.Model.TOMModel.Tables[toTable.Name];
                 var relationship = new SingleColumnRelationship
                 {
-                    FromColumn = tomTable.Columns.First(c => c.Name == table.Columns.GetByPropertyRef(r.FromColumn).Name),
-                    ToColumn = toTomTable.Columns.First(c => c.Name == toTable.Columns.GetByPropertyRef(r.ToColumn).Name),
+                    FromColumn = tomTable.Columns.First(c => c.Name == table.Columns[r.FromColumn].Name),
+                    ToColumn = toTomTable.Columns.First(c => c.Name == toTable.Columns[r.ToColumn].Name),
                     FromCardinality = getCardinality(r.FromColumnMultiplicity),
                     ToCardinality = getCardinality(r.ToColumnMultiplicity),
                     CrossFilteringBehavior = getCrossFilteringBehavior(r.CrossFilterDirection),
@@ -446,27 +446,31 @@ namespace ADOTabular
 
             if (rdr.EOF) return;
 
-                rdr.ReadToFollowing("ReferentialConstraint");
+            rdr.ReadToFollowing("ReferentialConstraint");
                 
-                var referentialConstraints = ReadReferentialConstraints(rdr, tabs);
+            var referentialConstraints = ReadReferentialConstraints(rdr, tabs);
 
-                rdr.ReadToFollowing("End");
-                var end1 = GetAssociationEnd(rdr);
+            // exit here if either column reference is empty
+            if (string.IsNullOrWhiteSpace(referentialConstraints.fromColumnRef)
+                || string.IsNullOrWhiteSpace(referentialConstraints.toColumnRef)) return;
+
+            rdr.ReadToFollowing("End");
+            var end1 = GetAssociationEnd(rdr);
                 
-                rdr.ReadToFollowing("End");
-                var end2 = GetAssociationEnd(rdr);
+            rdr.ReadToFollowing("End");
+            var end2 = GetAssociationEnd(rdr);
 
-                if (end1.Role == referentialConstraints.fromRole)
-                {
-                    referentialConstraints.fromMultiplicity = end1.Multiplicity;
-                    referentialConstraints.toMultiplicity = end2.Multiplicity;
-                }
+            if (end1.Role == referentialConstraints.fromRole)
+            {
+                referentialConstraints.fromMultiplicity = end1.Multiplicity;
+                referentialConstraints.toMultiplicity = end2.Multiplicity;
+            }
 
-                if (end1.Role == referentialConstraints.toRole)
-                {
-                    referentialConstraints.toMultiplicity = end1.Multiplicity;
-                    referentialConstraints.fromMultiplicity = end2.Multiplicity;
-                }
+            if (end1.Role == referentialConstraints.toRole)
+            {
+                referentialConstraints.toMultiplicity = end1.Multiplicity;
+                referentialConstraints.fromMultiplicity = end2.Multiplicity;
+            }
 
 
             while (!(rdr.NodeType == XmlNodeType.EndElement
@@ -482,9 +486,9 @@ namespace ADOTabular
                 {
                     if (rel.InternalName == refName)
                     {
-                        rel.ToColumn = referentialConstraints.toColumnRef;
+                        rel.ToColumn =  rel.ToTable.Columns.GetByPropertyRef( referentialConstraints.toColumnRef).Name;
                         rel.ToColumnMultiplicity = referentialConstraints.toMultiplicity;
-                        rel.FromColumn = referentialConstraints.fromColumnRef;
+                        rel.FromColumn = rel.FromTable.Columns.GetByPropertyRef(referentialConstraints.fromColumnRef).Name;
                         rel.FromColumnMultiplicity = referentialConstraints.fromMultiplicity;
                         return;
                     }
