@@ -315,6 +315,134 @@
                 <Setter Property="Padding" Value="6,2"/>
             </Style>
 
+            <!-- Diagram Relationship Tooltip Template (uses shared styles from MetadataToolTipStyles) -->
+            <DataTemplate x:Key="DiagramRelationshipToolTipTemplate">
+                <Border Padding="8">
+                    <Grid MaxWidth="400">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition Height="12"/>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Grid.ColumnSpan="3" 
+                                   FontSize="14"
+                                   FontWeight="Bold">
+                            <Run Text="{Binding FromTable, Mode=OneWay}"/>
+                            <Run Text=" → "/>
+                            <Run Text="{Binding ToTable, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock Grid.Row="1"
+                                   Grid.ColumnSpan="3"
+                                   Foreground="{DynamicResource MutedTextBrush}">
+                            <Run Text="{Binding FromTable, Mode=OneWay}"/>
+                            <Run Text="["/>
+                            <Run Text="{Binding FromColumn, Mode=OneWay}"/>
+                            <Run Text="] → "/>
+                            <Run Text="{Binding ToTable, Mode=OneWay}"/>
+                            <Run Text="["/>
+                            <Run Text="{Binding ToColumn, Mode=OneWay}"/>
+                            <Run Text="]"/>
+                        </TextBlock>
+
+                        <!-- Row 2 is a spacer -->
+
+                        <!-- Cardinality -->
+                        <TextBlock Text="Cardinality"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="3"/>
+                        <TextBlock Grid.Row="3"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Foreground="{DynamicResource Theme.Brush.Accent}"
+                                   Text="{Binding CardinalityText}"/>
+
+                        <!-- Cross-Filter Direction -->
+                        <TextBlock Text="Cross-Filter"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="4"/>
+                        <TextBlock Grid.Row="4"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding CrossFilterDirectionRaw}"/>
+
+                        <!-- Active -->
+                        <TextBlock Text="Active"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="5"/>
+                        <TextBlock Grid.Row="5" Grid.Column="2">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource ToolTipValue}">
+                                    <Setter Property="Text" Value="Yes"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                            <Setter Property="Text" Value="No"/>
+                                            <Setter Property="Foreground" Value="#999999"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <!-- From Side -->
+                        <TextBlock Text="From"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="6"/>
+                        <TextBlock Grid.Row="6"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}">
+                            <Run Text="{Binding FromCardinality, Mode=OneWay}"/>
+                            <Run Text="  "/>
+                            <Run Text="{Binding FromTable, Mode=OneWay}"/>
+                            <Run Text="["/>
+                            <Run Text="{Binding FromColumn, Mode=OneWay}"/>
+                            <Run Text="]"/>
+                        </TextBlock>
+
+                        <!-- To Side -->
+                        <TextBlock Text="To"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="7"/>
+                        <TextBlock Grid.Row="7"
+                                   Grid.Column="2" 
+                                   Style="{StaticResource ToolTipValue}">
+                            <Run Text="{Binding ToCardinality, Mode=OneWay}"/>
+                            <Run Text="  "/>
+                            <Run Text="{Binding ToTable, Mode=OneWay}"/>
+                            <Run Text="["/>
+                            <Run Text="{Binding ToColumn, Mode=OneWay}"/>
+                            <Run Text="]"/>
+                        </TextBlock>
+
+                        <!-- Relationship Type Indicators -->
+                        <StackPanel Grid.Row="8" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0 8 0 0">
+                            <TextBlock Text="↔ Bi-Directional  " FontSize="11" Foreground="#00897B" Visibility="{Binding IsBidirectional, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="⚠ Many-to-Many  " FontSize="11" Foreground="#E91E63" Visibility="{Binding IsManyToMany, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="⏸ Inactive  " FontSize="11" Foreground="#999999" Visibility="{Binding IsInactive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Row borders -->
+                        <Border Grid.Row="3" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="4" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="5" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="6" Style="{StaticResource ToolTipBorder}"/>
+                        <Border Grid.Row="7" Style="{StaticResource ToolTipBorder}"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
             <!-- Table Card Template -->
             <DataTemplate x:Key="TableCardTemplate" DataType="{x:Type vm:ModelDiagramTableViewModel}">
                 <Grid Width="{Binding Width}" Height="{Binding Height}" MinWidth="150" MinHeight="32">
@@ -438,7 +566,7 @@
                                            Foreground="White"
                                            TextTrimming="CharacterEllipsis"
                                            VerticalAlignment="Center"
-                                           ToolTip="{Binding TableName}"/>
+                                           />
                                 
                                 <!-- Column/Measure/Relationship Count -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="4,0,0,0">
@@ -641,57 +769,72 @@
                             <ItemsControl ItemsSource="{Binding KeyColumns}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}">
-                                        <Grid Margin="0,1">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Text" Value=""/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsKey}" Value="True">
-                                                                <Setter Property="Text" Value="🔑"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsRelationshipColumn}" Value="True">
-                                                                <Setter Property="Text" Value="🔗"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                            <Image Grid.Column="1"
-                                                   ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
-                                                   Width="12" Height="12"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,3,0"/>
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding Caption}"
-                                                       FontSize="10"
-                                                       FontWeight="SemiBold"
-                                                       TextTrimming="CharacterEllipsis"
+                                        <Border Padding="0,1">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                            <Setter Property="Background" Value="#4000D7FF"/>
+                                                            <Setter Property="BorderBrush" Value="#00D7FF"/>
+                                                            <Setter Property="BorderThickness" Value="2,1,2,1"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value=""/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsKey}" Value="True">
+                                                                    <Setter Property="Text" Value="🔑"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsRelationshipColumn}" Value="True">
+                                                                    <Setter Property="Text" Value="🔗"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <Image Grid.Column="1"
+                                                       ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
+                                                       Width="12" Height="12"
                                                        VerticalAlignment="Center"
-                                                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                                                       ToolTipService.ShowDuration="60000">
-                                                <TextBlock.ToolTip>
-                                                    <ToolTip>
-                                                        <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramColumnToolTipTemplate}"/>
-                                                    </ToolTip>
-                                                </TextBlock.ToolTip>
-                                            </TextBlock>
-                                            <!-- VPA Cardinality for key columns -->
-                                            <TextBlock Grid.Column="3"
-                                                       Text="{Binding DisplayedStat}"
-                                                       FontSize="9"
-                                                       VerticalAlignment="Center"
-                                                       Margin="4,0,2,0"
-                                                       Foreground="#2196F3"
-                                                       ToolTip="{Binding DisplayedStatTooltip}"
-                                                       Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                        </Grid>
+                                                       Margin="0,0,3,0"/>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding Caption}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                                           ToolTipService.ShowDuration="60000">
+                                                    <TextBlock.ToolTip>
+                                                        <ToolTip>
+                                                            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramColumnToolTipTemplate}"/>
+                                                        </ToolTip>
+                                                    </TextBlock.ToolTip>
+                                                </TextBlock>
+                                                <!-- VPA Cardinality for key columns -->
+                                                <TextBlock Grid.Column="3"
+                                                           Text="{Binding DisplayedStat}"
+                                                           FontSize="9"
+                                                           VerticalAlignment="Center"
+                                                           Margin="4,0,2,0"
+                                                           Foreground="#2196F3"
+                                                           ToolTip="{Binding DisplayedStatTooltip}"
+                                                           Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                            </Grid>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -921,13 +1064,24 @@
                           MouseLeftButtonDown="Relationship_MouseLeftButtonDown"
                           MouseEnter="Relationship_MouseEnter"
                           MouseLeave="Relationship_MouseLeave"
-                          ToolTip="{Binding Tooltip}"/>
+                          ToolTipService.ShowDuration="60000">
+                        <Path.ToolTip>
+                            <ToolTip>
+                                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramRelationshipToolTipTemplate}"/>
+                            </ToolTip>
+                        </Path.ToolTip>
+                    </Path>
                     
                     <!-- Relationship Path (main line) -->
                     <Path Data="{Binding PathData}"
                           StrokeThickness="2"
                           IsHitTestVisible="False"
-                          ToolTip="{Binding Tooltip}">
+                          ToolTipService.ShowDuration="60000">
+                        <Path.ToolTip>
+                            <ToolTip>
+                                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramRelationshipToolTipTemplate}"/>
+                            </ToolTip>
+                        </Path.ToolTip>
                         <Path.Style>
                             <Style TargetType="Path">
                                 <Setter Property="Stroke" Value="#666666"/>
