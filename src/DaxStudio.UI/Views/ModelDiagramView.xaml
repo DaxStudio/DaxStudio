@@ -20,6 +20,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToCollapsedConverter x:Key="BoolToVisibilityConverter" />
@@ -1526,32 +1527,22 @@
         
         <!-- Loading Overlay -->
         <Border Grid.Row="1" 
-                Background="#80000000"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}">
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}"
+                Style="{StaticResource BusyPanel}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <!-- Spinner animation -->
-                <Border Width="40" Height="40" Margin="0,0,0,16">
-                    <Border.RenderTransform>
-                        <RotateTransform x:Name="SpinnerRotation" CenterX="20" CenterY="20"/>
-                    </Border.RenderTransform>
-                    <Border.Triggers>
-                        <EventTrigger RoutedEvent="Border.Loaded">
-                            <BeginStoryboard>
-                                <Storyboard RepeatBehavior="Forever">
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                     From="0" To="360" Duration="0:0:1"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </Border.Triggers>
-                    <Ellipse Stroke="White" StrokeThickness="4" StrokeDashArray="3,2" Opacity="0.8"/>
-                </Border>
+                <ProgressBar
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                    Height="60"
+                    Width="60"
+                    Margin="0,0,0,16" />
                 <TextBlock Text="{Binding LoadingMessage}" 
-                           Foreground="White" 
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
                            FontSize="16"
                            HorizontalAlignment="Center"/>
                 <TextBlock Text="{Binding LoadingStats}" 
-                           Foreground="White" 
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
                            FontSize="10"
                            Opacity="0.7"
                            Margin="0,8,0,0"

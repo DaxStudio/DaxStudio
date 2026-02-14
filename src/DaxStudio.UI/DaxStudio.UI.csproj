@@ -1004,6 +1004,9 @@
     <Page Include="Resources\Styles\LoadingPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Resources\Styles\MetadataToolTipStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Styles\ToggleSwitchSmall.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
