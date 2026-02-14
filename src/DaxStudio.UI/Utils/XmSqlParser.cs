@@ -189,7 +189,7 @@ namespace DaxStudio.UI.Utils
 
         // Enhanced CREATE SHALLOW RELATION to capture cardinality hints
         private static readonly Regex CreateShallowRelationExtendedPattern = new Regex(
-            @"CREATE\s+SHALLOW\s+RELATION\s+'(?<relationName>[^']+)'.*?(?<manyToMany>MANYTOMANY)?.*?FROM\s+'(?<fromTable>[^']+)'\s*\[(?<fromColumn>[^\]]+)\].*?TO\s+'(?<toTable>[^']+)'\s*\[(?<toColumn>[^\]]+)\]",
+            @"CREATE\s+SHALLOW\s+RELATION\s+'(?<relationName>[^']+)'\s*(?<manyToMany>MANYTOMANY)?(?<hints>[^F]*?)FROM\s+'(?<fromTable>[^']+)'\s*\[(?<fromColumn>[^\]]+)\].*?TO\s+'(?<toTable>[^']+)'\s*\[(?<toColumn>[^\]]+)\]",
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
         // Matches BOTH direction indicators
