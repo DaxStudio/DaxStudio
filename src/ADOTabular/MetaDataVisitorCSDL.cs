@@ -486,9 +486,9 @@ namespace ADOTabular
                 {
                     if (rel.InternalName == refName)
                     {
-                        rel.ToColumn =  rel.ToTable.Columns.GetByPropertyRef( referentialConstraints.toColumnRef).Name;
+                        rel.ToColumn =  rel.ToTable.Columns.GetByPropertyRef( referentialConstraints.toColumnRef)?.Name;
                         rel.ToColumnMultiplicity = referentialConstraints.toMultiplicity;
-                        rel.FromColumn = rel.FromTable.Columns.GetByPropertyRef(referentialConstraints.fromColumnRef).Name;
+                        rel.FromColumn = rel.FromTable.Columns.GetByPropertyRef(referentialConstraints.fromColumnRef)?.Name;
                         rel.FromColumnMultiplicity = referentialConstraints.fromMultiplicity;
                         return;
                     }
