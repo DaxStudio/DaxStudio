@@ -391,8 +391,8 @@ WHERE
             var productTable = analysis.Tables["Product"];
             var categoryCol = productTable.Columns["Category"];
             Assert.IsTrue(categoryCol.UsageTypes.HasFlag(XmSqlColumnUsage.Filter));
-            Assert.Contains("Bikes", categoryCol.FilterValues);
-            Assert.Contains("=", categoryCol.FilterOperators);
+            Assert.IsTrue(categoryCol.FilterValues.Contains("Bikes"));
+            Assert.IsTrue(categoryCol.FilterOperators.Contains("="));
         }
 
         [TestMethod]
@@ -409,10 +409,10 @@ WHERE
             var customerTable = analysis.Tables["Customer"];
             var cityCol = customerTable.Columns["City"];
             Assert.IsTrue(cityCol.UsageTypes.HasFlag(XmSqlColumnUsage.Filter));
-            Assert.Contains("New York", cityCol.FilterValues);
-            Assert.Contains("London", cityCol.FilterValues);
-            Assert.Contains("Paris", cityCol.FilterValues);
-            Assert.Contains("IN", cityCol.FilterOperators);
+            Assert.IsTrue(cityCol.FilterValues.Contains("New York"));
+            Assert.IsTrue(cityCol.FilterValues.Contains("London"));
+            Assert.IsTrue(cityCol.FilterValues.Contains("Paris"));
+            Assert.IsTrue(cityCol.FilterOperators.Contains("IN"));
         }
 
         [TestMethod]
@@ -1297,6 +1297,133 @@ FROM 'Sales Territory';";
 
             Assert.AreEqual(1, column.AggregationTypes.Count, "Aggregation types should be case-insensitive");
             Assert.IsTrue(column.AggregationTypes.Contains("SUM"));
+        }
+
+        // ==================== TRUNCATED IN CLAUSE TESTS ====================
+
+        [TestMethod]
+        public void ParseQueryWithTruncatedInClause_ExtractsTotalCount()
+        {
+            // Arrange - exact query from user testing with truncated IN clause
+            string xmSql = @"SET DC_KIND=""AUTO"";
+SELECT
+    'Date'[Date],
+    'Geography'[Country Region Code],
+    SUM ( 'Internet Sales'[Sales Amount] )
+FROM 'Internet Sales'
+    LEFT OUTER JOIN 'Date'
+        ON 'Internet Sales'[Order Date]='Date'[Date]
+    LEFT OUTER JOIN 'Customer'
+        ON 'Internet Sales'[Customer Id]='Customer'[Customer Id]
+    LEFT OUTER JOIN 'Geography'
+        ON 'Customer'[Geography Id]='Geography'[Geography Id]
+WHERE
+    'Date'[Date] IN ( 40593.000000, 40174.000000, 38732.000000, 40556.000000, 40137.000000, 41998.000000, 40100.000000, 39681.000000, 41542.000000, 41961.000000..[3,652 total values, not all displayed] ) ;";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            // Assert
+            Assert.IsTrue(result);
+            Assert.IsTrue(analysis.Tables.ContainsKey("Date"));
+            
+            var dateTable = analysis.Tables["Date"];
+            Assert.IsTrue(dateTable.Columns.ContainsKey("Date"));
+            
+            var dateColumn = dateTable.Columns["Date"];
+            Assert.IsTrue(dateColumn.UsageTypes.HasFlag(XmSqlColumnUsage.Filter));
+            
+            // The key assertion: TotalFilterValueCount should be 3652, not the number of comma-separated values
+            Assert.AreEqual(3652, dateColumn.TotalFilterValueCount, 
+                "TotalFilterValueCount should be extracted from the '[3,652 total values, not all displayed]' indicator");
+            
+            // FilterValues should contain some sample values (limited to 20 max)
+            Assert.IsTrue(dateColumn.FilterValues.Count > 0);
+            Assert.IsTrue(dateColumn.FilterValues.Count <= 20, "FilterValues should be limited to 20 for display");
+            
+            // Check that IN operator is recorded
+            Assert.IsTrue(dateColumn.FilterOperators.Contains("IN"));
+        }
+
+        [TestMethod]
+        public void ParseQueryWithTruncatedInClause_LargeCount()
+        {
+            // Test with a larger count (over 10,000)
+            string xmSql = @"SELECT 'Product'[ProductKey]
+FROM 'Product'
+WHERE
+    'Product'[ProductKey] IN ( 1, 2, 3, 4, 5..[12,345 total values, not all displayed] ) ;";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            // Assert
+            Assert.IsTrue(result);
+            var productTable = analysis.Tables["Product"];
+            var productKeyCol = productTable.Columns["ProductKey"];
+            
+            Assert.AreEqual(12345, productKeyCol.TotalFilterValueCount);
+        }
+
+        [TestMethod]
+        public void ParseQueryWithNonTruncatedInClause_CountsActualValues()
+        {
+            // Test with a non-truncated IN clause (no "[X total values]" indicator)
+            string xmSql = @"SELECT 'Product'[Name]
+FROM 'Product'
+WHERE
+    'Product'[Color] IN ( 'Red', 'Blue', 'Green', 'Yellow', 'Black' ) ;";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            // Assert
+            Assert.IsTrue(result);
+            var productTable = analysis.Tables["Product"];
+            var colorCol = productTable.Columns["Color"];
+            
+            // TotalFilterValueCount should equal the number of values added
+            Assert.AreEqual(5, colorCol.TotalFilterValueCount, 
+                "TotalFilterValueCount should equal the number of actual values when no truncation indicator");
+            Assert.AreEqual(5, colorCol.FilterValues.Count);
+            Assert.IsTrue(colorCol.FilterValues.Contains("Red"));
+            Assert.IsTrue(colorCol.FilterValues.Contains("Blue"));
+            Assert.IsTrue(colorCol.FilterValues.Contains("Green"));
+            Assert.IsTrue(colorCol.FilterValues.Contains("Yellow"));
+            Assert.IsTrue(colorCol.FilterValues.Contains("Black"));
+        }
+
+        [TestMethod]
+        public void ParseQueryWithTruncatedInClause_SampleValuesExtracted()
+        {
+            // Test that sample values are correctly extracted before the truncation indicator
+            string xmSql = @"SELECT 'Customer'[Name]
+FROM 'Customer'
+WHERE
+    'Customer'[City] IN ( 'New York', 'Los Angeles', 'Chicago', 'Houston'..[500 total values, not all displayed] ) ;";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            // Assert
+            Assert.IsTrue(result);
+            var customerTable = analysis.Tables["Customer"];
+            var cityCol = customerTable.Columns["City"];
+            
+            Assert.AreEqual(500, cityCol.TotalFilterValueCount);
+            // Should have extracted the sample values before the truncation
+            Assert.IsTrue(cityCol.FilterValues.Contains("New York"));
+            Assert.IsTrue(cityCol.FilterValues.Contains("Los Angeles"));
+            Assert.IsTrue(cityCol.FilterValues.Contains("Chicago"));
+            Assert.IsTrue(cityCol.FilterValues.Contains("Houston"));
         }
     }
 }

@@ -376,6 +376,15 @@ namespace DaxStudio.UI.Model
         /// </summary>
         public HashSet<string> FilterOperators { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        private int _totalFilterValueCount = 0;
+        /// <summary>
+        /// The total count of filter values (may be higher than FilterValues.Count if truncated).
+        /// </summary>
+        public int TotalFilterValueCount { 
+            get { return _totalFilterValueCount > 0 ? _totalFilterValueCount : FilterValues.Count; }
+            private set { _totalFilterValueCount = value; } 
+        }
+
         /// <summary>
         /// Whether this column has a DAX callback (CallbackDataID or EncodeCallback).
         /// </summary>
@@ -412,6 +421,14 @@ namespace DaxStudio.UI.Model
                     FilterOperators.Add(op.Trim());
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the total filter value count (used when the actual count exceeds the stored limit).
+        /// </summary>
+        public void SetTotalFilterValueCount(int count)
+        {
+            TotalFilterValueCount = count;
         }
 
         /// <summary>

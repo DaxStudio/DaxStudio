@@ -3048,7 +3048,7 @@ namespace DaxStudio.UI.ViewModels
                     if (col.FilterOperators.Any())
                         details.Add(string.Join("/", col.FilterOperators));
                     if (col.HasFilterValues)
-                        details.Add($"{col.FilterValues.Count} values");
+                        details.Add($"{col.TotalFilterValuesCount} values");
                     var detailStr = details.Any() ? $" ({string.Join(", ", details)})" : "";
                     sb.AppendLine($"   • {col.ColumnName}{detailStr}");
                 }
@@ -4480,10 +4480,12 @@ namespace DaxStudio.UI.ViewModels
                 var values = _columnInfo.FilterValues.Take(3).ToList();
                 var preview = string.Join(", ", values);
                 if (_columnInfo.FilterValues.Count > 3)
-                    preview += $", ... (+{_columnInfo.FilterValues.Count - 3} more)";
+                    preview += $", ... (+{_columnInfo.TotalFilterValueCount - 3} more)";
                 return preview;
             }
         }
+
+        public int TotalFilterValuesCount => _columnInfo.TotalFilterValueCount;
 
         /// <summary>
         /// All filter values formatted for detail panel display.

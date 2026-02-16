@@ -151,6 +151,12 @@ namespace DaxStudio.UI.Utils
             @"'(?<table>[^']+)'\s*\[(?<column>[^\]]+)\]\s+IN\s*\(\s*(?<values>[^)]+)\s*\)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        // Matches truncated IN clause value count: ..[3,652 total values, not all displayed]
+        // Captures the number (with optional comma separators) from the truncation message
+        private static readonly Regex TruncatedValuesPattern = new Regex(
+            @"\.\.\s*\[\s*(?<count>[\d,]+)\s+total\s+values,\s+not\s+all\s+displayed\s*\]",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         // Matches BETWEEN clause: 'Table'[Column] BETWEEN value1 AND value2
         private static readonly Regex FilterBetweenPattern = new Regex(
             @"'(?<table>[^']+)'\s*\[(?<column>[^\]]+)\]\s+BETWEEN\s+(?<val1>'[^']*'|""[^""]*""|-?\d+(?:\.\d+)?)\s+AND\s+(?<val2>'[^']*'|""[^""]*""|-?\d+(?:\.\d+)?)",
@@ -997,6 +1003,7 @@ namespace DaxStudio.UI.Utils
 
         /// <summary>
         /// Extracts filter values from IN clauses like 'Table'[Column] IN (val1, val2).
+        /// Also handles truncated value lists with "[X total values, not all displayed]" indicator.
         /// </summary>
         private void ExtractFilterInValues(string whereClause, XmSqlAnalysis analysis)
         {
@@ -1027,11 +1034,32 @@ namespace DaxStudio.UI.Utils
                     {
                         column.AddUsage(XmSqlColumnUsage.Filter);
                         
+                        // Check for truncation indicator: ..[X total values, not all displayed]
+                        int totalCount = 0;
+                        var truncationMatch = TruncatedValuesPattern.Match(valuesText);
+                        if (truncationMatch.Success)
+                        {
+                            var countText = truncationMatch.Groups["count"].Value;
+                            if (int.TryParse(countText.Replace(",", ""), out var parsedCount))
+                            {
+                                totalCount = parsedCount;
+                            }
+                            
+                            // Remove the truncation indicator from the values text for parsing
+                            valuesText = valuesText.Substring(0, truncationMatch.Index);
+                        }
+                        
                         // Parse individual values from the IN list
                         var values = ParseInValues(valuesText);
                         foreach (var value in values)
                         {
                             column.AddFilterValue(value, "IN");
+                        }
+                        
+                        // If we detected a truncation indicator, set the total count
+                        if (totalCount > 0)
+                        {
+                            column.SetTotalFilterValueCount(totalCount);
                         }
                     }
                 }
