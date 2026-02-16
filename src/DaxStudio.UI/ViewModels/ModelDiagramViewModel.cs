@@ -21,6 +21,12 @@ using System.Windows.Media;
 namespace DaxStudio.UI.ViewModels
 {
     /// <summary>
+    /// Public enum for edge type, used in edge slot calculations for relationship lines.
+    /// Defines which edge of a table a relationship connects to.
+    /// </summary>
+    public enum EdgeTypePublic { Left, Right, Top, Bottom }
+
+    /// <summary>
     /// ViewModel for the Model Diagram visualization.
     /// This displays tables, columns, and relationships from the connected model's metadata.
     /// This is a dockable tool window that can be resized, floated, or maximized.
@@ -668,37 +674,155 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Calculates parallel offsets for relationships between the same table pairs.
-        /// This prevents multiple relationships from overlapping by spacing them apart.
+        /// Calculates edge slot positions for all relationships, distributing connection points
+        /// along each table edge to prevent overlapping lines.
+        /// This must be called AFTER UpdatePath() has set the edge types for each relationship.
         /// </summary>
         private void CalculateParallelRelationshipOffsets()
         {
-            const double ParallelGap = 30; // Gap between parallel relationship lines
-            
-            // Group relationships by table pair (order-independent)
-            var tablePairGroups = Relationships
-                .GroupBy(r => 
-                {
-                    // Create a consistent key regardless of direction
-                    var tables = new[] { r.FromTable, r.ToTable }.OrderBy(t => t, StringComparer.OrdinalIgnoreCase).ToArray();
-                    return $"{tables[0]}|{tables[1]}";
-                })
-                .Where(g => g.Count() > 1) // Only process groups with multiple relationships
-                .ToList();
-            
-            foreach (var group in tablePairGroups)
+            // First, call UpdatePath on all relationships to determine which edge they use
+            foreach (var rel in Relationships)
             {
-                var rels = group.ToList();
-                int count = rels.Count;
-                
-                // Calculate offsets to center the group
-                // For 2 relationships: offsets are -10, +10
-                // For 3 relationships: offsets are -20, 0, +20
-                for (int i = 0; i < count; i++)
+                rel.UpdatePath();
+            }
+
+            // Now calculate edge slots for each table
+            CalculateEdgeSlots();
+        }
+
+        /// <summary>
+        /// Calculates edge slot positions for relationships on each table edge.
+        /// Relationships connecting to the same edge of a table are distributed along that edge.
+        /// </summary>
+        private void CalculateEdgeSlots()
+        {
+            const double EdgePadding = 30; // Minimum distance from table corners
+            const double FixedSlotGap = 25;  // Fixed gap between connection points for consistent spacing
+
+            // Reset all slot offsets to 0 before recalculating
+            // This ensures single relationships stay centered and prevents stale offsets
+            foreach (var rel in Relationships)
+            {
+                rel.StartEdgeSlotOffset = 0;
+                rel.EndEdgeSlotOffset = 0;
+            }
+
+            // Build a dictionary of table name to table VM for quick lookup
+            var tableDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
+            foreach (var table in Tables)
+            {
+                if (!tableDict.ContainsKey(table.TableName))
+                    tableDict[table.TableName] = table;
+            }
+
+            // For each table, group relationships by which edge they connect to
+            foreach (var table in Tables)
+            {
+                // Get relationships where this table is the "from" side
+                var fromRelsByEdge = Relationships
+                    .Where(r => string.Equals(r.FromTable, table.TableName, StringComparison.OrdinalIgnoreCase))
+                    .GroupBy(r => r.StartEdgeType)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Get relationships where this table is the "to" side
+                var toRelsByEdge = Relationships
+                    .Where(r => string.Equals(r.ToTable, table.TableName, StringComparison.OrdinalIgnoreCase))
+                    .GroupBy(r => r.EndEdgeType)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Process each edge type
+                foreach (var edgeType in new[] { EdgeTypePublic.Left, EdgeTypePublic.Right, EdgeTypePublic.Top, EdgeTypePublic.Bottom })
                 {
-                    double offset = (i - (count - 1) / 2.0) * ParallelGap;
-                    rels[i].ParallelOffset = offset;
+                    // Combine "from" and "to" relationships for this edge
+                    var fromRels = fromRelsByEdge.TryGetValue(edgeType, out var fr) ? fr : new List<ModelDiagramRelationshipViewModel>();
+                    var toRels = toRelsByEdge.TryGetValue(edgeType, out var tr) ? tr : new List<ModelDiagramRelationshipViewModel>();
+
+                    int totalCount = fromRels.Count + toRels.Count;
+                    if (totalCount == 0) continue; // No relationships on this edge
+                    if (totalCount == 1) continue; // Single connection stays centered (offset already 0)
+
+                    // Calculate edge length for reference
+                    bool isVerticalEdge = (edgeType == EdgeTypePublic.Left || edgeType == EdgeTypePublic.Right);
+                    double edgeLength = isVerticalEdge ? table.Height : table.Width;
+
+                    // Use fixed slot gap for consistent spacing across all tables
+                    double slotGap = FixedSlotGap;
+
+                    // Sort relationships by the position of the other table (to minimize crossings)
+                    // For vertical edges (Left/Right): sort by Y position of the other table
+                    // For horizontal edges (Top/Bottom): sort by X position of the other table
+                    var allRelsOnEdge = new List<(ModelDiagramRelationshipViewModel rel, bool isFrom, double otherTablePos)>();
+
+                    foreach (var rel in fromRels)
+                    {
+                        // Get the "to" table position
+                        if (tableDict.TryGetValue(rel.ToTable, out var toTable))
+                        {
+                            double pos = isVerticalEdge ? toTable.CenterY : toTable.CenterX;
+                            allRelsOnEdge.Add((rel, true, pos));
+                        }
+                    }
+
+                    foreach (var rel in toRels)
+                    {
+                        // Get the "from" table position
+                        if (tableDict.TryGetValue(rel.FromTable, out var fromTable))
+                        {
+                            double pos = isVerticalEdge ? fromTable.CenterY : fromTable.CenterX;
+                            allRelsOnEdge.Add((rel, false, pos));
+                        }
+                    }
+
+                    // Sort by position of the other table (ascending)
+                    // This ensures relationships to higher (smaller Y) tables appear at the top of vertical edges
+                    // And relationships to leftmost (smaller X) tables appear at the left of horizontal edges
+                    System.Diagnostics.Debug.WriteLine($"[EdgeSlots] {table.TableName}.{edgeType}: BEFORE sort:");
+                    foreach (var item in allRelsOnEdge)
+                    {
+                        var otherName = item.isFrom ? item.rel.ToTable : item.rel.FromTable;
+                        System.Diagnostics.Debug.WriteLine($"    {otherName}: otherTablePos={item.otherTablePos:F1}");
+                    }
+
+                    allRelsOnEdge = allRelsOnEdge.OrderBy(x => x.otherTablePos).ToList();
+
+                    System.Diagnostics.Debug.WriteLine($"[EdgeSlots] {table.TableName}.{edgeType}: AFTER sort:");
+                    for (int idx = 0; idx < allRelsOnEdge.Count; idx++)
+                    {
+                        var item = allRelsOnEdge[idx];
+                        var otherName = item.isFrom ? item.rel.ToTable : item.rel.FromTable;
+                        System.Diagnostics.Debug.WriteLine($"    [{idx}] {otherName}: otherTablePos={item.otherTablePos:F1}");
+                    }
+
+                    // Distribute slots centered around 0
+                    // For n items with gap g: totalWidth = (n-1)*g, centered means offsets from -(n-1)*g/2 to +(n-1)*g/2
+                    double totalWidth = (totalCount - 1) * slotGap;
+                    double startOffset = -totalWidth / 2;
+
+                    System.Diagnostics.Debug.WriteLine($"[EdgeSlots] {table.TableName}.{edgeType}: {totalCount} rels, height={edgeLength:F0}, gap={slotGap:F1}, startOffset={startOffset:F1}");
+
+                    for (int i = 0; i < allRelsOnEdge.Count; i++)
+                    {
+                        var (rel, isFrom, otherPos) = allRelsOnEdge[i];
+                        double slotOffset = startOffset + (i * slotGap);
+
+                        if (isFrom)
+                        {
+                            rel.StartEdgeSlotOffset = slotOffset;
+                            System.Diagnostics.Debug.WriteLine($"  [{i}] -> {rel.ToTable} (Y={otherPos:F0}): StartOffset={slotOffset:F1}, VERIFY StartEdgeSlotOffset={rel.StartEdgeSlotOffset:F1}");
+                        }
+                        else
+                        {
+                            rel.EndEdgeSlotOffset = slotOffset;
+                            System.Diagnostics.Debug.WriteLine($"  [{i}] <- {rel.FromTable} (Y={otherPos:F0}): EndOffset={slotOffset:F1}, VERIFY EndEdgeSlotOffset={rel.EndEdgeSlotOffset:F1}");
+                        }
+                    }
                 }
+            }
+
+            // Now update all relationship paths with the new slot positions
+            foreach (var rel in Relationships)
+            {
+                rel.UpdatePathWithSlots();
             }
         }
 
@@ -1013,7 +1137,7 @@ namespace DaxStudio.UI.ViewModels
                 // Add relationships to collection
                 stageStopwatch.Restart();
                 LoadingMessage = "Adding relationships to diagram...";
-                
+
                 Relationships.IsNotifying = false;
                 try
                 {
@@ -1024,10 +1148,7 @@ namespace DaxStudio.UI.ViewModels
                     Relationships.IsNotifying = true;
                     Relationships.Refresh();
                 }
-                
-                // Calculate parallel offsets for relationships between the same table pairs
-                CalculateParallelRelationshipOffsets();
-                
+
                 var addRelsTime = stageStopwatch.ElapsedMilliseconds;
 
                 // Re-sort columns and recalculate collapsed heights now that IsRelationshipColumn is set
@@ -1036,7 +1157,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // Notify that KeyColumns may have changed (IsRelationshipColumn was just set)
                     table.NotifyKeyColumnsChanged();
-                    
+
                     // Recalculate collapsed height now that we know the key columns
                     if (table.IsCollapsed)
                     {
@@ -1057,7 +1178,13 @@ namespace DaxStudio.UI.ViewModels
                 if (!layoutLoaded)
                 {
                     // Use the user's selected layout algorithm (respects dropdown setting)
+                    // This includes relationship offset calculation
                     LayoutDiagram();
+                }
+                else
+                {
+                    // Saved layout loaded - still need to update relationship paths and offsets
+                    CalculateParallelRelationshipOffsets();
                 }
 
                 // Safety check: if layout failed (all tables at 0,0), force a grid layout
@@ -1566,13 +1693,17 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
 
-                // Calculate parallel offsets for relationships between the same table pairs
-                CalculateParallelRelationshipOffsets();
-
                 // Try to load saved layout, otherwise use auto-layout
+                // NOTE: Both branches call CalculateParallelRelationshipOffsets AFTER positions are set
                 if (!TryLoadSavedLayout())
                 {
+                    // LayoutDiagram() calls CalculateParallelRelationshipOffsets() internally at the end
                     LayoutDiagram();
+                }
+                else
+                {
+                    // Saved layout loaded - need to calculate offsets now that positions are set
+                    CalculateParallelRelationshipOffsets();
                 }
 
                 stopwatch.Stop();
@@ -1773,13 +1904,17 @@ namespace DaxStudio.UI.ViewModels
                 // Now enrich with full VPA stats since we already have the data
                 EnrichFromVertipaq(vpaModel);
 
-                // Calculate parallel offsets for relationships between the same table pairs
-                CalculateParallelRelationshipOffsets();
-
                 // Try to load saved layout, otherwise use auto-layout
+                // NOTE: Both branches call CalculateParallelRelationshipOffsets AFTER positions are set
                 if (!TryLoadSavedLayout())
                 {
+                    // LayoutDiagram() calls CalculateParallelRelationshipOffsets() internally at the end
                     LayoutDiagram();
+                }
+                else
+                {
+                    // Saved layout loaded - need to calculate offsets now that positions are set
+                    CalculateParallelRelationshipOffsets();
                 }
 
                 Log.Information("{class} {method} Loaded {tableCount} tables and {relCount} relationships from VPA data",
@@ -1913,7 +2048,7 @@ namespace DaxStudio.UI.ViewModels
             
             // Step 2: Order tables within each layer to minimize edge crossings
             MinimizeCrossings(layers);
-            
+
             // Step 3: Assign X coordinates using barycenter method
             AssignCoordinates(layers, tableWidth, tableHeight, horizontalSpacing, verticalSpacing, padding);
 
@@ -1923,11 +2058,8 @@ namespace DaxStudio.UI.ViewModels
             CanvasWidth = Math.Max(100, maxX + padding);
             CanvasHeight = Math.Max(100, maxY + padding);
 
-            // Update relationship line positions
-            foreach (var rel in Relationships)
-            {
-                rel.UpdatePath();
-            }
+            // Update relationship line positions and edge slot distribution
+            CalculateParallelRelationshipOffsets();
         }
 
         /// <summary>
@@ -2032,18 +2164,15 @@ namespace DaxStudio.UI.ViewModels
                     columnIndex++;
                 }
             }
-            
+
             // Calculate canvas size
             var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
             var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
             CanvasWidth = Math.Max(100, maxX + padding);
             CanvasHeight = Math.Max(100, maxY + padding);
 
-            // Update relationship line positions
-            foreach (var rel in Relationships)
-            {
-                rel.UpdatePath();
-            }
+            // Update relationship line positions and edge slot distribution
+            CalculateParallelRelationshipOffsets();
         }
 
         /// <summary>
@@ -2054,15 +2183,12 @@ namespace DaxStudio.UI.ViewModels
         {
             // Calculate positions using the cluster-based algorithm
             var positions = CalculateLayoutPositionsFromViewModels();
-            
+
             // Apply positions
             ApplyLayoutPositions(positions);
 
-            // Update relationship line positions
-            foreach (var rel in Relationships)
-            {
-                rel.UpdatePath();
-            }
+            // Update relationship line positions and edge slot distribution
+            CalculateParallelRelationshipOffsets();
         }
 
         /// <summary>
@@ -2579,7 +2705,12 @@ namespace DaxStudio.UI.ViewModels
         {
             // Update relationship visibility based on table visibility
             UpdateRelationshipVisibility();
-            
+
+            // Recalculate edge slot distribution for parallel relationships
+            // This must be done BEFORE UpdatePath() so that relationships connecting 
+            // to the same edge are properly sorted and spaced based on current table positions
+            CalculateParallelRelationshipOffsets();
+
             // Update relationship line positions
             foreach (var rel in Relationships)
             {
@@ -4262,6 +4393,71 @@ namespace DaxStudio.UI.ViewModels
                         sb.AppendLine($"    IsVisible: {rel.IsVisible}");
                         sb.AppendLine($"    HasCenterIndicators: {rel.HasCenterIndicators}");
                         sb.AppendLine($"    CrossFilterDirection (raw): {rel.CrossFilterDirectionRaw}");
+                        sb.AppendLine($"    StartEdge: {rel.StartEdgeType}, EndEdge: {rel.EndEdgeType}");
+                        sb.AppendLine($"    StartSlotOffset: {rel.StartEdgeSlotOffset:F1}, EndSlotOffset: {rel.EndEdgeSlotOffset:F1}");
+                        sb.AppendLine($"    FromCardinalityY: {rel.FromCardinalityY:F1}, ToCardinalityY: {rel.ToCardinalityY:F1}");
+                        sb.AppendLine($"    ActualStartY: {rel.ActualStartY:F1}, ActualEndY: {rel.ActualEndY:F1}");
+                    }
+                    sb.AppendLine();
+
+                    // Edge slot diagnostics
+                    sb.AppendLine("=== EDGE SLOT DIAGNOSTICS ===");
+                    foreach (var table in Tables.OrderBy(t => t.TableName))
+                    {
+                        // Group relationships by edge for this table
+                        var fromRelsByEdge = Relationships
+                            .Where(r => string.Equals(r.FromTable, table.TableName, StringComparison.OrdinalIgnoreCase))
+                            .GroupBy(r => r.StartEdgeType)
+                            .ToDictionary(g => g.Key, g => g.ToList());
+                        var toRelsByEdge = Relationships
+                            .Where(r => string.Equals(r.ToTable, table.TableName, StringComparison.OrdinalIgnoreCase))
+                            .GroupBy(r => r.EndEdgeType)
+                            .ToDictionary(g => g.Key, g => g.ToList());
+
+                        foreach (var edgeType in new[] { EdgeTypePublic.Left, EdgeTypePublic.Right, EdgeTypePublic.Top, EdgeTypePublic.Bottom })
+                        {
+                            var fromRels = fromRelsByEdge.TryGetValue(edgeType, out var fr) ? fr : new List<ModelDiagramRelationshipViewModel>();
+                            var toRels = toRelsByEdge.TryGetValue(edgeType, out var tr) ? tr : new List<ModelDiagramRelationshipViewModel>();
+                            int totalCount = fromRels.Count + toRels.Count;
+                            if (totalCount > 1)
+                            {
+                                sb.AppendLine($"  [{table.TableName}] {edgeType} edge: {totalCount} relationships");
+                                sb.AppendLine($"    Table Position: Y={table.Y:F0}, Height={table.Height:F0}, CenterY={table.CenterY:F0}");
+
+                                // Sort and show relationships with their positions
+                                bool isVerticalEdge = (edgeType == EdgeTypePublic.Left || edgeType == EdgeTypePublic.Right);
+                                var allRels = new List<(ModelDiagramRelationshipViewModel rel, bool isFrom, string otherTable, double otherPos, double slotOffset)>();
+
+                                var tableDict = Tables.ToDictionary(t => t.TableName, StringComparer.OrdinalIgnoreCase);
+                                foreach (var rel in fromRels)
+                                {
+                                    if (tableDict.TryGetValue(rel.ToTable, out var otherTbl))
+                                    {
+                                        double pos = isVerticalEdge ? otherTbl.CenterY : otherTbl.CenterX;
+                                        allRels.Add((rel, true, rel.ToTable, pos, rel.StartEdgeSlotOffset));
+                                    }
+                                }
+                                foreach (var rel in toRels)
+                                {
+                                    if (tableDict.TryGetValue(rel.FromTable, out var otherTbl))
+                                    {
+                                        double pos = isVerticalEdge ? otherTbl.CenterY : otherTbl.CenterX;
+                                        allRels.Add((rel, false, rel.FromTable, pos, rel.EndEdgeSlotOffset));
+                                    }
+                                }
+
+                                // Sort by other table position (ascending)
+                                allRels = allRels.OrderBy(x => x.otherPos).ToList();
+
+                                for (int i = 0; i < allRels.Count; i++)
+                                {
+                                    var (rel, isFrom, otherTable, otherPos, offset) = allRels[i];
+                                    var actualY = isFrom ? rel.ActualStartY : rel.ActualEndY;
+                                    var cardinalityY = isFrom ? rel.FromCardinalityY : rel.ToCardinalityY;
+                                    sb.AppendLine($"      #{i}: {otherTable} (CenterY={otherPos:F0}) -> Offset={offset:F1}, ActualY={actualY:F1}, CardinalityY={cardinalityY:F1}");
+                                }
+                            }
+                        }
                     }
                     sb.AppendLine();
 
@@ -6498,9 +6694,14 @@ namespace DaxStudio.UI.ViewModels
         public string FromCardinality => _relationship.FromColumnMultiplicity == "*" ? "*" : "1";
 
         /// <summary>
-        /// Font size for the "From" cardinality - larger for * to make it more visible
+        /// Font size for the "From" cardinality - larger for * symbol
         /// </summary>
         public double FromCardinalityFontSize => FromCardinality == "*" ? 16 : 12;
+
+        /// <summary>
+        /// Margin for the "From" cardinality - negative top/bottom for * to maintain consistent border height
+        /// </summary>
+        public Thickness FromCardinalityMargin => FromCardinality == "*" ? new Thickness(0, -2, 0, -4) : new Thickness(0,-2,0,-2);
 
         /// <summary>
         /// The "To" side cardinality symbol (1 or *)
@@ -6508,9 +6709,14 @@ namespace DaxStudio.UI.ViewModels
         public string ToCardinality => _relationship.ToColumnMultiplicity == "*" ? "*" : "1";
 
         /// <summary>
-        /// Font size for the "To" cardinality - larger for * to make it more visible
+        /// Font size for the "To" cardinality - larger for * symbol
         /// </summary>
         public double ToCardinalityFontSize => ToCardinality == "*" ? 16 : 12;
+
+        /// <summary>
+        /// Margin for the "To" cardinality - negative top/bottom for * to maintain consistent border height
+        /// </summary>
+        public Thickness ToCardinalityMargin => ToCardinality == "*" ? new Thickness(0, -4, 0, -4) : new Thickness(0);
 
         /// <summary>
         /// Tooltip for the "From" side cardinality.
@@ -6633,6 +6839,53 @@ namespace DaxStudio.UI.ViewModels
             set { _parallelOffset = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(PathData)); }
         }
 
+        /// <summary>
+        /// Slot offset for the start point (on the from table's edge).
+        /// Used to distribute multiple relationships along a table edge.
+        /// </summary>
+        private double _startEdgeSlotOffset;
+        public double StartEdgeSlotOffset
+        {
+            get => _startEdgeSlotOffset;
+            set { _startEdgeSlotOffset = value; NotifyOfPropertyChange(); }
+        }
+
+        /// <summary>
+        /// Slot offset for the end point (on the to table's edge).
+        /// Used to distribute multiple relationships along a table edge.
+        /// </summary>
+        private double _endEdgeSlotOffset;
+        public double EndEdgeSlotOffset
+        {
+            get => _endEdgeSlotOffset;
+            set { _endEdgeSlotOffset = value; NotifyOfPropertyChange(); }
+        }
+
+        /// <summary>
+        /// The edge type used for the start of the relationship line (publicly accessible).
+        /// </summary>
+        public EdgeTypePublic StartEdgeType => ConvertToPublicEdgeType(_startEdge);
+
+        /// <summary>
+        /// The edge type used for the end of the relationship line (publicly accessible).
+        /// </summary>
+        public EdgeTypePublic EndEdgeType => ConvertToPublicEdgeType(_endEdge);
+
+        /// <summary>
+        /// Converts internal EdgeType to public EdgeTypePublic enum.
+        /// </summary>
+        private EdgeTypePublic ConvertToPublicEdgeType(EdgeType edgeType)
+        {
+            return edgeType switch
+            {
+                EdgeType.Left => EdgeTypePublic.Left,
+                EdgeType.Right => EdgeTypePublic.Right,
+                EdgeType.Top => EdgeTypePublic.Top,
+                EdgeType.Bottom => EdgeTypePublic.Bottom,
+                _ => EdgeTypePublic.Right
+            };
+        }
+
         #endregion
 
         #region Line Path
@@ -6691,6 +6944,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Path data for drawing the relationship line (bezier curve).
+        /// Uses the actual start/end positions which include edge slot offsets.
         /// </summary>
         public string PathData
         {
@@ -6698,19 +6952,16 @@ namespace DaxStudio.UI.ViewModels
             {
                 // Return empty if positions not initialized
                 if (!HasValidPositions) return string.Empty;
-                
+
                 // Determine if this is a horizontal or vertical relationship
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
-                
-                // Apply parallel offset perpendicular to the line direction
-                double offsetX = isVertical ? _parallelOffset : 0;
-                double offsetY = isVertical ? 0 : _parallelOffset;
-                
-                double startX = StartX + offsetX;
-                double startY = StartY + offsetY;
-                double endX = EndX + offsetX;
-                double endY = EndY + offsetY;
-                
+
+                // Use actual positions (already include slot offsets)
+                double startX = ActualStartX;
+                double startY = ActualStartY;
+                double endX = ActualEndX;
+                double endY = ActualEndY;
+
                 if (isVertical)
                 {
                     // Vertical bezier curve (for top/bottom connections)
@@ -6731,27 +6982,59 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Label position (middle of the line), accounting for parallel offset.
+        /// Actual start X position (base position + slot offset for vertical edges).
         /// </summary>
-        public double LabelX
+        public double ActualStartX
         {
             get
             {
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
-                double offset = isVertical ? _parallelOffset : 0;
-                return (StartX + EndX) / 2 + offset;
+                return isVertical ? StartX + _startEdgeSlotOffset : StartX;
             }
         }
-        
-        public double LabelY
+
+        /// <summary>
+        /// Actual start Y position (base position + slot offset for horizontal edges).
+        /// </summary>
+        public double ActualStartY
         {
             get
             {
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
-                double offset = isVertical ? 0 : _parallelOffset;
-                return (StartY + EndY) / 2 + offset;
+                return isVertical ? StartY : StartY + _startEdgeSlotOffset;
             }
         }
+
+        /// <summary>
+        /// Actual end X position (base position + slot offset for vertical edges).
+        /// </summary>
+        public double ActualEndX
+        {
+            get
+            {
+                bool isVertical = (_endEdge == EdgeType.Top || _endEdge == EdgeType.Bottom);
+                return isVertical ? EndX + _endEdgeSlotOffset : EndX;
+            }
+        }
+
+        /// <summary>
+        /// Actual end Y position (base position + slot offset for horizontal edges).
+        /// </summary>
+        public double ActualEndY
+        {
+            get
+            {
+                bool isVertical = (_endEdge == EdgeType.Top || _endEdge == EdgeType.Bottom);
+                return isVertical ? EndY : EndY + _endEdgeSlotOffset;
+            }
+        }
+
+        /// <summary>
+        /// Label position (middle of the line), using actual positions.
+        /// </summary>
+        public double LabelX => (ActualStartX + ActualEndX) / 2;
+
+        public double LabelY => (ActualStartY + ActualEndY) / 2;
 
         /// <summary>
         /// Rotation angle for filter direction arrow pointing toward "From" table (where filter originates).
@@ -6762,8 +7045,8 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 // Point toward the From table (filter flows from "one" side to "many" side)
-                double dx = StartX - EndX;
-                double dy = StartY - EndY;
+                double dx = ActualStartX - ActualEndX;
+                double dy = ActualStartY - ActualEndY;
                 double angleRadians = Math.Atan2(dy, dx);
                 return angleRadians * 180 / Math.PI;
             }
@@ -6774,112 +7057,105 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public double ReverseFilterDirectionAngle => FilterDirectionAngle + 180;
 
+        // Label dimensions - must match XAML fixed dimensions (Height=18, Width=16)
+        private const double CardinalityLabelWidth = 16;
+        private const double CardinalityLabelHeight = 18;
+        private const double CardinalityGap = 2; // Gap between label and table edge
+
         /// <summary>
-        /// Position for the "From" cardinality label (near start, offset based on edge type).
+        /// Position for the "From" cardinality label (adjacent to the table edge at the line endpoint).
+        /// For left/right edges: X touches the table, Y centers on the connection point (with slot offset).
+        /// For top/bottom edges: Y touches the table, X centers on the connection point (with slot offset).
         /// </summary>
         public double FromCardinalityX
         {
             get
             {
-                bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
-                double parallelOffsetX = isVertical ? _parallelOffset : 0;
-                
-                // Position based on which edge the line exits from
                 switch (_startEdge)
                 {
                     case EdgeType.Top:
                     case EdgeType.Bottom:
-                        // Vertical edge - position to the right of the connection point
-                        return StartX + 4 + parallelOffsetX;
+                        // Vertical edge: center horizontally on the connection point (includes slot offset)
+                        return ActualStartX - CardinalityLabelWidth / 2;
                     case EdgeType.Left:
-                        // Left edge - position to the left
-                        return StartX - 28;
+                        // Left edge: position to the left of the table edge (touching)
+                        return StartX - CardinalityLabelWidth - CardinalityGap;
                     case EdgeType.Right:
-                        // Right edge - position to the right
-                        return StartX + 6;
+                        // Right edge: position to the right of the table edge (touching)
+                        return StartX + CardinalityGap;
                     default:
-                        return StartX + 5 + parallelOffsetX;
+                        return ActualStartX - CardinalityLabelWidth / 2;
                 }
             }
         }
-        
+
         public double FromCardinalityY
         {
             get
             {
-                bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
-                double parallelOffsetY = isVertical ? 0 : _parallelOffset;
-                
-                // Position based on which edge the line exits from
                 switch (_startEdge)
                 {
                     case EdgeType.Top:
-                        // Top edge - position above the connection point
-                        return StartY - 28;
+                        // Top edge: position above the table edge (touching)
+                        return StartY - CardinalityLabelHeight - CardinalityGap;
                     case EdgeType.Bottom:
-                        // Bottom edge - position below the connection point
-                        return StartY + 6;
+                        // Bottom edge: position below the table edge (touching)
+                        return StartY + CardinalityGap;
                     case EdgeType.Left:
                     case EdgeType.Right:
-                        // Horizontal edge - position above the line
-                        return StartY - 12 + parallelOffsetY;
+                        // Horizontal edge: center vertically on the connection point (includes slot offset)
+                        return ActualStartY - CardinalityLabelHeight / 2;
                     default:
-                        return StartY - 12 + parallelOffsetY;
+                        return ActualStartY - CardinalityLabelHeight / 2;
                 }
             }
         }
 
         /// <summary>
-        /// Position for the "To" cardinality label (near end, offset based on edge type).
+        /// Position for the "To" cardinality label (adjacent to the table edge at the line endpoint).
+        /// For left/right edges: X touches the table, Y centers on the connection point (with slot offset).
+        /// For top/bottom edges: Y touches the table, X centers on the connection point (with slot offset).
         /// </summary>
         public double ToCardinalityX
         {
             get
             {
-                bool isVertical = (_endEdge == EdgeType.Top || _endEdge == EdgeType.Bottom);
-                double parallelOffsetX = isVertical ? _parallelOffset : 0;
-                
-                // Position based on which edge the line enters
                 switch (_endEdge)
                 {
                     case EdgeType.Top:
                     case EdgeType.Bottom:
-                        // Vertical edge - position to the right of the connection point
-                        return EndX + 4 + parallelOffsetX;
+                        // Vertical edge: center horizontally on the connection point (includes slot offset)
+                        return ActualEndX - CardinalityLabelWidth / 2;
                     case EdgeType.Left:
-                        // Left edge - position to the left
-                        return EndX - 28;
+                        // Left edge: position to the left of the table edge (touching)
+                        return EndX - CardinalityLabelWidth - CardinalityGap;
                     case EdgeType.Right:
-                        // Right edge - position to the right
-                        return EndX + 6;
+                        // Right edge: position to the right of the table edge (touching)
+                        return EndX + CardinalityGap;
                     default:
-                        return EndX + 5 + parallelOffsetX;
+                        return ActualEndX - CardinalityLabelWidth / 2;
                 }
             }
         }
-        
+
         public double ToCardinalityY
         {
             get
             {
-                bool isVertical = (_endEdge == EdgeType.Top || _endEdge == EdgeType.Bottom);
-                double parallelOffsetY = isVertical ? 0 : _parallelOffset;
-                
-                // Position based on which edge the line enters
                 switch (_endEdge)
                 {
                     case EdgeType.Top:
-                        // Top edge - position above the connection point
-                        return EndY - 28;
+                        // Top edge: position above the table edge (touching)
+                        return EndY - CardinalityLabelHeight - CardinalityGap;
                     case EdgeType.Bottom:
-                        // Bottom edge - position below the connection point
-                        return EndY + 6;
+                        // Bottom edge: position below the table edge (touching)
+                        return EndY + CardinalityGap;
                     case EdgeType.Left:
                     case EdgeType.Right:
-                        // Horizontal edge - position above the line
-                        return EndY - 12 + parallelOffsetY;
+                        // Horizontal edge: center vertically on the connection point (includes slot offset)
+                        return ActualEndY - CardinalityLabelHeight / 2;
                     default:
-                        return EndY - 12 + parallelOffsetY;
+                        return ActualEndY - CardinalityLabelHeight / 2;
                 }
             }
         }
@@ -7023,6 +7299,30 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(ArrowFromPathData));
             NotifyOfPropertyChange(nameof(FilterDirectionAngle));
             NotifyOfPropertyChange(nameof(ReverseFilterDirectionAngle));
+            NotifyOfPropertyChange(nameof(StartEdgeType));
+            NotifyOfPropertyChange(nameof(EndEdgeType));
+        }
+
+        /// <summary>
+        /// Updates the path after slot offsets have been calculated.
+        /// Called by CalculateEdgeSlots after assigning slot positions.
+        /// </summary>
+        public void UpdatePathWithSlots()
+        {
+            // Re-notify all derived properties that depend on actual positions
+            NotifyOfPropertyChange(nameof(PathData));
+            NotifyOfPropertyChange(nameof(LabelX));
+            NotifyOfPropertyChange(nameof(LabelY));
+            NotifyOfPropertyChange(nameof(FromCardinalityX));
+            NotifyOfPropertyChange(nameof(FromCardinalityY));
+            NotifyOfPropertyChange(nameof(ToCardinalityX));
+            NotifyOfPropertyChange(nameof(ToCardinalityY));
+            NotifyOfPropertyChange(nameof(ActualStartX));
+            NotifyOfPropertyChange(nameof(ActualStartY));
+            NotifyOfPropertyChange(nameof(ActualEndX));
+            NotifyOfPropertyChange(nameof(ActualEndY));
+            NotifyOfPropertyChange(nameof(FilterDirectionAngle));
+            NotifyOfPropertyChange(nameof(ReverseFilterDirectionAngle));
         }
 
         /// <summary>
@@ -7035,7 +7335,7 @@ namespace DaxStudio.UI.ViewModels
             // Set edge types first (before positions trigger notifications)
             _startEdge = startEdge;
             _endEdge = endEdge;
-            
+
             // Now set positions (which trigger notifications that use edge types)
             StartX = startX;
             StartY = startY;

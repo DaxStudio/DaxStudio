@@ -1117,6 +1117,8 @@
                             CornerRadius="3"
                             Padding="3,1"
                             BorderThickness="1"
+                            Height="18"
+                            Width="16"
                             BorderBrush="#888888"
                             MinWidth="16"
                             MinHeight="18"
@@ -1126,6 +1128,7 @@
                             MouseLeftButtonDown="Relationship_MouseLeftButtonDown">
                         <TextBlock Text="{Binding FromCardinality}"
                                    FontSize="{Binding FromCardinalityFontSize}"
+                                   Margin="{Binding FromCardinalityMargin}"
                                    FontWeight="Bold"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
@@ -1134,12 +1137,15 @@
                     </Border>
                     
                     <!-- "To" Cardinality (1 or *) - positioned near end of line -->
-                    <Border Canvas.Left="{Binding ToCardinalityX}"
+                    <Border x:Name="ToCardinalityBorder"
+                            Canvas.Left="{Binding ToCardinalityX}"
                             Canvas.Top="{Binding ToCardinalityY}"
                             Background="{DynamicResource Theme.Brush.Content.Back}"
                             CornerRadius="3"
                             Padding="3,1"
                             BorderThickness="1"
+                            Height="18"
+                            Width="16"
                             BorderBrush="#888888"
                             MinWidth="16"
                             MinHeight="18"
@@ -1149,6 +1155,7 @@
                             MouseLeftButtonDown="Relationship_MouseLeftButtonDown">
                         <TextBlock Text="{Binding ToCardinality}"
                                    FontSize="{Binding ToCardinalityFontSize}"
+                                   Margin="{Binding ToCardinalityMargin}"
                                    FontWeight="Bold"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
@@ -1158,7 +1165,8 @@
                     
                     <!-- Center indicator panel (filter direction and BiDi, M:M, Inactive labels) -->
                     <!-- Use a Canvas to position, then RenderTransform to center the border on the point -->
-                    <Border Canvas.Left="{Binding LabelX}"
+                    <Border x:Name="FromCardinalityBorder"
+                            Canvas.Left="{Binding LabelX}"
                             Canvas.Top="{Binding LabelY}"
                             Background="{DynamicResource Theme.Brush.Content.Back}"
                             CornerRadius="3"
