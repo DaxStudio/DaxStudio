@@ -1103,8 +1103,7 @@ namespace DaxStudio.UI.ViewModels
 
                     // Yield to dispatcher at Background priority to let WPF render
                     // this batch and process any pending user input
-                    await Application.Current.Dispatcher.InvokeAsync(
-                        () => { }, System.Windows.Threading.DispatcherPriority.Background);
+                    await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
                 }
                 var addTablesTime = stageStopwatch.ElapsedMilliseconds;
 
@@ -4271,7 +4270,11 @@ namespace DaxStudio.UI.ViewModels
                         if (preserveCollapsedState)
                         {
                             // Keep current collapsed state, just update position
-                            // Height was already set when IsCollapsed was set
+                            // but restore the saved expanded height so expanding later uses the saved size
+                            if (pos.ExpandedHeight > 0)
+                                table.ExpandedHeight = pos.ExpandedHeight;
+                            else if (pos.Height > 0)
+                                table.ExpandedHeight = pos.Height;
                         }
                         else
                         {
@@ -4280,6 +4283,11 @@ namespace DaxStudio.UI.ViewModels
                             if (pos.IsCollapsed)
                             {
                                 table.SetCollapsedState(true, pos.ExpandedHeight > 0 ? pos.ExpandedHeight : pos.Height);
+                            }
+                            else
+                            {
+                                // Store the expanded height so collapse/expand preserves the user's saved size
+                                table.ExpandedHeight = pos.Height > 0 ? pos.Height : 180;
                             }
                         }
                         anyApplied = true;
