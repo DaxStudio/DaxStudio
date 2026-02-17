@@ -419,7 +419,11 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 var models = _metadataProvider?.GetModels();
+                sw.Stop();
+                Log.Debug("{class} {method} GetModels() took {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(RefreshAvailablePerspectives), sw.ElapsedMilliseconds);
                 if (models != null && models.Count > 0)
                 {
                     AvailablePerspectives = models;
@@ -682,14 +686,22 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         private void CalculateParallelRelationshipOffsets()
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
             // First, call UpdatePath on all relationships to determine which edge they use
             foreach (var rel in Relationships)
             {
                 rel.UpdatePath();
             }
+            var updatePathTime = sw.ElapsedMilliseconds;
 
             // Now calculate edge slots for each table
             CalculateEdgeSlots();
+
+            sw.Stop();
+            Log.Debug("{class} {method} Completed in {time}ms (UpdatePaths:{updatePathTime}ms, EdgeSlots:{edgeSlotsTime}ms) for {rels} relationships",
+                nameof(ModelDiagramViewModel), nameof(CalculateParallelRelationshipOffsets),
+                sw.ElapsedMilliseconds, updatePathTime, sw.ElapsedMilliseconds - updatePathTime, Relationships.Count);
         }
 
         /// <summary>
@@ -924,19 +936,25 @@ namespace DaxStudio.UI.ViewModels
         public void LoadFromModel(ADOTabularModel model, bool forceReload = false)
         {
             if (model == null) return;
-            
+
             // Prevent duplicate loads while already loading
             if (IsLoading) return;
-            
+
             // Prevent reloading the same model (unless explicitly requested)
             if (!forceReload && _model == model && Tables.Count > 0) return;
 
+            var loadSw = System.Diagnostics.Stopwatch.StartNew();
+
             // Set loading flag BEFORE starting async work to prevent duplicate calls
             IsLoading = true;
-            
+
             // Refresh available perspectives when loading a model
+            var perspSw = System.Diagnostics.Stopwatch.StartNew();
             RefreshAvailablePerspectives();
-            
+            perspSw.Stop();
+            Log.Information("{class} {method} RefreshAvailablePerspectives took {time}ms",
+                nameof(ModelDiagramViewModel), nameof(LoadFromModel), perspSw.ElapsedMilliseconds);
+
             // Update selected perspective to match the model being loaded
             if (_availablePerspectives != null && _availablePerspectives.Any(m => m.Name == model.Name))
             {
@@ -945,7 +963,13 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // For large models, load asynchronously
+            var countSw = System.Diagnostics.Stopwatch.StartNew();
             var tableCount = model.Tables.Count(t => !t.Private && (ShowHiddenObjects || t.IsVisible));
+            countSw.Stop();
+            Log.Information("{class} {method} Table count enumeration ({count} tables) took {time}ms. Routing to {path} path.",
+                nameof(ModelDiagramViewModel), nameof(LoadFromModel), tableCount, countSw.ElapsedMilliseconds,
+                tableCount > 20 ? "async" : "sync");
+
             if (tableCount > 20)
             {
                 // Run async loading on background thread for large models
@@ -956,6 +980,10 @@ namespace DaxStudio.UI.ViewModels
                 // Small models load synchronously
                 LoadFromModelSync(model);
             }
+
+            loadSw.Stop();
+            Log.Information("{class} {method} LoadFromModel total (before rendering) took {time}ms",
+                nameof(ModelDiagramViewModel), nameof(LoadFromModel), loadSw.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -1046,28 +1074,38 @@ namespace DaxStudio.UI.ViewModels
                     {
                         tableVm.IsCollapsed = true;
                     }
+                    // Place tables offscreen during loading so users don't see them
+                    // stacking at (0,0). The layout step will move them to correct positions.
+                    tableVm.X = -10000;
                     tableVms.Add(tableVm);
                 }
 
                 var tablesTime = stageStopwatch.ElapsedMilliseconds;
 
-                // Add all tables to collection - suppress notifications during bulk add
-                // WPF rendering happens after this method completes
+                // Add tables in batches for responsive UI during WPF template instantiation.
+                // Each individual Add fires an incremental CollectionChanged(Add) notification,
+                // which is O(1) per item for WPF (creates one container).
+                // Using AddRange+Refresh fires CollectionChanged(Reset) which forces WPF to
+                // synchronously rebuild ALL item containers at once (~36ms each = 6+ seconds for 178 tables).
+                // Yielding between batches at Background priority (lower than Render)
+                // ensures WPF renders each batch before adding more.
                 stageStopwatch.Restart();
-                LoadingMessage = $"Adding {tableVms.Count} tables to diagram...";
-                await Task.Yield();
-                
-                Tables.IsNotifying = false;
-                try
+                const int addBatchSize = 10;
+                for (int batchStart = 0; batchStart < tableVms.Count; batchStart += addBatchSize)
                 {
-                    Tables.AddRange(tableVms);
+                    var batchEnd = Math.Min(batchStart + addBatchSize, tableVms.Count);
+                    LoadingMessage = $"Rendering tables {batchEnd}/{tableVms.Count}...";
+
+                    for (int j = batchStart; j < batchEnd; j++)
+                    {
+                        Tables.Add(tableVms[j]);
+                    }
+
+                    // Yield to dispatcher at Background priority to let WPF render
+                    // this batch and process any pending user input
+                    await Application.Current.Dispatcher.InvokeAsync(
+                        () => { }, System.Windows.Threading.DispatcherPriority.Background);
                 }
-                finally
-                {
-                    Tables.IsNotifying = true;
-                    Tables.Refresh();
-                }
-                
                 var addTablesTime = stageStopwatch.ElapsedMilliseconds;
 
                 // Stage 4: Create relationships - fast enough to do on UI thread
@@ -1641,6 +1679,7 @@ namespace DaxStudio.UI.ViewModels
         private void LoadFromModelSync(ADOTabularModel model)
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var stageSw = new System.Diagnostics.Stopwatch();
 
             // IsLoading is already set by LoadFromModel() before calling this method
 
@@ -1654,7 +1693,8 @@ namespace DaxStudio.UI.ViewModels
                 Relationships.Clear();
                 Annotations.Clear();
 
-                // Create view models for tables
+                // Stage 1: Create view models for tables
+                stageSw.Restart();
                 foreach (var table in model.Tables)
                 {
                     // Private tables are never shown in the diagram
@@ -1664,7 +1704,13 @@ namespace DaxStudio.UI.ViewModels
                     var tableVm = new ModelDiagramTableViewModel(table, ShowHiddenObjects, _metadataProvider, _options, _sortKeyColumnsFirst);
                     Tables.Add(tableVm);
                 }
+                stageSw.Stop();
+                var createTablesTime = stageSw.ElapsedMilliseconds;
+                Log.Information("{class} {method} Stage 1 - Create {count} table VMs: {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), Tables.Count, createTablesTime);
 
+                // Stage 2: Build table dictionary
+                stageSw.Restart();
                 // Create a dictionary for O(1) table lookups (performance optimization for large models)
                 // Use safe construction to handle potential duplicate keys
                 var tableDict = new Dictionary<string, ModelDiagramTableViewModel>(StringComparer.OrdinalIgnoreCase);
@@ -1675,8 +1721,12 @@ namespace DaxStudio.UI.ViewModels
                     else
                         Log.Warning("{class} {method} Duplicate table name '{tableName}' - skipping", nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), tv.TableName);
                 }
+                stageSw.Stop();
+                Log.Information("{class} {method} Stage 2 - Build table dict: {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), stageSw.ElapsedMilliseconds);
 
-                // Create view models for relationships
+                // Stage 3: Create view models for relationships
+                stageSw.Restart();
                 // Relationships are stored on individual tables, so we need to gather from all tables
                 var processedRelationships = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var table in model.Tables)
@@ -1713,10 +1763,23 @@ namespace DaxStudio.UI.ViewModels
                         }
                     }
                 }
+                stageSw.Stop();
+                var createRelsTime = stageSw.ElapsedMilliseconds;
+                Log.Information("{class} {method} Stage 3 - Create {count} relationships: {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), Relationships.Count, createRelsTime);
 
+                // Stage 4: Layout
+                stageSw.Restart();
                 // Try to load saved layout, otherwise use auto-layout
                 // NOTE: Both branches call CalculateParallelRelationshipOffsets AFTER positions are set
-                if (!TryLoadSavedLayout())
+                bool layoutLoaded = TryLoadSavedLayout();
+                stageSw.Stop();
+                var layoutLoadTime = stageSw.ElapsedMilliseconds;
+                Log.Information("{class} {method} Stage 4a - TryLoadSavedLayout ({loaded}): {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), layoutLoaded, layoutLoadTime);
+
+                stageSw.Restart();
+                if (!layoutLoaded)
                 {
                     // LayoutDiagram() calls CalculateParallelRelationshipOffsets() internally at the end
                     LayoutDiagram();
@@ -1726,13 +1789,20 @@ namespace DaxStudio.UI.ViewModels
                     // Saved layout loaded - need to calculate offsets now that positions are set
                     CalculateParallelRelationshipOffsets();
                 }
+                stageSw.Stop();
+                var layoutCalcTime = stageSw.ElapsedMilliseconds;
+                Log.Information("{class} {method} Stage 4b - {algorithm}: {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromModelSync),
+                    layoutLoaded ? "CalculateParallelRelationshipOffsets" : "LayoutDiagram", layoutCalcTime);
 
                 stopwatch.Stop();
-                Log.Information("{class} {method} Loaded {tables} tables, {relationships} relationships in {time}ms",
+                Log.Information("{class} {method} Loaded {tables} tables, {relationships} relationships in {time}ms " +
+                    "(CreateTables:{createTablesTime}ms, Rels:{relsTime}ms, LayoutLoad:{layoutLoadTime}ms, LayoutCalc:{layoutCalcTime}ms)",
                     nameof(ModelDiagramViewModel), nameof(LoadFromModelSync),
-                    Tables.Count, Relationships.Count, stopwatch.ElapsedMilliseconds);
+                    Tables.Count, Relationships.Count, stopwatch.ElapsedMilliseconds,
+                    createTablesTime, createRelsTime, layoutLoadTime, layoutCalcTime);
 
-                LoadingStats = $"Loaded in {stopwatch.ElapsedMilliseconds}ms";
+                LoadingStats = $"Loaded in {stopwatch.ElapsedMilliseconds}ms (Tables:{createTablesTime}ms, Rels:{createRelsTime}ms, Layout:{layoutLoadTime + layoutCalcTime}ms)";
 
                 NotifyOfPropertyChange(nameof(SummaryText));
                 NotifyOfPropertyChange(nameof(HasData));
@@ -2012,7 +2082,9 @@ namespace DaxStudio.UI.ViewModels
         {
             if (Tables.Count == 0) return;
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var algorithm = _options?.DiagramLayoutAlgorithm ?? DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Auto;
+            string algorithmName;
 
             // Determine which algorithm to use
             if (algorithm == DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Auto)
@@ -2020,19 +2092,23 @@ namespace DaxStudio.UI.ViewModels
                 // Auto-select based on table count
                 if (Tables.Count <= 15)
                 {
+                    algorithmName = "Sugiyama (Auto)";
                     LayoutDiagramSugiyama(); // Hierarchy - best for small models
                 }
                 else if (Tables.Count <= 50)
                 {
+                    algorithmName = "Grid (Auto)";
                     LayoutDiagramGrid(); // Grid - best for medium models
                 }
                 else
                 {
+                    algorithmName = "Clustered (Auto)";
                     LayoutDiagramClustered(); // Clustered - best for large models
                 }
             }
             else
             {
+                algorithmName = algorithm.ToString();
                 // Use explicitly selected algorithm
                 switch (algorithm)
                 {
@@ -2050,6 +2126,10 @@ namespace DaxStudio.UI.ViewModels
                         break;
                 }
             }
+
+            sw.Stop();
+            Log.Information("{class} {method} LayoutDiagram using {algorithm} for {tables} tables took {time}ms",
+                nameof(ModelDiagramViewModel), nameof(LayoutDiagram), algorithmName, Tables.Count, sw.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -4276,7 +4356,11 @@ namespace DaxStudio.UI.ViewModels
         {
             if (message?.Model != null && IsVisible)
             {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 LoadFromModel(message.Model);
+                sw.Stop();
+                Log.Information("{class} {method} HandleAsync(MetadataLoadedEvent) completed in {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(HandleAsync), sw.ElapsedMilliseconds);
             }
             return System.Threading.Tasks.Task.CompletedTask;
         }
@@ -4977,18 +5061,16 @@ namespace DaxStudio.UI.ViewModels
                     foreach (var level in hierarchy.Levels)
                     {
                         hierarchyLevelColumnNames.Add(level.Column.Name);
-                        // DEBUG: Log hierarchy level columns
-                        Log.Information("{class} {method} Table '{table}': Hierarchy '{hier}' has level column '{col}'",
+                        Log.Debug("{class} {method} Table '{table}': Hierarchy '{hier}' has level column '{col}'",
                             nameof(ModelDiagramTableViewModel), nameof(GetSortedColumns), 
                             _table.Caption, hierarchy.Caption, level.Column.Name);
                     }
                 }
             }
             
-            // DEBUG: Log all hierarchy level column names collected
             if (hierarchyLevelColumnNames.Count > 0)
             {
-                Log.Information("{class} {method} Table '{table}': HierarchyLevelColumnNames = [{cols}]",
+                Log.Debug("{class} {method} Table '{table}': HierarchyLevelColumnNames = [{cols}]",
                     nameof(ModelDiagramTableViewModel), nameof(GetSortedColumns),
                     _table.Caption, string.Join(", ", hierarchyLevelColumnNames));
             }
@@ -5001,7 +5083,7 @@ namespace DaxStudio.UI.ViewModels
                     col.ObjectType != ADOTabularObjectType.Hierarchy && 
                     col.ObjectType != ADOTabularObjectType.UnnaturalHierarchy)
                 {
-                    Log.Information("{class} {method} Table '{table}': SKIPPING column '{col}' (Name='{name}', ObjectType={type}) - it's a hierarchy level",
+                    Log.Debug("{class} {method} Table '{table}': SKIPPING column '{col}' (Name='{name}', ObjectType={type}) - it's a hierarchy level",
                         nameof(ModelDiagramTableViewModel), nameof(GetSortedColumns),
                         _table.Caption, col.Caption, col.Name, col.ObjectType);
                     continue;
@@ -5012,7 +5094,7 @@ namespace DaxStudio.UI.ViewModels
                 // If this is a hierarchy, add its levels as indented children
                 if (col is ADOTabularHierarchy hierarchy && hierarchy.Levels != null)
                 {
-                    Log.Information("{class} {method} Table '{table}': Adding {count} levels for hierarchy '{hier}'",
+                    Log.Debug("{class} {method} Table '{table}': Adding {count} levels for hierarchy '{hier}'",
                         nameof(ModelDiagramTableViewModel), nameof(GetSortedColumns),
                         _table.Caption, hierarchy.Levels.Count, hierarchy.Caption);
                         
@@ -5025,17 +5107,9 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             
-            // DEBUG: Log final column list with IsHierarchyLevel status
-            Log.Information("{class} {method} Table '{table}': Final column list ({count} items):",
+            Log.Debug("{class} {method} Table '{table}': Final column list ({count} items)",
                 nameof(ModelDiagramTableViewModel), nameof(GetSortedColumns), _table.Caption, result.Count);
-            foreach (var vm in result)
-            {
-                if (vm.IsHierarchyLevel)
-                {
-                    Log.Information("  - '{caption}' (IsHierarchyLevel=TRUE, Name='{name}')", vm.Caption, vm.ColumnName);
-                }
-            }
-            
+
             return result;
         }
 
