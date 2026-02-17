@@ -1111,7 +1111,8 @@
                     </Path>
                     
                     <!-- "From" Cardinality (1 or *) - positioned near start of line -->
-                    <Border Canvas.Left="{Binding FromCardinalityX}"
+                    <Border x:Name="FromCardinalityBorder"
+                            Canvas.Left="{Binding FromCardinalityX}"
                             Canvas.Top="{Binding FromCardinalityY}"
                             Background="{DynamicResource Theme.Brush.Content.Back}"
                             CornerRadius="3"
@@ -1165,7 +1166,7 @@
                     
                     <!-- Center indicator panel (filter direction and BiDi, M:M, Inactive labels) -->
                     <!-- Use a Canvas to position, then RenderTransform to center the border on the point -->
-                    <Border x:Name="FromCardinalityBorder"
+                    <Border 
                             Canvas.Left="{Binding LabelX}"
                             Canvas.Top="{Binding LabelY}"
                             Background="{DynamicResource Theme.Brush.Content.Back}"

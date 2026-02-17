@@ -354,7 +354,7 @@ namespace DaxStudio.UI.Views
                 {
                     _draggedTable.X = System.Math.Max(0, vm.SnapToGridValue(_tableStartPosition.X + delta.X));
                     _draggedTable.Y = System.Math.Max(0, vm.SnapToGridValue(_tableStartPosition.Y + delta.Y));
-                    vm.RefreshLayout();
+                    vm.RefreshLayoutForTable(_draggedTable);
                 }
 
                 e.Handled = true;
@@ -503,7 +503,7 @@ namespace DaxStudio.UI.Views
 
                 if (DataContext is ModelDiagramViewModel vm)
                 {
-                    vm.RefreshLayout();
+                    vm.RefreshLayoutForTable(_resizingTable);
                 }
 
                 e.Handled = true;
@@ -520,7 +520,7 @@ namespace DaxStudio.UI.Views
 
                 if (DataContext is ModelDiagramViewModel vm)
                 {
-                    vm.RefreshLayout();
+                    vm.RefreshLayoutForTable(_resizingTable);
                 }
 
                 e.Handled = true;
@@ -539,7 +539,7 @@ namespace DaxStudio.UI.Views
 
                 if (DataContext is ModelDiagramViewModel vm)
                 {
-                    vm.RefreshLayout();
+                    vm.RefreshLayoutForTable(_resizingTable);
                 }
 
                 e.Handled = true;
@@ -917,7 +917,7 @@ namespace DaxStudio.UI.Views
                     table.Y = System.Math.Max(0, vm.SnapToGridValue(startPos.Y + delta.Y));
                 }
 
-                vm.RefreshLayout();
+                vm.RefreshLayoutForTables(_multiDragStartPositions.Keys);
             }
         }
 

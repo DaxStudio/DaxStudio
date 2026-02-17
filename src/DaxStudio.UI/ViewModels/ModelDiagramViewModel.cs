@@ -696,15 +696,38 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         private void CalculateEdgeSlots()
         {
+            CalculateEdgeSlotsCore(null);
+        }
+
+        /// <summary>
+        /// Calculates edge slot positions for relationships on the specified table edges only.
+        /// Only relationships connected to the specified tables are recalculated.
+        /// </summary>
+        private void CalculateEdgeSlotsForTables(HashSet<string> affectedTableNames)
+        {
+            CalculateEdgeSlotsCore(affectedTableNames);
+        }
+
+        /// <summary>
+        /// Core implementation for edge slot calculation.
+        /// When affectedTableNames is null, processes all tables (full recalculation).
+        /// When provided, only processes the specified tables and their relationships.
+        /// </summary>
+        private void CalculateEdgeSlotsCore(HashSet<string> affectedTableNames)
+        {
             const double EdgePadding = 30; // Minimum distance from table corners
             const double FixedSlotGap = 25;  // Fixed gap between connection points for consistent spacing
 
-            // Reset all slot offsets to 0 before recalculating
-            // This ensures single relationships stay centered and prevents stale offsets
+            bool processAll = affectedTableNames == null;
+
+            // Reset slot offsets before recalculating
+            // Only reset offsets for relationships connected to affected tables
             foreach (var rel in Relationships)
             {
-                rel.StartEdgeSlotOffset = 0;
-                rel.EndEdgeSlotOffset = 0;
+                if (processAll || affectedTableNames.Contains(rel.FromTable))
+                    rel.StartEdgeSlotOffset = 0;
+                if (processAll || affectedTableNames.Contains(rel.ToTable))
+                    rel.EndEdgeSlotOffset = 0;
             }
 
             // Build a dictionary of table name to table VM for quick lookup
@@ -718,6 +741,9 @@ namespace DaxStudio.UI.ViewModels
             // For each table, group relationships by which edge they connect to
             foreach (var table in Tables)
             {
+                // Skip tables that are not affected
+                if (!processAll && !affectedTableNames.Contains(table.TableName)) continue;
+
                 // Get relationships where this table is the "from" side
                 var fromRelsByEdge = Relationships
                     .Where(r => string.Equals(r.FromTable, table.TableName, StringComparison.OrdinalIgnoreCase))
@@ -774,55 +800,48 @@ namespace DaxStudio.UI.ViewModels
                     }
 
                     // Sort by position of the other table (ascending)
-                    // This ensures relationships to higher (smaller Y) tables appear at the top of vertical edges
-                    // And relationships to leftmost (smaller X) tables appear at the left of horizontal edges
-                    System.Diagnostics.Debug.WriteLine($"[EdgeSlots] {table.TableName}.{edgeType}: BEFORE sort:");
-                    foreach (var item in allRelsOnEdge)
-                    {
-                        var otherName = item.isFrom ? item.rel.ToTable : item.rel.FromTable;
-                        System.Diagnostics.Debug.WriteLine($"    {otherName}: otherTablePos={item.otherTablePos:F1}");
-                    }
-
                     allRelsOnEdge = allRelsOnEdge.OrderBy(x => x.otherTablePos).ToList();
 
-                    System.Diagnostics.Debug.WriteLine($"[EdgeSlots] {table.TableName}.{edgeType}: AFTER sort:");
-                    for (int idx = 0; idx < allRelsOnEdge.Count; idx++)
-                    {
-                        var item = allRelsOnEdge[idx];
-                        var otherName = item.isFrom ? item.rel.ToTable : item.rel.FromTable;
-                        System.Diagnostics.Debug.WriteLine($"    [{idx}] {otherName}: otherTablePos={item.otherTablePos:F1}");
-                    }
+                    // Calculate the maximum number of slots that fit within the edge
+                    // so that no offset extends beyond the table boundary.
+                    double usableLength = Math.Max(edgeLength - 2 * EdgePadding, 0);
+                    int maxSlots = Math.Max(1, (int)(usableLength / slotGap) + 1);
+
+                    // Determine actual number of distinct slot positions
+                    int numSlots = Math.Min(totalCount, maxSlots);
 
                     // Distribute slots centered around 0
-                    // For n items with gap g: totalWidth = (n-1)*g, centered means offsets from -(n-1)*g/2 to +(n-1)*g/2
-                    double totalWidth = (totalCount - 1) * slotGap;
+                    double totalWidth = (numSlots - 1) * slotGap;
                     double startOffset = -totalWidth / 2;
 
-                    System.Diagnostics.Debug.WriteLine($"[EdgeSlots] {table.TableName}.{edgeType}: {totalCount} rels, height={edgeLength:F0}, gap={slotGap:F1}, startOffset={startOffset:F1}");
+                    // When more relationships than slots, group them evenly across available slots.
+                    int relsPerSlot = (int)Math.Ceiling((double)totalCount / numSlots);
 
                     for (int i = 0; i < allRelsOnEdge.Count; i++)
                     {
                         var (rel, isFrom, otherPos) = allRelsOnEdge[i];
-                        double slotOffset = startOffset + (i * slotGap);
+                        int slotIndex = Math.Min(i / relsPerSlot, numSlots - 1);
+                        double slotOffset = startOffset + (slotIndex * slotGap);
 
                         if (isFrom)
                         {
                             rel.StartEdgeSlotOffset = slotOffset;
-                            System.Diagnostics.Debug.WriteLine($"  [{i}] -> {rel.ToTable} (Y={otherPos:F0}): StartOffset={slotOffset:F1}, VERIFY StartEdgeSlotOffset={rel.StartEdgeSlotOffset:F1}");
                         }
                         else
                         {
                             rel.EndEdgeSlotOffset = slotOffset;
-                            System.Diagnostics.Debug.WriteLine($"  [{i}] <- {rel.FromTable} (Y={otherPos:F0}): EndOffset={slotOffset:F1}, VERIFY EndEdgeSlotOffset={rel.EndEdgeSlotOffset:F1}");
                         }
                     }
                 }
             }
 
-            // Now update all relationship paths with the new slot positions
+            // Update relationship paths with the new slot positions
             foreach (var rel in Relationships)
             {
-                rel.UpdatePathWithSlots();
+                if (processAll || affectedTableNames.Contains(rel.FromTable) || affectedTableNames.Contains(rel.ToTable))
+                {
+                    rel.UpdatePathWithSlots();
+                }
             }
         }
 
@@ -2718,13 +2737,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // Recalculate canvas size
-            if (Tables.Count > 0)
-            {
-                var maxX = Tables.Max(t => t.X + t.Width);
-                var maxY = Tables.Max(t => t.Y + t.Height);
-                CanvasWidth = Math.Max(100, maxX + 40);
-                CanvasHeight = Math.Max(100, maxY + 40);
-            }
+            UpdateCanvasSize();
         }
 
         /// <summary>
@@ -2734,13 +2747,111 @@ namespace DaxStudio.UI.ViewModels
         public void UpdateRelationshipsForTable(ModelDiagramTableViewModel table)
         {
             if (table == null) return;
-            
+
             foreach (var rel in Relationships)
             {
                 if (rel.FromTableViewModel == table || rel.ToTableViewModel == table)
                 {
                     rel.UpdatePath();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Targeted layout refresh for a single dragged table.
+        /// Only recalculates edge slots and paths for the dragged table and its direct neighbors,
+        /// avoiding a full O(tables × relationships) recalculation on every mouse move.
+        /// </summary>
+        public void RefreshLayoutForTable(ModelDiagramTableViewModel draggedTable)
+        {
+            if (draggedTable == null) return;
+
+            // Find all relationships connected to the dragged table
+            var affectedRels = new List<ModelDiagramRelationshipViewModel>();
+            foreach (var rel in Relationships)
+            {
+                if (rel.FromTableViewModel == draggedTable || rel.ToTableViewModel == draggedTable)
+                {
+                    affectedRels.Add(rel);
+                }
+            }
+
+            // Update edge types for affected relationships only
+            foreach (var rel in affectedRels)
+            {
+                rel.UpdatePath();
+            }
+
+            // Build the set of affected tables: dragged table + all neighbors connected via relationships
+            var affectedTableNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { draggedTable.TableName };
+            foreach (var rel in affectedRels)
+            {
+                affectedTableNames.Add(rel.FromTable);
+                affectedTableNames.Add(rel.ToTable);
+            }
+
+            // Recalculate edge slots only for affected tables
+            CalculateEdgeSlotsForTables(affectedTableNames);
+
+            // Update canvas size
+            UpdateCanvasSize();
+        }
+
+        /// <summary>
+        /// Targeted layout refresh for multiple dragged tables (multi-select drag).
+        /// Only recalculates edge slots and paths for the dragged tables and their direct neighbors.
+        /// </summary>
+        public void RefreshLayoutForTables(IEnumerable<ModelDiagramTableViewModel> draggedTables)
+        {
+            if (draggedTables == null) return;
+
+            var draggedSet = new HashSet<ModelDiagramTableViewModel>(draggedTables);
+            if (draggedSet.Count == 0) return;
+
+            // Find all relationships connected to any dragged table
+            var affectedRels = new List<ModelDiagramRelationshipViewModel>();
+            foreach (var rel in Relationships)
+            {
+                if (draggedSet.Contains(rel.FromTableViewModel) || draggedSet.Contains(rel.ToTableViewModel))
+                {
+                    affectedRels.Add(rel);
+                }
+            }
+
+            // Update edge types for affected relationships only
+            foreach (var rel in affectedRels)
+            {
+                rel.UpdatePath();
+            }
+
+            // Build the set of affected tables: all dragged tables + all their neighbors
+            var affectedTableNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in draggedSet)
+                affectedTableNames.Add(t.TableName);
+            foreach (var rel in affectedRels)
+            {
+                affectedTableNames.Add(rel.FromTable);
+                affectedTableNames.Add(rel.ToTable);
+            }
+
+            // Recalculate edge slots only for affected tables
+            CalculateEdgeSlotsForTables(affectedTableNames);
+
+            // Update canvas size
+            UpdateCanvasSize();
+        }
+
+        /// <summary>
+        /// Updates CanvasWidth and CanvasHeight based on current table positions.
+        /// </summary>
+        private void UpdateCanvasSize()
+        {
+            if (Tables.Count > 0)
+            {
+                var maxX = Tables.Max(t => t.X + t.Width);
+                var maxY = Tables.Max(t => t.Y + t.Height);
+                CanvasWidth = Math.Max(100, maxX + 40);
+                CanvasHeight = Math.Max(100, maxY + 40);
             }
         }
 
