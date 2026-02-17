@@ -181,7 +181,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 table.IsCollapsed = true;
             }
-            UpdateAllRelationships();
+            // Recalculate edge slots since table heights changed
+            CalculateParallelRelationshipOffsets();
         }
 
         /// <summary>
@@ -194,7 +195,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 table.IsCollapsed = false;
             }
-            UpdateAllRelationships();
+            // Recalculate edge slots since table heights changed
+            CalculateParallelRelationshipOffsets();
         }
 
         /// <summary>
@@ -814,13 +816,11 @@ namespace DaxStudio.UI.ViewModels
                     double totalWidth = (numSlots - 1) * slotGap;
                     double startOffset = -totalWidth / 2;
 
-                    // When more relationships than slots, group them evenly across available slots.
-                    int relsPerSlot = (int)Math.Ceiling((double)totalCount / numSlots);
-
                     for (int i = 0; i < allRelsOnEdge.Count; i++)
                     {
                         var (rel, isFrom, otherPos) = allRelsOnEdge[i];
-                        int slotIndex = Math.Min(i / relsPerSlot, numSlots - 1);
+                        // Distribute relationships proportionally across all available slots
+                        int slotIndex = Math.Min(i * numSlots / totalCount, numSlots - 1);
                         double slotOffset = startOffset + (slotIndex * slotGap);
 
                         if (isFrom)
