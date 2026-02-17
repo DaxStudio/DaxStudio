@@ -329,7 +329,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showHiddenObjects = false;
+        private bool _showHiddenObjects = true;
         /// <summary>
         /// Whether to show hidden tables and columns.
         /// </summary>
@@ -945,7 +945,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // For large models, load asynchronously
-            var tableCount = model.Tables.Count(t => ShowHiddenObjects || t.IsVisible);
+            var tableCount = model.Tables.Count(t => !t.Private && (ShowHiddenObjects || t.IsVisible));
             if (tableCount > 20)
             {
                 // Run async loading on background thread for large models
@@ -993,7 +993,7 @@ namespace DaxStudio.UI.ViewModels
                 LoadingMessage = "Reading model metadata...";
                 
                 var visibleTables = model.Tables
-                    .Where(t => ShowHiddenObjects || t.IsVisible)
+                    .Where(t => !t.Private && (ShowHiddenObjects || t.IsVisible))
                     .ToList();
                 var totalTables = visibleTables.Count;
 
@@ -1657,6 +1657,8 @@ namespace DaxStudio.UI.ViewModels
                 // Create view models for tables
                 foreach (var table in model.Tables)
                 {
+                    // Private tables are never shown in the diagram
+                    if (table.Private) continue;
                     if (!ShowHiddenObjects && !table.IsVisible) continue;
 
                     var tableVm = new ModelDiagramTableViewModel(table, ShowHiddenObjects, _metadataProvider, _options, _sortKeyColumnsFirst);
