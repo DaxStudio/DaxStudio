@@ -4813,7 +4813,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Gets the arrowhead path data for the end (To-table) side.
-        /// Returns a filled triangle pointing in the direction the line arrives at the endpoint.
+        /// Uses the actual bezier curve approach angle for a natural appearance.
         /// </summary>
         public string EndArrowPathData
         {
@@ -4823,19 +4823,28 @@ namespace DaxStudio.UI.ViewModels
                 double offsetX = isVertical ? _parallelOffset : 0;
                 double offsetY = isVertical ? 0 : _parallelOffset;
 
-                double px = EndX + offsetX;
-                double py = EndY + offsetY;
+                // Get the bezier control points (must match PathData construction)
+                GetBezierControlPoints(isVertical, offsetX, offsetY,
+                    out double p0x, out double p0y, out double p1x, out double p1y,
+                    out double p2x, out double p2y, out double p3x, out double p3y);
 
-                // Direction the line approaches the endpoint (based on end edge)
-                GetEdgeDirection(_endEdge, out double dx, out double dy);
+                // Evaluate a point slightly back on the curve to get the visual approach direction
+                EvaluateBezier(ArrowSampleT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
+                    out double bx, out double by);
 
-                return BuildArrowPath(px, py, dx, dy);
+                // Direction from B(t) to endpoint
+                double dx = p3x - bx;
+                double dy = p3y - by;
+                double len = Math.Sqrt(dx * dx + dy * dy);
+                if (len > 0) { dx /= len; dy /= len; }
+
+                return BuildArrowPath(p3x, p3y, dx, dy);
             }
         }
 
         /// <summary>
         /// Gets the arrowhead path data for the start (From-table) side.
-        /// Returns a filled triangle pointing in the direction the line arrives at the start point.
+        /// Uses the actual bezier curve approach angle for a natural appearance.
         /// </summary>
         public string StartArrowPathData
         {
@@ -4845,31 +4854,73 @@ namespace DaxStudio.UI.ViewModels
                 double offsetX = isVertical ? _parallelOffset : 0;
                 double offsetY = isVertical ? 0 : _parallelOffset;
 
-                double px = StartX + offsetX;
-                double py = StartY + offsetY;
+                // Get the bezier control points (must match PathData construction)
+                GetBezierControlPoints(isVertical, offsetX, offsetY,
+                    out double p0x, out double p0y, out double p1x, out double p1y,
+                    out double p2x, out double p2y, out double p3x, out double p3y);
 
-                // Direction the line approaches the start point (based on start edge)
-                GetEdgeDirection(_startEdge, out double dx, out double dy);
+                // Evaluate a point slightly forward on the curve to get the visual approach direction
+                EvaluateBezier(1.0 - ArrowSampleT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
+                    out double bx, out double by);
 
-                return BuildArrowPath(px, py, dx, dy);
+                // Direction from B(t) to start point (reversed — approaching the start)
+                double dx = p0x - bx;
+                double dy = p0y - by;
+                double len = Math.Sqrt(dx * dx + dy * dy);
+                if (len > 0) { dx /= len; dy /= len; }
+
+                return BuildArrowPath(p0x, p0y, dx, dy);
             }
         }
 
         /// <summary>
-        /// Gets the unit direction vector pointing toward the table at the given edge.
-        /// This matches the bezier curve's tangent at that endpoint.
+        /// Parameter t at which to sample the bezier curve for arrow direction.
+        /// A value close to 1.0 samples near the endpoint; 0.85 gives a good visual match.
         /// </summary>
-        private static void GetEdgeDirection(EdgeType edge, out double dx, out double dy)
+        private const double ArrowSampleT = 0.85;
+
+        /// <summary>
+        /// Gets the four bezier control points matching the PathData construction.
+        /// </summary>
+        private void GetBezierControlPoints(bool isVertical, double offsetX, double offsetY,
+            out double p0x, out double p0y, out double p1x, out double p1y,
+            out double p2x, out double p2y, out double p3x, out double p3y)
         {
-            // Direction points INTO the table (the direction the line is traveling as it arrives)
-            switch (edge)
+            if (isVertical)
             {
-                case EdgeType.Left:   dx = 1;  dy = 0;  break; // arrives moving right into left edge
-                case EdgeType.Right:  dx = -1; dy = 0;  break; // arrives moving left into right edge
-                case EdgeType.Top:    dx = 0;  dy = 1;  break; // arrives moving down into top edge
-                case EdgeType.Bottom: dx = 0;  dy = -1; break; // arrives moving up into bottom edge
-                default:              dx = 1;  dy = 0;  break;
+                double midY = (StartY + EndY) / 2;
+                p0x = StartX + offsetX; p0y = StartY;
+                p1x = StartX + offsetX; p1y = midY;
+                p2x = EndX + offsetX;   p2y = midY;
+                p3x = EndX + offsetX;   p3y = EndY;
             }
+            else
+            {
+                double midX = (StartX + EndX) / 2;
+                p0x = StartX;           p0y = StartY + offsetY;
+                p1x = midX;             p1y = StartY + offsetY;
+                p2x = midX;             p2y = EndY + offsetY;
+                p3x = EndX;             p3y = EndY + offsetY;
+            }
+        }
+
+        /// <summary>
+        /// Evaluates a cubic bezier curve at parameter t.
+        /// B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
+        /// </summary>
+        private static void EvaluateBezier(double t,
+            double p0x, double p0y, double p1x, double p1y,
+            double p2x, double p2y, double p3x, double p3y,
+            out double x, out double y)
+        {
+            double u = 1.0 - t;
+            double u2 = u * u;
+            double u3 = u2 * u;
+            double t2 = t * t;
+            double t3 = t2 * t;
+
+            x = u3 * p0x + 3 * u2 * t * p1x + 3 * u * t2 * p2x + t3 * p3x;
+            y = u3 * p0y + 3 * u2 * t * p1y + 3 * u * t2 * p2y + t3 * p3y;
         }
 
         /// <summary>
