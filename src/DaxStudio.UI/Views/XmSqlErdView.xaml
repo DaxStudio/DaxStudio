@@ -1228,6 +1228,42 @@
                                         </StackPanel>
                                     </Path.ToolTip>
                                 </Path>
+                                <!-- Arrow at End (To-table side) - for LEFT OUTER and FULL OUTER joins -->
+                                <Path Data="{Binding EndArrowPathData}"
+                                      Visibility="{Binding ShowArrowAtEnd, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <Path.Style>
+                                        <Style TargetType="Path">
+                                            <Setter Property="Fill" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                            <Setter Property="Opacity" Value="1"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                    <Setter Property="Fill" Value="#FF0078D4"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsDimmed}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.3"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
+                                </Path>
+                                <!-- Arrow at Start (From-table side) - for RIGHT OUTER and FULL OUTER joins -->
+                                <Path Data="{Binding StartArrowPathData}"
+                                      Visibility="{Binding ShowArrowAtStart, Converter={StaticResource BoolToCollapsedConverter}}">
+                                    <Path.Style>
+                                        <Style TargetType="Path">
+                                            <Setter Property="Fill" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                            <Setter Property="Opacity" Value="1"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                    <Setter Property="Fill" Value="#FF0078D4"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsDimmed}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.3"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
+                                </Path>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

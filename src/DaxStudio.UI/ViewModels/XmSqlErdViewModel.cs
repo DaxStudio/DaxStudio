@@ -4792,6 +4792,113 @@ namespace DaxStudio.UI.ViewModels
             _ => ""
         };
 
+        #region Arrow Properties
+
+        private const double ArrowLength = 12;
+        private const double ArrowHalfWidth = 4;
+
+        /// <summary>
+        /// Whether to show an arrow at the end point (To-table side) of the relationship line.
+        /// Shown for LEFT OUTER and FULL OUTER joins.
+        /// </summary>
+        public bool ShowArrowAtEnd => JoinType == XmSqlJoinType.LeftOuterJoin
+                                   || JoinType == XmSqlJoinType.FullOuterJoin;
+
+        /// <summary>
+        /// Whether to show an arrow at the start point (From-table side) of the relationship line.
+        /// Shown for RIGHT OUTER and FULL OUTER joins.
+        /// </summary>
+        public bool ShowArrowAtStart => JoinType == XmSqlJoinType.RightOuterJoin
+                                     || JoinType == XmSqlJoinType.FullOuterJoin;
+
+        /// <summary>
+        /// Gets the arrowhead path data for the end (To-table) side.
+        /// Returns a filled triangle pointing in the direction the line arrives at the endpoint.
+        /// </summary>
+        public string EndArrowPathData
+        {
+            get
+            {
+                bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
+                double offsetX = isVertical ? _parallelOffset : 0;
+                double offsetY = isVertical ? 0 : _parallelOffset;
+
+                double px = EndX + offsetX;
+                double py = EndY + offsetY;
+
+                // Direction the line approaches the endpoint (based on end edge)
+                GetEdgeDirection(_endEdge, out double dx, out double dy);
+
+                return BuildArrowPath(px, py, dx, dy);
+            }
+        }
+
+        /// <summary>
+        /// Gets the arrowhead path data for the start (From-table) side.
+        /// Returns a filled triangle pointing in the direction the line arrives at the start point.
+        /// </summary>
+        public string StartArrowPathData
+        {
+            get
+            {
+                bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
+                double offsetX = isVertical ? _parallelOffset : 0;
+                double offsetY = isVertical ? 0 : _parallelOffset;
+
+                double px = StartX + offsetX;
+                double py = StartY + offsetY;
+
+                // Direction the line approaches the start point (based on start edge)
+                GetEdgeDirection(_startEdge, out double dx, out double dy);
+
+                return BuildArrowPath(px, py, dx, dy);
+            }
+        }
+
+        /// <summary>
+        /// Gets the unit direction vector pointing toward the table at the given edge.
+        /// This matches the bezier curve's tangent at that endpoint.
+        /// </summary>
+        private static void GetEdgeDirection(EdgeType edge, out double dx, out double dy)
+        {
+            // Direction points INTO the table (the direction the line is traveling as it arrives)
+            switch (edge)
+            {
+                case EdgeType.Left:   dx = 1;  dy = 0;  break; // arrives moving right into left edge
+                case EdgeType.Right:  dx = -1; dy = 0;  break; // arrives moving left into right edge
+                case EdgeType.Top:    dx = 0;  dy = 1;  break; // arrives moving down into top edge
+                case EdgeType.Bottom: dx = 0;  dy = -1; break; // arrives moving up into bottom edge
+                default:              dx = 1;  dy = 0;  break;
+            }
+        }
+
+        /// <summary>
+        /// Builds a filled triangle path string for an arrowhead.
+        /// Tip is at (px, py), pointing in direction (dx, dy).
+        /// </summary>
+        private static string BuildArrowPath(double px, double py, double dx, double dy)
+        {
+            // Tip of arrow
+            double tipX = px;
+            double tipY = py;
+
+            // Base of arrow (ArrowLength back from tip along approach direction)
+            double baseX = px - dx * ArrowLength;
+            double baseY = py - dy * ArrowLength;
+
+            // Two base corners (perpendicular to approach direction)
+            double leftX = baseX - dy * ArrowHalfWidth;
+            double leftY = baseY + dx * ArrowHalfWidth;
+            double rightX = baseX + dy * ArrowHalfWidth;
+            double rightY = baseY - dx * ArrowHalfWidth;
+
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "M {0},{1} L {2},{3} L {4},{5} Z",
+                tipX, tipY, leftX, leftY, rightX, rightY);
+        }
+
+        #endregion
+
         #region Highlighting
 
         private bool _isHighlighted;
@@ -4831,7 +4938,14 @@ namespace DaxStudio.UI.ViewModels
         public double ParallelOffset
         {
             get => _parallelOffset;
-            set { _parallelOffset = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(PathData)); }
+            set 
+            { 
+                _parallelOffset = value; 
+                NotifyOfPropertyChange(); 
+                NotifyOfPropertyChange(nameof(PathData));
+                NotifyOfPropertyChange(nameof(StartArrowPathData));
+                NotifyOfPropertyChange(nameof(EndArrowPathData));
+            }
         }
 
         #endregion
@@ -4847,6 +4961,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(); 
                 NotifyOfPropertyChange(nameof(PathData)); 
                 NotifyOfPropertyChange(nameof(LabelX));
+                NotifyOfPropertyChange(nameof(StartArrowPathData));
+                NotifyOfPropertyChange(nameof(EndArrowPathData));
             }
         }
 
@@ -4860,6 +4976,8 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(); 
                 NotifyOfPropertyChange(nameof(PathData)); 
                 NotifyOfPropertyChange(nameof(LabelY));
+                NotifyOfPropertyChange(nameof(StartArrowPathData));
+                NotifyOfPropertyChange(nameof(EndArrowPathData));
             }
         }
 
@@ -4873,6 +4991,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(); 
                 NotifyOfPropertyChange(nameof(PathData)); 
                 NotifyOfPropertyChange(nameof(LabelX));
+                NotifyOfPropertyChange(nameof(EndArrowPathData));
             }
         }
 
@@ -4886,6 +5005,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(); 
                 NotifyOfPropertyChange(nameof(PathData)); 
                 NotifyOfPropertyChange(nameof(LabelY));
+                NotifyOfPropertyChange(nameof(EndArrowPathData));
             }
         }
 
@@ -5047,6 +5167,8 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(PathData));
             NotifyOfPropertyChange(nameof(LabelX));
             NotifyOfPropertyChange(nameof(LabelY));
+            NotifyOfPropertyChange(nameof(StartArrowPathData));
+            NotifyOfPropertyChange(nameof(EndArrowPathData));
         }
 
         /// <summary>
