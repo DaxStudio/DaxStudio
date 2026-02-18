@@ -9,6 +9,7 @@
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:enums="clr-namespace:DaxStudio.Interfaces.Enums;assembly=DaxStudio.Interfaces"
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
+             xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="{DynamicResource Theme.Brush.Content.Back}"
@@ -1393,13 +1394,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <!--<RowDefinition Height="Auto"/>-->
         </Grid.RowDefinitions>
         
         <!-- Toolbar -->
-        <Border Grid.Row="0" 
+        <ctrl:ClipBorder Grid.Row="0" 
                 CornerRadius="4"
                 Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+
                 Margin="0,0,0,8">
             <DockPanel LastChildFill="False">
                 
@@ -1647,11 +1649,17 @@
                 </ComboBox>
 
             </DockPanel>
-        </Border>
+        </ctrl:ClipBorder>
         
         <!-- Main Canvas Area -->
-        <ScrollViewer x:Name="MainScrollViewer" 
-                      Grid.Row="1"
+            <ctrl:ClipBorder Grid.Row="1">
+                <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer x:Name="MainScrollViewer" 
+                      Grid.Row="0"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
@@ -1785,7 +1793,7 @@
         </ScrollViewer>
         
         <!-- Mini-Map Panel (overlay in bottom-right corner) -->
-        <Border Grid.Row="1"
+        <Border 
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
                 Margin="10"
@@ -1851,9 +1859,9 @@
         
         <!-- Status Bar -->
         <Border x:Name="StatusBar"
-                Grid.Row="2" 
+                Grid.Row="1" 
                 BorderThickness="0,1,0,0" 
-                BorderBrush="{DynamicResource Theme.Brush.MenuBar.Border}"
+                BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                 Background="{DynamicResource Theme.Brush.MenuBar.Back}"
                 Padding="8,4">
             <Grid>
@@ -1954,9 +1962,9 @@
                 </StackPanel>
             </Grid>
         </Border>
-        
-        <!-- Loading Overlay -->
-        <Border Grid.Row="1" 
+                
+            <!-- Loading Overlay -->
+        <Border Grid.RowSpan="2" 
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}"
                 Style="{StaticResource BusyPanel}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -1982,7 +1990,7 @@
         </Border>
         
         <!-- No Data Message -->
-        <Border Grid.Row="1" 
+        <Border 
                 Visibility="{Binding NoData, Converter={StaticResource BoolToCollapsedConverter}}">
             <TextBlock Text="Connect to a model to view the diagram" 
                        HorizontalAlignment="Center" 
@@ -1991,5 +1999,7 @@
                        Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                        Opacity="0.6"/>
         </Border>
+                </Grid>
+            </ctrl:ClipBorder>
     </Grid>
 </UserControl>

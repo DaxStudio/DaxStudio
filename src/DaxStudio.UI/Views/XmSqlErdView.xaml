@@ -1081,21 +1081,25 @@
             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
             Background="{DynamicResource Theme.Brush.Content.Back}"
             Grid.Row="1"
+            
             >
             <Grid>
-        <!-- Main Content Area with Detail Panel on Right -->
-        <Grid x:Name="DiagramGrid" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
+
             <!-- Left: Canvas and Status Bar -->
             <Grid x:Name="DiagramWithStatusBar" Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+                    
+                    <!-- Main Content Area with Detail Panel on Right -->
+                <Grid x:Name="DiagramGrid" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+            
+
         
                 <!-- Main Canvas Area with Mini-map Overlay -->
                 <Grid Grid.Row="0">
@@ -1425,12 +1429,84 @@
                 </Grid>
             </Border>
             </Grid>
+        <!-- Detail Panel on Right (shows when column, table, or relationship is clicked) -->
+        <ctrl:ClipBorder Grid.Column="1"
+                         CornerRadius="4"
+                         Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                         Margin="8,4,4,4"
+                         Width="{Binding DetailPanelWidth}"
+                         Visibility="{Binding HasSelectedDetail, Converter={StaticResource BoolToCollapsedConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Resize Grip on left edge -->
+                <Border Grid.Column="0"
+                        Width="8"
+                        Background="{DynamicResource Theme.Brush.StatusBar.Back}"
+                        Cursor="SizeWE"
+                        MouseLeftButtonDown="DetailPanel_ResizeStart"
+                        MouseMove="DetailPanel_ResizeMove"
+                        MouseLeftButtonUp="DetailPanel_ResizeEnd"
+                        ToolTip="Drag to resize">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Rectangle Width="3" Height="40" Fill="#888" RadiusX="1" RadiusY="1"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Content Column -->
+                <Grid Grid.Column="1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header with title and close button -->
+                    <Grid Grid.Row="0" Margin="10,8,10,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Details" 
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                               VerticalAlignment="Center"/>
+                        <Button Grid.Column="1"
+                            Content="✕"
+                            FontSize="10"
+                            Padding="2"
+                            Width="20" Height="20"
+                            VerticalAlignment="Center"
+                            cal:Message.Attach="[Event Click] = [Action ClearDetailSelection]"
+                            ToolTip="Close details panel"/>
+                    </Grid>
+                
+                    <!-- Content -->
+                    <ScrollViewer Grid.Row="1" 
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto"
+                              Margin="10,8,10,8">
+                        <TextBlock Text="{Binding SelectedDetailInfo}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                               FontFamily="Consolas"
+                               FontSize="11"
+                               TextWrapping="NoWrap"/>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </ctrl:ClipBorder>
+            
+        </Grid>
         
-            <!-- Status Bar -->
-            <ctrl:ClipBorder Grid.Row="1"
-                             CornerRadius="4"
+        <!-- Status Bar -->
+            <Border Grid.Row="1"
+                             BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+                    BorderThickness="0 1 0 0"
                              Background="{DynamicResource Theme.Brush.StatusBar.Back}"
-                             Margin="0,8,0,0"
+                             
                              Padding="10,6">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -1506,77 +1582,8 @@
                         </StackPanel>
                     </StackPanel>
                 </Grid>
-            </ctrl:ClipBorder>
-        </Grid>
-        
-        <!-- Detail Panel on Right (shows when column, table, or relationship is clicked) -->
-        <ctrl:ClipBorder Grid.Column="1"
-                         CornerRadius="4"
-                         Background="{DynamicResource Theme.Brush.MenuBar.Back}"
-                         Margin="8,0,0,0"
-                         Width="{Binding DetailPanelWidth}"
-                         Visibility="{Binding HasSelectedDetail, Converter={StaticResource BoolToCollapsedConverter}}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            </Border>
                 
-                <!-- Resize Grip on left edge -->
-                <Border Grid.Column="0"
-                        Width="8"
-                        Background="{DynamicResource Theme.Brush.StatusBar.Back}"
-                        Cursor="SizeWE"
-                        MouseLeftButtonDown="DetailPanel_ResizeStart"
-                        MouseMove="DetailPanel_ResizeMove"
-                        MouseLeftButtonUp="DetailPanel_ResizeEnd"
-                        ToolTip="Drag to resize">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Rectangle Width="3" Height="40" Fill="#888" RadiusX="1" RadiusY="1"/>
-                    </StackPanel>
-                </Border>
-                
-                <!-- Content Column -->
-                <Grid Grid.Column="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    
-                    <!-- Header with title and close button -->
-                    <Grid Grid.Row="0" Margin="10,8,10,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Details" 
-                               FontWeight="SemiBold"
-                               FontSize="12"
-                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                               VerticalAlignment="Center"/>
-                        <Button Grid.Column="1"
-                            Content="✕"
-                            FontSize="10"
-                            Width="20" Height="20"
-                            VerticalAlignment="Center"
-                            cal:Message.Attach="[Event Click] = [Action ClearDetailSelection]"
-                            ToolTip="Close details panel"/>
-                    </Grid>
-                
-                    <!-- Content -->
-                    <ScrollViewer Grid.Row="1" 
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto"
-                              Margin="10,8,10,8">
-                        <TextBlock Text="{Binding SelectedDetailInfo}"
-                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                               FontFamily="Consolas"
-                               FontSize="11"
-                               TextWrapping="NoWrap"/>
-                    </ScrollViewer>
-                </Grid>
-            </Grid>
-        </ctrl:ClipBorder>
         </Grid>
         
         <!-- Loading Overlay -->
