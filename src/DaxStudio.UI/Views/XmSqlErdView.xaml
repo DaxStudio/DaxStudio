@@ -840,6 +840,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -1075,9 +1076,15 @@
 
             </DockPanel>
         </ctrl:ClipBorder>
-        
+
+        <ctrl:ClipBorder
+            BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
+            Background="{DynamicResource Theme.Brush.Content.Back}"
+            Grid.Row="1"
+            >
+            <Grid>
         <!-- Main Content Area with Detail Panel on Right -->
-        <Grid x:Name="DiagramGrid" Grid.Row="1">
+        <Grid x:Name="DiagramGrid" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -1573,7 +1580,7 @@
         </Grid>
         
         <!-- Loading Overlay -->
-        <Grid Grid.Row="1"
+        <Grid 
               Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}"
               Background="#80000000">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -1585,7 +1592,7 @@
         </Grid>
         
         <!-- No Data Message -->
-        <TextBlock Grid.Row="1"
+        <TextBlock 
                    Text="No SE query data to analyze. Run a query with Server Timings enabled, then click 'Show Dependencies' to see the diagram."
                    Visibility="{Binding NoData, Converter={StaticResource BoolToVisibilityConverter}}"
                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"
@@ -1593,5 +1600,8 @@
                    VerticalAlignment="Center"
                    TextWrapping="Wrap"
                    Margin="40"/>
+            </Grid>
+        </ctrl:ClipBorder>
     </Grid>
+    
 </UserControl>
