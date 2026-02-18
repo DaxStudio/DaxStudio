@@ -555,7 +555,7 @@ namespace DaxStudio.UI.Model
 
         public bool ShowDistinctValues { get {
                 if (!Options.ShowTooltipBasicStats) return false;
-                return _column != null && typeof(ADOTabularColumn) == _column.GetType(); }
+                return _column != null && typeof(ADOTabularColumn) == _column.GetType() && !_column.IsMeasure; }
         }
 
         public MetadataImages MetadataImage { get; set; }

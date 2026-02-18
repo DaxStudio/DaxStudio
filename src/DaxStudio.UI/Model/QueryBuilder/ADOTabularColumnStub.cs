@@ -30,12 +30,13 @@ namespace DaxStudio.UI.Model
         public long DistinctValues { get;  set; }
         public void UpdateBasicStats(ADOTabularConnection connection)
         {
-            throw new NotImplementedException();
+            // do nothing
         }
 
         public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
-            throw new NotImplementedException();
+            // return empty list
+            return new List<string>();
         }
 
         public MetadataImages MetadataImage { get;  set; }
@@ -59,6 +60,8 @@ namespace DaxStudio.UI.Model
             {DataType.Variant, typeof(object) },
 
         };
+
+        public bool IsMeasure { get; set; }
 
         [OnDeserialized]
         internal void OnSerializedMethod(StreamingContext context)

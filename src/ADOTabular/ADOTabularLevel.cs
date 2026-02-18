@@ -56,5 +56,7 @@ namespace ADOTabular
         {
             return Column.GetSampleData(connection, sampleSize);
         }
+
+        public bool IsMeasure => false;
     }
 }

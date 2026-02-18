@@ -62,5 +62,7 @@ namespace ADOTabular
         public Type SystemType => Column.SystemType;
 
         public string ImageResource => Column.ImageResource;
+
+        public bool IsMeasure => Column.IsMeasure;
     }
 }

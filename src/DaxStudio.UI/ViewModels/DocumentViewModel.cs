@@ -231,13 +231,16 @@ namespace DaxStudio.UI.ViewModels
 
             // Initialize default Tool Windows
             // HACK: could not figure out a good way of passing '_connection' and 'this' using IoC (MEF)
-
+            Dispatcher.Yield(DispatcherPriority.Background);
             MetadataPane = new MetadataPaneViewModel(Connection, _eventAggregator, this, Options);
+            Dispatcher.Yield(DispatcherPriority.Background);
             FunctionPane = new FunctionPaneViewModel(Connection, _eventAggregator, this, Options);
+            Dispatcher.Yield(DispatcherPriority.Background);
             DmvPane = new DmvPaneViewModel(Connection, _eventAggregator, this, Options);
+            Dispatcher.Yield(DispatcherPriority.Background);
             QueryBuilder = new QueryBuilderViewModel(_eventAggregator, this, Options);
             QueryBuilder.VisibilityChanged += QueryBuilder_VisibilityChanged;
-
+            Dispatcher.Yield(DispatcherPriority.Background);
             OutputPane = IoC.Get<OutputPaneViewModel>();// (_eventAggregator);
             QueryResultsPane = IoC.Get<QueryResultsPaneViewModel>();//(_eventAggregator,_host);
 

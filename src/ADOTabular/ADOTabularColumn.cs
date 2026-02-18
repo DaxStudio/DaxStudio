@@ -315,5 +315,14 @@ namespace ADOTabular
         public string Role { get; internal set; }
         public List<ADOTabularVariation> Variations { get; internal set; }
         public bool IsKey { get; internal set; }
+        public bool IsMeasure { get {
+                if (ObjectType == ADOTabularObjectType.Measure
+                    || ObjectType == ADOTabularObjectType.KPI
+                    || ObjectType == ADOTabularObjectType.KPIGoal
+                    || ObjectType == ADOTabularObjectType.KPIStatus) return true;
+                return false;
+            }
+        }
+
     }
 }

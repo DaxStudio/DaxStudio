@@ -535,20 +535,21 @@ namespace DaxStudio.UI.ViewModels
 
         public void CopyError()
         {
-            if (!string.IsNullOrEmpty(ErrorMessage))
+            // exit early if the ErrorMessage is emtpty
+            if (string.IsNullOrWhiteSpace(ErrorMessage)) return;
+
+            try
             {
-                try
-                {
-                    Clipboard.SetText(ErrorMessage);
-                    _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
-                }
-                catch (Exception ex)
-                {
-                    var msg = $"Unable to copy error message to clipboard: {ex.Message}";
-                    _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Error, msg));
-                    Log.Error(Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyError), msg);
-                }
+                Clipboard.SetText(ErrorMessage);
+                _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
             }
+            catch (Exception ex)
+            {
+                var msg = $"Unable to copy error message to clipboard: {ex.Message}";
+                _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Error, msg));
+                Log.Error(Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyError), msg);
+            }
+            
         }
 
         public bool ShowErrorMessage { get => !string.IsNullOrEmpty(ErrorMessage); }

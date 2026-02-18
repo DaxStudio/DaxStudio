@@ -3048,7 +3048,7 @@ namespace DaxStudio.UI.ViewModels
                     if (col.FilterOperators.Any())
                         details.Add(string.Join("/", col.FilterOperators));
                     if (col.HasFilterValues)
-                        details.Add($"{col.TotalFilterValuesCount} values");
+                        details.Add($"{col.TotalFilterValuesCount:N0} values");
                     var detailStr = details.Any() ? $" ({string.Join(", ", details)})" : "";
                     sb.AppendLine($"   • {col.ColumnName}{detailStr}");
                 }

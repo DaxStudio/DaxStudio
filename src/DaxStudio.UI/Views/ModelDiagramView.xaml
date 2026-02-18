@@ -196,7 +196,7 @@
                                    Grid.ColumnSpan="3" 
                                    FontSize="14"
                                    FontWeight="Bold"/>
-                        <TextBlock Text="{Binding ColumnName}" 
+                        <TextBlock Text="{Binding DaxName}" 
                                    Grid.Row="1"
                                    Grid.ColumnSpan="3"
                                    Foreground="{DynamicResource MutedTextBrush}"/>
@@ -637,13 +637,10 @@
                                         <DataTrigger Binding="{Binding IsFieldParameterTable}" Value="True">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsCalculationGroup}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsPrivate}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsMeasureOnlyTable}" Value="True">
+                                            <DataTrigger Binding="{Binding IsCalculationGroup}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsMeasureOnlyTable}" Value="True">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding HasHierarchies}" Value="True">
@@ -768,18 +765,17 @@
                             </Border.Style>
                             <ItemsControl ItemsSource="{Binding KeyColumns}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}">
-                                        <Border Padding="0,1">
+                                    <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}" x:Name="KeyColumnDataTemplate">
+                                        <Border Padding="6,2" BorderThickness="1">
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Setter Property="Background" Value="Transparent"/>
-                                                    <Setter Property="BorderThickness" Value="0"/>
+
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
                                                             <Setter Property="Background" Value="#4000D7FF"/>
-                                                            <Setter Property="BorderBrush" Value="#00D7FF"/>
-                                                            <Setter Property="BorderThickness" Value="2,1,2,1"/>
-                                                        </DataTrigger>
+                                                                <Setter Property="BorderBrush" Value="#00D7FF"/>
+                                                            </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
@@ -789,8 +785,9 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0">
+                                                <!--<TextBlock Grid.Column="0" FontSize="9" VerticalAlignment="Center" Margin="0,0,2,0">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Text" Value=""/>
@@ -804,7 +801,7 @@
                                                             </Style.Triggers>
                                                         </Style>
                                                     </TextBlock.Style>
-                                                </TextBlock>
+                                                </TextBlock>-->
                                                 <Image Grid.Column="1"
                                                        ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
                                                        Width="12" Height="12"
@@ -812,7 +809,7 @@
                                                        Margin="0,0,3,0"/>
                                                 <TextBlock Grid.Column="2"
                                                            Text="{Binding Caption}"
-                                                           FontSize="10"
+                                                           FontSize="11"
                                                            FontWeight="SemiBold"
                                                            TextTrimming="CharacterEllipsis"
                                                            VerticalAlignment="Center"
@@ -833,7 +830,11 @@
                                                            Foreground="#2196F3"
                                                            ToolTip="{Binding DisplayedStatTooltip}"
                                                            Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                            </Grid>
+                                                    <Image Source="{DynamicResource measure_accentDrawingImage}" 
+                                                           Grid.Column="4" 
+                                                           Margin="2 0 4 0"
+                                                           Visibility="{Binding IsMeasure, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -858,8 +859,9 @@
                                           HorizontalScrollBarVisibility="Disabled">
                                 <ItemsControl ItemsSource="{Binding Columns}">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}">
+                                        <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}" x:Name="ColumnDataTemplate">
                                             <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    Margin="2 0"
                                                     ToolTipService.ShowDuration="60000">
                                                 <Border.ToolTip>
                                                     <ToolTip>
@@ -876,7 +878,11 @@
                                                     <Style TargetType="Border" BasedOn="{StaticResource ColumnItemStyle}">
                                                         <Setter Property="Opacity" Value="1"/>
                                                         <Setter Property="Background" Value="Transparent"/>
-                                                        <Style.Triggers>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            
+                                                            <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsSearchMatch}" Value="False">
                                                                 <Setter Property="Opacity" Value="0.4"/>
                                                             </DataTrigger>
@@ -886,7 +892,7 @@
                                                             <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
                                                                 <Setter Property="Background" Value="#4000D7FF"/>
                                                                 <Setter Property="BorderBrush" Value="#00D7FF"/>
-                                                                <Setter Property="BorderThickness" Value="2,1,2,1"/>
+                                                                <Setter Property="BorderThickness" Value="1"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -903,23 +909,24 @@
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Grid.Style>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    
-                                                    <!-- Column Type Icon with Key Indicator -->
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Column Type Icon with Key Indicator -->
                                                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
                                                         <!-- Key indicator using a simple path icon -->
-                                                        <Grid Width="12" Height="12" Margin="0,0,2,0"
+                                                        <!--<Grid Width="12" Height="12" Margin="0,0,2,0"
                                                               VerticalAlignment="Center"
                                                               Visibility="{Binding IsKey, Converter={StaticResource BoolToVisibilityConverter}}"
                                                               ToolTip="Key column">
                                                             <Path Data="M7,0 L9,2 L9,4 L7,4 L7,6 L9,6 L9,8 L7,8 L7,10 L5,10 L5,8 L3,8 L3,6 L5,6 L5,4 L3,4 L3,2 L5,0 Z M6,1 L5,2 L5,3 L7,3 L7,2 L6,1 Z"
                                                                   Fill="#FFB300"
                                                                   Stretch="Uniform"/>
-                                                        </Grid>
+                                                        </Grid>-->
                                                         <!-- Hierarchy level indicator -->
                                                         <TextBlock Text="└"
                                                                    FontSize="10"
@@ -946,9 +953,9 @@
                                                                     <DataTrigger Binding="{Binding IsKey}" Value="True">
                                                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                                                     </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding IsMeasure}" Value="True">
+                                                                    <!--<DataTrigger Binding="{Binding IsMeasure}" Value="True">
                                                                         <Setter Property="FontStyle" Value="Italic"/>
-                                                                    </DataTrigger>
+                                                                    </DataTrigger>-->
                                                                 </Style.Triggers>
                                                             </Style>
                                                         </TextBlock.Style>
@@ -973,7 +980,11 @@
                                                                Foreground="#2196F3"
                                                                ToolTip="{Binding DisplayedStatTooltip}"
                                                                Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                                </Grid>
+                                                        <Image Source="{DynamicResource measure_accentDrawingImage}" 
+                                                           Grid.Column="3" 
+                                                           Margin="2 0 4 0"
+                                                           Visibility="{Binding IsMeasure, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                    </Grid>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

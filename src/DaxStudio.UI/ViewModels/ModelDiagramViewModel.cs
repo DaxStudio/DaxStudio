@@ -5680,6 +5680,17 @@ namespace DaxStudio.UI.ViewModels
                 keyCount = Math.Min(CollapsedFallbackColumnCount, Columns.Count(c => !c.IsMeasure));
             }
             if (keyCount == 0) return CollapsedHeaderHeight;
+            // add an extra row if the info bar is showing
+            if ( !IsVisible 
+                || IsFieldParameterTable
+                || IsCalculationGroup
+                || IsMeasureOnlyTable
+                || HasHierarchies
+                || HasStorageModeInfo
+                || HasVertipaqStats)
+            {
+                keyCount++;
+            }
             return CollapsedHeaderHeight + 6 + (keyCount * KeyColumnRowHeight); // 6 = padding
         }
 
@@ -6178,6 +6189,7 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public string SortByColumnName => _isFromVpa ? null : _column?.OrderBy?.Name;
 
+        public string DaxName => _column.DaxName;
         /// <summary>
         /// Whether this column has variations (field parameters).
         /// </summary>
@@ -6274,8 +6286,8 @@ namespace DaxStudio.UI.ViewModels
                 var suffix = IsVisible ? "DrawingImage" : "HiddenDrawingImage";
                 
                 // Measures
-                if (IsMeasure)
-                    return $"measure{suffix}";
+                //if (IsMeasure)
+                //    return $"measure{suffix}";
 
                 // Hierarchies
                 if (IsHierarchy)
