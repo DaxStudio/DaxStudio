@@ -4748,6 +4748,11 @@ namespace DaxStudio.UI.ViewModels
         public bool IsBidirectional => CrossFilterDirection == XmSqlCrossFilterDirection.Both;
 
         /// <summary>
+        /// Whether this relationship does NOT have bi-directional cross-filtering.
+        /// </summary>
+        public bool IsNotBidirectional => !IsBidirectional;
+
+        /// <summary>
         /// Text representation of cardinality for display.
         /// </summary>
         public string CardinalityText => Cardinality switch

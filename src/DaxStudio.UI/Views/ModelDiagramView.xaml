@@ -31,6 +31,36 @@
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+
+            <!-- Diagram Color Resources -->
+            <SolidColorBrush x:Key="Diagram.Brush.Table.DefaultBorder" Color="#CCCCCC"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Selection" Color="{DynamicResource Theme.Accent1}"/> <!-- #FF5722 -->
+            <SolidColorBrush x:Key="Diagram.Brush.Selection.LightFill" Color="#10FF5722"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Selection.RectFill" Color="#202196F3"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Header.Foreground" Color="White"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Badge.Text" Color="#333333"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Badge.RelationshipBack" Color="#E3F2FD"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Badge.RelationshipText" Color="#1565C0"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Blue" Color="#2196F3"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Purple" Color="#9C27B0"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Orange" Color="#FF9800"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.DeepPurple" Color="#673AB7"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Cyan" Color="#00BCD4"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.BlueGrey" Color="#607D8B"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Grey" Color="#9E9E9E"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Green" Color="#4CAF50"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Amber" Color="#FFB300"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.Default" Color="#666666"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.Chevron" Color="#555555"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.CardinalityBorder" Color="#888888"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.ManyToMany" Color="#E91E63"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.Inactive" Color="#999999"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.BiDirectional" Color="{DynamicResource Theme.Icons.Red}"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Relationship.BiDirectionalSelected" Color="{DynamicResource Theme.Icons.Red}"/>
+            
+            <SolidColorBrush x:Key="Diagram.Brush.Column.HighlightBack" Color="#4000D7FF"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Column.HighlightBorder" Color="#00D7FF"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Legend.InactivePattern" Color="#AAAAAA"/>
             
             <!-- Diagram Table Tooltip Template (uses shared styles from MetadataToolTipStyles) -->
             <DataTemplate x:Key="DiagramTableToolTipTemplate">
@@ -390,7 +420,7 @@
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsActive}" Value="False">
                                             <Setter Property="Text" Value="No"/>
-                                            <Setter Property="Foreground" Value="#999999"/>
+                                            <Setter Property="Foreground" Value="{StaticResource Diagram.Brush.Relationship.Inactive}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -429,9 +459,9 @@
 
                         <!-- Relationship Type Indicators -->
                         <StackPanel Grid.Row="8" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0 8 0 0">
-                            <TextBlock Text="↔ Bi-Directional  " FontSize="11" Foreground="#00897B" Visibility="{Binding IsBidirectional, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            <TextBlock Text="⚠ Many-to-Many  " FontSize="11" Foreground="#E91E63" Visibility="{Binding IsManyToMany, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            <TextBlock Text="⏸ Inactive  " FontSize="11" Foreground="#999999" Visibility="{Binding IsInactive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="↔ Bi-Directional  " FontSize="11" Foreground="{StaticResource Diagram.Brush.Relationship.BiDirectional}" Visibility="{Binding IsBidirectional, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="⚠ Many-to-Many  " FontSize="11" Foreground="{StaticResource Diagram.Brush.Relationship.ManyToMany}" Visibility="{Binding IsManyToMany, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock Text="⏸ Inactive  " FontSize="11" Foreground="{StaticResource Diagram.Brush.Relationship.Inactive}" Visibility="{Binding IsInactive, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         </StackPanel>
 
                         <!-- Row borders -->
@@ -468,7 +498,7 @@
                         <Style TargetType="Border">
                             <Setter Property="Opacity" Value="1"/>
                             <Setter Property="BorderThickness" Value="1"/>
-                            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource Diagram.Brush.Table.DefaultBorder}"/>
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsSearchMatch}" Value="False">
@@ -476,7 +506,7 @@
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                     <Setter Property="BorderThickness" Value="2"/>
-                                    <Setter Property="BorderBrush" Value="#FF5722"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource Diagram.Brush.Selection}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -537,7 +567,7 @@
                                         Margin="0,0,4,0"
                                         MouseLeftButtonDown="CollapseToggle_MouseLeftButtonDown"
                                         ToolTip="Toggle collapse">
-                                    <Path Width="10" Height="10" Stretch="Uniform" Fill="White">
+                                    <Path Width="10" Height="10" Stretch="Uniform" Fill="{StaticResource Diagram.Brush.Header.Foreground}">
                                         <Path.Style>
                                             <Style TargetType="Path">
                                                 <Setter Property="Data" Value="M0,0 L8,4 L0,8 Z"/>
@@ -564,14 +594,14 @@
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Caption}"
                                            FontWeight="SemiBold"
-                                           Foreground="White"
+                                           Foreground="{StaticResource Diagram.Brush.Header.Foreground}"
                                            TextTrimming="CharacterEllipsis"
                                            VerticalAlignment="Center"
                                            />
                                 
                                 <!-- Column/Measure/Relationship Count -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="4,0,0,0">
-                                    <Border Background="White"
+                                    <Border Background="{StaticResource Diagram.Brush.Header.Foreground}"
                                             CornerRadius="8"
                                             Padding="4,1"
                                             Opacity="0.9"
@@ -582,11 +612,11 @@
                                             <TextBlock Text="{Binding ColumnCount}"
                                                        FontSize="10"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#333"
+                                                       Foreground="{StaticResource Diagram.Brush.Badge.Text}"
                                                        Margin="2,0,0,0"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Background="White"
+                                    <Border Background="{StaticResource Diagram.Brush.Header.Foreground}"
                                             CornerRadius="8"
                                             Padding="4,1"
                                             Margin="4,0,0,0"
@@ -598,12 +628,12 @@
                                             <TextBlock Text="{Binding MeasureCount}"
                                                        FontSize="10"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#333"
+                                                       Foreground="{StaticResource Diagram.Brush.Badge.Text}"
                                                        Margin="2,0,0,0"/>
                                         </StackPanel>
                                     </Border>
                                     <!-- Relationship Count Badge -->
-                                    <Border Background="#E3F2FD"
+                                    <Border Background="{StaticResource Diagram.Brush.Badge.RelationshipBack}"
                                             CornerRadius="8"
                                             Padding="4,1"
                                             Margin="4,0,0,0"
@@ -616,7 +646,7 @@
                                             <TextBlock Text="{Binding RelationshipCount}"
                                                        FontSize="10"
                                                        FontWeight="SemiBold"
-                                                       Foreground="#1565C0"
+                                                       Foreground="{StaticResource Diagram.Brush.Badge.RelationshipText}"
                                                        Margin="2,0,0,0"/>
                                         </StackPanel>
                                     </Border>
@@ -670,7 +700,7 @@
                                 </TextBlock>
                                 <!-- VPA Stats: Row Count (from VPA enrichment) -->
                                 <TextBlock FontSize="10" 
-                                           Foreground="#2196F3"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.Blue}"
                                            Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
@@ -680,7 +710,7 @@
                                 </TextBlock>
                                 <!-- VPA Stats: Table Size (from VPA enrichment) -->
                                 <TextBlock FontSize="10" 
-                                           Foreground="#9C27B0"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.Purple}"
                                            Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
@@ -690,28 +720,28 @@
                                 </TextBlock>
                                 <!-- Field Parameter Table Indicator -->
                                 <TextBlock Text="⚡ Field Parameter" FontSize="10" 
-                                           Foreground="#FF9800"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.Orange}"
                                            Visibility="{Binding IsFieldParameterTable, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
                                            ToolTip="This is a Field Parameter table"/>
                                 <!-- Calculation Group Indicator -->
                                 <TextBlock Text="🧮 Calc Group" FontSize="10" 
-                                           Foreground="#673AB7"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.DeepPurple}"
                                            Visibility="{Binding IsCalculationGroup, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
                                            ToolTip="This is a Calculation Group table"/>
                                 <!-- Measure-Only Table Indicator -->
                                 <TextBlock Text="📊 Measures Only" FontSize="10" 
-                                           Foreground="#9C27B0"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.Purple}"
                                            Visibility="{Binding IsMeasureOnlyTable, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
                                            ToolTip="This table contains only measures (no data columns)"/>
                                 <!-- Hierarchy Indicator -->
                                 <TextBlock FontSize="10" 
-                                           Foreground="#00BCD4"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.Cyan}"
                                            Visibility="{Binding HasHierarchies, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
@@ -722,14 +752,14 @@
                                 </TextBlock>
                                 <!-- Private Table Indicator -->
                                 <TextBlock Text="🔒 Private" FontSize="10" 
-                                           Foreground="#607D8B"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.BlueGrey}"
                                            Visibility="{Binding IsPrivate, Converter={StaticResource BoolToCollapsedConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,4,0"
                                            ToolTip="This table is marked as private"/>
                                 <!-- Hidden Indicator -->
                                 <TextBlock Text="👁 Hidden" FontSize="10" 
-                                           Foreground="#9E9E9E"
+                                           Foreground="{StaticResource Diagram.Brush.Accent.Grey}"
                                            VerticalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
@@ -774,8 +804,8 @@
 
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                            <Setter Property="Background" Value="#4000D7FF"/>
-                                                                <Setter Property="BorderBrush" Value="#00D7FF"/>
+                                                            <Setter Property="Background" Value="{StaticResource Diagram.Brush.Column.HighlightBack}"/>
+                                                                <Setter Property="BorderBrush" Value="{StaticResource Diagram.Brush.Column.HighlightBorder}"/>
                                                             </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -828,7 +858,7 @@
                                                            FontSize="9"
                                                            VerticalAlignment="Center"
                                                            Margin="4,0,2,0"
-                                                           Foreground="#2196F3"
+                                                           Foreground="{StaticResource Diagram.Brush.Accent.Blue}"
                                                            ToolTip="{Binding DisplayedStatTooltip}"
                                                            Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                     <Image Source="{DynamicResource measure_accentDrawingImage}" 
@@ -891,8 +921,8 @@
                                                                 <Setter Property="Opacity" Value="0.6"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                                <Setter Property="Background" Value="#4000D7FF"/>
-                                                                <Setter Property="BorderBrush" Value="#00D7FF"/>
+                                                                <Setter Property="Background" Value="{StaticResource Diagram.Brush.Column.HighlightBack}"/>
+                                                                <Setter Property="BorderBrush" Value="{StaticResource Diagram.Brush.Column.HighlightBorder}"/>
                                                                 <Setter Property="BorderThickness" Value="1"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
@@ -933,7 +963,7 @@
                                                                    FontSize="10"
                                                                    VerticalAlignment="Center"
                                                                    Margin="0,0,2,0"
-                                                                   Foreground="#9C27B0"
+                                                                   Foreground="{StaticResource Diagram.Brush.Accent.Purple}"
                                                                    Visibility="{Binding IsHierarchyLevel, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                         <Image ap:ImageBindingHelper.SourceResourceKey="{Binding IconResourceKey}"
                                                                Width="14" Height="14"
@@ -968,7 +998,7 @@
                                                                FontSize="10"
                                                                VerticalAlignment="Center"
                                                                Margin="4,0,2,0"
-                                                               Foreground="#FF9800"
+                                                               Foreground="{StaticResource Diagram.Brush.Accent.Orange}"
                                                                ToolTip="{Binding SortByColumnName, StringFormat='Sorted by: {0}'}"
                                                                Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                     
@@ -978,7 +1008,7 @@
                                                                FontSize="9"
                                                                VerticalAlignment="Center"
                                                                Margin="4,0,2,0"
-                                                               Foreground="#2196F3"
+                                                               Foreground="{StaticResource Diagram.Brush.Accent.Blue}"
                                                                ToolTip="{Binding DisplayedStatTooltip}"
                                                                Visibility="{Binding ShowStatDisplay, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                         <Image Source="{DynamicResource measure_accentDrawingImage}" 
@@ -1096,27 +1126,35 @@
                         </Path.ToolTip>
                         <Path.Style>
                             <Style TargetType="Path">
-                                <Setter Property="Stroke" Value="#666666"/>
+                                <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Relationship.Default}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="Stroke" Value="#2196F3"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Accent.Blue}"/>
                                         <Setter Property="StrokeThickness" Value="3"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                        <Setter Property="Stroke" Value="#FF5722"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Selection}"/>
                                         <Setter Property="StrokeThickness" Value="3"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                        <Setter Property="Stroke" Value="#999999"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Relationship.Inactive}"/>
                                         <Setter Property="StrokeDashArray" Value="4,2"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsManyToMany}" Value="True">
-                                        <Setter Property="Stroke" Value="#E91E63"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Relationship.ManyToMany}"/>
                                     </DataTrigger>
                                     <!-- Bi-directional relationships get a distinct teal color -->
                                     <DataTrigger Binding="{Binding IsBidirectional}" Value="True">
-                                        <Setter Property="Stroke" Value="#00897B"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Relationship.BiDirectional}"/>
                                     </DataTrigger>
+
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsBidirectional}" Value="True" />
+                                            <Condition Binding="{Binding IsHighlighted}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Stroke" Value="{StaticResource Diagram.Brush.Relationship.BiDirectionalSelected}"/>
+                                    </MultiDataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Path.Style>
@@ -1132,7 +1170,7 @@
                             BorderThickness="1"
                             Height="18"
                             Width="16"
-                            BorderBrush="#888888"
+                            BorderBrush="{StaticResource Diagram.Brush.Relationship.CardinalityBorder}"
                             MinWidth="16"
                             MinHeight="18"
                             Cursor="Hand"
@@ -1159,7 +1197,7 @@
                             BorderThickness="1"
                             Height="18"
                             Width="16"
-                            BorderBrush="#888888"
+                            BorderBrush="{StaticResource Diagram.Brush.Relationship.CardinalityBorder}"
                             MinWidth="16"
                             MinHeight="18"
                             Cursor="Hand"
@@ -1185,7 +1223,7 @@
                             CornerRadius="3"
                             Padding="3,2"
                             BorderThickness="1"
-                            BorderBrush="#888888"
+                            BorderBrush="{StaticResource Diagram.Brush.Relationship.CardinalityBorder}"
                             RenderTransformOrigin="0,0"
                             Visibility="{Binding HasValidPositions, Converter={StaticResource BoolToVisibilityConverter}}"
                             Cursor="Hand"
@@ -1197,28 +1235,50 @@
                             <TranslateTransform X="-15" Y="-10"/>
                         </Border.RenderTransform>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <!-- Reverse filter direction chevrons (for BiDi - pointing toward To table) -->
-                            <Grid Width="14" Height="14" Margin="0,0,0,0"
+                            <!-- Bi-directional arrow icon (two arrows pointing in opposite directions) -->
+                            <Grid Width="18" Height="14" Margin="0,0,2,0"
                                   Visibility="{Binding IsBidirectional, Converter={StaticResource BoolToVisibilityConverter}}"
                                   ToolTip="Filter flows both directions (bi-directional)">
                                 <Grid.RenderTransform>
-                                    <RotateTransform Angle="{Binding ReverseFilterDirectionAngle}" CenterX="7" CenterY="7"/>
+                                    <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="9" CenterY="7"/>
                                 </Grid.RenderTransform>
-                                <!-- Double chevron pointing right >> (rotated for reverse) -->
-                                <Path Data="M 2,3 L 7,7 L 2,11 M 6,3 L 11,7 L 6,11" 
-                                      Stroke="#555555"
+
+                                    <!-- Double chevron pointing right >> -->
+                                    <Path 
+                                          Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
+                                          StrokeThickness="1.5"
+                                          StrokeLineJoin="Round" Margin="0,2,2,2">
+                                    <Path.Data>
+                                        <PathGeometry Figures="M5.25,0.75 L0.75,4.8671875 5.25,9.25 M7.75,0.75 L12.25,5 7.75,9.25"/>
+                                    </Path.Data>
+                                </Path>
+                                
+
+                                <!-- Right-pointing arrow (top) -->
+                                <!--<Path Data="M 3,4 L 15,4 M 11,1 L 15,4 L 11,7" 
+                                      Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
                                       StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"/>
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"/>
+                                --><!-- Left-pointing arrow (bottom) --><!--
+                                <Path Data="M 15,10 L 3,10 M 7,7 L 3,10 L 7,13" 
+                                      Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
+                                      StrokeThickness="1.5"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"/>-->
                             </Grid>
-                            <!-- Filter direction chevrons (pointing toward From table) -->
+                            <!-- Filter direction chevrons (pointing toward From table, single direction only) -->
                             <Grid Width="14" Height="14" Margin="0,0,2,0"
+                                  Visibility="{Binding IsNotBidirectional, Converter={StaticResource BoolToVisibilityConverter}}"
                                   ToolTip="Filter direction">
                                 <Grid.RenderTransform>
                                     <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
                                 </Grid.RenderTransform>
                                 <!-- Double chevron pointing right >> -->
                                 <Path Data="M 2,3 L 7,7 L 2,11 M 6,3 L 11,7 L 6,11" 
-                                      Stroke="#555555"
+                                      Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
                                       StrokeThickness="1.5"
                                       StrokeLineJoin="Round"/>
                             </Grid>
@@ -1226,7 +1286,7 @@
                             <TextBlock Text="M:M"
                                        FontSize="9"
                                        FontWeight="SemiBold"
-                                       Foreground="#E91E63"
+                                       Foreground="{StaticResource Diagram.Brush.Relationship.ManyToMany}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,2,0"
                                        ToolTip="Many-to-Many relationship"
@@ -1235,7 +1295,7 @@
                             <TextBlock Text="Inactive"
                                        FontSize="9"
                                        FontStyle="Italic"
-                                       Foreground="#999999"
+                                       Foreground="{StaticResource Diagram.Brush.Relationship.Inactive}"
                                        VerticalAlignment="Center"
                                        ToolTip="This relationship is inactive"
                                        Visibility="{Binding IsInactive, Converter={StaticResource BoolToVisibilityConverter}}"/>
@@ -1261,7 +1321,7 @@
                     </Border.Background>
                     <Border.Style>
                         <Style TargetType="Border">
-                            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource Diagram.Brush.Table.DefaultBorder}"/>
                             <Setter Property="BorderThickness" Value="1"/>
                             <Setter Property="Effect">
                                 <Setter.Value>
@@ -1270,7 +1330,7 @@
                             </Setter>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource Diagram.Brush.Accent.Blue}"/>
                                     <Setter Property="BorderThickness" Value="2"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -1310,7 +1370,7 @@
                                    FontSize="{Binding FontSize}"
                                    FontWeight="{Binding FontWeight}"
                                    FontStyle="{Binding FontStyle}"
-                                   Foreground="#333333"
+                                   Foreground="{StaticResource Diagram.Brush.Badge.Text}"
                                    VerticalAlignment="Top">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -1379,7 +1439,7 @@
                         <Polygon Points="0,10 10,10 10,0"
                                  HorizontalAlignment="Right"
                                  VerticalAlignment="Bottom"
-                                 Fill="#CCCCCC"
+                                 Fill="{StaticResource Diagram.Brush.Table.DefaultBorder}"
                                  Cursor="SizeNWSE"
                                  MouseLeftButtonDown="AnnotationResize_MouseLeftButtonDown"
                                  MouseLeftButtonUp="AnnotationResize_MouseLeftButtonUp"
@@ -1784,8 +1844,8 @@
                 <!-- Selection Rectangle (for drag-select) -->
                 <Canvas x:Name="SelectionCanvas" IsHitTestVisible="False">
                     <Rectangle x:Name="SelectionRect" 
-                               Fill="#202196F3" 
-                               Stroke="#2196F3" 
+                               Fill="{StaticResource Diagram.Brush.Selection.RectFill}" 
+                               Stroke="{StaticResource Diagram.Brush.Accent.Blue}" 
                                StrokeThickness="1"
                                Visibility="Collapsed"/>
                 </Canvas>
@@ -1849,9 +1909,9 @@
                         
                         <!-- Viewport indicator -->
                         <Rectangle x:Name="MiniMapViewport"
-                                   Stroke="#FF5722"
+                                   Stroke="{StaticResource Diagram.Brush.Selection}"
                                    StrokeThickness="2"
-                                   Fill="#10FF5722"/>
+                                   Fill="{StaticResource Diagram.Brush.Selection.LightFill}"/>
                     </Canvas>
                 </Viewbox>
             </Grid>
@@ -1892,32 +1952,32 @@
                     <!-- Table Types (shown when storage mode data is NOT available) -->
                     <StackPanel Orientation="Horizontal"
                                 Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToNotCollapsedConverter}}">
-                        <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Blue}" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
                         <TextBlock Text="Table" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Green}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="Date" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Purple}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="Measures" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
                         <!-- Separator -->
-                        <Border Width="1" Height="14" Background="#888888" Margin="0,0,16,0"/>
+                        <Border Width="1" Height="14" Background="{StaticResource Diagram.Brush.Relationship.CardinalityBorder}" Margin="0,0,16,0"/>
                     </StackPanel>
                     
                     <!-- Relationship Types -->
-                    <TextBlock Text="▶" FontSize="10" Foreground="#666666" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock Text="▶" FontSize="10" Foreground="{StaticResource Diagram.Brush.Relationship.Default}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                     <TextBlock Text="Filter" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     
-                    <TextBlock Text="↔" FontSize="12" FontWeight="Bold" Foreground="#4CAF50" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock Text="↔" FontSize="12" FontWeight="Bold" Foreground="{StaticResource Diagram.Brush.Accent.Green}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                     <TextBlock Text="Bi-Di" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     
-                    <TextBlock Text="⚠" FontSize="10" Foreground="#E91E63" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock Text="⚠" FontSize="10" Foreground="{StaticResource Diagram.Brush.Relationship.ManyToMany}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                     <TextBlock Text="M:M" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     
@@ -1925,7 +1985,7 @@
                         <Border.Background>
                             <VisualBrush TileMode="Tile" Viewport="0,0,4,4" ViewportUnits="Absolute">
                                 <VisualBrush.Visual>
-                                    <Rectangle Width="2" Height="2" Fill="#AAAAAA"/>
+                                    <Rectangle Width="2" Height="2" Fill="{StaticResource Diagram.Brush.Legend.InactivePattern}"/>
                                 </VisualBrush.Visual>
                             </VisualBrush>
                         </Border.Background>
@@ -1937,25 +1997,25 @@
                     <StackPanel Orientation="Horizontal" 
                                 Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToVisibilityConverter}}">
                         <!-- Separator -->
-                        <Border Width="1" Height="14" Background="#888888" Margin="16,0,16,0"/>
+                        <Border Width="1" Height="14" Background="{StaticResource Diagram.Brush.Relationship.CardinalityBorder}" Margin="16,0,16,0"/>
                         
-                        <Border Background="#4CAF50" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Green}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="Import" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="#FF9800" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Orange}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="DirectQuery" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="#2196F3" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Blue}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="DirectLake" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="#9C27B0" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Accent.Purple}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="Dual" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="#E91E63" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{StaticResource Diagram.Brush.Relationship.ManyToMany}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="Hybrid" VerticalAlignment="Center" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     </StackPanel>

@@ -1094,7 +1094,7 @@ namespace DaxStudio.UI.ViewModels
                 for (int batchStart = 0; batchStart < tableVms.Count; batchStart += addBatchSize)
                 {
                     var batchEnd = Math.Min(batchStart + addBatchSize, tableVms.Count);
-                    LoadingMessage = $"Rendering tables {batchEnd}/{tableVms.Count}...";
+                    LoadingMessage = $"Loading tables {batchEnd}/{tableVms.Count}...";
 
                     for (int j = batchStart; j < batchEnd; j++)
                     {
@@ -6946,6 +6946,11 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public bool IsBidirectional =>
             string.Equals(_relationship.CrossFilterDirection, "Both", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Whether this relationship does NOT have bi-directional cross-filtering.
+        /// </summary>
+        public bool IsNotBidirectional => !IsBidirectional;
 
         /// <summary>
         /// Raw cross-filter direction value from the relationship (for debugging).
