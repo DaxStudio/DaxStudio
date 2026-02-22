@@ -4185,6 +4185,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     ModelKey = _currentModelKey,
                     LastModified = DateTime.UtcNow,
+                    LastAccessed = DateTime.UtcNow,
                     TablePositions = Tables.ToDictionary(
                         t => t.TableName,
                         t => new TablePosition 
@@ -4203,10 +4204,10 @@ namespace DaxStudio.UI.ViewModels
                 // Update or add
                 layouts[_currentModelKey] = layoutData;
 
-                // Prune old entries (keep last 50 models)
+                // Prune old entries (keep last 50 models) using LRU eviction
                 if (layouts.Count > 50)
                 {
-                    var oldest = layouts.OrderBy(kvp => kvp.Value.LastModified).Take(layouts.Count - 50).Select(kvp => kvp.Key).ToList();
+                    var oldest = layouts.OrderBy(kvp => kvp.Value.EffectiveLastUsed).Take(layouts.Count - 50).Select(kvp => kvp.Key).ToList();
                     foreach (var key in oldest)
                     {
                         layouts.Remove(key);
@@ -4324,6 +4325,10 @@ namespace DaxStudio.UI.ViewModels
                     {
                         rel.UpdatePath();
                     }
+
+                    // Touch LastAccessed so this layout is treated as recently used for LRU eviction
+                    TouchLayoutLastAccessed(layouts, _currentModelKey);
+
                     return true;
                 }
             }
@@ -4354,6 +4359,34 @@ namespace DaxStudio.UI.ViewModels
                 Log.Warning(ex, "Failed to read layout cache file");
             }
             return new Dictionary<string, ModelLayoutData>();
+        }
+
+        /// <summary>
+        /// Updates the LastAccessed timestamp for the given model key and persists the cache.
+        /// This ensures recently viewed (but not edited) layouts are not evicted by LRU pruning.
+        /// </summary>
+        private void TouchLayoutLastAccessed(Dictionary<string, ModelLayoutData> layouts, string modelKey)
+        {
+            try
+            {
+                if (layouts.TryGetValue(modelKey, out var layoutData))
+                {
+                    layoutData.LastAccessed = DateTime.UtcNow;
+
+                    var directory = Path.GetDirectoryName(LayoutCacheFilePath);
+                    if (!Directory.Exists(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
+
+                    var json = JsonConvert.SerializeObject(layouts, Formatting.None);
+                    File.WriteAllText(LayoutCacheFilePath, json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to update layout LastAccessed timestamp");
+            }
         }
 
         #endregion
@@ -7576,8 +7609,20 @@ namespace DaxStudio.UI.ViewModels
     {
         public string ModelKey { get; set; }
         public DateTime LastModified { get; set; }
+        /// <summary>
+        /// Tracks last time the layout was accessed (loaded or saved).
+        /// Used for LRU eviction. Falls back to LastModified for older cache entries.
+        /// </summary>
+        public DateTime? LastAccessed { get; set; }
         public Dictionary<string, TablePosition> TablePositions { get; set; } = new Dictionary<string, TablePosition>();
         public List<AnnotationData> Annotations { get; set; } = new List<AnnotationData>();
+
+        /// <summary>
+        /// Returns the effective last-used time for LRU eviction.
+        /// Uses LastAccessed if available, otherwise falls back to LastModified.
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore]
+        public DateTime EffectiveLastUsed => LastAccessed ?? LastModified;
     }
 
     /// <summary>
