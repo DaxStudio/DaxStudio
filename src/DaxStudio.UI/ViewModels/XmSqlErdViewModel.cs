@@ -1424,46 +1424,27 @@ namespace DaxStudio.UI.ViewModels
             else if (Tables.Count == 3)
             {
                 // Three tables - inverted triangle (2 on top, 1 centered below)
+                // Try all permutations to minimize edge crossings
                 double totalWidth = 2 * tableWidth + hSpacing;
-                
-                sortedTables[1].X = padding;
-                sortedTables[1].Y = padding;
-                sortedTables[1].Width = tableWidth;
-                sortedTables[1].ColumnsHeight = columnsHeight;
-                
-                sortedTables[2].X = padding + tableWidth + hSpacing;
-                sortedTables[2].Y = padding;
-                sortedTables[2].Width = tableWidth;
-                sortedTables[2].ColumnsHeight = columnsHeight;
-                
-                // Most connected table centered below
-                sortedTables[0].X = padding + (totalWidth - tableWidth) / 2;
-                sortedTables[0].Y = padding + tableHeight + vSpacing;
-                sortedTables[0].Width = tableWidth;
-                sortedTables[0].ColumnsHeight = columnsHeight;
+                var positions = new (double X, double Y)[]
+                {
+                    (padding, padding),  // top-left
+                    (padding + tableWidth + hSpacing, padding),  // top-right
+                    (padding + (totalWidth - tableWidth) / 2, padding + tableHeight + vSpacing),  // bottom-center
+                };
+                AssignPositionsMinimizingCrossings(sortedTables, positions, tableWidth, tableHeight, columnsHeight);
             }
             else // 4 tables
             {
-                // 2x2 grid, most connected in bottom-left
-                sortedTables[1].X = padding;
-                sortedTables[1].Y = padding;
-                sortedTables[1].Width = tableWidth;
-                sortedTables[1].ColumnsHeight = columnsHeight;
-                
-                sortedTables[2].X = padding + tableWidth + hSpacing;
-                sortedTables[2].Y = padding;
-                sortedTables[2].Width = tableWidth;
-                sortedTables[2].ColumnsHeight = columnsHeight;
-                
-                sortedTables[0].X = padding;
-                sortedTables[0].Y = padding + tableHeight + vSpacing;
-                sortedTables[0].Width = tableWidth;
-                sortedTables[0].ColumnsHeight = columnsHeight;
-                
-                sortedTables[3].X = padding + tableWidth + hSpacing;
-                sortedTables[3].Y = padding + tableHeight + vSpacing;
-                sortedTables[3].Width = tableWidth;
-                sortedTables[3].ColumnsHeight = columnsHeight;
+                // 2x2 grid - try all permutations to minimize edge crossings
+                var positions = new (double X, double Y)[]
+                {
+                    (padding, padding),  // top-left
+                    (padding + tableWidth + hSpacing, padding),  // top-right
+                    (padding, padding + tableHeight + vSpacing),  // bottom-left
+                    (padding + tableWidth + hSpacing, padding + tableHeight + vSpacing),  // bottom-right
+                };
+                AssignPositionsMinimizingCrossings(sortedTables, positions, tableWidth, tableHeight, columnsHeight);
             }
 
             // Calculate canvas size
@@ -1476,6 +1457,195 @@ namespace DaxStudio.UI.ViewModels
             foreach (var rel in Relationships)
             {
                 rel.UpdatePath();
+            }
+        }
+
+        /// <summary>
+        /// Assigns tables to grid positions by trying all permutations and choosing
+        /// the arrangement with the fewest edge crossings. Ties are broken by
+        /// preferring shorter total edge length.
+        /// </summary>
+        private void AssignPositionsMinimizingCrossings(
+            List<ErdTableViewModel> tables,
+            (double X, double Y)[] positions,
+            double tableWidth, double tableHeight, double columnsHeight)
+        {
+            int n = tables.Count;
+            var bestPerm = Enumerable.Range(0, n).ToArray();
+            int bestCrossings = int.MaxValue;
+            double bestTotalLength = double.MaxValue;
+
+            // Try every permutation of table-to-position assignment
+            foreach (var perm in GeneratePermutations(n))
+            {
+                int crossings = CountCrossingsForArrangement(tables, positions, perm, tableWidth, tableHeight);
+                double totalLength = TotalEdgeLengthForArrangement(tables, positions, perm, tableWidth, tableHeight);
+
+                if (crossings < bestCrossings || (crossings == bestCrossings && totalLength < bestTotalLength))
+                {
+                    bestCrossings = crossings;
+                    bestTotalLength = totalLength;
+                    bestPerm = (int[])perm.Clone();
+                }
+            }
+
+            // Apply the best permutation
+            for (int i = 0; i < n; i++)
+            {
+                int tableIdx = bestPerm[i];
+                tables[tableIdx].X = positions[i].X;
+                tables[tableIdx].Y = positions[i].Y;
+                tables[tableIdx].Width = tableWidth;
+                tables[tableIdx].ColumnsHeight = columnsHeight;
+            }
+        }
+
+        /// <summary>
+        /// Counts the number of edge crossings for a given table-to-position assignment.
+        /// A crossing occurs when two relationship lines intersect (excluding shared endpoints).
+        /// </summary>
+        private int CountCrossingsForArrangement(
+            List<ErdTableViewModel> tables,
+            (double X, double Y)[] positions,
+            int[] perm,
+            double tableWidth, double tableHeight)
+        {
+            // Map table name -> center position in this arrangement
+            var centers = new Dictionary<string, (double X, double Y)>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < perm.Length; i++)
+            {
+                var table = tables[perm[i]];
+                centers[table.TableName] = (positions[i].X + tableWidth / 2, positions[i].Y + tableHeight / 2);
+            }
+
+            // Build line segments from relationships
+            var segments = new List<(double x1, double y1, double x2, double y2)>();
+            foreach (var rel in Relationships)
+            {
+                if (centers.TryGetValue(rel.FromTable, out var from) && centers.TryGetValue(rel.ToTable, out var to))
+                {
+                    segments.Add((from.X, from.Y, to.X, to.Y));
+                }
+            }
+
+            // Count pairwise crossings
+            int crossings = 0;
+            for (int i = 0; i < segments.Count; i++)
+            {
+                for (int j = i + 1; j < segments.Count; j++)
+                {
+                    if (SegmentsIntersect(
+                        segments[i].x1, segments[i].y1, segments[i].x2, segments[i].y2,
+                        segments[j].x1, segments[j].y1, segments[j].x2, segments[j].y2))
+                    {
+                        crossings++;
+                    }
+                }
+            }
+
+            return crossings;
+        }
+
+        /// <summary>
+        /// Calculates total edge length for a given arrangement. Used as tiebreaker
+        /// when multiple arrangements have the same number of crossings.
+        /// </summary>
+        private double TotalEdgeLengthForArrangement(
+            List<ErdTableViewModel> tables,
+            (double X, double Y)[] positions,
+            int[] perm,
+            double tableWidth, double tableHeight)
+        {
+            var centers = new Dictionary<string, (double X, double Y)>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < perm.Length; i++)
+            {
+                var table = tables[perm[i]];
+                centers[table.TableName] = (positions[i].X + tableWidth / 2, positions[i].Y + tableHeight / 2);
+            }
+
+            double totalLength = 0;
+            foreach (var rel in Relationships)
+            {
+                if (centers.TryGetValue(rel.FromTable, out var from) && centers.TryGetValue(rel.ToTable, out var to))
+                {
+                    double dx = to.X - from.X;
+                    double dy = to.Y - from.Y;
+                    totalLength += Math.Sqrt(dx * dx + dy * dy);
+                }
+            }
+
+            return totalLength;
+        }
+
+        /// <summary>
+        /// Tests whether two line segments intersect, excluding cases where they share an endpoint.
+        /// Uses the cross-product orientation test.
+        /// </summary>
+        private static bool SegmentsIntersect(
+            double ax, double ay, double bx, double by,
+            double cx, double cy, double dx, double dy)
+        {
+            // Skip if segments share an endpoint (lines from/to same table don't cross)
+            const double eps = 0.5;
+            if ((Math.Abs(ax - cx) < eps && Math.Abs(ay - cy) < eps) ||
+                (Math.Abs(ax - dx) < eps && Math.Abs(ay - dy) < eps) ||
+                (Math.Abs(bx - cx) < eps && Math.Abs(by - cy) < eps) ||
+                (Math.Abs(bx - dx) < eps && Math.Abs(by - dy) < eps))
+                return false;
+
+            double d1 = CrossProduct2D(cx, cy, dx, dy, ax, ay);
+            double d2 = CrossProduct2D(cx, cy, dx, dy, bx, by);
+            double d3 = CrossProduct2D(ax, ay, bx, by, cx, cy);
+            double d4 = CrossProduct2D(ax, ay, bx, by, dx, dy);
+
+            if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+                ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// 2D cross product of vectors (OA) and (OB): (A-O) x (B-O).
+        /// Positive if B is counter-clockwise from A relative to O.
+        /// </summary>
+        private static double CrossProduct2D(double ox, double oy, double ax, double ay, double bx, double by)
+        {
+            return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
+        }
+
+        /// <summary>
+        /// Generates all permutations of indices [0..n-1] using Heap's algorithm.
+        /// Yields the same array reference each time (caller must clone to keep a copy).
+        /// </summary>
+        private static IEnumerable<int[]> GeneratePermutations(int n)
+        {
+            var perm = Enumerable.Range(0, n).ToArray();
+            yield return perm;
+
+            var c = new int[n];
+            int i = 0;
+            while (i < n)
+            {
+                if (c[i] < i)
+                {
+                    if (i % 2 == 0)
+                    {
+                        var tmp = perm[0]; perm[0] = perm[i]; perm[i] = tmp;
+                    }
+                    else
+                    {
+                        var tmp = perm[c[i]]; perm[c[i]] = perm[i]; perm[i] = tmp;
+                    }
+                    yield return perm;
+                    c[i]++;
+                    i = 0;
+                }
+                else
+                {
+                    c[i] = 0;
+                    i++;
+                }
             }
         }
 

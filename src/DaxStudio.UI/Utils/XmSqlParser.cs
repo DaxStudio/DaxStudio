@@ -804,6 +804,12 @@ namespace DaxStudio.UI.Utils
                 {
                     table.IsJoinedTable = true;
                     table.HitCount++;
+                    
+                    // Track which query IDs accessed this joined table
+                    if (_currentQueryId > 0)
+                    {
+                        table.QueryIds.Add(_currentQueryId);
+                    }
                 }
             }
 
@@ -822,6 +828,12 @@ namespace DaxStudio.UI.Utils
                 {
                     table.IsJoinedTable = true;
                     table.HitCount++;
+                    
+                    // Track which query IDs accessed this joined table
+                    if (_currentQueryId > 0)
+                    {
+                        table.QueryIds.Add(_currentQueryId);
+                    }
                 }
             }
         }

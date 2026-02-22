@@ -1348,6 +1348,95 @@ WHERE
         }
 
         [TestMethod]
+        public void ParseQueryWithChainedJoins_AllRelationshipsCaptured()
+        {
+            // Arrange - chained join: Internet Sales → Date, Internet Sales → Customer, Customer → Geography
+            // The 3rd join (Customer → Geography) does NOT involve the FROM table directly.
+            string xmSql = @"SET DC_KIND=""AUTO"";
+SELECT
+    'Date'[Date],
+    'Geography'[Country Region Code],
+    SUM ( 'Internet Sales'[Sales Amount] )
+FROM 'Internet Sales'
+    LEFT OUTER JOIN 'Date'
+        ON 'Internet Sales'[Order Date]='Date'[Date]
+    LEFT OUTER JOIN 'Customer'
+        ON 'Internet Sales'[Customer Id]='Customer'[Customer Id]
+    LEFT OUTER JOIN 'Geography'
+        ON 'Customer'[Geography Id]='Geography'[Geography Id]
+WHERE
+    'Date'[Date] IN ( 40593.000000, 40174.000000..[3,652 total values, not all displayed] ) ;";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act - use ParseQueryWithMetrics with QueryId=8 to match the event RowNumber
+            var result = _parser.ParseQueryWithMetrics(xmSql, analysis, new XmSqlParser.SeEventMetrics
+            {
+                QueryId = 8,
+                EstimatedRows = 4940,
+                DurationMs = 6,
+                IsCacheHit = false,
+                CpuTimeMs = 0
+            });
+
+            // Assert
+            Assert.IsTrue(result);
+
+            // Should have 4 tables: Internet Sales (FROM), Date, Customer, Geography (all JOINed)
+            Assert.AreEqual(4, analysis.Tables.Count, "Expected 4 tables");
+            Assert.IsTrue(analysis.Tables.ContainsKey("Internet Sales"));
+            Assert.IsTrue(analysis.Tables.ContainsKey("Date"));
+            Assert.IsTrue(analysis.Tables.ContainsKey("Customer"));
+            Assert.IsTrue(analysis.Tables.ContainsKey("Geography"));
+
+            // Should have 3 relationships including the chained Customer→Geography
+            Assert.AreEqual(3, analysis.Relationships.Count, 
+                "Expected 3 relationships: Internet Sales→Date, Internet Sales→Customer, Customer→Geography");
+
+            // Verify each relationship exists
+            var relInternetSalesDate = analysis.Relationships.FirstOrDefault(r =>
+                r.FromTable == "Internet Sales" && r.ToTable == "Date");
+            Assert.IsNotNull(relInternetSalesDate, "Missing relationship: Internet Sales → Date");
+            Assert.AreEqual("Order Date", relInternetSalesDate.FromColumn);
+            Assert.AreEqual("Date", relInternetSalesDate.ToColumn);
+            Assert.AreEqual(XmSqlJoinType.LeftOuterJoin, relInternetSalesDate.JoinType);
+
+            var relInternetSalesCustomer = analysis.Relationships.FirstOrDefault(r =>
+                r.FromTable == "Internet Sales" && r.ToTable == "Customer");
+            Assert.IsNotNull(relInternetSalesCustomer, "Missing relationship: Internet Sales → Customer");
+            Assert.AreEqual("Customer Id", relInternetSalesCustomer.FromColumn);
+            Assert.AreEqual("Customer Id", relInternetSalesCustomer.ToColumn);
+            Assert.AreEqual(XmSqlJoinType.LeftOuterJoin, relInternetSalesCustomer.JoinType);
+
+            var relCustomerGeography = analysis.Relationships.FirstOrDefault(r =>
+                r.FromTable == "Customer" && r.ToTable == "Geography");
+            Assert.IsNotNull(relCustomerGeography, "Missing relationship: Customer → Geography");
+            Assert.AreEqual("Geography Id", relCustomerGeography.FromColumn);
+            Assert.AreEqual("Geography Id", relCustomerGeography.ToColumn);
+            Assert.AreEqual(XmSqlJoinType.LeftOuterJoin, relCustomerGeography.JoinType);
+
+            // Verify join columns are marked on all participating tables
+            Assert.IsTrue(analysis.Tables["Internet Sales"].Columns["Order Date"].UsageTypes.HasFlag(XmSqlColumnUsage.Join));
+            Assert.IsTrue(analysis.Tables["Internet Sales"].Columns["Customer Id"].UsageTypes.HasFlag(XmSqlColumnUsage.Join));
+            Assert.IsTrue(analysis.Tables["Customer"].Columns["Customer Id"].UsageTypes.HasFlag(XmSqlColumnUsage.Join));
+            Assert.IsTrue(analysis.Tables["Customer"].Columns["Geography Id"].UsageTypes.HasFlag(XmSqlColumnUsage.Join));
+            Assert.IsTrue(analysis.Tables["Geography"].Columns["Geography Id"].UsageTypes.HasFlag(XmSqlColumnUsage.Join));
+            Assert.IsTrue(analysis.Tables["Date"].Columns["Date"].UsageTypes.HasFlag(XmSqlColumnUsage.Join));
+
+            // Verify that ALL tables (including joined tables) have QueryId tracked
+            // This is critical for the ERD event filter: tables must have the QueryId
+            // so they appear in "detail pane" output for that event
+            Assert.IsTrue(analysis.Tables["Internet Sales"].QueryIds.Contains(8), 
+                "FROM table 'Internet Sales' should have QueryId 8");
+            Assert.IsTrue(analysis.Tables["Date"].QueryIds.Contains(8), 
+                "Joined table 'Date' should have QueryId 8");
+            Assert.IsTrue(analysis.Tables["Customer"].QueryIds.Contains(8), 
+                "Joined table 'Customer' should have QueryId 8");
+            Assert.IsTrue(analysis.Tables["Geography"].QueryIds.Contains(8), 
+                "Chained joined table 'Geography' should have QueryId 8");
+        }
+
+        [TestMethod]
         public void ParseQueryWithTruncatedInClause_LargeCount()
         {
             // Test with a larger count (over 10,000)
