@@ -5437,6 +5437,10 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Label position (middle of the line), accounting for parallel offset.
+        /// Progressively centers the label horizontally as the line becomes more horizontal.
+        /// Canvas positions elements by their top-left corner: for vertical lines the label
+        /// naturally sits to the right of the line, but for horizontal lines we shift left
+        /// by an estimated half-label-width so it appears centered over the curve midpoint.
         /// </summary>
         public double LabelX
         {
@@ -5444,17 +5448,40 @@ namespace DaxStudio.UI.ViewModels
             {
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
                 double offsetX = isVertical ? _parallelOffset : 0;
-                return (StartX + EndX) / 2 + offsetX;
+                double midX = (StartX + EndX) / 2 + offsetX;
+
+                double dx = Math.Abs(EndX - StartX);
+                double dy = Math.Abs(EndY - StartY);
+                double total = dx + dy;
+                if (total > 0)
+                {
+                    // 0 = perfectly vertical line, 1 = perfectly horizontal line
+                    double horizontalFactor = dx / total;
+                    const double estimatedHalfLabelWidth = 40;
+                    midX -= estimatedHalfLabelWidth * horizontalFactor;
+                }
+
+                return midX;
             }
         }
         
+        /// <summary>
+        /// Label Y position (middle of the line), shifted up by half the estimated label
+        /// height so the label appears visually centered on the curve midpoint.
+        /// Canvas.Top anchors the top edge of the element, so without the shift the label
+        /// would appear below center.
+        /// </summary>
         public double LabelY
         {
             get
             {
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
                 double offsetY = isVertical ? 0 : _parallelOffset;
-                return (StartY + EndY) / 2 - 10 + offsetY;
+                double midY = (StartY + EndY) / 2 + offsetY;
+
+                // Shift up by estimated half-label-height so the label is visually centered
+                const double estimatedHalfLabelHeight = 10;
+                return midY - estimatedHalfLabelHeight;
             }
         }
 
