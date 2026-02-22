@@ -831,6 +831,131 @@ namespace DaxStudio.UI.ViewModels
 
         #endregion
 
+        #region Event List Panel
+
+        private BindableCollection<EventListItem> _eventListItems = new BindableCollection<EventListItem>();
+        /// <summary>
+        /// Collection of SE events for display in the hamburger menu event list.
+        /// </summary>
+        public BindableCollection<EventListItem> EventListItems
+        {
+            get => _eventListItems;
+            private set
+            {
+                _eventListItems = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(HasEventListItems));
+            }
+        }
+
+        /// <summary>
+        /// Whether there are any events to display.
+        /// </summary>
+        public bool HasEventListItems => _eventListItems.Count > 0;
+
+        private bool _isEventListOpen;
+        /// <summary>
+        /// Whether the event list popup is open.
+        /// </summary>
+        public bool IsEventListOpen
+        {
+            get => _isEventListOpen;
+            set
+            {
+                _isEventListOpen = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
+        /// Toggles the event list popup open/closed.
+        /// </summary>
+        public void ToggleEventList()
+        {
+            IsEventListOpen = !IsEventListOpen;
+        }
+
+        private EventListItem _selectedEventItem;
+        /// <summary>
+        /// The currently selected event in the list. Selecting an event filters the diagram.
+        /// </summary>
+        public EventListItem SelectedEventItem
+        {
+            get => _selectedEventItem;
+            set
+            {
+                if (_selectedEventItem == value) return;
+                _selectedEventItem = value;
+                NotifyOfPropertyChange();
+                if (value != null)
+                {
+                    // Filter diagram to show only this event's query
+                    SelectedQueryId = value.RowNumber;
+                    IsEventListOpen = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears the event selection and shows all events in the diagram.
+        /// </summary>
+        public void ShowAllEvents()
+        {
+            _selectedEventItem = null;
+            NotifyOfPropertyChange(nameof(SelectedEventItem));
+            ClearQueryFilter();
+            IsEventListOpen = false;
+        }
+
+        /// <summary>
+        /// Builds the event list from raw events for the hamburger menu.
+        /// Called after AnalyzeEvents completes.
+        /// </summary>
+        private void BuildEventList()
+        {
+            var items = new BindableCollection<EventListItem>();
+            if (_rawEvents == null) return;
+
+            foreach (var evt in _rawEvents)
+            {
+                // Only include events that contributed to the diagram
+                if (evt.IsBatchEvent) continue;
+                if (evt.IsInternalEvent) continue;
+                if (evt.IsDirectQueryEvent)
+                {
+                    if (string.IsNullOrWhiteSpace(evt.TextData) && string.IsNullOrWhiteSpace(evt.Query))
+                        continue;
+                }
+                else if (string.IsNullOrWhiteSpace(evt.Query))
+                {
+                    continue;
+                }
+
+                var eventType = GetFriendlyEventType(evt);
+                items.Add(new EventListItem
+                {
+                    RowNumber = evt.RowNumber,
+                    EventType = eventType,
+                    Duration = evt.Duration,
+                    CpuTime = evt.CpuTime
+                });
+            }
+
+            EventListItems = items;
+        }
+
+        /// <summary>
+        /// Gets a friendly display name for the event type.
+        /// </summary>
+        private static string GetFriendlyEventType(TraceStorageEngineEvent evt)
+        {
+            if (evt.IsDirectQueryEvent) return "DirectQuery";
+            if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch) return "Cache Hit";
+            if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryEnd) return "SE Query";
+            if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryBegin) return "SE Query";
+            return evt.Class.ToString();
+        }
+
         #endregion
 
         #region Methods
@@ -964,6 +1089,9 @@ namespace DaxStudio.UI.ViewModels
 
                 // Gather available query IDs for query plan integration
                 GatherAvailableQueryIds();
+
+                // Build event list for hamburger menu
+                BuildEventList();
 
                 // Try to enrich with existing VPA data (e.g., from .daxx file)
                 TryEnrichFromExistingVpaData();
@@ -2238,6 +2366,17 @@ namespace DaxStudio.UI.ViewModels
                             }
                         }
                         
+                        // Detail pane output for tables in this event
+                        var tablesInEvent = Tables.Where(t => t.TableInfo.QueryIds.Contains(evt.RowNumber)).ToList();
+                        if (tablesInEvent.Any())
+                        {
+                            sb.AppendLine($"  === DETAIL PANE: {tablesInEvent.Count} table(s) ===");
+                            foreach (var table in tablesInEvent.OrderBy(t => t.TableName))
+                            {
+                                sb.AppendLine(GetTableDetailText(table));
+                            }
+                        }
+                        
                         sb.AppendLine();
                     }
 
@@ -2834,7 +2973,10 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Shows details for a clicked table header.
         /// </summary>
-        public void SelectTableDetails(ErdTableViewModel table)
+        /// <summary>
+        /// Generates the detail pane text for a table. Used by both the UI detail pane and debug export.
+        /// </summary>
+        private string GetTableDetailText(ErdTableViewModel table)
         {
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"═══════════════════════════════════════════");
@@ -3160,7 +3302,15 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             
-            SelectedDetailInfo = sb.ToString();
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Shows details for a clicked table header.
+        /// </summary>
+        public void SelectTableDetails(ErdTableViewModel table)
+        {
+            SelectedDetailInfo = GetTableDetailText(table);
         }
 
         /// <summary>
@@ -5245,4 +5395,26 @@ namespace DaxStudio.UI.ViewModels
             EndY = endY;
         }
     }
+
+    /// <summary>
+    /// Represents a single SE event for display in the event list panel.
+    /// </summary>
+    public class EventListItem
+    {
+        public int RowNumber { get; set; }
+        public string EventType { get; set; }
+        public long? Duration { get; set; }
+        public long? CpuTime { get; set; }
+
+        /// <summary>
+        /// Formatted duration for display.
+        /// </summary>
+        public string DurationFormatted => Duration.HasValue ? $"{Duration.Value} ms" : "-";
+
+        /// <summary>
+        /// Formatted CPU time for display.
+        /// </summary>
+        public string CpuTimeFormatted => CpuTime.HasValue ? $"{CpuTime.Value} ms" : "-";
+    }
+    #endregion
 }

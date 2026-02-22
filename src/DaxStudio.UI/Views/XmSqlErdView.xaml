@@ -1464,6 +1464,158 @@
                     </Canvas>
                 </Grid>
             </Border>
+
+            <!-- Hamburger Menu Button (top-left corner overlay) -->
+            <ToggleButton x:Name="HamburgerButton"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
+                          Margin="10,10,0,0"
+                          Width="32" Height="32"
+                          IsChecked="{Binding IsEventListOpen, Mode=TwoWay}"
+                          ToolTip="Show SE event list"
+                          Visibility="{Binding HasEventListItems, Converter={StaticResource BoolToCollapsedConverter}}">
+                <ToggleButton.Style>
+                    <Style TargetType="ToggleButton">
+                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Theme.Brush.Table.Border}"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="HamburgerBorder"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="4"
+                                            Padding="6">
+                                        <!-- Hamburger icon: 3 horizontal lines -->
+                                        <Canvas Width="18" Height="14">
+                                            <Line X1="1" Y1="2" X2="17" Y2="2" Stroke="{DynamicResource Theme.Brush.Default.Fore}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                            <Line X1="1" Y1="7" X2="17" Y2="7" Stroke="{DynamicResource Theme.Brush.Default.Fore}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                            <Line X1="1" Y1="12" X2="17" Y2="12" Stroke="{DynamicResource Theme.Brush.Default.Fore}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                        </Canvas>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="HamburgerBorder" Property="Background" Value="{DynamicResource Theme.Brush.StatusBar.Back}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="HamburgerBorder" Property="Background" Value="{DynamicResource Theme.Brush.StatusBar.Back}"/>
+                                            <Setter TargetName="HamburgerBorder" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ToggleButton.Style>
+            </ToggleButton>
+
+            <!-- Event List Popup Panel -->
+            <Border x:Name="EventListPanel"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="10,48,0,0"
+                    MaxHeight="400"
+                    MinWidth="380"
+                    Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                    BorderBrush="{DynamicResource Theme.Brush.Table.Border}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="0"
+                    Visibility="{Binding IsEventListOpen, Converter={StaticResource BoolToCollapsedConverter}}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="3" Opacity="0.3" Direction="315"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Border Grid.Row="0" 
+                            Background="{DynamicResource Theme.Brush.StatusBar.Back}" 
+                            Padding="10,6"
+                            CornerRadius="4,4,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="SE Events"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Content="✕"
+                                    FontSize="10"
+                                    Padding="2"
+                                    Width="20" Height="20"
+                                    VerticalAlignment="Center"
+                                    cal:Message.Attach="[Event Click] = [Action ToggleEventList]"
+                                    ToolTip="Close event list"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Event DataGrid -->
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding EventListItems}"
+                              SelectedItem="{Binding SelectedEventItem, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserSortColumns="True"
+                              CanUserReorderColumns="False"
+                              CanUserResizeRows="False"
+                              SelectionMode="Single"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              BorderThickness="0"
+                              Background="{DynamicResource Theme.Brush.MenuBar.Back}"
+                              RowBackground="{DynamicResource Theme.Brush.MenuBar.Back}"
+                              AlternatingRowBackground="{DynamicResource Theme.Brush.Content.Back}"
+                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
+                              FontSize="11"
+                              MaxHeight="320">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40"/>
+                            <DataGridTextColumn Header="Event Type" Binding="{Binding EventType}" Width="90"/>
+                            <DataGridTextColumn Header="Duration" Binding="{Binding DurationFormatted}" Width="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Padding" Value="0,0,8,0"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="CPU Time" Binding="{Binding CpuTimeFormatted}" Width="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Padding" Value="0,0,8,0"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Show All button -->
+                    <Border Grid.Row="2" 
+                            Padding="8,6"
+                            Background="{DynamicResource Theme.Brush.StatusBar.Back}"
+                            CornerRadius="0,0,4,4">
+                        <Button Content="Show All Events"
+                                HorizontalAlignment="Left"
+                                Padding="12,4"
+                                cal:Message.Attach="[Event Click] = [Action ShowAllEvents]"
+                                ToolTip="Clear event filter and show entire diagram"/>
+                    </Border>
+                </Grid>
+            </Border>
+
             </Grid>
         <!-- Detail Panel on Right (shows when column, table, or relationship is clicked) -->
         <ctrl:ClipBorder Grid.Column="1"
