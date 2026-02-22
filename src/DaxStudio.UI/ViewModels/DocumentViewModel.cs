@@ -4518,6 +4518,11 @@ namespace DaxStudio.UI.ViewModels
 
                     ToolWindows.Add(diagramVm);
                 }
+                else
+                {
+                    // Restore visibility in case the pane was previously closed/hidden
+                    diagramVm.IsVisible = true;
+                }
 
                 diagramVm.Activate();
 

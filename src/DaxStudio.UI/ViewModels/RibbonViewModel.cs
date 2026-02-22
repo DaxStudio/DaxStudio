@@ -1252,8 +1252,21 @@ namespace DaxStudio.UI.ViewModels
             if (ActiveDocument == null) return;
             try
             {
-                var diagramViewModel = new ModelDiagramViewModel(_eventAggregator, ActiveDocument.Connection as IMetadataProvider, Options);
-                
+                // Reuse an existing ModelDiagramViewModel if one is already in ToolWindows
+                // (closing the pane hides it but doesn't remove it from the collection)
+                var diagramViewModel = ActiveDocument.ToolWindows.OfType<ModelDiagramViewModel>().FirstOrDefault();
+                bool isExisting = diagramViewModel != null;
+
+                if (!isExisting)
+                {
+                    diagramViewModel = new ModelDiagramViewModel(_eventAggregator, ActiveDocument.Connection as IMetadataProvider, Options);
+                }
+                else
+                {
+                    // Restore visibility so the pane reappears in AvalonDock
+                    diagramViewModel.IsVisible = true;
+                }
+
                 // Check for VPA data first (works for both online and offline)
                 var vpaView = ActiveDocument.ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
                 
@@ -1287,7 +1300,7 @@ namespace DaxStudio.UI.ViewModels
                     return;
                 }
 
-                // Publish event to show the tool window in the docking panel
+                // Publish event to show/reactivate the tool window in the docking panel
                 _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
             }
             catch (Exception ex)

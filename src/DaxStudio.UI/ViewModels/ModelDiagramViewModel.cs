@@ -77,6 +77,16 @@ namespace DaxStudio.UI.ViewModels
         public ImageSource IconSource => null;
 
         /// <summary>
+        /// Re-subscribe to event aggregator when the window is reactivated after being closed.
+        /// </summary>
+        protected override Task OnActivateAsync(CancellationToken cancellationToken)
+        {
+            // Re-subscribe in case we were previously closed and unsubscribed
+            _eventAggregator.SubscribeOnPublishedThread(this);
+            return base.OnActivateAsync(cancellationToken);
+        }
+
+        /// <summary>
         /// Unsubscribe from event aggregator when the window is closed to prevent memory leaks.
         /// </summary>
         protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
