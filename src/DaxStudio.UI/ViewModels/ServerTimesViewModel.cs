@@ -2092,7 +2092,7 @@ namespace DaxStudio.UI.ViewModels
 
                 // Publish event to filter Model Diagram to these tables
                 _eventAggregator.PublishOnUIThreadAsync(
-                    new ShowTablesInModelDiagramEvent(tableNames, includeRelated: true));
+                    new ShowTablesInModelDiagramEvent(tableNames, includeRelated: false));
             }
             catch (Exception ex)
             {

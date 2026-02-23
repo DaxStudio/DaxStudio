@@ -2305,7 +2305,7 @@ namespace DaxStudio.UI.ViewModels
                 tableNames.Count, string.Join(", ", tableNames));
 
             _eventAggregator.PublishOnUIThreadAsync(
-                new ShowTablesInModelDiagramEvent(tableNames, includeRelated: true));
+                new ShowTablesInModelDiagramEvent(tableNames, includeRelated: false));
         }
 
         public bool CanShowInModelDiagram => _analysis?.Tables?.Count > 0;

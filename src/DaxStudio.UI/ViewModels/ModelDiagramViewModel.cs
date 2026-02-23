@@ -4441,6 +4441,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Information("{class} {method} Filtering diagram to {count} tables",
                     nameof(ModelDiagramViewModel), nameof(HandleAsync), message.TableNames.Count());
+                this.ShowHiddenObjects = false;
                 ShowOnlyTables(message.TableNames, message.IncludeRelated);
             }
             else
@@ -4460,6 +4461,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_pendingTableFilter != null)
             {
+                this.ShowHiddenObjects = false;
                 Log.Information("{class} {method} Applying pending table filter ({count} tables)",
                     nameof(ModelDiagramViewModel), nameof(ApplyPendingTableFilter), _pendingTableFilter.TableNames.Count());
                 ShowOnlyTables(_pendingTableFilter.TableNames, _pendingTableFilter.IncludeRelated);
