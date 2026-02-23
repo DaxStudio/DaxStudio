@@ -555,8 +555,10 @@ namespace DaxStudio.UI.Model
 
         public ADOTabularModelCollection GetModels()
         {
-            return _dmvRetry.Execute(() => { return _dmvConnection.Database.Models; });
-    }
+            if (_dmvConnection == null) return null;
+            if (_dmvConnection.State != ConnectionState.Open && _connection?.ServerType != ServerType.Offline) return null;
+            return _dmvRetry.Execute(() => { return _dmvConnection?.Database?.Models; });
+        }
 
         public ADOTabularTableCollection GetTables()
         {
@@ -1123,19 +1125,23 @@ namespace DaxStudio.UI.Model
         public void SetSelectedDatabase(IDatabaseReference database)
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - start");
-            if (Database != null && database.Name == Database.Name) return;
-
-            var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
-            _retry.Execute(ctx =>
+            if (_connection == null) return;
+            if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline)
             {
-                if (database != null) { 
-                    _dmvConnection?.ChangeDatabase(database.Name);
-                    _connection?.ChangeDatabase(database.Name);
-                }
-                //Database = _dmvConnection.Database;
-                ModelList = _dmvConnection.Database?.Models;
-                _eventAggregator.PublishOnBackgroundThreadAsync(new DatabaseChangedEvent());
-            }, context);
+                if (Database != null && database.Name == Database.Name) return;
+
+                var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
+                _retry.Execute(ctx =>
+                {
+                    if (database != null) { 
+                        _dmvConnection?.ChangeDatabase(database.Name);
+                        _connection?.ChangeDatabase(database.Name);
+                    }
+                    //Database = _dmvConnection.Database;
+                    ModelList = _dmvConnection.Database?.Models;
+                    _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
+                }, context);
+            }
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - end" );
         }
 
@@ -1222,6 +1228,13 @@ namespace DaxStudio.UI.Model
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
             await TaskExtensions.WhenAll(openConnTask, openDmvConnTask);
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
+
+            // Change to the requested database after both connections are fully open
+            if (!string.IsNullOrEmpty(message.DatabaseName))
+            {
+                _connection.ChangeDatabase(message.DatabaseName);
+                _dmvConnection.ChangeDatabase(message.DatabaseName);
+            }
 
             SetSelectedDatabase(_dmvConnection.Database);
 

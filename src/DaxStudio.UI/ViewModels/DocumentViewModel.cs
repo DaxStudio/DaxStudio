@@ -1289,42 +1289,6 @@ namespace DaxStudio.UI.ViewModels
                         await Connection.ConnectAsync(message, this.UniqueID);
                         Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Finished Connect");
 
-
-                        // show database dialog if there is more than 1 database available
-                        if (Connection.Databases.Count > 1 && string.IsNullOrEmpty(message.DatabaseName) && Options.ShowDatabaseDialogOnConnect)
-                        {
-                            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "Start Showing Database Dialog");
-                            try
-                            {
-                                var dialog = new DatabaseDialogViewModel(Connection.Databases);
-                                await Application.Current.Dispatcher.InvokeAsync(async () =>
-                                {
-                                    await _windowManager.ShowDialogBoxAsync(dialog);
-                                });    
-                                    
-                                if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
-                                {
-                                    await Task.Run(() =>
-                                    {
-                                        Task.Yield();
-                                        Connection.SetSelectedDatabase(dialog.SelectedDatabase.Name);
-                                        MetadataPane.SelectDatabaseByName(dialog.SelectedDatabase.Name);
-                                    });
-                                    await MetadataPane.RefreshTablesAsync();
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
-                                var msg = $"The following error occurred while setting the active database: {ex.Message}";
-                                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), msg);
-                                OutputError(msg);
-                                ActivateOutput();
-                            }
-                            
-                            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(UpdateConnectionsAsync), "End Showing Database Dialog");
-                        }
-
                         UpdateViewAsDescription(message.ConnectionString);
 
                         NotifyOfPropertyChange(() => IsAdminConnection);
@@ -1389,11 +1353,8 @@ namespace DaxStudio.UI.ViewModels
                     //if (Connection.IsTestingRls) Connection.StopViewAs(null);
 
                     // if there was an error we bail out here
-                    return;
-                }
-                finally
-                {
                     MetadataPane.SetBusy(false);
+                    return;
                 }
             }
             if (Connection.Databases.Count == 0)
@@ -3511,9 +3472,6 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => IsConnected);
             NotifyOfPropertyChange(() => IsAdminConnection);
             NotifyOfPropertyChange(() => IsViewAsActive);
-            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), $"Publishing ConnectionChangedEvent: {(Connection == null ? "<null>" : Connection.ConnectionString)}");
-            if (IsConnected)
-                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(this, Connection.IsPowerBIorSSDT));
 
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Getting SPID");
             Spid = Connection.SPID;
@@ -3526,7 +3484,6 @@ namespace DaxStudio.UI.ViewModels
             { ServerName = "<Not Connected>"; }
             else
             {
-
                 if (!Connection.IsConnected)
                 {
                     ServerName = "<Not Connected>";
@@ -3544,24 +3501,67 @@ namespace DaxStudio.UI.ViewModels
                         ServerVersion = Connection.ServerVersion;
                     }
 
-                    if (!string.IsNullOrEmpty(message.DatabaseName))
+                    // Determine the correct database BEFORE publishing ConnectionChangedEvent
+                    // so that metadata loads for the database the user actually wants
+                    string selectedDatabaseName = message.DatabaseName;
+
+                    if (string.IsNullOrEmpty(selectedDatabaseName)
+                        && Connection.Databases.Count > 1
+                        && Options.ShowDatabaseDialogOnConnect)
                     {
-                        MetadataPane.ChangeDatabase(message.DatabaseName);
-                    }
-                    else
-                    {
-                        // Check that the selected database is set to the current database for the connection
-                        // this prevents issues when changing the connection on an existing window where
-                        // the database did not match the table list in the metadata pane
-                        if (MetadataPane?.SelectedDatabase?.Caption != Connection.Database.Name)
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Start Showing Database Dialog");
+                        try
                         {
-                            MetadataPane.ChangeDatabase(Connection.Database.Name);
+                            var dialog = new DatabaseDialogViewModel(Connection.Databases);
+                            await Application.Current.Dispatcher.InvokeAsync(async () =>
+                            {
+                                await _windowManager.ShowDialogBoxAsync(dialog);
+                            });
+
+                            if (dialog.Result == System.Windows.Forms.DialogResult.OK && dialog.SelectedDatabase != null)
+                            {
+                                selectedDatabaseName = dialog.SelectedDatabase.Name;
+                            }
                         }
+                        catch (Exception ex)
+                        {
+                            await _eventAggregator.PublishOnUIThreadAsync(new ConnectFailedEvent());
+                            var msg = $"The following error occurred while setting the active database: {ex.Message}";
+                            Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), msg);
+                            OutputError(msg);
+                            ActivateOutput();
+                        }
+                        Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "End Showing Database Dialog");
                     }
 
-
+                    // Switch connections to the selected database before metadata loads
+                    if (!string.IsNullOrEmpty(selectedDatabaseName))
+                    {
+                        Connection.SetSelectedDatabase(selectedDatabaseName);
+                    }
                 }
             }
+
+            // Database is now selected, clear the busy state before loading metadata
+            MetadataPane.SetBusy(false);
+
+            // Publish ConnectionChangedEvent after the correct database is selected
+            // so metadata loads for the right database
+            Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), $"Publishing ConnectionChangedEvent: {(Connection == null ? "<null>" : Connection.ConnectionString)}");
+            if (IsConnected)
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(this, Connection.IsPowerBIorSSDT));
+
+            // After ConnectionChangedEvent has populated metadata, ensure MetadataPane
+            // has the correct database selected in its UI
+            if (Connection != null && Connection.IsConnected)
+            {
+                var dbName = Connection.Database?.Name;
+                if (!string.IsNullOrEmpty(dbName) && MetadataPane?.SelectedDatabase?.Caption != dbName)
+                {
+                    MetadataPane.ChangeDatabase(dbName);
+                }
+            }
+
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Finished");
         }
 

@@ -275,7 +275,7 @@ namespace DaxStudio.UI.ViewModels
                 if (value == _modelList)
                     return;
                 _modelList = value;
-                SelectedModel = _modelList.BaseModel;
+                SelectedModel = _modelList?.BaseModel;
                 NotifyOfPropertyChange(() => ModelList);
                 NotifyOfPropertyChange(() => SelectedModel);
             }
