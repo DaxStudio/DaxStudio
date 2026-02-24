@@ -2049,8 +2049,10 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} Extracting table names from {count} SE events",
                     nameof(ServerTimesViewModel), nameof(ShowInModelDiagram), AllStorageEngineEvents.Count);
 
-                // Parse SE events to extract table names using XmSqlParser
-                var parser = new XmSqlParser();
+                // Parse SE events to extract table names using the configured parser
+                IXmSqlParser parser = Options.UseAntlrParser
+                    ? (IXmSqlParser)new AntlrXmSqlParser()
+                    : new XmSqlParser();
                 var analysis = new XmSqlAnalysis();
 
                 foreach (var evt in AllStorageEngineEvents)

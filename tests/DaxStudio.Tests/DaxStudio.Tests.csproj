@@ -92,6 +92,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessTokenTests.cs" />
+    <Compile Include="AntlrXmSqlParserTests.cs" />
+    <Compile Include="ParserBenchmarkTests.cs" />
     <Compile Include="ADOTabularVpaxVisitorTests.cs" />
     <Compile Include="ADOTabularMultiDimTests.cs" />
     <Compile Include="Assertions\StringAssertion.cs" />

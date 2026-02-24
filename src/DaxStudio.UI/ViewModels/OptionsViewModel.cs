@@ -1739,6 +1739,24 @@ namespace DaxStudio.UI.ViewModels
             }
 
         }
+
+        private bool _useAntlrParser;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Use ANTLR Parser for SE Queries")]
+        [Description("Use the ANTLR4-based grammar parser instead of the regex-based parser for Storage Engine query analysis.")]
+        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
+        public bool UseAntlrParser
+        {
+            get => _useAntlrParser;
+
+            set
+            {
+                _useAntlrParser = value;
+                SettingProvider.SetValue(nameof(UseAntlrParser), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => UseAntlrParser);
+            }
+        }
         #endregion
 
 

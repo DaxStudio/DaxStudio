@@ -133,6 +133,8 @@ namespace DaxStudio.Interfaces
         bool ShowStorageEngineNetParallelDuration { get; set; }
         bool ShowStorageEngineDependencies { get; set; }
 
+        bool UseAntlrParser { get; set; }
+
         bool HighlightXmSqlCallbacks { get; set; }
         bool SimplifyXmSqlSyntax { get; set; }
         bool ReplaceXmSqlColumnNames { get; set; }

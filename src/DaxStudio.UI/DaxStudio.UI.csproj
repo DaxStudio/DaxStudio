@@ -517,6 +517,14 @@
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\XmSqlAnalysis.cs" />
+    <Compile Include="Grammars\Generated\xmSQLLexer.cs" />
+    <Compile Include="Grammars\Generated\xmSQLParser.cs" />
+    <Compile Include="Grammars\Generated\xmSQLBaseVisitor.cs" />
+    <Compile Include="Grammars\Generated\xmSQLVisitor.cs" />
+    <Compile Include="Grammars\Generated\DirectQuerySqlLexer.cs" />
+    <Compile Include="Grammars\Generated\DirectQuerySqlParser.cs" />
+    <Compile Include="Grammars\Generated\DirectQuerySqlBaseVisitor.cs" />
+    <Compile Include="Grammars\Generated\DirectQuerySqlVisitor.cs" />
     <Compile Include="Model\CaptureDiagnosticsSource.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ClipboardTextProvider.cs" />
@@ -636,8 +644,12 @@
     <Compile Include="Utils\DaxxFormat.cs" />
     <Compile Include="Utils\DelegateCommand.cs" />
     <Compile Include="Utils\DirectQuerySqlParser.cs" />
+    <Compile Include="Utils\DirectQuerySqlAnalysisVisitor.cs" />
     <Compile Include="Utils\SqlBlockParser.cs" />
+    <Compile Include="Utils\IXmSqlParser.cs" />
     <Compile Include="Utils\XmSqlParser.cs" />
+    <Compile Include="Utils\AntlrXmSqlParser.cs" />
+    <Compile Include="Utils\XmSqlAnalysisVisitor.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
     <Compile Include="Utils\HighContrastHelper.cs" />
@@ -1502,6 +1514,13 @@
     <EmbeddedResource Include="Resources\AvalonDockLayout-Default.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Grammars\xmSQL.g4" />
+    <None Include="Grammars\DirectQuerySql.g4" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard">
+      <Version>4.13.1</Version>
+    </PackageReference>
     <PackageReference Include="AsyncAwaitBestPractices">
       <Version>10.0.0</Version>
     </PackageReference>

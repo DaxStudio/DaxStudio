@@ -12,7 +12,7 @@ namespace DaxStudio.UI.Utils
     /// Also parses DirectQuery SQL to extract table dependencies from external data sources.
     /// Includes lineage tracking to resolve temporary/intermediate tables back to physical tables.
     /// </summary>
-    public class XmSqlParser
+    public class XmSqlParser : IXmSqlParser
     {
         // ==================== SQL (DirectQuery) PATTERNS ====================
         // These patterns match T-SQL syntax used in DirectQuery events
