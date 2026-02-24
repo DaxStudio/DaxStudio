@@ -50,6 +50,7 @@ namespace ADOTabular.AdomdClientWrappers
             _conn.Close();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public void TryClose()
         {
             try

@@ -26,6 +26,7 @@ namespace DaxStudio.UI.Interfaces
 
         Task UpdateColumnSampleDataAsync(ITreeviewColumn column, int sampleSize, CancellationToken cancellationToken);
         Task UpdateColumnBasicStatsAsync(ITreeviewColumn column, CancellationToken cancellationToken);
+        Task UpdateColumnBasicStatsAsync(ADOTabularColumn column);
         Task<List<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize);
       
         bool IsPowerPivot { get; }

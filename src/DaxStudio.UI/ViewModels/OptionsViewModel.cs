@@ -2769,7 +2769,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _vpaxDontShowOptionsDialog = false;
+        private bool _vpaxDontShowOptionsDialog;
         [DataMember, DefaultValue(false)]
         [Category("VertiPaq Analyzer")]
         [DisplayName("Do not show options dialog")]
@@ -2785,7 +2785,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        private bool _showObjectNameInServerTimings = false;
+        private bool _showObjectNameInServerTimings;
         [DataMember, DefaultValue(false)]
         public bool ShowObjectNameInServerTimings
         {

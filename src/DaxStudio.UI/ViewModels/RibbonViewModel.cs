@@ -531,7 +531,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ServerTimingsChecked);
             NotifyOfPropertyChange(() => ServerTimingDetails);
 
-            _eventAggregator.PublishOnUIThreadAsync(new DocumentActivatedEvent(message.Document));
+            _eventAggregator.PublishOnUIThreadAsync(new DocumentActivatedEvent(message.Document), cancellationToken: cancellationToken);
             return Task.CompletedTask;
         }
 
@@ -794,7 +794,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<ApplicationActivatedEvent>", "Error Activating Application");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Activating Application:\n{ex.Message}"));
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Activating Application:\n{ex.Message}"), cancellationToken);
             }
             finally
             {
@@ -817,7 +817,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error updating trace status\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceChangingEvent>" , msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg), cancellationToken);
             }
             return Task.CompletedTask;
         }
@@ -834,7 +834,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error updating trace status:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceChangedEvent>", msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg), cancellationToken);
             }
             return Task.CompletedTask;
         }
@@ -1024,7 +1024,7 @@ namespace DaxStudio.UI.ViewModels
         public async void OpenRecentFile(DaxFile file, FrameworkElement backstage)
         {
             Fluent.Backstage item = GetBackStageParent(backstage as FrameworkElement) as Fluent.Backstage;
-            OpenRecentFile(file, item);
+            OpenRecentFile(file, item).FireAndForget();
         }
 
         public async Task OpenRecentFile(DaxFile file, Fluent.Backstage backstage)

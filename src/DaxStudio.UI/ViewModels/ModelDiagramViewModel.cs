@@ -1382,9 +1382,8 @@ namespace DaxStudio.UI.ViewModels
                     
                     foreach (var neighbor in neighbors[current])
                     {
-                        if (!visited.Contains(neighbor))
+                        if (visited.Add(neighbor))
                         {
-                            visited.Add(neighbor);
                             queue.Enqueue(neighbor);
                         }
                     }
@@ -1548,9 +1547,8 @@ namespace DaxStudio.UI.ViewModels
                     
                     foreach (var neighbor in neighbors[current])
                     {
-                        if (!visited.Contains(neighbor))
+                        if (visited.Add(neighbor))
                         {
-                            visited.Add(neighbor);
                             queue.Enqueue(neighbor);
                         }
                     }
@@ -2369,7 +2367,7 @@ namespace DaxStudio.UI.ViewModels
             var rootNodes = Tables.Where(t => inDegree[t.TableName] == 0).ToList();
             
             // If no clear roots (cyclic), pick tables with most outgoing edges as roots
-            if (!rootNodes.Any())
+            if (rootNodes.Count == 0)
             {
                 rootNodes = Tables
                     .OrderByDescending(t => adjacencyToMany[t.TableName].Count)
@@ -2403,9 +2401,8 @@ namespace DaxStudio.UI.ViewModels
                 // Add connected tables at next layer
                 foreach (var childName in adjacencyToMany[table.TableName])
                 {
-                    if (!visited.Contains(childName))
+                    if (visited.Add(childName))
                     {
-                        visited.Add(childName);
                         var childTable = Tables.FirstOrDefault(t => t.TableName.Equals(childName, StringComparison.OrdinalIgnoreCase));
                         if (childTable != null)
                         {
@@ -2417,7 +2414,7 @@ namespace DaxStudio.UI.ViewModels
             
             // Add any remaining unvisited tables (disconnected components) to a new layer
             var unvisited = Tables.Where(t => !visited.Contains(t.TableName)).ToList();
-            if (unvisited.Any())
+            if (unvisited.Count != 0)
             {
                 layers.Add(unvisited);
             }
@@ -2618,9 +2615,9 @@ namespace DaxStudio.UI.ViewModels
             // Normalize by number of neighbors
             foreach (var table in layer)
             {
-                if (barycenters.ContainsKey(table) && neighbors.ContainsKey(table.TableName))
+                if (barycenters.ContainsKey(table) && neighbors.TryGetValue(table.TableName, out HashSet<string> value))
                 {
-                    int neighborCount = neighbors[table.TableName].Count(n => 
+                    int neighborCount = value.Count(n => 
                         referenceLayer.Any(r => r.TableName.Equals(n, StringComparison.OrdinalIgnoreCase)));
                     if (neighborCount > 0)
                         barycenters[table] /= neighborCount;
@@ -2655,10 +2652,10 @@ namespace DaxStudio.UI.ViewModels
             
             foreach (var rel in Relationships)
             {
-                if (map.ContainsKey(rel.FromTable))
-                    map[rel.FromTable].Add(rel.ToTable);
-                if (map.ContainsKey(rel.ToTable))
-                    map[rel.ToTable].Add(rel.FromTable);
+                if (map.TryGetValue(rel.FromTable, out HashSet<string> value1))
+                    value1.Add(rel.ToTable);
+                if (map.TryGetValue(rel.ToTable, out HashSet<string> value))
+                    value.Add(rel.FromTable);
             }
             
             return map;
@@ -2732,7 +2729,7 @@ namespace DaxStudio.UI.ViewModels
                         .Where(r => tableNeighbors.Contains(r.TableName))
                         .ToList();
                     
-                    if (connectedInRef.Any())
+                    if (connectedInRef.Count != 0)
                     {
                         // Target is average center X of connected tables
                         targetX[table] = connectedInRef.Average(t => t.X + tableWidth / 2) - tableWidth / 2;
@@ -3172,9 +3169,8 @@ namespace DaxStudio.UI.ViewModels
         {
             if (table == null) return;
 
-            if (SelectedTables.Contains(table))
+            if (SelectedTables.Remove(table))
             {
-                SelectedTables.Remove(table);
                 table.IsSelected = false;
             }
             else
@@ -3812,9 +3808,8 @@ namespace DaxStudio.UI.ViewModels
                 
                 foreach (var (neighbor, rel) in adjacency[current])
                 {
-                    if (!visited.Contains(neighbor))
+                    if (visited.Add(neighbor))
                     {
-                        visited.Add(neighbor);
                         var newPath = new List<string>(path) { neighbor };
                         var newRels = new List<ModelDiagramRelationshipViewModel>(rels) { rel };
                         queue.Enqueue((neighbor, newPath, newRels));
@@ -6586,15 +6581,106 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Whether to show sample data in the tooltip (based on options).
-        /// For Model Diagram, we disable sample data loading to avoid performance issues
-        /// and errors with calculated columns. Users can see sample data in the metadata pane.
         /// </summary>
-        private bool ShowSampleData => false; // Disabled for Model Diagram - too many columns to query
+        public bool ShowSampleData => _options?.ShowTooltipSampleData == true && !_isFromVpa && _column != null && !IsMeasure && !IsHierarchy;
+
+        /// <summary>
+        /// Whether to show basic stats (distinct values, min/max) in the tooltip.
+        /// </summary>
+        public bool ShowBasicStats => _options?.ShowTooltipBasicStats == true && !_isFromVpa && _column != null && !IsMeasure && !IsHierarchy;
+
+        /// <summary>
+        /// Whether to show distinct values row (basic stats loaded and value > 0, or VPA cardinality).
+        /// </summary>
+        public bool ShowDistinctValues => ShowBasicStats && HasBasicStats && DistinctValues > 0;
+
+        /// <summary>
+        /// Whether to show min/max rows.
+        /// </summary>
+        public bool ShowMinMax => ShowBasicStats && HasBasicStats && (!string.IsNullOrEmpty(MinValue) || !string.IsNullOrEmpty(MaxValue));
 
         /// <summary>
         /// Whether sample data has been loaded.
         /// </summary>
-        private bool HasSampleData => _sampleData != null && _sampleData.Count > 0;
+        public bool HasSampleData => _sampleData != null && _sampleData.Count > 0;
+
+        /// <summary>
+        /// Whether basic stats have been loaded from the server.
+        /// </summary>
+        public bool HasBasicStats => _hasBasicStats;
+        private bool _hasBasicStats;
+        private bool _basicStatsLoadFailed;
+
+        /// <summary>
+        /// Whether basic stats are currently being loaded.
+        /// </summary>
+        public bool UpdatingBasicStats
+        {
+            get => _updatingBasicStats;
+            private set { _updatingBasicStats = value; NotifyOfPropertyChange(); }
+        }
+        private bool _updatingBasicStats;
+
+        /// <summary>
+        /// Whether sample data is currently being loaded.
+        /// </summary>
+        public bool UpdatingSampleData
+        {
+            get => _updatingSampleData;
+            private set { _updatingSampleData = value; NotifyOfPropertyChange(); }
+        }
+
+        /// <summary>
+        /// Sample data values for display in tooltip.
+        /// </summary>
+        public IReadOnlyList<string> SampleData => _sampleData;
+
+        /// <summary>
+        /// Called when the tooltip is opening. Triggers async loading of basic stats and sample data.
+        /// </summary>
+        public void OnTooltipOpening()
+        {
+            if (ShowBasicStats && !HasBasicStats && !UpdatingBasicStats && !_basicStatsLoadFailed)
+                LoadBasicStatsAsync();
+
+            if (ShowSampleData && !HasSampleData && !UpdatingSampleData && !_sampleDataLoadFailed)
+                LoadSampleDataAsync();
+        }
+
+        /// <summary>
+        /// Asynchronously loads basic stats (distinct values, min, max) for the column.
+        /// </summary>
+        private async void LoadBasicStatsAsync()
+        {
+            if (_metadataProvider == null || _column == null) return;
+
+            UpdatingBasicStats = true;
+
+            try
+            {
+                await _metadataProvider.UpdateColumnBasicStatsAsync(_column).ConfigureAwait(false);
+                _hasBasicStats = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error loading basic stats for column {ColumnName}", ColumnName);
+                _basicStatsLoadFailed = true;
+            }
+            finally
+            {
+                UpdatingBasicStats = false;
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    NotifyOfPropertyChange(nameof(HasBasicStats));
+                    NotifyOfPropertyChange(nameof(DistinctValues));
+                    NotifyOfPropertyChange(nameof(MinValue));
+                    NotifyOfPropertyChange(nameof(MaxValue));
+                    NotifyOfPropertyChange(nameof(ShowDistinctValues));
+                    NotifyOfPropertyChange(nameof(ShowMinMax));
+                    NotifyOfPropertyChange(nameof(Tooltip));
+                });
+            }
+        }
 
         /// <summary>
         /// Asynchronously loads sample data for the column.
@@ -6629,7 +6715,13 @@ namespace DaxStudio.UI.ViewModels
             {
                 _updatingSampleData = false;
                 // Marshal back to UI thread for property change notification
-                await Application.Current.Dispatcher.InvokeAsync(() => NotifyOfPropertyChange(nameof(Tooltip)));
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    NotifyOfPropertyChange(nameof(UpdatingSampleData));
+                    NotifyOfPropertyChange(nameof(HasSampleData));
+                    NotifyOfPropertyChange(nameof(SampleData));
+                    NotifyOfPropertyChange(nameof(Tooltip));
+                });
             }
         }
 

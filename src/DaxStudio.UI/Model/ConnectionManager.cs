@@ -723,6 +723,21 @@ namespace DaxStudio.UI.Model
             }
         }
 
+        public async Task UpdateColumnBasicStatsAsync(ADOTabularColumn column)
+        {
+            if (column == null) return;
+            await Task.Run(() =>
+            {
+                lock (_basicStatsLock)
+                {
+                    using (var conn = _dmvConnection.Clone())
+                    {
+                        column.UpdateBasicStats(conn);
+                    }
+                }
+            });
+        }
+
         public ADOTabularModelCollection ModelList { get; set; }
         public void Ping()
         {

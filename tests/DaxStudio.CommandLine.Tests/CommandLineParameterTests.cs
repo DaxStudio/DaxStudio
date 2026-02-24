@@ -9,9 +9,11 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void TestServerDatabaseNames()
         {
-            var settings = new FileCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works"
+            };
 
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, "Validation result should be successful");
@@ -20,8 +22,10 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_servername_should_fail()
         {
-            var settings = new FileCommand.Settings();
-            settings.Server = "localhost";
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost"
+            };
 
 
             var validationResult = settings.Validate();
@@ -32,8 +36,10 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_databasename_should_fail()
         {
-            var settings = new FileCommand.Settings();
-            settings.Database = "Adventure Works";
+            var settings = new FileCommand.Settings
+            {
+                Database = "Adventure Works"
+            };
 
 
             var validationResult = settings.Validate();
@@ -44,9 +50,11 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_servername_with_connectionstring_should_fail()
         {
-            var settings = new FileCommand.Settings();
-            settings.Server = "localhost";
-            settings.ConnectionString = "data source=localhost";
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                ConnectionString = "data source=localhost"
+            };
 
             var validationResult = settings.Validate();
             Assert.IsFalse(validationResult.Successful, validationResult.Message);
@@ -56,8 +64,10 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_only_connectionstring_should_suceed()
         {
-            var settings = new FileCommand.Settings();
-            settings.ConnectionString = "data source=localhost";
+            var settings = new FileCommand.Settings
+            {
+                ConnectionString = "data source=localhost"
+            };
 
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
@@ -67,10 +77,12 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_connectionstring_and_user_should_succeed()
         {
-            var settings = new FileCommand.Settings();
-            settings.ConnectionString = "data source=localhost";
-            settings.UserID = "testUser";
-            settings.Password = "testPwd";
+            var settings = new FileCommand.Settings
+            {
+                ConnectionString = "data source=localhost",
+                UserID = "testUser",
+                Password = "testPwd"
+            };
 
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
@@ -79,11 +91,13 @@ namespace DaxStudio.CommandLine.Tests
         }
 
         [TestMethod]
-        public void access_token_with_server_should_succeed()
+        public void Access_token_with_server_should_succeed()
         {
-            var settings = new AccessTokenCommand.Settings();
-            settings.Server = "asazure://australiasoutheast.asazure.windows.net/myserver";
-            settings.Database = "mydatabase";
+            var settings = new AccessTokenCommand.Settings
+            {
+                Server = "asazure://australiasoutheast.asazure.windows.net/myserver",
+                Database = "mydatabase"
+            };
             var validationResult = settings.Validate();
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsNull(validationResult.Message);
@@ -92,10 +106,12 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Using_server_and_password_should_succeed()
         {
-            var settings = new FileCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.Password = "testPwd";
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                Password = "testPwd"
+            };
 
 
             var validationResult = settings.Validate();
@@ -106,9 +122,11 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void access_token_command_validation_should_succeed()
         {
-            var settings = new AccessTokenCommand.Settings();
-            settings.Server = "asazure://australiasoutheast.asazure.windows.net/myserver";
-            settings.Database = "mydatabase";
+            var settings = new AccessTokenCommand.Settings
+            {
+                Server = "asazure://australiasoutheast.asazure.windows.net/myserver",
+                Database = "mydatabase"
+            };
             var validationResult = settings.Validate();
             var accessTokenCommand = new AccessTokenCommand();
             var cmdValidationResult = accessTokenCommand.Validate(null , settings);
