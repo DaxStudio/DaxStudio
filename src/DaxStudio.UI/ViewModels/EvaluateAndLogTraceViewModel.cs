@@ -360,7 +360,8 @@ namespace DaxStudio.UI.ViewModels
             var outputIdx = 0;
             bool isScalar = false;
             foreach (var col in item.Inputs) { 
-                var newCol = Table.Columns.Add(col, row1input[inputIdx].GetType());
+                var newCol = Table.Columns.Add($"{col}**", row1input[inputIdx].GetType());
+                newCol.Caption = col;
                 newCol.AllowDBNull = true;
                 newCol.ExtendedProperties.Add(columnSource, "Input");
                 inputIdx++;
@@ -370,6 +371,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 foreach (var col in item.Outputs)
                 {
+                    if (Table.Columns.Contains(col)) continue;
                     var newCol = Table.Columns.Add(col, GetOutputColumnType(row1output , outputIdx));
                     newCol.AllowDBNull = true;
                     newCol.ExtendedProperties.Add(columnSource, "Output");
