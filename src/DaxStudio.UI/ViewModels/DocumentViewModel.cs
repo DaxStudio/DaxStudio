@@ -3581,7 +3581,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (!IsAdminConnection)
                 {
-                    var msg = "You do not sufficient permission to clear the cache";
+                    var msg = "You do not have sufficient permission to clear the cache";
                     OutputWarning(msg);
                     Log.Warning(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(ClearDatabaseCacheAsync), msg);
                     return;
