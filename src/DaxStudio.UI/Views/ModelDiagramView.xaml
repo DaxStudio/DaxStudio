@@ -220,6 +220,8 @@
                             <RowDefinition />
                             <RowDefinition />
                             <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
                         </Grid.RowDefinitions>
 
                         <!-- Header -->
@@ -290,22 +292,12 @@
                                    Text="{Binding FormatString}"
                                    Visibility="{Binding FormatString, Converter={StaticResource StringToVisibilityConverter}}"/>
 
-                        <!-- Cardinality / Distinct Values -->
-                        <TextBlock Text="Cardinality"
+                        <!-- Column Size -->
+                        <TextBlock Text="Size"
                                    Style="{StaticResource ToolTipLabel}"
                                    Grid.Row="7"
                                    Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         <TextBlock Grid.Row="7" Grid.Column="2"
-                                   Style="{StaticResource ToolTipValue}"
-                                   Text="{Binding FormattedCardinality}"
-                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
-
-                        <!-- Column Size -->
-                        <TextBlock Text="Size"
-                                   Style="{StaticResource ToolTipLabel}"
-                                   Grid.Row="8"
-                                   Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        <TextBlock Grid.Row="8" Grid.Column="2"
                                    Style="{StaticResource ToolTipValue}"
                                    Text="{Binding FormattedColumnSize}"
                                    Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
@@ -313,19 +305,97 @@
                         <!-- Encoding -->
                         <TextBlock Text="Encoding"
                                    Style="{StaticResource ToolTipLabel}"
-                                   Grid.Row="9"
+                                   Grid.Row="8"
                                    Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
-                        <TextBlock Grid.Row="9" Grid.Column="2"
+                        <TextBlock Grid.Row="8" Grid.Column="2"
                                    Style="{StaticResource ToolTipValue}"
                                    Text="{Binding Encoding}"
                                    Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
 
+                        <!-- Basic Stats: Distinct Values -->
+                        <TextBlock Text="Distinct Values"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="9"
+                                   Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="9" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   Text="{Binding Path=DistinctValues, StringFormat={}{0:N0}}"
+                                   Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Basic Stats: Min Value -->
+                        <TextBlock Text="Min Value"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="10"
+                                   Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="10" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding MinValue}"
+                                   Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Basic Stats: Max Value -->
+                        <TextBlock Text="Max Value"
+                                   Style="{StaticResource ToolTipLabel}"
+                                   Grid.Row="11"
+                                   Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <TextBlock Grid.Row="11" Grid.Column="2"
+                                   Style="{StaticResource ToolTipValue}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding MaxValue}"
+                                   Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
                         <!-- Key/Relationship indicators -->
-                        <StackPanel Grid.Row="10" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0 8 0 0">
+                        <StackPanel Grid.Row="12" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0 8 0 0">
                             <TextBlock Text="🔑 Key  " FontSize="11" Visibility="{Binding IsKey, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <TextBlock Text="🔗 Relationship  " FontSize="11" Visibility="{Binding IsRelationshipColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <TextBlock Text="↕ Sorted by: " FontSize="11" Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <TextBlock Text="{Binding SortByColumnName}" FontSize="11" Visibility="{Binding HasSortByColumn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <!-- Sample Data -->
+                        <StackPanel Orientation="Vertical" Grid.Row="13" Grid.ColumnSpan="3"
+                                    Visibility="{Binding ShowSampleData, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock FontWeight="Bold" Margin="0 16 0 8">Sample Data</TextBlock>
+                            <Border BorderThickness="1"
+                                    BorderBrush="{DynamicResource Theme.Brush.TextBox.Border}"
+                                    CornerRadius="8"
+                                    ClipToBounds="True">
+                                <Grid>
+                                    <ItemsControl ItemsSource="{Binding SampleData}"
+                                                  AlternationCount="2"
+                                                  HorizontalAlignment="Stretch">
+                                        <ItemsControl.Style>
+                                            <Style TargetType="ItemsControl">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding UpdatingSampleData}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ItemsControl.Style>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border x:Name="itemContainer" BorderBrush="{DynamicResource Theme.Brush.TextBox.Border}" BorderThickness="1">
+                                                    <TextBlock Text="{Binding Path=.}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Margin="8 4 8 4"/>
+                                                </Border>
+                                                <DataTemplate.Triggers>
+                                                    <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                                                        <Setter Property="Background" Value="Transparent" TargetName="itemContainer"/>
+                                                    </Trigger>
+                                                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                                        <Setter Property="Background" Value="{DynamicResource Theme.Brush.Alternate.Back}" TargetName="itemContainer"/>
+                                                    </Trigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="Updating Sample Data..."
+                                               Visibility="{Binding UpdatingSampleData, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                </Grid>
+                            </Border>
                         </StackPanel>
 
                         <!-- Row borders -->
@@ -333,8 +403,10 @@
                         <Border Grid.Row="5" Style="{StaticResource ToolTipBorder}" Visibility="{Binding DataTypeName, Converter={StaticResource StringToVisibilityConverter}}"/>
                         <Border Grid.Row="6" Style="{StaticResource ToolTipBorder}" Visibility="{Binding FormatString, Converter={StaticResource StringToVisibilityConverter}}"/>
                         <Border Grid.Row="7" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        <Border Grid.Row="8" Style="{StaticResource ToolTipBorder}" Visibility="{Binding HasVertipaqStats, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        <Border Grid.Row="9" Style="{StaticResource ToolTipBorder}" Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <Border Grid.Row="8" Style="{StaticResource ToolTipBorder}" Visibility="{Binding Encoding, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <Border Grid.Row="9" Style="{StaticResource ToolTipBorder}" Visibility="{Binding ShowDistinctValues, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Border Grid.Row="10" Style="{StaticResource ToolTipBorder}" Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Border Grid.Row="11" Style="{StaticResource ToolTipBorder}" Visibility="{Binding ShowMinMax, Converter={StaticResource BoolToVisibilityConverter}}"/>
                     </Grid>
                 </Border>
             </DataTemplate>
@@ -845,7 +917,8 @@
                                                            TextTrimming="CharacterEllipsis"
                                                            VerticalAlignment="Center"
                                                            Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                                                           ToolTipService.ShowDuration="60000">
+                                                           ToolTipService.ShowDuration="60000"
+                                                           ToolTipOpening="ColumnTooltipOpening">
                                                     <TextBlock.ToolTip>
                                                         <ToolTip>
                                                             <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramColumnToolTipTemplate}"/>
@@ -893,7 +966,8 @@
                                         <DataTemplate DataType="{x:Type vm:ModelDiagramColumnViewModel}" x:Name="ColumnDataTemplate">
                                             <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                     Margin="2 0"
-                                                    ToolTipService.ShowDuration="60000">
+                                                    ToolTipService.ShowDuration="60000"
+                                                    ToolTipOpening="ColumnTooltipOpening">
                                                 <Border.ToolTip>
                                                     <ToolTip>
                                                         <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DiagramColumnToolTipTemplate}"/>

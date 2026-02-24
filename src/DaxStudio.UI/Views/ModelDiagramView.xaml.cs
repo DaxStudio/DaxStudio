@@ -599,6 +599,15 @@ namespace DaxStudio.UI.Views
             }
         }
 
+        private void ColumnTooltipOpening(object sender, ToolTipEventArgs e)
+        {
+            if (sender is FrameworkElement element &&
+                element.DataContext is ModelDiagramColumnViewModel columnVm)
+            {
+                columnVm.OnTooltipOpening();
+            }
+        }
+
         private void JumpToMetadata_Click(object sender, RoutedEventArgs e)
         {
             if (sender is MenuItem menuItem && 
