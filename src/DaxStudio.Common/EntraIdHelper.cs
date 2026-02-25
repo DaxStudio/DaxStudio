@@ -40,7 +40,8 @@ namespace DaxStudio.Common
         private static string DefaultClientId = "cf710c6e-dfcc-4fa8-a093-d47294e44c66"; // ADOMD Client ID
         private static string DefaultAuthority = "https://login.microsoftonline.com/organizations";
         
-        private static Regex regexGuid = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //private static Regex regexGuid = new Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex regexGuid = new Regex(@"(?<scheme>powerbi)://(?<host>.*)/v(?<version>\d+\.\d+)/(?<tenant>.*)/.*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
         private static readonly string[] powerbiScope = new [] { "https://analysis.windows.net/powerbi/api/.default" };
         private static readonly string[] asazureScope = new [] { "https://*.asazure.windows.net/.default" };
@@ -364,7 +365,7 @@ namespace DaxStudio.Common
             if (match.Success)
             {
                 // If we found a GUID, return it as the tenant ID
-                return match.Value;
+                return match.Groups["tenant"].Value;
             }
 
             return string.Empty; // This indicates the default tenant, which is usually the first tenant in the list
