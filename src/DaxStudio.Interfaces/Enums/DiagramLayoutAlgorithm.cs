@@ -17,6 +17,9 @@ namespace DaxStudio.Interfaces.Enums
         Grid,
         
         [Description("Clustered")]
-        Clustered
+        Clustered,
+
+        [Description("Force Directed")]
+        ForceDirected
     }
 }

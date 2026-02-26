@@ -7,136 +7,160 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Page1">
-    <Page.Resources>
-        <ResourceDictionary>
-            <!-- Diagram Color Resources -->
-            <SolidColorBrush x:Key="Diagram.Brush.Table.DefaultBorder" Color="#CCCCCC"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Selection" Color="{DynamicResource Theme.Accent1}"/>
-            <!-- #FF5722 -->
-            <SolidColorBrush x:Key="Diagram.Brush.Selection.LightFill" Color="#10FF5722"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Selection.RectFill" Color="#202196F3"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Header.Foreground" Color="White"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Badge.Text" Color="#333333"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Badge.RelationshipBack" Color="#E3F2FD"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Badge.RelationshipText" Color="#1565C0"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Blue" Color="#2196F3"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Purple" Color="#9C27B0"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Orange" Color="#FF9800"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.DeepPurple" Color="#673AB7"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Cyan" Color="#00BCD4"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.BlueGrey" Color="#607D8B"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Grey" Color="#9E9E9E"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Green" Color="#4CAF50"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Accent.Amber" Color="#FFB300"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.Default" Color="#666666"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.Chevron" Color="#555555"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.CardinalityBorder" Color="#888888"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.ManyToMany" Color="#E91E63"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.Inactive" Color="#999999"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.BiDirectional" Color="Red"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Relationship.BiDirectionalSelected" Color="DeepPink"/>
+	<Page.Resources>
+		<ResourceDictionary>
+			<!-- Diagram Color Resources -->
+			<SolidColorBrush x:Key="Diagram.Brush.Table.DefaultBorder" Color="#CCCCCC"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Selection" Color="{DynamicResource Theme.Accent1}"/>
+			<!-- #FF5722 -->
+			<SolidColorBrush x:Key="Diagram.Brush.Selection.LightFill" Color="#10FF5722"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Selection.RectFill" Color="#202196F3"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Header.Foreground" Color="White"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Badge.Text" Color="#333333"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Badge.RelationshipBack" Color="#E3F2FD"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Badge.RelationshipText" Color="#1565C0"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Blue" Color="#2196F3"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Purple" Color="#9C27B0"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Orange" Color="#FF9800"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.DeepPurple" Color="#673AB7"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Cyan" Color="#00BCD4"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.BlueGrey" Color="#607D8B"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Grey" Color="#9E9E9E"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Green" Color="#4CAF50"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Accent.Amber" Color="#FFB300"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.Default" Color="#666666"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.Chevron" Color="#555555"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.CardinalityBorder" Color="#888888"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.ManyToMany" Color="#E91E63"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.Inactive" Color="#999999"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.BiDirectional" Color="Red"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Relationship.BiDirectionalSelected" Color="DeepPink"/>
 
-            <SolidColorBrush x:Key="Diagram.Brush.Column.HighlightBack" Color="#4000D7FF"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Column.HighlightBorder" Color="#00D7FF"/>
-            <SolidColorBrush x:Key="Diagram.Brush.Legend.InactivePattern" Color="#AAAAAA"/>
-        </ResourceDictionary>
-    </Page.Resources>
-    <Grid>
-        <Canvas>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Bi-directional arrow icon (two arrows pointing in opposite directions) -->
-                <Grid Width="18" Height="14" Margin="0,0,2,0"
+			<SolidColorBrush x:Key="Diagram.Brush.Column.HighlightBack" Color="#4000D7FF"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Column.HighlightBorder" Color="#00D7FF"/>
+			<SolidColorBrush x:Key="Diagram.Brush.Legend.InactivePattern" Color="#AAAAAA"/>
+		</ResourceDictionary>
+	</Page.Resources>
+	<Grid>
+		<Canvas>
+			<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+				<!-- Bi-directional arrow icon (two arrows pointing in opposite directions) -->
+				<Grid Width="18" Height="14" Margin="0,0,2,0"
                   
                   ToolTip="Filter flows both directions (bi-directional)">
-                    <Grid.RenderTransform>
-                        <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="9" CenterY="7"/>
-                    </Grid.RenderTransform>
-                    <!-- Right-pointing arrow (top) -->
-                    <Path Data="M 3,4 L 15,4 M 11,1 L 15,4 L 11,7" 
+					<Grid.RenderTransform>
+						<RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="9" CenterY="7"/>
+					</Grid.RenderTransform>
+					<!-- Right-pointing arrow (top) -->
+					<Path Data="M 3,4 L 15,4 M 11,1 L 15,4 L 11,7" 
                       Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
                       StrokeThickness="1.5"
                       StrokeLineJoin="Round"
                       StrokeStartLineCap="Round"
                       StrokeEndLineCap="Round"/>
-                    <!-- Left-pointing arrow (bottom) -->
-                    <Path Data="M 15,10 L 3,10 M 7,7 L 3,10 L 7,13" 
+					<!-- Left-pointing arrow (bottom) -->
+					<Path Data="M 15,10 L 3,10 M 7,7 L 3,10 L 7,13" 
                       Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
                       StrokeThickness="1.5"
                       StrokeLineJoin="Round"
                       StrokeStartLineCap="Round"
                       StrokeEndLineCap="Round"/>
-                </Grid>
-                <!-- Filter direction chevrons (pointing toward From table, single direction only) -->
-                <Grid Width="18" Height="14" Margin="0,0,2,0"
+				</Grid>
+				<Grid Width="18" Height="14"
                   
                   ToolTip="Filter direction">
-                    <Grid.RenderTransform>
-                        <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
-                    </Grid.RenderTransform>
-                    <!-- Double chevron pointing right >> -->
-                    <Path 
+					<Grid.RenderTransform>
+						<RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
+					</Grid.RenderTransform>
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+					<Path 
                         Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
                         StrokeThickness="1.5"
                         StrokeLineJoin="Round" Margin="0,2,5,2" Stretch="Fill">
-                        <Path.Data>
-                            <PathGeometry Figures="M5.25,0.75 L0.75,4.8671875 5.25,9.25 M7.75,0.75 L12.25,5 7.75,9.25"/>
-                        </Path.Data>
-                    </Path>
-                    <!-- Double chevron pointing right >> -->
-                    <!-- Double chevron pointing right >> -->
-                    <!-- Double chevron pointing right >> -->
-                </Grid>
+						<Path.Data>
+							<PathGeometry Figures="M5.25,0.75 L0.75,4.8671875 5.25,9.25 M7.75,0.75 L12.25,5 7.75,9.25"/>
+						</Path.Data>
+					</Path>
+				</Grid>
 
-
-                <!-- Filter direction chevrons (pointing toward From table, single direction only) -->
-                <Grid Width="18" Height="14" Margin="0,0,2,0"
+				<Grid Width="18" Height="14"
                   
                   ToolTip="Filter direction">
-                    <Grid.RenderTransform>
-                        <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
-                    </Grid.RenderTransform>
-                    <Path 
+					<Grid.RenderTransform>
+						<RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
+					</Grid.RenderTransform>
+					<!-- Double chevron pointing right >> -->
+					<Path 
+			Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
+			StrokeThickness="1.5"
+			StrokeLineJoin="Round" Margin="0,2,-1,2" Stretch="Fill">
+						<Path.Data>
+							<PathGeometry Figures="M5.25,0.75 L0.75,4.8671875 5.25,9.25 M8.25,0.75 L3.75,4.8671875 8.25,9.25 M10.75,0.75 L15.25,5 10.75,9.25 M13.75,0.75 L18.25,5 13.75,9.25"/>
+						</Path.Data>
+					</Path>
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+					<!-- Double chevron pointing right >> -->
+
+					<!-- Double chevron pointing right >> -->
+				</Grid>
+				<!-- Filter direction chevrons (pointing toward From table, single direction only) -->
+
+
+				<!-- Filter direction chevrons (pointing toward From table, single direction only) -->
+				<Grid Width="18" Height="14" Margin="0,0,2,0"
+                  
+                  ToolTip="Filter direction">
+					<Grid.RenderTransform>
+						<RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
+					</Grid.RenderTransform>
+					<Path 
                         Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
                         StrokeThickness="1.5"
                         StrokeLineJoin="Round" Margin="0,2,2,2" Stretch="Fill"
                         Fill="{StaticResource Diagram.Brush.Relationship.Chevron}">
-                        <Path.Data>
-                            <PathGeometry Figures="M10.75,0.75 L15.25,5 10.75,9.25 z M5.2499999,0.75 L5.2499999,9.25 0.75,4.8671875 z"/>
-                        </Path.Data>
-                    </Path>
+						<Path.Data>
+							<PathGeometry Figures="M10.75,0.75 L15.25,5 10.75,9.25 z M5.2499999,0.75 L5.2499999,9.25 0.75,4.8671875 z"/>
+						</Path.Data>
+					</Path>
 
-                </Grid>
-                <!-- Filter direction chevrons (pointing toward From table, single direction only) -->
-                <Grid Width="14" Height="14" Margin="0,0,2,0"
+				</Grid>
+				<!-- Filter direction chevrons (pointing toward From table, single direction only) -->
+				<Grid Width="14" Height="14" Margin="0,0,2,0"
   
   ToolTip="Filter direction">
-                    <Grid.RenderTransform>
-                        <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
-                    </Grid.RenderTransform>
-                    <Path 
+					<Grid.RenderTransform>
+						<RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="7" CenterY="7"/>
+					</Grid.RenderTransform>
+					<Path 
                         Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
                         StrokeThickness="1.5"
                         StrokeLineJoin="Round" Margin="2,2,6,2" Stretch="Fill"
                         Fill="{StaticResource Diagram.Brush.Relationship.Chevron}">
-                        <Path.Data>
-                            <PathGeometry Figures="M5.25,0.75 L5.25,9.25 0.75,4.8671875 z"/>
-                        </Path.Data>
-                    </Path>
+						<Path.Data>
+							<PathGeometry Figures="M5.25,0.75 L5.25,9.25 0.75,4.8671875 z"/>
+						</Path.Data>
+					</Path>
 
-                </Grid>
+				</Grid>
 
-                <Grid Width="18">
+				<Grid Width="18">
 
-                    <Path Data="M 15,7 L 3,7 M 7,4 L 3,7 L 7,10" 
+					<Path Data="M 15,7 L 3,7 M 7,4 L 3,7 L 7,10" 
                         Stroke="#FFE48C8C"
                         StrokeThickness="1.5"
                         StrokeLineJoin="Round"
                         StrokeStartLineCap="Round"
                         StrokeEndLineCap="Round" Margin="0,0,-2,0"/>
 
-                </Grid>
-                <!-- Many-to-Many indicator -->
-                <TextBlock Text="M:M"
+				</Grid>
+				<!-- Many-to-Many indicator -->
+				<TextBlock Text="M:M"
                        FontSize="9"
                        FontWeight="SemiBold"
                        Foreground="{StaticResource Diagram.Brush.Relationship.ManyToMany}"
@@ -144,15 +168,15 @@
                        Margin="0,0,2,0"
                        ToolTip="Many-to-Many relationship"
                        Visibility="{Binding IsManyToMany, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <!-- Inactive indicator -->
-                <TextBlock Text="Inactive"
+				<!-- Inactive indicator -->
+				<TextBlock Text="Inactive"
                        FontSize="9"
                        FontStyle="Italic"
                        Foreground="{StaticResource Diagram.Brush.Relationship.Inactive}"
                        VerticalAlignment="Center"
                        ToolTip="This relationship is inactive"
                        Visibility="{Binding IsInactive, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            </StackPanel>
-        </Canvas>
-    </Grid>
+			</StackPanel>
+		</Canvas>
+	</Grid>
 </Page>

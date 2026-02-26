@@ -2128,6 +2128,9 @@ namespace DaxStudio.UI.ViewModels
                     case DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Clustered:
                         LayoutDiagramClustered();
                         break;
+                    case DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.ForceDirected:
+                        LayoutDiagramForceDirected();
+                        break;
                     default:
                         LayoutDiagramSugiyama();
                         break;
@@ -2297,6 +2300,454 @@ namespace DaxStudio.UI.ViewModels
 
             // Update relationship line positions and edge slot distribution
             CalculateParallelRelationshipOffsets();
+        }
+
+        /// <summary>
+        /// Layouts the diagram using a force-directed algorithm (Fruchterman-Reingold style).
+        /// Tables repel each other while relationships act as springs pulling connected tables together.
+        /// A mild vertical bias preserves the dimension-above-fact hierarchy.
+        /// </summary>
+        private void LayoutDiagramForceDirected()
+        {
+            const double tableWidth = 200;
+            const double tableHeight = 180;
+            const double padding = 150; // extra padding so tables can be dragged left/up
+
+            var neighbors = BuildNeighborMap();
+            var tableList = Tables.ToList();
+            int n = tableList.Count;
+            if (n == 0) return;
+
+            // Find connected components
+            var components = FindConnectedComponents(tableList, neighbors);
+
+            // Run force-directed layout independently per component
+            var allPositions = new Dictionary<string, (double X, double Y)>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var component in components)
+            {
+                var componentPositions = RunForceDirectedLayout(component, neighbors, tableWidth, tableHeight);
+                foreach (var kvp in componentPositions)
+                {
+                    allPositions[kvp.Key] = kvp.Value;
+                }
+            }
+
+            // Arrange components on canvas with gaps between them
+            ArrangeComponents(components, allPositions, tableWidth, tableHeight, padding);
+
+            // Apply final positions
+            foreach (var table in tableList)
+            {
+                if (allPositions.TryGetValue(table.TableName, out var pos))
+                {
+                    table.X = pos.X;
+                    table.Y = pos.Y;
+                    table.Width = tableWidth;
+                    table.Height = tableHeight;
+                }
+            }
+
+            // Calculate canvas size with extra margin for drag room
+            var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
+            var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
+            CanvasWidth = Math.Max(100, maxX + padding);
+            CanvasHeight = Math.Max(100, maxY + padding);
+
+            CalculateParallelRelationshipOffsets();
+        }
+
+        /// <summary>
+        /// Finds connected components in the table graph using BFS.
+        /// </summary>
+        private List<List<ModelDiagramTableViewModel>> FindConnectedComponents(
+            List<ModelDiagramTableViewModel> tableList,
+            Dictionary<string, HashSet<string>> neighbors)
+        {
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var components = new List<List<ModelDiagramTableViewModel>>();
+            var tableDict = tableList.ToDictionary(t => t.TableName, t => t, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var table in tableList)
+            {
+                if (visited.Contains(table.TableName)) continue;
+
+                var component = new List<ModelDiagramTableViewModel>();
+                var queue = new Queue<string>();
+                queue.Enqueue(table.TableName);
+                visited.Add(table.TableName);
+
+                while (queue.Count > 0)
+                {
+                    var current = queue.Dequeue();
+                    if (tableDict.TryGetValue(current, out var vm))
+                        component.Add(vm);
+
+                    if (neighbors.TryGetValue(current, out var currentNeighbors))
+                    {
+                        foreach (var neighbor in currentNeighbors)
+                        {
+                            if (visited.Add(neighbor))
+                                queue.Enqueue(neighbor);
+                        }
+                    }
+                }
+
+                components.Add(component);
+            }
+
+            return components.OrderByDescending(c => c.Count).ToList();
+        }
+
+        /// <summary>
+        /// Runs the core force-directed simulation for a single connected component.
+        /// Uses Fruchterman-Reingold with simulated annealing and a mild hierarchy bias.
+        /// </summary>
+        private Dictionary<string, (double X, double Y)> RunForceDirectedLayout(
+            List<ModelDiagramTableViewModel> component,
+            Dictionary<string, HashSet<string>> neighbors,
+            double tableWidth, double tableHeight)
+        {
+            int n = component.Count;
+            var positions = new Dictionary<string, (double X, double Y)>(StringComparer.OrdinalIgnoreCase);
+
+            if (n == 1)
+            {
+                positions[component[0].TableName] = (0, 0);
+                return positions;
+            }
+
+            // Ideal edge length: just enough gap between table edges for relationship lines
+            double idealLength = Math.Max(tableWidth, tableHeight) * 0.6 + 50;
+
+            // Initialize positions in a circle — radius sized so tables don't start overlapping
+            double radius = idealLength * n / (2.0 * Math.PI);
+            radius = Math.Max(radius, idealLength * 1.5);
+            for (int i = 0; i < n; i++)
+            {
+                double angle = 2.0 * Math.PI * i / n;
+                positions[component[i].TableName] = (
+                    radius * Math.Cos(angle),
+                    radius * Math.Sin(angle)
+                );
+            }
+
+            // Build edge list for this component (deduplicated)
+            var edges = new List<(string From, string To)>();
+            var edgeSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var table in component)
+            {
+                if (!neighbors.TryGetValue(table.TableName, out var tableNeighbors)) continue;
+                foreach (var neighbor in tableNeighbors)
+                {
+                    if (!positions.ContainsKey(neighbor)) continue;
+                    string edgeKey = string.Compare(table.TableName, neighbor, StringComparison.OrdinalIgnoreCase) < 0
+                        ? $"{table.TableName}|{neighbor}" : $"{neighbor}|{table.TableName}";
+                    if (edgeSet.Add(edgeKey))
+                        edges.Add((table.TableName, neighbor));
+                }
+            }
+
+            // Determine hierarchy roles: "1" side = dimension (pull up), "*" side = fact (pull down)
+            // Normalize to -1..+1 range so the bias is gentle regardless of connection count
+            var hierarchyBias = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            foreach (var table in component)
+                hierarchyBias[table.TableName] = 0;
+
+            foreach (var rel in Relationships)
+            {
+                if (!positions.ContainsKey(rel.FromTable) || !positions.ContainsKey(rel.ToTable)) continue;
+
+                if (rel.FromCardinality == "1" && rel.ToCardinality == "*")
+                {
+                    hierarchyBias[rel.FromTable] -= 1;
+                    hierarchyBias[rel.ToTable] += 1;
+                }
+                else if (rel.ToCardinality == "1" && rel.FromCardinality == "*")
+                {
+                    hierarchyBias[rel.ToTable] -= 1;
+                    hierarchyBias[rel.FromTable] += 1;
+                }
+            }
+
+            // Normalize hierarchy bias to [-1, +1]
+            double maxBias = 0;
+            foreach (var kvp in hierarchyBias)
+                maxBias = Math.Max(maxBias, Math.Abs(kvp.Value));
+            if (maxBias > 1)
+            {
+                var keys = hierarchyBias.Keys.ToList();
+                foreach (var key in keys)
+                    hierarchyBias[key] /= maxBias;
+            }
+
+            // Fruchterman-Reingold constants
+            // k = ideal distance, repulsive force = k² / d, attractive force = d² / k
+            double k = idealLength;
+            double k2 = k * k;
+            double temperature = radius * 0.5;
+            const double coolingFactor = 0.94;
+            const int iterations = 100;
+            double hierarchyForce = k * 0.3; // mild vertical bias
+            double minTableGap = 40;
+
+            for (int iter = 0; iter < iterations; iter++)
+            {
+                var displacements = new Dictionary<string, (double DX, double DY)>(StringComparer.OrdinalIgnoreCase);
+                foreach (var table in component)
+                    displacements[table.TableName] = (0, 0);
+
+                // Repulsive forces between all pairs (Fruchterman-Reingold: F_rep = k² / d)
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        var a = component[i].TableName;
+                        var b = component[j].TableName;
+                        var posA = positions[a];
+                        var posB = positions[b];
+
+                        double dx = posA.X - posB.X;
+                        double dy = posA.Y - posB.Y;
+                        double dist = Math.Sqrt(dx * dx + dy * dy);
+                        if (dist < 1) dist = 1;
+
+                        // Use rectangle-aware distance: reduce dist by table dimensions
+                        // so tables that are close edge-to-edge repel more strongly
+                        double edgeDist = Math.Max(1, dist - (tableWidth + tableHeight) / 2);
+                        double force = k2 / edgeDist;
+
+                        double fx = (dx / dist) * force;
+                        double fy = (dy / dist) * force;
+
+                        var dA = displacements[a];
+                        var dB = displacements[b];
+                        displacements[a] = (dA.DX + fx, dA.DY + fy);
+                        displacements[b] = (dB.DX - fx, dB.DY - fy);
+                    }
+                }
+
+                // Attractive forces along edges (Fruchterman-Reingold: F_attr = d² / k)
+                foreach (var (from, to) in edges)
+                {
+                    var posFrom = positions[from];
+                    var posTo = positions[to];
+
+                    double dx = posTo.X - posFrom.X;
+                    double dy = posTo.Y - posFrom.Y;
+                    double dist = Math.Sqrt(dx * dx + dy * dy);
+                    if (dist < 1) dist = 1;
+
+                    double force = (dist * dist) / k;
+                    double fx = (dx / dist) * force;
+                    double fy = (dy / dist) * force;
+
+                    var dFrom = displacements[from];
+                    var dTo = displacements[to];
+                    displacements[from] = (dFrom.DX + fx, dFrom.DY + fy);
+                    displacements[to] = (dTo.DX - fx, dTo.DY - fy);
+                }
+
+                // Hierarchy bias: mild vertical nudge (only in first 60% of iterations, then let it settle)
+                if (iter < iterations * 0.6)
+                {
+                    foreach (var table in component)
+                    {
+                        double bias = hierarchyBias[table.TableName];
+                        if (Math.Abs(bias) > 0.01)
+                        {
+                            var d = displacements[table.TableName];
+                            displacements[table.TableName] = (d.DX, d.DY + bias * hierarchyForce);
+                        }
+                    }
+                }
+
+                // Gravity: pull toward centroid to keep layout compact
+                double centerX = 0, centerY = 0;
+                foreach (var table in component)
+                {
+                    var p = positions[table.TableName];
+                    centerX += p.X;
+                    centerY += p.Y;
+                }
+                centerX /= n;
+                centerY /= n;
+
+                double gravityStrength = 0.1;
+                foreach (var table in component)
+                {
+                    var p = positions[table.TableName];
+                    var d = displacements[table.TableName];
+                    displacements[table.TableName] = (
+                        d.DX + (centerX - p.X) * gravityStrength,
+                        d.DY + (centerY - p.Y) * gravityStrength
+                    );
+                }
+
+                // Apply displacements clamped by temperature
+                foreach (var table in component)
+                {
+                    var d = displacements[table.TableName];
+                    double mag = Math.Sqrt(d.DX * d.DX + d.DY * d.DY);
+                    if (mag > 0.01)
+                    {
+                        double clampedMag = Math.Min(mag, temperature);
+                        var pos = positions[table.TableName];
+                        positions[table.TableName] = (
+                            pos.X + (d.DX / mag) * clampedMag,
+                            pos.Y + (d.DY / mag) * clampedMag
+                        );
+                    }
+                }
+
+                // Overlap removal: push apart any overlapping tables
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        var a = component[i].TableName;
+                        var b = component[j].TableName;
+                        var posA = positions[a];
+                        var posB = positions[b];
+
+                        double overlapX = (tableWidth + minTableGap) - Math.Abs(posA.X - posB.X);
+                        double overlapY = (tableHeight + minTableGap) - Math.Abs(posA.Y - posB.Y);
+
+                        if (overlapX > 0 && overlapY > 0)
+                        {
+                            if (overlapX < overlapY)
+                            {
+                                double pushX = overlapX / 2 + 1;
+                                if (posA.X <= posB.X)
+                                {
+                                    positions[a] = (posA.X - pushX, posA.Y);
+                                    positions[b] = (posB.X + pushX, posB.Y);
+                                }
+                                else
+                                {
+                                    positions[a] = (posA.X + pushX, posA.Y);
+                                    positions[b] = (posB.X - pushX, posB.Y);
+                                }
+                            }
+                            else
+                            {
+                                double pushY = overlapY / 2 + 1;
+                                if (posA.Y <= posB.Y)
+                                {
+                                    positions[a] = (posA.X, posA.Y - pushY);
+                                    positions[b] = (posB.X, posB.Y + pushY);
+                                }
+                                else
+                                {
+                                    positions[a] = (posA.X, posA.Y + pushY);
+                                    positions[b] = (posB.X, posB.Y - pushY);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                temperature *= coolingFactor;
+            }
+
+            return positions;
+        }
+
+        /// <summary>
+        /// Arranges multiple connected components on the canvas with gaps between them.
+        /// Each component's positions are shifted so they don't overlap.
+        /// </summary>
+        private void ArrangeComponents(
+            List<List<ModelDiagramTableViewModel>> components,
+            Dictionary<string, (double X, double Y)> positions,
+            double tableWidth, double tableHeight, double padding)
+        {
+            const double componentGap = 150;
+
+            if (components.Count <= 1)
+            {
+                // Single component: just normalize to padding origin
+                NormalizePositions(components.SelectMany(c => c).ToList(), positions, padding);
+                return;
+            }
+
+            // Calculate bounding box for each component
+            var componentBounds = new List<(double Width, double Height, List<ModelDiagramTableViewModel> Tables)>();
+            foreach (var component in components)
+            {
+                if (component.Count == 0) continue;
+
+                double minX = double.MaxValue, maxX = double.MinValue;
+                double minY = double.MaxValue, maxY = double.MinValue;
+                foreach (var table in component)
+                {
+                    if (!positions.TryGetValue(table.TableName, out var pos)) continue;
+                    minX = Math.Min(minX, pos.X);
+                    maxX = Math.Max(maxX, pos.X + tableWidth);
+                    minY = Math.Min(minY, pos.Y);
+                    maxY = Math.Max(maxY, pos.Y + tableHeight);
+                }
+
+                componentBounds.Add((maxX - minX, maxY - minY, component));
+            }
+
+            // Pack components left-to-right, wrapping to next row when too wide
+            double targetWidth = Math.Sqrt(componentBounds.Sum(c => c.Width * c.Height)) * 1.8;
+            double currentX = padding;
+            double currentY = padding;
+            double rowMaxHeight = 0;
+
+            foreach (var (width, height, tables) in componentBounds)
+            {
+                // Wrap to next row if this component would exceed target width
+                if (currentX > padding && currentX + width > targetWidth)
+                {
+                    currentX = padding;
+                    currentY += rowMaxHeight + componentGap;
+                    rowMaxHeight = 0;
+                }
+
+                // Normalize this component's positions relative to currentX, currentY
+                NormalizePositions(tables, positions, 0);
+
+                // Shift to target position
+                foreach (var table in tables)
+                {
+                    var pos = positions[table.TableName];
+                    positions[table.TableName] = (pos.X + currentX, pos.Y + currentY);
+                }
+
+                currentX += width + componentGap;
+                rowMaxHeight = Math.Max(rowMaxHeight, height);
+            }
+        }
+
+        /// <summary>
+        /// Normalizes positions so the minimum X and Y are at the given offset.
+        /// </summary>
+        private void NormalizePositions(
+            List<ModelDiagramTableViewModel> tables,
+            Dictionary<string, (double X, double Y)> positions,
+            double offset)
+        {
+            if (tables.Count == 0) return;
+
+            double minX = double.MaxValue, minY = double.MaxValue;
+            foreach (var table in tables)
+            {
+                if (!positions.TryGetValue(table.TableName, out var pos)) continue;
+                minX = Math.Min(minX, pos.X);
+                minY = Math.Min(minY, pos.Y);
+            }
+
+            double shiftX = offset - minX;
+            double shiftY = offset - minY;
+
+            foreach (var table in tables)
+            {
+                var pos = positions[table.TableName];
+                positions[table.TableName] = (pos.X + shiftX, pos.Y + shiftY);
+            }
         }
 
         /// <summary>

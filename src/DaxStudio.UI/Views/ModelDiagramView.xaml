@@ -31,6 +31,7 @@
             <conv:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter" />
             <conv:BoolToNotCollapsedConverter x:Key="BoolToNotCollapsedConverter" />
             <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <conv:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
 
             <!-- Diagram Color Resources -->
             <SolidColorBrush x:Key="Diagram.Brush.Table.DefaultBorder" Color="#CCCCCC"/>
@@ -1331,23 +1332,30 @@
                                     </Path.Data>
                                 </Path>-->
 
-                          
-                                
+                                <Path 
+                        Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
+                        StrokeThickness="1.5"
+                        StrokeLineJoin="Round" Margin="0,2,0,2" Stretch="Fill">
+                                    <Path.Data>
+                                        <PathGeometry Figures="M5.25,0.75 L0.75,4.8671875 5.25,9.25 M8.25,0.75 L3.75,4.8671875 8.25,9.25 M10.75,0.75 L15.25,5 10.75,9.25 M13.75,0.75 L18.25,5 13.75,9.25"/>
+                                    </Path.Data>
+                                </Path>
+
 
                                 <!-- Right-pointing arrow (top) -->
-                                <Path Data="M 3,4 L 15,4 M 11,1 L 15,4 L 11,7" 
+                                <!--<Path Data="M 3,4 L 15,4 M 11,1 L 15,4 L 11,7" 
                                       Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
                                       StrokeThickness="1.5"
                                       StrokeLineJoin="Round"
                                       StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
+                                      StrokeEndLineCap="Round"/>-->
                                  <!--Left-pointing arrow (bottom)--> 
-                                <Path Data="M 15,10 L 3,10 M 7,7 L 3,10 L 7,13" 
+                                <!--<Path Data="M 15,10 L 3,10 M 7,7 L 3,10 L 7,13" 
                                       Stroke="{StaticResource Diagram.Brush.Relationship.BiDirectional}"
                                       StrokeThickness="1.5"
                                       StrokeLineJoin="Round"
                                       StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"/>
+                                      StrokeEndLineCap="Round"/>-->
                             </Grid>
                             <!-- Filter direction chevrons (pointing toward From table, single direction only) -->
                             <Grid Width="16" Height="16" Margin="1"
@@ -1357,10 +1365,10 @@
                                     <RotateTransform Angle="{Binding FilterDirectionAngle}" CenterX="8" CenterY="8"/>
                                 </Grid.RenderTransform>
                                 <!-- Double chevron pointing right >> -->
-                                <!--<Path Data="M 2,3 L 7,7 L 2,11 M 6,3 L 11,7 L 6,11" 
+                                <Path Data="M 2,3 L 7,7 L 2,11 M 6,3 L 11,7 L 6,11" 
                                       Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
                                       StrokeThickness="1.5"
-                                      StrokeLineJoin="Round"/>-->
+                                      StrokeLineJoin="Round"/>
                                 <!-- Solid Triangle-->
                                 <!--<Path 
                                     Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
@@ -1373,12 +1381,12 @@
                                 </Path>-->
                                 
                                 <!-- Single Arrow -->
-                                <Path Data="M 15,7 L 3,7 M 7,4 L 3,7 L 7,10" 
+                                <!--<Path Data="M 15,7 L 3,7 M 7,4 L 3,7 L 7,10" 
                                     Stroke="{StaticResource Diagram.Brush.Relationship.Chevron}"
                                     StrokeThickness="1.5"
                                     StrokeLineJoin="Round"
                                     StrokeStartLineCap="Round"
-                                    StrokeEndLineCap="Round" Margin="0,0,-2,0"/>            
+                                    StrokeEndLineCap="Round" Margin="0,0,-2,0"/>-->            
                             </Grid>
                             <!-- Many-to-Many indicator -->
                             <TextBlock Text="M:M"
@@ -1613,15 +1621,21 @@
                 <!-- Layout Algorithm dropdown -->
                 <ComboBox DockPanel.Dock="Left"
                           SelectedItem="{Binding LayoutAlgorithm, Mode=TwoWay}"
-                          ToolTip="Select the layout algorithm for table arrangement:&#x0a;• Auto: Automatically selects based on table count&#x0a;• Hierarchy: Layered layout showing relationship hierarchy (best for small models)&#x0a;• Grid: Compact grid layout (best for medium models)&#x0a;• Clustered: Cluster-based compact layout (best for large models)"
+                          ToolTip="Select the layout algorithm for table arrangement:&#x0a;• Auto: Automatically selects based on table count&#x0a;• Hierarchy: Layered layout showing relationship hierarchy (best for small models)&#x0a;• Grid: Compact grid layout (best for medium models)&#x0a;• Clustered: Cluster-based compact layout (best for large models)&#x0a;• Force Directed: Physics-based layout that minimizes relationship overlap"
                           Margin="4,0"
                           VerticalAlignment="Center"
-                          Width="85">
+                          Width="110">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
                     <ComboBox.Items>
                         <enums:DiagramLayoutAlgorithm>Auto</enums:DiagramLayoutAlgorithm>
                         <enums:DiagramLayoutAlgorithm>Hierarchy</enums:DiagramLayoutAlgorithm>
                         <enums:DiagramLayoutAlgorithm>Grid</enums:DiagramLayoutAlgorithm>
                         <enums:DiagramLayoutAlgorithm>Clustered</enums:DiagramLayoutAlgorithm>
+                        <enums:DiagramLayoutAlgorithm>ForceDirected</enums:DiagramLayoutAlgorithm>
                     </ComboBox.Items>
                 </ComboBox>
                 

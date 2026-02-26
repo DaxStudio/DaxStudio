@@ -1514,5 +1514,47 @@ WHERE
             Assert.IsTrue(cityCol.FilterValues.Contains("Chicago"));
             Assert.IsTrue(cityCol.FilterValues.Contains("Houston"));
         }
+
+        // ==================== TRAILING SPACE IN TABLE NAME ====================
+
+        [TestMethod]
+        public void ParseLeftOuterJoin_TableNameWithTrailingSpace_RelationshipMatchesTable()
+        {
+            // Arrange - reproduces real xmSQL where table names have trailing spaces inside quotes
+            // e.g., 'Period Definition ( SISO ) ' (note the trailing space before the closing quote)
+            string xmSql = @"SET DC_KIND=""C64"";
+SELECT
+    'TI_Mime'[CALENDAR_ID],
+    'TI_Mime'[PK_DATE],
+    'TI_Mime'[Period],
+    'Period Definition ( SISO ) '[Period]
+FROM 'TI_Mime'
+    LEFT OUTER JOIN 'Period Definition ( SISO ) '
+        ON 'TI_Mime'[Period]='Period Definition ( SISO ) '[Period]
+WHERE
+    'TI_Mime'[CALENDAR_NAME] = 'Aligned';";
+
+            var analysis = new XmSqlAnalysis();
+
+            // Act
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            // Assert
+            Assert.IsTrue(result);
+
+            // Both tables should be found (trimmed names)
+            Assert.AreEqual(2, analysis.Tables.Count, "Should have 2 tables");
+            Assert.IsTrue(analysis.Tables.ContainsKey("TI_Mime"), "Should have TI_Mime table");
+            Assert.IsTrue(analysis.Tables.ContainsKey("Period Definition ( SISO )"), "Should have Period Definition ( SISO ) table");
+
+            // The relationship should exist
+            Assert.AreEqual(1, analysis.Relationships.Count, "Should have 1 relationship");
+            var rel = analysis.Relationships.First();
+            Assert.AreEqual("TI_Mime", rel.FromTable);
+            Assert.AreEqual("Period", rel.FromColumn);
+            Assert.AreEqual("Period Definition ( SISO )", rel.ToTable, "Relationship ToTable should be trimmed to match table name");
+            Assert.AreEqual("Period", rel.ToColumn);
+            Assert.AreEqual(XmSqlJoinType.LeftOuterJoin, rel.JoinType);
+        }
     }
 }

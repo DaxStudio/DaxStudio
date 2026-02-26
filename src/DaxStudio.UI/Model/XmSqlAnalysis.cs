@@ -132,6 +132,12 @@ namespace DaxStudio.UI.Model
         /// </summary>
         public void AddRelationship(string fromTable, string fromColumn, string toTable, string toColumn, XmSqlJoinType joinType)
         {
+            // Clean table/column names to match GetOrAddTable behavior
+            fromTable = fromTable?.Trim().Trim('\'', '"');
+            fromColumn = fromColumn?.Trim().Trim('[', ']');
+            toTable = toTable?.Trim().Trim('\'', '"');
+            toColumn = toColumn?.Trim().Trim('[', ']');
+
             // Check if this relationship already exists (in either direction)
             var existing = Relationships.FirstOrDefault(r =>
                 (r.FromTable.Equals(fromTable, StringComparison.OrdinalIgnoreCase) &&
