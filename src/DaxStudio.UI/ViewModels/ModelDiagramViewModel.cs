@@ -698,8 +698,8 @@ namespace DaxStudio.UI.ViewModels
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            // First, call UpdatePath on all relationships to determine which edge they use
-            foreach (var rel in Relationships)
+            // First, call UpdatePath on visible relationships to determine which edge they use
+            foreach (var rel in Relationships.Where(r => r.IsVisible))
             {
                 rel.UpdatePath();
             }
@@ -745,8 +745,8 @@ namespace DaxStudio.UI.ViewModels
             bool processAll = affectedTableNames == null;
 
             // Reset slot offsets before recalculating
-            // Only reset offsets for relationships connected to affected tables
-            foreach (var rel in Relationships)
+            // Only reset offsets for visible relationships connected to affected tables
+            foreach (var rel in Relationships.Where(r => r.IsVisible))
             {
                 if (processAll || affectedTableNames.Contains(rel.FromTable))
                     rel.StartEdgeSlotOffset = 0;
@@ -762,21 +762,21 @@ namespace DaxStudio.UI.ViewModels
                     tableDict[table.TableName] = table;
             }
 
-            // For each table, group relationships by which edge they connect to
-            foreach (var table in Tables)
+            // For each visible table, group visible relationships by which edge they connect to
+            foreach (var table in Tables.Where(t => !t.IsHidden))
             {
                 // Skip tables that are not affected
                 if (!processAll && !affectedTableNames.Contains(table.TableName)) continue;
 
-                // Get relationships where this table is the "from" side
+                // Get visible relationships where this table is the "from" side
                 var fromRelsByEdge = Relationships
-                    .Where(r => string.Equals(r.FromTable, table.TableName, StringComparison.OrdinalIgnoreCase))
+                    .Where(r => r.IsVisible && string.Equals(r.FromTable, table.TableName, StringComparison.OrdinalIgnoreCase))
                     .GroupBy(r => r.StartEdgeType)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
-                // Get relationships where this table is the "to" side
+                // Get visible relationships where this table is the "to" side
                 var toRelsByEdge = Relationships
-                    .Where(r => string.Equals(r.ToTable, table.TableName, StringComparison.OrdinalIgnoreCase))
+                    .Where(r => r.IsVisible && string.Equals(r.ToTable, table.TableName, StringComparison.OrdinalIgnoreCase))
                     .GroupBy(r => r.EndEdgeType)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -857,8 +857,8 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            // Update relationship paths with the new slot positions
-            foreach (var rel in Relationships)
+            // Update visible relationship paths with the new slot positions
+            foreach (var rel in Relationships.Where(r => r.IsVisible))
             {
                 if (processAll || affectedTableNames.Contains(rel.FromTable) || affectedTableNames.Contains(rel.ToTable))
                 {
@@ -1319,7 +1319,7 @@ namespace DaxStudio.UI.ViewModels
         private Dictionary<string, (double X, double Y, double Width)> CalculateLayoutPositionsFromViewModels()
         {
             var positions = new Dictionary<string, (double X, double Y, double Width)>();
-            var tableVms = Tables.ToList();
+            var tableVms = Tables.Where(t => !t.IsHidden).ToList();
             
             if (tableVms.Count == 0) return positions;
 
@@ -1344,8 +1344,8 @@ namespace DaxStudio.UI.ViewModels
                 neighbors[table.TableName] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            // Build neighbor relationships from Relationships collection
-            foreach (var rel in Relationships)
+            // Build neighbor relationships from visible Relationships
+            foreach (var rel in Relationships.Where(r => r.IsVisible))
             {
                 var fromTable = rel.FromTable;
                 var toTable = rel.ToTable;
@@ -2093,16 +2093,19 @@ namespace DaxStudio.UI.ViewModels
             var algorithm = _options?.DiagramLayoutAlgorithm ?? DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Auto;
             string algorithmName;
 
+            // Use visible table count for auto-selection so hidden tables don't inflate the count
+            int visibleTableCount = Tables.Count(t => !t.IsHidden);
+
             // Determine which algorithm to use
             if (algorithm == DaxStudio.Interfaces.Enums.DiagramLayoutAlgorithm.Auto)
             {
-                // Auto-select based on table count
-                if (Tables.Count <= 15)
+                // Auto-select based on visible table count
+                if (visibleTableCount <= 15)
                 {
                     algorithmName = "Sugiyama (Auto)";
                     LayoutDiagramSugiyama(); // Hierarchy - best for small models
                 }
-                else if (Tables.Count <= 50)
+                else if (visibleTableCount <= 50)
                 {
                     algorithmName = "Grid (Auto)";
                     LayoutDiagramGrid(); // Grid - best for medium models
@@ -2163,9 +2166,10 @@ namespace DaxStudio.UI.ViewModels
             // Step 3: Assign X coordinates using barycenter method
             AssignCoordinates(layers, tableWidth, tableHeight, horizontalSpacing, verticalSpacing, padding);
 
-            // Calculate canvas size to fit all tables
-            var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
-            var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
+            // Calculate canvas size to fit visible tables only
+            var visibleTables = Tables.Where(t => !t.IsHidden);
+            var maxX = visibleTables.Any() ? visibleTables.Max(t => t.X + t.Width) : 100;
+            var maxY = visibleTables.Any() ? visibleTables.Max(t => t.Y + t.Height) : 100;
             CanvasWidth = Math.Max(100, maxX + padding);
             CanvasHeight = Math.Max(100, maxY + padding);
 
@@ -2186,15 +2190,16 @@ namespace DaxStudio.UI.ViewModels
             const double verticalSpacing = 100;
             const double padding = 50;
 
-            // Build neighbor map for relationship awareness
-            var neighbors = BuildNeighborMap();
+            // Build neighbor map for relationship awareness (visible only)
+            var neighbors = BuildNeighborMap(visibleOnly: true);
             
-            // Group tables by their connectivity
+            // Group tables by their connectivity (visible only)
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var groups = new List<List<ModelDiagramTableViewModel>>();
+            var visibleTables = Tables.Where(t => !t.IsHidden).ToList();
             
             // Find connected components
-            foreach (var table in Tables)
+            foreach (var table in visibleTables)
             {
                 if (visited.Contains(table.TableName)) continue;
                 
@@ -2214,7 +2219,7 @@ namespace DaxStudio.UI.ViewModels
                         {
                             if (!visited.Contains(neighborName))
                             {
-                                var neighbor = Tables.FirstOrDefault(t => 
+                                var neighbor = visibleTables.FirstOrDefault(t => 
                                     string.Equals(t.TableName, neighborName, StringComparison.OrdinalIgnoreCase));
                                 if (neighbor != null)
                                 {
@@ -2235,9 +2240,9 @@ namespace DaxStudio.UI.ViewModels
             // Sort groups by size (largest first) for better placement
             groups = groups.OrderByDescending(g => g.Count).ToList();
             
-            // Calculate optimal grid dimensions based on total tables
+            // Calculate optimal grid dimensions based on visible tables
             // Aim for a roughly square layout with slight preference for wider
-            int totalTables = Tables.Count;
+            int totalTables = visibleTables.Count;
             int columns = (int)Math.Ceiling(Math.Sqrt(totalTables * 1.5)); // Slightly wider than square
             columns = Math.Max(3, Math.Min(columns, 8)); // Between 3 and 8 columns
             
@@ -2276,9 +2281,9 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            // Calculate canvas size
-            var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
-            var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
+            // Calculate canvas size (visible tables only)
+            var maxX = visibleTables.Any() ? visibleTables.Max(t => t.X + t.Width) : 100;
+            var maxY = visibleTables.Any() ? visibleTables.Max(t => t.Y + t.Height) : 100;
             CanvasWidth = Math.Max(100, maxX + padding);
             CanvasHeight = Math.Max(100, maxY + padding);
 
@@ -2313,8 +2318,8 @@ namespace DaxStudio.UI.ViewModels
             const double tableHeight = 180;
             const double padding = 150; // extra padding so tables can be dragged left/up
 
-            var neighbors = BuildNeighborMap();
-            var tableList = Tables.ToList();
+            var neighbors = BuildNeighborMap(visibleOnly: true);
+            var tableList = Tables.Where(t => !t.IsHidden).ToList();
             int n = tableList.Count;
             if (n == 0) return;
 
@@ -2348,9 +2353,10 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
 
-            // Calculate canvas size with extra margin for drag room
-            var maxX = Tables.Any() ? Tables.Max(t => t.X + t.Width) : 100;
-            var maxY = Tables.Any() ? Tables.Max(t => t.Y + t.Height) : 100;
+            // Calculate canvas size with extra margin for drag room (only visible tables)
+            var visibleTables = Tables.Where(t => !t.IsHidden);
+            var maxX = visibleTables.Any() ? visibleTables.Max(t => t.X + t.Width) : 100;
+            var maxY = visibleTables.Any() ? visibleTables.Max(t => t.Y + t.Height) : 100;
             CanvasWidth = Math.Max(100, maxX + padding);
             CanvasHeight = Math.Max(100, maxY + padding);
 
@@ -2759,12 +2765,16 @@ namespace DaxStudio.UI.ViewModels
             var layers = new List<List<ModelDiagramTableViewModel>>();
             var tableLayer = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             
+            // Only layout visible tables
+            var visibleTables = Tables.Where(t => !t.IsHidden).ToList();
+            var visibleTableNames = new HashSet<string>(visibleTables.Select(t => t.TableName), StringComparer.OrdinalIgnoreCase);
+
             // Build directed adjacency: from "one" side to "many" side (dimension -> fact)
             var adjacencyToMany = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var adjacencyFromMany = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var inDegree = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             
-            foreach (var table in Tables)
+            foreach (var table in visibleTables)
             {
                 adjacencyToMany[table.TableName] = new List<string>();
                 adjacencyFromMany[table.TableName] = new List<string>();
@@ -2772,7 +2782,7 @@ namespace DaxStudio.UI.ViewModels
             }
             
             // Direction: from "1" side (dimension) to "*" side (fact)
-            foreach (var rel in Relationships)
+            foreach (var rel in Relationships.Where(r => r.IsVisible))
             {
                 string fromTable, toTable;
                 
@@ -2803,6 +2813,9 @@ namespace DaxStudio.UI.ViewModels
                     }
                 }
                 
+                // Only include edges between visible tables
+                if (!visibleTableNames.Contains(fromTable) || !visibleTableNames.Contains(toTable)) continue;
+
                 if (adjacencyToMany.ContainsKey(fromTable) && adjacencyFromMany.ContainsKey(toTable))
                 {
                     if (!adjacencyToMany[fromTable].Contains(toTable))
@@ -2815,15 +2828,15 @@ namespace DaxStudio.UI.ViewModels
             }
             
             // Find root nodes (tables with no incoming edges - top-level dimensions)
-            var rootNodes = Tables.Where(t => inDegree[t.TableName] == 0).ToList();
+            var rootNodes = visibleTables.Where(t => inDegree[t.TableName] == 0).ToList();
             
             // If no clear roots (cyclic), pick tables with most outgoing edges as roots
             if (rootNodes.Count == 0)
             {
-                rootNodes = Tables
+                rootNodes = visibleTables
                     .OrderByDescending(t => adjacencyToMany[t.TableName].Count)
                     .ThenBy(t => adjacencyFromMany[t.TableName].Count)
-                    .Take(Math.Max(1, Tables.Count / 3))
+                    .Take(Math.Max(1, visibleTables.Count / 3))
                     .ToList();
             }
             
@@ -2854,7 +2867,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     if (visited.Add(childName))
                     {
-                        var childTable = Tables.FirstOrDefault(t => t.TableName.Equals(childName, StringComparison.OrdinalIgnoreCase));
+                        var childTable = visibleTables.FirstOrDefault(t => t.TableName.Equals(childName, StringComparison.OrdinalIgnoreCase));
                         if (childTable != null)
                         {
                             queue.Enqueue((childTable, layer + 1));
@@ -2863,8 +2876,8 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
             
-            // Add any remaining unvisited tables (disconnected components) to a new layer
-            var unvisited = Tables.Where(t => !visited.Contains(t.TableName)).ToList();
+            // Add any remaining unvisited visible tables (disconnected components) to a new layer
+            var unvisited = visibleTables.Where(t => !visited.Contains(t.TableName)).ToList();
             if (unvisited.Count != 0)
             {
                 layers.Add(unvisited);
@@ -2881,8 +2894,8 @@ namespace DaxStudio.UI.ViewModels
         {
             if (layers.Count < 2) return;
             
-            // Build adjacency map
-            var neighbors = BuildNeighborMap();
+            // Build adjacency map (visible tables only since layers already contain only visible tables)
+            var neighbors = BuildNeighborMap(visibleOnly: true);
             
             // Multiple passes of crossing minimization using barycenter heuristic
             const int maxIterations = 4;
@@ -3092,17 +3105,19 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Builds a map of table name to all connected table names.
         /// </summary>
-        private Dictionary<string, HashSet<string>> BuildNeighborMap()
+        private Dictionary<string, HashSet<string>> BuildNeighborMap(bool visibleOnly = false)
         {
             var map = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             
             foreach (var table in Tables)
             {
+                if (visibleOnly && table.IsHidden) continue;
                 map[table.TableName] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
             
             foreach (var rel in Relationships)
             {
+                if (visibleOnly && !rel.IsVisible) continue;
                 if (map.TryGetValue(rel.FromTable, out HashSet<string> value1))
                     value1.Add(rel.ToTable);
                 if (map.TryGetValue(rel.ToTable, out HashSet<string> value))
@@ -3119,7 +3134,7 @@ namespace DaxStudio.UI.ViewModels
         private void AssignCoordinates(List<List<ModelDiagramTableViewModel>> layers,
             double tableWidth, double tableHeight, double hSpacing, double vSpacing, double padding)
         {
-            var neighbors = BuildNeighborMap();
+            var neighbors = BuildNeighborMap(visibleOnly: true);
             
             // First pass: simple left-to-right placement
             for (int layerIndex = 0; layerIndex < layers.Count; layerIndex++)
@@ -3413,16 +3428,25 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public void ZoomToFit()
         {
-            if (Tables.Count == 0) return;
+            // Only consider visible (non-hidden) tables for fitting
+            var visibleTables = Tables.Where(t => !t.IsHidden).ToList();
+            if (visibleTables.Count == 0) return;
 
-            var contentWidth = Tables.Max(t => t.X + t.Width) + 40;
-            var contentHeight = Tables.Max(t => t.Y + t.Height) + 40;
+            var contentWidth = visibleTables.Max(t => t.X + t.Width) + 40;
+            var contentHeight = visibleTables.Max(t => t.Y + t.Height) + 40;
 
             var scaleX = ViewWidth / contentWidth;
             var scaleY = ViewHeight / contentHeight;
             var newScale = Math.Min(scaleX, scaleY) * 0.95; // 95% to add some margin
 
             Scale = Math.Max(0.1, Math.Min(2.0, newScale));
+
+            // Scroll to center on visible content
+            var minX = visibleTables.Min(t => t.X);
+            var minY = visibleTables.Min(t => t.Y);
+            var maxX = visibleTables.Max(t => t.X + t.Width);
+            var maxY = visibleTables.Max(t => t.Y + t.Height);
+            OnScrollToRequested?.Invoke(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
         }
 
         /// <summary>
@@ -3497,6 +3521,7 @@ namespace DaxStudio.UI.ViewModels
             LayoutDiagram();
             RefreshLayout();
             SaveCurrentLayout();
+            ZoomToFit();
         }
 
         /// <summary>
@@ -3529,6 +3554,7 @@ namespace DaxStudio.UI.ViewModels
             // Re-apply auto layout
             LayoutDiagram();
             RefreshLayout();
+            ZoomToFit();
         }
 
         /// <summary>

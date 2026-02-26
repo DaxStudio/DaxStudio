@@ -1583,7 +1583,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40"/>
                             <DataGridTextColumn Header="Event Type" Binding="{Binding EventType}" Width="90"/>
-                            <DataGridTextColumn Header="Duration" Binding="{Binding DurationFormatted}" Width="80">
+                            <DataGridTextColumn Header="Duration" Binding="{Binding DurationFormatted}" SortMemberPath="Duration" Width="80">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -1591,7 +1591,15 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="CPU Time" Binding="{Binding CpuTimeFormatted}" Width="80">
+                            <DataGridTextColumn Header="CPU Time" Binding="{Binding CpuTimeFormatted}" SortMemberPath="CpuTime" Width="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Padding" Value="0,0,8,0"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Rows" Binding="{Binding EstimatedRowsFormatted}" SortMemberPath="EstimatedRows" Width="80">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>

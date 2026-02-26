@@ -937,7 +937,8 @@ namespace DaxStudio.UI.ViewModels
                     RowNumber = evt.RowNumber,
                     EventType = eventType,
                     Duration = evt.Duration,
-                    CpuTime = evt.CpuTime
+                    CpuTime = evt.CpuTime,
+                    EstimatedRows = evt.EstimatedRows
                 });
             }
 
@@ -5602,6 +5603,7 @@ namespace DaxStudio.UI.ViewModels
         public string EventType { get; set; }
         public long? Duration { get; set; }
         public long? CpuTime { get; set; }
+        public long? EstimatedRows { get; set; }
 
         /// <summary>
         /// Formatted duration for display.
@@ -5612,6 +5614,11 @@ namespace DaxStudio.UI.ViewModels
         /// Formatted CPU time for display.
         /// </summary>
         public string CpuTimeFormatted => CpuTime.HasValue ? $"{CpuTime.Value} ms" : "-";
+
+        /// <summary>
+        /// Formatted estimated rows for display.
+        /// </summary>
+        public string EstimatedRowsFormatted => EstimatedRows.HasValue ? $"{EstimatedRows.Value:N0}" : "-";
     }
     #endregion
 }
