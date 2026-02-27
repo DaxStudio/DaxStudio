@@ -10,7 +10,7 @@
     <!--<ManifestSignToolExe>AzureManifestSignTool</ManifestSignToolExe>-->
     <ManifestKeyFile>./lib/DaxStudio.pfx</ManifestKeyFile>
     <ManifestThumbPrint>FD452A79B4FA48AD217EE83AE4BF60A5461A5885</ManifestThumbPrint>
-    <TimeStampUri>http://timestamp.digicert.com</TimeStampUri>
+    <TimeStampUri>http://timestamp.globalsign.com/tsa/r45standard</TimeStampUri>
   </PropertyGroup>
 
   <ItemGroup>
@@ -102,13 +102,13 @@
     </ItemGroup>
 
     <Message Text="Attempting to sign Assemblies" Importance="high" /> 
-    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.exe' 
+    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://timestamp.globalsign.com/tsa/r45standard" -td sha256 .\Release\daxstudio.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\dscmd.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://timestamp.globalsign.com/tsa/r45standard" -td sha256 .\Release\dscmd.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\Release\daxstudio.checker.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://timestamp.globalsign.com/tsa/r45standard" -td sha256 .\Release\daxstudio.checker.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
-    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 -mdop 1 %(DllFiles.Identity)' 
+    <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://timestamp.globalsign.com/tsa/r45standard" -td sha256 -mdop 1 %(DllFiles.Identity)' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
 
   </Target>
@@ -141,7 +141,7 @@
     <Message Text="Attempting to sign installer" Importance="high" />
     <Sleep Delay="1000"/>
 
-	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://rfc3161timestamp.globalsign.com/advanced" -td sha256 .\package\DaxStudio_$(OutVersion)_setup.exe' 
+	  <Exec Command='AzureSignTool sign -kvu "https://daxstudiocert.vault.azure.net/" -kvi "$(KVI_PARAMETER)" -kvs "$(KVS_PARAMETER)" -kvc "$(KVC_PARAMETER)"  -kvt "$(KVT_PARAMETER)" -tr "http://timestamp.globalsign.com/tsa/r45standard" -td sha256 .\package\DaxStudio_$(OutVersion)_setup.exe' 
           IgnoreExitCode="false" ContinueOnError="ErrorAndStop" />
           <OnError ExecuteTargets="DeleteInstaller" />
   </Target>
