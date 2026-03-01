@@ -404,8 +404,48 @@ namespace DaxStudio.UI.ViewModels
         public async void Open(FrameworkElement view)
         {
             Fluent.Backstage backstage = GetBackStageParent(view) as Fluent.Backstage;
-            await _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent());
-            backstage.IsOpen = false;
+
+            // Show open file dialog
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                FileName = "Document",
+                DefaultExt = ".dax",
+                Filter = "DAX documents|*.dax;*.msdax;*.daxx;*.vpax|DAX Studio documents|*.dax;*.daxx;*.vpax|SSMS DAX documents|*.msdax"
+            };
+
+            var result = dlg.ShowDialog();
+            if (result != true) 
+            {
+                backstage.IsOpen = false;
+                return;
+            }
+
+            try
+            {
+                var fileName = dlg.FileName;
+
+                // Show loading indicator in backstage (same pattern as OpenRecentFile)
+                _backstageToClose = backstage;
+                IsLoadingRecentFile = true;
+                LoadingFileName = System.IO.Path.GetFileName(fileName);
+                await Dispatcher.Yield();
+                await Task.Delay(50);
+
+                // Load the file (FileOpenedEvent will be published by DocumentViewModel.LoadFile on completion)
+                await Dispatcher.CurrentDispatcher.InvokeAsync(async () =>
+                {
+                    await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(fileName));
+                }, DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(Open), "Error opening file");
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening file: {ex.Message}"));
+                if (backstage != null)
+                    backstage.IsOpen = false;
+                IsLoadingRecentFile = false;
+                _backstageToClose = null;
+            }
         }
 
         private void RefreshConnectionDetails(IConnection connection)
