@@ -30,9 +30,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Dynamic;
 using DaxStudio.Interfaces.Enums;
-using System.Windows.Documents;
 using DaxStudio.UI.Views;
-using DaxStudio.UI.Controls;
 using System.Data;
 using DaxStudio.UI.Enums;
 
@@ -171,42 +169,18 @@ namespace DaxStudio.UI.ViewModels
         // - 'Cond'
         private string _queryRichText = "";
 
-        private static string HighlightXmSqlToken(Match match)
-        {
-            return string.IsNullOrEmpty(match.Groups["DAX"].Value) 
-                ? HighlightXmSqlKeyword(match) 
-                : HighlightXmSqlDaxCallback(match);
-        }
-        private static string HighlightXmSqlKeyword(Match match)
-        {
-            return $"|~K~|{match.Value}|~E~|";
-        }
-        private static string HighlightXmSqlDaxCallback(Match match)
-        {
-            return $"|~F~|{match.Value}|~E~|";
-        }
-        private static string HighlightXmSqlTotalValues(Match match)
-        {
-            return $"|~N~|{match.Value}|~E~|";
-        }
         [JsonIgnore]
         public string QueryRichText {
             set {
-                if (Options.HighlightXmSqlCallbacks && ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.xmSQL)
+                if (value != null)
                 {
-                    string totalValuesHighlighted = value.HighlightXmSqlTotalValues(HighlightXmSqlTotalValues);
-                    string keywordsHighlighted = totalValuesHighlighted.HighlightXmSqlTokens(HighlightXmSqlToken);
-
-                    var sb = new StringBuilder(keywordsHighlighted);
-                    // Remove existing highlighters, we want to make sure we apply the |~S~|...|~E~| delimiters only once
-                    sb.Replace("|~S~|CallbackDataID|~E~|", "CallbackDataID");
-                    sb.Replace("CallbackDataID", "|~S~|CallbackDataID|~E~|");
-                    sb.Replace("'LogAbsValueCallback'", "|~S~|LogAbsValueCallback|~E~|");
-                    sb.Replace("'RoundValueCallback'", "|~S~|RoundValueCallback|~E~|");
-                    sb.Replace("EncodeCallback", "|~S~|EncodeCallback|~E~|");
-                    sb.Replace("'MinMaxColumnPositionCallback'", "|~S~|MinMaxColumnPositionCallback|~E~|");
-                    sb.Replace("'Cond'", "|~S~|Cond|~E~|");
-                    _queryRichText = sb.ToString();
+                    // Strip single quotes around callback function names
+                    // (xmSQL wraps some callback names in quotes, but they should display without them)
+                    _queryRichText = value
+                        .Replace("'LogAbsValueCallback'", "LogAbsValueCallback")
+                        .Replace("'RoundValueCallback'", "RoundValueCallback")
+                        .Replace("'MinMaxColumnPositionCallback'", "MinMaxColumnPositionCallback")
+                        .Replace("'Cond'", "Cond");
                 }
                 else
                 {
@@ -317,13 +291,8 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 QueryRichText = Query;
-                // Clean highlight code (in case SQL has been formatted)
-                if (Query.Contains("|~"))
-                {
-                    Query = Query.StripFormatDelimiters();
-                }
-                // Set flag in case any highlight is present
-                HighlightQuery = QueryRichText.Contains("|~S~|");
+                // Set flag in case any callback is present
+                HighlightQuery = Query.ContainsCallback();
             }
             else
             {
@@ -663,6 +632,19 @@ namespace DaxStudio.UI.ViewModels
         public static string StripFormatDelimiters( this string query )
         {
             return formatDelimiters.Replace(query, "");
+        }
+
+        /// <summary>
+        /// Checks if the query contains any callback function names.
+        /// </summary>
+        public static bool ContainsCallback(this string query)
+        {
+            return query.Contains("CallbackDataID")
+                || query.Contains("LogAbsValueCallback")
+                || query.Contains("RoundValueCallback")
+                || query.Contains("EncodeCallback")
+                || query.Contains("MinMaxColumnPositionCallback")
+                || query.Contains("Cond");
         }
     }
 
@@ -1698,7 +1680,7 @@ namespace DaxStudio.UI.ViewModels
 
             AllStorageEngineEvents.Apply(se =>
             {
-                se.HighlightQuery = se.QueryRichText?.Contains("|~S~|") ?? false;
+                se.HighlightQuery = se.QueryRichText?.ContainsCallback() ?? false;
                 if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData ?? se.Query); }
             });
             // update timeline total Duration if this is an older file format
@@ -1894,15 +1876,9 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var fileName = $"{tse.RowNumber:0000}_{tse.StartTime:yyyyMMddThhmmss-ffff}_{tse.Subclass}.{tse.ClassSubclass.QueryLanguage.ToString().ToLower(System.Globalization.CultureInfo.InvariantCulture)}";
                     var filePath = Path.Combine(folderPath, fileName);
-                    File.WriteAllText(filePath, StripHighlighCodes(tse.QueryRichText));
+                    File.WriteAllText(filePath, tse.QueryRichText);
                 }
             }
-        }
-
-        private Regex regexStripHighlightCodes = new Regex("\\|~\\w~\\|", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
-        private string StripHighlighCodes(string queryRichText)
-        {
-            return regexStripHighlightCodes.Replace(queryRichText, string.Empty);
         }
 
         public bool CanShowTraceDiagnostics => AllStorageEngineEvents.Count > 0;
@@ -1939,61 +1915,41 @@ namespace DaxStudio.UI.ViewModels
             if (SelectedEvent == null)
             {
                 Log.Debug("SelectedEvent is null on CopySEQuery");
-                // TODO we should provide a visual notification that copy did not work because of missing selection
                 return;
             }
             try
             {
-                var view = GetView() as ServerTimesView;
-                var details = view.EventDetails;
-                var rt = details.FindChild("QueryRichText", typeof(BindableRichTextBox)) as BindableRichTextBox;
-
-                if (rt == null)
+                var queryText = SelectedEvent.QueryRichText ?? SelectedEvent.TextData;
+                if (string.IsNullOrEmpty(queryText))
                 {
-                    // if we don't have a rich text control in the current view then 
-                    // just grab the TextData
-                    Clipboard.SetText(SelectedEvent.TextData);
+                    Clipboard.SetText(SelectedEvent.TextData ?? string.Empty);
                     return;
                 }
 
-                // Remove initial SET DC_KIND line
-                TextPointer secondLine = rt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward).GetLineStartPosition(1);
-                string firstLineContent = (secondLine != null) ? new TextRange(rt.Document.ContentStart, secondLine).Text : null;
-
-                TextPointer startSelection = (firstLineContent != null) && firstLineContent.StartsWith("SET DC_KIND", StringComparison.InvariantCulture)
-                    ? secondLine
-                    : rt.Document.ContentStart;
-
-                // Remove last empty lines and Estimated size
-                TextPointer endSelection;
-                TextPointer lastLine = null;
-                string lastLineContent;
-                int index = 0;
-                do
+                var lines = queryText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                var sb = new System.Text.StringBuilder();
+                foreach (var line in lines)
                 {
-                    endSelection = lastLine ?? rt.Document.ContentEnd;
-                    lastLine = rt.Document.ContentEnd.GetNextInsertionPosition(LogicalDirection.Backward).GetLineStartPosition(--index);
-                    lastLineContent = (lastLine != null) ? new TextRange(lastLine, endSelection).Text : null;
-                } while (lastLineContent != null
-                            && (lastLineContent.StartsWith("Estimated", StringComparison.InvariantCulture) || lastLineContent == "\r\n"));
-                Console.WriteLine(lastLineContent);
+                    // Skip SET DC_KIND line at the start
+                    if (sb.Length == 0 && line.StartsWith("SET DC_KIND", StringComparison.InvariantCulture))
+                        continue;
+                    // Skip Estimated size lines at the end and trailing empty lines
+                    if (line.StartsWith("Estimated", StringComparison.InvariantCulture))
+                        continue;
 
-                // Remove the last CRLF from selection
-                if (lastLineContent.EndsWith("\r\n", StringComparison.InvariantCulture))
-                {
-                    endSelection = endSelection.GetPositionAtOffset(-2) ?? endSelection;
+                    if (sb.Length > 0) sb.AppendLine();
+                    sb.Append(line);
                 }
 
-                rt.Selection.Select(startSelection, endSelection);
-                rt.Copy();
-                rt.Selection.Select(rt.Document.ContentStart.GetLineStartPosition(0), rt.Document.ContentStart.GetLineStartPosition(0));
+                // Trim trailing empty lines
+                var result = sb.ToString().TrimEnd('\r', '\n');
+                Clipboard.SetText(result);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel), nameof(CopySEQuery), "Error copying SE Query text");
                 _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error copying SE query text\n{ex.Message}"));
             }
-            return;
         }
 
         public async void ShowTraceDiagnostics()
@@ -2159,6 +2115,10 @@ namespace DaxStudio.UI.ViewModels
         {
             StorageEventHeatmap = null;
             NotifyOfPropertyChange(nameof(StorageEventHeatmap));
+
+            // Update xmSQL/SQL syntax highlighting colors for the new theme
+            SyntaxHighlightingHelper.SetAllColorThemes(Options.AutoTheme.ToString());
+
             return Task.CompletedTask;
         }
 

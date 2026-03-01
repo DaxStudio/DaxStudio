@@ -291,6 +291,7 @@
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\BindableQueryEditor.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
     <Compile Include="Controls\ClipBorder.cs" />
     <Compile Include="Controls\DataGridCustomCopy.cs" />
@@ -705,6 +706,7 @@
     <Compile Include="Utils\TimelineHeatmapImageGenerator.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
     <Compile Include="Utils\XlsxHelper.cs" />
+    <Compile Include="Utils\SyntaxHighlightingHelper.cs" />
     <Compile Include="Utils\ZoomHelper.cs" />
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
@@ -1505,6 +1507,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AvalonDockLayout-Default.xml" />
+    <EmbeddedResource Include="Resources\xmSQL.xshd" />
+    <EmbeddedResource Include="Resources\DirectQuerySql.xshd" />
   </ItemGroup>
   <ItemGroup>
     <Antlr4 Include="Grammars\xmSQL.g4">
