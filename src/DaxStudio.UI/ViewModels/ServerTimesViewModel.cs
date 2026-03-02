@@ -641,7 +641,7 @@ namespace DaxStudio.UI.ViewModels
             string bytesString = m.Groups["bytes"].Value;
             bool foundRows = long.TryParse(rowsString, out rows);
             bool foundBytes = long.TryParse(bytesString, out bytes);
-            daxQueryFormatted = xmSqlPatternSize.Replace(daxQuery, $"Estimated size: rows = {(foundRows ? rows.ToString("#,#") : rowsString)}  bytes = {(foundBytes ? bytes.ToString("#,#") : bytesString)}");
+            daxQueryFormatted = xmSqlPatternSize.Replace(daxQuery, $"Estimated size: rows = {(foundRows ? rows.ToString("#,0") : rowsString)}  bytes = {(foundBytes ? bytes.ToString("#,0") : bytesString)}");
             return foundRows && foundBytes;
         }
 
