@@ -242,6 +242,34 @@ namespace DaxStudio.UI.ViewModels
                     }
                     break;
                 default:
+                    if (Options.UseAntlrParser)
+                    {
+                        // ANTLR-based formatting: single parse tree walk handles formatting, simplification, and estimated size extraction
+                        var antlrResult = AntlrXmSqlFormatter.Format(
+                            ev.TextData,
+                            Options.FormatXmSql,
+                            Options.SimplifyXmSqlSyntax,
+                            out long antlrRows,
+                            out long antlrBytes,
+                            out bool antlrHasSize);
+
+                        if (antlrResult != null)
+                        {
+                            // Apply table/column name remapping on the formatted result
+                            string antlrRemapped = Options.ReplaceXmSqlColumnNames ? antlrResult.ReplaceTableOrColumnNames(remapColumns) : antlrResult;
+                            antlrRemapped = Options.ReplaceXmSqlTableNames ? antlrRemapped.ReplaceTableOrColumnNames(remapTables) : antlrRemapped;
+                            Query = antlrRemapped;
+
+                            if (antlrHasSize)
+                            {
+                                EstimatedRows = antlrRows;
+                                EstimatedKBytes = 1 + antlrBytes / 1024;
+                            }
+                            break;
+                        }
+                        // Fall through to regex approach if ANTLR parsing failed
+                    }
+
                     string rawText = Options.SimplifyXmSqlSyntax ? ev.TextData.RemovePremiumTags() : ev.TextData;
                     // Format xmSQL
                     string queryFormatted = Options.FormatXmSql ? rawText.FormatXmSql() : rawText;
@@ -1977,6 +2005,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Starting with {AllStorageEngineEvents.Count} events");
                 
                 var erdViewModel = new XmSqlErdViewModel(_eventAggregator);
+                erdViewModel.SetEventFilter(ServerTimingDetails);
                 erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
                 
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Analysis complete: {erdViewModel.Tables.Count} tables found");

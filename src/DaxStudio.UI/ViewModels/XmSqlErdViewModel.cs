@@ -33,6 +33,8 @@ namespace DaxStudio.UI.ViewModels
         private IGlobalOptions _options;
         private IEventAggregator _eventAggregator;
         private List<TraceStorageEngineEvent> _rawEvents;  // Stored for debug export
+        private ServerTimingDetailsViewModel _serverTimingDetails;
+        private List<int> _allAvailableQueryIds = new List<int>();  // Unfiltered query IDs from tables
 
         /// <summary>
         /// Gets the global options instance, lazily loaded via IoC.
@@ -55,6 +57,96 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator.SubscribeOnPublishedThread(this);
             // Initialize heat map mode from persisted options
             _heatMapMode = Options.SEDependenciesHeatMapMode;
+        }
+
+        /// <summary>
+        /// Sets the event filter to match the ServerTimingsView visibility settings.
+        /// Navigation controls will only show events that pass this filter.
+        /// </summary>
+        public void SetEventFilter(ServerTimingDetailsViewModel serverTimingDetails)
+        {
+            if (_serverTimingDetails != null)
+                _serverTimingDetails.PropertyChanged -= OnServerTimingDetailsPropertyChanged;
+
+            _serverTimingDetails = serverTimingDetails;
+
+            if (_serverTimingDetails != null)
+                _serverTimingDetails.PropertyChanged += OnServerTimingDetailsPropertyChanged;
+        }
+
+        private void OnServerTimingDetailsPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(ServerTimingDetailsViewModel.ShowScan):
+                case nameof(ServerTimingDetailsViewModel.ShowBatch):
+                case nameof(ServerTimingDetailsViewModel.ShowCache):
+                case nameof(ServerTimingDetailsViewModel.ShowInternal):
+                case nameof(ServerTimingDetailsViewModel.ShowSql):
+                case nameof(ServerTimingDetailsViewModel.ShowTabularQueries):
+                    RefreshVisibleEvents();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Checks whether an event would be visible in the ServerTimingsView given current filter settings.
+        /// Mirrors the filtering logic in ServerTimesViewModel.StorageEngineEvents.
+        /// </summary>
+        private bool IsEventVisibleInServerTimings(TraceStorageEngineEvent evt)
+        {
+            if (_serverTimingDetails == null) return true;
+
+            var cs = evt.ClassSubclass;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal)
+                return _serverTimingDetails.ShowInternal;
+            if (cs.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
+                return _serverTimingDetails.ShowBatch;
+            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
+                return _serverTimingDetails.ShowCache;
+            if (cs.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL)
+                return _serverTimingDetails.ShowSql;
+            if (cs.Subclass == DaxStudioTraceEventSubclass.TabularQuery
+                || cs.Subclass == DaxStudioTraceEventSubclass.TabularQueryInternal)
+                return _serverTimingDetails.ShowTabularQueries;
+            if (cs.Class == DaxStudioTraceEventClass.Total)
+                return true;
+
+            // Default: regular scan events
+            return _serverTimingDetails.ShowScan;
+        }
+
+        /// <summary>
+        /// Rebuilds the visible event list and filtered query IDs when filter settings change.
+        /// </summary>
+        private void RefreshVisibleEvents()
+        {
+            BuildEventList();
+            FilterAvailableQueryIds();
+        }
+
+        /// <summary>
+        /// Filters _allAvailableQueryIds to only include IDs of events visible in ServerTimingsView.
+        /// </summary>
+        private void FilterAvailableQueryIds()
+        {
+            if (_rawEvents == null || _serverTimingDetails == null)
+            {
+                AvailableQueryIds = new List<int>(_allAvailableQueryIds);
+            }
+            else
+            {
+                var visibleRowNumbers = new HashSet<int>(
+                    _rawEvents.Where(e => IsEventVisibleInServerTimings(e)).Select(e => e.RowNumber));
+                AvailableQueryIds = _allAvailableQueryIds.Where(id => visibleRowNumbers.Contains(id)).ToList();
+            }
+
+            // Reset query filter selection
+            _selectedQueryId = null;
+            NotifyOfPropertyChange(nameof(SelectedQueryId));
+            NotifyOfPropertyChange(nameof(QueryFilterText));
+            NotifyOfPropertyChange(nameof(QueryFilterDetails));
         }
 
         #region ToolWindowBase Implementation
@@ -918,6 +1010,9 @@ namespace DaxStudio.UI.ViewModels
 
             foreach (var evt in _rawEvents)
             {
+                // Skip events not visible in the ServerTimingsView
+                if (!IsEventVisibleInServerTimings(evt)) continue;
+
                 // Only include events that contributed to the diagram
                 if (evt.IsBatchEvent) continue;
                 if (evt.IsInternalEvent) continue;
@@ -1293,6 +1388,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Gathers all unique query IDs from the tables for query plan integration.
+        /// Stores the full unfiltered list, then applies visibility filtering.
         /// </summary>
         private void GatherAvailableQueryIds()
         {
@@ -1304,12 +1400,10 @@ namespace DaxStudio.UI.ViewModels
                     allQueryIds.Add(queryId);
                 }
             }
-            AvailableQueryIds = allQueryIds.OrderBy(x => x).ToList();
-            
-            // Clear any previous query filter
-            _selectedQueryId = null;
-            NotifyOfPropertyChange(nameof(SelectedQueryId));
-            NotifyOfPropertyChange(nameof(QueryFilterText));
+            _allAvailableQueryIds = allQueryIds.OrderBy(x => x).ToList();
+
+            // Apply visibility filter from ServerTimingsView settings
+            FilterAvailableQueryIds();
         }
 
         /// <summary>

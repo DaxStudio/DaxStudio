@@ -250,7 +250,7 @@ NOT(
 "    NULL;" + Environment.NewLine 
 ;
 
-            string expectedSql = @"|~K~|SELECT|~E~| |~K~|TOP|~E~| (1000001) 1 |~K~|AS|~E~| [c22]," + Environment.NewLine +
+            string expectedSql = @"SELECT TOP (1000001) 1 AS [c22]," + Environment.NewLine +
 "\t[t1].[ProductID]," + Environment.NewLine +
 "	[t1].[Name]," + Environment.NewLine +
 "	[t1].[ProductNumber]," + Environment.NewLine +
@@ -267,13 +267,13 @@ NOT(
 "	[t1].[ThumbnailPhotoFileName]," + Environment.NewLine +
 "	[t1].[rowguid]," + Environment.NewLine +
 "	[t1].[ModifiedDate]" + Environment.NewLine +
-"|~K~|FROM|~E~| (" + Environment.NewLine +
-"	|~K~|SELECT|~E~| [ProductID]," + Environment.NewLine +
+"FROM (" + Environment.NewLine +
+"	SELECT [ProductID]," + Environment.NewLine +
 "		[Name]," + Environment.NewLine +
 "		[ProductNumber]," + Environment.NewLine +
 "		[Color]," + Environment.NewLine +
-"		CAST([StandardCost] |~K~|AS|~E~| |~K~|MONEY|~E~|) |~K~|AS|~E~| [StandardCost]," + Environment.NewLine +
-"		CAST([ListPrice] |~K~|AS|~E~| |~K~|MONEY|~E~|) |~K~|AS|~E~| [ListPrice]," + Environment.NewLine +
+"		CAST([StandardCost] AS MONEY) AS [StandardCost]," + Environment.NewLine +
+"		CAST([ListPrice] AS MONEY) AS [ListPrice]," + Environment.NewLine +
 "		[Size]," + Environment.NewLine +
 "		[Weight]," + Environment.NewLine +
 "		[ProductCategoryID]," + Environment.NewLine +
@@ -284,8 +284,8 @@ NOT(
 "		[ThumbnailPhotoFileName]," + Environment.NewLine +
 "		[rowguid]," + Environment.NewLine +
 "		[ModifiedDate]" + Environment.NewLine +
-"	|~K~|FROM|~E~| [dbo].[Product_SM] |~K~|AS|~E~| [t1]" + Environment.NewLine +
-"	) |~K~|AS|~E~| [t1]" + Environment.NewLine;
+"	FROM [dbo].[Product_SM] AS [t1]" + Environment.NewLine +
+"	) AS [t1]" + Environment.NewLine;
             // SQL Formatter for DirectQuery
             var actual = SqlFormatter.FormatSql(sqlQuery);
 
