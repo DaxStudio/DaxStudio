@@ -1584,7 +1584,18 @@
                               MaxHeight="320">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40"/>
-                            <DataGridTextColumn Header="Event Type" Binding="{Binding EventType}" Width="90"/>
+                            <DataGridTextColumn Header="Subclass" Binding="{Binding Subclass}" Width="90">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding InternalBatchEvent}" Value="True">
+                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                <Setter Property="Margin" Value="15,0,0,0"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Duration" Binding="{Binding DurationFormatted}" SortMemberPath="Duration" Width="80">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">

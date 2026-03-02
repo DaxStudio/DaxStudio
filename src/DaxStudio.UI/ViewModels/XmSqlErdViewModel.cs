@@ -918,24 +918,27 @@ namespace DaxStudio.UI.ViewModels
 
             foreach (var evt in _rawEvents)
             {
+                // Skip events not visible in the ServerTimingsView
+                if (!IsEventVisibleInServerTimings(evt)) continue;
+
                 // Only include events that contributed to the diagram
-                if (evt.IsBatchEvent) continue;
                 if (evt.IsInternalEvent) continue;
                 if (evt.IsDirectQueryEvent)
                 {
                     if (string.IsNullOrWhiteSpace(evt.TextData) && string.IsNullOrWhiteSpace(evt.Query))
                         continue;
                 }
-                else if (string.IsNullOrWhiteSpace(evt.Query))
+                else if (!evt.IsBatchEvent && string.IsNullOrWhiteSpace(evt.Query))
                 {
                     continue;
                 }
 
-                var eventType = GetFriendlyEventType(evt);
+                var subclass = GetSubclassDisplayName(evt);
                 items.Add(new EventListItem
                 {
                     RowNumber = evt.RowNumber,
-                    EventType = eventType,
+                    Subclass = subclass,
+                    InternalBatchEvent = evt.InternalBatchEvent,
                     Duration = evt.Duration,
                     CpuTime = evt.CpuTime,
                     EstimatedRows = evt.EstimatedRows
@@ -946,15 +949,29 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Gets a friendly display name for the event type.
+        /// Gets the subclass display name matching the ServerTimingsView Subclass column.
+        /// Uses the same logic as EventClassSubclassConverter.
         /// </summary>
-        private static string GetFriendlyEventType(TraceStorageEngineEvent evt)
+        private static string GetSubclassDisplayName(TraceStorageEngineEvent evt)
         {
-            if (evt.IsDirectQueryEvent) return "DirectQuery";
-            if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch) return "Cache Hit";
-            if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryEnd) return "SE Query";
-            if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryBegin) return "SE Query";
-            return evt.Class.ToString();
+            var cs = evt.ClassSubclass;
+            switch (cs.Subclass)
+            {
+                case DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch:
+                    return "Cache";
+                case DaxStudioTraceEventSubclass.VertiPaqScanInternal:
+                    return "Internal";
+                case DaxStudioTraceEventSubclass.VertiPaqScan:
+                    return "Scan";
+                case DaxStudioTraceEventSubclass.BatchVertiPaqScan:
+                    return "Batch";
+                case DaxStudioTraceEventSubclass.NotAvailable:
+                    if (cs.Class == DaxStudioTraceEventClass.DirectQueryEnd)
+                        return cs.QueryLanguage.ToString();
+                    return cs.Class.ToString();
+                default:
+                    return cs.Subclass.ToString();
+            }
         }
 
         #endregion
@@ -5600,7 +5617,8 @@ namespace DaxStudio.UI.ViewModels
     public class EventListItem
     {
         public int RowNumber { get; set; }
-        public string EventType { get; set; }
+        public string Subclass { get; set; }
+        public bool InternalBatchEvent { get; set; }
         public long? Duration { get; set; }
         public long? CpuTime { get; set; }
         public long? EstimatedRows { get; set; }
