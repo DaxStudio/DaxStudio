@@ -8,7 +8,7 @@
   <Color name="NumericLiteral" foreground="#EE7F18" />
   
   <!-- Light theme colors -->
-  <Color name="Light.Keyword"    foreground="#035ACA" />
+  <Color name="Light.Keyword"    foreground="#035ACA" fontWeight="bold" />
   <Color name="Light.Callback"   foreground="#000000" background="#FFFF00" fontWeight="bold" />
   <Color name="Light.Number"     foreground="#000000" background="#FFC2DDEF" fontWeight="bold" />
   <Color name="Light.Identifier" foreground="#333333" />
@@ -16,7 +16,7 @@
   <Color name="Light.NumericLiteral" foreground="#EE7F18" />
   
   <!-- Dark theme colors -->
-  <Color name="Dark.Keyword"    foreground="#0095FF" />
+  <Color name="Dark.Keyword"    foreground="#0095FF" fontWeight="bold"/>
   <Color name="Dark.Callback"   foreground="#1E1E1E" background="#E2D76F" fontWeight="bold" />
   <Color name="Dark.Number"     foreground="#FFFFFF" background="#29A9FF" fontWeight="bold" />
   <Color name="Dark.Identifier" foreground="#FFFFFF" />
