@@ -517,6 +517,8 @@
     <Compile Include="Model\AutoSaveIndex.cs" />
     <Compile Include="Model\AutoSaveIndexEntry.cs" />
     <Compile Include="Model\XmSqlAnalysis.cs" />
+    <Compile Include="Model\XmSqlQueryFingerprint.cs" />
+    <Compile Include="Model\XmSqlQueryGroup.cs" />
 
     <Compile Include="Model\CaptureDiagnosticsSource.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
@@ -643,6 +645,8 @@
     <Compile Include="Utils\XmSqlParser.cs" />
     <Compile Include="Utils\AntlrXmSqlParser.cs" />
     <Compile Include="Utils\XmSqlAnalysisVisitor.cs" />
+    <Compile Include="Utils\XmSqlFingerprintVisitor.cs" />
+    <Compile Include="Utils\XmSqlQueryGrouper.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
     <Compile Include="Utils\HighContrastHelper.cs" />

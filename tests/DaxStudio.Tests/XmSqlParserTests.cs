@@ -1556,5 +1556,37 @@ WHERE
             Assert.AreEqual("Period", rel.ToColumn);
             Assert.AreEqual(XmSqlJoinType.LeftOuterJoin, rel.JoinType);
         }
+
+        [TestMethod]
+        public void ParseBatchEvent_WithReverseBitmapJoin_FindsJoin()
+        {
+            string xmSql = "DEFINE TABLE '$TTable2' := SELECT 'Time Periods'[CompKeyTP] FROM 'Time Periods' WHERE 'Time Periods'[Period] = 'LP', " +
+                "DEFINE TABLE '$TTable3' := SELECT RJOIN ( '$TTable2'[Time Periods$CompKeyTP] ) FROM '$TTable2' REVERSE BITMAP JOIN 'CME_Global_Data' ON '$TTable2'[Time Periods$CompKeyTP]='CME_Global_Data'[CompKeyGD], " +
+                "DEFINE TABLE '$TTable1' := SELECT SUM ( 'CME_Global_Data'[Value] ) FROM 'CME_Global_Data' " +
+                "WHERE 'CME_Global_Data'[Country] = 'Thailand' VAND 'CME_Global_Data'[Category] = 'Beverages' " +
+                "VAND 'CME_Global_Data'[PEP/ROM] NIN ( 'Not Applicable' ) VAND 'CME_Global_Data'[Channel] NIN ( 'All' ) " +
+                "VAND 'CME_Global_Data'[SubSegGrp] = 'Sub Segment' " +
+                "VAND [CallbackDataID ( CME_Global_Data[Data_Flag]=SlicerSelect ) ] ( PFDATAID ( 'CME_Global_Data'[Data_Flag] ) ) " +
+                "VAND 'CME_Global_Data'[CompKeyGD] ININDEX '$TTable3'[$SemijoinProjection];";
+
+            var analysis = new XmSqlAnalysis();
+            var result = _parser.ParseQuery(xmSql, analysis);
+
+            Assert.IsTrue(result, "Parser should successfully parse the batch event query");
+
+            // Both physical tables should be found
+            Assert.IsTrue(analysis.Tables.ContainsKey("Time Periods"), "Should find 'Time Periods' table");
+            Assert.IsTrue(analysis.Tables.ContainsKey("CME_Global_Data"), "Should find 'CME_Global_Data' table");
+
+            // No temp tables should appear
+            foreach (var tableName in analysis.Tables.Keys)
+            {
+                Assert.IsFalse(tableName.StartsWith("$T"), $"Temp table '{tableName}' should not appear in analysis");
+            }
+
+            // There should be a relationship between Time Periods and CME_Global_Data
+            Assert.IsTrue(analysis.Relationships.Count > 0, 
+                $"Should find at least one relationship. Tables found: {string.Join(", ", analysis.Tables.Keys)}");
+        }
     }
 }

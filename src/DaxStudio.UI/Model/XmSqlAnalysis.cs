@@ -43,7 +43,7 @@ namespace DaxStudio.UI.Model
 
         /// <summary>
         /// Number of batch SE events.
-        /// These are counted in StorageEngineQueryCount in Server Timings but don't have parseable queries.
+        /// These are counted in StorageEngineQueryCount in Server Timings and are also parsed for the diagram.
         /// </summary>
         public int BatchEventCount { get; set; }
 
@@ -169,6 +169,18 @@ namespace DaxStudio.UI.Model
         }
 
         /// <summary>
+        /// Mapping from query ID (RowNumber) to structural similarity group ID.
+        /// Populated by XmSqlQueryGrouper after parsing.
+        /// </summary>
+        public Dictionary<int, int> QueryToStructuralGroup { get; set; } = new Dictionary<int, int>();
+
+        /// <summary>
+        /// Mapping from query ID (RowNumber) to table access similarity group ID.
+        /// Populated by XmSqlQueryGrouper after parsing.
+        /// </summary>
+        public Dictionary<int, int> QueryToTableAccessGroup { get; set; } = new Dictionary<int, int>();
+
+        /// <summary>
         /// Clears all analysis data.
         /// </summary>
         public void Clear()
@@ -180,6 +192,8 @@ namespace DaxStudio.UI.Model
             FailedParseQueries = 0;
             CacheHitQueries = 0;
             BatchEventCount = 0;
+            QueryToStructuralGroup.Clear();
+            QueryToTableAccessGroup.Clear();
         }
     }
 

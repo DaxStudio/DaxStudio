@@ -453,6 +453,13 @@ namespace DaxStudio.UI.Utils
 
         public override object VisitJoinClause(xmSQLParser.JoinClauseContext context)
         {
+            // Handle REVERSE BITMAP JOIN
+            var rbj = context.reverseBitmapJoin();
+            if (rbj != null)
+            {
+                return VisitReverseBitmapJoin(rbj);
+            }
+
             // Determine join type
             var joinTypeCtx = context.joinType();
             var joinType = XmSqlJoinType.Unknown;
@@ -525,6 +532,58 @@ namespace DaxStudio.UI.Utils
                             AddColumnUsage(resolvedFrom.Value.Table, resolvedFrom.Value.Column, XmSqlColumnUsage.Join);
                             AddColumnUsage(resolvedTo.Value.Table, resolvedTo.Value.Column, XmSqlColumnUsage.Join);
                         }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Handles REVERSE BITMAP JOIN: extracts the joined table and relationship from ON clause.
+        /// Grammar: REVERSE BITMAP JOIN tableRef ON tableColumnRef EQUALS tableColumnRef
+        /// </summary>
+        private object VisitReverseBitmapJoin(xmSQLParser.ReverseBitmapJoinContext context)
+        {
+            // Mark the joined table
+            var tableRef = context.tableRef();
+            if (tableRef != null)
+            {
+                var tableName = GetTableName(tableRef);
+                if (tableName != null && !IsTempTable(tableName))
+                {
+                    var table = _analysis.GetOrAddTable(tableName);
+                    if (table != null)
+                    {
+                        table.IsJoinedTable = true;
+                        table.HitCount++;
+                        if (_metrics?.QueryId > 0)
+                            table.QueryIds.Add(_metrics.QueryId);
+                    }
+                }
+            }
+
+            // ON clause columns -> relationship
+            var refs = context.tableColumnRef();
+            if (refs != null && refs.Length == 2)
+            {
+                var from = GetTableColumn(refs[0]);
+                var to = GetTableColumn(refs[1]);
+                if (from != null && to != null)
+                {
+                    var resolvedFrom = ResolveToPhysical(from.Value.Table, from.Value.Column);
+                    var resolvedTo = ResolveToPhysical(to.Value.Table, to.Value.Column);
+
+                    if (resolvedFrom != null && resolvedTo != null &&
+                        !IsTempTable(resolvedFrom.Value.Table) && !IsTempTable(resolvedTo.Value.Table))
+                    {
+                        _analysis.AddRelationship(
+                            resolvedFrom.Value.Table, resolvedFrom.Value.Column,
+                            resolvedTo.Value.Table, resolvedTo.Value.Column,
+                            XmSqlJoinType.InnerJoin);
+
+                        AddColumnUsage(resolvedFrom.Value.Table, resolvedFrom.Value.Column, XmSqlColumnUsage.Join);
+                        AddColumnUsage(resolvedTo.Value.Table, resolvedTo.Value.Column, XmSqlColumnUsage.Join);
                     }
                 }
             }
