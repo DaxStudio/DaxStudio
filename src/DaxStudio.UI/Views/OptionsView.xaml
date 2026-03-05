@@ -657,6 +657,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="24"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
@@ -725,7 +726,10 @@
                                 <Label Content="Toggle Comment" Padding="2" Grid.Row="17" />
                                 <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="17" Padding="2" Hotkey="{Binding HotkeyToggleComment, Converter={StaticResource HotKeyConverter}}"/>
 
-                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}"
+                                <Label Content="Toggle Results Pane" Padding="2" Grid.Row="18" />
+                                <controls:HotkeyEditorControl Grid.Column="1" Grid.Row="18" Padding="2" Hotkey="{Binding HotkeyToggleResultsPane, Converter={StaticResource HotKeyConverter}}"/>
+
+                                <StackPanel Orientation="Horizontal" Style="{StaticResource FadeInOut}" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding ShowHotkeyWarningMessage, Converter={StaticResource BoolToHiddenConverter}}"
                                             HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource warningDrawingImage}" Width="16" Height="16"/>
                                     <TextBlock x:Name="HotkeyWarningMessage" Foreground="Red"/>

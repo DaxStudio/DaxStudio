@@ -1413,6 +1413,20 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private string _hotkeyToggleResultsPane;
+        [DataMember, DefaultValue("Ctrl + R"), Hotkey]
+        public string HotkeyToggleResultsPane
+        {
+            get => _hotkeyToggleResultsPane;
+            set
+            {
+                _hotkeyToggleResultsPane = value;
+                if (!_isInitializing) _eventAggregator.PublishOnUIThreadAsync(new UpdateHotkeys());
+                SettingProvider.SetValue(nameof(HotkeyToggleResultsPane), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => HotkeyToggleResultsPane);
+            }
+        }
+
         public void ResetKeyBindings()
         {
             //try

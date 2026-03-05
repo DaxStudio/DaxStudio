@@ -5,6 +5,7 @@ using ADOTabular.Extensions;
 using ADOTabular.Interfaces;
 using ADOTabular.MetadataInfo;
 using AvalonDock;
+using AvalonDock.Layout;
 using Caliburn.Micro;
 using Dax.Model.Extractor;
 using Dax.ViewModel;
@@ -862,6 +863,60 @@ namespace DaxStudio.UI.ViewModels
         {
             DocumentView v = (DocumentView)GetView();
             return v?.Document;
+        }
+
+        public void ToggleResultsPane()
+        {
+            var dm = GetDockManager();
+            if (dm == null) return;
+
+            var metadataPane = dm.Layout.Descendents()
+                .OfType<LayoutAnchorable>()
+                .FirstOrDefault(a => a.ContentId == "metadata");
+
+            // Find all non-metadata panes that are currently docked (visible, not auto-hidden)
+            var visibleNonMetadata = dm.Layout.Descendents()
+                .OfType<LayoutAnchorable>()
+                .Where(a => a.ContentId != "metadata" && !a.IsAutoHidden && !a.IsHidden && !a.Parent.Children.OfType<LayoutAnchorable>().Any(b => b.ContentId == "metadata"))
+                .ToList();
+
+            if (visibleNonMetadata.Any())
+            {
+                // HIDE: ToggleAutoHide() auto-hides the entire parent LayoutAnchorablePane group,
+                // so we only need to call it once per parent group to avoid toggle/untoggle.
+                var groups = visibleNonMetadata
+                    .GroupBy(a => a.Parent)
+                    .ToList();
+
+                foreach (var group in groups)
+                    group.First().ToggleAutoHide();
+
+                // The metadata pane may have been auto-hidden as a side effect
+                // (it shares a group with Functions and DMV). Restore it.
+                if (metadataPane != null && metadataPane.IsAutoHidden)
+                    metadataPane.ToggleAutoHide();
+            }
+            else
+            {
+                // SHOW: Auto-hidden panes live in LayoutAnchorSide > LayoutAnchorGroup,
+                // which are NOT included in LayoutRoot.Descendents(). Search explicitly.
+                var sides = new[] { dm.Layout.BottomSide, dm.Layout.TopSide, 
+                                    dm.Layout.LeftSide, dm.Layout.RightSide };
+
+                var autoHiddenGroups = sides
+                    .Where(s => s != null)
+                    .SelectMany(s => s.Children)
+                    .Where(g => g.Children.Any(a => a.ContentId != "metadata"))
+                    .ToList();
+
+                foreach (var group in autoHiddenGroups)
+                {
+                    var firstNonMetadata = group.Children
+                        .FirstOrDefault(a => a.ContentId != "metadata");
+                    if (firstNonMetadata != null)
+                        firstNonMetadata.ToggleAutoHide();
+                }
+            }
         }
 
         public TextDocument Document { get; set; }

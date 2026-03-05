@@ -290,6 +290,7 @@ namespace DaxStudio.UI.ViewModels
             yield return new InputBindingCommand(this, nameof(CopySEQuery), Options.HotkeyCopySEQuery);
             yield return new InputBindingCommand(this, nameof(CopyPasteServerTimings), Options.HotkeyCopyPasteServerTimings);
             yield return new InputBindingCommand(this, nameof(CopyPasteServerTimingsData), Options.HotkeyCopyPasteServerTimingsData);
+            yield return new InputBindingCommand(this, nameof(ToggleResultsPane), Options.HotkeyToggleResultsPane);
         }
 
         public void CopyPasteServerTimings()
@@ -303,6 +304,11 @@ namespace DaxStudio.UI.ViewModels
         public void CopySEQuery()
         {
             _eventAggregator.PublishOnUIThreadAsync(new CopySEQueryEvent());
+        }
+
+        public void ToggleResultsPane()
+        {
+            Ribbon.ActiveDocument?.ToggleResultsPane();
         }
 
         public void DebugCommas()

@@ -113,6 +113,7 @@ namespace DaxStudio.Interfaces
         [Hotkey] string HotkeyToggleComment { get; set; }
         [Hotkey] string HotkeyDebugCommas { get; set; }
         [Hotkey] string HotkeySwapDelimiters { get; set; }
+        [Hotkey] string HotkeyToggleResultsPane { get; set; }
         #endregion
 
         // Preview Features
