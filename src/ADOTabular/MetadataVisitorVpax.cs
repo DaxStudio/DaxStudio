@@ -118,6 +118,67 @@ namespace ADOTabular
                     
                 }
             }
+
+            // Populate relationships from the VPAX model
+            foreach (var rel in _daxModel.Relationships)
+            {
+                if (rel.FromColumn?.Table?.TableName?.Name == null || rel.ToColumn?.Table?.TableName?.Name == null)
+                    continue;
+
+                var fromTableName = rel.FromColumn.Table.TableName.Name;
+                var toTableName = rel.ToColumn.Table.TableName.Name;
+
+                ADOTabularTable fromTable = null;
+                ADOTabularTable toTable = null;
+                foreach (var t in tables)
+                {
+                    if (t.Name == fromTableName) fromTable = t;
+                    if (t.Name == toTableName) toTable = t;
+                }
+
+                if (fromTable == null || toTable == null) continue;
+
+                var fromMultiplicity = MapCardinalityType(rel.FromCardinalityType);
+                var toMultiplicity = MapCardinalityType(rel.ToCardinalityType);
+
+                var adoRel = new ADOTabularRelationship
+                {
+                    InternalName = rel.Name ?? string.Empty,
+                    FromTable = fromTable,
+                    ToTable = toTable,
+                    FromColumn = rel.FromColumn.ColumnName?.Name,
+                    ToColumn = rel.ToColumn.ColumnName?.Name,
+                    FromColumnMultiplicity = fromMultiplicity,
+                    ToColumnMultiplicity = toMultiplicity,
+                    CrossFilterDirection = rel.CrossFilteringBehavior ?? string.Empty,
+                    IsActive = rel.IsActive
+                };
+                fromTable.Relationships.Add(adoRel);
+
+                // Also populate the TOM model relationships for model diagram support
+                if (!string.IsNullOrWhiteSpace(adoRel.FromColumn) && !string.IsNullOrWhiteSpace(adoRel.ToColumn))
+                {
+                    try
+                    {
+                        var tomFromTable = model.TOMModel.Tables[fromTable.Name];
+                        var tomToTable = model.TOMModel.Tables[toTable.Name];
+                        var tomRel = new Microsoft.AnalysisServices.Tabular.SingleColumnRelationship
+                        {
+                            FromColumn = tomFromTable.Columns.First(c => c.Name == adoRel.FromColumn),
+                            ToColumn = tomToTable.Columns.First(c => c.Name == adoRel.ToColumn),
+                            FromCardinality = GetCardinality(fromMultiplicity),
+                            ToCardinality = GetCardinality(toMultiplicity),
+                            CrossFilteringBehavior = GetCrossFilteringBehavior(adoRel.CrossFilterDirection),
+                            IsActive = adoRel.IsActive
+                        };
+                        model.TOMModel.Relationships.Add(tomRel);
+                    }
+                    catch (Exception)
+                    {
+                        // Skip TOM relationship if table/column lookup fails
+                    }
+                }
+            }
         }
 
         public SortedDictionary<string, ADOTabularColumn> Visit(ADOTabularColumnCollection columns)
@@ -215,6 +276,38 @@ namespace ADOTabular
         public void Visit(ADOTabularCalendarCollection calendars)
         {
             // TODO - read calendars from vpax
+        }
+
+        private static string MapCardinalityType(string cardinalityType)
+        {
+            switch (cardinalityType)
+            {
+                case "Many": return "*";
+                case "One": return "1";
+                case "None": return "0..1";
+                default: return cardinalityType ?? string.Empty;
+            }
+        }
+
+        private static Microsoft.AnalysisServices.Tabular.RelationshipEndCardinality GetCardinality(string multiplicity)
+        {
+            return multiplicity switch
+            {
+                "*" => Microsoft.AnalysisServices.Tabular.RelationshipEndCardinality.Many,
+                "0..1" => Microsoft.AnalysisServices.Tabular.RelationshipEndCardinality.One,
+                "1" => Microsoft.AnalysisServices.Tabular.RelationshipEndCardinality.One,
+                _ => Microsoft.AnalysisServices.Tabular.RelationshipEndCardinality.None,
+            };
+        }
+
+        private static Microsoft.AnalysisServices.Tabular.CrossFilteringBehavior GetCrossFilteringBehavior(string crossFilterDirection)
+        {
+            return crossFilterDirection switch
+            {
+                "Both" => Microsoft.AnalysisServices.Tabular.CrossFilteringBehavior.BothDirections,
+                "BothDirections" => Microsoft.AnalysisServices.Tabular.CrossFilteringBehavior.BothDirections,
+                _ => Microsoft.AnalysisServices.Tabular.CrossFilteringBehavior.OneDirection,
+            };
         }
     }
 }
