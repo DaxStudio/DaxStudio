@@ -1,5 +1,6 @@
 using Caliburn.Micro;
 using Dax.ViewModel;
+using DaxStudio.Common;
 using DaxStudio.Common.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
@@ -32,6 +33,7 @@ namespace DaxStudio.UI.ViewModels
         private XmSqlAnalysis _analysis;
         private IGlobalOptions _options;
         private IEventAggregator _eventAggregator;
+        private ServerTimingDetailsViewModel _serverTimingDetails;
         private List<TraceStorageEngineEvent> _rawEvents;  // Stored for debug export
 
         /// <summary>
@@ -47,11 +49,12 @@ namespace DaxStudio.UI.ViewModels
         }
 
         [ImportingConstructor]
-        public XmSqlErdViewModel(IEventAggregator eventAggregator)
+        public XmSqlErdViewModel(IEventAggregator eventAggregator, ServerTimingDetailsViewModel serverTimingDetails = null)
         {
             _parser = new XmSqlParser();
             _analysis = new XmSqlAnalysis();
             _eventAggregator = eventAggregator;
+            _serverTimingDetails = serverTimingDetails;
             _eventAggregator.SubscribeOnPublishedThread(this);
             // Initialize heat map mode from persisted options
             _heatMapMode = Options.SEDependenciesHeatMapMode;
@@ -97,6 +100,21 @@ namespace DaxStudio.UI.ViewModels
         /// Collection of relationship view models for display.
         /// </summary>
         public BindableCollection<ErdRelationshipViewModel> Relationships { get; } = new BindableCollection<ErdRelationshipViewModel>();
+
+        /// <summary>
+        /// Query similarity grouping results. Null if grouping has not been run.
+        /// </summary>
+        public XmSqlQueryGrouper.GroupingResult QueryGroups { get; private set; }
+
+        /// <summary>
+        /// Number of structural similarity groups found.
+        /// </summary>
+        public int StructuralGroupCount => QueryGroups?.StructuralGroups?.Count ?? 0;
+
+        /// <summary>
+        /// Number of table access similarity groups found.
+        /// </summary>
+        public int TableAccessGroupCount => QueryGroups?.TableAccessGroups?.Count ?? 0;
 
         /// <summary>
         /// Summary text showing counts, Scan CPU, and DirectQuery duration.
@@ -827,6 +845,33 @@ namespace DaxStudio.UI.ViewModels
                     rel.IsQueryFiltered = (fromTable?.IsQueryFiltered ?? true) || (toTable?.IsQueryFiltered ?? true);
                 }
             }
+
+            // Show query text in the detail panel when a query is selected
+            if (_selectedQueryId.HasValue)
+            {
+                var eventItem = EventListItems.FirstOrDefault(e => e.RowNumber == _selectedQueryId.Value);
+                if (eventItem != null && !string.IsNullOrWhiteSpace(eventItem.QueryText))
+                {
+                    var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"═══════════════════════════════════════════");
+                    sb.AppendLine($"📋 SE QUERY #{eventItem.RowNumber} ({eventItem.Subclass})");
+                    sb.AppendLine($"═══════════════════════════════════════════");
+                    sb.AppendLine();
+                    sb.AppendLine($"Duration: {eventItem.DurationFormatted}");
+                    sb.AppendLine($"CPU Time: {eventItem.CpuTimeFormatted}");
+                    sb.AppendLine($"Est. Rows: {eventItem.EstimatedRowsFormatted}");
+                    sb.AppendLine();
+                    sb.AppendLine("───────────────────────────────────────────");
+                    sb.AppendLine("QUERY TEXT");
+                    sb.AppendLine("───────────────────────────────────────────");
+                    sb.AppendLine(eventItem.QueryText);
+                    SelectedDetailInfo = sb.ToString();
+                }
+            }
+            else
+            {
+                SelectedDetailInfo = null;
+            }
         }
 
         #endregion
@@ -941,7 +986,10 @@ namespace DaxStudio.UI.ViewModels
                     InternalBatchEvent = evt.InternalBatchEvent,
                     Duration = evt.Duration,
                     CpuTime = evt.CpuTime,
-                    EstimatedRows = evt.EstimatedRows
+                    EstimatedRows = evt.EstimatedRows,
+                    QueryText = evt.IsDirectQueryEvent
+                        ? (!string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query)
+                        : evt.Query
                 });
             }
 
@@ -979,8 +1027,46 @@ namespace DaxStudio.UI.ViewModels
         #region Methods
 
         /// <summary>
+        /// Checks whether an event would be visible in the ServerTimingsView given the current filter settings.
+        /// This mirrors the filtering logic in ServerTimesViewModel.StorageEngineEvents.
+        /// </summary>
+        private bool IsEventVisibleInServerTimings(TraceStorageEngineEvent evt)
+        {
+            if (_serverTimingDetails == null) return true;
+
+            var cs = evt.ClassSubclass;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal)
+                return _serverTimingDetails.ShowInternal;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
+                return _serverTimingDetails.ShowBatch;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
+                return _serverTimingDetails.ShowCache;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted)
+                return _serverTimingDetails.ShowRewriteAttempts;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.TabularQuery
+                || cs.Subclass == DaxStudioTraceEventSubclass.TabularQueryInternal)
+                return _serverTimingDetails.ShowTabularQueries;
+
+            if (cs.Class == DaxStudioTraceEventClass.ExecutionMetrics)
+                return _serverTimingDetails.ShowMetrics;
+
+            if (cs.Class == DaxStudioTraceEventClass.Total)
+                return true;
+
+            if (cs.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL)
+                return _serverTimingDetails.ShowSql;
+
+            return _serverTimingDetails.ShowScan;
+        }
+
+        /// <summary>
         /// Analyzes a collection of SE events and builds the ERD model.
-        /// Skips Internal and Batch subclass events for hit counting.
+        /// Filters events to match Server Timings visibility settings.
         /// </summary>
         public void AnalyzeEvents(IEnumerable<TraceStorageEngineEvent> events)
         {
@@ -1002,18 +1088,20 @@ namespace DaxStudio.UI.ViewModels
                 long totalScanCpu = 0;
                 long totalDirectQueryDuration = 0;
                 
-                // Track batch events separately - they count toward SE query count but don't have parseable queries
+                // Track batch events separately - they count toward SE query count
                 int batchEventCount = 0;
 
                 // Parse each SE event's query
                 foreach (var evt in events)
                 {
+                    // Skip events not visible in the ServerTimingsView
+                    if (!IsEventVisibleInServerTimings(evt)) continue;
+
                     // Count batch events toward SE query total (they're counted in Server Timings)
-                    // but don't try to parse them as they don't have meaningful query text
+                    // but still parse their xmSQL query text for the diagram
                     if (evt.IsBatchEvent)
                     {
                         batchEventCount++;
-                        continue;
                     }
                     
                     // Skip Internal events as they don't represent actual user queries
@@ -1087,6 +1175,9 @@ namespace DaxStudio.UI.ViewModels
                 _analysis.TotalScanCpuTimeMs = totalScanCpu;
                 _analysis.TotalDirectQueryDurationMs = totalDirectQueryDuration;
 
+                // Run similarity grouping on the parsed queries
+                RunQueryGrouping(_rawEvents);
+
                 // Create view models for tables
                 CreateTableViewModels();
 
@@ -1122,6 +1213,35 @@ namespace DaxStudio.UI.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Runs query similarity grouping on the parsed events.
+        /// Groups queries by structural fingerprint (same SELECT/FROM/JOIN/WHERE columns, different values).
+        /// </summary>
+        private void RunQueryGrouping(List<TraceStorageEngineEvent> events)
+        {
+            try
+            {
+                var grouper = new XmSqlQueryGrouper();
+                var queries = events
+                    .Where(e => e.IsScanEvent && !e.IsInternalEvent && !string.IsNullOrWhiteSpace(e.Query))
+                    .Select(e => (e.RowNumber, e.Query));
+
+                QueryGroups = grouper.GroupQueries(queries);
+
+                // Store mappings in the analysis for use by other UI components
+                _analysis.QueryToStructuralGroup = QueryGroups.QueryToStructuralGroup;
+                _analysis.QueryToTableAccessGroup = QueryGroups.QueryToTableAccessGroup;
+
+                Log.Information(Constants.LogMessageTemplate, nameof(XmSqlErdViewModel), nameof(RunQueryGrouping),
+                    $"Grouped {QueryGroups.TotalQueries} queries into {QueryGroups.StructuralGroups.Count} structural groups and {QueryGroups.TableAccessGroups.Count} table access groups");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to run query similarity grouping");
+                QueryGroups = null;
             }
         }
 
@@ -5622,6 +5742,7 @@ namespace DaxStudio.UI.ViewModels
         public long? Duration { get; set; }
         public long? CpuTime { get; set; }
         public long? EstimatedRows { get; set; }
+        public string QueryText { get; set; }
 
         /// <summary>
         /// Formatted duration for display.

@@ -1501,6 +1501,7 @@
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="HamburgerBorder" Property="Background" Value="{DynamicResource Theme.Brush.StatusBar.Back}"/>
+                                            <Setter TargetName="HamburgerBorder" Property="BorderBrush" Value="{DynamicResource Theme.Brush.Accent}"/>
                                         </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
                                             <Setter TargetName="HamburgerBorder" Property="Background" Value="{DynamicResource Theme.Brush.StatusBar.Back}"/>

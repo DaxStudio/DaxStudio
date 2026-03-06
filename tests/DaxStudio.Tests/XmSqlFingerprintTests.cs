@@ -310,5 +310,276 @@ WHERE 'Sales'[Region] = 'North' VAND 'Sales'[Year] = '2024';";
             Assert.IsTrue(fp.WhereColumnsSignature.Contains("Sales.Region"), $"WhereColumnsSignature should contain filter column, got: {fp.WhereColumnsSignature}");
             Assert.IsTrue(fp.WhereColumnsSignature.Contains("Sales.Year"), $"WhereColumnsSignature should contain filter column, got: {fp.WhereColumnsSignature}");
         }
+
+        // ==================== GROUP TYPE DETERMINATION ====================
+
+        [TestMethod]
+        public void GroupType_IdenticalQueries_ReturnsIdentical()
+        {
+            var query = @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Bikes';";
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                (1, query),
+                (2, query),
+                (3, query),
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            // All queries are identical text, so they share a single structural group
+            var groupId = result.QueryToStructuralGroup[1];
+            var groupType = XmSqlQueryGrouper.DetermineGroupType(result, groupId, queryTexts);
+
+            Assert.AreEqual("Identical queries", groupType);
+        }
+
+        [TestMethod]
+        public void GroupType_IdenticalQueries_ReturnsIdentical2()
+        {
+            var query1 = @"SET DC_KIND=""AUTO"";
+SELECT
+    'Date'[Calendar Date],
+    SUM ( 'Retail Sales Item'[Sold Quantity] )
+FROM 'Retail Sales Item'
+    LEFT OUTER JOIN 'Date'
+        ON 'Retail Sales Item'[Transaction Date Sk]='Date'[Date Sk]
+    LEFT OUTER JOIN 'Article'
+        ON 'Retail Sales Item'[Article Typ1 Sk]='Article'[Article Typ1 Sk]
+WHERE
+    'Date'[Calendar Date] IN ( 45714.000000, 45690.000000, 45666.000000, 45685.000000, 45677.000000, 45661.000000, 45717.000000, 45709.000000, 45701.000000, 45669.000000..[63 total values, not all displayed] ) VAND
+    'Article'[Merchandise Department Name] IN ( 'OTHER', 'HEALTH', 'BEAUTY' ) VAND
+    'Retail Sales Item'[Void Transaction Line Flag] = 'N' VAND
+    'Retail Sales Item'[Priceline Range Flag] = 'Y' VAND
+    'Retail Sales Item'[Exclude Transaction Flag] = 'N';
+
+
+Estimated size: rows = 1,645  bytes = 26,320";
+            var query2 = @"SET DC_KIND=""AUTO"";
+SELECT
+    'Date'[Calendar Date],
+    SUM ( 'Retail Sales Item'[Sold Quantity] )
+FROM 'Retail Sales Item'
+    LEFT OUTER JOIN 'Date'
+        ON 'Retail Sales Item'[Transaction Date Sk]='Date'[Date Sk]
+    LEFT OUTER JOIN 'Article'
+        ON 'Retail Sales Item'[Article Typ1 Sk]='Article'[Article Typ1 Sk]
+WHERE
+    'Date'[Calendar Date] IN ( 45714.000000, 45690.000000, 45666.000000, 45685.000000, 45677.000000, 45661.000000, 45717.000000, 45709.000000, 45701.000000, 45669.000000..[63 total values, not all displayed] ) VAND
+    'Article'[Merchandise Department Name] IN ( 'OTHER', 'HEALTH', 'BEAUTY' ) VAND
+    'Retail Sales Item'[Void Transaction Line Flag] = 'N' VAND
+    'Retail Sales Item'[Priceline Range Flag] = 'Y' VAND
+    'Retail Sales Item'[Exclude Transaction Flag] = 'N';
+
+
+Estimated size: rows = 1,645  bytes = 26,320";
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                (1, query1),
+                (2, query2),
+
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            // All queries are identical text, so they share a single structural group
+            var groupId = result.QueryToStructuralGroup[1];
+            var groupType = XmSqlQueryGrouper.DetermineGroupType(result, groupId, queryTexts);
+
+            Assert.AreEqual("Identical queries", groupType);
+        }
+
+
+        [TestMethod]
+        public void GroupType_SameStructureDifferentFilterValues_ReturnsDifferentFilterValues()
+        {
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                (1, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Bikes';"),
+                (2, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Clothing';"),
+                (3, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Accessories';"),
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            var groupId = result.QueryToStructuralGroup[1];
+            var groupType = XmSqlQueryGrouper.DetermineGroupType(result, groupId, queryTexts);
+
+            Assert.AreEqual("Same structure, different filter values", groupType);
+        }
+
+        [TestMethod]
+        public void GroupType_DifferentSelectColumns_ReturnsDifferentSelectColumns()
+        {
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                // Two structural groups that share the same table access (FROM+WHERE)
+                // but differ in SELECT columns. Each group has multiple members with different filter values.
+                (1, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Bikes';"),
+                (2, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Clothing';"),
+                (3, @"SELECT 'Product'[Size] FROM 'Product' WHERE 'Product'[Category] = 'Bikes';"),
+                (4, @"SELECT 'Product'[Size] FROM 'Product' WHERE 'Product'[Category] = 'Clothing';"),
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            // Queries 1&2 are in one structural group, 3&4 in another
+            // Both structural groups share the same table access group
+            var groupId1 = result.QueryToStructuralGroup[1];
+            var groupType1 = XmSqlQueryGrouper.DetermineGroupType(result, groupId1, queryTexts);
+            Assert.AreEqual("Similar structure, different SELECT columns", groupType1);
+
+            var groupId3 = result.QueryToStructuralGroup[3];
+            var groupType3 = XmSqlQueryGrouper.DetermineGroupType(result, groupId3, queryTexts);
+            Assert.AreEqual("Similar structure, different SELECT columns", groupType3);
+        }
+
+        [TestMethod]
+        public void GroupType_MixOfIdenticalAndDifferentValues_CorrectTypes()
+        {
+            var identicalQuery = @"SELECT 'Sales'[Amount] FROM 'Sales';";
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                // Group A: identical queries
+                (1, identicalQuery),
+                (2, identicalQuery),
+                // Group B: same structure, different filter values
+                (3, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Bikes';"),
+                (4, @"SELECT 'Product'[Color] FROM 'Product' WHERE 'Product'[Category] = 'Clothing';"),
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            var groupIdA = result.QueryToStructuralGroup[1];
+            var groupTypeA = XmSqlQueryGrouper.DetermineGroupType(result, groupIdA, queryTexts);
+            Assert.AreEqual("Identical queries", groupTypeA);
+
+            var groupIdB = result.QueryToStructuralGroup[3];
+            var groupTypeB = XmSqlQueryGrouper.DetermineGroupType(result, groupIdB, queryTexts);
+            Assert.AreEqual("Same structure, different filter values", groupTypeB);
+        }
+
+        [TestMethod]
+        public void GroupType_SingleQueryInGroup_ReturnsIdentical()
+        {
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                (1, @"SELECT 'Product'[Color] FROM 'Product';"),
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            var groupId = result.QueryToStructuralGroup[1];
+            var groupType = XmSqlQueryGrouper.DetermineGroupType(result, groupId, queryTexts);
+
+            Assert.AreEqual("Single query", groupType,
+                "A single query in a group should be classified as single query");
+        }
+
+        [TestMethod]
+        public void GroupType_IdenticalQueriesWithDifferentSelectSiblings_ReturnsIdentical()
+        {
+            // Simulates the real-world case: many structural groups share the same 
+            // FROM/JOIN/WHERE (table access group), but one group has identical query text.
+            // The identical group should still be classified as "Identical queries"
+            // even though it has sibling structural groups with different SELECTs.
+            var identicalQuery = @"SELECT 'Sales'[Amount], SUM ( 'Sales'[Qty] )
+FROM 'Sales'
+LEFT OUTER JOIN 'Date' ON 'Sales'[DateKey]='Date'[DateKey]
+WHERE 'Date'[Year] = '2024';";
+
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                // Group A: 4 identical queries (same structural group)
+                (1, identicalQuery),
+                (2, identicalQuery),
+                (3, identicalQuery),
+                (4, identicalQuery),
+                // Group B: different SELECT, same FROM/JOIN/WHERE
+                (5, @"SELECT 'Sales'[Region]
+FROM 'Sales'
+LEFT OUTER JOIN 'Date' ON 'Sales'[DateKey]='Date'[DateKey]
+WHERE 'Date'[Year] = '2024';"),
+                (6, @"SELECT 'Sales'[Region]
+FROM 'Sales'
+LEFT OUTER JOIN 'Date' ON 'Sales'[DateKey]='Date'[DateKey]
+WHERE 'Date'[Year] = '2025';"),
+                // Group C: yet another SELECT, same FROM/JOIN/WHERE
+                (7, @"SELECT DCOUNT ( 'Sales'[TransId] )
+FROM 'Sales'
+LEFT OUTER JOIN 'Date' ON 'Sales'[DateKey]='Date'[DateKey]
+WHERE 'Date'[Year] = '2024';"),
+                (8, @"SELECT DCOUNT ( 'Sales'[TransId] )
+FROM 'Sales'
+LEFT OUTER JOIN 'Date' ON 'Sales'[DateKey]='Date'[DateKey]
+WHERE 'Date'[Year] = '2025';"),
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            // Group A (identical queries) - should be "Identical queries" despite having sibling structural groups
+            var groupIdA = result.QueryToStructuralGroup[1];
+            Assert.AreEqual(result.QueryToStructuralGroup[2], groupIdA, "All identical queries should be in same structural group");
+            Assert.AreEqual(result.QueryToStructuralGroup[3], groupIdA);
+            Assert.AreEqual(result.QueryToStructuralGroup[4], groupIdA);
+            var groupTypeA = XmSqlQueryGrouper.DetermineGroupType(result, groupIdA, queryTexts);
+            Assert.AreEqual("Identical queries", groupTypeA,
+                "Identical queries should be classified as such even when sibling structural groups exist");
+
+            // Group B (same structure, different filter values)
+            var groupIdB = result.QueryToStructuralGroup[5];
+            var groupTypeB = XmSqlQueryGrouper.DetermineGroupType(result, groupIdB, queryTexts);
+            Assert.AreEqual("Similar structure, different SELECT columns", groupTypeB,
+                "Non-identical group with sibling structural groups should show different SELECT columns");
+
+            // Group C (same structure, different filter values)
+            var groupIdC = result.QueryToStructuralGroup[7];
+            var groupTypeC = XmSqlQueryGrouper.DetermineGroupType(result, groupIdC, queryTexts);
+            Assert.AreEqual("Similar structure, different SELECT columns", groupTypeC);
+        }
+
+        [TestMethod]
+        public void GroupType_EndAndCacheMatchEventsWithSameQuery_ReturnsIdentical()
+        {
+            // Simulates QueryEnd events (with "Estimated size:" suffix) and 
+            // CacheMatch events (without suffix) for the same query.
+            // They should be in the same structural group and classified as "Identical queries".
+            var baseQuery = @"SET DC_KIND=""AUTO"";
+SELECT 'Date'[Calendar Date], SUM ( 'Sales'[Amount] )
+FROM 'Sales'
+LEFT OUTER JOIN 'Date' ON 'Sales'[DateKey]='Date'[DateKey]
+WHERE 'Date'[Year] IN ( '2024', '2025' );";
+
+            var queryEndVersion = baseQuery + "\n\nEstimated size: rows = 1,645  bytes = 26,320";
+            var cacheMatchVersion = baseQuery;
+
+            var queries = new List<(int QueryId, string XmSql)>
+            {
+                (1, queryEndVersion),       // first execution (QueryEnd)
+                (2, cacheMatchVersion),      // cache hit (CacheMatch)
+                (3, queryEndVersion),        // second execution (QueryEnd)
+                (4, cacheMatchVersion),      // another cache hit
+            };
+
+            var result = _grouper.GroupQueries(queries);
+            var queryTexts = queries.ToDictionary(q => q.QueryId, q => q.XmSql);
+
+            // All 4 should be in the same structural group after normalization
+            var groupId = result.QueryToStructuralGroup[1];
+            Assert.AreEqual(groupId, result.QueryToStructuralGroup[2],
+                "End and CacheMatch events should be in the same structural group");
+            Assert.AreEqual(groupId, result.QueryToStructuralGroup[3]);
+            Assert.AreEqual(groupId, result.QueryToStructuralGroup[4]);
+
+            var groupType = XmSqlQueryGrouper.DetermineGroupType(result, groupId, queryTexts);
+            Assert.AreEqual("Identical queries", groupType,
+                "End and CacheMatch events for the same query should be classified as identical");
+        }
     }
 }

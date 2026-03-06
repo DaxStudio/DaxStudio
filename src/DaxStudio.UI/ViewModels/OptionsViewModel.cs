@@ -1569,6 +1569,23 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showQueryGroupColumn;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [DisplayName("Show Query Group Column")]
+        [Description("Show the Query Group column in Server Timings which groups structurally similar storage engine queries together.")]
+        public bool ShowQueryGroupColumn
+        {
+            get => _showQueryGroupColumn;
+            set
+            {
+                _showQueryGroupColumn = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowQueryGroupColumn), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowQueryGroupColumn);
+            }
+        }
+
         private DiagramColumnStatDisplay _diagramColumnStatDisplay;
         [DataMember, DefaultValue(DiagramColumnStatDisplay.Cardinality)]
         [Category("Preview")]

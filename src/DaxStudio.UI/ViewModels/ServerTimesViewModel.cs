@@ -38,6 +38,18 @@ using DaxStudio.UI.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
+    public class QueryGroupSummary
+    {
+        public int GroupId { get; set; }
+        public string GroupType { get; set; }
+        public int EventCount { get; set; }
+        public int CacheHits { get; set; }
+        public long TotalDuration { get; set; }
+        public long TotalCpu { get; set; }
+        public long TotalRows { get; set; }
+        public long TotalKB { get; set; }
+    }
+
     // Using SimplePropertyChangedBase as a base as it does not have a [DataContract] attribute
     // like the default Caliburn.Micro PropertyChangedBase which breaks the deserilization
     public class TraceStorageEngineEvent : SimplePropertyChangedBase {
@@ -113,6 +125,8 @@ namespace DaxStudio.UI.ViewModels
         public long? CpuTime { get; set; }
         public double? CpuFactor { get; set; }
         public int RowNumber { get; set; }
+        public int? QueryGroup { get; set; }
+        public QueryGroupSummary QueryGroupSummary { get; set; }
         public long? EstimatedRows { get; set; }
         public long? EstimatedKBytes { get; set; }
         public bool HighlightQuery { get; set; }
@@ -795,6 +809,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
             NotifyOfPropertyChange(nameof(ShowStorageEngineDependencies));
             NotifyOfPropertyChange(nameof(ShowInModelDiagramVisible));
+            NotifyOfPropertyChange(nameof(ShowQueryGroupColumn));
         }
 
         protected override void ProcessSingleEvent(DaxStudioTraceEventArgs singleEvent)
@@ -1240,6 +1255,9 @@ namespace DaxStudio.UI.ViewModels
                 Events.Clear();
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
 
+                // Run query similarity grouping on SE scan events
+                RunQueryGrouping();
+
                 Refresh(); // update all data bindings
             }
         }
@@ -1262,6 +1280,70 @@ namespace DaxStudio.UI.ViewModels
             }
 
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
+        }
+
+        private void RunQueryGrouping()
+        {
+            try
+            {
+                var grouper = new XmSqlQueryGrouper();
+                var queries = AllStorageEngineEvents
+                    .Where(e => e.IsScanEvent && !e.IsInternalEvent && !string.IsNullOrWhiteSpace(e.Query))
+                    .Select(e => (e.RowNumber, e.Query));
+
+                var groupResult = grouper.GroupQueries(queries);
+
+                // Assign structural group IDs to events
+                foreach (var evt in AllStorageEngineEvents)
+                {
+                    if (groupResult.QueryToStructuralGroup.TryGetValue(evt.RowNumber, out int structId))
+                        evt.QueryGroup = structId;
+                }
+
+                // Look up fingerprints from the grouper results
+                var structGroupFingerprints = groupResult.StructuralGroups.ToDictionary(g => g.GroupId, g => g.Fingerprint);
+
+                // Build query text lookup for group type detection
+                var queryTexts = AllStorageEngineEvents
+                    .Where(e => e.QueryGroup.HasValue)
+                    .ToDictionary(e => e.RowNumber, e => e.Query);
+
+                // Build group summaries based on visible event types
+                var groupSummaries = AllStorageEngineEvents
+                    .Where(e => e.QueryGroup.HasValue)
+                    .GroupBy(e => e.QueryGroup.Value)
+                    .ToDictionary(g => g.Key, g =>
+                    {
+                        structGroupFingerprints.TryGetValue(g.Key, out var fingerprint);
+
+                        var cacheHits = g.Count(e => e.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch);
+                        var nonCacheEvents = g.Where(e => e.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch
+                                                       && e.Subclass != DaxStudioTraceEventSubclass.VertiPaqScanInternal
+                                                       && e.Subclass != DaxStudioTraceEventSubclass.BatchVertiPaqScan).ToList();
+
+                        return new QueryGroupSummary
+                        {
+                            GroupId = g.Key,
+                            GroupType = XmSqlQueryGrouper.DetermineGroupType(groupResult, g.Key, queryTexts, nonCacheEvents.Count),
+                            EventCount = nonCacheEvents.Count,
+                            CacheHits = cacheHits,
+                            TotalDuration = nonCacheEvents.Sum(e => e.Duration ?? 0),
+                            TotalCpu = nonCacheEvents.Sum(e => e.CpuTime ?? 0),
+                            TotalRows = nonCacheEvents.Sum(e => e.EstimatedRows ?? 0),
+                            TotalKB = nonCacheEvents.Sum(e => e.EstimatedKBytes ?? 0)
+                        };
+                    });
+
+                foreach (var evt in AllStorageEngineEvents)
+                {
+                    if (evt.QueryGroup.HasValue && groupSummaries.TryGetValue(evt.QueryGroup.Value, out var summary))
+                        evt.QueryGroupSummary = summary;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to run query similarity grouping in Server Timings");
+            }
         }
 
         private bool IsDaxStudioInternalQuery()
@@ -1707,6 +1789,9 @@ namespace DaxStudio.UI.ViewModels
                 AllStorageEngineEvents.Apply(se => UpdateTimelineTotalDuration(new DaxStudioTraceEventArgs(se.Class.ToString(), se.Subclass.ToString(), se.Duration ?? 0, se.CpuTime ?? 0, se.TextData ?? se.Query, string.Empty, se.StartTime)));
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
+
+            // Run query similarity grouping on pasted/loaded data
+            RunQueryGrouping();
         }
 
 
@@ -2020,7 +2105,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Starting with {AllStorageEngineEvents.Count} events");
                 
-                var erdViewModel = new XmSqlErdViewModel(_eventAggregator);
+                var erdViewModel = new XmSqlErdViewModel(_eventAggregator, ServerTimingDetails);
                 erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
                 
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Analysis complete: {erdViewModel.Tables.Count} tables found");
@@ -2057,7 +2142,7 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var evt in AllStorageEngineEvents)
                 {
-                    if (evt.IsBatchEvent || evt.IsInternalEvent) continue;
+                    if (evt.IsInternalEvent) continue;
 
                     var metrics = new XmSqlParser.SeEventMetrics
                     {
@@ -2233,6 +2318,16 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _globalOptions.ShowObjectNameInServerTimings = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public bool ShowQueryGroupColumn
+        {
+            get { return _globalOptions.ShowQueryGroupColumn; }
+            set
+            {
+                _globalOptions.ShowQueryGroupColumn = value;
                 NotifyOfPropertyChange();
             }
         }

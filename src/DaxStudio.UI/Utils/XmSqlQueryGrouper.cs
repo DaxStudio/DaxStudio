@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DaxStudio.UI.Utils
 {
@@ -73,7 +74,11 @@ namespace DaxStudio.UI.Utils
                     continue;
                 }
 
-                var fingerprint = ComputeFingerprint(xmSql);
+                // Normalize query text: strip "Estimated size:" suffix which differs
+                // between VertiPaqSEQueryEnd and VertiPaqSEQueryCacheMatch events
+                var normalizedSql = NormalizeQueryText(xmSql);
+
+                var fingerprint = ComputeFingerprint(normalizedSql);
                 if (fingerprint == null)
                 {
                     result.FailedQueries++;
@@ -146,6 +151,76 @@ namespace DaxStudio.UI.Utils
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Determines the group type label for a structural group.
+        /// </summary>
+        /// <param name="groupResult">The full grouping result.</param>
+        /// <param name="structuralGroupId">The structural group ID to classify.</param>
+        /// <param name="queryTexts">Map of query ID to query text for identical-query detection.</param>
+        /// <param name="visibleEventCount">Number of visible (non-cache, non-internal) events in this group.</param>
+        /// <returns>A descriptive group type string.</returns>
+        public static string DetermineGroupType(GroupingResult groupResult, int structuralGroupId, Dictionary<int, string> queryTexts, int visibleEventCount = -1)
+        {
+            // Check if all queries in this structural group are identical
+            // (normalize by stripping "Estimated size:" suffix which differs between End and CacheMatch events)
+            var memberIds = groupResult.StructuralGroups
+                .FirstOrDefault(g => g.GroupId == structuralGroupId)?.MemberQueryIds;
+
+            if (memberIds != null && memberIds.Count > 0)
+            {
+                var matchingMembers = memberIds.Where(id => queryTexts.ContainsKey(id)).ToList();
+                var distinctQueries = matchingMembers
+                    .Select(id => NormalizeQueryText(queryTexts[id]))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count();
+
+                // Use visible event count if provided, otherwise fall back to total members
+                var effectiveCount = visibleEventCount >= 0 ? visibleEventCount : matchingMembers.Count;
+
+                if (distinctQueries <= 1)
+                    return effectiveCount <= 1 ? "Single query" : "Identical queries";
+            }
+
+            // Check if multiple structural groups share the same table access group
+            var tableAccessGroupMembers = new Dictionary<int, HashSet<int>>();
+            foreach (var structGroup in groupResult.StructuralGroups)
+            {
+                foreach (var queryId in structGroup.MemberQueryIds)
+                {
+                    if (groupResult.QueryToTableAccessGroup.TryGetValue(queryId, out int accessId))
+                    {
+                        if (!tableAccessGroupMembers.TryGetValue(accessId, out var structIds))
+                        {
+                            structIds = new HashSet<int>();
+                            tableAccessGroupMembers[accessId] = structIds;
+                        }
+                        structIds.Add(structGroup.GroupId);
+                    }
+                }
+            }
+
+            // Find how many sibling structural groups share our table access group
+            foreach (var accessGroup in tableAccessGroupMembers.Values)
+            {
+                if (accessGroup.Contains(structuralGroupId) && accessGroup.Count > 1)
+                    return "Similar structure, different SELECT columns";
+            }
+
+            return "Same structure, different filter values";
+        }
+
+        private static readonly Regex EstimatedSizeRegex = new Regex(@"Estimated size:.*$", RegexOptions.Singleline | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Normalizes query text for identity comparison by stripping the 
+        /// "Estimated size:" suffix (present on QueryEnd but not CacheMatch events).
+        /// </summary>
+        internal static string NormalizeQueryText(string query)
+        {
+            if (string.IsNullOrEmpty(query)) return string.Empty;
+            return EstimatedSizeRegex.Replace(query, "").Trim();
         }
 
         /// <summary>
