@@ -1870,10 +1870,21 @@ namespace DaxStudio.UI.ViewModels
                 var showHidden = ShowHiddenObjects;
                 var sortKeyColumnsFirst = _sortKeyColumnsFirst;
 
+                // Look up the ADOTabular model from the connection (populated by MetadataVisitorVpax for VPAX files)
+                var adoModel = _metadataProvider?.SelectedModel;
+
                 foreach (var vpaTable in vpaModel.Tables)
                 {
+                    // Look up the matching ADOTabularTable if available
+                    ADOTabularTable adoTable = null;
+                    if (adoModel?.Tables != null)
+                    {
+                        adoTable = adoModel.Tables.FirstOrDefault(t => 
+                            string.Equals(t.Name, vpaTable.TableName, StringComparison.OrdinalIgnoreCase));
+                    }
+
                     // Note: VpaTable doesn't expose IsHidden, so we show all tables in offline mode
-                    var tableVm = new ModelDiagramTableViewModel(vpaTable, showHidden, _options, sortKeyColumnsFirst);
+                    var tableVm = new ModelDiagramTableViewModel(vpaTable, showHidden, _options, sortKeyColumnsFirst, adoTable);
                     Tables.Add(tableVm);
                     tableDict[vpaTable.TableName] = tableVm;
                 }
@@ -1917,7 +1928,13 @@ namespace DaxStudio.UI.ViewModels
                             // Try to find the VPA column to get its type info
                             var vpaCol = vpaTable.Columns.FirstOrDefault(c => 
                                 string.Equals(c.ColumnName, fromColumnName, StringComparison.OrdinalIgnoreCase));
-                            fromColumnVm = new ModelDiagramColumnViewModel(fromColumnName, vpaCol, _options);
+                            // Look up ADOTabularColumn from the model if available
+                            ADOTabularColumn adoFromCol = null;
+                            var adoFromTable = adoModel?.Tables?.FirstOrDefault(t => 
+                                string.Equals(t.Name, fromTableName, StringComparison.OrdinalIgnoreCase));
+                            if (adoFromTable?.Columns != null && adoFromTable.Columns.ContainsKey(fromColumnName))
+                                adoFromCol = adoFromTable.Columns[fromColumnName];
+                            fromColumnVm = new ModelDiagramColumnViewModel(fromColumnName, vpaCol, _options, adoFromCol);
                             fromColumnVm.IsRelationshipColumn = true;
                             fromTableVm.Columns.Add(fromColumnVm);
                             Log.Debug("VPA: Created placeholder column {Table}.{Column} for relationship", fromTableName, fromColumnName);
@@ -1930,7 +1947,13 @@ namespace DaxStudio.UI.ViewModels
                                 string.Equals(t.TableName, toTableName, StringComparison.OrdinalIgnoreCase));
                             var vpaCol = targetVpaTable?.Columns.FirstOrDefault(c => 
                                 string.Equals(c.ColumnName, toColumnName, StringComparison.OrdinalIgnoreCase));
-                            toColumnVm = new ModelDiagramColumnViewModel(toColumnName, vpaCol, _options);
+                            // Look up ADOTabularColumn from the model if available
+                            ADOTabularColumn adoToCol = null;
+                            var adoToTable = adoModel?.Tables?.FirstOrDefault(t => 
+                                string.Equals(t.Name, toTableName, StringComparison.OrdinalIgnoreCase));
+                            if (adoToTable?.Columns != null && adoToTable.Columns.ContainsKey(toColumnName))
+                                adoToCol = adoToTable.Columns[toColumnName];
+                            toColumnVm = new ModelDiagramColumnViewModel(toColumnName, vpaCol, _options, adoToCol);
                             toColumnVm.IsRelationshipColumn = true;
                             toTableVm.Columns.Add(toColumnVm);
                             Log.Debug("VPA: Created placeholder column {Table}.{Column} for relationship", toTableName, toColumnName);
@@ -5498,7 +5521,7 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Constructor for creating a table from VPA (VertiPaq Analyzer) data when offline.
         /// </summary>
-        public ModelDiagramTableViewModel(VpaTable vpaTable, bool showHiddenObjects, IGlobalOptions options, bool sortKeyColumnsFirst = false)
+        public ModelDiagramTableViewModel(VpaTable vpaTable, bool showHiddenObjects, IGlobalOptions options, bool sortKeyColumnsFirst = false, ADOTabularTable adoTable = null)
         {
             _table = null; // No ADOTabular table when loading from VPA
             _showHiddenObjects = showHiddenObjects;
@@ -5517,7 +5540,7 @@ namespace DaxStudio.UI.ViewModels
             _vpaIsPrivate = false; // VPA doesn't track private
             
             // Create columns from VPA data
-            Columns = new BindableCollection<ModelDiagramColumnViewModel>(GetColumnsFromVpa(vpaTable, showHiddenObjects, options));
+            Columns = new BindableCollection<ModelDiagramColumnViewModel>(GetColumnsFromVpa(vpaTable, showHiddenObjects, options, adoTable));
             
             Log.Information("{class} {method} Created table from VPA: '{table}' with {colCount} columns",
                 nameof(ModelDiagramTableViewModel), ".ctor(VPA)", _vpaTableName, Columns.Count);
@@ -5526,7 +5549,7 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Creates column ViewModels from VPA table data.
         /// </summary>
-        private IEnumerable<ModelDiagramColumnViewModel> GetColumnsFromVpa(VpaTable vpaTable, bool showHiddenObjects, IGlobalOptions options)
+        private IEnumerable<ModelDiagramColumnViewModel> GetColumnsFromVpa(VpaTable vpaTable, bool showHiddenObjects, IGlobalOptions options, ADOTabularTable adoTable = null)
         {
             var result = new List<ModelDiagramColumnViewModel>();
             
@@ -5538,7 +5561,13 @@ namespace DaxStudio.UI.ViewModels
                 // Skip hidden columns if not showing hidden
                 if (!showHiddenObjects && vpaCol.IsHidden) continue;
                 
-                var colVm = new ModelDiagramColumnViewModel(vpaCol, options);
+                // Look up the matching ADOTabularColumn if available
+                ADOTabularColumn adoCol = null;
+                if (adoTable?.Columns != null && adoTable.Columns.ContainsKey(vpaCol.ColumnName))
+                {
+                    adoCol = adoTable.Columns[vpaCol.ColumnName];
+                }
+                var colVm = new ModelDiagramColumnViewModel(vpaCol, options, adoCol);
                 result.Add(colVm);
             }
             
@@ -6610,9 +6639,9 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Constructor for creating a column from VPA (VertiPaq Analyzer) data when offline.
         /// </summary>
-        public ModelDiagramColumnViewModel(VpaColumn vpaColumn, IGlobalOptions options)
+        public ModelDiagramColumnViewModel(VpaColumn vpaColumn, IGlobalOptions options, ADOTabularColumn column = null)
         {
-            _column = null;
+            _column = column;
             _metadataProvider = null;
             _options = options;
             _sampleData = new List<string>();
@@ -6644,9 +6673,10 @@ namespace DaxStudio.UI.ViewModels
         /// <param name="columnName">The column name from the relationship definition</param>
         /// <param name="vpaColumn">Optional VPA column data if available (may be null for completely hidden columns)</param>
         /// <param name="options">Global options</param>
-        public ModelDiagramColumnViewModel(string columnName, VpaColumn vpaColumn, IGlobalOptions options)
+        /// <param name="column">Optional ADOTabularColumn from the model (when available from VPAX connection)</param>
+        public ModelDiagramColumnViewModel(string columnName, VpaColumn vpaColumn, IGlobalOptions options, ADOTabularColumn column = null)
         {
-            _column = null;
+            _column = column;
             _metadataProvider = null;
             _options = options;
             _sampleData = new List<string>();
@@ -6706,7 +6736,7 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public string SortByColumnName => _isFromVpa ? null : _column?.OrderBy?.Name;
 
-        public string DaxName => _column.DaxName;
+        public string DaxName => _column?.DaxName;
         /// <summary>
         /// Whether this column has variations (field parameters).
         /// </summary>
