@@ -1613,7 +1613,7 @@
                         cal:Message.Attach="[Event Click] = [Action AutoArrange]"
                         ToolTip="Automatically arrange tables using the selected layout algorithm">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⊞" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock Text="&#xEE47;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0 0 4 0"/>
                         <TextBlock>Layout</TextBlock>
                     </StackPanel>
                 </Button>
@@ -1624,7 +1624,7 @@
                           ToolTip="Select the layout algorithm for table arrangement:&#x0a;• Auto: Automatically selects based on table count&#x0a;• Hierarchy: Layered layout showing relationship hierarchy (best for small models)&#x0a;• Grid: Compact grid layout (best for medium models)&#x0a;• Clustered: Cluster-based compact layout (best for large models)&#x0a;• Force Directed: Physics-based layout that minimizes relationship overlap"
                           Margin="4,0"
                           VerticalAlignment="Center"
-                          Width="110">
+                          Width="130">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
@@ -1653,7 +1653,7 @@
                         cal:Message.Attach="[Event Click] = [Action ZoomToFit]"
                         ToolTip="Zoom to fit all tables">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⊡" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE73F;" FontSize="14" Margin="0,0,4,0"/>
                         <TextBlock>Fit</TextBlock>
                     </StackPanel>
                 </Button>
@@ -1662,7 +1662,7 @@
                               IsChecked="{Binding ShowMiniMap}"
                               ToolTip="Toggle mini-map navigation panel">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🗺" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock Text="&#xEA5F;" FontFamily="Segoe Fluent Icons" FontSize="14" Margin="0,2,4,0"/>
                         <TextBlock>Map</TextBlock>
                     </StackPanel>
                 </ToggleButton>
@@ -1680,7 +1680,7 @@
                               IsChecked="{Binding SnapToGrid}"
                               ToolTip="Snap tables to grid when dragging">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⊡" FontSize="12" Margin="0,0,4,0"/>
+                        <TextBlock Text="&#xF0E2;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0 2 4 0"/>
                         <TextBlock>Snap</TextBlock>
                     </StackPanel>
                 </ToggleButton>
