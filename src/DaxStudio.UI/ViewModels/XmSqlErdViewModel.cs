@@ -968,6 +968,7 @@ namespace DaxStudio.UI.ViewModels
 
                 // Only include events that contributed to the diagram
                 if (evt.IsInternalEvent) continue;
+                if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch) continue;
                 if (evt.IsDirectQueryEvent)
                 {
                     if (string.IsNullOrWhiteSpace(evt.TextData) && string.IsNullOrWhiteSpace(evt.Query))
@@ -1107,6 +1108,15 @@ namespace DaxStudio.UI.ViewModels
                     // Skip Internal events as they don't represent actual user queries
                     if (evt.IsInternalEvent)
                         continue;
+
+                    // Cache hit events contribute to statistics but are not parsed for the diagram
+                    // (they duplicate Scan events already represented)
+                    if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
+                    {
+                        _analysis.TotalSEQueriesAnalyzed++;
+                        _analysis.CacheHitQueries++;
+                        continue;
+                    }
 
                     // Skip events without query text
                     // For DirectQuery events, check TextData which has the SQL
