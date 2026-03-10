@@ -167,6 +167,7 @@ namespace DaxStudio.UI.ViewModels
         // - 'RoundValueCallback'
         // - 'MinMaxColumnPositionCallback'
         // - 'Cond'
+        private const int XmSqlTabWidth = 4;
         private string _queryRichText = "";
 
         [JsonIgnore]
@@ -174,9 +175,12 @@ namespace DaxStudio.UI.ViewModels
             set {
                 if (value != null)
                 {
+                    var tabReplacement = new string(' ', XmSqlTabWidth);
+                    var normalized = value.Replace("\t", tabReplacement);
+
                     // Strip single quotes around callback function names
                     // (xmSQL wraps some callback names in quotes, but they should display without them)
-                    _queryRichText = value
+                    _queryRichText = normalized
                         .Replace("'LogAbsValueCallback'", "LogAbsValueCallback")
                         .Replace("'RoundValueCallback'", "RoundValueCallback")
                         .Replace("'MinMaxColumnPositionCallback'", "MinMaxColumnPositionCallback")
