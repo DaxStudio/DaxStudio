@@ -739,9 +739,9 @@ namespace PoorMansTSqlFormatterLib.Formatters
                 outputKeyword = keyword;
 
             if (Options.UppercaseKeywords)
-                return $"|~K~|{outputKeyword.ToUpperInvariant()}|~E~|";
+                return outputKeyword.ToUpperInvariant();
             else
-                return $"|~K~|{outputKeyword.ToLowerInvariant()}|~E~|";
+                return outputKeyword.ToLowerInvariant();
         }
 
         private string FormatOperator(string operatorValue)

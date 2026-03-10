@@ -27,15 +27,7 @@ SELECT
 FROM 'Product'
 WHERE
 	 ( COALESCE ( [CallbackDataID ( SEARCH ( ""R"", 'Product'[Color], 1, 0 ) ) ] ( PFDATAID ( 'Product'[Color] ) ) ) = COALESCE ( 1 ) ) ;";
-            string formattedxmSql = @"|~K~|SET|~E~| |~K~|DC_KIND|~E~|=""|~K~|DENSE|~E~|"";
-|~K~|SELECT|~E~|
-	'Product'[Color],
-	'Product'[Class],
-	'Product'[Product Category Name],
-	|~K~|COUNT|~E~| () 
-|~K~|FROM|~E~| 'Product'
-|~K~|WHERE|~E~|
-	 ( |~K~|COALESCE|~E~| ( [|~S~|CallbackDataID|~E~||~F~| ( SEARCH ( ""R"", 'Product'[Color], 1, 0 ) )|~E~| ] ( |~K~|PFDATAID|~E~| ( 'Product'[Color] ) ) ) = |~K~|COALESCE|~E~| ( 1 ) ) ;";
+            // With AvalonEdit syntax highlighting, QueryRichText stores plain text (no marker codes)
             var options = Substitute.For<IGlobalOptions>();
             options.HighlightXmSqlCallbacks.Returns(true);
             var args = new DaxStudioTraceEventArgs();
@@ -43,8 +35,10 @@ WHERE
             args.TextData = xmSql;
             var evnt = new TraceStorageEngineEvent( args, 1, options, null, null);
             
-            //evnt.QueryRichText = xmSql;
-            Assert.AreEqual(formattedxmSql, evnt.QueryRichText);
+            // QueryRichText should now contain the query without marker codes
+            Assert.AreEqual(xmSql, evnt.QueryRichText);
+            // HighlightQuery should be true since the query contains CallbackDataID
+            Assert.IsTrue(evnt.HighlightQuery);
 
         }
     }

@@ -45,10 +45,14 @@ namespace DaxStudio.UI.Utils
             return text.Length >= 2 ? text.Substring(1, text.Length - 2) : text;
         }
 
-        /// <summary>Extracts table name from a tableRef context</summary>
+        /// <summary>Extracts table name from a tableRef context (handles both 'Table' and [Table])</summary>
         private static string GetTableName(xmSQLParser.TableRefContext ctx)
         {
-            return ctx == null ? null : GetTableName(ctx.QUOTED_TABLE_NAME());
+            if (ctx == null) return null;
+            var quoted = ctx.QUOTED_TABLE_NAME();
+            if (quoted != null) return GetTableName(quoted);
+            var bracketed = ctx.BRACKETED_NAME();
+            return bracketed != null ? GetBracketedContent(bracketed) : null;
         }
 
         /// <summary>Extracts column name from a BRACKETED_NAME token ([ColumnName] -> ColumnName)</summary>
@@ -59,11 +63,13 @@ namespace DaxStudio.UI.Utils
             return text.Length >= 2 ? text.Substring(1, text.Length - 2) : text;
         }
 
-        /// <summary>Gets table and column from a tableColumnRef context</summary>
+        /// <summary>Gets table and column from a tableColumnRef context.
+        /// Handles both 'Table'[Column] and [Table].[Column] forms.</summary>
         private (string Table, string Column)? GetTableColumn(xmSQLParser.TableColumnRefContext ctx)
         {
             if (ctx == null) return null;
             var table = GetTableName(ctx.tableRef());
+            // Column is the BRACKETED_NAME that's a direct child of tableColumnRef
             var column = GetBracketedContent(ctx.BRACKETED_NAME());
             if (string.IsNullOrEmpty(table) || string.IsNullOrEmpty(column)) return null;
             return (table, column);

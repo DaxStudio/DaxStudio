@@ -94,6 +94,7 @@
     <Compile Include="AccessTokenTests.cs" />
     <Compile Include="AntlrXmSqlParserTests.cs" />
     <Compile Include="XmSqlFingerprintTests.cs" />
+    <Compile Include="AntlrXmSqlFormatterTests.cs" />
     <Compile Include="ParserBenchmarkTests.cs" />
     <Compile Include="ADOTabularVpaxVisitorTests.cs" />
     <Compile Include="ADOTabularMultiDimTests.cs" />

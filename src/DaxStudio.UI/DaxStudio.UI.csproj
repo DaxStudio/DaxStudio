@@ -291,6 +291,7 @@
     <Compile Include="Behaviours\TreeViewClipboardBehaviour.cs" />
     <Compile Include="Behaviours\TreeViewMultipleSelectionBehaviour.cs" />
     <Compile Include="Controls\BindableRichTextBox.cs" />
+    <Compile Include="Controls\BindableQueryEditor.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
     <Compile Include="Controls\ClipBorder.cs" />
     <Compile Include="Controls\DataGridCustomCopy.cs" />
@@ -644,9 +645,11 @@
     <Compile Include="Utils\IXmSqlParser.cs" />
     <Compile Include="Utils\XmSqlParser.cs" />
     <Compile Include="Utils\AntlrXmSqlParser.cs" />
+    <Compile Include="Utils\AntlrXmSqlFormatter.cs" />
     <Compile Include="Utils\XmSqlAnalysisVisitor.cs" />
     <Compile Include="Utils\XmSqlFingerprintVisitor.cs" />
     <Compile Include="Utils\XmSqlQueryGrouper.cs" />
+    <Compile Include="Utils\XmSqlFormattingVisitor.cs" />
     <Compile Include="Utils\FocusManager.cs" />
     <Compile Include="Utils\FormatDebugMode.cs" />
     <Compile Include="Utils\HighContrastHelper.cs" />
@@ -709,6 +712,7 @@
     <Compile Include="Utils\TimelineHeatmapImageGenerator.cs" />
     <Compile Include="Utils\WrapSharingViolations.cs" />
     <Compile Include="Utils\XlsxHelper.cs" />
+    <Compile Include="Utils\SyntaxHighlightingHelper.cs" />
     <Compile Include="Utils\ZoomHelper.cs" />
     <Compile Include="Validation\BindingProxy.cs" />
     <Compile Include="Validation\HotkeyValidationRule.cs" />
@@ -1509,6 +1513,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AvalonDockLayout-Default.xml" />
+    <EmbeddedResource Include="Resources\xmSQL.xshd" />
+    <EmbeddedResource Include="Resources\DirectQuerySql.xshd" />
   </ItemGroup>
   <ItemGroup>
     <Antlr4 Include="Grammars\xmSQL.g4">

@@ -75,11 +75,16 @@ selectList
     ;
 
 selectItem
-    : aggregationExpr
-    | callbackExpr
-    | tableColumnRef CALLBACKDATAID?
+    : aggregationExpr alias?
+    | callbackExpr alias?
+    | tableColumnRef CALLBACKDATAID? alias?
     | EXPR_AT_REF     // @$Expr0 reference
     | expression       // catch-all for complex expressions
+    ;
+
+// Optional select item alias: AS [name] or AS 'name'
+alias
+    : AS (BRACKETED_NAME | QUOTED_TABLE_NAME)
     ;
 
 aggregationExpr
@@ -165,17 +170,19 @@ valueList
     ;
 
 truncationIndicator
-    : DOTDOT BRACKETED_NAME
+    : DOTDOT DOT? BRACKETED_NAME
     ;
 
-// 'TableName'[ColumnName]
+// 'TableName'[ColumnName] or [TableName].[ColumnName]
 tableColumnRef
     : tableRef BRACKETED_NAME
+    | tableRef DOT BRACKETED_NAME
     ;
 
-// 'TableName'  (single-quoted identifier)
+// 'TableName' or [TableName]  (single-quoted or bracketed table identifier)
 tableRef
     : QUOTED_TABLE_NAME
+    | BRACKETED_NAME
     ;
 
 // Generic expression (catch-all for complex expressions like PFCAST, arithmetic, etc.)
@@ -315,6 +322,9 @@ IDENTIFIER
 
 // Whitespace (skip)
 WS          : [ \t\r\n]+ -> skip ;
+
+// Single dot (for [Table].[Column] references)
+DOT         : '.' ;
 
 // Catch-all for any unrecognized characters (allows partial parsing)
 ANY_CHAR    : . ;

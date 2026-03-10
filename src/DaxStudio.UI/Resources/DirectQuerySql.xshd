@@ -1,0 +1,208 @@
+﻿<SyntaxDefinition name="DirectQuerySql" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <!-- Default colors (Light theme) -->
+  <Color name="Keyword"  foreground="#035ACA" />
+  <Color name="String"   foreground="#D93124" />
+  <Color name="Comment"  foreground="#39A03B" />
+  <Color name="Number"   foreground="#EE7F18" />
+  <Color name="Function" foreground="#FF00FF" />
+  <Color name="Operator" foreground="#808080" />
+
+  <!-- Light theme colors -->
+  <Color name="Light.Keyword"  foreground="#035ACA" />
+  <Color name="Light.String"   foreground="#D93124" />
+  <Color name="Light.Comment"  foreground="#39A03B" />
+  <Color name="Light.Number"   foreground="#EE7F18" />
+  <Color name="Light.Function" foreground="#FF00FF" />
+  <Color name="Light.Operator" foreground="#808080" />
+
+  <!-- Dark theme colors -->
+  <Color name="Dark.Keyword"  foreground="#0095FF" />
+  <Color name="Dark.String"   foreground="#E44444" />
+  <Color name="Dark.Comment"  foreground="#86C573" />
+  <Color name="Dark.Number"   foreground="#EE7F18" />
+  <Color name="Dark.Function" foreground="#DCDCAA" />
+  <Color name="Dark.Operator" foreground="#FFFFFF" />
+
+  <RuleSet ignoreCase="true">
+    <!-- Single-line comments -->
+    <Span color="Comment" multiline="false">
+      <Begin>--</Begin>
+    </Span>
+
+    <!-- Multi-line comments -->
+    <Span color="Comment" multiline="true">
+      <Begin>/\*</Begin>
+      <End>\*/</End>
+    </Span>
+
+    <!-- String literals (single quotes) -->
+    <Span color="String">
+      <Begin>'</Begin>
+      <End>'</End>
+    </Span>
+
+    <!-- String literals (double quotes / identifiers) -->
+    <Span color="String">
+      <Begin>"</Begin>
+      <End>"</End>
+    </Span>
+
+    <!-- SQL Keywords -->
+    <Keywords color="Keyword">
+      <Word>SELECT</Word>
+      <Word>FROM</Word>
+      <Word>WHERE</Word>
+      <Word>AND</Word>
+      <Word>OR</Word>
+      <Word>NOT</Word>
+      <Word>IN</Word>
+      <Word>IS</Word>
+      <Word>NULL</Word>
+      <Word>AS</Word>
+      <Word>ON</Word>
+      <Word>JOIN</Word>
+      <Word>LEFT</Word>
+      <Word>RIGHT</Word>
+      <Word>INNER</Word>
+      <Word>OUTER</Word>
+      <Word>CROSS</Word>
+      <Word>FULL</Word>
+      <Word>GROUP</Word>
+      <Word>BY</Word>
+      <Word>ORDER</Word>
+      <Word>HAVING</Word>
+      <Word>UNION</Word>
+      <Word>ALL</Word>
+      <Word>DISTINCT</Word>
+      <Word>TOP</Word>
+      <Word>SET</Word>
+      <Word>INTO</Word>
+      <Word>INSERT</Word>
+      <Word>UPDATE</Word>
+      <Word>DELETE</Word>
+      <Word>CREATE</Word>
+      <Word>ALTER</Word>
+      <Word>DROP</Word>
+      <Word>TABLE</Word>
+      <Word>INDEX</Word>
+      <Word>VIEW</Word>
+      <Word>EXEC</Word>
+      <Word>EXECUTE</Word>
+      <Word>DECLARE</Word>
+      <Word>BEGIN</Word>
+      <Word>END</Word>
+      <Word>IF</Word>
+      <Word>ELSE</Word>
+      <Word>THEN</Word>
+      <Word>WHEN</Word>
+      <Word>CASE</Word>
+      <Word>EXISTS</Word>
+      <Word>BETWEEN</Word>
+      <Word>LIKE</Word>
+      <Word>ASC</Word>
+      <Word>DESC</Word>
+      <Word>WITH</Word>
+      <Word>VALUES</Word>
+      <Word>PRIMARY</Word>
+      <Word>KEY</Word>
+      <Word>FOREIGN</Word>
+      <Word>REFERENCES</Word>
+      <Word>CONSTRAINT</Word>
+      <Word>DEFAULT</Word>
+      <Word>CHECK</Word>
+      <Word>UNIQUE</Word>
+      <Word>NOLOCK</Word>
+      <Word>OPTION</Word>
+      <Word>APPLY</Word>
+      <Word>PIVOT</Word>
+      <Word>UNPIVOT</Word>
+      <Word>OVER</Word>
+      <Word>PARTITION</Word>
+      <Word>ROWS</Word>
+      <Word>RANGE</Word>
+      <Word>UNBOUNDED</Word>
+      <Word>PRECEDING</Word>
+      <Word>FOLLOWING</Word>
+      <Word>CURRENT</Word>
+      <Word>ROW</Word>
+      <Word>OFFSET</Word>
+      <Word>FETCH</Word>
+      <Word>NEXT</Word>
+      <Word>ONLY</Word>
+      <Word>PERCENT</Word>
+      <Word>TIES</Word>
+      <Word>EXCEPT</Word>
+      <Word>INTERSECT</Word>
+      <Word>MERGE</Word>
+      <Word>USING</Word>
+      <Word>MATCHED</Word>
+      <Word>OUTPUT</Word>
+      <Word>INSERTED</Word>
+      <Word>DELETED</Word>
+      <Word>RETURN</Word>
+      <Word>WHILE</Word>
+      <Word>BREAK</Word>
+      <Word>CONTINUE</Word>
+      <Word>GOTO</Word>
+      <Word>TRY</Word>
+      <Word>CATCH</Word>
+      <Word>THROW</Word>
+      <Word>ROLLBACK</Word>
+      <Word>COMMIT</Word>
+      <Word>TRANSACTION</Word>
+      <Word>TRAN</Word>
+    </Keywords>
+
+    <!-- Aggregate / built-in functions -->
+    <Keywords color="Function">
+      <Word>COUNT</Word>
+      <Word>SUM</Word>
+      <Word>AVG</Word>
+      <Word>MIN</Word>
+      <Word>MAX</Word>
+      <Word>CAST</Word>
+      <Word>CONVERT</Word>
+      <Word>COALESCE</Word>
+      <Word>ISNULL</Word>
+      <Word>NULLIF</Word>
+      <Word>ROW_NUMBER</Word>
+      <Word>RANK</Word>
+      <Word>DENSE_RANK</Word>
+      <Word>NTILE</Word>
+      <Word>LAG</Word>
+      <Word>LEAD</Word>
+      <Word>FIRST_VALUE</Word>
+      <Word>LAST_VALUE</Word>
+      <Word>LEN</Word>
+      <Word>SUBSTRING</Word>
+      <Word>REPLACE</Word>
+      <Word>TRIM</Word>
+      <Word>LTRIM</Word>
+      <Word>RTRIM</Word>
+      <Word>UPPER</Word>
+      <Word>LOWER</Word>
+      <Word>CHARINDEX</Word>
+      <Word>STUFF</Word>
+      <Word>CONCAT</Word>
+      <Word>GETDATE</Word>
+      <Word>DATEADD</Word>
+      <Word>DATEDIFF</Word>
+      <Word>DATEPART</Word>
+      <Word>YEAR</Word>
+      <Word>MONTH</Word>
+      <Word>DAY</Word>
+      <Word>ABS</Word>
+      <Word>CEILING</Word>
+      <Word>FLOOR</Word>
+      <Word>ROUND</Word>
+      <Word>POWER</Word>
+      <Word>SQRT</Word>
+      <Word>SIGN</Word>
+    </Keywords>
+
+    <!-- Numeric literals -->
+    <Rule color="Number">
+      \b\d+(\.\d+)?\b
+    </Rule>
+  </RuleSet>
+</SyntaxDefinition>

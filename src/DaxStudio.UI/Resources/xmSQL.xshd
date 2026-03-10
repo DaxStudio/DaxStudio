@@ -1,0 +1,210 @@
+﻿<SyntaxDefinition name="xmSQL" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <!-- Default colors (Light theme) -->
+  <Color name="Keyword"    foreground="#035ACA" fontWeight="bold" />
+  <Color name="Callback"   foreground="#000000" background="#FFFF00" fontWeight="bold" />
+  <Color name="Number"     foreground="#000000" background="#FFC2DDEF" fontWeight="bold" />
+  <Color name="Identifier" foreground="#333333" />
+  <Color name="String"     foreground="#D93124" />
+  <Color name="NumericLiteral" foreground="#EE7F18" />
+  
+  <!-- Light theme colors -->
+  <Color name="Light.Keyword"    foreground="#035ACA" fontWeight="bold" />
+  <Color name="Light.Callback"   foreground="#000000" background="#FFFF00" fontWeight="bold" />
+  <Color name="Light.Number"     foreground="#000000" background="#FFC2DDEF" fontWeight="bold" />
+  <Color name="Light.Identifier" foreground="#333333" />
+  <Color name="Light.String"     foreground="#D93124" />
+  <Color name="Light.NumericLiteral" foreground="#EE7F18" />
+  
+  <!-- Dark theme colors -->
+  <Color name="Dark.Keyword"    foreground="#0095FF" fontWeight="bold" />
+  <Color name="Dark.Callback"   foreground="#1E1E1E" background="#E2D76F" fontWeight="bold" />
+  <Color name="Dark.Number"     foreground="#FFFFFF" background="#29A9FF" fontWeight="bold" />
+  <Color name="Dark.Identifier" foreground="#FFFFFF" />
+  <Color name="Dark.String"     foreground="#E44444" />
+  <Color name="Dark.NumericLiteral" foreground="#EE7F18" />
+
+  <RuleSet ignoreCase="true">
+    <!-- Callback expressions in brackets: highlights entire [CallbackName ...] including nested brackets -->
+    <Rule color="Callback">
+      \[(CallbackDataID|EncodeCallback|LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)\b[^\[\]]*(?:\[[^\]]*\][^\[\]]*)*\]
+    </Rule>
+
+    <!-- Callback names outside brackets -->
+    <Rule color="Callback">
+      \b(CallbackDataID|EncodeCallback|LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)\b
+    </Rule>
+
+    <!-- Table-column references: 'Table'[Column] matched as a unit -->
+    <Rule color="Identifier">
+      '[^']*'\[[^\]]*\]
+    </Rule>
+
+    <!-- Truncation marker ..[  consumed before bracket rule to allow Number rule on digits -->
+    <Rule color="Identifier">
+      \.\.\[
+    </Rule>
+
+    <!-- Column/table references in square brackets -->
+    <Rule color="Identifier">
+      \[[^\[\]]*\]
+    </Rule>
+
+    <!-- Table names after TABLE, FROM, or JOIN keywords -->
+    <Rule color="Identifier">
+      (?&lt;=\b(?:TABLE|FROM|JOIN)\s+)'[^']*'
+    </Rule>
+
+    <!-- String values: standalone single-quoted text -->
+    <Rule color="String">
+      '[^']*'
+    </Rule>
+
+    <!-- Numbers in total tuples display: ..[N total tuples, not all displayed] -->
+    <Rule color="Number">
+      (?&lt;=\.\.\[)\d[\d.,]*
+    </Rule>
+
+    <!-- Other numeric literals shown in orange -->
+    <Rule color="NumericLiteral">
+      \b\d[\d.,]*\b
+    </Rule>
+
+    <!-- xmSQL keywords -->
+    <Keywords color="Keyword">
+      <!-- 12+ character keywords -->
+      <Word>TESTCALLBACKIDENT</Word>
+      <Word>TESTCALLBACKSUM</Word>
+      <Word>PFCASTCOALESCE</Word>
+      <!-- 11 character keywords -->
+      <Word>DATAID2STRING</Word>
+      <Word>SEQUENCEINDEX</Word>
+      <Word>NEXTROWINDEX</Word>
+      <Word>SIMPLEINDEXN</Word>
+      <Word>SIMPLEINDEXV</Word>
+      <!-- 10-11 character keywords -->
+      <Word>DESERIALIZE</Word>
+      <Word>FLUSHCACHES</Word>
+      <Word>SIMPLEINDEX</Word>
+      <!-- 9-10 character keywords -->
+      <Word>DICTIONARY</Word>
+      <Word>DISCRETIZE</Word>
+      <Word>MANYTOMANY</Word>
+      <Word>NOVERTIPAQ</Word>
+      <Word>PARTITIONS</Word>
+      <Word>PFCOALESCE</Word>
+      <!-- 8-9 character keywords -->
+      <Word>DIMENSION</Word>
+      <Word>HIERARCHY</Word>
+      <Word>MANYTOONE</Word>
+      <Word>NOTIMEOUT</Word>
+      <Word>ROWFILTER</Word>
+      <Word>SEPARATOR</Word>
+      <Word>SERIALIZE</Word>
+      <Word>TOKENIZED</Word>
+      <Word>VERTICALC</Word>
+      <!-- 7-8 character keywords -->
+      <Word>ANYTOKEN</Word>
+      <Word>ASDATAID</Word>
+      <Word>COALESCE</Word>
+      <Word>CONTAINS</Word>
+      <Word>ENDMATCH</Word>
+      <Word>NVARCHAR</Word>
+      <Word>PFDATAID</Word>
+      <Word>RELATION</Word>
+      <!-- 7 character keywords -->
+      <Word>FOREIGN</Word>
+      <Word>GENERAL</Word>
+      <Word>ININDEX</Word>
+      <Word>NATURAL</Word>
+      <Word>NOSPLIT</Word>
+      <Word>ORDERBY</Word>
+      <Word>PRIMARY</Word>
+      <Word>REDUCED</Word>
+      <Word>REVERSE</Word>
+      <Word>SEGMENT</Word>
+      <Word>SHALLOW</Word>
+      <Word>VARIANT</Word>
+      <!-- 6 character keywords -->
+      <Word>APPEND</Word>
+      <Word>BITMAP</Word>
+      <Word>COLUMN</Word>
+      <Word>CREATE</Word>
+      <Word>DCOUNT</Word>
+      <Word>DEFINE</Word>
+      <Word>PFCAST</Word>
+      <Word>PREFIX</Word>
+      <Word>Search</Word>
+      <Word>SELECT</Word>
+      <Word>STRING</Word>
+      <Word>SUMSQR</Word>
+      <Word>SYSTEM</Word>
+      <!-- 5 character keywords -->
+      <Word>COUNT</Word>
+      <Word>DENSE</Word>
+      <Word>INDEX</Word>
+      <Word>INNER</Word>
+      <Word>NORLE</Word>
+      <Word>OUTER</Word>
+      <Word>PAGED</Word>
+      <Word>RJOIN</Word>
+      <Word>TABLE</Word>
+      <Word>USING</Word>
+      <Word>VALUE</Word>
+      <Word>VANDR</Word>
+      <Word>WHERE</Word>
+      <!-- 4 character keywords -->
+      <Word>AUTO</Word>
+      <Word>BLOB</Word>
+      <Word>C123</Word>
+      <Word>CAST</Word>
+      <Word>DESC</Word>
+      <Word>DROP</Word>
+      <Word>DUMP</Word>
+      <Word>EXEC</Word>
+      <Word>FACT</Word>
+      <Word>FROM</Word>
+      <Word>HASH</Word>
+      <Word>IN32</Word>
+      <Word>IN64</Word>
+      <Word>JOIN</Word>
+      <Word>LEFT</Word>
+      <Word>LOAD</Word>
+      <Word>NINB</Word>
+      <Word>NINH</Word>
+      <Word>NULL</Word>
+      <Word>REAL</Word>
+      <Word>SKIP</Word>
+      <Word>WITH</Word>
+      <!-- 3 character keywords -->
+      <Word>AND</Word>
+      <Word>ASC</Word>
+      <Word>IN0</Word>
+      <Word>INB</Word>
+      <Word>INH</Word>
+      <Word>INT</Word>
+      <Word>INX</Word>
+      <Word>KEY</Word>
+      <Word>MAX</Word>
+      <Word>MIN</Word>
+      <Word>NIN</Word>
+      <Word>NOT</Word>
+      <Word>SET</Word>
+      <Word>SUM</Word>
+      <Word>TOP</Word>
+      <Word>VAND</Word>
+      <!-- 2 character keywords -->
+      <Word>AS</Word>
+      <Word>BY</Word>
+      <Word>IN</Word>
+      <Word>IS</Word>
+      <Word>ON</Word>
+      <Word>OR</Word>
+      <Word>PF</Word>
+      <Word>TO</Word>
+      <Word>TW</Word>
+      <Word>UH</Word>
+      <!-- Multi-word keywords -->
+      <Word>DC_KIND</Word>
+    </Keywords>
+  </RuleSet>
+</SyntaxDefinition>

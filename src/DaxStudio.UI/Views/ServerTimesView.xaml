@@ -30,7 +30,6 @@
             <conv:QuerySingleLineConverter x:Key="QuerySingleLine"></conv:QuerySingleLineConverter>
             <conv:QueryTabToSpacesConverter x:Key="QueryTabToSpaces"></conv:QueryTabToSpacesConverter>
             <conv:QueryMultiLineConverter x:Key="QueryMultiLine"></conv:QueryMultiLineConverter>
-            <conv:XmSqlToDocumentConverter x:Key="XmSqlToDocument"></conv:XmSqlToDocumentConverter>
             <conv:MatchingResultColourConverter x:Key="MatchingResultColourConverter"></conv:MatchingResultColourConverter>
             <conv:MultiplyConverter x:Key="MultiConverter"></conv:MultiplyConverter>
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
@@ -213,26 +212,19 @@
         
             <DataTemplate  DataType="{x:Type vm:TraceStorageEngineEvent}">
                 <DockPanel LastChildFill="True">
-                    <TextBlock Margin="5" MinWidth="15"
-                               FontFamily="Open Sans"
-                               Background="{DynamicResource Theme.Brush.Content.Back}"
-                               Foreground="{DynamicResource Theme.Brush.LineNumbers}"
-                               Text="{Binding ElementName=QueryRichText, Path=(ap:ContentControlLineNumberHelper.BindableLineCount)}"/>
-
-                    <ctrl:BindableRichTextBox Padding="5,5,5,5"
+                    <ctrl:BindableQueryEditor Padding="5,5,5,5"
                                              MinWidth="200"
                                              MinHeight="100"
-                                             IsReadOnly="True"
                                              BorderThickness="0"
                                              x:Name="QueryRichText"
                                              DataContext="{Binding}"
                                              FontFamily="Open Sans"
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                                             Document="{Binding  Path=QueryRichText, Converter={StaticResource XmSqlToDocument}, Mode=OneWay}"
-                                             ap:ContentControlLineNumberHelper.HasBindableLineCount="True">
+                                             BoundText="{Binding Path=QueryRichText, Mode=OneWay}"
+                                             QueryLanguage="{Binding Path=ClassSubclass.QueryLanguage, Mode=OneWay}">
                     
-                        <ctrl:BindableRichTextBox.ContextMenu>
+                        <ctrl:BindableQueryEditor.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Command="Copy">
                                     <MenuItem.Icon>
@@ -243,12 +235,13 @@
                             <Separator/>
                             <MenuItem Header="_Raw Query" IsCheckable="True" IsChecked="{Binding ShowRawQuery}" ToolTip="Toggle query format and beautifier"></MenuItem>
                             </ContextMenu>
-                        </ctrl:BindableRichTextBox.ContextMenu>
-                    </ctrl:BindableRichTextBox>
+                        </ctrl:BindableQueryEditor.ContextMenu>
+                    </ctrl:BindableQueryEditor>
                 </DockPanel>
             </DataTemplate>
 
             <DataTemplate  DataType="{x:Type vm:ExecutionMetricsTraceEngineEvent}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <StackPanel Orientation="Vertical">
                     <DataGrid ItemsSource="{Binding Properties}" AutoGenerateColumns="False" >
                         <DataGrid.Columns>
@@ -257,9 +250,11 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
+                </ScrollViewer>
             </DataTemplate>
 
             <DataTemplate  DataType="{x:Type vm:RewriteTraceEngineEvent}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <StackPanel Margin="5">
                     <TextBlock Margin="0 0 0 5" FontWeight="DemiBold" Padding="3" 
                                Background="{DynamicResource Theme.Brush.MenuBar.Back}"
@@ -307,8 +302,8 @@
                         <TextBlock Text="{Binding TextData}" />
                     </Expander>
                 </StackPanel>
+                </ScrollViewer>
             </DataTemplate>
-
             <DataTemplate x:Key="TimelineCell">
                 <primitives:DataGridCellPresenter>
                     <primitives:DataGridCellPresenter.Content>
@@ -1009,13 +1004,8 @@
             Grid.Column="{Binding TextGridColumn}"
              Style="{StaticResource BusyBlurClipBorder}"
             >
-            <ScrollViewer Background="{DynamicResource Theme.Brush.Content.Back}">
-                <ContentControl x:Name="EventDetails" Content="{Binding ElementName=ListEvents, Path=SelectedItem}" >
+                <ContentControl x:Name="EventDetails" Content="{Binding ElementName=ListEvents, Path=SelectedItem}" Background="{DynamicResource Theme.Brush.Content.Back}" >
                 </ContentControl>
-                <!-- Query Event Template -->
-
-
-            </ScrollViewer>
         </ctrl:ClipBorder>
 
         <!-- Busy overlay -->
