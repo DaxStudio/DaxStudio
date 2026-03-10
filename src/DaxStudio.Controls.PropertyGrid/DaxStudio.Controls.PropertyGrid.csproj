@@ -85,6 +85,8 @@
     <Compile Include="ListViewBehaviours.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyBinding.cs" />
+    <Compile Include="PropertyMetadataCache.cs" />
+    <Compile Include="PropertyMetadataEntry.cs" />
     <Compile Include="PropertySortComparer.cs" />
     <Compile Include="PropertyList.cs" />
     <Compile Include="PropertyTemplateSelector.cs" />

@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Reflection;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Linq;
 
 namespace DaxStudio.Controls.PropertyGrid
@@ -111,11 +108,6 @@ namespace DaxStudio.Controls.PropertyGrid
         private Dictionary<string, Action> onEnabledChangedFuncs = new Dictionary<string, Action>();
         protected virtual async Task UpdateSource(object newSource)
         {
-            //await Task.Delay(100);
-            //var cvs = new System.Windows.Data.CollectionViewSource();
-
-            // TODO - may need to hook into newSource.PropertyChanged event
-
             await Task.Run(() =>
             {
                 var props = new System.Collections.ObjectModel.ObservableCollection<PropertyBindingBase>();
@@ -125,66 +117,51 @@ namespace DaxStudio.Controls.PropertyGrid
                     npc.PropertyChanged += OnSourcePropertyChanged;
                 }
 
-                foreach (var prop in newSource.GetType().GetProperties())
+                var cachedEntries = PropertyMetadataCache.GetMetadata(newSource.GetType());
+
+                foreach (var entry in cachedEntries)
                 {
-                    var envVar = prop.GetCustomAttribute<EnvironmentVariableAttribute>();
-                    // skip properties that depend on an environment variable with a zero or missing value
-                    if (envVar != null && !string.IsNullOrEmpty(envVar.VariableName))
+                    // Environment variable check remains dynamic (env vars can change between dialog opens)
+                    if (!string.IsNullOrEmpty(entry.EnvironmentVariableName))
                     {
-                        var envValue = Environment.GetEnvironmentVariable(envVar.VariableName);
+                        var envValue = Environment.GetEnvironmentVariable(entry.EnvironmentVariableName);
                         if (string.IsNullOrWhiteSpace(envValue) || envValue.Trim() != "1")
                         {
                             continue;
                         }
                     }
 
-                    var dispName = prop.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-                    //skip properties that do not have a display name defined
-                    if (dispName == null) continue;
-
-                    var catName = prop.GetCustomAttribute(typeof(CategoryAttribute)) as CategoryAttribute;
-                    var subCatName = prop.GetCustomAttribute(typeof(SubcategoryAttribute)) as SubcategoryAttribute;
-                    var sortOrder = prop.GetCustomAttribute<SortOrderAttribute>();
-                    var desc = prop.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute;
-                    var minValue = prop.GetCustomAttribute(typeof(MinValueAttribute)) as MinValueAttribute;
-                    var maxValue = prop.GetCustomAttribute(typeof(MaxValueAttribute)) as MaxValueAttribute;
-                    var enumDisplay = prop.GetCustomAttribute(typeof(EnumDisplayAttribute)) as EnumDisplayAttribute;
-                    
-                    var t = prop.GetType();
-
                     var binding = new PropertyBinding<object>();
 
-                    binding.DisplayName = dispName.DisplayName;
+                    binding.DisplayName = entry.DisplayName;
+                    if (entry.Category != null) binding.Category = entry.Category;
+                    binding.Description = entry.Description;
+                    binding.Subcategory = entry.Subcategory;
+                    binding.SortOrder = entry.SortOrder;
+                    binding.MinValue = entry.MinValue;
+                    binding.MaxValue = entry.MaxValue;
+                    binding.PropertyType = entry.PropertyType;
+                    binding.EnumDisplay = entry.EnumDisplay;
 
-                    if (catName != null) binding.Category = catName?.Category;
-
-                    binding.Description = desc?.Description;
-                    binding.Subcategory = subCatName?.Subcategory;
-                    binding.SortOrder = sortOrder?.SortOrder ?? int.MaxValue;
-                    binding.MinValue = minValue?.MinValue ?? 0;
-                    binding.MaxValue = maxValue?.MaxValue ?? 0;
-                    binding.PropertyType = prop.PropertyType;
-                    binding.EnumDisplay = enumDisplay?.EnumDisplay ?? EnumDisplayOptions.Description;
-                    //var setProp = constructed.GetProperty("SetValue");
-                    //setProp.SetValue(o, (Action)((value) => prop.SetValue(newSource,value));
-                    //var getProp = o.GetType().GetProperty("GetValue");
-
-                    binding.SetValue = (value) => prop.SetValue(newSource, value);
-                    binding.GetValue = () => prop.GetValue(newSource);
-                    
-                    var enabledProp = newSource.GetType().GetProperty($"{prop.Name}Enabled", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (enabledProp != null)
+                    // Use compiled delegates instead of PropertyInfo.GetValue/SetValue
+                    var compiledGetter = entry.CompiledGetter;
+                    var compiledSetter = entry.CompiledSetter;
+                    binding.GetValue = () => compiledGetter(newSource);
+                    if (compiledSetter != null)
                     {
-#pragma warning disable CA1305 // Specify IFormatProvider
-                        binding.GetValueEnabled = () => Convert.ToBoolean( enabledProp.GetValue(newSource) );
-#pragma warning restore CA1305 // Specify IFormatProvider
-                        onEnabledChangedFuncs.Add(enabledProp.Name, binding.OnEnabledChanged);
+                        binding.SetValue = (value) => compiledSetter(newSource, value);
+                    }
 
+                    if (entry.HasEnabledProperty)
+                    {
+                        var compiledEnabledGetter = entry.CompiledEnabledGetter;
+                        binding.GetValueEnabled = () => compiledEnabledGetter(newSource);
+                        onEnabledChangedFuncs.Add(entry.EnabledPropertyName, binding.OnEnabledChanged);
                     }
 
                     props.Add(binding);
-
                 }
+
                 _cvs = (ListCollectionView)CollectionViewSource.GetDefaultView(props);
                 PropertyGroupDescription groupDescription = new PropertyGroupDescription("Subcategory");
                 _cvs.GroupDescriptions.Add(groupDescription);

@@ -1429,31 +1429,11 @@ namespace DaxStudio.UI.ViewModels
 
         public void ResetKeyBindings()
         {
-            //try
-            //{
-            //    _isInitializing = true;
-                var props = typeof(OptionsViewModel).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                foreach (var prop in props)
-                {
-                    if (!prop.Name.StartsWith("Hotkey", StringComparison.InvariantCultureIgnoreCase)) continue;
-
-                    foreach (var att in prop.GetCustomAttributes(false))
-                    {
-                        if (att is DefaultValueAttribute val)
-                        {
-                            prop.SetValue(this, val.Value.ToString());
-                        }
-                    }
-                }
-
-
-            //}
-            //finally
-            //{
-            //    _isInitializing = false;
-                
-            //}
-            
+            var hotkeyDefaults = PropertyMetadataCache.GetHotkeyDefaults(typeof(OptionsViewModel));
+            foreach (var hotkey in hotkeyDefaults)
+            {
+                hotkey.CompiledSetter(this, hotkey.DefaultValue);
+            }
         }
         #endregion
 
@@ -2604,18 +2584,9 @@ namespace DaxStudio.UI.ViewModels
 
         private IEnumerable<string> GetCategories()
         {
-            var lst = new SortedList<string, string>();
-
-            foreach (var prop in GetType().GetProperties())
-            {
-                var catAttrib = prop.GetCustomAttribute<CategoryAttribute>();
-                var cat = catAttrib?.Category;
-                if (cat == null) continue;
-                if (lst.ContainsKey(cat)) continue;
-                lst.Add(cat, cat);
-            }
-            SelectedCategory = lst.Keys.FirstOrDefault();
-            return lst.Keys;
+            var categories = PropertyMetadataCache.GetCategories(GetType());
+            SelectedCategory = categories.FirstOrDefault();
+            return categories;
         }
 
         #endregion
