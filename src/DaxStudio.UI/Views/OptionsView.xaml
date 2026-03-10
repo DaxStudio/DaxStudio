@@ -592,12 +592,12 @@
                                             <Grid VerticalAlignment="Top">
                                                     
                                                <TextBlock Text="{Binding DisplayName}" 
-                                                          pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
+                                                          pg:TextBlockHighlighter.Selection="{Binding RelativeSource={RelativeSource AncestorType={x:Type pg:PropertyList}}, Path=ActiveSearchText}"
                                                           pg:TextBlockHighlighter.HighlightColor="Yellow"
                                                           VerticalAlignment="Top" TextWrapping="Wrap" 
                                                           Margin="0 4 8 8"
                                                           MinWidth="200"
-                                                          />    
+                                                          />
                                             </Grid>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
@@ -615,7 +615,7 @@
                                     <DataTemplate>
                                             
                                         <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Name}" Margin="0,10,0,0"
-                                                   pg:TextBlockHighlighter.Selection="{Binding ElementName=Search, Path=Text}"
+                                                   pg:TextBlockHighlighter.Selection="{Binding RelativeSource={RelativeSource AncestorType={x:Type pg:PropertyList}}, Path=ActiveSearchText}"
                                                    pg:TextBlockHighlighter.HighlightColor="Yellow"
                                                    />
                                     </DataTemplate>
