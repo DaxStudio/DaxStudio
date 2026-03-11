@@ -172,33 +172,15 @@ namespace DaxStudio.UI.ViewModels
 
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-
-        // String that highlight important parts of the query
-        // Currently implement only the strong (~E~/~S~) for the following functions:
-        // - CallbackDataID
-        // - EncodeCallback
-        // - 'LogAbsValueCallback'
-        // - 'RoundValueCallback'
-        // - 'MinMaxColumnPositionCallback'
-        // - 'Cond'
-        private const int XmSqlTabWidth = 4;
-        private string _queryRichText = "";
+       
+        private string _queryRichText = string.Empty;
 
         [JsonIgnore]
         public string QueryRichText {
             set {
                 if (value != null)
                 {
-                    var tabReplacement = new string(' ', XmSqlTabWidth);
-                    var normalized = value.Replace("\t", tabReplacement);
-
-                    // Strip single quotes around callback function names
-                    // (xmSQL wraps some callback names in quotes, but they should display without them)
-                    _queryRichText = normalized
-                        .Replace("'LogAbsValueCallback'", "LogAbsValueCallback")
-                        .Replace("'RoundValueCallback'", "RoundValueCallback")
-                        .Replace("'MinMaxColumnPositionCallback'", "MinMaxColumnPositionCallback")
-                        .Replace("'Cond'", "Cond");
+                    _queryRichText = value;
                 }
                 else
                 {
@@ -291,6 +273,8 @@ namespace DaxStudio.UI.ViewModels
                     string rawText = Options.SimplifyXmSqlSyntax ? ev.TextData.RemovePremiumTags() : ev.TextData;
                     // Format xmSQL
                     string queryFormatted = Options.FormatXmSql ? rawText.FormatXmSql() : rawText;
+                    // Normalize tabs to 4 spaces
+                    queryFormatted = queryFormatted.Replace("\t", "    ");
                     // Replace column names
                     string queryRemapped = Options.ReplaceXmSqlColumnNames ? queryFormatted.ReplaceTableOrColumnNames( remapColumns ) : queryFormatted;
                     // replace table names
@@ -606,13 +590,13 @@ namespace DaxStudio.UI.ViewModels
         private static string FormatStep1(Match match)
         {
             return match.Value
-                .Replace(",\r\n", ",\r\n\t")
-                .Replace("], [", "],\r\n\t[")
-                .Replace("SELECT\r\n", "SELECT\r\n\t");
+                .Replace(",\r\n", ",\r\n    ")
+                .Replace("], [", "],\r\n    [")
+                .Replace("SELECT\r\n", "SELECT\r\n    ");
         }
         private static string FormatStep2(Match match)
         {
-            return match.Value.Substring(0,match.Value.Length-3) + "\r\n\t\tON";
+            return match.Value.Substring(0,match.Value.Length-3) + "\r\n        ON";
         }
         private static string FormatStep3(Match match)
         {
@@ -620,11 +604,11 @@ namespace DaxStudio.UI.ViewModels
         }
         private static string FormatStep4(Match match)
         {
-            return match.Value.Replace(" MANYTOMANY FROM", "\r\n\tMANYTOMANY\r\n\tFROM").Replace(" TO ", "\r\n\t\tTO ");
+            return match.Value.Replace(" MANYTOMANY FROM", "\r\n    MANYTOMANY\r\n    FROM").Replace(" TO ", "\r\n        TO ");
         }
         private static string FormatStep5(Match match)
         {
-            return "\r\n\t";
+            return "\r\n    ";
         }
 
         public static string FormatXmSql(this string xmSqlQuery)

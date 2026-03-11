@@ -35,7 +35,6 @@ namespace DaxStudio.UI.ViewModels
         private IEventAggregator _eventAggregator;
         private ServerTimingDetailsViewModel _serverTimingDetails;
         private List<TraceStorageEngineEvent> _rawEvents;  // Stored for debug export
-        private ServerTimingDetailsViewModel _serverTimingDetails;
         private List<int> _allAvailableQueryIds = new List<int>();  // Unfiltered query IDs from tables
 
         /// <summary>
@@ -90,34 +89,6 @@ namespace DaxStudio.UI.ViewModels
                     RefreshVisibleEvents();
                     break;
             }
-        }
-
-        /// <summary>
-        /// Checks whether an event would be visible in the ServerTimingsView given current filter settings.
-        /// Mirrors the filtering logic in ServerTimesViewModel.StorageEngineEvents.
-        /// </summary>
-        private bool IsEventVisibleInServerTimings(TraceStorageEngineEvent evt)
-        {
-            if (_serverTimingDetails == null) return true;
-
-            var cs = evt.ClassSubclass;
-
-            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal)
-                return _serverTimingDetails.ShowInternal;
-            if (cs.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
-                return _serverTimingDetails.ShowBatch;
-            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
-                return _serverTimingDetails.ShowCache;
-            if (cs.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL)
-                return _serverTimingDetails.ShowSql;
-            if (cs.Subclass == DaxStudioTraceEventSubclass.TabularQuery
-                || cs.Subclass == DaxStudioTraceEventSubclass.TabularQueryInternal)
-                return _serverTimingDetails.ShowTabularQueries;
-            if (cs.Class == DaxStudioTraceEventClass.Total)
-                return true;
-
-            // Default: regular scan events
-            return _serverTimingDetails.ShowScan;
         }
 
         /// <summary>

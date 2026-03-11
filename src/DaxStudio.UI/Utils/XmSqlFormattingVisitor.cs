@@ -16,6 +16,7 @@ namespace DaxStudio.UI.Utils
         private readonly StringBuilder _sb = new StringBuilder();
         private readonly bool _simplify;
         private readonly bool _format;
+        private const string Indent = "    ";
 
         // Extracted estimated size data
         public long EstimatedRows { get; private set; }
@@ -66,6 +67,7 @@ namespace DaxStudio.UI.Utils
                 raw = LineagePattern.Replace(raw, "");
                 raw = RemoveGuids(raw);
                 raw = PremiumTagsPattern.Replace(raw, "");
+                raw = raw.TrimEnd();
             }
             return raw;
         }
@@ -86,6 +88,7 @@ namespace DaxStudio.UI.Utils
                 // Simplify RowNumber GUIDs
                 raw = RowNumberGuidPattern.Replace(raw, "RowNumber");
                 raw = PremiumTagsPattern.Replace(raw, "");
+                raw = raw.TrimEnd();
             }
             return raw;
         }
@@ -245,7 +248,7 @@ namespace DaxStudio.UI.Utils
             {
                 if (_format)
                 {
-                    _sb.Append("\r\n\t");
+                    _sb.Append("\r\n" + Indent);
                     _sb.Append(mod.GetText().ToUpperInvariant());
                 }
                 else
@@ -259,9 +262,9 @@ namespace DaxStudio.UI.Utils
 
             if (_format)
             {
-                _sb.Append("\r\n\tFROM ");
+                _sb.Append("\r\n" + Indent + "FROM ");
                 AppendTableColumnRef(fromRef);
-                _sb.Append("\r\n\t\tTO ");
+                _sb.Append("\r\n" + Indent + Indent + "TO ");
                 AppendTableColumnRef(toRef);
             }
             else
@@ -323,7 +326,7 @@ namespace DaxStudio.UI.Utils
                 {
                     if (i > 0) _sb.Append(",");
                     if (_format)
-                        _sb.Append("\r\n\t");
+                        _sb.Append("\r\n" + Indent);
                     else
                         _sb.Append(" ");
                     VisitSelectItem(items[i]);
@@ -346,7 +349,7 @@ namespace DaxStudio.UI.Utils
             foreach (var join in context.joinClause())
             {
                 if (_format)
-                    _sb.Append("\r\n\t");
+                    _sb.Append("\r\n" + Indent);
                 else
                     _sb.Append(" ");
                 VisitJoinClause(join);
@@ -439,10 +442,10 @@ namespace DaxStudio.UI.Utils
             _sb.Append(fn.GetText().ToUpperInvariant());
             _sb.Append(" ( ");
 
-            var tcRef = context.tableColumnRef();
-            if (tcRef != null)
+            var expr = context.expression();
+            if (expr != null)
             {
-                AppendTableColumnRef(tcRef);
+                AppendExpression(expr);
             }
             else
             {
@@ -500,7 +503,7 @@ namespace DaxStudio.UI.Utils
                 var onRefs = reverseBitmap.tableColumnRef();
                 if (_format)
                 {
-                    _sb.Append("\r\n\t\tON ");
+                    _sb.Append("\r\n" + Indent + Indent + "ON ");
                 }
                 else
                 {
@@ -539,7 +542,7 @@ namespace DaxStudio.UI.Utils
             if (onClause != null)
             {
                 if (_format)
-                    _sb.Append("\r\n\t\tON ");
+                    _sb.Append("\r\n" + Indent + Indent + "ON ");
                 else
                     _sb.Append(" ON ");
                 var onRefs = onClause.tableColumnRef();
@@ -554,7 +557,7 @@ namespace DaxStudio.UI.Utils
         public override object VisitWhereClause(xmSQLParser.WhereClauseContext context)
         {
             if (_format)
-                _sb.Append("WHERE\r\n\t");
+                _sb.Append("WHERE\r\n" + Indent);
             else
                 _sb.Append("WHERE ");
 
@@ -817,7 +820,31 @@ namespace DaxStudio.UI.Utils
                 return;
             }
 
-            _sb.Append(ctx.IDENTIFIER().GetText());
+            var ident = ctx.IDENTIFIER();
+            if (ident != null)
+            {
+                _sb.Append(ident.GetText());
+            }
+            else
+            {
+                // Function name is a QUOTED_TABLE_NAME (e.g. 'LogAbsValueCallback') or
+                // BRACKETED_NAME (e.g. [MinMaxColumnPositionCallback]) — strip quotes/brackets
+                var quoted = ctx.QUOTED_TABLE_NAME();
+                if (quoted != null)
+                {
+                    _sb.Append(quoted.GetText().Trim('\''));
+                }
+                else
+                {
+                    var bracketed = ctx.BRACKETED_NAME();
+                    if (bracketed != null)
+                    {
+                        var name = bracketed.GetText();
+                        _sb.Append(name.Substring(1, name.Length - 2));
+                    }
+                }
+            }
+
             _sb.Append(" ( ");
             var exprList = ctx.expressionList();
             if (exprList != null)

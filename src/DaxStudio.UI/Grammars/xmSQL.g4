@@ -88,7 +88,7 @@ alias
     ;
 
 aggregationExpr
-    : aggFunction LPAREN tableColumnRef? RPAREN
+    : aggFunction LPAREN expression? RPAREN
     | aggFunction LPAREN EXPR_AT_REF RPAREN
     ;
 
@@ -201,7 +201,7 @@ expressionAtom
     ;
 
 functionCall
-    : IDENTIFIER LPAREN expressionList? RPAREN
+    : (IDENTIFIER | QUOTED_TABLE_NAME | BRACKETED_NAME) LPAREN expressionList? RPAREN
     | PFCAST LPAREN expression AS IDENTIFIER RPAREN
     ;
 

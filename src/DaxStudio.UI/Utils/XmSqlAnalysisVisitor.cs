@@ -75,6 +75,42 @@ namespace DaxStudio.UI.Utils
             return (table, column);
         }
 
+        /// <summary>
+        /// Walks an expression tree to find the first tableColumnRef (for aggregation expressions
+        /// that may wrap a column reference in function calls like callbacks).
+        /// </summary>
+        private xmSQLParser.TableColumnRefContext FindTableColumnRef(xmSQLParser.ExpressionContext expr)
+        {
+            if (expr == null) return null;
+            foreach (var atom in expr.expressionAtom())
+            {
+                var tcRef = atom.tableColumnRef();
+                if (tcRef != null) return tcRef;
+
+                var funcCall = atom.functionCall();
+                if (funcCall != null)
+                {
+                    var exprList = funcCall.expressionList();
+                    if (exprList != null)
+                    {
+                        foreach (var innerExpr in exprList.expression())
+                        {
+                            var found = FindTableColumnRef(innerExpr);
+                            if (found != null) return found;
+                        }
+                    }
+                }
+
+                var parenExpr = atom.expression();
+                if (parenExpr != null)
+                {
+                    var found = FindTableColumnRef(parenExpr);
+                    if (found != null) return found;
+                }
+            }
+            return null;
+        }
+
         private static bool IsTempTable(string tableName)
         {
             return tableName != null && tableName.StartsWith("$T", StringComparison.OrdinalIgnoreCase);
@@ -421,7 +457,7 @@ namespace DaxStudio.UI.Utils
         public override object VisitAggregationExpr(xmSQLParser.AggregationExprContext context)
         {
             var aggFunc = context.aggFunction().GetText().ToUpperInvariant();
-            var tcRef = context.tableColumnRef();
+            var tcRef = FindTableColumnRef(context.expression());
             if (tcRef != null)
             {
                 var tc = GetTableColumn(tcRef);

@@ -122,6 +122,103 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void Formatter_QuotedFunctionNames_OutputWithoutQuotes()
+        {
+            // xmSQL engine wraps some callback function names in single quotes;
+            // the formatter should strip those quotes in the output.
+            string xmSql = "SELECT\r\n"
+                + "'Cond'('Product'[Color], 'Product'[Size])\r\n"
+                + "FROM 'Product';";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: false,
+                out _, out _, out _);
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Contains("Cond"), "Result should contain Cond function");
+            Assert.IsFalse(result.Contains("'Cond'"), "Cond should not be wrapped in single quotes");
+        }
+
+        [TestMethod]
+        public void Formatter_QuotedCallbackNames_AllStripped()
+        {
+            string xmSql = "SELECT\r\n"
+                + "'LogAbsValueCallback'('Sales'[Amount]),\r\n"
+                + "'RoundValueCallback'('Sales'[Price]),\r\n"
+                + "'MinMaxColumnPositionCallback'('Sales'[Qty])\r\n"
+                + "FROM 'Sales';";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: false,
+                out _, out _, out _);
+
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Contains("'LogAbsValueCallback'"), "LogAbsValueCallback should not be quoted");
+            Assert.IsFalse(result.Contains("'RoundValueCallback'"), "RoundValueCallback should not be quoted");
+            Assert.IsFalse(result.Contains("'MinMaxColumnPositionCallback'"), "MinMaxColumnPositionCallback should not be quoted");
+            Assert.IsTrue(result.Contains("LogAbsValueCallback"), "LogAbsValueCallback should be present");
+            Assert.IsTrue(result.Contains("RoundValueCallback"), "RoundValueCallback should be present");
+            Assert.IsTrue(result.Contains("MinMaxColumnPositionCallback"), "MinMaxColumnPositionCallback should be present");
+        }
+
+        [TestMethod]
+        public void Formatter_BracketedCallbackInAggregation_NotQuoted()
+        {
+            // Real-world xmSQL: callback function name in brackets inside MAX()
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Period Definition  SISO  (139)].[Period (1438)] AS [Period Definition  SISO  (139)$Period (1438)],\r\n"
+                + "MAX([MinMaxColumnPositionCallback](PFDATAID( [Period Definition  SISO  (139)].[Previous Period (1439)] ))) AS [$Measure0]\r\n"
+                + "FROM [Period Definition  SISO  (139)]\r\n"
+                + "WHERE\r\n"
+                + "\t[Period Definition  SISO  (139)].[Period (1438)] IN ('YTD', 'L13W', 'LW', 'L4W');\r\n"
+                + "\r\n\r\n"
+                + "[Estimated size (volume, marshalling bytes): 37, 592]";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out long rows,
+                out long bytes,
+                out bool hasSize);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("MinMaxColumnPositionCallback"), "Should contain callback function name");
+            Assert.IsFalse(result.Contains("'MinMaxColumnPositionCallback'"), "Callback should not be wrapped in single quotes");
+            Assert.IsFalse(result.Contains("[MinMaxColumnPositionCallback]"), "Callback should not be wrapped in brackets");
+            Assert.IsTrue(result.Contains("MAX"), "Should contain MAX aggregation");
+            Assert.IsTrue(result.Contains("PFDATAID"), "Should contain PFDATAID function");
+        }
+
+        [TestMethod]
+        public void Formatter_FormattedOutput_UsesSpacesNotTabs()
+        {
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "'Product'[Color],\r\n"
+                + "'Product'[Class]\r\n"
+                + "FROM 'Product'\r\n"
+                + "\tLEFT OUTER JOIN 'Category' ON 'Product'[CategoryId]='Category'[CategoryId]\r\n"
+                + "WHERE\r\n"
+                + "\t'Product'[Color] IN ('Red', 'Blue');";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: false,
+                out _, out _, out _);
+
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Contains("\t"), "Formatted output should not contain tab characters");
+            Assert.IsTrue(result.Contains("    "), "Formatted output should use 4-space indentation");
+        }
+
+        [TestMethod]
         public void Formatter_BracketTableRefs_FullQuery()
         {
             string xmSql =
