@@ -50,6 +50,12 @@
     <ApplicationId>cf710c6e-dfcc-4fa8-a093-d47294e44c66</ApplicationId>
   </AuthenticationInformation>
   <AuthenticationInformation>
+    <DomainPostfix>asazure.sovcloud-api.fr</DomainPostfix>
+    <Authority>https://login.sovcloud-api.fr/common</Authority>
+    <Authority.v2>https://login.sovcloud-api.fr/organizations</Authority.v2>
+    <ApplicationId>cf710c6e-dfcc-4fa8-a093-d47294e44c66</ApplicationId>
+  </AuthenticationInformation>
+  <AuthenticationInformation>
     <DomainPostfix>asazure.cloudapi.de</DomainPostfix>
     <Authority>https://login.microsoftonline.de/common</Authority>
     <Authority.v2>https://login.microsoftonline.de/organizations</Authority.v2>

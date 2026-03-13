@@ -111,12 +111,12 @@
       <Version>5.0.258</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>10.0.102</Version>
+      <Version>10.0.201</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.3.0</Version>
+      <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="Unofficial.Excel.Amo" Version="11.0.2832.12" Aliases="ExcelAmo">
       <ExcludeAssets>runtime</ExcludeAssets>

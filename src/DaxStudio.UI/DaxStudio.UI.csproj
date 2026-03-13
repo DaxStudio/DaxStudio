@@ -520,7 +520,6 @@
     <Compile Include="Model\XmSqlAnalysis.cs" />
     <Compile Include="Model\XmSqlQueryFingerprint.cs" />
     <Compile Include="Model\XmSqlQueryGroup.cs" />
-
     <Compile Include="Model\CaptureDiagnosticsSource.cs" />
     <Compile Include="Model\ClipboardManager.cs" />
     <Compile Include="Model\ClipboardTextProvider.cs" />
@@ -1584,7 +1583,7 @@
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Humanizer">
-      <Version>3.0.1</Version>
+      <Version>3.0.10</Version>
     </PackageReference>
     <PackageReference Include="LargeXlsx">
       <Version>2.0.1</Version>
@@ -1593,10 +1592,10 @@
       <Version>6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>10.0.2</Version>
+      <Version>10.0.5</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>10.0.102</Version>
+      <Version>10.0.201</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -1607,7 +1606,7 @@
       <Version>3.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
-      <Version>4.82.0</Version>
+      <Version>4.83.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.PowerBI.Api">
       <Version>5.0.0</Version>
@@ -1619,10 +1618,10 @@
       <Version>5.5.0</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.6.5</Version>
+      <Version>8.6.6</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.3.0</Version>
+      <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>

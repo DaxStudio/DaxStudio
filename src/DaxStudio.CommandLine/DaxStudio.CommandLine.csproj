@@ -142,16 +142,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.108.5</Version>
+      <Version>19.113.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.108.5</Version>
+      <Version>19.113.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>10.0.2</Version>
+      <Version>10.0.5</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.3.0</Version>
+      <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="Serilog.Sinks.Console">
       <Version>6.1.1</Version>
@@ -166,7 +166,7 @@
       <Version>0.53.1</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>10.0.2</Version>
+      <Version>10.0.5</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.6.3</Version>

@@ -292,18 +292,18 @@
       <Version>1.5.0.20-commands</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.108.5</Version>
+      <Version>19.113.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.108.5</Version>
+      <Version>19.113.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>10.0.102</Version>
+      <Version>10.0.201</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.3.0</Version>
+      <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="Serilog.Settings.AppSettings">
       <Version>3.0.0</Version>
@@ -312,7 +312,7 @@
       <Version>7.0.0</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>10.0.2</Version>
+      <Version>10.0.5</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.6.3</Version>

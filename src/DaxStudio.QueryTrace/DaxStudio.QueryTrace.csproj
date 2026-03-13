@@ -117,16 +117,16 @@
       <Version>5.0.258</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.108.5</Version>
+      <Version>19.113.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.108.5</Version>
+      <Version>19.113.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
       <Version>2.4.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>10.0.102</Version>
+      <Version>10.0.201</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -140,10 +140,10 @@
       <Version>13.0.4</Version>
     </PackageReference>
     <PackageReference Include="Polly">
-      <Version>8.6.5</Version>
+      <Version>8.6.6</Version>
     </PackageReference>
     <PackageReference Include="Serilog">
-      <Version>4.3.0</Version>
+      <Version>4.3.1</Version>
     </PackageReference>
     <PackageReference Include="System.Collections">
       <Version>4.3.0</Version>
