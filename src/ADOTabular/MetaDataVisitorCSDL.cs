@@ -737,6 +737,7 @@ namespace ADOTabular
                 IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
 
                 List<ADOTabularVariation> variations = new List<ADOTabularVariation>();
+                string parameterMetadata = null;
 
                 KpiDetails kpi = new KpiDetails();
 
@@ -872,6 +873,26 @@ namespace ADOTabular
                     }
 
                     if (rdr.NodeType == XmlNodeType.Element
+                        && rdr.LocalName == "ExtendedProperty")
+                    {
+                        var epName = rdr.GetAttribute("Name");
+                        if (epName == "ParameterMetadata")
+                        {
+                            // Read through to find the Value child element (using LocalName for namespace-agnostic matching)
+                            while (rdr.Read())
+                            {
+                                if (rdr.NodeType == XmlNodeType.Element && rdr.LocalName == "Value")
+                                {
+                                    parameterMetadata = rdr.ReadElementContentAsString();
+                                    break;
+                                }
+                                if (rdr.NodeType == XmlNodeType.EndElement && rdr.LocalName == "ExtendedProperty")
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (rdr.NodeType == XmlNodeType.Element
                         && rdr.LocalName == "OrderBy")
                     {
                         orderBy = ProcessOrderBy(rdr);
@@ -908,6 +929,7 @@ namespace ADOTabular
                                     OrderByRef = orderBy
                                 };
                                 col.Variations.AddRange(variations);
+                                col.ParameterMetadata = parameterMetadata;
                                 col.GroupByRefs.AddRange(groupBy);
                                 tables.Model.AddRole(col);
                                 tab.Columns.Add(col);
@@ -941,6 +963,7 @@ namespace ADOTabular
                         nullable = true;
                         colType = ADOTabularObjectType.Column;
                         variations = new List<ADOTabularVariation>();
+                        parameterMetadata = null;
                         dataTypeEnum = DataType.Unknown;
                         orderBy = string.Empty;
                         groupBy.Clear();
@@ -1353,7 +1376,17 @@ namespace ADOTabular
                 var catalogRestriction = new AdomdRestriction("CATALOG_NAME", _conn.Database.Name);
                 restrictions = new AdomdRestrictionCollection { catalogRestriction };
             }
-            DataRow[] drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", restrictions, false).Tables[0].Select("ORIGIN = 2 OR ORIGIN = 3 OR ORIGIN = 4");
+            DataRow[] drFuncs;
+            try
+            {
+                drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", restrictions, false).Tables[0].Select("ORIGIN = 2 OR ORIGIN = 3 OR ORIGIN = 4");
+            }
+            catch
+            {
+                // if the call to get the function list fails, retry without any restrictions
+                // there can be circumstances where the compatibility level is 1702 or higher, but UDFs are disabled
+                drFuncs = _conn.GetSchemaDataSet("MDSCHEMA_FUNCTIONS", null, false).Tables[0].Select("ORIGIN = 2 OR ORIGIN = 3 OR ORIGIN = 4");
+            }
             foreach (DataRow dr in drFuncs)
             {
                 functionGroups.AddFunction(dr);

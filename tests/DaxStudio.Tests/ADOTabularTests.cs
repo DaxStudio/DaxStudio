@@ -348,9 +348,41 @@ namespace DaxStudio.Tests
 
         }
 
+        [TestMethod]
+        public void TestParameterMetadataExtendedProperty()
+        {
+            var conn = MockConnection($@"{Constants.TestDataPath}\FieldParams_Csdl.xml");
+            MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
+            ADOTabularDatabase db = new ADOTabularDatabase(conn, "Test", "Test", DateTime.Parse("2019-09-01 09:00:00"), "1200", "*", "Test Description");
+            ADOTabularModel m = new ADOTabularModel(conn, db, "Test", "Test", "Test Description", "");
+            var tabs = new ADOTabularTableCollection(conn, m);
+
+            // The "Slicer by number of days Fields" column has a ParameterMetadata ExtendedProperty
+            var paramTable = tabs["Slicer by number of days"];
+            Assert.IsNotNull(paramTable);
+
+            var fieldsCol = paramTable.Columns["Slicer by number of days Fields"];
+            Assert.IsNotNull(fieldsCol, "Fields column should exist");
+            Assert.IsNotNull(fieldsCol.ParameterMetadata, "ParameterMetadata should be parsed from ExtendedProperty");
+            Assert.IsTrue(fieldsCol.ParameterMetadata.Contains("version"), "ParameterMetadata should contain JSON content");
+
+            // Other columns in the same table should NOT have ParameterMetadata
+            var orderCol = paramTable.Columns["Slicer by number of days Order"];
+            Assert.IsNull(orderCol.ParameterMetadata, "Order column should not have ParameterMetadata");
+
+            var baseCol = paramTable.Columns["Slicer by number of days"];
+            Assert.IsNull(baseCol.ParameterMetadata, "Base column should not have ParameterMetadata");
+
+            // A regular table should have no columns with ParameterMetadata
+            var regularTable = tabs["Table"];
+            Assert.IsNotNull(regularTable);
+            Assert.IsFalse(regularTable.Columns.Any(c => !string.IsNullOrEmpty(c.ParameterMetadata)),
+                "Regular table should have no columns with ParameterMetadata");
+        }
+
 
         [TestMethod]
-        public void TestPowerBIDatabaseCulture()    
+        public void TestPowerBIDatabaseCulture()
         {
             var conn = MockConnection($@"{Constants.TestDataPath}\powerbi-csdl.xml");
             MetaDataVisitorCSDL v = new MetaDataVisitorCSDL(conn);
