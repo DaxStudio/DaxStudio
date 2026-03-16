@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Attributes\DirectLakeModeDescriptionAttribute.cs" />
     <Compile Include="Commands\AccessTokenCommand.cs" />
+    <Compile Include="Commands\BenchmarkCommand.cs" />
     <Compile Include="Commands\CommandSettingsBase.cs" />
     <Compile Include="Commands\ExportParquetCommand.cs" />
     <Compile Include="Helpers\AccessTokenHelper.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="UIStubs\QueryRunner.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="ViewModel\CmdCustomTraceViewModel.cs" />
+    <Compile Include="ViewModel\CmdServerTimesViewModel.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
@@ -134,6 +136,10 @@
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj">
       <Project>{9cdccc97-ca3b-4bdf-b062-da0266387b76}</Project>
       <Name>DaxStudio.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj">
+      <Project>{A7912ABB-E3AD-45C4-A8A7-183828DB300E}</Project>
+      <Name>DaxStudio.QueryTrace</Name>
     </ProjectReference>
     <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj">
       <Project>{5efeff14-3052-4dc1-b020-8e259062b899}</Project>
