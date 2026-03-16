@@ -4,6 +4,7 @@ using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
@@ -49,6 +50,14 @@ namespace DaxStudio.CommandLine.Commands
             [Description("Suppress console output (only write CSV)")]
             [DefaultValue(false)]
             public bool Silent { get; set; }
+
+            [CommandOption("--role <role>")]
+            [Description("RLS role to test (adds Roles= to the query connection string)")]
+            public string Role { get; set; }
+
+            [CommandOption("--effective-user <upn>")]
+            [Description("User to impersonate for RLS testing (adds EffectiveUserName= to the query connection string)")]
+            public string EffectiveUser { get; set; }
         }
 
         public IEventAggregator EventAggregator { get; }
@@ -107,10 +116,27 @@ namespace DaxStudio.CommandLine.Commands
             }
 
             // Connect — same pattern as CustomTraceCommand (lines 98-110)
+            // Roles/EffectiveUserName are added to the query connection for RLS testing.
+            // ClearCache requires admin privileges, so it uses the base connection
+            // (without role impersonation) via a separate ConnectionManager.
+            string baseConnectionString = settings.FullConnectionString;
+            string queryConnectionString = baseConnectionString;
+            bool hasImpersonation = false;
+            if (!string.IsNullOrWhiteSpace(settings.Role))
+            {
+                queryConnectionString += $";Roles={settings.Role}";
+                hasImpersonation = true;
+            }
+            if (!string.IsNullOrWhiteSpace(settings.EffectiveUser))
+            {
+                queryConnectionString += $";EffectiveUserName={settings.EffectiveUser}";
+                hasImpersonation = true;
+            }
+
             var connMgr = new ConnectionManager(EventAggregator);
             var connEvent = new UIStubs.ConnectEvent()
             {
-                ConnectionString = settings.FullConnectionString,
+                ConnectionString = queryConnectionString,
                 ApplicationName = "DAX Studio Command Line",
                 DatabaseName = settings.Database,
                 PowerBIFileName = settings.PowerBIFileName ?? ""
@@ -144,7 +170,7 @@ namespace DaxStudio.CommandLine.Commands
             // approach the UI uses (BenchmarkViewModel subscribes to ServerTimingsEvent).
             var timingReady = new ManualResetEventSlim(false);
             EventAggregator.SubscribeOnPublishedThread(
-                new TraceCompletedHandler(() => timingReady.Set()));
+                new TraceCompletedHandler(serverTimes, () => timingReady.Set()));
 
             // Start trace
             if (!silent) AnsiConsole.MarkupLine("[yellow]Starting server trace...[/]");
@@ -167,6 +193,33 @@ namespace DaxStudio.CommandLine.Commands
                     AnsiConsole.MarkupLine("[yellow]Trace unavailable[/] — wall-clock timing only");
             }
 
+            // For cache clearing with RLS impersonation: use a separate admin
+            // connection without Roles/EffectiveUserName, since ClearCache
+            // requires server admin privileges that the impersonated role lacks.
+            ConnectionManager adminConnMgr = null;
+            if (hasImpersonation && settings.ColdRuns > 0)
+            {
+                try
+                {
+                    adminConnMgr = new ConnectionManager(new Caliburn.Micro.EventAggregator());
+                    var adminEvent = new UIStubs.ConnectEvent()
+                    {
+                        ConnectionString = baseConnectionString,
+                        ApplicationName = "DAX Studio Command Line (admin)",
+                        DatabaseName = settings.Database,
+                        PowerBIFileName = settings.PowerBIFileName ?? ""
+                    };
+                    adminConnMgr.Connect(adminEvent);
+                    adminConnMgr.SelectedModel = adminConnMgr.Database.Models.BaseModel;
+                    if (!silent) AnsiConsole.MarkupLine("[dim]Admin connection for cache clear established[/]");
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("Could not create admin connection for cache clear: {message}", ex.Message);
+                    adminConnMgr = null;
+                }
+            }
+
             // Run benchmark
             int totalRuns = settings.ColdRuns + settings.WarmRuns;
             var details = new List<BenchmarkResult>();
@@ -177,7 +230,11 @@ namespace DaxStudio.CommandLine.Commands
                 if (cancellationToken.IsCancellationRequested) break;
                 sequence++;
 
-                try { connMgr.Database.ClearCache(); }
+                try
+                {
+                    var clearConn = adminConnMgr ?? connMgr;
+                    clearConn.Database.ClearCache();
+                }
                 catch (Exception ex) { Log.Warning("Cache clear failed: {message}", ex.Message); }
 
                 timingReady.Reset();
@@ -210,6 +267,7 @@ namespace DaxStudio.CommandLine.Commands
             // Stop trace and close
             try { await serverTimes.StopTraceAsync(); } catch { }
             connMgr.Close();
+            adminConnMgr?.Close();
 
             if (details.Count == 0)
             {
@@ -241,7 +299,10 @@ namespace DaxStudio.CommandLine.Commands
             {
                 using (var reader = connMgr.ExecuteReader(daxQuery, new List<AdomdParameter>()))
                 {
-                    while (reader.Read()) { rowCount++; }
+                    do
+                    {
+                        while (reader.Read()) { rowCount++; }
+                    } while (reader.NextResult());
                 }
             }
             catch (Exception ex)
@@ -362,29 +423,49 @@ namespace DaxStudio.CommandLine.Commands
                 "TotalCpu_ms,VertipaqCacheMatches,RowCount,Error");
 
             foreach (var r in details)
-                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}",
-                    r.Sequence, r.CacheType, r.TotalDurationMs,
-                    r.FormulaEngineDurationMs, r.StorageEngineDurationMs,
-                    r.StorageEngineQueryCount, r.StorageEngineCpuMs,
-                    r.TotalCpuMs, r.VertipaqCacheMatches,
-                    r.RowCount, r.Error ?? ""));
+                sb.AppendLine(string.Join(",", new[]
+                {
+                    Csv(r.Sequence.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.CacheType),
+                    Csv(r.TotalDurationMs.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.FormulaEngineDurationMs.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.StorageEngineDurationMs.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.StorageEngineQueryCount.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.StorageEngineCpuMs.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.TotalCpuMs.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.VertipaqCacheMatches.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.RowCount.ToString(CultureInfo.InvariantCulture)),
+                    Csv(r.Error ?? string.Empty)
+                }));
 
             sb.AppendLine().AppendLine("# Summary");
             sb.AppendLine("Cache,Statistic,TotalDuration_ms,FormulaEngineDuration_ms," +
                 "StorageEngineDuration_ms,StorageEngineQueryCount,VertipaqCacheMatches,RowCount");
 
             foreach (var r in summary)
-                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1},{2:F1},{3:F1},{4:F1},{5:F1},{6:F1},{7:F1}",
-                    r.CacheType, r.Statistic, r.TotalDurationMs,
-                    r.FormulaEngineDurationMs, r.StorageEngineDurationMs,
-                    r.StorageEngineQueryCount, r.VertipaqCacheMatches, r.RowCount));
+                sb.AppendLine(string.Join(",", new[]
+                {
+                    Csv(r.CacheType),
+                    Csv(r.Statistic),
+                    Csv(r.TotalDurationMs.ToString("F1", CultureInfo.InvariantCulture)),
+                    Csv(r.FormulaEngineDurationMs.ToString("F1", CultureInfo.InvariantCulture)),
+                    Csv(r.StorageEngineDurationMs.ToString("F1", CultureInfo.InvariantCulture)),
+                    Csv(r.StorageEngineQueryCount.ToString("F1", CultureInfo.InvariantCulture)),
+                    Csv(r.VertipaqCacheMatches.ToString("F1", CultureInfo.InvariantCulture)),
+                    Csv(r.RowCount.ToString("F1", CultureInfo.InvariantCulture))
+                }));
 
             var dir = Path.GetDirectoryName(outputFile);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
             System.IO.File.WriteAllText(outputFile, sb.ToString(), Encoding.UTF8);
+        }
+
+        private static string Csv(string value)
+        {
+            if (value == null) return string.Empty;
+            if (value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) < 0) return value;
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
         }
 
         #endregion
@@ -428,10 +509,16 @@ namespace DaxStudio.CommandLine.Commands
         /// </summary>
         private class TraceCompletedHandler : IHandle<UI.Events.QueryTraceCompletedEvent>
         {
+            private readonly ITraceWatcher _traceWatcher;
             private readonly System.Action _callback;
-            public TraceCompletedHandler(System.Action callback) { _callback = callback; }
+            public TraceCompletedHandler(ITraceWatcher traceWatcher, System.Action callback)
+            {
+                _traceWatcher = traceWatcher;
+                _callback = callback;
+            }
             public Task HandleAsync(UI.Events.QueryTraceCompletedEvent message, CancellationToken cancellationToken)
             {
+                if (!ReferenceEquals(message.Trace, _traceWatcher)) return Task.CompletedTask;
                 _callback();
                 return Task.CompletedTask;
             }
