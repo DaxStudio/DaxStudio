@@ -1,6 +1,6 @@
 ﻿<SyntaxDefinition name="DirectQuerySql" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
   <!-- Default colors (Light theme) -->
-  <Color name="Keyword"  foreground="#035ACA" />
+  <Color name="Keyword"  foreground="#035ACA" fontWeight="bold" />
   <Color name="String"   foreground="#D93124" />
   <Color name="Comment"  foreground="#39A03B" />
   <Color name="Number"   foreground="#EE7F18" />
@@ -8,7 +8,8 @@
   <Color name="Operator" foreground="#808080" />
 
   <!-- Light theme colors -->
-  <Color name="Light.Keyword"  foreground="#035ACA" />
+  <Color name="Light.Comment"  foreground="#39A03B" />
+  <Color name="Light.Keyword"  foreground="#035ACA" fontWeight="bold" />
   <Color name="Light.String"   foreground="#D93124" />
   <Color name="Light.Comment"  foreground="#39A03B" />
   <Color name="Light.Number"   foreground="#EE7F18" />
@@ -16,7 +17,8 @@
   <Color name="Light.Operator" foreground="#808080" />
 
   <!-- Dark theme colors -->
-  <Color name="Dark.Keyword"  foreground="#0095FF" />
+  <Color name="Dark.Comment"  foreground="#86C573" />
+  <Color name="Dark.Keyword"  foreground="#0095FF" fontWeight="bold" />
   <Color name="Dark.String"   foreground="#E44444" />
   <Color name="Dark.Comment"  foreground="#86C573" />
   <Color name="Dark.Number"   foreground="#EE7F18" />

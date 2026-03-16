@@ -2,6 +2,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using DaxStudio.UI.Grammars.Generated;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -39,12 +40,21 @@ namespace DaxStudio.UI.Utils
         private static readonly Regex PremiumTagsPattern = new Regex(
             @"<pii>|</pii>|<ccon>|</ccon>", RegexOptions.Compiled);
 
+        private readonly Dictionary<string, string> _remapColumns;
+        private readonly Dictionary<string, string> _remapTables;
+
         /// <param name="simplify">When true, removes aliases, lineage, GUIDs, brackets, etc.</param>
         /// <param name="format">When true, applies structural formatting (indentation, line breaks).</param>
-        public XmSqlFormattingVisitor(bool simplify, bool format)
+        /// <param name="remapColumns">Optional dictionary mapping lineage IDs to friendly column names.</param>
+        /// <param name="remapTables">Optional dictionary mapping lineage IDs to friendly table names.</param>
+        public XmSqlFormattingVisitor(bool simplify, bool format,
+            Dictionary<string, string> remapColumns = null,
+            Dictionary<string, string> remapTables = null)
         {
             _simplify = simplify;
             _format = format;
+            _remapColumns = remapColumns;
+            _remapTables = remapTables;
         }
 
         public string GetFormattedText() => _sb.ToString();
@@ -64,6 +74,17 @@ namespace DaxStudio.UI.Utils
 
             if (_simplify)
             {
+                // Check remap before removing lineage
+                if (_remapTables != null)
+                {
+                    var lineageMatch = LineagePattern.Match(raw);
+                    if (lineageMatch.Success)
+                    {
+                        var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
+                        if (_remapTables.TryGetValue(id, out var remapped))
+                            return remapped;
+                    }
+                }
                 raw = LineagePattern.Replace(raw, "");
                 raw = RemoveGuids(raw);
                 raw = PremiumTagsPattern.Replace(raw, "");
@@ -82,6 +103,17 @@ namespace DaxStudio.UI.Utils
 
             if (_simplify)
             {
+                // Check remap before removing lineage
+                if (_remapColumns != null)
+                {
+                    var lineageMatch = LineagePattern.Match(raw);
+                    if (lineageMatch.Success)
+                    {
+                        var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
+                        if (_remapColumns.TryGetValue(id, out var remapped))
+                            return remapped;
+                    }
+                }
                 // Remove lineage IDs like " ( 123 ) "
                 raw = LineagePattern.Replace(raw, "");
                 raw = RemoveGuids(raw);
@@ -570,7 +602,15 @@ namespace DaxStudio.UI.Utils
                 {
                     _sb.Append(" ");
                     _sb.Append(logicalOps[i - 1].GetText().ToUpperInvariant());
-                    _sb.Append(" ");
+                    if (_format)
+                    {
+                        _sb.Append("\r\n");
+                        _sb.Append(Indent);
+                    }
+                    else
+                    {
+                        _sb.Append(" ");
+                    }
                 }
                 AppendFilterPredicate(predicates[i]);
             }
@@ -579,7 +619,7 @@ namespace DaxStudio.UI.Utils
 
         private void AppendFilterPredicate(xmSQLParser.FilterPredicateContext ctx)
         {
-            // Coalesce filter
+            // Coalesce filter: COALESCE(tableColumnRef) = value
             var coalesce = ctx.coalesceFilter();
             if (coalesce != null)
             {
@@ -587,9 +627,46 @@ namespace DaxStudio.UI.Utils
                 return;
             }
 
+            // COALESCE/PFCASTCOALESCE wrapping an expression: COALESCE((expr))
+            var directCoal = ctx.COALESCE();
+            var directPfCoal = ctx.PFCASTCOALESCE();
+            if (directCoal != null || directPfCoal != null)
+            {
+                _sb.Append(directCoal != null ? directCoal.GetText() : directPfCoal.GetText());
+                _sb.Append(" (  ( ");
+                var coalExpr = ctx.expression();
+                if (coalExpr != null)
+                {
+                    AppendExpression(coalExpr);
+                }
+                _sb.Append(" )  )");
+                return;
+            }
+
             var tcRefs = ctx.tableColumnRef();
             if (tcRefs != null && tcRefs.Length > 0)
             {
+                // Tuple IN filter: (col1, col2) IN {(v1,v2), ...}
+                // Must check before appending first tcRef to avoid double output
+                var lbrace = ctx.LBRACE();
+                if (lbrace != null)
+                {
+                    _sb.Append("( ");
+                    for (int i = 0; i < tcRefs.Length; i++)
+                    {
+                        if (i > 0) _sb.Append(", ");
+                        AppendTableColumnRef(tcRefs[i]);
+                    }
+                    _sb.Append(" ) IN { ");
+                    var tupleList = ctx.tupleList();
+                    if (tupleList != null)
+                    {
+                        AppendTupleList(tupleList);
+                    }
+                    _sb.Append(" }");
+                    return;
+                }
+
                 AppendTableColumnRef(tcRefs[0]);
 
                 // comparison
@@ -710,6 +787,19 @@ namespace DaxStudio.UI.Utils
             _sb.Append(text);
         }
 
+        private void AppendTupleList(xmSQLParser.TupleListContext ctx)
+        {
+            if (ctx == null) return;
+            var valueLists = ctx.valueList();
+            for (int i = 0; i < valueLists.Length; i++)
+            {
+                if (i > 0) _sb.Append(", ");
+                _sb.Append("( ");
+                AppendValueList(valueLists[i]);
+                _sb.Append(" )");
+            }
+        }
+
         private void AppendValueList(xmSQLParser.ValueListContext ctx)
         {
             if (ctx == null) return;
@@ -827,20 +917,34 @@ namespace DaxStudio.UI.Utils
             }
             else
             {
-                // Function name is a QUOTED_TABLE_NAME (e.g. 'LogAbsValueCallback') or
-                // BRACKETED_NAME (e.g. [MinMaxColumnPositionCallback]) — strip quotes/brackets
-                var quoted = ctx.QUOTED_TABLE_NAME();
-                if (quoted != null)
+                // Check for COALESCE / PFCASTCOALESCE used as function names
+                var coal = ctx.COALESCE();
+                var pfcastCoal = ctx.PFCASTCOALESCE();
+                if (coal != null)
                 {
-                    _sb.Append(quoted.GetText().Trim('\''));
+                    _sb.Append(coal.GetText());
+                }
+                else if (pfcastCoal != null)
+                {
+                    _sb.Append(pfcastCoal.GetText());
                 }
                 else
                 {
-                    var bracketed = ctx.BRACKETED_NAME();
-                    if (bracketed != null)
+                    // Function name is a QUOTED_TABLE_NAME (e.g. 'LogAbsValueCallback') or
+                    // BRACKETED_NAME (e.g. [MinMaxColumnPositionCallback]) — strip quotes/brackets
+                    var quoted = ctx.QUOTED_TABLE_NAME();
+                    if (quoted != null)
                     {
-                        var name = bracketed.GetText();
-                        _sb.Append(name.Substring(1, name.Length - 2));
+                        _sb.Append(quoted.GetText().Trim('\''));
+                    }
+                    else
+                    {
+                        var bracketed = ctx.BRACKETED_NAME();
+                        if (bracketed != null)
+                        {
+                            var name = bracketed.GetText();
+                            _sb.Append(name.Substring(1, name.Length - 2));
+                        }
                     }
                 }
             }

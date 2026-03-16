@@ -218,7 +218,7 @@
                                              BorderThickness="0"
                                              x:Name="QueryRichText"
                                              DataContext="{Binding}"
-                                             FontFamily="Open Sans"
+                                             FontFamily="{Binding DataContext.Options.EditorFontFamily, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                              Background="{DynamicResource Theme.Brush.Content.Back}"
                                              Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                              BoundText="{Binding Path=QueryRichText, Mode=OneWay}"
@@ -823,6 +823,8 @@
                                     <MenuItem Header="Medium" cal:Message.Attach="SetTimelineOnRowsVisibility('MEDIUM')" />
                                     <MenuItem Header="Full Height" cal:Message.Attach="SetTimelineOnRowsVisibility('FULLHEIGHT')" />
                                 </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="Reformat Queries" cal:Message.Attach="ReformatQueries"/>
                             </CompositeCollection>
                     </ContextMenu.ItemsSource>
                 </ContextMenu>

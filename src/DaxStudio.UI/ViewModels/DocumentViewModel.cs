@@ -2600,10 +2600,10 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 word = _editor.ContextMenuWord;
-                var measureName = word.Trim('[', ']');
+                //var measureName = word.Trim('[', ']');
 
                 if (_editor.SelectionLength == 0)
-                    DefineSingleMeasureByName(measureName);
+                    DefineSingleMeasureByName(word);
                 else
                     DefineMeasuresForQuery();
 

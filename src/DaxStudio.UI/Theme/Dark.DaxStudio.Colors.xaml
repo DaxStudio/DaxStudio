@@ -13,6 +13,8 @@
     <Color x:Key="Theme.Accent1">#FF69C3FF</Color>
     <Color x:Key="Theme.Accent2">#FFFAC700</Color>
     <Color x:Key="Theme.Accent3">#FF1287CC</Color>
+    <Color x:Key="Theme.Accent4">#FF3c8c3c</Color>
+    <Color x:Key="Theme.Accent5">#FF8c239b</Color>
     <Color x:Key="Theme.Icons.Red">#ED1C24</Color>
     <Color x:Key="Theme.Default.Back">#2D2D2D</Color>
     <Color x:Key="Theme.FindSelection.Back">#5D5D5D</Color>
@@ -54,6 +56,8 @@
     <SolidColorBrush x:Key="Theme.Brush.Accent1" Color="{StaticResource Theme.Accent1}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Accent2" Color="{StaticResource Theme.Accent2}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Accent3" Color="{StaticResource Theme.Accent3}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Accent4" Color="{StaticResource Theme.Accent4}" options:Freeze="true"/>
+    <SolidColorBrush x:Key="Theme.Brush.Accent5" Color="{StaticResource Theme.Accent5}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Icons.Red" Color="{StaticResource Theme.Icons.Red}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Default.Fore" Color="{StaticResource Theme.Default.Fore}" options:Freeze="true"/>
     <SolidColorBrush x:Key="Theme.Brush.Muted.Fore" Color="{StaticResource Theme.Muted.Fore}" options:Freeze="true"/>

@@ -139,8 +139,10 @@ filterPredicate
     | tableColumnRef NIN LPAREN valueList RPAREN                    // 'T'[C] NIN (v1, v2)
     | tableColumnRef BETWEEN filterValue AND filterValue            // 'T'[C] BETWEEN v1 AND v2
     | tableColumnRef ININDEX tableColumnRef                         // 'T1'[C1] ININDEX '$T'[C2]
-    | coalesceFilter                                                 // PFCASTCOALESCE/COALESCE
+    | coalesceFilter                                                 // PFCASTCOALESCE/COALESCE(col) = val
+    | (PFCASTCOALESCE | COALESCE) LPAREN LPAREN expression RPAREN RPAREN  // COALESCE((expr))
     | tableColumnRef CALLBACKDATAID                                  // callback in filter
+    | LPAREN tableColumnRef (COMMA tableColumnRef)* RPAREN IN LBRACE tupleList RBRACE  // (col1, col2) IN {(v1,v2), ...}
     | expression                                                     // catch-all for unknown filter patterns
     ;
 
@@ -167,6 +169,10 @@ filterValue
 
 valueList
     : filterValue (COMMA filterValue)* truncationIndicator?
+    ;
+
+tupleList
+    : LPAREN valueList RPAREN (COMMA LPAREN valueList RPAREN)*
     ;
 
 truncationIndicator
@@ -201,7 +207,7 @@ expressionAtom
     ;
 
 functionCall
-    : (IDENTIFIER | QUOTED_TABLE_NAME | BRACKETED_NAME) LPAREN expressionList? RPAREN
+    : (IDENTIFIER | QUOTED_TABLE_NAME | BRACKETED_NAME | COALESCE | PFCASTCOALESCE) LPAREN expressionList? RPAREN
     | PFCAST LPAREN expression AS IDENTIFIER RPAREN
     ;
 
@@ -313,6 +319,8 @@ PLUS        : '+' ;
 MINUS       : '-' ;
 STAR        : '*' ;
 SLASH       : '/' ;
+LBRACE      : '{' ;
+RBRACE      : '}' ;
 DOTDOT      : '..' ;
 
 // Identifiers (for types like INT, CURRENCY, keywords not otherwise matched)

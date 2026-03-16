@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace DaxStudio.UI.Converters {
     class QuerySingleLineConverter : IValueConverter {
         const string searchSet = @"SET.*;";
-        const string searchTab = @"\r\n\t+|\n\t+|\r\t+|\r\n|\r|\n|\t+";
+        const string searchTab = @"\r\n\t+|\n\t+|\r\t+|\r\n|\r|\n|\t+|\s{2,}";
 
         static Regex setRemoval = new Regex(searchSet, RegexOptions.Compiled);
         static Regex tabRemoval = new Regex(searchTab, RegexOptions.Compiled);

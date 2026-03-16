@@ -1431,6 +1431,18 @@ namespace DaxStudio.UI.Views
             }
         }
 
+        private void ShowMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            if (button?.ContextMenu != null)
+            {
+                button.ContextMenu.DataContext = button.DataContext;
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                button.ContextMenu.IsOpen = true;
+            }
+        }
+
         #endregion
     }
 }

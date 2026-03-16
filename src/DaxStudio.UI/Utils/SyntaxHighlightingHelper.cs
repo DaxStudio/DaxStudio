@@ -7,6 +7,7 @@ namespace DaxStudio.UI.Utils
 {
     /// <summary>
     /// Loads and caches .xshd syntax highlighting definitions for xmSQL and DirectQuery SQL.
+    /// Automatically applies the current theme colors when definitions are first loaded.
     /// </summary>
     internal static class SyntaxHighlightingHelper
     {
@@ -18,7 +19,10 @@ namespace DaxStudio.UI.Utils
             get
             {
                 if (_xmSqlHighlighting == null)
+                {
                     _xmSqlHighlighting = LoadHighlighting("DaxStudio.UI.Resources.xmSQL.xshd");
+                    SetColorTheme(_xmSqlHighlighting, GetCurrentTheme());
+                }
                 return _xmSqlHighlighting;
             }
         }
@@ -28,8 +32,24 @@ namespace DaxStudio.UI.Utils
             get
             {
                 if (_directQuerySqlHighlighting == null)
+                {
                     _directQuerySqlHighlighting = LoadHighlighting("DaxStudio.UI.Resources.DirectQuerySql.xshd");
+                    SetColorTheme(_directQuerySqlHighlighting, GetCurrentTheme());
+                }
                 return _directQuerySqlHighlighting;
+            }
+        }
+
+        private static string GetCurrentTheme()
+        {
+            try
+            {
+                var theme = ModernWpf.ThemeManager.Current.ActualApplicationTheme;
+                return theme == ModernWpf.ApplicationTheme.Dark ? "Dark" : "Light";
+            }
+            catch
+            {
+                return "Light";
             }
         }
 

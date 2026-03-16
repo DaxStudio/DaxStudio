@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -242,7 +243,7 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Whether there is no data to display (inverse of HasData, for binding).
         /// </summary>
-        public bool NoData => !HasData;
+        public bool NoData => !HasData && !IsLoading;
 
         private string _searchText = string.Empty;
         /// <summary>
@@ -364,7 +365,14 @@ namespace DaxStudio.UI.ViewModels
         public bool IsLoading
         {
             get => _isLoading;
-            set { _isLoading = value; NotifyOfPropertyChange(); }
+            set { _isLoading = value; NotifyOfPropertyChange(); NotifyOfPropertyChange(nameof(NoData)); }
+        }
+
+        private string _loadingMessage = "Analyzing SE Events...";
+        public string LoadingMessage
+        {
+            get => _loadingMessage;
+            set { _loadingMessage = value; NotifyOfPropertyChange(); }
         }
 
         private double _canvasWidth = 800;
@@ -1096,36 +1104,7 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         private bool IsEventVisibleInServerTimings(TraceStorageEngineEvent evt)
         {
-            if (_serverTimingDetails == null) return true;
-
-            var cs = evt.ClassSubclass;
-
-            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal)
-                return _serverTimingDetails.ShowInternal;
-
-            if (cs.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
-                return _serverTimingDetails.ShowBatch;
-
-            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
-                return _serverTimingDetails.ShowCache;
-
-            if (cs.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted)
-                return _serverTimingDetails.ShowRewriteAttempts;
-
-            if (cs.Subclass == DaxStudioTraceEventSubclass.TabularQuery
-                || cs.Subclass == DaxStudioTraceEventSubclass.TabularQueryInternal)
-                return _serverTimingDetails.ShowTabularQueries;
-
-            if (cs.Class == DaxStudioTraceEventClass.ExecutionMetrics)
-                return _serverTimingDetails.ShowMetrics;
-
-            if (cs.Class == DaxStudioTraceEventClass.Total)
-                return true;
-
-            if (cs.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL)
-                return _serverTimingDetails.ShowSql;
-
-            return _serverTimingDetails.ShowScan;
+            return IsEventVisibleInServerTimings(evt, _serverTimingDetails);
         }
 
         /// <summary>
@@ -1134,139 +1113,159 @@ namespace DaxStudio.UI.ViewModels
         /// </summary>
         public void AnalyzeEvents(IEnumerable<TraceStorageEngineEvent> events)
         {
+            if (IsLoading) return;
+
             IsLoading = true;
+            LoadingMessage = "Analyzing SE Events...";
+
+            _ = AnalyzeEventsAsync(events);
+        }
+
+        /// <summary>
+        /// Asynchronously analyzes SE events with progress updates to keep UI responsive.
+        /// Heavy parsing and grouping work runs on a background thread.
+        /// </summary>
+        private async Task AnalyzeEventsAsync(IEnumerable<TraceStorageEngineEvent> events)
+        {
+            // Allow UI to render the loading indicator before starting work
+            await Task.Delay(50);
 
             try
             {
-                // Store events for debug export
+                // Store events for debug export (on UI thread since we're reading from the incoming enumerable)
+                LoadingMessage = "Loading events...";
                 _rawEvents = events.ToList();
+                var totalEvents = _rawEvents.Count;
 
-                // Clear previous analysis
+                // Clear previous analysis (must be on UI thread - bound to UI)
                 _analysis = new XmSqlAnalysis();
                 Tables.Clear();
                 Relationships.Clear();
 
-                // Calculate total CPU from all events and track Scan CPU separately
-                // DirectQuery CPU values are unreliable (just copy of Duration), so we track Scan CPU separately
-                long totalCpu = 0;
-                long totalScanCpu = 0;
-                long totalDirectQueryDuration = 0;
-                
-                // Track batch events separately - they count toward SE query count
-                int batchEventCount = 0;
+                // Capture settings needed for background work
+                var serverTimingDetails = _serverTimingDetails;
+                var sortKeyColumnsFirst = _sortKeyColumnsFirst;
+                var heatMapMode = _heatMapMode;
+                var parser = _parser;
+                var rawEvents = _rawEvents;
+                var analysis = _analysis;
 
-                // Parse each SE event's query
-                foreach (var evt in events)
+                LoadingMessage = $"Parsing {totalEvents} events...";
+                await Task.Yield();
+
+                // ── Phase 1: Parse events on background thread (CPU-heavy) ──
+                var parseResult = await Task.Run(() =>
                 {
-                    // Skip events not visible in the ServerTimingsView
-                    if (!IsEventVisibleInServerTimings(evt)) continue;
+                    long totalCpu = 0;
+                    long totalScanCpu = 0;
+                    long totalDirectQueryDuration = 0;
+                    int batchEventCount = 0;
+                    int processedCount = 0;
 
-                    // Count batch events toward SE query total (they're counted in Server Timings)
-                    // but still parse their xmSQL query text for the diagram
-                    if (evt.IsBatchEvent)
+                    foreach (var evt in rawEvents)
                     {
-                        batchEventCount++;
-                    }
-                    
-                    // Skip Internal events as they don't represent actual user queries
-                    if (evt.IsInternalEvent)
-                        continue;
+                        // Skip events not visible in the ServerTimingsView
+                        if (!IsEventVisibleInServerTimings(evt, serverTimingDetails)) continue;
 
-                    // Cache hit events contribute to statistics but are not parsed for the diagram
-                    // (they duplicate Scan events already represented)
-                    if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
-                    {
-                        _analysis.TotalSEQueriesAnalyzed++;
-                        _analysis.CacheHitQueries++;
-                        continue;
-                    }
+                        if (evt.IsBatchEvent)
+                            batchEventCount++;
 
-                    // Skip events without query text
-                    // For DirectQuery events, check TextData which has the SQL
-                    // For Scan events, check Query which has the xmSQL
-                    if (evt.IsDirectQueryEvent)
-                    {
-                        if (string.IsNullOrWhiteSpace(evt.TextData) && string.IsNullOrWhiteSpace(evt.Query))
+                        if (evt.IsInternalEvent)
                             continue;
-                    }
-                    else if (string.IsNullOrWhiteSpace(evt.Query))
-                    {
-                        continue;
-                    }
 
-                    // Track total CPU for percentage calculations
-                    if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
-                    {
-                        totalCpu += evt.CpuTime.Value;
-                        
-                        // Only count Scan events toward Scan CPU (DirectQuery CPU is just Duration copy)
-                        if (evt.IsScanEvent)
+                        if (evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch)
                         {
-                            totalScanCpu += evt.CpuTime.Value;
+                            analysis.TotalSEQueriesAnalyzed++;
+                            analysis.CacheHitQueries++;
+                            continue;
+                        }
+
+                        if (evt.IsDirectQueryEvent)
+                        {
+                            if (string.IsNullOrWhiteSpace(evt.TextData) && string.IsNullOrWhiteSpace(evt.Query))
+                                continue;
+                        }
+                        else if (string.IsNullOrWhiteSpace(evt.Query))
+                        {
+                            continue;
+                        }
+
+                        if (evt.CpuTime.HasValue && evt.CpuTime.Value > 0)
+                        {
+                            totalCpu += evt.CpuTime.Value;
+                            if (evt.IsScanEvent)
+                                totalScanCpu += evt.CpuTime.Value;
+                        }
+
+                        if (evt.IsDirectQueryEvent && evt.Duration.HasValue && evt.Duration.Value > 0)
+                            totalDirectQueryDuration += evt.Duration.Value;
+
+                        var metrics = new XmSqlParser.SeEventMetrics
+                        {
+                            QueryId = evt.RowNumber,
+                            EstimatedRows = evt.EstimatedRows,
+                            DurationMs = evt.Duration,
+                            IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
+                            CpuTimeMs = evt.CpuTime,
+                            CpuFactor = evt.CpuFactor,
+                            NetParallelDurationMs = evt.NetParallelDuration
+                        };
+
+                        if (evt.IsDirectQueryEvent)
+                        {
+                            var sqlText = !string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query;
+                            parser.ParseDirectQuerySql(sqlText, analysis, metrics);
+                        }
+                        else if (evt.IsScanEvent)
+                        {
+                            parser.ParseQueryWithMetrics(evt.Query, analysis, metrics);
+                        }
+
+                        processedCount++;
+                        if (processedCount % 100 == 0)
+                        {
+                            var count = processedCount;
+                            Application.Current.Dispatcher.InvokeAsync(() =>
+                                LoadingMessage = $"Parsing events ({count}/{totalEvents})...");
                         }
                     }
 
-                    // Track DirectQuery duration separately
-                    if (evt.IsDirectQueryEvent && evt.Duration.HasValue && evt.Duration.Value > 0)
-                    {
-                        totalDirectQueryDuration += evt.Duration.Value;
-                    }
+                    analysis.BatchEventCount = batchEventCount;
+                    analysis.TotalCpuTimeMs = totalCpu;
+                    analysis.TotalScanCpuTimeMs = totalScanCpu;
+                    analysis.TotalDirectQueryDurationMs = totalDirectQueryDuration;
 
-                    // Build full metrics including cache hit status and parallelism data
-                    var metrics = new XmSqlParser.SeEventMetrics
-                    {
-                        QueryId = evt.RowNumber,  // Track which query this is for Query Plan Integration
-                        EstimatedRows = evt.EstimatedRows,
-                        DurationMs = evt.Duration,
-                        IsCacheHit = evt.Class == DaxStudioTraceEventClass.VertiPaqSEQueryCacheMatch,
-                        CpuTimeMs = evt.CpuTime,
-                        CpuFactor = evt.CpuFactor,
-                        NetParallelDurationMs = evt.NetParallelDuration
-                    };
+                    return (totalCpu, totalScanCpu);
+                });
 
-                    // Parse based on event type
-                    if (evt.IsDirectQueryEvent)
-                    {
-                        // DirectQuery events contain T-SQL syntax for external data sources
-                        // Use TextData (raw SQL) which has consistent "from [schema].[table] as" format
-                        // rather than Query (formatted) which varies
-                        var sqlText = !string.IsNullOrWhiteSpace(evt.TextData) ? evt.TextData : evt.Query;
-                        _parser.ParseDirectQuerySql(sqlText, _analysis, metrics);
-                    }
-                    else if (evt.IsScanEvent)
-                    {
-                        // VertiPaq SE events contain xmSQL syntax
-                        _parser.ParseQueryWithMetrics(evt.Query, _analysis, metrics);
-                    }
-                }
-                
-                // Add batch event count to analysis for accurate SE query count matching Server Timings
-                _analysis.BatchEventCount = batchEventCount;
+                // ── Phase 2: Query grouping on background thread (CPU-heavy) ──
+                LoadingMessage = "Grouping similar queries...";
+                await Task.Yield();
 
-                // Store total CPU in analysis for reference
-                _analysis.TotalCpuTimeMs = totalCpu;
-                _analysis.TotalScanCpuTimeMs = totalScanCpu;
-                _analysis.TotalDirectQueryDurationMs = totalDirectQueryDuration;
+                await Task.Run(() => RunQueryGrouping(rawEvents));
 
-                // Run similarity grouping on the parsed queries
-                RunQueryGrouping(_rawEvents);
-
-                // Create view models for tables
+                // ── Phase 3: Create ViewModels on UI thread ──
+                LoadingMessage = "Creating table views...";
+                await Task.Yield();
                 CreateTableViewModels();
 
                 // Auto-hide mini-map for small diagrams (fewer than 10 tables)
                 ShowMiniMap = Tables.Count >= 10;
 
                 // Calculate CPU percentages for each table (use Scan CPU only for accurate percentages)
-                CalculateCpuPercentages(totalScanCpu > 0 ? totalScanCpu : totalCpu);
+                CalculateCpuPercentages(parseResult.totalScanCpu > 0 ? parseResult.totalScanCpu : parseResult.totalCpu);
 
                 // Calculate heat map levels
                 CalculateHeatLevels();
 
                 // Create view models for relationships
+                LoadingMessage = "Building relationships...";
+                await Task.Yield();
                 CreateRelationshipViewModels();
 
                 // Layout the diagram
+                LoadingMessage = "Calculating layout...";
+                await Task.Yield();
                 LayoutDiagram();
 
                 // Gather available query IDs for query plan integration
@@ -1283,10 +1282,52 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(nameof(HasData));
                 NotifyOfPropertyChange(nameof(NoData));
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(XmSqlErdViewModel), nameof(AnalyzeEventsAsync), ex.Message);
+            }
             finally
             {
                 IsLoading = false;
+                LoadingMessage = "Analyzing SE Events...";
             }
+        }
+
+        /// <summary>
+        /// Thread-safe version: checks whether an event would be visible given filter settings.
+        /// </summary>
+        private static bool IsEventVisibleInServerTimings(TraceStorageEngineEvent evt, ServerTimingDetailsViewModel serverTimingDetails)
+        {
+            if (serverTimingDetails == null) return true;
+
+            var cs = evt.ClassSubclass;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqScanInternal)
+                return serverTimingDetails.ShowInternal;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)
+                return serverTimingDetails.ShowBatch;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
+                return serverTimingDetails.ShowCache;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.RewriteAttempted)
+                return serverTimingDetails.ShowRewriteAttempts;
+
+            if (cs.Subclass == DaxStudioTraceEventSubclass.TabularQuery
+                || cs.Subclass == DaxStudioTraceEventSubclass.TabularQueryInternal)
+                return serverTimingDetails.ShowTabularQueries;
+
+            if (cs.Class == DaxStudioTraceEventClass.ExecutionMetrics)
+                return serverTimingDetails.ShowMetrics;
+
+            if (cs.Class == DaxStudioTraceEventClass.Total)
+                return true;
+
+            if (cs.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL)
+                return serverTimingDetails.ShowSql;
+
+            return serverTimingDetails.ShowScan;
         }
 
         /// <summary>
@@ -5032,23 +5073,6 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Tooltip text explaining the column usage icons.
-        /// </summary>
-        public string UsageTooltip
-        {
-            get
-            {
-                var tips = new List<string>();
-                if (IsJoinColumn) tips.Add("🔑 Join Key");
-                if (IsFilterColumn) tips.Add("🔍 Filter");
-                if (IsAggregateColumn) tips.Add("📊 Aggregate (" + AggregationText + ")");
-                if (IsSelectColumn) tips.Add("✓ Selected");
-                if (IsExpressionColumn) tips.Add("📐 Expression");
-                if (HasCallback) tips.Add("⚡ Callback (" + CallbackType + ")");
-                return tips.Count > 0 ? string.Join("\n", tips) : "No usage detected";
-            }
-        }
         
         private bool _isSearchMatch = true;
         /// <summary>
@@ -5348,7 +5372,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Gets the arrowhead path data for the end (To-table) side.
-        /// Uses the actual bezier curve approach angle for a natural appearance.
+        /// Uses the bezier derivative near the endpoint for a natural visual alignment.
         /// </summary>
         public string EndArrowPathData
         {
@@ -5358,18 +5382,15 @@ namespace DaxStudio.UI.ViewModels
                 double offsetX = isVertical ? _parallelOffset : 0;
                 double offsetY = isVertical ? 0 : _parallelOffset;
 
-                // Get the bezier control points (must match PathData construction)
                 GetBezierControlPoints(isVertical, offsetX, offsetY,
                     out double p0x, out double p0y, out double p1x, out double p1y,
                     out double p2x, out double p2y, out double p3x, out double p3y);
 
-                // Evaluate a point slightly back on the curve to get the visual approach direction
-                EvaluateBezier(ArrowSampleT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
-                    out double bx, out double by);
-
-                // Direction from B(t) to endpoint
-                double dx = p3x - bx;
-                double dy = p3y - by;
+                // Evaluate the derivative near (not at) the endpoint to capture visual approach angle.
+                // At t=1.0 the tangent is pure vertical/horizontal by construction; sampling
+                // slightly before blends in the curve's actual approach direction.
+                EvaluateBezierDerivative(ArrowTangentT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
+                    out double dx, out double dy);
                 double len = Math.Sqrt(dx * dx + dy * dy);
                 if (len > 0) { dx /= len; dy /= len; }
 
@@ -5379,7 +5400,7 @@ namespace DaxStudio.UI.ViewModels
 
         /// <summary>
         /// Gets the arrowhead path data for the start (From-table) side.
-        /// Uses the actual bezier curve approach angle for a natural appearance.
+        /// Uses the bezier derivative near the start point for a natural visual alignment.
         /// </summary>
         public string StartArrowPathData
         {
@@ -5389,18 +5410,15 @@ namespace DaxStudio.UI.ViewModels
                 double offsetX = isVertical ? _parallelOffset : 0;
                 double offsetY = isVertical ? 0 : _parallelOffset;
 
-                // Get the bezier control points (must match PathData construction)
                 GetBezierControlPoints(isVertical, offsetX, offsetY,
                     out double p0x, out double p0y, out double p1x, out double p1y,
                     out double p2x, out double p2y, out double p3x, out double p3y);
 
-                // Evaluate a point slightly forward on the curve to get the visual approach direction
-                EvaluateBezier(1.0 - ArrowSampleT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
-                    out double bx, out double by);
-
-                // Direction from B(t) to start point (reversed — approaching the start)
-                double dx = p0x - bx;
-                double dy = p0y - by;
+                // Evaluate derivative near start, reversed to point toward start
+                EvaluateBezierDerivative(1.0 - ArrowTangentT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
+                    out double dx, out double dy);
+                dx = -dx;
+                dy = -dy;
                 double len = Math.Sqrt(dx * dx + dy * dy);
                 if (len > 0) { dx /= len; dy /= len; }
 
@@ -5409,10 +5427,11 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Parameter t at which to sample the bezier curve for arrow direction.
-        /// A value close to 1.0 samples near the endpoint; 0.85 gives a good visual match.
+        /// Parameter t at which to evaluate the bezier derivative for arrow direction.
+        /// At t=1.0 the tangent is degenerate (pure axis-aligned); sampling near the
+        /// endpoint captures the visual curve direction. 0.92 works well visually.
         /// </summary>
-        private const double ArrowSampleT = 0.85;
+        private const double ArrowTangentT = 0.92;
 
         /// <summary>
         /// Gets the four bezier control points matching the PathData construction.
@@ -5440,22 +5459,21 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Evaluates a cubic bezier curve at parameter t.
-        /// B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
+        /// Evaluates the derivative (tangent vector) of a cubic bezier at parameter t.
+        /// B'(t) = 3(1-t)²(P1-P0) + 6(1-t)t(P2-P1) + 3t²(P3-P2)
         /// </summary>
-        private static void EvaluateBezier(double t,
+        private static void EvaluateBezierDerivative(double t,
             double p0x, double p0y, double p1x, double p1y,
             double p2x, double p2y, double p3x, double p3y,
-            out double x, out double y)
+            out double dx, out double dy)
         {
             double u = 1.0 - t;
-            double u2 = u * u;
-            double u3 = u2 * u;
-            double t2 = t * t;
-            double t3 = t2 * t;
+            double a = 3 * u * u;       // coefficient for (P1-P0)
+            double b = 6 * u * t;       // coefficient for (P2-P1)
+            double c = 3 * t * t;       // coefficient for (P3-P2)
 
-            x = u3 * p0x + 3 * u2 * t * p1x + 3 * u * t2 * p2x + t3 * p3x;
-            y = u3 * p0y + 3 * u2 * t * p1y + 3 * u * t2 * p2y + t3 * p3y;
+            dx = a * (p1x - p0x) + b * (p2x - p1x) + c * (p3x - p2x);
+            dy = a * (p1y - p0y) + b * (p2y - p1y) + c * (p3y - p2y);
         }
 
         /// <summary>
@@ -5614,34 +5632,63 @@ namespace DaxStudio.UI.ViewModels
         /// Path data for drawing the relationship line (bezier curve).
         /// Adapts to horizontal or vertical orientation based on edge types.
         /// Supports parallel offset for multiple relationships between same tables.
+        /// When arrows are shown, both the endpoint AND the adjacent control point
+        /// are adjusted so the bezier tangent at the arrow base matches the arrow direction.
         /// </summary>
         public string PathData
         {
             get
             {
-                // Determine if this is a horizontal or vertical relationship
                 bool isVertical = (_startEdge == EdgeType.Top || _startEdge == EdgeType.Bottom);
-                
-                // Apply parallel offset perpendicular to the line direction
                 double offsetX = isVertical ? _parallelOffset : 0;
                 double offsetY = isVertical ? 0 : _parallelOffset;
-                
-                if (isVertical)
+
+                GetBezierControlPoints(isVertical, offsetX, offsetY,
+                    out double p0x, out double p0y, out double p1x, out double p1y,
+                    out double p2x, out double p2y, out double p3x, out double p3y);
+
+                double sx = p0x, sy = p0y;
+                double c1x = p1x, c1y = p1y;
+                double c2x = p2x, c2y = p2y;
+                double ex = p3x, ey = p3y;
+
+                // When a start arrow is shown, move the bezier start to the arrow base
+                // and adjust P1 so the curve departs along the arrow direction
+                if (ShowArrowAtStart)
                 {
-                    // Vertical bezier curve (for top/bottom connections)
-                    double midY = (StartY + EndY) / 2;
-                    return string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                        "M {0},{1} C {2},{3} {4},{5} {6},{7}",
-                        StartX + offsetX, StartY, StartX + offsetX, midY, EndX + offsetX, midY, EndX + offsetX, EndY);
+                    EvaluateBezierDerivative(1.0 - ArrowTangentT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
+                        out double sdx, out double sdy);
+                    double slen = Math.Sqrt(sdx * sdx + sdy * sdy);
+                    if (slen > 0) { sdx /= slen; sdy /= slen; }
+                    // Move start to arrow base (ArrowLength along curve direction from P0)
+                    sx = p0x + sdx * ArrowLength;
+                    sy = p0y + sdy * ArrowLength;
+                    // Adjust P1 so bezier tangent at new start matches arrow direction
+                    double armLen = Math.Sqrt((p1x - p0x) * (p1x - p0x) + (p1y - p0y) * (p1y - p0y));
+                    c1x = sx + sdx * armLen;
+                    c1y = sy + sdy * armLen;
                 }
-                else
+
+                // When an end arrow is shown, move the bezier end to the arrow base
+                // and adjust P2 so the curve arrives along the arrow direction
+                if (ShowArrowAtEnd)
                 {
-                    // Horizontal bezier curve (for left/right connections)
-                    double midX = (StartX + EndX) / 2;
-                    return string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                        "M {0},{1} C {2},{3} {4},{5} {6},{7}",
-                        StartX, StartY + offsetY, midX, StartY + offsetY, midX, EndY + offsetY, EndX, EndY + offsetY);
+                    EvaluateBezierDerivative(ArrowTangentT, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y,
+                        out double edx, out double edy);
+                    double elen = Math.Sqrt(edx * edx + edy * edy);
+                    if (elen > 0) { edx /= elen; edy /= elen; }
+                    // Move end to arrow base (ArrowLength back from tip)
+                    ex = p3x - edx * ArrowLength;
+                    ey = p3y - edy * ArrowLength;
+                    // Adjust P2 so bezier tangent at new end matches arrow direction
+                    double armLen = Math.Sqrt((p3x - p2x) * (p3x - p2x) + (p3y - p2y) * (p3y - p2y));
+                    c2x = ex - edx * armLen;
+                    c2y = ey - edy * armLen;
                 }
+
+                return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                    "M {0},{1} C {2},{3} {4},{5} {6},{7}",
+                    sx, sy, c1x, c1y, c2x, c2y, ex, ey);
             }
         }
 

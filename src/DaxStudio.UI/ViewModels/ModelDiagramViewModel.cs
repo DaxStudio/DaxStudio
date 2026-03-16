@@ -357,6 +357,42 @@ namespace DaxStudio.UI.ViewModels
             }
         }
 
+        private bool _showVariations = false;
+        /// <summary>
+        /// Whether to show variation tables (e.g., auto date tables).
+        /// </summary>
+        public bool ShowVariations
+        {
+            get => _showVariations;
+            set
+            {
+                _showVariations = value;
+                NotifyOfPropertyChange();
+                if (_model != null)
+                {
+                    LoadFromModel(_model, forceReload: true);
+                }
+            }
+        }
+
+        private bool _showDisconnected = true;
+        /// <summary>
+        /// Whether to show tables that have no relationships.
+        /// </summary>
+        public bool ShowDisconnected
+        {
+            get => _showDisconnected;
+            set
+            {
+                _showDisconnected = value;
+                NotifyOfPropertyChange();
+                if (_model != null)
+                {
+                    LoadFromModel(_model, forceReload: true);
+                }
+            }
+        }
+
         private bool _sortKeyColumnsFirst = false;
         /// <summary>
         /// Whether to sort related columns first in the column list.
@@ -974,7 +1010,7 @@ namespace DaxStudio.UI.ViewModels
 
             // For large models, load asynchronously
             var countSw = System.Diagnostics.Stopwatch.StartNew();
-            var tableCount = model.Tables.Count(t => !t.Private && (ShowHiddenObjects || t.IsVisible));
+            var tableCount = model.Tables.Count(t => !t.Private && (ShowHiddenObjects || t.IsVisible) && (ShowVariations || !t.ShowAsVariationsOnly));
             countSw.Stop();
             Log.Information("{class} {method} Table count enumeration ({count} tables) took {time}ms. Routing to {path} path.",
                 nameof(ModelDiagramViewModel), nameof(LoadFromModel), tableCount, countSw.ElapsedMilliseconds,
@@ -1031,7 +1067,7 @@ namespace DaxStudio.UI.ViewModels
                 LoadingMessage = "Reading model metadata...";
                 
                 var visibleTables = model.Tables
-                    .Where(t => !t.Private && (ShowHiddenObjects || t.IsVisible))
+                    .Where(t => !t.Private && (ShowHiddenObjects || t.IsVisible) && (ShowVariations || !t.ShowAsVariationsOnly))
                     .ToList();
                 var totalTables = visibleTables.Count;
 
@@ -1176,6 +1212,12 @@ namespace DaxStudio.UI.ViewModels
                         relationshipCounts[fromTableName]++;
                         relationshipCounts[toTableName]++;
 
+                        // Track many-side relationship counts
+                        if (rel.FromColumnMultiplicity == "*")
+                            fromTableVm.ManySideRelationshipCount++;
+                        if (rel.ToColumnMultiplicity == "*")
+                            toTableVm.ManySideRelationshipCount++;
+
                         if (columnDicts.TryGetValue(fromTableName, out var fromColDict) &&
                             fromColDict.TryGetValue(fromColumn, out var fromCol))
                         {
@@ -1195,6 +1237,17 @@ namespace DaxStudio.UI.ViewModels
                     if (relationshipCounts.TryGetValue(tableVm.TableName, out var count))
                     {
                         tableVm.RelationshipCount = count;
+                    }
+                }
+
+                // Filter disconnected tables if ShowDisconnected is false
+                if (!ShowDisconnected)
+                {
+                    var disconnectedTables = tableVms.Where(t => t.RelationshipCount == 0).ToList();
+                    foreach (var dt in disconnectedTables)
+                    {
+                        tableVms.Remove(dt);
+                        Tables.Remove(dt);
                     }
                 }
 
@@ -1707,6 +1760,7 @@ namespace DaxStudio.UI.ViewModels
                     // Private tables are never shown in the diagram
                     if (table.Private) continue;
                     if (!ShowHiddenObjects && !table.IsVisible) continue;
+                    if (!ShowVariations && table.ShowAsVariationsOnly) continue;
 
                     var tableVm = new ModelDiagramTableViewModel(table, ShowHiddenObjects, _metadataProvider, _options, _sortKeyColumnsFirst);
                     Tables.Add(tableVm);
@@ -1762,6 +1816,12 @@ namespace DaxStudio.UI.ViewModels
                             fromTableVm.RelationshipCount++;
                             toTableVm.RelationshipCount++;
 
+                            // Track many-side relationship counts
+                            if (rel.FromColumnMultiplicity == "*")
+                                fromTableVm.ManySideRelationshipCount++;
+                            if (rel.ToColumnMultiplicity == "*")
+                                toTableVm.ManySideRelationshipCount++;
+
                             // Mark columns as relationship columns
                             var fromCol = fromTableVm.Columns.FirstOrDefault(c => c.ColumnName == rel.FromColumn);
                             var toCol = toTableVm.Columns.FirstOrDefault(c => c.ColumnName == rel.ToColumn);
@@ -1774,6 +1834,16 @@ namespace DaxStudio.UI.ViewModels
                 var createRelsTime = stageSw.ElapsedMilliseconds;
                 Log.Information("{class} {method} Stage 3 - Create {count} relationships: {time}ms",
                     nameof(ModelDiagramViewModel), nameof(LoadFromModelSync), Relationships.Count, createRelsTime);
+
+                // Filter disconnected tables if ShowDisconnected is false
+                if (!ShowDisconnected)
+                {
+                    var disconnectedTables = Tables.Where(t => t.RelationshipCount == 0).ToList();
+                    foreach (var dt in disconnectedTables)
+                    {
+                        Tables.Remove(dt);
+                    }
+                }
 
                 // Stage 4: Layout
                 stageSw.Restart();
@@ -1882,6 +1952,9 @@ namespace DaxStudio.UI.ViewModels
                         adoTable = adoModel.Tables.FirstOrDefault(t => 
                             string.Equals(t.Name, vpaTable.TableName, StringComparison.OrdinalIgnoreCase));
                     }
+
+                    // Filter variation tables based on ShowVariations toggle
+                    if (!ShowVariations && (adoTable?.ShowAsVariationsOnly ?? false)) continue;
 
                     // Note: VpaTable doesn't expose IsHidden, so we show all tables in offline mode
                     var tableVm = new ModelDiagramTableViewModel(vpaTable, showHidden, _options, sortKeyColumnsFirst, adoTable);
@@ -2016,11 +2089,27 @@ namespace DaxStudio.UI.ViewModels
                         // Track relationship counts per table
                         fromTableVm.RelationshipCount++;
                         toTableVm.RelationshipCount++;
+
+                        // Track many-side relationship counts
+                        if (fromMultiplicity == "*")
+                            fromTableVm.ManySideRelationshipCount++;
+                        if (toMultiplicity == "*")
+                            toTableVm.ManySideRelationshipCount++;
                     }
                 }
 
                 // Add all relationships
                 Relationships.AddRange(relationshipVms);
+
+                // Filter disconnected tables if ShowDisconnected is false
+                if (!ShowDisconnected)
+                {
+                    var disconnectedTables = Tables.Where(t => t.RelationshipCount == 0).ToList();
+                    foreach (var dt in disconnectedTables)
+                    {
+                        Tables.Remove(dt);
+                    }
+                }
 
                 // Now enrich with full VPA stats since we already have the data
                 EnrichFromVertipaq(vpaModel);
@@ -5537,7 +5626,7 @@ namespace DaxStudio.UI.ViewModels
             _vpaIsVisible = true; // VPA doesn't expose IsHidden at table level, assume visible
             _vpaIsDateTable = vpaTable.IsDateTable == true; // VpaTable has nullable bool IsDateTable
             _vpaDataCategory = null; // VPA doesn't have data category
-            _vpaIsPrivate = false; // VPA doesn't track private
+            _vpaIsPrivate = adoTable?.Private ?? false;
             
             // Create columns from VPA data
             Columns = new BindableCollection<ModelDiagramColumnViewModel>(GetColumnsFromVpa(vpaTable, showHiddenObjects, options, adoTable));
@@ -5814,7 +5903,19 @@ namespace DaxStudio.UI.ViewModels
                 return "tableDrawingImage";
             }
         }
-        public bool IsVisible => _isFromVpa ? _vpaIsVisible : _table.IsVisible;
+        /// <summary>
+        /// Icon resource key for diagram header (white version for colored backgrounds).
+        /// </summary>
+        public string DiagramIcon
+        {
+            get
+            {
+                if (!IsVisible || IsPrivate) return "tableHiddenDiagramDrawingImage";
+                if (IsDateTable) return "date_tableDiagramDrawingImage";
+                return "tableDiagramDrawingImage";
+            }
+        }
+        public bool IsVisible=> _isFromVpa ? _vpaIsVisible : _table.IsVisible;
         public bool IsDateTable => _isFromVpa ? _vpaIsDateTable : _table.IsDateTable;
         public string DataCategory => _isFromVpa ? _vpaDataCategory : _table.DataCategory;
         public int ColumnCount => Columns.Count(c => c.ObjectType == ADOTabularObjectType.Column || (!c.IsMeasure && !c.IsHierarchy));
@@ -5843,45 +5944,49 @@ namespace DaxStudio.UI.ViewModels
         public bool IsPrivate => _isFromVpa ? _vpaIsPrivate : _table.Private;
 
         /// <summary>
+        /// Whether this table is a variation table (e.g., auto date tables).
+        /// </summary>
+        public bool IsVariation => _isFromVpa ? false : (_table?.ShowAsVariationsOnly ?? false);
+
+        /// <summary>
         /// Whether this table is a Field Parameter table.
-        /// Detection: ShowAsVariationsOnly property OR any column has Variations defined,
-        /// OR follows the field parameter pattern (1 column + 1 measure with specific naming).
+        /// Online: detected via ParameterMetadata extended property on columns.
+        /// Offline/VPA: heuristic based on column naming patterns.
         /// </summary>
         public bool IsFieldParameterTable
         {
             get
             {
-                // VPA mode: We don't have enough metadata to detect field parameters
-                if (_isFromVpa) return false;
-                
-                // Primary detection methods
-                if (_table.ShowAsVariationsOnly) return true;
-                if (_table.Columns.Any(c => c.Variations != null && c.Variations.Count > 0)) return true;
-                
-                // Heuristic: Field parameter tables typically have:
-                // - Exactly 1 column (the parameter name)
-                // - 1 or more measures (typically named "{TableName} Value" or similar)
-                // - The column often has the same name as the table
-                var columns = _table.Columns.Where(c => c.ObjectType == ADOTabularObjectType.Column).ToList();
-                var measures = _table.Columns.Where(c => c.ObjectType == ADOTabularObjectType.Measure).ToList();
-                
-                if (columns.Count == 1 && measures.Count >= 1)
+                if (!_isFromVpa)
                 {
-                    // Check if column name matches table name (common field parameter pattern)
-                    var colName = columns[0].Name;
-                    var tableName = _table.Name;
-                    if (colName.Equals(tableName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                    
-                    // Check if there's a measure with "Value" in the name
-                    if (measures.Any(m => m.Name.IndexOf("Value", StringComparison.OrdinalIgnoreCase) >= 0))
+                    // Online: check if any column has ParameterMetadata
+                    return _table.Columns.Any(c => !string.IsNullOrEmpty(c.ParameterMetadata));
+                }
+
+                // VPA/offline: heuristic detection based on naming patterns
+                var tableName = TableName;
+                var cols = Columns.Where(c => !c.IsMeasure && !c.IsHierarchy).ToList();
+                var measures = Columns.Where(c => c.IsMeasure).ToList();
+
+                // Pattern 1: 3 columns named [<table>], [<table> Fields], [<table> Order]
+                if (cols.Count == 3)
+                {
+                    var hasBase = cols.Any(c => c.ColumnName.Equals(tableName, StringComparison.OrdinalIgnoreCase));
+                    var hasFields = cols.Any(c => c.ColumnName.Equals($"{tableName} Fields", StringComparison.OrdinalIgnoreCase));
+                    var hasOrder = cols.Any(c => c.ColumnName.Equals($"{tableName} Order", StringComparison.OrdinalIgnoreCase));
+                    if (hasBase && hasFields && hasOrder) return true;
+                }
+
+                // Pattern 2: 1 column named [<table>] and a measure named [<table> Value]
+                if (cols.Count == 1 && measures.Count >= 1)
+                {
+                    if (cols[0].ColumnName.Equals(tableName, StringComparison.OrdinalIgnoreCase)
+                        && measures.Any(m => m.ColumnName.Equals($"{tableName} Value", StringComparison.OrdinalIgnoreCase)))
                     {
                         return true;
                     }
                 }
-                
+
                 return false;
             }
         }
@@ -5934,6 +6039,23 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(IsHubTable));
                 NotifyOfPropertyChange(nameof(IsLeafTable));
+                NotifyOfPropertyChange(nameof(HeaderColor));
+            }
+        }
+
+        private int _manySideRelationshipCount;
+        /// <summary>
+        /// Number of relationships where this table is on the "many" side.
+        /// A table on the many side of multiple relationships may indicate a modeling issue.
+        /// </summary>
+        public int ManySideRelationshipCount
+        {
+            get => _manySideRelationshipCount;
+            set
+            {
+                _manySideRelationshipCount = value;
+                NotifyOfPropertyChange();
+                NotifyOfPropertyChange(nameof(HeaderColor));
             }
         }
 
@@ -6099,24 +6221,24 @@ namespace DaxStudio.UI.ViewModels
         }
 
         /// <summary>
-        /// Header background color based on table type and storage mode.
-        /// When storage mode is available (admin), uses storage mode colors.
-        /// Otherwise falls back to: Date Tables = green, hidden = gray, default = blue.
+        /// Header background color based on table type and relationship role.
+        /// Yellow for tables on the many side of multiple relationships (potential modeling issue).
+        /// Dark blue for unrelated tables. Green for date tables. Gray for hidden tables.
         /// </summary>
-        public string HeaderColor
+        public System.Windows.Media.Brush HeaderColor
         {
             get
             {
-                // If storage mode is available, use storage mode colors
-                if (HasStorageModeInfo)
-                {
-                    return StorageModeColor;
-                }
+                string key;
+                if (!IsVisible) key = "Theme.Brush.Muted.Fore";
+                else if (ManySideRelationshipCount > 1) key = "Theme.Brush.Accent2"; // Fact
+                else if (IsDateTable) key = "Theme.Brush.Accent4"; // Date
+                else if (RelationshipCount == 0 && IsMeasureTable) key = "Theme.Brush.Accent5"; // Measures
+                else if (RelationshipCount == 0) key = "Theme.Brush.Accent3"; // Disconnected
+                else key = "Theme.Brush.Accent1"; // Dimension
                 
-                // Fallback to type-based colors
-                if (IsDateTable) return "#4CAF50"; // Green for date tables
-                if (!IsVisible) return "#9E9E9E"; // Gray for hidden tables
-                return "#2196F3"; // Blue default
+                return System.Windows.Application.Current?.TryFindResource(key) as System.Windows.Media.Brush 
+                    ?? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue);
             }
         }
 

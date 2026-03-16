@@ -2,6 +2,7 @@ using Antlr4.Runtime;
 using DaxStudio.UI.Grammars.Generated;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -34,7 +35,9 @@ namespace DaxStudio.UI.Utils
             bool simplify,
             out long estimatedRows,
             out long estimatedBytes,
-            out bool hasEstimatedSize)
+            out bool hasEstimatedSize,
+            Dictionary<string, string> remapColumns = null,
+            Dictionary<string, string> remapTables = null)
         {
             estimatedRows = 0;
             estimatedBytes = 0;
@@ -72,7 +75,7 @@ namespace DaxStudio.UI.Utils
 
                 var tree = parser.query();
 
-                var visitor = new XmSqlFormattingVisitor(simplify, format);
+                var visitor = new XmSqlFormattingVisitor(simplify, format, remapColumns, remapTables);
                 visitor.Visit(tree);
 
                 // If visitor found size in a truncation indicator, use that

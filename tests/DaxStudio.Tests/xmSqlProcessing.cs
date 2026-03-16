@@ -100,5 +100,85 @@ Estimated size: rows = 37  bytes = 592
 
 
         }
+        [TestMethod]
+        public void ParseQueryWithVandIn()
+        {
+            string xmSql = @"SET DC_KIND=""AUTO"";
+SELECT
+DCOUNT([Trip (5608)].[PULocationID (5642)]) AS [$Measure0]
+FROM [Trip (5608)]
+	LEFT OUTER JOIN [Dropoff Location (1522)] ON [Trip (5608)].[DOLocationID (5643)]=[Dropoff Location (1522)].[DropOffLocationID (1526)]
+	LEFT OUTER JOIN [Pickup Location (1678)] ON [Trip (5608)].[PULocationID (5642)]=[Pickup Location (1678)].[PickupLocationID (1682)]
+WHERE
+	[Trip (5608)].[passenger count (5638)] = 1 VAND
+	([Dropoff Location (1522)].[DropOffLocationID (1526)], [Trip (5608)].[passenger count (5638)]) IN {(1, 1)} VAND
+	COALESCE((PFDATAID( [Pickup Location (1678)].[Pickup Service Zone (1685)] ) = 6));
+
+
+[Estimated size (volume, marshalling bytes): 1, 12]
+";
+
+// ANTLR formatter expected output
+            string expectedAntlr = @"SET DC_KIND=""AUTO"";
+SELECT
+    DCOUNT ( 'Trip'[PULocationID] )
+FROM 'Trip'
+    LEFT OUTER JOIN 'Dropoff Location'
+        ON 'Trip'[DOLocationID]='Dropoff Location'[DropOffLocationID]
+    LEFT OUTER JOIN 'Pickup Location'
+        ON 'Trip'[PULocationID]='Pickup Location'[PickupLocationID]
+WHERE
+    'Trip'[passenger_count] = 1 VAND
+    ( 'Dropoff Location'[DropOffLocationID], 'Trip'[passenger_count] ) IN { ( 1, 1 ) } VAND
+    COALESCE (  ( PFDATAID ( 'Pickup Location'[Pickup Service Zone] ) = 6 )  ) ;
+
+
+Estimated size: rows = 1  bytes = 12
+";
+
+            // With AvalonEdit syntax highlighting, QueryRichText stores plain text (no marker codes)
+            var options = Substitute.For<IGlobalOptions>();
+            options.HighlightXmSqlCallbacks.Returns(true);
+            options.SimplifyXmSqlSyntax.Returns(true);
+            options.FormatXmSql.Returns(true);
+            options.UseAntlrParser.Returns(true);
+
+            Dictionary<string,string> remapColumns = new Dictionary<string, string>
+            {
+                { "5638", "passenger_count" },
+                {"1526", "DropOffLocationID" },
+                {"1682", "PickupLocationID" },
+                {"5642", "PULocationID" }
+
+            };
+            Dictionary<string, string> remapTables = new Dictionary<string, string>
+            {
+                { "5608", "Trip" },
+                { "1522", "Dropoff Location" },
+                { "1678", "Pickup Location" }   
+            };
+            var args = new DaxStudioTraceEventArgs();
+            args.EventClassName = "VertiPaqSEQueryEnd";
+            args.TextData = xmSql;
+            var evnt = new TraceStorageEngineEvent(args, 1, options, remapColumns, remapTables);
+
+            // QueryRichText should now contain the query without marker codes
+            Assert.AreEqual(expectedAntlr, evnt.QueryRichText);
+            // HighlightQuery should be false since this query does not contain any callback patterns
+            Assert.IsFalse(evnt.HighlightQuery);
+
+            // Regex formatter: verify it also uses spaces (not tabs) and doesn't throw
+            options.UseAntlrParser.Returns(false);
+            var args2 = new DaxStudioTraceEventArgs();
+            args2.EventClassName = "VertiPaqSEQueryEnd";
+            args2.TextData = xmSql;
+            var evnt2 = new TraceStorageEngineEvent(args2, 1, options, remapColumns, remapTables);
+
+            Assert.IsFalse(evnt2.QueryRichText.Contains("\t"), "Regex formatter should not use tab characters");
+            Assert.IsTrue(evnt2.QueryRichText.Contains("    "), "Regex formatter should use 4-space indentation");
+            Assert.IsFalse(evnt2.HighlightQuery, "HighlightQuery should be false since this query has no callback patterns");
+
+
+        }
     }
 }

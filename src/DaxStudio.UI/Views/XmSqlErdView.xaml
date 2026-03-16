@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/DaxStudioResources.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/BusyPanel.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/TraceWatcherStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/DaxStudio.UI;Component/Resources/Styles/DaxStudio.Spinner.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToHiddenConverter x:Key="BoolToVisibilityConverter" />
@@ -137,7 +138,7 @@
                             </Border>
                             
                             <!-- Header content -->
-                            <Border CornerRadius="4,4,0,0"
+                            <Border CornerRadius="3,3,0,0"
                                 Padding="8,4"
                                 Background="Transparent"
                                 MouseLeftButtonDown="TableHeader_MouseLeftButtonDown"
@@ -145,7 +146,8 @@
                                 Cursor="Hand">
                             <Border.ToolTip>
                                 <StackPanel>
-                                    <TextBlock Text="Click for table details, double-click to toggle collapse, drag to move" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding TableName}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Click for table details, double-click to toggle collapse, drag to move" TextWrapping="Wrap" FontStyle="Italic"/>
                                     <TextBlock Text="{Binding HeatLevelText, StringFormat='Heat Level: {0}'}" Margin="0,4,0,0"/>
                                     <TextBlock Text="{Binding HeatAccessibilityIcon}" Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -164,13 +166,26 @@
                                 <Border Grid.Column="0" 
                                         Background="Transparent" 
                                         Cursor="Hand"
-                                        Margin="0,0,4,0"
                                         MouseLeftButtonDown="CollapseToggle_MouseLeftButtonDown"
                                         ToolTip="Toggle collapse">
-                                    <Path Width="10" Height="10" Stretch="Uniform" Fill="White">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Margin" Value="-2,4,6,0"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                                    <Setter Property="Margin" Value="0,0,4,0"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Path Width="10" Height="10" Stretch="Uniform" 
+                                          Fill="Transparent" 
+                                          Stroke="White" 
+                                          StrokeThickness="1.5"
+                                          StrokeLineJoin="Round">
                                         <Path.Style>
                                             <Style TargetType="Path">
-                                                <Setter Property="Data" Value="M0,0 L8,4 L0,8 Z"/>
+                                                <Setter Property="Data" Value="M2,0 L6,4 L2,8"/>
                                                 <Setter Property="RenderTransform">
                                                     <Setter.Value>
                                                         <RotateTransform Angle="90" CenterX="5" CenterY="5"/>
@@ -197,7 +212,7 @@
                                            Foreground="White"
                                            TextTrimming="CharacterEllipsis"
                                            VerticalAlignment="Center"
-                                           ToolTip="{Binding TableName}"/>
+                                           />
                                 
                                 <!-- Heat Accessibility Indicator (shows intensity without relying on color) -->
                                 <Border Grid.Column="2"
@@ -650,10 +665,37 @@
                                                             Orientation="Horizontal" 
                                                             HorizontalAlignment="Right"
                                                             VerticalAlignment="Center"
-                                                            Margin="4,0,2,0"
-                                                            ToolTip="{Binding UsageTooltip}">
+                                                            Margin="4,0,2,0">
+                                                    <StackPanel.ToolTip>
+                                                        <StackPanel Orientation="Vertical">
+                                                            <StackPanel Orientation="Horizontal" Margin="0,1" Visibility="{Binding IsJoinColumn, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                                <TextBlock Text="&#x1F511;" FontFamily="Segoe UI Emoji" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="Join Key"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,1" Visibility="{Binding IsFilterColumn, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                                <TextBlock Text="&#xE71C;" FontFamily="Segoe Fluent Icons" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="Filter"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,1" Visibility="{Binding IsSelectColumn, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                                <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="Selected"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,1" Visibility="{Binding IsExpressionColumn, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                                <TextBlock Text="&#xE945;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="Expression"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,1" Visibility="{Binding HasCallback, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                                <TextBlock Text="&#xF71A;" FontFamily="Segoe Fluent Icons" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="{Binding CallbackType, StringFormat='Callback ({0})'}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,1" Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}">
+                                                                <TextBlock Text="&#x2211;" FontFamily="Segoe UI Symbol" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="{Binding AggregationText, StringFormat='Aggregate ({0})'}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </StackPanel.ToolTip>
                                                     <!-- Key icon for Join (golden - simple key shape) -->
-                                                    <Grid Width="14" Height="14" Margin="0,0,2,0"
+                                                    <!--<Grid Width="14" Height="14" Margin="0,0,2,0"
                                                           Visibility="{Binding IsJoinColumn, Converter={StaticResource BoolToCollapsedConverter}}">
                                                         <Ellipse Width="8" Height="8" Fill="#DAA520" 
                                                                  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0"/>
@@ -665,29 +707,57 @@
                                                                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,1,2"/>
                                                         <Rectangle Width="2" Height="3" Fill="#DAA520" 
                                                                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,2"/>
-                                                    </Grid>
-                                                    <!-- Funnel/Filter icon (purple) -->
-                                                    <Path Data="M0,0 L10,0 L6,5 L6,9 L4,10 L4,5 Z"
+                                                    </Grid>-->
+                                                    
+                                                    
+                                                    <!--<Path Data="M0,0 L10,0 L6,5 L6,9 L4,10 L4,5 Z"
                                                           Fill="#9932CC" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
                                                           Visibility="{Binding IsFilterColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
-                                                    <!-- Sum/Sigma icon (blue) -->
-                                                    <Path Data="M0,0 L8,0 L8,2 L3,2 L6,5 L3,8 L8,8 L8,10 L0,10 L0,8 L4,5 L0,2 Z"
-                                                          Fill="#1E90FF" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
-                                                          Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
-                                                    <!-- Checkmark icon (green) -->
+                                                    
+                                                    --><!-- Checkmark icon (green) --><!--
                                                     <Path Data="M0,5 L3,8 L9,2 L10,3 L3,10 L-1,6 Z"
                                                           Fill="#32CD32" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
                                                           Visibility="{Binding IsSelectColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
-                                                    <!-- Function/Expr icon (teal - for WITH $Expr expressions) -->
+                                                    --><!-- Function/Expr icon (teal - for WITH $Expr expressions) --><!--
                                                     <Path Data="M1,2 L1,8 M0,3 L2,3 M0,7 L2,7 M4,0 L4,3 L6,5 L4,7 L4,10 M8,0 L8,3 L6,5 L8,7 L8,10"
                                                           Stroke="#00CED1" StrokeThickness="1.5" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
                                                           Visibility="{Binding IsExpressionColumn, Converter={StaticResource BoolToCollapsedConverter}}"
                                                           ToolTip="Used in WITH expression (calculated measure)"/>
-                                                    <!-- Lightning bolt icon for Callback (orange/red - indicates performance issue) -->
+                                                    --><!-- Lightning bolt icon for Callback (orange/red - indicates performance issue) --><!--
                                                     <Path Data="M7,0 L3,5 L5,5 L2,10 L8,4 L5,4 Z"
                                                           Fill="#FF5722" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
                                                           Visibility="{Binding HasCallback, Converter={StaticResource BoolToCollapsedConverter}}"
                                                           ToolTip="DAX Callback - reduces Storage Engine efficiency"/>
+                                                    --><!-- Sum/Sigma icon (blue) --><!--
+                                                    <Path Data="M0,0 L8,0 L8,2 L3,2 L6,5 L3,8 L8,8 L8,10 L0,10 L0,8 L4,5 L0,2 Z"
+                                                          Fill="#1E90FF" Width="14" Height="14" Stretch="Uniform" Margin="0,0,2,0"
+                                                          Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>-->
+                                                    
+                                                    <!-- Key Icon -->
+                                                    <TextBlock Text="&#x1F511;" FontFamily="Segoe UI Emoji" 
+                                                               Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                                               Visibility="{Binding IsJoinColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Funnel/Filter icon (purple) -->
+                                                    <TextBlock Text="&#xE71C;" FontFamily="Segoe Fluent Icons" 
+                                                               Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                                               Visibility="{Binding IsFilterColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Checkmark icon (green) -->
+                                                    <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons" 
+                                                               Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                                               Visibility="{Binding IsSelectColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Function/Expr icon (teal - for WITH $Expr expressions) -->
+                                                    <TextBlock Text="&#xE945;" FontFamily="Segoe MDL2 Assets" 
+                                                               Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                                               Visibility="{Binding IsExpressionColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Lightning bolt icon for Callback (orange/red - indicates performance issue) -->
+                                                    <TextBlock Text="&#xF71A;" FontFamily="Segoe Fluent Icons" 
+                                                               Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                                               Visibility="{Binding HasCallback, Converter={StaticResource BoolToCollapsedConverter}}"/>
+                                                    <!-- Sum/Sigma icon (blue) -->
+                                                    <TextBlock Text="&#x2211;" FontFamily="Segoe UI Symbol" 
+                                                               Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                                               Visibility="{Binding IsAggregateColumn, Converter={StaticResource BoolToCollapsedConverter}}"/>
+
                                                 </StackPanel>
                                                 
                                                 <!-- Aggregation Badge -->
@@ -874,7 +944,14 @@
                         <TextBlock>Copy Text</TextBlock>
                     </StackPanel>
                 </Button>
-                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
+                        ToolTip="Copy diagram as image to clipboard (paste into email, Teams, etc.)">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{DynamicResource copy_toolbarDrawingImage}" Margin="0,0,4,0"/>
+                        <TextBlock>Copy Image</TextBlock>
+                    </StackPanel>
+                </Button>
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action ExportToImage]"
                         ToolTip="Export diagram as PNG image file">
@@ -884,14 +961,7 @@
                     </StackPanel>
                 </Button>
                 
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
-                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
-                        ToolTip="Export detailed debug info about SE events (for troubleshooting parser issues)">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🐛" FontSize="14" Margin="0,0,4,0"/>
-                        <TextBlock>Debug</TextBlock>
-                    </StackPanel>
-                </Button>
+                
 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action ShowInModelDiagram]"
@@ -903,20 +973,13 @@
                     </StackPanel>
                 </Button>
                 
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
-                        cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
-                        ToolTip="Copy diagram as image to clipboard (paste into email, Teams, etc.)">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📋" FontSize="14" Margin="0,0,4,0"/>
-                        <TextBlock>Copy Image</TextBlock>
-                    </StackPanel>
-                </Button>
+
                 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action ZoomToFit]"
                         ToolTip="Zoom to fit all tables in view">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⊡" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock FontFamily="Segoe Fluent Icons" Text="&#xE73F;" FontSize="14" Margin="0,0,4,0"/>
                         <TextBlock>Fit</TextBlock>
                     </StackPanel>
                 </Button>
@@ -925,7 +988,7 @@
                               IsChecked="{Binding ShowMiniMap}"
                               ToolTip="Toggle mini-map navigation panel">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🗺" FontSize="14" Margin="0,0,4,0"/>
+                        <TextBlock Text="&#xEA5F;" FontFamily="Segoe Fluent Icons" FontSize="14" Margin="0,2,4,0"/>
                         <TextBlock>Map</TextBlock>
                     </StackPanel>
                 </ToggleButton>
@@ -939,6 +1002,16 @@
                     </StackPanel>
                 </ToggleButton>
                 
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        ToolTip="Export detailed debug info about SE events (for troubleshooting parser issues)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="" FontFamily="Segoe Fluent Icons" FontSize="14" Margin="0,2,4,0"/>
+                        <TextBlock>Debug</TextBlock>
+                    </StackPanel>
+                </Button>
+
+
                 <!-- Column Stat Display dropdown (visible when VPA data available) -->
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" 
                             VerticalAlignment="Center"
@@ -1726,52 +1799,68 @@
                 
                     <TextBlock Grid.Column="0"
                                Text="{Binding SummaryText}"
-                               Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}"
+                               Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                VerticalAlignment="Center"/>
                 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Legend: " 
-                                   Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                     
                         <!-- Join Key -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
-                            <Grid Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center">
+                            <!--<Grid Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center">
                                 <Ellipse Width="7" Height="7" Fill="#DAA520" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                                 <Ellipse Width="3" Height="3" Fill="{DynamicResource Theme.Brush.StatusBar.Back}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,2,0,0"/>
                                 <Rectangle Width="6" Height="2" Fill="#DAA520" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,1,0,0"/>
                                 <Rectangle Width="2" Height="2" Fill="#DAA520" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,1,2"/>
-                            </Grid>
-                            <TextBlock Text="Join Key" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                            </Grid>-->
+                                    <!-- Key Icon -->
+                                    <TextBlock Text="&#x1F511;" FontFamily="Segoe UI Emoji" Margin="0 0 4 0"
+                                        Foreground="{DynamicResource Theme.Brush.Accent1}"
+                                            />
+
+                                    <TextBlock Text="Join Key" Foreground="{DynamicResource Theme.Brush.Default.Fore}" VerticalAlignment="Center"/>
                         </StackPanel>
                     
                         <!-- Filter -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
-                            <Path Data="M0,0 L10,0 L6,5 L6,9 L4,10 L4,5 Z"
-                                  Fill="#9932CC" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                            <TextBlock Text="Filter" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                            <!--<Path Data="M0,0 L10,0 L6,5 L6,9 L4,10 L4,5 Z"
+                                  Fill="#9932CC" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>-->
+                                    <!-- Funnel/Filter icon (purple) -->
+                                    <TextBlock Text="&#xE71C;" FontFamily="Segoe Fluent Icons" Foreground="{DynamicResource Theme.Brush.Accent1}" Margin="0 2 4 0"/>
+                                    <TextBlock Text="Filter" Foreground="{DynamicResource Theme.Brush.Default.Fore}" VerticalAlignment="Center"/>
                         </StackPanel>
                     
                         <!-- Aggregate -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
-                            <Path Data="M0,0 L8,0 L8,2 L3,2 L6,5 L3,8 L8,8 L8,10 L0,10 L0,8 L4,5 L0,2 Z"
-                                  Fill="#1E90FF" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                            <TextBlock Text="Aggregate" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                            <!--<Path Data="M0,0 L8,0 L8,2 L3,2 L6,5 L3,8 L8,8 L8,10 L0,10 L0,8 L4,5 L0,2 Z"
+                                  Fill="#1E90FF" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>-->
+                                    
+                                    <!-- Sum/Sigma icon (blue) -->
+                                    <TextBlock Text="&#x2211;" FontFamily="Segoe UI Symbol" Margin="0 0 4 0" Foreground="{DynamicResource Theme.Brush.Accent1}"/>
+                                    <TextBlock Text="Aggregate" Foreground="{DynamicResource Theme.Brush.Default.Fore}" VerticalAlignment="Center"/>
                         </StackPanel>
                     
                         <!-- Select -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
-                            <Path Data="M0,5 L3,8 L9,2 L10,3 L3,10 L-1,6 Z"
-                                  Fill="#32CD32" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                            <TextBlock Text="Select" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"/>
+                            <!--<Path Data="M0,5 L3,8 L9,2 L10,3 L3,10 L-1,6 Z"
+                                  Fill="#32CD32" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>-->
+                                    <!-- Checkmark icon (green) -->
+                                    <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons" Margin="0 2 4 0" Foreground="{DynamicResource Theme.Brush.Accent1}"/>
+
+                                    <TextBlock Text="Select" Foreground="{DynamicResource Theme.Brush.Default.Fore}" VerticalAlignment="Center"/>
                         </StackPanel>
                     
                         <!-- Callback -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
-                            <Path Data="M7,0 L3,5 L5,5 L2,10 L8,4 L5,4 Z"
-                                  Fill="#FF5722" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                            <TextBlock Text="Callback" Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center"
+                            <!--<Path Data="M7,0 L3,5 L5,5 L2,10 L8,4 L5,4 Z"
+                                  Fill="#FF5722" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,4,0"/>-->
+
+                                    <!-- Lightning bolt icon for Callback (orange/red - indicates performance issue) -->
+                                    <TextBlock Text="&#xF71A;" FontFamily="Segoe Fluent Icons" Margin="0 2 4 0" Foreground="{DynamicResource Theme.Brush.Accent1}"/>
+                                    <TextBlock Text="Callback" Foreground="{DynamicResource Theme.Brush.Default.Fore}" VerticalAlignment="Center"
                                        ToolTip="DAX callback - indicates reduced SE efficiency"/>
                         </StackPanel>
                     
@@ -1786,7 +1875,7 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                             </Border>
-                            <TextBlock Foreground="{DynamicResource Theme.Brush.StatusBar.Fore}" VerticalAlignment="Center">
+                            <TextBlock Foreground="{DynamicResource Theme.Brush.Default.Fore}" VerticalAlignment="Center">
                                 <Run Text="Heat = "/><Run Text="{Binding HeatMapLegendText, Mode=OneWay}"/>
                             </TextBlock>
                         </StackPanel>
@@ -1797,16 +1886,24 @@
         </Grid>
         
         <!-- Loading Overlay -->
-        <Grid 
+        <Border  
               Visibility="{Binding IsLoading, Converter={StaticResource BoolToCollapsedConverter}}"
-              Background="#80000000">
+              Style="{StaticResource BusyPanel}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Analyzing SE Events..."
-                           Foreground="White"
+                <ProgressBar
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                    Height="60"
+                    Width="60"
+                    Margin="0,0,0,16"
+                    IsIndeterminate="True" />
+                <TextBlock Text="{Binding LoadingMessage}" 
+                           Foreground="{DynamicResource Theme.Brush.Default.Fore}" 
                            FontSize="16"
                            HorizontalAlignment="Center"/>
             </StackPanel>
-        </Grid>
+        </Border>
         
         <!-- No Data Message -->
         <TextBlock 

@@ -51,6 +51,8 @@
             <SolidColorBrush x:Key="Diagram.Brush.Accent.Grey" Color="#9E9E9E"/>
             <SolidColorBrush x:Key="Diagram.Brush.Accent.Green" Color="#4CAF50"/>
             <SolidColorBrush x:Key="Diagram.Brush.Accent.Amber" Color="#FFB300"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.Yellow" Color="#F9A825"/>
+            <SolidColorBrush x:Key="Diagram.Brush.Accent.DarkBlue" Color="#1565C0"/>
             <SolidColorBrush x:Key="Diagram.Brush.Relationship.Default" Color="#666666"/>
             <SolidColorBrush x:Key="Diagram.Brush.Relationship.Chevron" Color="#555555"/>
             <SolidColorBrush x:Key="Diagram.Brush.Relationship.CardinalityBorder" Color="#888888"/>
@@ -597,7 +599,7 @@
                         
                         <!-- Table Header -->
                         <Border Grid.Row="0" 
-                                CornerRadius="4,4,0,0"
+                                CornerRadius="3,3,0,0"
                                 Padding="8,4"
                                 Background="{Binding HeaderColor}"
                                 MouseLeftButtonDown="TableHeader_MouseLeftButtonDown"
@@ -629,6 +631,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
@@ -637,13 +640,26 @@
                                 <Border Grid.Column="0" 
                                         Background="Transparent" 
                                         Cursor="Hand"
-                                        Margin="0,0,4,0"
                                         MouseLeftButtonDown="CollapseToggle_MouseLeftButtonDown"
                                         ToolTip="Toggle collapse">
-                                    <Path Width="10" Height="10" Stretch="Uniform" Fill="{StaticResource Diagram.Brush.Header.Foreground}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Margin" Value="-2,4,6,0"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                                    <Setter Property="Margin" Value="0,0,4,0"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Path Width="10" Height="10" Stretch="Uniform" 
+                                          Fill="Transparent" 
+                                          Stroke="{StaticResource Diagram.Brush.Header.Foreground}" 
+                                          StrokeThickness="1.5"
+                                          StrokeLineJoin="Round">
                                         <Path.Style>
                                             <Style TargetType="Path">
-                                                <Setter Property="Data" Value="M0,0 L8,4 L0,8 Z"/>
+                                                <Setter Property="Data" Value="M2,0 L6,4 L2,8"/>
                                                 <Setter Property="RenderTransform">
                                                     <Setter.Value>
                                                         <RotateTransform Angle="90" CenterX="5" CenterY="5"/>
@@ -662,9 +678,16 @@
                                         </Path.Style>
                                     </Path>
                                 </Border>
+
+                                <!-- Table Icon -->
+                                <Image Grid.Column="1" 
+                                       ap:ImageBindingHelper.SourceResourceKey="{Binding DiagramIcon}"
+                                       Width="14" Height="14"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,4,0"/>
                                 
                                 <!-- Table Name -->
-                                <TextBlock Grid.Column="1"
+                                <TextBlock Grid.Column="2"
                                            Text="{Binding Caption}"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource Diagram.Brush.Header.Foreground}"
@@ -673,7 +696,7 @@
                                            />
                                 
                                 <!-- Column/Measure/Relationship Count -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="4,0,0,0">
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="4,0,0,0">
                                     <Border Background="{StaticResource Diagram.Brush.Header.Foreground}"
                                             CornerRadius="8"
                                             Padding="4,1"
@@ -1590,22 +1613,14 @@
                         <TextBlock>Export</TextBlock>
                     </StackPanel>
                 </Button>
-                
-                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
-                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
-                        ToolTip="Export detailed debug information to a text file for troubleshooting">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🐛" FontSize="14" Margin="0,0,4,0"/>
-                        <TextBlock>Debug</TextBlock>
-                    </StackPanel>
-                </Button>
+           
                 
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action CopyImageToClipboard]"
                         ToolTip="Copy diagram as image to clipboard">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📋" FontSize="14" Margin="0,0,4,0"/>
-                        <TextBlock>Clipboard</TextBlock>
+                        <Image Source="{DynamicResource copyDrawingImage}" />
+                        <TextBlock Margin="0 2 0 0">Copy</TextBlock>
                     </StackPanel>
                 </Button>
                 
@@ -1667,14 +1682,22 @@
                     </StackPanel>
                 </ToggleButton>
                 
-                <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
-                              IsChecked="{Binding ShowHiddenObjects}"
-                              ToolTip="Show hidden tables and columns">
+                <Button x:Name="ShowMenuButton" DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        Click="ShowMenuButton_Click"
+                        ToolTip="Choose which types of tables to show or hide">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="👁" FontSize="14" Margin="0,0,4,0"/>
-                        <TextBlock>Hidden</TextBlock>
+                        <TextBlock>Show</TextBlock>
+                        <TextBlock Text="▾" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
-                </ToggleButton>
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Variations" IsCheckable="True" IsChecked="{Binding ShowVariations}" ToolTip="Show variation tables (e.g., auto date tables)"/>
+                            <MenuItem Header="Hidden" IsCheckable="True" IsChecked="{Binding ShowHiddenObjects}" ToolTip="Show hidden tables and columns"/>
+                            <MenuItem Header="Disconnected" IsCheckable="True" IsChecked="{Binding ShowDisconnected}" ToolTip="Show tables with no relationships"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
                 
                 <ToggleButton DockPanel.Dock="Left" Style="{StaticResource TraceToggleButton}"
                               IsChecked="{Binding SnapToGrid}"
@@ -1702,7 +1725,15 @@
                          Width="150"
                          Margin="8,4,4,4"
                          ToolTip="Search for tables or columns"/>
-                
+                <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
+                        cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        ToolTip="Export detailed debug information to a text file for troubleshooting">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="" FontFamily="Segoe Fluent Icons" FontSize="14" Margin="0,2,4,0"/>
+                        <TextBlock>Debug</TextBlock>
+                    </StackPanel>
+                </Button>
+
                 <!-- Right side: Zoom controls -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,4,0">
                     <Button Style="{StaticResource TraceButton}"
@@ -2062,19 +2093,30 @@
                 
                 <!-- Legend -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <!-- Table Types (shown when storage mode data is NOT available) -->
-                    <StackPanel Orientation="Horizontal"
-                                Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToNotCollapsedConverter}}">
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Blue}" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
-                        <TextBlock Text="Table" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                    <!-- Table Types -->
+                    <StackPanel Orientation="Horizontal">
+                        <Border Background="{DynamicResource Theme.Brush.Accent1}" Width="12" Height="12" CornerRadius="2" Margin="8,0,4,0"/>
+                        <TextBlock Text="Dimension" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Green}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <Border Background="{DynamicResource Theme.Brush.Accent4}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
                         <TextBlock Text="Date" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Purple}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                        <TextBlock Text="Measures" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="10"
+                        <Border Background="{DynamicResource Theme.Brush.Accent2}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Fact" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="{DynamicResource Theme.Brush.Accent3}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Disconnected" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="{DynamicResource Theme.Brush.Accent5}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Measures" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
+                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
+                        
+                        <Border Background="{DynamicResource Theme.Brush.Muted.Fore}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
+                        <TextBlock Text="Hidden" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="10"
                                    Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                         
                         <!-- Separator -->
@@ -2106,32 +2148,7 @@
                     <TextBlock Text="Inactive" VerticalAlignment="Center" FontSize="10"
                                Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
                     
-                    <!-- Storage Mode Legend (shown when storage mode data is available) -->
-                    <StackPanel Orientation="Horizontal" 
-                                Visibility="{Binding HasStorageModeData, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <!-- Separator -->
-                        <Border Width="1" Height="14" Background="{StaticResource Diagram.Brush.Relationship.CardinalityBorder}" Margin="16,0,16,0"/>
-                        
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Green}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                        <TextBlock Text="Import" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
-                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                        
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Orange}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                        <TextBlock Text="DirectQuery" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
-                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                        
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Blue}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                        <TextBlock Text="DirectLake" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
-                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                        
-                        <Border Background="{StaticResource Diagram.Brush.Accent.Purple}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                        <TextBlock Text="Dual" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="10"
-                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                        
-                        <Border Background="{StaticResource Diagram.Brush.Relationship.ManyToMany}" Width="12" Height="12" CornerRadius="2" Margin="0,0,4,0"/>
-                        <TextBlock Text="Hybrid" VerticalAlignment="Center" FontSize="10"
-                                   Foreground="{DynamicResource Theme.Brush.Default.Fore}"/>
-                    </StackPanel>
+                    
                 </StackPanel>
             </Grid>
         </Border>

@@ -402,7 +402,8 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private SEDependenciesHeatMapMode _seDependenciesHeatMapMode = SEDependenciesHeatMapMode.CpuTime;
-        [Category("Server Timings")]
+        [Category("Preview")]
+        [Subcategory("Diagrams")]
         [SortOrder(11)]
         [DisplayName("SE Dependencies Heat Map Mode")]
         [Description("This setting controls what metric is used to color table headers in the Storage Engine Dependencies view. CPU Time (default) is usually the most useful for identifying performance bottlenecks.")]
@@ -1499,6 +1500,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showCopyMetricsComments;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Server Timings")]
         [DisplayName("Copy server timings for comments")]
         [Description("Copy server timings metrics in the clipboard to display results in comments within the DAX editor.")]
         public bool ShowCopyMetricsComments
@@ -1534,7 +1536,9 @@ namespace DaxStudio.UI.ViewModels
         private bool _showModelDiagram;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Diagrams")]
         [DisplayName("Show Model Diagram")]
+        [SortOrder(2)]
         [Description("Enable the Model Diagram feature to visualize the data model structure including tables, columns, and relationships.")]
         [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
         public bool ShowModelDiagram
@@ -1552,6 +1556,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showQueryGroupColumn;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Server Timings")]
         [DisplayName("Show Query Group Column")]
         [Description("Show the Query Group column in Server Timings which groups structurally similar storage engine queries together.")]
         public bool ShowQueryGroupColumn
@@ -1569,6 +1574,7 @@ namespace DaxStudio.UI.ViewModels
         private DiagramColumnStatDisplay _diagramColumnStatDisplay;
         [DataMember, DefaultValue(DiagramColumnStatDisplay.Cardinality)]
         [Category("Preview")]
+        [Subcategory("Diagrams")]
         [DisplayName("Model Diagram Column Stat")]
         [Description("Choose which statistic to display on columns in the Model Diagram after running View Metrics (VPA). Options: None, Cardinality, or Size.")]
         [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
@@ -1587,6 +1593,7 @@ namespace DaxStudio.UI.ViewModels
         private DiagramColumnSortOrder _diagramColumnSortOrder;
         [DataMember, DefaultValue(DiagramColumnSortOrder.Name)]
         [Category("Preview")]
+        [Subcategory("Diagrams")]
         [DisplayName("Model Diagram Column Sort")]
         [Description("Choose how to sort columns in the Model Diagram tables. Sort by Cardinality or Size requires View Metrics (VPA) data.")]
         [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
@@ -1605,6 +1612,7 @@ namespace DaxStudio.UI.ViewModels
         private DiagramLayoutAlgorithm _diagramLayoutAlgorithm;
         [DataMember, DefaultValue(DiagramLayoutAlgorithm.Auto)]
         [Category("Preview")]
+        [Subcategory("Diagrams")]
         [DisplayName("Model Diagram Layout")]
         [Description("Choose the layout algorithm for arranging tables in the Model Diagram. Auto selects based on table count: Hierarchy (≤15), Grid (16-50), Clustered (>50).")]
         [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
@@ -1696,6 +1704,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showTotalDirectQueryDuration;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Server Timings")]
         [DisplayName("Show total DirectQuery duration")]
         [Description("Show the total duration of DirectQuery storage engine requests in Server Timings.")]
         public bool ShowTotalDirectQueryDuration
@@ -1715,6 +1724,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _showStorageEngineNetParallelDuration;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Server Timings")]
         [DisplayName("Show SE parallel calculation (debug)")]
         [Description("Show the Net Parallel Duration calculation for storage engine (SE) in Server Timings (for debug purposes).")]
         public bool ShowStorageEngineNetParallelDuration
@@ -1734,7 +1744,9 @@ namespace DaxStudio.UI.ViewModels
         private bool _showStorageEngineDependencies;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Diagrams")]
         [DisplayName("Show Storage Engine Dependencies")]
+        [SortOrder(1)]
         [Description("Show the Dependencies button in Server Timings to visualize table/column relationships from SE queries.")]
         [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
         public bool ShowStorageEngineDependencies
@@ -1754,6 +1766,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _useAntlrParser;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
+        [Subcategory("Server Timings")]
         [DisplayName("Use ANTLR Parser for SE Queries")]
         [Description("Use the ANTLR4-based grammar parser instead of the regex-based parser for Storage Engine query analysis.")]
         [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
@@ -2380,6 +2393,7 @@ namespace DaxStudio.UI.ViewModels
 
         private bool _exportServerTimingDetailsToFolder = false;
         [Category("Preview")]
+        [Subcategory("Server Timings")]
         [DisplayName("Export Server Timing details to folder")]
         [Description("Exports the query text from the server timing details to a folder with one file per storage event")]
         [DataMember, DefaultValue(false)]

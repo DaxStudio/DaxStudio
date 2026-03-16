@@ -33,6 +33,7 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Views;
 using System.Data;
 using DaxStudio.UI.Enums;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -221,6 +222,28 @@ namespace DaxStudio.UI.ViewModels
             EndTime = ev.EndTime;
             TextData = ev.TextData;
             ObjectName = ev.ObjectName;
+
+            FormatQuery(remapColumns, remapTables);
+
+            // Skip Duration/Cpu Time for Cache Match
+            if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
+            {
+                Duration = ev.Duration;
+                NetParallelDuration = ev.NetParallelDuration;
+                if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
+                {
+                    CpuTime = ev.CpuTime;
+                    CpuFactor = ev.CpuFactor;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Formats the query text based on current Options. Can be called again to
+        /// re-apply formatting after options change (e.g., toggling simplify/format settings).
+        /// </summary>
+        public void FormatQuery(Dictionary<string, string> remapColumns = null, Dictionary<string, string> remapTables = null)
+        {
             switch (Class)
             {
                 case DaxStudioTraceEventClass.ExecutionMetrics:
@@ -232,13 +255,13 @@ namespace DaxStudio.UI.ViewModels
                     // Format SQL code
                     // Apply bold to keywords
                     // Replace base queries with table alias (optional?)
-                    if (!IsDaxDirectQuery(ev.TextData) && Options.FormatDirectQuerySql)
+                    if (!IsDaxDirectQuery(TextData) && Options.FormatDirectQuerySql)
                     {
-                        Query = SqlFormatter.FormatSql(ev.TextData);
+                        Query = SqlFormatter.FormatSql(TextData);
                     }
                     else
                     {
-                        Query = ev.TextData;
+                        Query = TextData;
                     }
                     break;
                 default:
@@ -246,19 +269,18 @@ namespace DaxStudio.UI.ViewModels
                     {
                         // ANTLR-based formatting: single parse tree walk handles formatting, simplification, and estimated size extraction
                         var antlrResult = AntlrXmSqlFormatter.Format(
-                            ev.TextData,
+                            TextData,
                             Options.FormatXmSql,
                             Options.SimplifyXmSqlSyntax,
                             out long antlrRows,
                             out long antlrBytes,
-                            out bool antlrHasSize);
+                            out bool antlrHasSize,
+                            remapColumns,
+                            remapTables);
 
                         if (antlrResult != null)
                         {
-                            // Apply table/column name remapping on the formatted result
-                            string antlrRemapped = Options.ReplaceXmSqlColumnNames ? antlrResult.ReplaceTableOrColumnNames(remapColumns) : antlrResult;
-                            antlrRemapped = Options.ReplaceXmSqlTableNames ? antlrRemapped.ReplaceTableOrColumnNames(remapTables) : antlrRemapped;
-                            Query = antlrRemapped;
+                            Query = antlrResult;
 
                             if (antlrHasSize)
                             {
@@ -267,10 +289,12 @@ namespace DaxStudio.UI.ViewModels
                             }
                             break;
                         }
+
                         // Fall through to regex approach if ANTLR parsing failed
+                        Log.Warning(Constants.LogMessageTemplate, nameof(TraceStorageEngineEvent), nameof(FormatQuery), "ANTLR parsing of xmSQL failed, falling back to regex-based formatting. Query text: " + TextData);
                     }
 
-                    string rawText = Options.SimplifyXmSqlSyntax ? ev.TextData.RemovePremiumTags() : ev.TextData;
+                    string rawText = Options.SimplifyXmSqlSyntax ? TextData.RemovePremiumTags() : TextData;
                     // Format xmSQL
                     string queryFormatted = Options.FormatXmSql ? rawText.FormatXmSql() : rawText;
                     // Normalize tabs to 4 spaces
@@ -289,23 +313,11 @@ namespace DaxStudio.UI.ViewModels
                                     .FixEmptyArguments()
                                     .RemoveRowNumberGuid()
                                     .RemoveDoubleBracketsInCallbacks()
-                                    .RemoveDoubleSpaces()
                                     .FormatIndexSize()
                                 : queryRemapped;
                     break;
             }
-            
-            // Skip Duration/Cpu Time for Cache Match
-            if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
-            {
-                Duration = ev.Duration;
-                NetParallelDuration = ev.NetParallelDuration;
-                if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.RewriteAttempted)
-                {
-                    CpuTime = ev.CpuTime;
-                    CpuFactor = ev.CpuFactor;
-                }
-            }
+
             if (Query != null && Query?.Length > 0)
             {
                 long rows, bytes;
@@ -446,6 +458,7 @@ namespace DaxStudio.UI.ViewModels
         const string searchXmSqlFormatStep3 = @"\,\r\n(DEFINE TABLE|CREATE)";
         const string searchXmSqlFormatStep4 = @"(\] MANYTOMANY FROM ).*( TO )";
         const string searchXmSqlFormatStep5 = @"(?<=,) *?(?=MIN|MAX|SUM|COUNT|DCOUNT)";
+        const string searchXmSqlFormatStep6 = @"'(LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)'";
         const string searchXmSqlCallbackStart = @"\[\'?((CallbackDataID)|(EncodeCallback)|(LogAbsValueCallback)|(RoundValueCallback)|(MinMaxColumnPositionCallback)|(Cond))\'?\(";
         const string searchXmSqlCallbackEnd = @"[\S\s]*?(?<!\]\])\)\]";
         const string searchXmSqlCallbackDax = @"(?<=\[CallbackDataID|EncodeCallback)(?<DAX>[\w\W]*?\))(?=\s?\]\s?\()";
@@ -482,6 +495,7 @@ namespace DaxStudio.UI.ViewModels
         static Regex xmSqlFormatStep3 = new Regex(searchXmSqlFormatStep3, RegexOptions.Compiled);
         static Regex xmSqlFormatStep4 = new Regex(searchXmSqlFormatStep4, RegexOptions.Compiled);
         static Regex xmSqlFormatStep5 = new Regex(searchXmSqlFormatStep5, RegexOptions.Compiled);
+        static Regex xmSqlFormatStep6 = new Regex(searchXmSqlFormatStep6, RegexOptions.Compiled|RegexOptions.IgnoreCase);
         static Regex xmSqlRemoveDoubleSpaces = new Regex(searchXmSqlRemoveDoubleSpaces, RegexOptions.Compiled);
         static Regex xmSqlCallbackStart = new Regex(searchXmSqlCallbackStart, RegexOptions.Compiled);
         static Regex xmSqlTotalValues = new Regex(searchXmSqlTotalValues, RegexOptions.Compiled);
@@ -621,7 +635,7 @@ namespace DaxStudio.UI.ViewModels
             var step3 = xmSqlFormatStep3.Replace(step2, FormatStep3);
             var step4 = xmSqlFormatStep4.Replace(step3, FormatStep4);
             var step5 = xmSqlFormatStep5.Replace(step4, FormatStep5);
-
+            var step6 = xmSqlFormatStep6.Replace(step5, @"$1");
             var stepFinal = step5;
             return stepFinal;
         }
@@ -1253,8 +1267,8 @@ namespace DaxStudio.UI.ViewModels
                 Events.Clear();
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
 
-                // Run query similarity grouping on SE scan events
-                RunQueryGrouping();
+                // Run query similarity grouping on SE scan events (only if column is visible)
+                if (ShowQueryGroupColumn) _ = RunQueryGroupingAsync();
 
                 Refresh(); // update all data bindings
             }
@@ -1280,16 +1294,19 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(StorageEngineEvents));
         }
 
-        private void RunQueryGrouping()
+        private async Task RunQueryGroupingAsync()
         {
             try
             {
-                var grouper = new XmSqlQueryGrouper();
+                // Prepare query data on UI thread
                 var queries = AllStorageEngineEvents
                     .Where(e => e.IsScanEvent && !e.IsInternalEvent && !string.IsNullOrWhiteSpace(e.Query))
-                    .Select(e => (e.RowNumber, e.Query));
+                    .Select(e => (e.RowNumber, e.Query))
+                    .ToList();
 
-                var groupResult = grouper.GroupQueries(queries);
+                // Run CPU-heavy grouping on background thread
+                var grouper = new XmSqlQueryGrouper();
+                var groupResult = await Task.Run(() => grouper.GroupQueries(queries));
 
                 // Assign structural group IDs to events
                 foreach (var evt in AllStorageEngineEvents)
@@ -1788,8 +1805,8 @@ namespace DaxStudio.UI.ViewModels
                 UpdateTimelineDurations(QueryStartDateTime, QueryEndDateTime, TimelineTotalDuration);
             }
 
-            // Run query similarity grouping on pasted/loaded data
-            RunQueryGrouping();
+            // Run query similarity grouping on pasted/loaded data (only if column is visible)
+            if (ShowQueryGroupColumn) _ = RunQueryGroupingAsync();
         }
 
 
@@ -2078,12 +2095,12 @@ namespace DaxStudio.UI.ViewModels
                 Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Starting with {AllStorageEngineEvents.Count} events");
                 
                 var erdViewModel = new XmSqlErdViewModel(_eventAggregator, ServerTimingDetails);
-                erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
                 
-                Log.Information("{class} {method} {message}", nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), $"Analysis complete: {erdViewModel.Tables.Count} tables found");
-                
-                // Publish event to show the tool window in the docking panel
+                // Show the tool window first so user sees loading indicator immediately
                 _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(erdViewModel));
+                
+                // Start async analysis - the view will show progress and update when complete
+                erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
             }
             catch (Exception ex)
             {
@@ -2189,6 +2206,53 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
+        }
+
+        /// <summary>
+        /// Re-applies formatting to all storage engine events using current Options.
+        /// Called from the context menu when the user wants to reformat queries
+        /// (e.g., after changing format/simplify settings).
+        /// </summary>
+        public async void ReformatQueries()
+        {
+            if (IsBusy) return;
+
+            IsBusy = true;
+            BusyMessage = "Reformatting queries...";
+
+            // Allow UI to show the busy overlay before starting work
+            await Task.Delay(50);
+
+            try
+            {
+                var totalEvents = _storageEngineEvents.Count;
+                var events = _storageEngineEvents.ToList();
+                var remapColumns = RemapColumnNames;
+                var remapTables = RemapTableNames;
+
+                await Task.Run(() =>
+                {
+                    int processedCount = 0;
+                    foreach (var evt in events)
+                    {
+                        evt.FormatQuery(remapColumns, remapTables);
+
+                        processedCount++;
+                        if (processedCount % 50 == 0)
+                        {
+                            var count = processedCount;
+                            Application.Current.Dispatcher.InvokeAsync(() =>
+                                BusyMessage = $"Reformatting queries ({count}/{totalEvents})...");
+                        }
+                    }
+                });
+
+                NotifyOfPropertyChange(nameof(StorageEngineEvents));
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         public Task HandleAsync(CopySEQueryEvent message, CancellationToken cancellationToken)
