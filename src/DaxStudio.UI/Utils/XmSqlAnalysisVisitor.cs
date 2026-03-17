@@ -22,12 +22,6 @@ namespace DaxStudio.UI.Utils
         private readonly Dictionary<string, TempTableLineage> _tempTableLineage
             = new Dictionary<string, TempTableLineage>(StringComparer.OrdinalIgnoreCase);
 
-        // Context flags
-        private bool _inWithClause;
-        private bool _inSelectClause;
-        private bool _inWhereClause;
-        private bool _inDefineTable;
-        private string _currentDefineTableName;
 
         public XmSqlAnalysisVisitor(XmSqlAnalysis analysis, XmSqlParser.SeEventMetrics metrics)
         {
@@ -324,9 +318,7 @@ namespace DaxStudio.UI.Utils
             var withClause = context.withClause();
             if (withClause != null)
             {
-                _inWithClause = true;
                 VisitWithClause(withClause);
-                _inWithClause = false;
             }
 
             // Visit the select body
@@ -336,21 +328,16 @@ namespace DaxStudio.UI.Utils
 
         public override object VisitDefineTableStatement(xmSQLParser.DefineTableStatementContext context)
         {
-            _inDefineTable = true;
-            _currentDefineTableName = GetTableName(context.tableRef());
+            var _ = GetTableName(context.tableRef());
             VisitSelectBody(context.selectBody());
-            _inDefineTable = false;
-            _currentDefineTableName = null;
+
             return null;
         }
 
         public override object VisitReducedByStatement(xmSQLParser.ReducedByStatementContext context)
         {
-            _inDefineTable = true;
-            _currentDefineTableName = GetTableName(context.tableRef());
+            var _ = GetTableName(context.tableRef());
             VisitSelectBody(context.selectBody());
-            _inDefineTable = false;
-            _currentDefineTableName = null;
             return null;
         }
 
@@ -387,7 +374,6 @@ namespace DaxStudio.UI.Utils
             }
 
             // SELECT clause
-            _inSelectClause = true;
             var selectList = context.selectList();
             if (selectList != null)
             {
@@ -396,7 +382,7 @@ namespace DaxStudio.UI.Utils
                     VisitSelectItem(item);
                 }
             }
-            _inSelectClause = false;
+
 
             // JOIN clauses
             foreach (var joinCtx in context.joinClause())
@@ -408,9 +394,7 @@ namespace DaxStudio.UI.Utils
             var whereCtx = context.whereClause();
             if (whereCtx != null)
             {
-                _inWhereClause = true;
                 VisitWhereClause(whereCtx);
-                _inWhereClause = false;
             }
 
             return null;

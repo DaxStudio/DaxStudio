@@ -28,8 +28,7 @@ namespace DaxStudio.UI.Utils
         private readonly List<string> _whereColumnSignatures = new List<string>();
 
         // Context flags
-        private bool _isInFinalSelect;
-        private bool _collectingStructure;
+
 
         /// <summary>
         /// Computes a fingerprint for the given parse tree.
@@ -187,9 +186,8 @@ namespace DaxStudio.UI.Utils
 
             if (mainBody != null)
             {
-                _collectingStructure = true;
+                // collecting structure from the main select body
                 ExtractSelectBodyStructure(mainBody);
-                _collectingStructure = false;
             }
         }
 
