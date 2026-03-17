@@ -216,19 +216,17 @@
                 }
                 
                 Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"Successfully extracted ASAzureSecurityConfig.xml from AdomdClient v{Version ?? "unknown"} to {OutputPath}");
-                return true;
             }
             else
             {
                 Log.LogWarning($"ASAzureSecurityConfig.xml resource not found in assembly {AssemblyPath}");
                 Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"Available resources: {string.Join(", ", resourceNames)}");
-                return true; // Don't fail the build
             }
         }
         catch (Exception ex)
         {
             Log.LogError($"Failed to extract embedded resource: {ex.Message}");
-            return false; // Fail the task but continue build
+            return false;
         }
         ]]></Code>
     </Task>

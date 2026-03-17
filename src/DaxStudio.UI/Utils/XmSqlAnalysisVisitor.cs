@@ -585,7 +585,7 @@ namespace DaxStudio.UI.Utils
         /// Handles REVERSE BITMAP JOIN: extracts the joined table and relationship from ON clause.
         /// Grammar: REVERSE BITMAP JOIN tableRef ON tableColumnRef EQUALS tableColumnRef
         /// </summary>
-        private object VisitReverseBitmapJoin(xmSQLParser.ReverseBitmapJoinContext context)
+        public override object VisitReverseBitmapJoin(xmSQLParser.ReverseBitmapJoinContext context)
         {
             // Mark the joined table
             var tableRef = context.tableRef();

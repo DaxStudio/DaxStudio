@@ -1095,17 +1095,17 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
-                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), $"Starting for: {DisplayName}");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), $"Starting for: {DisplayName}");
                 _logger.Info("In OnActivate");
                 await base.OnActivatedAsync(cancellationToken);
 
-                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Updating EventAggregator Subscriptions");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Updating EventAggregator Subscriptions");
                 UnsubscribeAll();
                 SubscribeAll();
-                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Setting SelectedTarget");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Setting SelectedTarget");
 
                 _ribbon.SelectedTarget = SelectedTarget;
-                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Setting RunStyle");
+                Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Setting RunStyle");
                 SelectedRunStyle = _ribbon.SelectedRunStyle;
                 var loc = Document.GetLocation(0);
                 //SelectedWorksheet = QueryResultsPane.SelectedWorksheet;
@@ -1117,7 +1117,7 @@ namespace DaxStudio.UI.ViewModels
                 // either a query is running or a trace is starting
                 if (CanRunQuery)
                 {
-                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Check for Metadata updates");
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Check for Metadata updates");
                     await CheckForMetadataUpdatesAsync();
                     // TODO - look at removing this as it breaks some connections
                     //Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Ping Connection");
@@ -1126,9 +1126,9 @@ namespace DaxStudio.UI.ViewModels
 
                 try
                 {
-                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Publish EditorLocationChanged event");
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Publish EditorLocationChanged event");
                     await _eventAggregator.PublishOnUIThreadAsync(new EditorPositionChangedMessage(loc.Column, loc.Line), cancellationToken);
-                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivateAsync), "Publish ActivateDocument event");
+                    Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(OnActivatedAsync), "Publish ActivateDocument event");
                     await _eventAggregator.PublishOnUIThreadAsync(new ActivateDocumentEvent(this), cancellationToken);
                 }
                 catch (Exception ex)

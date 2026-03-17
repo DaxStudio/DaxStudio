@@ -79,11 +79,11 @@ namespace DaxStudio.UI.ViewModels
         /// <summary>
         /// Re-subscribe to event aggregator when the window is reactivated after being closed.
         /// </summary>
-        protected override Task OnActivateAsync(CancellationToken cancellationToken)
+        protected override Task OnActivatedAsync(CancellationToken cancellationToken)
         {
             // Re-subscribe in case we were previously closed and unsubscribed
             _eventAggregator.SubscribeOnPublishedThread(this);
-            return base.OnActivateAsync(cancellationToken);
+            return base.OnActivatedAsync(cancellationToken);
         }
 
         /// <summary>
