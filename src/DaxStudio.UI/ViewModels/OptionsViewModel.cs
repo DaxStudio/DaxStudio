@@ -46,7 +46,6 @@ namespace DaxStudio.UI.ViewModels
         private const double DefaultResultsFontSize = 11.0;
         private const string DefaultWindowPosition = @"﻿﻿<?xml version=""1.0"" encoding=""utf-8""?><WINDOWPLACEMENT xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""><length>44</length><flags>0</flags><showCmd>1</showCmd><minPosition><X>0</X><Y>0</Y></minPosition><maxPosition><X>-1</X><Y>-1</Y></maxPosition><normalPosition><Left>5</Left><Top>5</Top><Right>1125</Right><Bottom>725</Bottom></normalPosition></WINDOWPLACEMENT>";
         private const double Tolerance = 0.1;
-        private const string ENV_DAXSTUDIO_DIAGRAMS = "DAXSTUDIO_DIAGRAMS";
 
         private string _selectedEditorFontFamily;
         private string _selectedResultFontFamily;
@@ -408,7 +407,6 @@ namespace DaxStudio.UI.ViewModels
         [DisplayName("SE Dependencies Heat Map Mode")]
         [Description("This setting controls what metric is used to color table headers in the Storage Engine Dependencies view. CPU Time (default) is usually the most useful for identifying performance bottlenecks.")]
         [DataMember, DefaultValue(SEDependenciesHeatMapMode.CpuTime)]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
         public SEDependenciesHeatMapMode SEDependenciesHeatMapMode
         {
             get => _seDependenciesHeatMapMode;
@@ -1539,8 +1537,7 @@ namespace DaxStudio.UI.ViewModels
         [Subcategory("Diagrams")]
         [DisplayName("Show Model Diagram")]
         [SortOrder(2)]
-        [Description("Enable the Model Diagram feature to visualize the data model structure including tables, columns, and relationships.")]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
+        [Description("Enable the Model Diagram feature to visualize the data model structure including tables, columns, and relationships.\nWARNING: the UI may change before the final release")]
         public bool ShowModelDiagram
         {
             get => _showModelDiagram;
@@ -1577,7 +1574,6 @@ namespace DaxStudio.UI.ViewModels
         [Subcategory("Diagrams")]
         [DisplayName("Model Diagram Column Stat")]
         [Description("Choose which statistic to display on columns in the Model Diagram after running View Metrics (VPA). Options: None, Cardinality, or Size.")]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
         public DiagramColumnStatDisplay DiagramColumnStatDisplay
         {
             get => _diagramColumnStatDisplay;
@@ -1596,7 +1592,6 @@ namespace DaxStudio.UI.ViewModels
         [Subcategory("Diagrams")]
         [DisplayName("Model Diagram Column Sort")]
         [Description("Choose how to sort columns in the Model Diagram tables. Sort by Cardinality or Size requires View Metrics (VPA) data.")]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
         public DiagramColumnSortOrder DiagramColumnSortOrder
         {
             get => _diagramColumnSortOrder;
@@ -1615,7 +1610,6 @@ namespace DaxStudio.UI.ViewModels
         [Subcategory("Diagrams")]
         [DisplayName("Model Diagram Layout")]
         [Description("Choose the layout algorithm for arranging tables in the Model Diagram. Auto selects based on table count: Hierarchy (≤15), Grid (16-50), Clustered (>50).")]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
         public DiagramLayoutAlgorithm DiagramLayoutAlgorithm
         {
             get => _diagramLayoutAlgorithm;
@@ -1747,8 +1741,7 @@ namespace DaxStudio.UI.ViewModels
         [Subcategory("Diagrams")]
         [DisplayName("Show Storage Engine Dependencies")]
         [SortOrder(1)]
-        [Description("Show the Dependencies button in Server Timings to visualize table/column relationships from SE queries.")]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
+        [Description("Show the Dependencies button in Server Timings to visualize table/column relationships from SE queries.\nWARNING: the UI may change before the final release")]
         public bool ShowStorageEngineDependencies
         {
             get => _showStorageEngineDependencies;
@@ -1767,9 +1760,8 @@ namespace DaxStudio.UI.ViewModels
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
         [Subcategory("Server Timings")]
-        [DisplayName("Use ANTLR Parser for SE Queries")]
-        [Description("Use the ANTLR4-based grammar parser instead of the regex-based parser for Storage Engine query analysis.")]
-        [EnvironmentVariable(ENV_DAXSTUDIO_DIAGRAMS)]
+        [DisplayName("Use New Parser for SE Queries")]
+        [Description("Use the new grammar-based parser instead of the regex-based parser for Storage Engine query analysis.")]
         public bool UseAntlrParser
         {
             get => _useAntlrParser;
