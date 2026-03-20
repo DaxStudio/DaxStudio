@@ -1756,6 +1756,27 @@ namespace DaxStudio.UI.ViewModels
 
         }
 
+        private bool _showDiagramDebugButton;
+        [DataMember, DefaultValue(false)]
+        [Category("Preview")]
+        [Subcategory("Diagrams")]
+        [DisplayName("Show Diagram Debug Button")]
+        [SortOrder(10)]
+        [Description("Show the Debug button in diagram views (Model Diagram and SE Dependencies) for exporting diagnostic information.")]
+        public bool ShowDiagramDebugButton
+        {
+            get => _showDiagramDebugButton;
+
+            set
+            {
+                _showDiagramDebugButton = value;
+                _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                SettingProvider.SetValue(nameof(ShowDiagramDebugButton), value, _isInitializing, this);
+                NotifyOfPropertyChange(() => ShowDiagramDebugButton);
+            }
+
+        }
+
         private bool _useAntlrParser;
         [DataMember, DefaultValue(false)]
         [Category("Preview")]
@@ -2745,10 +2766,10 @@ namespace DaxStudio.UI.ViewModels
         }
 
         private bool  _useIndentCodeFolding;
-        [Category("Preview")]
+        [Category("Editor")]
         [DisplayName("Use Indent based code folding")]
         [Description("Allows for sections of code to be collapsed based on indenting")]
-        [DataMember, DefaultValue(false)]
+        [DataMember, DefaultValue(true)]
         public bool UseIndentCodeFolding { get => _useIndentCodeFolding;
             set {
                 _useIndentCodeFolding = value;

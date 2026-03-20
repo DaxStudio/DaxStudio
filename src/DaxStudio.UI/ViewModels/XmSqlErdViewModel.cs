@@ -334,12 +334,12 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (!hasSearch)
                 {
-                    // No search - clear all search highlighting
-                    table.IsSearchMatch = false;
+                    // No search - reset to normal (not dimmed, not highlighted)
+                    table.IsSearchMatch = true;
                     table.IsSearchDimmed = false;
                     foreach (var col in table.Columns)
                     {
-                        col.IsSearchMatch = false;
+                        col.IsSearchMatch = true;
                     }
                 }
                 else
@@ -2652,6 +2652,8 @@ namespace DaxStudio.UI.ViewModels
         {
             CopyImageRequested?.Invoke(this, EventArgs.Empty);
         }
+
+        public bool ShowDebugButton => Options.ShowDiagramDebugButton;
 
         /// <summary>
         /// Exports detailed debug information about all SE events to a text file.

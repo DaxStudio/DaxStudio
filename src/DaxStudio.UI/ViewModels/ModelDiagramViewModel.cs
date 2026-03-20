@@ -83,6 +83,7 @@ namespace DaxStudio.UI.ViewModels
         {
             // Re-subscribe in case we were previously closed and unsubscribed
             _eventAggregator.SubscribeOnPublishedThread(this);
+            NotifyOfPropertyChange(() => ShowDebugButton);
             return base.OnActivatedAsync(cancellationToken);
         }
 
@@ -981,6 +982,7 @@ namespace DaxStudio.UI.ViewModels
         /// <param name="forceReload">If true, bypasses duplicate load prevention.</param>
         public void LoadFromModel(ADOTabularModel model, bool forceReload = false)
         {
+            System.Diagnostics.Debug.WriteLine($"[ModelDiagram] LoadFromModel ENTER on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
             if (model == null) return;
 
             // Prevent duplicate loads while already loading
@@ -1043,9 +1045,11 @@ namespace DaxStudio.UI.ViewModels
 
             // IsLoading is already set by LoadFromModel() before calling this method
             LoadingMessage = "Initializing...";
+            System.Diagnostics.Debug.WriteLine($"[ModelDiagram] LoadFromModelAsync START on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
             
             // Allow UI to render the loading indicator before starting work
             await Task.Delay(50);
+            System.Diagnostics.Debug.WriteLine($"[ModelDiagram] After Task.Delay(50) - {stopwatch.ElapsedMilliseconds}ms on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
 
             try
             {
@@ -1061,6 +1065,7 @@ namespace DaxStudio.UI.ViewModels
                     Relationships.Clear();
                     Annotations.Clear();
                 });
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Stage 1 (Clear) done - {stopwatch.ElapsedMilliseconds}ms");
 
                 // Stage 2: Materialize all model data on UI thread first (ADOTabular may log during lazy loading)
                 stageStopwatch.Start();
@@ -1070,6 +1075,7 @@ namespace DaxStudio.UI.ViewModels
                     .Where(t => !t.Private && (ShowHiddenObjects || t.IsVisible) && (ShowVariations || !t.ShowAsVariationsOnly))
                     .ToList();
                 var totalTables = visibleTables.Count;
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Stage 2a (filter tables: {totalTables}) - {stopwatch.ElapsedMilliseconds}ms");
 
                 // Pre-load all relationship data on UI thread to avoid logging issues on background thread
                 // Also pre-extract all string values to avoid lazy loading on background thread
@@ -1096,6 +1102,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 
                 var metadataTime = stageStopwatch.ElapsedMilliseconds;
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Stage 2b (relationships: {relationshipData.Count}) - {stopwatch.ElapsedMilliseconds}ms (metadata: {metadataTime}ms)");
 
                 // Capture values needed for background work
                 var showHidden = ShowHiddenObjects;
@@ -1107,6 +1114,7 @@ namespace DaxStudio.UI.ViewModels
                 stageStopwatch.Restart();
                 LoadingMessage = $"Creating {totalTables} table views...";
                 await Task.Yield(); // Allow UI to render progress
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Stage 3 start (creating VMs) - {stopwatch.ElapsedMilliseconds}ms on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
                 
                 // For large models (>50 tables), start with tables collapsed to improve rendering performance
                 bool startCollapsed = totalTables > 50;
@@ -1127,6 +1135,7 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 var tablesTime = stageStopwatch.ElapsedMilliseconds;
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Stage 3 done (created {tableVms.Count} VMs) - {stopwatch.ElapsedMilliseconds}ms (VMs: {tablesTime}ms)");
 
                 // Add tables in batches for responsive UI during WPF template instantiation.
                 // Each individual Add fires an incremental CollectionChanged(Add) notification,
@@ -1147,11 +1156,14 @@ namespace DaxStudio.UI.ViewModels
                         Tables.Add(tableVms[j]);
                     }
 
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Batch {batchEnd}/{tableVms.Count} added - {stopwatch.ElapsedMilliseconds}ms");
                     // Yield to dispatcher at Background priority to let WPF render
                     // this batch and process any pending user input
                     await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Batch {batchEnd}/{tableVms.Count} after yield - {stopwatch.ElapsedMilliseconds}ms");
                 }
                 var addTablesTime = stageStopwatch.ElapsedMilliseconds;
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Stage 3b done (batched add) - {stopwatch.ElapsedMilliseconds}ms (add: {addTablesTime}ms)");
 
                 // Stage 4: Create relationships - fast enough to do on UI thread
                 stageStopwatch.Restart();
@@ -1913,22 +1925,35 @@ namespace DaxStudio.UI.ViewModels
 
             if (IsLoading) return;
 
+            IsLoading = true;
+            LoadingMessage = "Loading from offline data...";
+
+            Log.Information("{class} {method} Loading diagram from VPA data with {tableCount} tables",
+                nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), vpaModel.Tables.Count());
+
+            _ = LoadFromVpaModelAsync(vpaModel);
+        }
+
+        private async Task LoadFromVpaModelAsync(VpaModel vpaModel)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            // Allow UI to render the loading indicator before starting work
+            await Task.Delay(50);
+
             try
             {
-                IsLoading = true;
-                LoadingMessage = "Loading from offline data...";
-
-                Log.Information("{class} {method} Loading diagram from VPA data with {tableCount} tables",
-                    nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), vpaModel.Tables.Count());
-
                 // Clear existing data
-                Tables.Clear();
-                Relationships.Clear();
-                Annotations.Clear();
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    Tables.Clear();
+                    Relationships.Clear();
+                    Annotations.Clear();
+                });
 
                 // Store VPA model reference for debugging
                 _vpaModel = vpaModel;
-                _isOfflineMode = true;;
+                _isOfflineMode = true;
 
                 // Generate a model key from VPA data
                 var tableNames = string.Join("|", vpaModel.Tables.OrderBy(t => t.TableName).Select(t => t.TableName));
@@ -1943,6 +1968,7 @@ namespace DaxStudio.UI.ViewModels
                 // Look up the ADOTabular model from the connection (populated by MetadataVisitorVpax for VPAX files)
                 var adoModel = _metadataProvider?.SelectedModel;
 
+                var tableVms = new List<ModelDiagramTableViewModel>();
                 foreach (var vpaTable in vpaModel.Tables)
                 {
                     // Look up the matching ADOTabularTable if available
@@ -1958,9 +1984,35 @@ namespace DaxStudio.UI.ViewModels
 
                     // Note: VpaTable doesn't expose IsHidden, so we show all tables in offline mode
                     var tableVm = new ModelDiagramTableViewModel(vpaTable, showHidden, _options, sortKeyColumnsFirst, adoTable);
-                    Tables.Add(tableVm);
+                    tableVm.X = -10000;
+                    tableVms.Add(tableVm);
                     tableDict[vpaTable.TableName] = tableVm;
                 }
+
+                // For large models, start collapsed
+                bool startCollapsed = tableVms.Count > 50;
+                if (startCollapsed)
+                {
+                    foreach (var tv in tableVms) tv.IsCollapsed = true;
+                }
+
+                // Add tables in batches for responsive UI
+                const int addBatchSize = 10;
+                for (int batchStart = 0; batchStart < tableVms.Count; batchStart += addBatchSize)
+                {
+                    var batchEnd = Math.Min(batchStart + addBatchSize, tableVms.Count);
+                    LoadingMessage = $"Loading tables {batchEnd}/{tableVms.Count}...";
+
+                    for (int j = batchStart; j < batchEnd; j++)
+                    {
+                        Tables.Add(tableVms[j]);
+                    }
+
+                    await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+                }
+
+                LoadingMessage = $"Processing relationships...";
+                await Task.Yield();
 
                 // Create relationship ViewModels from VPA relationships
                 var processedRelationships = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -2033,21 +2085,13 @@ namespace DaxStudio.UI.ViewModels
                         }
 
                         // Create an ADOTabularRelationship to wrap the VPA data
-                        // Parse RelationshipFromToName to extract cardinality and cross-filter direction
-                        // Format: "Table[Column] <from_card><direction><to_card> Table[Column]"
-                        // Where: ∞ = Many, 1 = One, ↔ = BiDi, ← = Single direction
                         var relName = vpaRel.RelationshipFromToName ?? "";
                         var isBiDi = relName.Contains("↔");
                         var crossFilterDirection = isBiDi ? "Both" : "Single";
                         
-                        // Extract cardinality from RelationshipFromToName
-                        // The cardinality symbols appear between ] and [ in the format: ] symbol←symbol [
-                        // ∞ (infinity) indicates Many, 1 indicates One
-                        var fromMultiplicity = "*"; // Default to Many
-                        var toMultiplicity = "1";   // Default to One
+                        var fromMultiplicity = "*";
+                        var toMultiplicity = "1";
                         
-                        // Look for the cardinality symbols in the relationship name
-                        // Format examples: "Table[Col] ∞←1 Table[Col]" or "Table[Col] 1↔1 Table[Col]" or "Table[Col] ∞↔∞ Table[Col]"
                         if (relName.Contains("∞←1") || relName.Contains("∞↔1"))
                         {
                             fromMultiplicity = "*";
@@ -2060,20 +2104,18 @@ namespace DaxStudio.UI.ViewModels
                         }
                         else if (relName.Contains("∞←∞") || relName.Contains("∞↔∞"))
                         {
-                            // Many-to-Many relationship
                             fromMultiplicity = "*";
                             toMultiplicity = "*";
                         }
                         else if (relName.Contains("1←1") || relName.Contains("1↔1"))
                         {
-                            // One-to-One relationship
                             fromMultiplicity = "1";
                             toMultiplicity = "1";
                         }
                         
                         var adoRel = new ADOTabularRelationship
                         {
-                            FromTable = null, // Not needed for diagram - we use table VMs
+                            FromTable = null,
                             ToTable = null,
                             FromColumn = fromColumnName,
                             ToColumn = toColumnName,
@@ -2086,11 +2128,9 @@ namespace DaxStudio.UI.ViewModels
                         var relVm = new ModelDiagramRelationshipViewModel(adoRel, fromTableVm, toTableVm);
                         relationshipVms.Add(relVm);
 
-                        // Track relationship counts per table
                         fromTableVm.RelationshipCount++;
                         toTableVm.RelationshipCount++;
 
-                        // Track many-side relationship counts
                         if (fromMultiplicity == "*")
                             fromTableVm.ManySideRelationshipCount++;
                         if (toMultiplicity == "*")
@@ -2114,21 +2154,24 @@ namespace DaxStudio.UI.ViewModels
                 // Now enrich with full VPA stats since we already have the data
                 EnrichFromVertipaq(vpaModel);
 
+                LoadingMessage = "Calculating layout...";
+                await Task.Yield();
+
                 // Try to load saved layout, otherwise use auto-layout
-                // NOTE: Both branches call CalculateParallelRelationshipOffsets AFTER positions are set
                 if (!TryLoadSavedLayout())
                 {
-                    // LayoutDiagram() calls CalculateParallelRelationshipOffsets() internally at the end
                     LayoutDiagram();
                 }
                 else
                 {
-                    // Saved layout loaded - need to calculate offsets now that positions are set
                     CalculateParallelRelationshipOffsets();
                 }
 
-                Log.Information("{class} {method} Loaded {tableCount} tables and {relCount} relationships from VPA data",
-                    nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), Tables.Count, Relationships.Count);
+                stopwatch.Stop();
+                Log.Information("{class} {method} Loaded {tableCount} tables and {relCount} relationships from VPA data in {time}ms",
+                    nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), Tables.Count, Relationships.Count, stopwatch.ElapsedMilliseconds);
+
+                LoadingStats = $"Loaded in {stopwatch.ElapsedMilliseconds}ms";
 
                 NotifyOfPropertyChange(nameof(SummaryText));
                 NotifyOfPropertyChange(nameof(HasData));
@@ -2137,11 +2180,18 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading Model Diagram from offline data: {ex.Message}"));
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading Model Diagram from offline data: {ex.Message}"));
+                });
             }
             finally
             {
-                IsLoading = false;
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    IsLoading = false;
+                    LoadingMessage = "Loading diagram...";
+                }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
             }
         }
 
@@ -5148,6 +5198,12 @@ namespace DaxStudio.UI.ViewModels
                 }
             }
         }
+
+        public bool ShowDebugButton => _options.ShowDiagramDebugButton;
+
+        /// <summary>
+        /// Refresh ShowDebugButton when the view is activated, since it reads from options.
+        /// </summary>
 
         /// <summary>
         /// Exports detailed debug information about the Model Diagram to a text file.

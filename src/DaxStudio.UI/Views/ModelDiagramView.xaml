@@ -1727,6 +1727,7 @@
                          ToolTip="Search for tables or columns"/>
                 <Button DockPanel.Dock="Left" Style="{StaticResource TraceButton}"
                         cal:Message.Attach="[Event Click] = [Action ExportDebugInfo]"
+                        Visibility="{Binding ShowDebugButton, Converter={StaticResource BoolToVisibilityConverter}}"
                         ToolTip="Export detailed debug information to a text file for troubleshooting">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="" FontFamily="Segoe Fluent Icons" FontSize="14" Margin="0,2,4,0"/>

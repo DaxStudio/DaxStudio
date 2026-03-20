@@ -1292,35 +1292,47 @@ namespace DaxStudio.UI.ViewModels
             if (ActiveDocument == null) return;
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] ShowModelDiagram START on thread {System.Threading.Thread.CurrentThread.ManagedThreadId}");
                 // Reuse an existing ModelDiagramViewModel if one is already in ToolWindows
                 // (closing the pane hides it but doesn't remove it from the collection)
                 var diagramViewModel = ActiveDocument.ToolWindows.OfType<ModelDiagramViewModel>().FirstOrDefault();
                 bool isExisting = diagramViewModel != null;
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] isExisting={isExisting}");
 
                 if (!isExisting)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Creating new ModelDiagramViewModel...");
                     diagramViewModel = new ModelDiagramViewModel(_eventAggregator, ActiveDocument.Connection as IMetadataProvider, Options);
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] ModelDiagramViewModel created");
                 }
                 else
                 {
                     // Restore visibility so the pane reappears in AvalonDock
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Restoring visibility on existing VM");
                     diagramViewModel.IsVisible = true;
                 }
 
                 // Check for VPA data first (works for both online and offline)
                 var vpaView = ActiveDocument.ToolWindows.FirstOrDefault(tw => tw is VertiPaqAnalyzerViewModel) as VertiPaqAnalyzerViewModel;
                 
-                if (IsActiveDocumentConnected)
-                {
-                    // Online: Load from live model
-                    var model = ActiveDocument.Connection?.SelectedModel;
-                    if (model == null)
-                    {
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No model selected. Please connect to a model first."));
-                        return;
-                    }
+                // Try to get the model from the connection (live or VPAX-populated metadata pane)
+                var model = ActiveDocument.Connection?.SelectedModel;
+                System.Diagnostics.Debug.WriteLine($"[ModelDiagram] IsActiveDocumentConnected={IsActiveDocumentConnected}, hasModel={model != null}, hasVpa={vpaView?.ViewModel != null}");
 
+                // Show the tool window first so the loading indicator is visible
+                if (!isExisting)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Publishing ShowToolWindowEvent BEFORE load");
+                    _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] ShowToolWindowEvent published");
+                }
+
+                if (model != null)
+                {
+                    // Load from model metadata (works for both live connections and VPAX-loaded metadata)
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Calling LoadFromModel for '{model.Name}'...");
                     diagramViewModel.LoadFromModel(model);
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] LoadFromModel returned");
 
                     // Enrich with VPA data if available
                     if (vpaView?.ViewModel != null)
@@ -1330,8 +1342,9 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else if (vpaView?.ViewModel != null)
                 {
-                    // Offline: Load from VPA data (e.g., .daxx file)
-                    Log.Information("{class} {method} Loading Model Diagram from offline VPA data", nameof(RibbonViewModel), nameof(ShowModelDiagram));
+                    // Fallback: Load from VPA data only (no model metadata available)
+                    Log.Information("{class} {method} Loading Model Diagram from VPA data (no model metadata)", nameof(RibbonViewModel), nameof(ShowModelDiagram));
+                    System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Calling LoadFromVpaModel (fallback)...");
                     diagramViewModel.LoadFromVpaModel(vpaView.ViewModel);
                 }
                 else
@@ -1341,7 +1354,11 @@ namespace DaxStudio.UI.ViewModels
                 }
 
                 // Publish event to show/reactivate the tool window in the docking panel
-                _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
+                // Only publish if we haven't already shown it above (for existing windows being reactivated)
+                if (isExisting)
+                {
+                    _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
+                }
             }
             catch (Exception ex)
             {
