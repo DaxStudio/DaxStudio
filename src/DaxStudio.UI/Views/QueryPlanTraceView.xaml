@@ -167,7 +167,7 @@
                 <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             </Style>
 
-            <Style x:Key="LogicalTreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="ctrls:TreeGrid">
+            <Style x:Key="LogicalTreeGridStyle" BasedOn="{StaticResource DefaultDataGridStyle}" TargetType="uictrl:LogicalQueryPlanTreeGrid">
                 <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             </Style>
 
@@ -422,15 +422,12 @@
                         filter:DataGridColumnExtensions.IsContainsTextSearch="True"
                         ShowTreeLines="{Binding DataContext.ShowPhysicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}, Mode=OneWay}"
                         ShowExpander="{Binding DataContext.ShowPhysicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:PhysicalQueryPlanTreeGrid}}, Mode=OneWay}"
+                        TextForeground="{DynamicResource Theme.Brush.Default.Fore}"
+                        SelectedLineStroke="{DynamicResource Theme.Brush.Icons.Red}"
+                        LineStroke="{DynamicResource Theme.Brush.Muted.Fore}"
                         >
 
-                        <ctrls:TreeColumn.TreeLineStyle>
-                            <Style TargetType="ctrls:TreeCell">
-                                <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
-                                <Setter Property="SelectedLineStroke" Value="{DynamicResource Theme.Brush.Icons.Red}"/>
-                                <Setter Property="LineStroke" Value="{DynamicResource Theme.Brush.Muted.Fore}"/>
-                            </Style>
-                        </ctrls:TreeColumn.TreeLineStyle>
+
                         <ctrls:TreeColumn.TextTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding .}">
@@ -466,7 +463,7 @@
                              BorderBrush="{DynamicResource Theme.Brush.Control.Border}"
                              Style="{StaticResource BusyBlur}">
 
-            <ctrls:TreeGrid
+            <uictrl:LogicalQueryPlanTreeGrid
                 x:Name="LogicalTreeGrid"
                 RootItems="{Binding LogicalQueryPlanTree}"
                 ChildrenBindingPath="Children"
@@ -489,31 +486,29 @@
                 TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, 
                 ResourceId=DataGridHeaderFilterControlStyle}}"
                 >
-                <ctrls:TreeGrid.Columns>
+                <uictrl:LogicalQueryPlanTreeGrid.Columns>
                     <DataGridTextColumn Header="Line" Width="60" IsReadOnly="True" Binding="{Binding Data.RowNumber, StringFormat='#,#;;'}" ElementStyle="{StaticResource AlignRight}" 
                                         filter:DataGridColumnExtensions.DoNotGenerateFilterControl="True"/>
-                    
+
                     <ctrls:TreeColumn 
                         Header="Logical Query Plan"
                         Width="Auto"
                         IsReadOnly="True"
                         TextPath="Data.Operation"
                         ClipboardContentBinding="{Binding Data.IndentedOperation}"
-                        ShowTreeLines="{Binding DataContext.ShowLogicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type ctrls:TreeGrid}}, Mode=OneWay}"
-                        ShowExpander="{Binding DataContext.ShowLogicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type ctrls:TreeGrid}}, Mode=OneWay}"
+                        ShowTreeLines="{Binding DataContext.ShowLogicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:LogicalQueryPlanTreeGrid}}, Mode=OneWay}"
+                        ShowExpander="{Binding DataContext.ShowLogicalTreeLines, RelativeSource={RelativeSource AncestorType={x:Type uictrl:LogicalQueryPlanTreeGrid}}, Mode=OneWay}"
                         filter:DataGridColumnExtensions.CustomBindingPath="Data.Operation"
-                        filter:DataGridColumnExtensions.IsContainsTextSearch="True">
-                        <ctrls:TreeColumn.TreeLineStyle>
-                            <Style TargetType="ctrls:TreeCell">
-                                <Setter Property="TextForeground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
-                                <Setter Property="SelectedLineStroke" Value="{DynamicResource Theme.Brush.Icons.Red}"/>
-                                <Setter Property="LineStroke" Value="{DynamicResource Theme.Brush.Muted.Fore}"/>
-                            </Style>
-                        </ctrls:TreeColumn.TreeLineStyle>
+                        filter:DataGridColumnExtensions.IsContainsTextSearch="True"
+                        TextForeground="{DynamicResource Theme.Brush.Default.Fore}"
+                        SelectedLineStroke="{DynamicResource Theme.Brush.Icons.Red}"
+                        LineStroke="{DynamicResource Theme.Brush.Muted.Fore}"
+                        >
+
                     </ctrls:TreeColumn>
                     
-                </ctrls:TreeGrid.Columns>
-            </ctrls:TreeGrid>
+                </uictrl:LogicalQueryPlanTreeGrid.Columns>
+            </uictrl:LogicalQueryPlanTreeGrid>
             
         </controls:ClipBorder>
         

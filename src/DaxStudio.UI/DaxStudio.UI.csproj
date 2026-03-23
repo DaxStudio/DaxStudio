@@ -300,6 +300,7 @@
     <Compile Include="Controls\HotKeyEditorControl.xaml.cs">
       <DependentUpon>HotKeyEditorControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\LogicalQueryPlanTreeGrid.cs" />
     <Compile Include="Controls\PhysicalQueryPlanTreeGrid.cs" />
     <Compile Include="Controls\StorageEngineTime.xaml.cs">
       <DependentUpon>StorageEngineTime.xaml</DependentUpon>
@@ -1562,7 +1563,7 @@
       <Version>1.2.1</Version>
     </PackageReference>
     <PackageReference Include="DaxStudio.Controls">
-      <Version>0.1.6</Version>
+      <Version>0.1.7</Version>
     </PackageReference>
     <PackageReference Include="Dirkster.AvalonDock">
       <Version>4.72.1</Version>
