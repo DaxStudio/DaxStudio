@@ -1,171 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{508A1FAA-9157-4474-94B4-FDBF76FFA74B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DaxStudio.Common</RootNamespace>
-    <AssemblyName>DaxStudio.Common</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>net472</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>DaxStudio.Common.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>8.0</LangVersion>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>..\..\Release\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeAnalysisRuleSet>DaxStudio.Common.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>8.0</LangVersion>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Tests|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Tests\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>DaxStudio.Common.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Cmd Only|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Cmd Only\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>8.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>DaxStudio.Common.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Windows" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AccessTokenContext.cs" />
-    <Compile Include="EntraIdHelper.cs" />
-    <Compile Include="Extensions\ApplicationExtensions.cs" />
-    <Compile Include="ApplicationPaths.cs" />
-    <Compile Include="AppProperties.cs" />
-    <Compile Include="CmdLineArgs.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="CrashReporter.cs" />
-    <Compile Include="Enums\DaxStudioTraceEventClass.cs" />
-    <Compile Include="Exceptions\SaveSettingValueException.cs" />
-    <Compile Include="Extensions\ExceptionExtensions.cs" />
-    <Compile Include="Extensions\ObjectExtensions.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="HelpFormatter.cs" />
-    <Compile Include="Interfaces\IHaveLastUPN.cs" />
-    <Compile Include="MailUtility.cs" />
-    <Compile Include="..\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\CommonAssemblyVersion.cs">
-      <Link>Properties\CommonAssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="PbiServiceHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Telemetry.cs" />
-    <Compile Include="WindowTitle.cs" />
-    <Compile Include="WMHelper.cs" />
-    <Compile Include="XmlTypeMapper.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include=".editorconfig" />
-    <None Include="app.config" />
-    <None Include="ApplicationInsights.config" />
-    <None Include="DaxStudio.Common.ruleset" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="CrashReporter.NET.Official">
-      <Version>1.6.0</Version>
-    </PackageReference>
-    <PackageReference Include="FluentCommandLineParser">
-      <Version>1.5.0.20-commands</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AnalysisServices">
-      <Version>19.113.2</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient">
-      <Version>19.113.2</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel">
-      <Version>2.23.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
-      <Version>10.0.201</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Client.Broker">
-      <Version>4.83.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal">
-      <Version>4.83.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.PowerBI.Api">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.4</Version>
-    </PackageReference>
-    <PackageReference Include="Serilog">
-      <Version>4.3.1</Version>
-    </PackageReference>
+    <Compile Include="..\CommonAssemblyInfo.cs" Link="Properties\CommonAssemblyInfo.cs" />
+    <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ASAzureSecurityConfig.xml">
       <WebResourceUrl>https://global.asazure.windows.net/ASAzureSecurityConfig.xml</WebResourceUrl>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <GeneratedMSBuildEditorConfigFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedMSBuildEditorConfig.editorconfig</GeneratedMSBuildEditorConfigFile>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.-->
-  <Target Name="BeforeBuild">
-    <!-- Get the version of Microsoft.AnalysisServices.AdomdClient package reference -->
+  <ItemGroup>
+    <PackageReference Include="CrashReporter.NET.Official" Version="1.6.0" />
+    <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" />
+    <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.23.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.201">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.83.1" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.1" />
+    <PackageReference Include="Microsoft.PowerBI.Api" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+  </ItemGroup>
+
+  <!-- Custom MSBuild task to extract ASAzureSecurityConfig.xml from AdomdClient -->
+  <Target Name="ExtractAdomdResource" BeforeTargets="BeforeBuild">
     <ItemGroup>
       <AdomdClientPackageRef Include="@(PackageReference)" Condition="'%(Identity)' == 'Microsoft.AnalysisServices.AdomdClient'" />
     </ItemGroup>
@@ -173,21 +45,18 @@
       <AdomdClientVersion>%(AdomdClientPackageRef.Version)</AdomdClientVersion>
       <AdomdClientPackagePath>$(NuGetPackageRoot)microsoft.analysisservices.adomdclient\$(AdomdClientVersion)\lib\net472\Microsoft.AnalysisServices.AdomdClient.dll</AdomdClientPackagePath>
       <ResourceOutputDir>$(MSBuildProjectDirectory)\Resources</ResourceOutputDir>
-      <OutputFile>$(ResourceOutputDir)\ASAzureSecurityConfig.xml</OutputFile>
+      <_OutputFile>$(ResourceOutputDir)\ASAzureSecurityConfig.xml</_OutputFile>
     </PropertyGroup>
-    <!-- Ensure the Resources directory exists -->
     <MakeDir Directories="$(ResourceOutputDir)" Condition="!Exists('$(ResourceOutputDir)')" />
-    <!-- Remove existing file if it exists to ensure fresh extraction -->
-    <Delete Files="$(OutputFile)" Condition="Exists('$(OutputFile)')" />
+    <Delete Files="$(_OutputFile)" Condition="Exists('$(_OutputFile)')" />
     <Message Text="Assembly Path: $(AdomdClientPackagePath)" Importance="high" />
-    <Message Text="Output File: $(OutputFile)" Importance="high" />
+    <Message Text="Output File: $(_OutputFile)" Importance="high" />
     <Message Text="AdomdClient Version: $(AdomdClientVersion)" Importance="high" />
-    <!-- Extract the embedded resource from the AdomdClient assembly using inline C# task -->
-    <ExtractEmbeddedResource AssemblyPath="$(AdomdClientPackagePath)" OutputPath="$(OutputFile)" Version="$(AdomdClientVersion)" Condition="Exists('$(AdomdClientPackagePath)')" />
+    <ExtractEmbeddedResource AssemblyPath="$(AdomdClientPackagePath)" OutputPath="$(_OutputFile)" Version="$(AdomdClientVersion)" Condition="Exists('$(AdomdClientPackagePath)')" />
     <Message Text="ExtractEmbeddedResource task completed" Importance="high" />
     <Warning Text="AdomdClient assembly not found at: $(AdomdClientPackagePath)" Condition="!Exists('$(AdomdClientPackagePath)')" />
   </Target>
-  <!-- Inline C# task to extract embedded resource -->
+
   <UsingTask TaskName="ExtractEmbeddedResource" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <AssemblyPath ParameterType="System.String" Required="true" />
@@ -205,7 +74,6 @@
             var assembly = Assembly.LoadFrom(AssemblyPath);
             var resourceNames = assembly.GetManifestResourceNames();
             var targetResource = resourceNames.FirstOrDefault(name => name.Contains("ASAzureSecurityConfig.xml"));
-            
             if (targetResource != null)
             {
                 using (var stream = assembly.GetManifestResourceStream(targetResource))
@@ -214,7 +82,6 @@
                     var content = reader.ReadToEnd();
                     File.WriteAllText(OutputPath, content, System.Text.Encoding.UTF8);
                 }
-                
                 Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, $"Successfully extracted ASAzureSecurityConfig.xml from AdomdClient v{Version ?? "unknown"} to {OutputPath}");
             }
             else
@@ -228,9 +95,7 @@
             Log.LogError($"Failed to extract embedded resource: {ex.Message}");
             return false;
         }
-        ]]></Code>
+      ]]></Code>
     </Task>
   </UsingTask>
-  <Target Name="AfterBuild">
-  </Target>
 </Project>

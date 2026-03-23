@@ -1,0 +1,10 @@
+<Project>
+  <!-- .NET SDK 10.0 adds GeneratedAssemblyInfoFile to the compile list even when
+       all individual assembly attributes are suppressed. Ensure the file exists. -->
+  <Target Name="_EnsureGeneratedAssemblyInfoFile" 
+          BeforeTargets="CoreCompile" 
+          AfterTargets="GenerateAssemblyInfo"
+          Condition="'$(GeneratedAssemblyInfoFile)' != '' and !Exists('$(GeneratedAssemblyInfoFile)')">
+    <WriteLinesToFile File="$(GeneratedAssemblyInfoFile)" Lines="" Overwrite="true" />
+  </Target>
+</Project>

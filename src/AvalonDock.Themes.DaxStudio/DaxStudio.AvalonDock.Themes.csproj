@@ -22,8 +22,13 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <BaseOutputPath>..\bin\Debug\</BaseOutputPath>
     <Configurations>Debug;Release;Cmd Only</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>..\bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>..\..\Release\bin\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
