@@ -1394,6 +1394,7 @@ namespace ADOTabular
             AddUndocumentedFunctions(functionGroups);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "<Pending>")]
         private void AddUndocumentedFunctions(ADOTabularFunctionGroupCollection functionGroups)
         {
             var ssas2016 = new Version(13,0,0,0);
