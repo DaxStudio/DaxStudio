@@ -1,0 +1,4 @@
+<Project>
+  <!-- Import shared targets from src directory -->
+  <Import Project="..\src\Directory.Build.targets" />
+</Project>

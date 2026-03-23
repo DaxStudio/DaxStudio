@@ -1,0 +1,4 @@
+<Project>
+  <!-- Import shared settings from src directory -->
+  <Import Project="..\src\Directory.Build.props" />
+</Project>
