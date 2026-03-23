@@ -364,8 +364,10 @@ namespace DaxStudio.Common
             var match = regexGuid.Match(serverName);
             if (match.Success)
             {
+                var tenant = match.Groups["tenant"].Value;
+                if (String.Equals(tenant, "myorg", StringComparison.OrdinalIgnoreCase)) return string.Empty;
                 // If we found a GUID, return it as the tenant ID
-                return match.Groups["tenant"].Value;
+                return tenant;
             }
 
             return string.Empty; // This indicates the default tenant, which is usually the first tenant in the list
