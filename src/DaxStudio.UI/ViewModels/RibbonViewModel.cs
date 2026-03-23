@@ -1417,6 +1417,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(DebugCommasTitle));
             NotifyOfPropertyChange(nameof(SwapDelimitersTitle));
             NotifyOfPropertyChange(nameof(CanShowModelDiagram));
+            NotifyOfPropertyChange(nameof(ShowModelDiagramEnabled));
         }
 
         public async void LaunchSqlProfiler()
