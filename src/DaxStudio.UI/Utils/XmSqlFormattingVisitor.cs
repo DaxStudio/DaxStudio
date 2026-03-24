@@ -545,6 +545,7 @@ namespace DaxStudio.UI.Utils
             if (expr != null)
             {
                 AppendExpression(expr);
+                AppendAlias(context.alias());
                 return null;
             }
 

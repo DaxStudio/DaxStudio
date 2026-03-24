@@ -79,7 +79,7 @@ selectItem
     | callbackExpr alias?
     | tableColumnRef CALLBACKDATAID? alias?
     | EXPR_AT_REF     // @$Expr0 reference
-    | expression       // catch-all for complex expressions
+    | expression alias?  // catch-all for complex expressions (e.g., SIMPLEINDEXN(...) AS alias)
     ;
 
 // Optional select item alias: AS [name] or AS 'name'
