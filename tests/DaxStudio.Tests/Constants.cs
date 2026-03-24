@@ -9,9 +9,9 @@ namespace DaxStudio.Tests
     public static class Constants
     {
 #if DEBUG
-        public const string TestDataPath = @"..\..\..\tests\DaxStudio.Tests\data";
+        public const string TestDataPath = @"..\..\..\..\tests\DaxStudio.Tests\data";
 #else
-        public const string TestDataPath = @"..\..\tests\DaxStudio.Tests\data";
+        public const string TestDataPath = @"..\..\..\tests\DaxStudio.Tests\data";
 #endif
     }
 }
