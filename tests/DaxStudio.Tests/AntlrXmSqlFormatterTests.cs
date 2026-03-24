@@ -613,5 +613,59 @@ namespace DaxStudio.Tests
             // Non-date values should NOT get date annotations
             Assert.IsFalse(result.Contains("/* 1901"), "Sales Amount values should not get date annotations");
         }
+
+        [TestMethod]
+        public void Formatter_DefineTableWithSimpleindexn_PreservesFromClause()
+        {
+            // Regression: SIMPLEINDEXN(...) AS alias in a DEFINE TABLE's SELECT list
+            // caused the FROM clause table reference to be lost because the expression
+            // catch-all in selectItem didn't support aliases.
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "DEFINE TABLE [$TTable2] := SELECT\r\n"
+                + "SIMPLEINDEXN([Date (13)].[Date (69)]) AS [$SemijoinProjection]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) > COALESCE(40969.000000)) VAND\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) < COALESCE(40998.000000));\r\n"
+                + "\r\n\r\n"
+                + "[Estimated size (volume, marshalling bytes): 3712, 464]";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out long rows,
+                out long bytes,
+                out bool hasSize,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // FROM clause must have the table name
+            Assert.IsTrue(result.Contains("FROM 'Date'"), "FROM clause must contain the table name");
+
+            // SIMPLEINDEXN function preserved
+            Assert.IsTrue(result.Contains("SIMPLEINDEXN"), "Should contain SIMPLEINDEXN function");
+
+            // Column reference format: 'Table'[Column] without spurious DOT
+            Assert.IsFalse(result.Contains("'Date'.[Date]"), "Should not have DOT between table and column");
+            Assert.IsTrue(result.Contains("'Date'[Date]"), "Should use 'Table'[Column] format");
+
+            // COALESCE wrapping preserved for PFCASTCOALESCE
+            Assert.IsTrue(result.Contains("COALESCE ( 40969.000000"), "Should preserve COALESCE wrapping around first value");
+            Assert.IsTrue(result.Contains("COALESCE ( 40998.000000"), "Should preserve COALESCE wrapping around second value");
+
+            // Date annotations present (name heuristic: "Date" contains "date")
+            Assert.IsTrue(result.Contains("/* 2012-03-01 */"), "Should annotate first date value");
+            Assert.IsTrue(result.Contains("/* 2012-03-30 */"), "Should annotate second date value");
+
+            // Both VAND predicates present
+            Assert.IsTrue(result.Contains("VAND"), "Should contain VAND between predicates");
+
+            // Estimated size extracted
+            Assert.IsTrue(hasSize, "Should extract estimated size");
+            Assert.AreEqual(3712, rows, "Estimated rows");
+            Assert.AreEqual(464, bytes, "Estimated bytes");
+        }
     }
 }
