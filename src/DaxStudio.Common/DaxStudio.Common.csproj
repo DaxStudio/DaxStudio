@@ -3,8 +3,6 @@
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWPF>true</UseWPF>
-    <!-- Suppress BinaryFormatter obsolete warning - needed for WM_COPYDATA interop -->
-    <NoWarn>$(NoWarn);SYSLIB0011</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\$(Configuration)\</OutputPath>

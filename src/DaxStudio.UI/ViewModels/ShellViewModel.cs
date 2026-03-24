@@ -21,7 +21,6 @@ using System.Threading;
 using System.Windows.Input;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using DaxStudio.UI.Views;
 using System.Windows.Interop;
 using common = DaxStudio.Common;
@@ -650,7 +649,6 @@ namespace DaxStudio.UI.ViewModels
             // If our message
             if (msg == common.NativeMethods.WM_COPYDATA)
             {
-#if NET472
                 // msg.LParam contains a pointer to the COPYDATASTRUCT struct
                 common.NativeMethods.COPYDATASTRUCT dataStruct =
                     (common.NativeMethods.COPYDATASTRUCT)Marshal.PtrToStructure(
@@ -663,16 +661,15 @@ namespace DaxStudio.UI.ViewModels
                 // the COPYDATASTRUCT struct
                 Marshal.Copy(dataStruct.lpData, bytes, 0,
                     dataStruct.cbData);
-                // Deserialize the data back into a string
-                MemoryStream stream = new MemoryStream(bytes);
-                BinaryFormatter b = new BinaryFormatter();
 
-                // This is the message sent from the other application
-                string[] rawmessage = (string[])b.Deserialize(stream);
+                // Deserialize the string array
+                string[] rawmessage = common.WMHelper.DeserializeStringArray(bytes);
 
                 // do something with our message
                 var app = Application.Current;
+#if NET472
                 app.ReadCommandLineArgs(rawmessage);
+#endif
 
                 _host.Proxy.Port = app.Args().Port;
 
@@ -686,7 +683,6 @@ namespace DaxStudio.UI.ViewModels
                 }
                 Application.Current.MainWindow.Activate();
                 handled = true;
-#endif
             }
             return IntPtr.Zero;
         }
