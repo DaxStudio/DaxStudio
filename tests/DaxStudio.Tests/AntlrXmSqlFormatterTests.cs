@@ -408,5 +408,41 @@ namespace DaxStudio.Tests
             Assert.IsTrue(result.Contains("/* 2011-02-19 */"), "Should annotate 40593");
             Assert.IsTrue(result.Contains("/* 2009-12-27 */"), "Should annotate 40174");
         }
+
+        [TestMethod]
+        public void Formatter_CoalesceWithCallbackAndVand_ParsesCompletely()
+        {
+            // Regression test: COALESCE wrapping a callback expression followed by VAND
+            // was losing the callback content and the second predicate entirely.
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)],\r\n"
+                + "SUM([Internet Sales (28)].[Sales Amount (142)]) AS [$Measure0]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "\tLEFT OUTER JOIN [Product (19)] ON [Internet Sales (28)].[Product Id (127)]=[Product (19)].[Product Id (93)]\r\n"
+                + "WHERE\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount])]"
+                + "(PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) > COALESCE(501.000000)) VAND\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount])]"
+                + "(PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) < COALESCE(2501.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // Both predicates should be present (VAND was being dropped)
+            Assert.IsTrue(result.Contains("VAND"), "Should contain VAND between predicates");
+
+            // Both comparison values should be present
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain first comparison value");
+            Assert.IsTrue(result.Contains("2501.000000"), "Should contain second comparison value");
+
+            // The callback expression should not be empty
+            Assert.IsTrue(result.Contains("CallbackDataID"), "Should contain CallbackDataID in output");
+        }
     }
 }

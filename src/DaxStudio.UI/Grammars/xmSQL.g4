@@ -285,10 +285,10 @@ QUOTED_TABLE_NAME
     : '\'' (~['\r\n])+ '\''
     ;
 
-// Bracketed name: [ColumnName], [$SemijoinProjection], etc.
-// Contains everything between [ and ]
+// Bracketed name: [ColumnName], [$SemijoinProjection], [CallbackDataID('T'[Col])], etc.
+// Supports one level of nested brackets for callback expressions
 BRACKETED_NAME
-    : '[' (~[\]\r\n])+ ']'
+    : '[' ( ~('[' | ']' | '\r' | '\n') | '[' ~(']' | '\r' | '\n')* ']' )+ ']'
     ;
 
 // String literals (double-quoted)
