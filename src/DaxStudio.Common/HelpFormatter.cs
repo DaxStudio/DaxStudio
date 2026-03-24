@@ -1,3 +1,4 @@
+#if NET472
 ﻿using Fclp;
 using Fclp.Internals;
 using System;
@@ -76,3 +77,4 @@ namespace DaxStudio.Common
 
     }
 }
+#endif

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <RootNamespace>UnitComboLib</RootNamespace>
     <AssemblyName>UnitComboLib</AssemblyName>
     <UseWPF>true</UseWPF>

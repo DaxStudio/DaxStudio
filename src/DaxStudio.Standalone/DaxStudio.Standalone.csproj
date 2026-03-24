@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <AssemblyName>DaxStudio</AssemblyName>
     <UseWPF>true</UseWPF>
     <Win32Resource>DaxStudio.res</Win32Resource>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>..\..\Release\bin\</OutputPath>
@@ -35,7 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
-    <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" />
+    <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
     <PackageReference Include="Serilog" Version="4.3.1" />

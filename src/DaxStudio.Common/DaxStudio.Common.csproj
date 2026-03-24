@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWPF>true</UseWPF>
+    <!-- Suppress BinaryFormatter obsolete warning - needed for WM_COPYDATA interop -->
+    <NoWarn>$(NoWarn);SYSLIB0011</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>..\..\Release\bin\</OutputPath>
@@ -20,8 +22,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CrashReporter.NET.Official" Version="1.6.0" />
-    <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" />
+    <PackageReference Include="CrashReporter.NET.Official" Version="1.6.0" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" Condition="'$(TargetFramework)' == 'net472'" />
     <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
     <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.23.0" />
@@ -34,21 +36,23 @@
     <PackageReference Include="Microsoft.PowerBI.Api" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.3" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
   </ItemGroup>
 
-  <!-- Custom MSBuild task to extract ASAzureSecurityConfig.xml from AdomdClient -->
-  <Target Name="ExtractAdomdResource" BeforeTargets="BeforeBuild">
+  <!-- Custom MSBuild task to extract ASAzureSecurityConfig.xml from AdomdClient (only run once, not per TFM) -->
+  <Target Name="ExtractAdomdResource" BeforeTargets="BeforeBuild" Condition="!Exists('$(MSBuildProjectDirectory)\Resources\ASAzureSecurityConfig.xml')">
     <ItemGroup>
       <AdomdClientPackageRef Include="@(PackageReference)" Condition="'%(Identity)' == 'Microsoft.AnalysisServices.AdomdClient'" />
     </ItemGroup>
     <PropertyGroup>
       <AdomdClientVersion>%(AdomdClientPackageRef.Version)</AdomdClientVersion>
-      <AdomdClientPackagePath>$(NuGetPackageRoot)microsoft.analysisservices.adomdclient\$(AdomdClientVersion)\lib\net472\Microsoft.AnalysisServices.AdomdClient.dll</AdomdClientPackagePath>
+      <AdomdClientTfmFolder Condition="'$(TargetFramework)' == 'net472'">net472</AdomdClientTfmFolder>
+      <AdomdClientTfmFolder Condition="'$(TargetFramework)' != 'net472'">net8.0</AdomdClientTfmFolder>
+      <AdomdClientPackagePath>$(NuGetPackageRoot)microsoft.analysisservices.adomdclient\$(AdomdClientVersion)\lib\$(AdomdClientTfmFolder)\Microsoft.AnalysisServices.AdomdClient.dll</AdomdClientPackagePath>
       <ResourceOutputDir>$(MSBuildProjectDirectory)\Resources</ResourceOutputDir>
       <_OutputFile>$(ResourceOutputDir)\ASAzureSecurityConfig.xml</_OutputFile>
     </PropertyGroup>
     <MakeDir Directories="$(ResourceOutputDir)" Condition="!Exists('$(ResourceOutputDir)')" />
-    <Delete Files="$(_OutputFile)" Condition="Exists('$(_OutputFile)')" />
     <Message Text="Assembly Path: $(AdomdClientPackagePath)" Importance="high" />
     <Message Text="Output File: $(_OutputFile)" Importance="high" />
     <Message Text="AdomdClient Version: $(AdomdClientVersion)" Importance="high" />

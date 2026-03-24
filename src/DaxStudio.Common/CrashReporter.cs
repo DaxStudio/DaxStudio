@@ -1,5 +1,7 @@
 ﻿using System;
+#if NET472
 using CrashReporterDotNET;
+#endif
 using Serilog;
 
 namespace DaxStudio.Common
@@ -15,6 +17,7 @@ namespace DaxStudio.Common
 
             Telemetry.TrackException(exception,developerMessage);
 
+#if NET472
             var reportCrash = new ReportCrash("daxstudiocrash@gmail.com")
             {
                 AnalyzeWithDoctorDump = true,
@@ -28,6 +31,9 @@ namespace DaxStudio.Common
             };
 
             reportCrash.Send(exception);
+#else
+            Log.Error(exception, "CrashReporter is not available on this platform. Developer message: {Message}", developerMessage);
+#endif
 
         }
         

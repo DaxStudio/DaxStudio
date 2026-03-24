@@ -18,8 +18,6 @@
     <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) DAX Studio ($([System.DateTime]::UtcNow.ToString("s")))</Copyright>
     <LangVersion>8.0</LangVersion>
     <Deterministic>true</Deterministic>
-    <!-- Keep flat output structure (no TFM subdirectories) during SDK migration -->
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- Code analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

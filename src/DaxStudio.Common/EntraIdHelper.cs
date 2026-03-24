@@ -7,6 +7,9 @@ using Microsoft.Identity.Client.Broker;
 using Microsoft.Identity.Client.Extensions.Msal;
 using Microsoft.PowerBI.Api;
 using Microsoft.PowerBI.Api.Models;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 using Microsoft.Win32.SafeHandles;
 using Serilog;
 using System;
@@ -457,12 +460,14 @@ namespace DaxStudio.Common
                 ExpiresOn = token.ExpirationTime;
                 UserContext = token.UserContext as AccessTokenContext;
             }
+#if NET472
             public TokenDetails(Tom.AccessToken token)
             {
                 AccessToken = token.Token;
                 ExpiresOn = token.ExpirationTime;
                 UserContext = token.UserContext as AccessTokenContext;
             }
+#endif
             public string AccessToken;
             public DateTimeOffset ExpiresOn;
             public AccessTokenContext UserContext;
@@ -476,6 +481,7 @@ namespace DaxStudio.Common
             return newToken;
         }
 
+#if NET472
         public static async Task<AccessToken> RefreshToken(AccessToken token)
         {
             var details = new TokenDetails(token);
@@ -483,6 +489,7 @@ namespace DaxStudio.Common
             AccessToken newToken = new AccessToken(authResult.AccessToken, authResult.ExpiresOn, details.UserContext);
             return newToken;
         }
+#endif
 
         public static AccessToken CreateAccessToken(string token, DateTimeOffset expiry, AccessTokenContext context)
         {

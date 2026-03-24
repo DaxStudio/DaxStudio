@@ -1,3 +1,4 @@
+#if NET472
 ﻿using Fclp;
 using Serilog;
 using System;
@@ -80,3 +81,4 @@ namespace DaxStudio.Common.Extensions
         }
     }
 }
+#endif

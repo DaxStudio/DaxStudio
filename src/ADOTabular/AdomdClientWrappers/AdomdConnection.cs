@@ -4,6 +4,9 @@ using System;
 using System.Data;
 using System.Threading;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 
 namespace ADOTabular.AdomdClientWrappers
 {

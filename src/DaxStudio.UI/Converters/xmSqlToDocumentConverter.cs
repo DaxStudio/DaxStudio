@@ -6,7 +6,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Collections.Generic;
 using System.Linq;
-using Fclp.Internals.Extensions;
 using DaxStudio.Controls.PropertyGrid;
 
 
@@ -122,7 +121,7 @@ namespace DaxStudio.UI.Converters
                     }
                     int posEnd = s.IndexOf("|~E~|", sIndex, StringComparison.Ordinal);
                     var tokens = formatList.Where(t => t.position >= 0);
-                    if (tokens.IsNullOrEmpty())
+                    if (!tokens.Any())
                     {
                         if (posEnd >= 0)
                         {

@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <StartupObject>DaxStudio.CheckerApp.App</StartupObject>
     <ApplicationIcon>DaxStudioChecker.ico</ApplicationIcon>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>
@@ -17,9 +18,12 @@
     <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System.Management" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="System.Drawing" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="System.Windows.Forms" Condition="'$(TargetFramework)' == 'net472'" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <PackageReference Include="System.Management" Version="9.0.3" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

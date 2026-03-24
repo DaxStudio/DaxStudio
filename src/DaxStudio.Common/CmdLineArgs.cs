@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 using DaxStudio.Common.Extensions;
+#if NET472
 using Fclp;
+#endif
 using Serilog;
 
 namespace DaxStudio.Common
@@ -258,6 +260,7 @@ namespace DaxStudio.Common
             }
         }
 
+#if NET472
         public void Parse(string[] args)
         {
 
@@ -324,6 +327,7 @@ namespace DaxStudio.Common
             p.Parse(args);
 
         }
+#endif
         public void Clear()
         {
             _argDict.Clear();

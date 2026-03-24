@@ -6,6 +6,11 @@ using TOM = Microsoft.AnalysisServices;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using System.Collections.Generic;
 using System.Data;
+#if NET8_0_OR_GREATER
+using AdomdAccessToken = Microsoft.AnalysisServices.AccessToken;
+#else
+using AdomdAccessToken = Microsoft.AnalysisServices.AdomdClient.AccessToken;
+#endif
 
 namespace DaxStudio.Interfaces
 {
@@ -33,6 +38,6 @@ namespace DaxStudio.Interfaces
         ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteReaderForPrepare(string query, List<Adomd.AdomdParameter> paramList);
         DataTable ExecuteDaxQueryDataTable(string query);
         ServerType ServerType { get; }
-        Adomd.AccessToken AccessToken { get; }
+        AdomdAccessToken AccessToken { get; }
     }
 }

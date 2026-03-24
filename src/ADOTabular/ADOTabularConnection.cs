@@ -39,13 +39,25 @@ namespace ADOTabular
             : this(connectionString, connectionType, showHidden, ADOTabularMetadataDiscovery.Csdl)
         { }
 
-        public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken
+        public
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            AccessToken
         {
             get => _adomdConn.AccessToken;
             set => _adomdConn.AccessToken = value;
         }
 
-        public Func<Microsoft.AnalysisServices.AdomdClient.AccessToken, Microsoft.AnalysisServices.AdomdClient.AccessToken> OnAccessTokenExpired
+        public Func<
+#if NET8_0_OR_GREATER
+            Microsoft.AnalysisServices.AccessToken, Microsoft.AnalysisServices.AccessToken
+#else
+            Microsoft.AnalysisServices.AdomdClient.AccessToken, Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+            > OnAccessTokenExpired
         {
             get => _adomdConn.OnAccessTokenExpired;
             set => _adomdConn.OnAccessTokenExpired = value;
@@ -1057,7 +1069,13 @@ namespace ADOTabular
                 _dmvCollection = this._dmvCollection,
                 ServerType = this.ServerType
             };
-            if (!this.AccessToken.Equals(default(Microsoft.AnalysisServices.AdomdClient.AccessToken)))
+            if (!this.AccessToken.Equals(default(
+#if NET8_0_OR_GREATER
+                Microsoft.AnalysisServices.AccessToken
+#else
+                Microsoft.AnalysisServices.AdomdClient.AccessToken
+#endif
+                )))
             {
                 cnn.AccessToken = this.AccessToken;
                 cnn.OnAccessTokenExpired = OnAccessTokenExpired;

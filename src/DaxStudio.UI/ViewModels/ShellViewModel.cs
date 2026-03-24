@@ -648,6 +648,7 @@ namespace DaxStudio.UI.ViewModels
             // If our message
             if (msg == common.NativeMethods.WM_COPYDATA)
             {
+#if NET472
                 // msg.LParam contains a pointer to the COPYDATASTRUCT struct
                 common.NativeMethods.COPYDATASTRUCT dataStruct =
                     (common.NativeMethods.COPYDATASTRUCT)Marshal.PtrToStructure(
@@ -683,6 +684,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 Application.Current.MainWindow.Activate();
                 handled = true;
+#endif
             }
             return IntPtr.Zero;
         }

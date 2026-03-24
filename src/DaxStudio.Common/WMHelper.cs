@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+#pragma warning disable SYSLIB0011 // BinaryFormatter is obsolete
 using System.Runtime.Serialization.Formatters.Binary;
+#pragma warning restore SYSLIB0011
 using System.Text;
 using System.Threading.Tasks;
 using static DaxStudio.Common.NativeMethods;
