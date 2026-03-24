@@ -1619,7 +1619,8 @@ namespace ADOTabular
 
             // Clear remapping
             daxColumnsRemap.RemapNames.Clear();
-            const string QUERY_REMAP_COLUMNS = @"SELECT COLUMN_ID AS COLUMN_ID, ATTRIBUTE_NAME AS COLUMN_NAME FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS WHERE COLUMN_TYPE = 'BASIC_DATA'";
+            daxColumnsRemap.DateColumnIds.Clear();
+            const string QUERY_REMAP_COLUMNS = @"SELECT COLUMN_ID AS COLUMN_ID, ATTRIBUTE_NAME AS COLUMN_NAME, DATATYPE AS DATATYPE FROM $SYSTEM.DISCOVER_STORAGE_TABLE_COLUMNS WHERE COLUMN_TYPE = 'BASIC_DATA'";
 
             // Load remapping
             using AdomdDataReader result = _conn.ExecuteReader(QUERY_REMAP_COLUMNS, null);
@@ -1627,13 +1628,22 @@ namespace ADOTabular
             {
                 string columnId = GetString(result, 0);
                 string columnName = GetString(result, 1);
+                string dataType = GetString(result, 2);
 
                 // PowerPivot does not include the table id in the columnid so if two 
                 // tables have a column with the same name this can throw a duplicate key error
                 // the IF check prevents this.
                 if (!daxColumnsRemap.RemapNames.ContainsKey(columnId))
                     daxColumnsRemap.RemapNames.Add(columnId, columnName);
-                
+
+                // Track columns with DateTime-like data types for date annotation
+                if (dataType != null && (dataType.Equals("DBTYPE_DATE", StringComparison.OrdinalIgnoreCase)
+                    || dataType.Equals("DBTYPE_DBDATE", StringComparison.OrdinalIgnoreCase)
+                    || dataType.Equals("DBTYPE_DBTIMESTAMP", StringComparison.OrdinalIgnoreCase)
+                    || dataType.Equals("DBTYPE_FILETIME", StringComparison.OrdinalIgnoreCase)))
+                {
+                    daxColumnsRemap.DateColumnIds.Add(columnId);
+                }
             }
         }
         public void Visit(MetadataInfo.DaxTablesRemap daxTablesRemap)

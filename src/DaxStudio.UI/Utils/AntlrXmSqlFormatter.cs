@@ -39,7 +39,8 @@ namespace DaxStudio.UI.Utils
             out bool hasEstimatedSize,
             bool convertDates = false,
             Dictionary<string, string> remapColumns = null,
-            Dictionary<string, string> remapTables = null)
+            Dictionary<string, string> remapTables = null,
+            HashSet<string> dateColumnIds = null)
         {
             estimatedRows = 0;
             estimatedBytes = 0;
@@ -77,7 +78,7 @@ namespace DaxStudio.UI.Utils
 
                 var tree = parser.query();
 
-                var visitor = new XmSqlFormattingVisitor(simplify, format, convertDates, remapColumns, remapTables);
+                var visitor = new XmSqlFormattingVisitor(simplify, format, convertDates, remapColumns, remapTables, dateColumnIds);
                 visitor.Visit(tree);
 
                 // If visitor found size in a truncation indicator, use that

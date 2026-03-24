@@ -2817,6 +2817,7 @@ namespace DaxStudio.UI.ViewModels
                 stvModel.ServerTimingDetails = ServerTimingDetails;
                 stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
                 stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
+                stvModel.DateColumnIds = Connection.DaxColumnsRemapInfo.DateColumnIds;
             }
         }
 

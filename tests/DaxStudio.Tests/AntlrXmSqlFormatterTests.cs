@@ -444,5 +444,102 @@ namespace DaxStudio.Tests
             // The callback expression should not be empty
             Assert.IsTrue(result.Contains("CallbackDataID"), "Should contain CallbackDataID in output");
         }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_NonDateColumn_NoAnnotation()
+        {
+            // Sales Amount is NOT a date column — should NOT get date annotations
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Internet Sales (28)].[Sales Amount (142)] AS REAL ) >= COALESCE(501.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain numeric value");
+            Assert.IsFalse(result.Contains("/*"), "Non-date column should NOT have date comment");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_WithMetadataSet_UsesMetadata()
+        {
+            // The metadata set says column ID "167" is a date column
+            var dateIds = new System.Collections.Generic.HashSet<string> { "167" };
+
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (16)].[Calendar Date (167)] AS [Date (16)$Calendar Date (167)]\r\n"
+                + "FROM [Date (16)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (16)].[Calendar Date (167)] AS REAL ) >= COALESCE(46087.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true,
+                dateColumnIds: dateIds);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("/* 2026-03-06 */"), "Should annotate date value when metadata confirms date column");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_WithMetadataSet_NonDateColumnIgnored()
+        {
+            // The metadata set does NOT contain "142" (Sales Amount)
+            var dateIds = new System.Collections.Generic.HashSet<string> { "167" };
+
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Internet Sales (28)].[Sales Amount (142)] AS REAL ) >= COALESCE(501.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true,
+                dateColumnIds: dateIds);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain numeric value");
+            Assert.IsFalse(result.Contains("/*"), "Metadata says this is NOT a date column - no annotation");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_InListWithDateColumn_AnnotatesValues()
+        {
+            // IN list on a date column — values should be annotated
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (13)].[Date (69)] AS [Date (13)$Date (69)]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t[Date (13)].[Date (69)] IN (40593.000000, 40174.000000);";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            // Column name "Date" contains "date" → name heuristic triggers annotation
+            Assert.IsTrue(result.Contains("/* 2011-02-19 */"), "Should annotate date values in IN list");
+        }
     }
 }
