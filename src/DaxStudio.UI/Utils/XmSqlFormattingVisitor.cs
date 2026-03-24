@@ -881,7 +881,6 @@ namespace DaxStudio.UI.Utils
                 rawColName = colNode.GetText();
 
                 _sb.Append("'").Append(tableName).Append("'");
-                if (dot != null) _sb.Append(".");
                 _sb.Append("[").Append(columnName).Append("]");
             }
 
