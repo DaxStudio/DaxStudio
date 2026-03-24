@@ -140,15 +140,14 @@ filterPredicate
     | tableColumnRef BETWEEN filterValue AND filterValue            // 'T'[C] BETWEEN v1 AND v2
     | tableColumnRef ININDEX tableColumnRef                         // 'T1'[C1] ININDEX '$T'[C2]
     | coalesceFilter                                                 // PFCASTCOALESCE/COALESCE(col) = val
-    | LPAREN coalesceFilter RPAREN                                   // (PFCASTCOALESCE/COALESCE(col) = val)
-    | (PFCASTCOALESCE | COALESCE) LPAREN LPAREN expression RPAREN RPAREN  // COALESCE((expr))
     | tableColumnRef CALLBACKDATAID                                  // callback in filter
     | LPAREN tableColumnRef (COMMA tableColumnRef)* RPAREN IN LBRACE tupleList RBRACE  // (col1, col2) IN {(v1,v2), ...}
+    | LPAREN filterPredicate RPAREN                                  // parenthesized predicate
     | expression                                                     // catch-all for unknown filter patterns
     ;
 
 coalesceFilter
-    : (PFCASTCOALESCE | COALESCE) LPAREN tableColumnRef (AS IDENTIFIER)? RPAREN 
+    : (PFCASTCOALESCE | COALESCE) LPAREN tableRef (BRACKETED_NAME | DOT BRACKETED_NAME) (AS IDENTIFIER)? RPAREN
       comparisonOp 
       (COALESCE LPAREN)? filterValue RPAREN?
     ;

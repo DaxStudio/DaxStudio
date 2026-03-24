@@ -541,5 +541,77 @@ namespace DaxStudio.Tests
             // Column name "Date" contains "date" → name heuristic triggers annotation
             Assert.IsTrue(result.Contains("/* 2011-02-19 */"), "Should annotate date values in IN list");
         }
+
+        [TestMethod]
+        public void Formatter_PfcastCoalesceFilter_PreservesCoalesceWrapping()
+        {
+            // Regression: COALESCE wrapping the value was dropped when PFCASTCOALESCE started the filter
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "DEFINE TABLE [$TTable2] := SELECT\r\n"
+                + "SIMPLEINDEXN([Date (13)].[Date (69)]) AS [$SemijoinProjection]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) > COALESCE(40969.000000)) VAND\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) < COALESCE(40998.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // COALESCE wrapping must be preserved
+            Assert.IsTrue(result.Contains("COALESCE ( 40969.000000"), "Should preserve COALESCE wrapping around first value");
+            Assert.IsTrue(result.Contains("COALESCE ( 40998.000000"), "Should preserve COALESCE wrapping around second value");
+
+            // Both predicates with VAND
+            Assert.IsTrue(result.Contains("VAND"), "Should contain VAND between predicates");
+
+            // Date annotations (name heuristic: "Date" contains "date")
+            Assert.IsTrue(result.Contains("/*"), "Date column should have date annotations");
+        }
+
+        [TestMethod]
+        public void Formatter_ParenthesizedCallbackCoalesceWithVand_ParsesCompletely()
+        {
+            // Regression: (COALESCE([CallbackDataID(...)](...)) > COALESCE(value)) was losing content
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "DEFINE TABLE [$TTable1] := SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)],\r\n"
+                + "SUM([Internet Sales (28)].[Sales Amount (142)]) AS [$Measure0]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "\tLEFT OUTER JOIN [Date (13)] ON [Internet Sales (28)].[Order Date (147)]=[Date (13)].[Date (69)]\r\n"
+                + "\tLEFT OUTER JOIN [Product (19)] ON [Internet Sales (28)].[Product Id (127)]=[Product (19)].[Product Id (93)]\r\n"
+                + "WHERE\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount]])](PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) > COALESCE(501.000000)) VAND\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount]])](PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) < COALESCE(2501.000000)) VAND\r\n"
+                + "\t[Date (13)].[Date (69)] ININDEX [$TTable2].[$SemijoinProjection];";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // Both filter values must be present (not lost)
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain first filter value");
+            Assert.IsTrue(result.Contains("2501.000000"), "Should contain second filter value");
+
+            // All three VAND clauses preserved
+            int vandCount = System.Text.RegularExpressions.Regex.Matches(result, "VAND").Count;
+            Assert.AreEqual(2, vandCount, "Should have 2 VAND operators between 3 predicates");
+
+            // ININDEX clause preserved
+            Assert.IsTrue(result.Contains("ININDEX"), "Should contain ININDEX clause");
+
+            // Non-date values should NOT get date annotations
+            Assert.IsFalse(result.Contains("/* 1901"), "Sales Amount values should not get date annotations");
+        }
     }
 }

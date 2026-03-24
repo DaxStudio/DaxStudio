@@ -72,7 +72,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
         private bool _formatXmSql;
-        private bool _replaceXmSqlDatesWithIsoFormat;
+        private bool _replaceXmSqlDatesWithIsoFormat = true;
         private bool _formatDirectQuerySql;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;

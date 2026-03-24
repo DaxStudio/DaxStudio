@@ -130,7 +130,7 @@ FROM 'Trip'
 WHERE
     'Trip'[passenger_count] = 1 VAND
     ( 'Dropoff Location'[DropOffLocationID], 'Trip'[passenger_count] ) IN { ( 1, 1 ) } VAND
-    COALESCE (  ( PFDATAID ( 'Pickup Location'[Pickup Service Zone] ) = 6 )  ) ;
+    COALESCE ( ( PFDATAID ( 'Pickup Location'[Pickup Service Zone] ) = 6 ) ) ;
 
 
 Estimated size: rows = 1  bytes = 12

@@ -143,9 +143,60 @@ namespace DaxStudio.UI.Utils
         }
 
         /// <summary>
+        /// Emits the original text of a parse tree context, applying simplification if enabled.
+        /// Used as a fallback when ANTLR error recovery produces a malformed parse tree.
+        /// </summary>
+        private void EmitOriginalText(Antlr4.Runtime.ParserRuleContext ctx)
+        {
+            // Reconstruct original text from token stream to get the full span
+            var tokens = ctx.Start.TokenSource;
+            var stream = ctx.Start.InputStream;
+            int start = ctx.Start.StartIndex;
+            int stop = ctx.Stop?.StopIndex ?? start;
+            string rawText = stop >= start ? stream.GetText(new Antlr4.Runtime.Misc.Interval(start, stop)) : ctx.GetText();
+
+            if (_simplify)
+            {
+                rawText = LineagePattern.Replace(rawText, "");
+                rawText = RemoveGuids(rawText);
+                rawText = PremiumTagsPattern.Replace(rawText, "");
+            }
+            _sb.Append(rawText);
+        }
+
+        /// <summary>
+        /// Determines if a column name (raw, without brackets) represents a date/datetime column.
+        /// First checks the metadata-based dateColumnIds set (positive match only).
+        /// Always falls back to checking if the column name contains "date" (case-insensitive).
+        /// </summary>
+        private bool IsDateColumnByName(string rawName)
+        {
+            if (string.IsNullOrEmpty(rawName)) return false;
+
+            // Strategy 1: Check metadata-based date column IDs (positive match)
+            if (_dateColumnIds != null && _dateColumnIds.Count > 0)
+            {
+                var lineageMatch = LineagePattern.Match(rawName);
+                if (lineageMatch.Success)
+                {
+                    var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
+                    if (_dateColumnIds.Contains(id)) return true;
+                }
+                else if (_dateColumnIds.Contains(rawName))
+                {
+                    return true;
+                }
+            }
+
+            // Strategy 2: Fall back to name heuristic — check the cleaned/remapped column name
+            string cleanedName = CleanColumnName("[" + rawName + "]");
+            return cleanedName.IndexOf("date", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>
         /// Determines if a column reference represents a date/datetime column.
-        /// First checks the metadata-based dateColumnIds set. If empty/null, falls back
-        /// to checking if the column name contains "date" (case-insensitive).
+        /// First checks the metadata-based dateColumnIds set (positive match only).
+        /// Always falls back to checking if the column name contains "date" (case-insensitive).
         /// </summary>
         private bool IsDateColumn(xmSQLParser.TableColumnRefContext colRef)
         {
@@ -158,18 +209,19 @@ namespace DaxStudio.UI.Utils
             if (rawName.Length >= 2 && rawName[0] == '[' && rawName[rawName.Length - 1] == ']')
                 rawName = rawName.Substring(1, rawName.Length - 2);
 
-            // Strategy 1: Check metadata-based date column IDs
+            // Strategy 1: Check metadata-based date column IDs (positive match)
             if (_dateColumnIds != null && _dateColumnIds.Count > 0)
             {
-                // Extract the lineage ID from the raw column name (e.g., "Calendar Date (167)" → "167")
                 var lineageMatch = LineagePattern.Match(rawName);
                 if (lineageMatch.Success)
                 {
                     var id = lineageMatch.Value.Trim().Trim('(', ')').Trim();
-                    return _dateColumnIds.Contains(id);
+                    if (_dateColumnIds.Contains(id)) return true;
                 }
-                // If no lineage ID, check by full raw name
-                return _dateColumnIds.Contains(rawName);
+                else if (_dateColumnIds.Contains(rawName))
+                {
+                    return true;
+                }
             }
 
             // Strategy 2: Fall back to name heuristic — check the cleaned/remapped column name
@@ -659,40 +711,57 @@ namespace DaxStudio.UI.Utils
                         _sb.Append(" ");
                     }
                 }
+
+                // Try formatted output; if it produces nothing (error recovery consumed tokens),
+                // fall back to emitting the raw text from the token stream
+                int posBefore = _sb.Length;
                 AppendFilterPredicate(predicates[i]);
+                if (_sb.Length == posBefore)
+                {
+                    EmitOriginalText(predicates[i]);
+                }
             }
             return null;
         }
 
         private void AppendFilterPredicate(xmSQLParser.FilterPredicateContext ctx)
         {
-            // Coalesce filter: COALESCE(tableColumnRef) = value
-            // Also handles parenthesized form: (COALESCE(tableColumnRef) = value)
-            var coalesce = ctx.coalesceFilter();
-            if (coalesce != null)
+            // Parenthesized predicate: (filterPredicate)
+            var nested = ctx.filterPredicate();
+            if (nested != null)
             {
-                // Check if this is the parenthesized form by looking for LPAREN/RPAREN tokens
-                bool parenthesized = ctx.LPAREN() != null && ctx.RPAREN() != null
-                    && ctx.COALESCE() == null && ctx.PFCASTCOALESCE() == null;
-                if (parenthesized) _sb.Append("( ");
-                AppendCoalesceFilter(coalesce);
-                if (parenthesized) _sb.Append(" )");
+                // Check if the inner predicate has a malformed coalesceFilter;
+                // if so, emit the entire parenthesized form as raw text
+                var innerCoalesce = nested.coalesceFilter();
+                if (innerCoalesce != null && (innerCoalesce.tableRef() == null || innerCoalesce.BRACKETED_NAME() == null || innerCoalesce.comparisonOp() == null))
+                {
+                    EmitOriginalText(ctx);
+                    return;
+                }
+                _sb.Append("( ");
+                AppendFilterPredicate(nested);
+                _sb.Append(" )");
                 return;
             }
 
-            // COALESCE/PFCASTCOALESCE wrapping an expression: COALESCE((expr))
-            var directCoal = ctx.COALESCE();
-            var directPfCoal = ctx.PFCASTCOALESCE();
-            if (directCoal != null || directPfCoal != null)
+            // Coalesce filter: COALESCE(tableColumnRef) = value
+            // Validate that the coalesceFilter parsed correctly;
+            // if error recovery produced a malformed tree (e.g., callback inside COALESCE),
+            // emit the original text from the token stream instead
+            var coalesce = ctx.coalesceFilter();
+            if (coalesce != null)
             {
-                _sb.Append(directCoal != null ? directCoal.GetText() : directPfCoal.GetText());
-                _sb.Append(" (  ( ");
-                var coalExpr = ctx.expression();
-                if (coalExpr != null)
+                if (coalesce.tableRef() != null && coalesce.BRACKETED_NAME() != null && coalesce.comparisonOp() != null)
                 {
-                    AppendExpression(coalExpr);
+                    AppendCoalesceFilter(coalesce);
+                    return;
                 }
-                _sb.Append(" )  )");
+                // Malformed coalesceFilter — emit original text from the outermost filterPredicate
+                // (walk up through any nested LPAREN filterPredicate RPAREN wrappers)
+                var emitCtx = ctx;
+                while (emitCtx.Parent is xmSQLParser.FilterPredicateContext parentFp && parentFp.filterPredicate() != null)
+                    emitCtx = parentFp;
+                EmitOriginalText(emitCtx);
                 return;
             }
 
@@ -797,8 +866,24 @@ namespace DaxStudio.UI.Utils
             var coal = ctx.COALESCE();
             _sb.Append(pfcc != null ? pfcc.GetText() : coal[0].GetText());
             _sb.Append(" ( ");
-            var colRef = ctx.tableColumnRef();
-            AppendTableColumnRef(colRef);
+
+            // The table-column ref is inlined: tableRef (BRACKETED_NAME | DOT BRACKETED_NAME)
+            var tableRef = ctx.tableRef();
+            var colNode = ctx.BRACKETED_NAME(); // Single ITerminalNode — the column part
+            var dot = ctx.DOT();
+
+            string tableName = CleanTableName(tableRef?.GetText());
+            string rawColName = null;
+
+            if (colNode != null)
+            {
+                string columnName = CleanColumnName(colNode.GetText());
+                rawColName = colNode.GetText();
+
+                _sb.Append("'").Append(tableName).Append("'");
+                if (dot != null) _sb.Append(".");
+                _sb.Append("[").Append(columnName).Append("]");
+            }
 
             // AS type
             var asKw = ctx.AS();
@@ -813,10 +898,20 @@ namespace DaxStudio.UI.Utils
             _sb.Append(" ");
 
             // Determine if the filtered column is a date column
-            bool isDate = _convertDates && IsDateColumn(colRef);
+            bool isDate = false;
+            if (_convertDates && rawColName != null)
+            {
+                var name = rawColName;
+                if (name.Length >= 2 && name[0] == '[' && name[name.Length - 1] == ']')
+                    name = name.Substring(1, name.Length - 2);
+                isDate = IsDateColumnByName(name);
+            }
 
             // Second COALESCE wrapping value (optional)
-            if (coal != null && coal.Length > 1)
+            // When PFCASTCOALESCE starts, coal has 1 element (the value wrapper).
+            // When COALESCE starts, coal has 2 elements (function name + value wrapper).
+            bool hasValueCoalesce = coal != null && (pfcc != null ? coal.Length >= 1 : coal.Length > 1);
+            if (hasValueCoalesce)
             {
                 _sb.Append("COALESCE ( ");
             }
@@ -827,7 +922,7 @@ namespace DaxStudio.UI.Utils
                 AppendFilterValue(filterValue, isDate);
             }
 
-            if (coal != null && coal.Length > 1)
+            if (hasValueCoalesce)
             {
                 _sb.Append(" )");
             }
