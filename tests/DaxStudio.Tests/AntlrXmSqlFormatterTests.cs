@@ -283,5 +283,130 @@ namespace DaxStudio.Tests
             Assert.IsTrue(result.Contains("Estimated size: rows = 4,940"), "Should have formatted estimated rows");
             Assert.IsTrue(result.Contains("bytes = 59,280"), "Should have formatted estimated bytes");
         }
+
+        // ==================== DATE CONVERSION TESTS ====================
+
+        [TestMethod]
+        public void TryConvertOADateToIso_DateOnly_AppendsComment()
+        {
+            // 46087.000000 = 2026-03-06
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("46087.000000");
+            Assert.AreEqual("46087.000000 /* 2026-03-06 */", result);
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_DateWithTime_AppendsDateTimeComment()
+        {
+            // 46087.5 = 2026-03-06 12:00:00
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("46087.500000");
+            Assert.AreEqual("46087.500000 /* 2026-03-06 12:00:00 */", result);
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_IntegerDate_AppendsComment()
+        {
+            // 46023 = 2026-01-01
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("46023");
+            Assert.IsTrue(result.StartsWith("46023 /* 20"), "Should append date comment for integer value");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_OutOfRange_ReturnsOriginal()
+        {
+            // 100000 is way beyond 2099
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("100000.000000");
+            Assert.AreEqual("100000.000000", result, "Out-of-range value should not be converted");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_SmallNumber_ReturnsOriginal()
+        {
+            // 5 is not a plausible date filter
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("5");
+            // 5 is in range (> 366 is the minimum), so it should NOT be converted
+            Assert.AreEqual("5", result, "Small number below range should not be converted");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_NonNumeric_ReturnsOriginal()
+        {
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("'hello'");
+            Assert.AreEqual("'hello'", result, "Non-numeric value should be returned unchanged");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_NegativeNumber_ReturnsOriginal()
+        {
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("-100.000000");
+            Assert.AreEqual("-100.000000", result, "Negative number should not be converted");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_CoalesceFilterWithDates()
+        {
+            // Single xmSQL predicate with PFCASTCOALESCE and COALESCE-wrapped date value
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (16)].[Calendar Date (167)] AS [Date (16)$Calendar Date (167)]\r\n"
+                + "FROM [Date (16)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (16)].[Calendar Date (167)] AS  REAL ) >= COALESCE(46087.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("46087.000000"), "Should still contain original numeric value");
+            Assert.IsTrue(result.Contains("/* 2026-03-06 */"), "Should contain ISO date comment for 46087");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDatesDisabled_NoDateComments()
+        {
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (16)].[Calendar Date (167)] AS [Date (16)$Calendar Date (167)]\r\n"
+                + "FROM [Date (16)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (16)].[Calendar Date (167)] AS  REAL ) >= COALESCE(46087.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: false);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsFalse(result.Contains("/*"), "Should not contain date comments when convertDates is false");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_InListWithDates()
+        {
+            // IN list with date values
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (13)].[Date (69)] AS [Date (13)$Date (69)]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t[Date (13)].[Date (69)] IN (40593.000000, 40174.000000, 38732.000000);";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            // All three values should have date comments
+            Assert.IsTrue(result.Contains("/* 2011-02-19 */"), "Should annotate 40593");
+            Assert.IsTrue(result.Contains("/* 2009-12-27 */"), "Should annotate 40174");
+        }
     }
 }

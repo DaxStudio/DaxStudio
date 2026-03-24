@@ -28,6 +28,7 @@ namespace DaxStudio.UI.Utils
         /// <param name="estimatedRows">Output: estimated row count if found.</param>
         /// <param name="estimatedBytes">Output: estimated byte size if found.</param>
         /// <param name="hasEstimatedSize">Output: true if estimated size annotation was found.</param>
+        /// <param name="convertDates">When true, converts OA date numbers in COALESCE filters to ISO 8601 dates.</param>
         /// <returns>Formatted query string, or null if parsing failed.</returns>
         public static string Format(
             string xmSql,
@@ -36,6 +37,7 @@ namespace DaxStudio.UI.Utils
             out long estimatedRows,
             out long estimatedBytes,
             out bool hasEstimatedSize,
+            bool convertDates = false,
             Dictionary<string, string> remapColumns = null,
             Dictionary<string, string> remapTables = null)
         {
@@ -75,7 +77,7 @@ namespace DaxStudio.UI.Utils
 
                 var tree = parser.query();
 
-                var visitor = new XmSqlFormattingVisitor(simplify, format, remapColumns, remapTables);
+                var visitor = new XmSqlFormattingVisitor(simplify, format, convertDates, remapColumns, remapTables);
                 visitor.Visit(tree);
 
                 // If visitor found size in a truncation indicator, use that

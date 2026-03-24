@@ -72,6 +72,7 @@ namespace DaxStudio.UI.ViewModels
         //private bool _showQueryPlanLineLevel;
         private bool _replaceXmSqlTableNames;
         private bool _formatXmSql;
+        private bool _replaceXmSqlDatesWithIsoFormat;
         private bool _formatDirectQuerySql;
         private bool _playSoundAtQueryEnd;
         private bool _playSoundIfNotActive;
@@ -361,6 +362,23 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => FormatXmSql);
                 _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
                 SettingProvider.SetValue<bool>(nameof(FormatXmSql), value, _isInitializing, this);
+            }
+        }
+
+        [DisplayName("Show date values as ISO dates")]
+        [Category("Server Timings")]
+        [Description("Annotate numeric date values in xmSQL COALESCE filters with an ISO 8601 date comment (yyyy-MM-dd).")]
+        [DataMember, DefaultValue(true)]
+        public bool ReplaceXmSqlDatesWithIsoFormat
+        {
+            get => _replaceXmSqlDatesWithIsoFormat;
+            set
+            {
+                if (_replaceXmSqlDatesWithIsoFormat == value) return;
+                _replaceXmSqlDatesWithIsoFormat = value;
+                NotifyOfPropertyChange(() => ReplaceXmSqlDatesWithIsoFormat);
+                _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+                SettingProvider.SetValue<bool>(nameof(ReplaceXmSqlDatesWithIsoFormat), value, _isInitializing, this);
             }
         }
 

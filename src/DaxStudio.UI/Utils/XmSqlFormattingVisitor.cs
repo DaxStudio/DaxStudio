@@ -43,16 +43,24 @@ namespace DaxStudio.UI.Utils
         private readonly Dictionary<string, string> _remapColumns;
         private readonly Dictionary<string, string> _remapTables;
 
+        private readonly bool _convertDates;
+
+        // OLE Automation date range: ~1901-01-01 to ~2099-12-31
+        private const double MinOADate = 366;
+        private const double MaxOADate = 73050;
+
         /// <param name="simplify">When true, removes aliases, lineage, GUIDs, brackets, etc.</param>
         /// <param name="format">When true, applies structural formatting (indentation, line breaks).</param>
+        /// <param name="convertDates">When true, converts OA date numbers in COALESCE filters to ISO 8601 dates.</param>
         /// <param name="remapColumns">Optional dictionary mapping lineage IDs to friendly column names.</param>
         /// <param name="remapTables">Optional dictionary mapping lineage IDs to friendly table names.</param>
-        public XmSqlFormattingVisitor(bool simplify, bool format,
+        public XmSqlFormattingVisitor(bool simplify, bool format, bool convertDates = false,
             Dictionary<string, string> remapColumns = null,
             Dictionary<string, string> remapTables = null)
         {
             _simplify = simplify;
             _format = format;
+            _convertDates = convertDates;
             _remapColumns = remapColumns;
             _remapTables = remapTables;
         }
@@ -784,7 +792,43 @@ namespace DaxStudio.UI.Utils
                 text = PremiumTagsPattern.Replace(text, "");
             }
 
+            if (_convertDates)
+            {
+                text = TryConvertOADateToIso(text);
+            }
+
             _sb.Append(text);
+        }
+
+        /// <summary>
+        /// If the text is a numeric string representing an OLE Automation date in a plausible range,
+        /// appends an ISO 8601 date comment (e.g., "46087.000000 /* 2026-03-06 */").
+        /// Returns the original text unchanged if the value is not a plausible OA date.
+        /// </summary>
+        internal static string TryConvertOADateToIso(string text)
+        {
+            if (double.TryParse(text, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out double oaDate))
+            {
+                if (oaDate >= MinOADate && oaDate <= MaxOADate)
+                {
+                    try
+                    {
+                        var dt = DateTime.FromOADate(oaDate);
+                        // If the fractional part is zero (or negligible), format as date-only
+                        double fractional = oaDate - Math.Truncate(oaDate);
+                        string isoDate = Math.Abs(fractional) < 0.000001
+                            ? dt.ToString("yyyy-MM-dd")
+                            : dt.ToString("yyyy-MM-dd HH:mm:ss");
+                        return text + " /* " + isoDate + " */";
+                    }
+                    catch
+                    {
+                        // FromOADate can throw for edge cases; return original
+                    }
+                }
+            }
+            return text;
         }
 
         private void AppendTupleList(xmSQLParser.TupleListContext ctx)

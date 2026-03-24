@@ -275,6 +275,7 @@ namespace DaxStudio.UI.ViewModels
                             out long antlrRows,
                             out long antlrBytes,
                             out bool antlrHasSize,
+                            Options.ReplaceXmSqlDatesWithIsoFormat,
                             remapColumns,
                             remapTables);
 
@@ -315,6 +316,12 @@ namespace DaxStudio.UI.ViewModels
                                     .RemoveDoubleBracketsInCallbacks()
                                     .FormatIndexSize()
                                 : queryRemapped;
+
+                    // Convert OA date values in COALESCE filters to ISO dates
+                    if (Options.ReplaceXmSqlDatesWithIsoFormat)
+                    {
+                        Query = Query.ConvertCoalesceDatesToIso();
+                    }
                     break;
             }
 
@@ -593,6 +600,21 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlTotalValues.Replace(xmSqlQuery, FormatNumber);
         }
+
+        // Regex to find numeric literals inside COALESCE(...) in the fallback (non-ANTLR) path
+        private static readonly Regex CoalesceDatePattern = new Regex(
+            @"(?<=COALESCE\s*\(\s*)-?\d+(?:\.\d+)?(?=\s*\))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// In the regex-based fallback path, annotates numeric values inside COALESCE(number)
+        /// with an ISO date comment if they fall within a plausible OLE Automation date range.
+        /// </summary>
+        public static string ConvertCoalesceDatesToIso(this string xmSqlQuery)
+        {
+            return CoalesceDatePattern.Replace(xmSqlQuery, m =>
+                XmSqlFormattingVisitor.TryConvertOADateToIso(m.Value));
+        }
         public static string HighlightXmSqlTokens(this string xmSqlQuery, MatchEvaluator evaluator )
         {
             return xmSqlKeywords.Replace(xmSqlQuery, evaluator);
@@ -786,6 +808,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
+        public bool ReplaceXmSqlDatesWithIsoFormat => Options.ReplaceXmSqlDatesWithIsoFormat;
+
         public bool ShowTotalDirectQueryDuration => Options.ShowTotalDirectQueryDuration;
 
         public bool ShowStorageEngineNetParallelDuration => Options.ShowStorageEngineNetParallelDuration;
@@ -816,6 +840,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
+            NotifyOfPropertyChange(nameof(ReplaceXmSqlDatesWithIsoFormat));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
             NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
