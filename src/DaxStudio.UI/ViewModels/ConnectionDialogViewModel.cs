@@ -21,6 +21,9 @@ using System.Windows.Input;
 using System.Threading;
 using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices.AdomdClient;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 using DaxStudio.Common;
 using Microsoft.Identity.Client;
 

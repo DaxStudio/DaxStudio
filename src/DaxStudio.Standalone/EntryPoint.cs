@@ -23,7 +23,9 @@ using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Shell;
+#if NET472
 using Windows.Management.Update;
+#endif
 //using Microsoft.Identity.Client;
 
 namespace DaxStudio.Standalone
@@ -424,9 +426,9 @@ namespace DaxStudio.Standalone
         private static void ReadCommandLineArgs(this Application app, string[] args)
         {
             app.Args().Clear();
-
+#if NET472
             Application.Current.Args().Parse(args);
-            
+#endif
         }
 
 
@@ -435,6 +437,7 @@ namespace DaxStudio.Standalone
             app.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(src, UriKind.RelativeOrAbsolute) });
         }
 
+#pragma warning disable SYSLIB0011 // BinaryFormatter is obsolete
         private static void ProcessMessage(NamedPipeServerStream pipe, Application app)
         {
             var bf = new BinaryFormatter();
@@ -449,6 +452,7 @@ namespace DaxStudio.Standalone
                 _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
             }
         }
+#pragma warning restore SYSLIB0011
 
 
     }

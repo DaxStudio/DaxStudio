@@ -26,7 +26,9 @@ using Serilog;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Dynamic;
+#if NET472
 using SharpCompress;
+#endif
 
 namespace DaxStudio.UI.ViewModels
 {

@@ -1,5 +1,7 @@
-﻿using DaxStudio.Standalone;
+﻿#if NET472
+using DaxStudio.Standalone;
 using Fclp;
+#endif
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ namespace DaxStudio.Tests
     public class EntryPointTests
     {
 
-
+#if NET472
         [TestMethod]
         public void HelpFormatter()
         {
@@ -43,5 +45,6 @@ namespace DaxStudio.Tests
             //Assert.AreEqual(expectedHelp, formattedHelp);
             StringAssertion.ShouldEqualWithDiff(expectedHelp, formattedHelp, DiffStyle.Full);
         }
+#endif
     }
 }

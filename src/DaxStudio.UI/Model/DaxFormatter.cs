@@ -24,7 +24,11 @@ namespace DaxStudio.UI.Model
         {
             if (input == null) return "";
 
+#if NET8_0_OR_GREATER
+            using var hasher = System.Security.Cryptography.SHA256.Create();
+#else
             var hasher = new SHA256Cng();
+#endif
             var sb = new StringBuilder();
 
             byte[] hashedBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(input), 0, Encoding.UTF8.GetByteCount(input));

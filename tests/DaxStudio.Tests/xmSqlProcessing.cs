@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if NET472
 using System.Web.UI.WebControls;
+#endif
 
 namespace DaxStudio.Tests
 {

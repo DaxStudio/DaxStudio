@@ -1255,7 +1255,11 @@ namespace DaxStudio.UI.Model
 
         }
 
+#if NET8_0_OR_GREATER
+        private Microsoft.AnalysisServices.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AccessToken token)
+#else
         private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
+#endif
         {
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
             var newToken = EntraIdHelper.RefreshToken(token).GetAwaiter().GetResult();
@@ -1636,7 +1640,11 @@ namespace DaxStudio.UI.Model
             return ds;
         }
 
+#if NET8_0_OR_GREATER
+        public Microsoft.AnalysisServices.AccessToken AccessToken { get => _connection.AccessToken; }
+#else
         public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
+#endif
 
         protected virtual void Dispose(bool disposing)
         {

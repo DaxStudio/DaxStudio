@@ -404,7 +404,11 @@ namespace DaxStudio.UI.ViewModels
                 var initialCatalog = string.Empty;
                 if (!string.IsNullOrEmpty(database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(ConnectToServerAsync), $"Connecting to Server: {server} Database:{database}");
+#if NET8_0_OR_GREATER
+                var token = default(Microsoft.AnalysisServices.AccessToken);
+#else
                 var token = default(Adomd.AccessToken);
+#endif
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token
@@ -1544,7 +1548,11 @@ namespace DaxStudio.UI.ViewModels
                 if (!string.IsNullOrEmpty(_app.Args().Database)) initialCatalog = $";Initial Catalog={database}";
                 Log.Information("{class} {method} {message}", nameof(DocumentViewModel), nameof(TryConnectToCommandLineServer), $"Connecting to Server: {server} Database:{database}");
 
+#if NET8_0_OR_GREATER
+                var token = default(Microsoft.AnalysisServices.AccessToken);
+#else
                 var token = default(Adomd.AccessToken);
+#endif
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token

@@ -2,6 +2,9 @@
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Text;

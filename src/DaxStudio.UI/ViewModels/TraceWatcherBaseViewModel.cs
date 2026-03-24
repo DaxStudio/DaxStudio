@@ -22,7 +22,9 @@ using DaxStudio.Common;
 using AsyncAwaitBestPractices;
 using System.Collections.Concurrent;
 using System.Windows;
+#if NET472
 using Windows.UI.Core;
+#endif
 using Fluent;
 using Microsoft.PowerBI.Api.Models;
 

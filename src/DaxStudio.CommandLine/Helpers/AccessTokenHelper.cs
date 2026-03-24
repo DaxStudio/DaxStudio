@@ -2,6 +2,9 @@
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using Microsoft.AnalysisServices.AdomdClient;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 using System;
 using System.Data.OleDb;
 

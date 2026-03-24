@@ -180,6 +180,7 @@
     <PackageReference Include="Polly" Version="8.6.6" />
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="System.ComponentModel.Composition" Version="9.0.3" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 

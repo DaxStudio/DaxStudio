@@ -27,7 +27,9 @@ using System.Windows.Interop;
 using common = DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using GongSolutions.Wpf.DragDrop;
+#if NET472
 using Windows.ApplicationModel.VoiceCommands;
+#endif
 
 namespace DaxStudio.UI.ViewModels
 {

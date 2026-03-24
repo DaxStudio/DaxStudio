@@ -1,6 +1,9 @@
 ﻿using ADOTabular.Enums;
 using DaxStudio.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
+#if NET8_0_OR_GREATER
+using AccessToken = Microsoft.AnalysisServices.AccessToken;
+#endif
 using System;
 
 
