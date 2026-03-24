@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using static DaxStudio.Common.NativeMethods;
 
 namespace DaxStudio.Common
@@ -12,50 +13,32 @@ namespace DaxStudio.Common
     public static class WMHelper
     {
         /// <summary>
-        /// Serializes a string array to a byte array using length-prefixed UTF8 encoding.
-        /// Compatible with both .NET Framework and .NET 8+.
+        /// Serializes a string array to a UTF8 byte array using JSON.
         /// </summary>
         public static byte[] SerializeStringArray(string[] args)
         {
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8))
-            {
-                writer.Write(args.Length);
-                foreach (var arg in args)
-                    writer.Write(arg ?? string.Empty);
-                writer.Flush();
-                return stream.ToArray();
-            }
+            var json = JsonConvert.SerializeObject(args);
+            return Encoding.UTF8.GetBytes(json);
         }
 
         /// <summary>
-        /// Deserializes a string array from a byte array using length-prefixed UTF8 encoding.
+        /// Deserializes a string array from a UTF8 byte array.
         /// </summary>
         public static string[] DeserializeStringArray(byte[] data)
         {
-            using (var stream = new MemoryStream(data))
-            using (var reader = new BinaryReader(stream, Encoding.UTF8))
-            {
-                int count = reader.ReadInt32();
-                var args = new string[count];
-                for (int i = 0; i < count; i++)
-                    args[i] = reader.ReadString();
-                return args;
-            }
+            var json = Encoding.UTF8.GetString(data);
+            return JsonConvert.DeserializeObject<string[]>(json);
         }
 
         /// <summary>
-        /// Deserializes a string array from a stream using length-prefixed UTF8 encoding.
+        /// Deserializes a string array from a stream.
         /// </summary>
         public static string[] DeserializeStringArray(Stream stream)
         {
-            using (var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true))
+            using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 1024, leaveOpen: true))
             {
-                int count = reader.ReadInt32();
-                var args = new string[count];
-                for (int i = 0; i < count; i++)
-                    args[i] = reader.ReadString();
-                return args;
+                var json = reader.ReadToEnd();
+                return JsonConvert.DeserializeObject<string[]>(json);
             }
         }
 
