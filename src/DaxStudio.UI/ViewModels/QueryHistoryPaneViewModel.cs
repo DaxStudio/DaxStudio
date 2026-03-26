@@ -80,9 +80,10 @@ namespace DaxStudio.UI.ViewModels
         private bool HistoryFilter(object queryHistoryEvent)
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
+            var connection = CurrentDocument?.Connection;
             return qhe != null 
-                && (string.Equals( qhe.ServerName, CurrentDocument?.Connection?.ServerNameForHistory??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByServer)
-                && (string.Equals( qhe.DatabaseName, CurrentDocument?.Connection?.Database?.Caption??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByDatabase);
+                && (string.Equals( qhe.ServerName, connection?.ServerNameForHistory??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByServer)
+                && (string.Equals( qhe.DatabaseName, connection != null && connection.IsConnected ? connection.Database?.Caption ?? string.Empty : string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByDatabase);
         }
 
         public ICollectionView QueryHistory => _queryHistory;

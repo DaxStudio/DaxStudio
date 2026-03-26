@@ -77,8 +77,9 @@ namespace DaxStudio.UI.ViewModels
             {
                 if (_gotoLocation == null)
                 {
-                    _gotoLocation = new Utils.RelayCommand<LocationOutputMessage>(msg =>
+                    _gotoLocation = new Utils.RelayCommand(param =>
                     {
+                        var msg = (LocationOutputMessage)param;
                         Debug.WriteLine($"Goto location ({msg.Row},{msg.Column})");
                         _eventAggregator.PublishOnUIThreadAsync(new NavigateToLocationEvent(msg.Row, msg.Column));
 
@@ -94,8 +95,9 @@ namespace DaxStudio.UI.ViewModels
             get
             {
                 if (_openFolder == null)
-                    _openFolder = new Utils.RelayCommand<FolderOutputMessage>(msg =>
+                    _openFolder = new Utils.RelayCommand(param =>
                     {
+                        var msg = (FolderOutputMessage)param;
                         Debug.WriteLine($"Open ({msg.FolderPath})");
                         Process.Start(new ProcessStartInfo
                         {

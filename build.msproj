@@ -16,16 +16,16 @@
   <ItemGroup>
     <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
   </ItemGroup>
-  
 
-
+  <!-- Which TFM to use for the release build. Default is net472.
+       Override with: msbuild build.msproj /p:ReleaseTFM=net8.0-windows -->
   <PropertyGroup>
+    <ReleaseTFM Condition="'$(ReleaseTFM)' == ''">net472</ReleaseTFM>
     <ReleaseDirectory>.\Release</ReleaseDirectory>
   </PropertyGroup>
 
   <Target Name="Clean" DependsOnTargets="MakeReleaseFolder">
     <Message Text="Cleaning DaxStudio.Standalone" />
-    <!--<MSBuild Projects=".\src\daxstudio.sln" Targets="Clean" />-->
     <RemoveDir Directories="$(ReleaseDirectory)" />
     <MakeDir Directories="$(ReleaseDirectory)" />
   </Target>
@@ -48,18 +48,43 @@
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio.Tests" />
-    <!--<MSBuild Projects=".\tests\daxstudio.Tests\DaxStudio.Tests.csproj" Targets="Build" Properties="RestorePackages=false" />-->
   </Target>
 
-  <Target Name="DeletePdb" AfterTargets="Build" DependsOnTargets="Build">
+  <!-- Stage the selected TFM output into the flat Release\bin\ layout.
+       Copies from Release\bin\$(ReleaseTFM)\ to Release\bin\, then cleans up the TFM subdirs. -->
+  <Target Name="StageRelease" DependsOnTargets="Build">
+    <Message Text="Staging $(ReleaseTFM) output to Release\bin\" Importance="High" />
+
+    <!-- Copy the selected TFM output to the flat Release\bin\ -->
+    <ItemGroup>
+      <TfmFiles Include="$(ReleaseDirectory)\bin\$(ReleaseTFM)\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TfmFiles)" 
+          DestinationFiles="@(TfmFiles->'$(ReleaseDirectory)\bin\%(RecursiveDir)%(Filename)%(Extension)')" 
+          SkipUnchangedFiles="true" />
+
+    <!-- If building net8.0, also copy the ExcelAddin net472 VSTO files -->
+    <ItemGroup Condition="'$(ReleaseTFM)' != 'net472'">
+      <VstoFiles Include="$(ReleaseDirectory)\bin\net472\DaxStudio.dll;$(ReleaseDirectory)\bin\net472\DaxStudio.vsto;$(ReleaseDirectory)\bin\net472\DaxStudio.dll.manifest;$(ReleaseDirectory)\bin\net472\DaxStudio.dll.config;$(ReleaseDirectory)\bin\net472\DaxStudio.dll.*.config" />
+    </ItemGroup>
+    <Copy Condition="'$(ReleaseTFM)' != 'net472'" 
+          SourceFiles="@(VstoFiles)" 
+          DestinationFolder="$(ReleaseDirectory)\bin" 
+          SkipUnchangedFiles="true" />
+
+    <!-- Remove TFM subdirectories after staging -->
+    <RemoveDir Directories="$(ReleaseDirectory)\bin\net472" />
+    <RemoveDir Directories="$(ReleaseDirectory)\bin\net8.0-windows" />
+  </Target>
+
+  <Target Name="DeletePdb" AfterTargets="StageRelease" DependsOnTargets="StageRelease">
     <ItemGroup>
       <FilesToDelete Include=".\Release\**\*.pdb"/>
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
 
-
-  <Target Name="DeleteXml" AfterTargets="Build" DependsOnTargets="Build">
+  <Target Name="DeleteXml" AfterTargets="StageRelease" DependsOnTargets="StageRelease">
     <ItemGroup>
       <FilesToDelete Include=".\Release\**\*.xml"/>
     </ItemGroup>
@@ -73,6 +98,10 @@
   <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb">
     <ItemGroup>
       <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;.\Release\bin\dscmd.exe;.\Release\bin\dscmd.exe.config;" />
+    </ItemGroup>
+    <!-- For net8.0, also move the .dll and .runtimeconfig.json for the exe projects -->
+    <ItemGroup Condition="'$(ReleaseTFM)' != 'net472'">
+      <FilesToMove Include=".\Release\bin\DaxStudio.runtimeconfig.json;.\Release\bin\DaxStudio.deps.json;.\Release\bin\DaxStudio.Checker.runtimeconfig.json;.\Release\bin\DaxStudio.Checker.deps.json;.\Release\bin\dscmd.runtimeconfig.json;.\Release\bin\dscmd.deps.json" />
     </ItemGroup>
     <Message Text="Moving exe files" Importance="High" />
     <Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release" />
@@ -96,7 +125,7 @@
     <Message Text="Major: $(OutVersion) " Importance="high"/>
   </Target>
 
-  <Target Name="SignAssemblies" DependsOnTargets="Build;MoveExes">
+  <Target Name="SignAssemblies" DependsOnTargets="Build;StageRelease;MoveExes">
     <ItemGroup>
 	    <DllFiles Include=".\Release\bin\DaxStudio.*.dll;.\Release\bin\DaxStudio.dll"/>
     </ItemGroup>
@@ -129,11 +158,11 @@
   </Target>
 
 
-  <Target Name="Installer" DependsOnTargets="DeleteXml; DeletePdb;MoveExes">
+  <Target Name="Installer" DependsOnTargets="DeleteXml; DeletePdb;StageRelease;MoveExes">
     <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\DaxStudio.iss' />
   </Target>
 
-  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="DeleteXml; DeletePdb; SignVsto;MoveExes">
+  <Target Name="InstallerWithSignedAssemblies" DependsOnTargets="DeleteXml; DeletePdb; SignVsto;StageRelease;MoveExes">
     <Exec Command='"$(MSBuildProgramFiles32)\Inno Setup 6\iscc.exe" .\installer\daxstudio.iss' />
   </Target>
 
@@ -159,7 +188,7 @@
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
-  <Target Name="DeleteZip" DependsOnTargets="RetrieveIdentities;Build;DeleteXml;DeletePdb">
+  <Target Name="DeleteZip" DependsOnTargets="RetrieveIdentities;Build;StageRelease;DeleteXml;DeletePdb">
     <ItemGroup>
       <FilesToDelete Include="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion).zip"/>
     </ItemGroup>
@@ -167,12 +196,12 @@
     <Delete Files="@(FilesToDelete)" TreatErrorsAsWarnings="True" />
   </Target>
 
-  <Target Name="SignedPortable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies;MoveTestsOut">
+  <Target Name="SignedPortable" DependsOnTargets="Build;StageRelease;CreatePortableFile;DeleteZip;MoveExes;SignAssemblies;MoveTestsOut">
     <Message Text="Creating .zip file" Importance="High" />
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>
 
-  <Target Name="Portable" DependsOnTargets="Build;CreatePortableFile;DeleteZip;MoveExes;MoveTestsOut">
+  <Target Name="Portable" DependsOnTargets="Build;StageRelease;CreatePortableFile;DeleteZip;MoveExes;MoveTestsOut">
     <Message Text="Creating .zip file" Importance="High" />
     <ZipDirectory SourceDirectory=".\Release" DestinationFile="$(MSBuildProjectDirectory)\Package\DaxStudio_$(OutVersion)_portable.zip" Overwrite="True" />
   </Target>

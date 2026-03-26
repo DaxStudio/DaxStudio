@@ -156,6 +156,7 @@ namespace DaxStudio.UI.Utils
                                                 _globalOptions.ProxyUser,
                                                 _globalOptions.ProxySecurePassword.ConvertToUnsecureString())
                     };
+                    Log.Verbose("Proxy: {proxyAddress}", _proxy.GetProxy(new Uri(uri)).AbsolutePath);
                 }
                 catch (Exception ex)
                 {
@@ -165,7 +166,7 @@ namespace DaxStudio.UI.Utils
                 }
             }
             
-            Log.Verbose("Proxy: {proxyAddress}", _proxy.GetProxy(new Uri(uri)).AbsolutePath);
+            
             return _proxy;
         }
 
