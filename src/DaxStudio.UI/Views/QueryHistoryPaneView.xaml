@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-                              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+                              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
                               xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
                               xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                               xmlns:clr="clr-namespace:System;assembly=mscorlib"

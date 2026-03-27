@@ -35,7 +35,7 @@
 
   <!-- WPF framework reference needed for Aero theme types -->
   <ItemGroup>
-    <Reference Include="PresentationFramework.Aero" />
+    <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
