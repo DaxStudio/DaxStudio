@@ -14,6 +14,15 @@
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <ItemGroup Condition="'$(ProjectTypeGuids)' == ''">
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" PrivateAssets="all" />
   </ItemGroup>
+
+  <!-- Fix incorrect SuggestedBindingRedirects from System.Resources.Extensions package
+       which hardcodes MaxVersion="9.0.0.0" but the net462 DLL is actually 9.0.0.3 -->
+  <Target Name="_FixResourceExtensionsBindingRedirect" BeforeTargets="GenerateBindingRedirects" Condition="'$(ProjectTypeGuids)' == ''">
+    <ItemGroup>
+      <SuggestedBindingRedirects Remove="System.Resources.Extensions, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <SuggestedBindingRedirects Include="System.Resources.Extensions, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" MaxVersion="9.0.0.3" />
+    </ItemGroup>
+  </Target>
 </Project>
