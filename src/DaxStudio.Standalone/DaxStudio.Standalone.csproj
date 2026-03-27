@@ -3,8 +3,9 @@
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <AssemblyName>DaxStudio</AssemblyName>
+    <ApplicationIcon>DaxStudio.ico</ApplicationIcon>
     <UseWPF>true</UseWPF>
-    <Win32Resource>DaxStudio.res</Win32Resource>
+    <Version>$(AssemblyVersion)</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
@@ -29,9 +30,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="DaxStudio.res" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
