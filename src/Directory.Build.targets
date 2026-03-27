@@ -7,4 +7,13 @@
           Condition="'$(GeneratedAssemblyInfoFile)' != '' and !Exists('$(GeneratedAssemblyInfoFile)')">
     <WriteLinesToFile File="$(GeneratedAssemblyInfoFile)" Lines="" Overwrite="true" />
   </Target>
+
+  <!-- Required for dotnet build/test with .resx files containing non-string resources.
+       In targets file so ProjectTypeGuids is available to exclude VSTO projects. -->
+  <PropertyGroup Condition="'$(ProjectTypeGuids)' == ''">
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ProjectTypeGuids)' == ''">
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" />
+  </ItemGroup>
 </Project>
