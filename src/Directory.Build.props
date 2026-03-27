@@ -28,7 +28,8 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Required by GenerateResourceUsePreserializedResources for dotnet build/test -->
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" />
+    <!-- Required by GenerateResourceUsePreserializedResources for dotnet build/test.
+         Excluded from old-style VSTO projects via condition on TargetFrameworks (plural). -->
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" Condition="'$(TargetFrameworks)' != ''" />
   </ItemGroup>
 </Project>

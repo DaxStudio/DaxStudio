@@ -1,0 +1,26 @@
+{
+  "solution": {
+    "path": "DaxStudio.sln",
+    "projects": [
+      "ADOTabular\\DaxStudio.ADOTabular.csproj",
+      "AvalonDock.Themes.DaxStudio\\DaxStudio.AvalonDock.Themes.csproj",
+      "DAXEditor\\DaxStudio.DAXEditor.csproj",
+      "DaxStudio.Checker\\DaxStudio.Checker.csproj",
+      "DaxStudio.CommandLine\\DaxStudio.CommandLine.csproj",
+      "DaxStudio.Common\\DaxStudio.Common.csproj",
+      "DaxStudio.Controls.DataGridFilter\\DaxStudio.Controls.DataGridFilter.csproj",
+      "DaxStudio.Controls.PropertyGrid\\DaxStudio.Controls.PropertyGrid.csproj",
+      "DaxStudio.FileIcons\\DaxStudio.FileIcons.csproj",
+      "DaxStudio.Interfaces\\DaxStudio.Interfaces.csproj",
+      "DaxStudio.QueryTrace\\DaxStudio.QueryTrace.csproj",
+      "DaxStudio.QueryTrace.Excel\\DaxStudio.QueryTrace.Excel.csproj",
+      "DaxStudio.SqlFormatter\\DaxStudio.SqlFormatter.csproj",
+      "DaxStudio.Standalone\\DaxStudio.Standalone.csproj",
+      "DaxStudio.UI\\DaxStudio.UI.csproj",
+      "DaxStudio.UriHandler\\DaxStudio.Launcher.csproj",
+      "UnitComboLib\\DaxStudio.UnitComboLib.csproj",
+      "..\\tests\\DaxStudio.CommandLine.Tests\\DaxStudio.CommandLine.Tests.csproj",
+      "..\\tests\\DaxStudio.Tests\\DaxStudio.Tests.csproj"
+    ]
+  }
+}
