@@ -19,10 +19,16 @@
     <LangVersion>8.0</LangVersion>
     <Deterministic>true</Deterministic>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!-- Required for dotnet build/test with .resx files containing non-string resources (e.g. images) -->
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <!-- Code analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Required by GenerateResourceUsePreserializedResources for dotnet build/test -->
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" />
+  </ItemGroup>
 </Project>

@@ -48,6 +48,11 @@
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
     <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="daxstudio.pbitool.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Target Name="WriteBuildDate" BeforeTargets="BeforeBuild">
     <WriteLinesToFile File="$(ProjectDir)Resources\BuildDate.txt" Lines="$([System.DateTime]::UtcNow.ToString('s'))" Overwrite="true" />
   </Target>
