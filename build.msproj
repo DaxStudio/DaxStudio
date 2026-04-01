@@ -224,7 +224,7 @@
     </ItemGroup>
     <Message Text="Moving Tests In" Importance="High" />
     <Move SourceFiles="@(TestsToMoveIn)" DestinationFolder=".\Release\bin" />
-    <Move SourceFiles="@(CmdLineTestsToMoveIn)" DestinationFolder=".\Release" />
+    <Move SourceFiles="@(CmdLineTestsToMoveIn)" DestinationFolder=".\Release\bin" />
   </Target>
 
 
