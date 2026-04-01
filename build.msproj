@@ -53,7 +53,28 @@
   <!-- When building a single TFM via TargetFramework property, output goes directly
        to Release\bin\ (no TFM subfolder), so staging is not needed. -->
   <Target Name="StageRelease" DependsOnTargets="Build">
-    <Message Text="Build output already in Release\bin\ (single TFM: $(ReleaseTFM))" Importance="High" />
+    <Message Text="Staging $(ReleaseTFM) output to Release\bin\" Importance="High" />
+
+    <!-- Copy the selected TFM output to the flat Release\bin\ -->
+    <ItemGroup>
+      <TfmFiles Include="$(ReleaseDirectory)\bin\$(ReleaseTFM)\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TfmFiles)" 
+          DestinationFiles="@(TfmFiles->'$(ReleaseDirectory)\bin\%(RecursiveDir)%(Filename)%(Extension)')" 
+          SkipUnchangedFiles="true" />
+
+    <!-- If building net8.0, also copy the ExcelAddin net472 VSTO files -->
+    <ItemGroup Condition="'$(ReleaseTFM)' != 'net472'">
+      <VstoFiles Include="$(ReleaseDirectory)\bin\net472\DaxStudio.dll;$(ReleaseDirectory)\bin\net472\DaxStudio.vsto;$(ReleaseDirectory)\bin\net472\DaxStudio.dll.manifest;$(ReleaseDirectory)\bin\net472\DaxStudio.dll.config;$(ReleaseDirectory)\bin\net472\DaxStudio.dll.*.config" />
+    </ItemGroup>
+    <Copy Condition="'$(ReleaseTFM)' != 'net472'" 
+          SourceFiles="@(VstoFiles)" 
+          DestinationFolder="$(ReleaseDirectory)\bin" 
+          SkipUnchangedFiles="true" />
+
+    <!-- Remove TFM subdirectories after staging -->
+    <RemoveDir Directories="$(ReleaseDirectory)\bin\net472" />
+    <RemoveDir Directories="$(ReleaseDirectory)\bin\net8.0-windows" />
   </Target>
 
   <Target Name="DeletePdb" AfterTargets="StageRelease" DependsOnTargets="StageRelease">
