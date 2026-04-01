@@ -222,6 +222,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BenchmarkCommandTests.cs" />
     <Compile Include="CommandLineParameterTests.cs" />
     <Compile Include="ListTypeConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
