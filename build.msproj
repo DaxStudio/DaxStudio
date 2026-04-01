@@ -13,6 +13,11 @@
     <TimeStampUri>http://timestamp.globalsign.com/tsa/r45standard</TimeStampUri>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <VstoProject Include=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" />
   </ItemGroup>

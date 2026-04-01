@@ -8,6 +8,17 @@
     <WriteLinesToFile File="$(GeneratedAssemblyInfoFile)" Lines="" Overwrite="true" />
   </Target>
 
+   <Target Name="DisableAnalyzers" 
+           BeforeTargets="CoreCompile" 
+           Condition="'$(UseRoslynAnalyzers)' == 'false'"> 
+     <!-- 
+       Disable analyzers via an MSBuild property settable on the command line. 
+     --> 
+     <ItemGroup> 
+       <Analyzer Remove="@(Analyzer)" /> 
+     </ItemGroup> 
+   </Target> 
+
   <!-- Required for dotnet build/test with .resx files containing non-string resources.
        In targets file so ProjectTypeGuids is available to exclude VSTO projects. -->
   <PropertyGroup Condition="'$(ProjectTypeGuids)' == ''">

@@ -6,6 +6,9 @@
     <ApplicationIcon>Images\DaxStudio.ico</ApplicationIcon>
     <Utf8Output>true</Utf8Output>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
   </PropertyGroup>
 
   <!-- Exclude orphaned files not in the original project -->

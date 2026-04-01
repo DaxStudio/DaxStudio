@@ -622,6 +622,14 @@
     <CodeAnalysisRuleSet>DaxStudio.ExcelAddin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Apply ExcelAmo alias after NuGet resolves the reference (NuGet drops alias metadata) -->
+  <Target Name="_ApplyExcelAmoAlias" BeforeTargets="CoreCompile" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)' == 'Microsoft.Excel.Amo'">
+        <Aliases>ExcelAmo</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
   <!-- Include additional build rules for an Office application add-in. -->
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
   <!-- This section defines VSTO properties that describe the host-changeable project properties. -->
