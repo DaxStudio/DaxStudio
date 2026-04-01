@@ -43,7 +43,7 @@
     <Message Text="Building DaxStudio for $(ReleaseTFM)" Importance="High" />
     <MSBuild Projects=".\src\daxstudio.sln" 
              Targets="Clean;Build" 
-             Properties="RestorePackages=false;TargetFramework=$(ReleaseTFM)" />
+             Properties="RestorePackages=false;TargetFrameworks=$(ReleaseTFM)" />
   </Target>
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
