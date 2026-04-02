@@ -31,6 +31,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Xml;
 using Tom = Microsoft.AnalysisServices;
+using Adomd = Microsoft.AnalysisServices.AdomdClient;
 
 namespace DaxStudio.Common
 {
@@ -482,7 +483,7 @@ namespace DaxStudio.Common
         }
 
 #if NET472
-        public static async Task<AccessToken> RefreshToken(AccessToken token)
+        public static async Task<Adomd.AccessToken> RefreshToken(Adomd.AccessToken token)
         {
             var details = new TokenDetails(token);
             var authResult = await RefreshTokenInternalAsync(details);
