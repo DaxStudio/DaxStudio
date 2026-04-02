@@ -380,14 +380,10 @@ namespace DaxStudio.QueryTrace
             {
                 _server = new Server();
                 // if the document's connection has an access token copy that to the server object for the trace
-#if NETFRAMEWORK
-                var tomToken = _connectionManager.AccessToken.ToTomAccessToken();
-#else
-                var tomToken = _connectionManager.AccessToken; // Same type on .NET 8
-#endif
-                if (tomToken.IsNotNull())
+                var tomToken = AccessTokenHelper.ToTomToken(_connectionManager.AccessToken);
+                if (tomToken.HasValue)
                 {
-                    _server.AccessToken = tomToken;
+                    _server.AccessToken = tomToken.Value;
                     _server.OnAccessTokenExpired = OnAccessTokenExpired;
                 }
                 _server.Connect(_connectionString);
