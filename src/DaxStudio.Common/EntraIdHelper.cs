@@ -455,14 +455,14 @@ namespace DaxStudio.Common
 
         private struct TokenDetails
         {
-            public TokenDetails(AccessToken token)
+            public TokenDetails(Tom.AccessToken token)
             {
                 AccessToken = token.Token;
                 ExpiresOn = token.ExpirationTime;
                 UserContext = token.UserContext as AccessTokenContext;
             }
 #if NET472
-            public TokenDetails(Tom.AccessToken token)
+            public TokenDetails(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
             {
                 AccessToken = token.Token;
                 ExpiresOn = token.ExpirationTime;
