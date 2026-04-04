@@ -72,32 +72,24 @@ namespace DaxStudio.Common
                 firstAccount = PublicClientApplication.OperatingSystemAccount;
             }
             var scope = GetScope(tokenScope);
+            
+            // Force interactive authentication to ensure correct account selection
+            // in multi-tenant environments. This addresses issues where Windows broker (WAM)
+            // or cached tokens may silently authenticate with the wrong account, causing
+            // connection failures when users have multiple work/school accounts.
             try
             {
-                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync();
+                authResult = await app.AcquireTokenInteractive(scope)
+                    .WithAccount(firstAccount)
+                    .WithParentActivityOrWindow(hwnd)
+                    .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
+                    .WithPrompt(Prompt.SelectAccount)
+                    .ExecuteAsync();
                 options.LastUsedUPN = authResult.Account.Username;
             }
-            catch (MsalUiRequiredException)
+            catch (MsalException msalex)
             {
-                // A MsalUiRequiredException happened on AcquireTokenSilent. 
-                // This indicates you need to call AcquireTokenInteractive to acquire a token
-                Log.Warning(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "User not found in cache, prompting user to sign-in interactively");
-
-                try
-                {
-                    authResult = await app.AcquireTokenInteractive(scope)
-                        .WithAccount(firstAccount)
-                        .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
-                                                          //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
-                        .WithPrompt(Prompt.SelectAccount)
-                        .ExecuteAsync();
-                    options.LastUsedUPN = authResult.Account.Username;
-                }
-                catch (MsalException msalex)
-                {
-                    Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token Interactively");
-                }
+                Log.Error(msalex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireTokenAsync), "Error Acquiring Token Interactively");
             }
             catch (Exception ex)
             {
@@ -166,11 +158,14 @@ namespace DaxStudio.Common
             Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetPublicClientAppAsync), $"Using Authority: {authority}, ClientId: {clientId}, DomainPostfix: {context.DomainPostfix}, TenantId: {context.TenantId}");
 
             _clientApp = PublicClientApplicationBuilder.Create(clientId)
-                //.WithAuthority($"{Instance}{Tenant}")
                 .WithAuthority(authority)
                 .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
                 .WithDefaultRedirectUri()
-                .WithBroker(brokerOptions)
+                // Windows Authentication Manager (WAM) broker disabled to prevent issues
+                // where users with multiple tenants experience silent authentication with
+                // incorrect accounts. Without broker, MSAL uses standard web-based auth flow.
+                // To re-enable WAM: uncomment the line below and ensure BrokerOptions is configured
+                // .WithBroker(brokerOptions)
                 .Build();
 
             MsalCacheHelper cacheHelper = await CreateCacheHelperAsync();
