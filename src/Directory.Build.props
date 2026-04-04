@@ -19,6 +19,9 @@
     <LangVersion>8.0</LangVersion>
     <Deterministic>true</Deterministic>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!-- Suppress NU1202 for Humanizer satellite resource packages which falsely report
+         incompatibility in WPF temp projects on older MSBuild (e.g. VS 2022) -->
+    <NoWarn>$(NoWarn);NU1202</NoWarn>
     <!-- Code analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
