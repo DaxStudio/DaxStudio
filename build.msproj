@@ -62,7 +62,13 @@
 
   <Target Name="RunTests" DependsOnTargets="Build">
     <Message Text="Running tests" Importance="High" />
-    <Exec Command='dotnet test ".\src\DaxStudio.NoAddin.slnf" --no-build -c $(Configuration) --logger "trx;LogFileName=TestResults.trx" --results-directory ".\TestResults"' />
+    <!-- Use dotnet vstest with DLL paths directly since custom OutputPath
+         means dotnet test can't find the assemblies in the default location -->
+    <PropertyGroup>
+      <TestOutputDir Condition="'$(Configuration)' == 'Debug'">.\src\bin\Debug\$(ReleaseTFM)</TestOutputDir>
+      <TestOutputDir Condition="'$(Configuration)' != 'Debug'">$(ReleaseDirectory)\bin</TestOutputDir>
+    </PropertyGroup>
+    <Exec Command='dotnet vstest "$(TestOutputDir)\DaxStudio.Tests.dll" "$(TestOutputDir)\DaxStudio.CommandLine.Tests.dll" --logger:"trx;LogFileName=TestResults.trx" --ResultsDirectory:".\TestResults"' />
   </Target>
 
   <!-- When building a single TFM via TargetFramework property, output goes directly
