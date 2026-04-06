@@ -1,5 +1,5 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Auto detect text files and ensure CRLF on checkout (Windows project)
+* text=auto eol=crlf
 
 # Custom for Visual Studio
 *.cs     diff=csharp
