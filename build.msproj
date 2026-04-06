@@ -60,6 +60,11 @@
     <Message Text="Building DaxStudio.Tests" />
   </Target>
 
+  <Target Name="RunTests" DependsOnTargets="Build">
+    <Message Text="Running tests" Importance="High" />
+    <Exec Command='dotnet test ".\src\DaxStudio.NoAddin.slnf" --no-build -c $(Configuration) --logger "trx;LogFileName=TestResults.trx" --results-directory ".\TestResults"' />
+  </Target>
+
   <!-- When building a single TFM via TargetFramework property, output goes directly
        to Release\bin\ (no TFM subfolder), so staging is not needed. -->
   <Target Name="StageRelease" DependsOnTargets="Build">
@@ -113,9 +118,8 @@
     <ItemGroup Condition="'$(ReleaseTFM)' != 'net472'">
       <ExeFilesToCopy Include=".\Release\bin\DaxStudio.runtimeconfig.json;.\Release\bin\DaxStudio.deps.json;.\Release\bin\DaxStudio.Checker.runtimeconfig.json;.\Release\bin\DaxStudio.Checker.deps.json;.\Release\bin\dscmd.runtimeconfig.json;.\Release\bin\dscmd.deps.json" />
     </ItemGroup>
-    <Message Text="Copying exe files to Release root" Importance="High" />
-    <!-- Copy instead of Move so tests can still find assemblies in Release\bin\ -->
-    <Copy SourceFiles="@(ExeFilesToCopy)" DestinationFolder=".\Release" />
+    <Message Text="Moving exe files to Release root" Importance="High" />
+    <Move SourceFiles="@(ExeFilesToCopy)" DestinationFolder=".\Release" />
   </Target>
 
 
@@ -267,11 +271,11 @@
         <GenerateHash InputFiles="@(FilesToHash)" OutputFile="$(MSBuildProjectDirectory)\Package\Setup_Hash.txt" />
   </Target>
 
-  <Target Name="FullBuild" DependsOnTargets="BuildTests;SignedInstaller;SignedPortable;GeneratePortableHash;GenerateInstallerHash;MoveTestsIn">
+  <Target Name="FullBuild" DependsOnTargets="RunTests;SignedInstaller;SignedPortable;GeneratePortableHash;GenerateInstallerHash;MoveTestsIn">
     <Message Text="Performed full build of Signed Installer and Portable zip" Importance="High" />
   </Target>
 
-  <Target Name="UnsignedBuild" DependsOnTargets="BuildTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash;DllsToSign;MoveTestsIn">
+  <Target Name="UnsignedBuild" DependsOnTargets="RunTests;Installer;Portable;UnsignedGeneratePortableHash; UnsignedGenerateInstallerHash;DllsToSign;MoveTestsIn">
     <Message Text="Performed full build of Unsigned Installer and Portable zip" Importance="High" />
   </Target>
 
