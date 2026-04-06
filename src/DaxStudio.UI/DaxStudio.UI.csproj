@@ -170,7 +170,7 @@
     <PackageReference Include="Fluent.Ribbon" Version="9.0.4" />
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
-    <PackageReference Include="Humanizer.Core" Version="3.0.10" />
+    <PackageReference Include="Humanizer" Version="3.0.10" />
     <PackageReference Include="LargeXlsx" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.5" />

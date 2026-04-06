@@ -26,6 +26,7 @@
        Override with: msbuild build.msproj /p:ReleaseTFM=net8.0-windows -->
   <PropertyGroup>
     <ReleaseTFM Condition="'$(ReleaseTFM)' == ''">net472</ReleaseTFM>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <ReleaseDirectory>.\Release</ReleaseDirectory>
   </PropertyGroup>
 
@@ -46,9 +47,13 @@
 
   <Target Name="Build" DependsOnTargets="Clean">
     <Message Text="Building DaxStudio for $(ReleaseTFM)" Importance="High" />
-    <MSBuild Projects=".\src\daxstudio.sln" 
-             Targets="Clean;Build" 
-             Properties="RestorePackages=false;TargetFrameworks=$(ReleaseTFM)" />
+    <!-- Use dotnet msbuild which has updated SDK targets that correctly handle
+         satellite resource packages in WPF temp projects -->
+    <Exec Command='dotnet msbuild ".\src\DaxStudio.NoAddin.slnf" /t:Build /p:Configuration=$(Configuration) /p:TargetFrameworks=$(ReleaseTFM) /restore' />
+    <!-- Build ExcelAddin separately with VS MSBuild (VSTO requires it) -->
+    <MSBuild Projects=".\src\DaxStudio.ExcelAddin\DaxStudio.ExcelAddin.csproj" 
+             Targets="Build" 
+             Properties="Configuration=$(Configuration)" />
   </Target>
 
   <Target Name="BuildTests" DependsOnTargets="Clean">
