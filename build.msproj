@@ -107,14 +107,15 @@
 
   <Target Name="MoveExes" DependsOnTargets="DeleteXml;DeletePdb">
     <ItemGroup>
-      <FilesToMove Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;.\Release\bin\dscmd.exe;.\Release\bin\dscmd.exe.config;" />
+      <ExeFilesToCopy Include=".\Release\bin\DaxStudio.exe;.\Release\bin\DaxStudio.exe.config;.\Release\bin\DaxStudio.Checker.exe;.\Release\bin\DaxStudio.Checker.exe.config;.\Release\bin\dscmd.exe;.\Release\bin\dscmd.exe.config;" />
     </ItemGroup>
-    <!-- For net8.0, also move the .dll and .runtimeconfig.json for the exe projects -->
+    <!-- For net8.0, also copy the .dll and .runtimeconfig.json for the exe projects -->
     <ItemGroup Condition="'$(ReleaseTFM)' != 'net472'">
-      <FilesToMove Include=".\Release\bin\DaxStudio.runtimeconfig.json;.\Release\bin\DaxStudio.deps.json;.\Release\bin\DaxStudio.Checker.runtimeconfig.json;.\Release\bin\DaxStudio.Checker.deps.json;.\Release\bin\dscmd.runtimeconfig.json;.\Release\bin\dscmd.deps.json" />
+      <ExeFilesToCopy Include=".\Release\bin\DaxStudio.runtimeconfig.json;.\Release\bin\DaxStudio.deps.json;.\Release\bin\DaxStudio.Checker.runtimeconfig.json;.\Release\bin\DaxStudio.Checker.deps.json;.\Release\bin\dscmd.runtimeconfig.json;.\Release\bin\dscmd.deps.json" />
     </ItemGroup>
-    <Message Text="Moving exe files" Importance="High" />
-    <Move SourceFiles="@(FilesToMove)" DestinationFolder=".\Release" />
+    <Message Text="Copying exe files to Release root" Importance="High" />
+    <!-- Copy instead of Move so tests can still find assemblies in Release\bin\ -->
+    <Copy SourceFiles="@(ExeFilesToCopy)" DestinationFolder=".\Release" />
   </Target>
 
 
