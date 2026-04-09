@@ -274,10 +274,8 @@ namespace DaxStudio.Standalone
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             if (Application.Current?.Dispatcher?.HasShutdownStarted??true) return;
-            var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
-            //e.Exception.InnerExceptions
             e.SetObserved();
-            LogFatalCrash(e.Exception, msg, _options);
+            Log.Error(e.Exception, "{class} {method} {message}", nameof(EntryPoint), nameof(TaskSchedulerOnUnobservedTaskException), "Unobserved task exception");
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
