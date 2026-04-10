@@ -1,4 +1,5 @@
 using Antlr4.Runtime;
+using Antlr4.Runtime.Atn;
 using DaxStudio.UI.Grammars.Generated;
 using DaxStudio.UI.Model;
 using Serilog;
@@ -15,6 +16,53 @@ namespace DaxStudio.UI.Utils
     /// </summary>
     public class AntlrXmSqlParser : IXmSqlParser
     {
+        // Shared stateless error listener singletons
+        private static readonly SilentErrorListener _silentLexerListener = new SilentErrorListener();
+        private static readonly SilentParseErrorListener _silentParserListener = new SilentParseErrorListener();
+
+        // Reusable xmSQL lexer/parser/token stream (created lazily on first use)
+        private xmSQLLexer _xmLexer;
+        private CommonTokenStream _xmTokenStream;
+        private xmSQLParser _xmParser;
+
+        // Reusable DirectQuery lexer/parser/token stream (created lazily on first use)
+        private DirectQuerySqlLexer _dqLexer;
+        private CommonTokenStream _dqTokenStream;
+        private DqParser _dqParser;
+
+        private void EnsureXmSqlParserInitialized()
+        {
+            if (_xmLexer != null) return;
+
+            var emptyStream = new AntlrInputStream(string.Empty);
+            _xmLexer = new xmSQLLexer(emptyStream);
+            _xmLexer.RemoveErrorListeners();
+            _xmLexer.AddErrorListener(_silentLexerListener);
+
+            _xmTokenStream = new CommonTokenStream(_xmLexer);
+
+            _xmParser = new xmSQLParser(_xmTokenStream);
+            _xmParser.RemoveErrorListeners();
+            _xmParser.AddErrorListener(_silentParserListener);
+            _xmParser.Interpreter.PredictionMode = PredictionMode.SLL;
+        }
+
+        private void EnsureDirectQueryParserInitialized()
+        {
+            if (_dqLexer != null) return;
+
+            var emptyStream = new AntlrInputStream(string.Empty);
+            _dqLexer = new DirectQuerySqlLexer(emptyStream);
+            _dqLexer.RemoveErrorListeners();
+            _dqLexer.AddErrorListener(_silentLexerListener);
+
+            _dqTokenStream = new CommonTokenStream(_dqLexer);
+
+            _dqParser = new DqParser(_dqTokenStream);
+            _dqParser.RemoveErrorListeners();
+            _dqParser.AddErrorListener(_silentParserListener);
+        }
+
         /// <inheritdoc />
         public bool ParseQuery(string xmSql, XmSqlAnalysis analysis, long? estimatedRows = null, long? durationMs = null)
         {
@@ -51,18 +99,15 @@ namespace DaxStudio.UI.Utils
                     analysis.TotalScanCpuTimeMs += metrics.CpuTimeMs.Value;
                 }
 
-                // Lex and parse
-                var inputStream = new AntlrInputStream(xmSql);
-                var lexer = new xmSQLLexer(inputStream);
-                lexer.RemoveErrorListeners();
-                lexer.AddErrorListener(new SilentErrorListener());
+                // Reuse lexer/parser instances to avoid repeated construction
+                EnsureXmSqlParserInitialized();
 
-                var tokenStream = new CommonTokenStream(lexer);
-                var parser = new xmSQLParser(tokenStream);
-                parser.RemoveErrorListeners();
-                parser.AddErrorListener(new SilentParseErrorListener());
+                _xmLexer.SetInputStream(new AntlrInputStream(xmSql));
+                _xmTokenStream.SetTokenSource(_xmLexer);
+                _xmParser.TokenStream = _xmTokenStream;
+                _xmParser.Reset();
 
-                var tree = parser.query();
+                var tree = _xmParser.query();
 
                 // First pass: build lineage
                 var visitor = new XmSqlAnalysisVisitor(analysis, metrics);
@@ -105,18 +150,15 @@ namespace DaxStudio.UI.Utils
                     analysis.TotalDirectQueryDurationMs += metrics.DurationMs.Value;
                 }
 
-                // Lex and parse
-                var inputStream = new AntlrInputStream(sql);
-                var lexer = new DirectQuerySqlLexer(inputStream);
-                lexer.RemoveErrorListeners();
-                lexer.AddErrorListener(new SilentErrorListener());
+                // Reuse lexer/parser instances to avoid repeated construction
+                EnsureDirectQueryParserInitialized();
 
-                var tokenStream = new CommonTokenStream(lexer);
-                var parser = new DqParser(tokenStream);
-                parser.RemoveErrorListeners();
-                parser.AddErrorListener(new SilentParseErrorListener());
+                _dqLexer.SetInputStream(new AntlrInputStream(sql));
+                _dqTokenStream.SetTokenSource(_dqLexer);
+                _dqParser.TokenStream = _dqTokenStream;
+                _dqParser.Reset();
 
-                var tree = parser.query();
+                var tree = _dqParser.query();
 
                 var visitor = new DirectQuerySqlAnalysisVisitor(analysis, metrics);
                 visitor.Visit(tree);
