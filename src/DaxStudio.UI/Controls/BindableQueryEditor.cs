@@ -1,3 +1,4 @@
+using DaxStudio.Common;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using ICSharpCode.AvalonEdit;
@@ -38,8 +39,38 @@ namespace DaxStudio.UI.Controls
         private static void OnBoundTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var editor = (BindableQueryEditor)d;
-            var newText = e.NewValue as string;
-            editor.Text = newText ?? string.Empty;
+            var newText = e.NewValue as string ?? string.Empty;
+
+            // Break very long lines to prevent AvalonEdit colorization freezes.
+            // This uses the same LongLineStateMachine approach as the paste handler
+            // in DocumentViewModel.
+            if (newText.Length > 0 && HasLongLines(newText))
+            {
+                var sm = new LongLineStateMachine(Constants.MaxLineLength);
+                newText = sm.ProcessString(newText);
+            }
+
+            editor.Text = newText;
+        }
+
+        /// <summary>
+        /// Quick check for whether any line exceeds the max length threshold.
+        /// Avoids the overhead of LongLineStateMachine for normal-sized text.
+        /// </summary>
+        private static bool HasLongLines(string text)
+        {
+            int lineLength = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n')
+                    lineLength = 0;
+                else
+                    lineLength++;
+
+                if (lineLength > Constants.MaxLineLength)
+                    return true;
+            }
+            return false;
         }
 
         #endregion
