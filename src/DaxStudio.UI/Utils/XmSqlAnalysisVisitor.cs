@@ -692,10 +692,15 @@ namespace DaxStudio.UI.Utils
 
         public override object VisitCoalesceFilter(xmSQLParser.CoalesceFilterContext context)
         {
-            var tcRef = context.tableColumnRef();
-            if (tcRef != null)
+            var coalesceTableRef = context.tableRef();
+            var bracketedName = context.BRACKETED_NAME();
+            if (coalesceTableRef != null && bracketedName != null)
             {
-                var tc = GetTableColumn(tcRef);
+                var table = GetTableName(coalesceTableRef);
+                var column = GetBracketedContent(bracketedName);
+                var tc = (!string.IsNullOrEmpty(table) && !string.IsNullOrEmpty(column))
+                    ? ((string Table, string Column)?)(table, column)
+                    : null;
                 if (tc != null)
                 {
                     AddColumnUsage(tc.Value.Table, tc.Value.Column, XmSqlColumnUsage.Filter);

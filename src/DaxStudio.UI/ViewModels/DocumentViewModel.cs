@@ -276,7 +276,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new SizeUnitsUpdatedEvent((UnitViewModel)sender));
         }
 
-        internal void LoadAutoSaveFile(Guid autoSaveId)
+        internal async Task LoadAutoSaveFileAsync(Guid autoSaveId)
         {
 
             var text = AutoSaver.GetAutoSaveText(autoSaveId);
@@ -290,7 +290,7 @@ namespace DaxStudio.UI.ViewModels
                 editor.Document.EndUpdate();
             });
 
-            LoadState();
+            await LoadStateAsync();
             State = DocumentState.Loaded;
             _eventAggregator.PublishOnUIThreadAsync(new RecoverNextAutoSaveFileEvent());
         }
@@ -352,7 +352,7 @@ namespace DaxStudio.UI.ViewModels
                         await OpenFileAsync();
                         break;
                     case DocumentState.RecoveryPending:
-                        LoadAutoSaveFile(AutoSaveId);
+                        await LoadAutoSaveFileAsync(AutoSaveId);
                         break;
                 }
 
@@ -2825,6 +2825,7 @@ namespace DaxStudio.UI.ViewModels
                 stvModel.ServerTimingDetails = ServerTimingDetails;
                 stvModel.RemapColumnNames = Connection.DaxColumnsRemapInfo.RemapNames;
                 stvModel.RemapTableNames = Connection.DaxTablesRemapInfo.RemapNames;
+                stvModel.DateColumnIds = Connection.DaxColumnsRemapInfo.DateColumnIds;
             }
         }
 
@@ -3211,54 +3212,74 @@ namespace DaxStudio.UI.ViewModels
                 LoadFile(FileName);
             });
 
-            //// todo - should we be checking for exceptions in this continuation
-            //if (!FileName.EndsWith(".vpax", StringComparison.OrdinalIgnoreCase)
-            //    && !FileName.EndsWith(".ovpax", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    await ChangeConnectionAsync();
-            //}
+            // Wait for the background file loading to complete before proceeding
+            // so the backstage loading overlay closes before the connection dialog opens
+            if (_loadFileTask != null) await _loadFileTask;
 
             // todo - should we be checking for exceptions in this continuation
             IsDirty = false;
 
         }
 
-        private void LoadState()
+        private async Task LoadStateAsync()
         {
             if (!_isLoadingFile) return;
 
             foreach (ISaveState tw in ToolWindows.Where(w => w is ISaveState && !(w is ITraceWatcher)))
             {
-                tw.Load(FileName);
+                var sw = Stopwatch.StartNew();
+                await Application.Current.Dispatcher.InvokeAsync(
+                    () => tw.Load(FileName),
+                    DispatcherPriority.Background);
+                sw.Stop();
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadStateAsync), $"Loaded tool window {tw.GetType().Name} in {sw.ElapsedMilliseconds}ms");
             }
 
             foreach (ISaveState tw in TraceWatchers.Where(w => w is ISaveState))
             {
-                tw.Load(FileName);
+                var sw = Stopwatch.StartNew();
+                await Application.Current.Dispatcher.InvokeAsync(
+                    () => tw.Load(FileName),
+                    DispatcherPriority.Background);
+                sw.Stop();
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadStateAsync), $"Loaded trace watcher {tw.GetType().Name} in {sw.ElapsedMilliseconds}ms");
             }
         }
 
-        private void LoadState(Package package)
+        private async Task LoadStateAsync(Package package)
         {
             if (!_isLoadingFile) return;
 
             foreach (ISaveState tw in ToolWindows.Where(w => w is ISaveState && !(w is ITraceWatcher)))
             {
-                tw.LoadPackage(package);
+                var sw = Stopwatch.StartNew();
+                await Application.Current.Dispatcher.InvokeAsync(
+                    () => tw.LoadPackage(package),
+                    DispatcherPriority.Background);
+                sw.Stop();
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadStateAsync), $"Loaded tool window package {tw.GetType().Name} in {sw.ElapsedMilliseconds}ms");
             }
 
             foreach (ISaveState tw in TraceWatchers.Where(w => w is ISaveState))
             {
-                tw.LoadPackage(package);
+                var sw = Stopwatch.StartNew();
+                await Application.Current.Dispatcher.InvokeAsync(
+                    () => tw.LoadPackage(package),
+                    DispatcherPriority.Background);
+                sw.Stop();
+                Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadStateAsync), $"Loaded trace watcher package {tw.GetType().Name} in {sw.ElapsedMilliseconds}ms");
             }
 
             // check for embedded vpax file
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.VpaxFile, UriKind.Relative));
             if (package.PartExists(uri))
             {
-                vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
-                ToolWindows.Add(vpaView);
-                vpaView.LoadPackage(package);
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    vpaView = new VertiPaqAnalyzerViewModel(this._eventAggregator, this, this.Options);
+                    ToolWindows.Add(vpaView);
+                    vpaView.LoadPackage(package);
+                }, DispatcherPriority.Background);
             }
 
         }
@@ -3295,40 +3316,48 @@ namespace DaxStudio.UI.ViewModels
                         _isLoadingFile = true;
 
                         // Run file I/O on background thread
-                        Task.Run(() =>
+                        _loadFileTask = Task.Run(async () =>
                         {
-                            if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
+                            try
                             {
-                                using (var package = LoadPackageFile())
+                                if (FileName.EndsWith(".daxx", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // LoadState needs UI thread access for some operations
-                                    Execute.OnUIThread(() => LoadState(package));
+                                    using (var package = LoadPackageFile())
+                                    {
+                                        // LoadState dispatches each tool window load individually at Background priority
+                                        // so WPF Render frames (spinner animation) can interleave between loads
+                                        await LoadStateAsync(package);
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                LoadSingleFile();
-                                // LoadState needs UI thread access for some operations
-                                Execute.OnUIThread(() => LoadState());
-                            }
-                        }).ContinueWith(t =>
-                        {
-                            // Handle completion on UI thread
-                            if (t.IsFaulted)
-                            {
-                                Log.Error(t.Exception, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
-                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {t.Exception?.InnerException?.Message ?? t.Exception?.Message}"));
-                            }
-                            else
-                            {
-                                _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(fileName));
-                            }
+                                else
+                                {
+                                    LoadSingleFile();
+                                    // LoadState dispatches each tool window load individually at Background priority
+                                    // so WPF Render frames (spinner animation) can interleave between loads
+                                    await LoadStateAsync();
+                                }
 
-                            _isLoadingFile = false;
-                            IsDirty = false;
-                            State = DocumentState.Loaded;
-                            
-                        }, TaskScheduler.FromCurrentSynchronizationContext());
+                                // Handle completion on UI thread
+                                await Application.Current.Dispatcher.InvokeAsync(() =>
+                                {
+                                    _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(fileName));
+                                    _isLoadingFile = false;
+                                    IsDirty = false;
+                                    State = DocumentState.Loaded;
+                                }, DispatcherPriority.Background);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(LoadFile), "Error loading file");
+                                await Application.Current.Dispatcher.InvokeAsync(() =>
+                                {
+                                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading file: {ex.InnerException?.Message ?? ex.Message}"));
+                                    _isLoadingFile = false;
+                                    IsDirty = false;
+                                    State = DocumentState.Loaded;
+                                }, DispatcherPriority.Background);
+                            }
+                        });
                         
                         // Return immediately - completion happens in continuation
                         return;
@@ -3372,17 +3401,14 @@ namespace DaxStudio.UI.ViewModels
             }
 
             // Update editor on UI thread
-            Execute.OnUIThread(() =>
+            // Use Background priority so WPF Render frames (spinner animation) are not starved
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 var editor = GetEditor();
-                // put contents in edit window
-                editor.Dispatcher.Invoke(() =>
-                {
-                    editor.Document.BeginUpdate();
-                    editor.Document.Text = fileContents;
-                    editor.Document.EndUpdate();
-                });
-            });
+                editor.Document.BeginUpdate();
+                editor.Document.Text = fileContents;
+                editor.Document.EndUpdate();
+            }, DispatcherPriority.Background);
 
             return package;
         }
@@ -3397,17 +3423,14 @@ namespace DaxStudio.UI.ViewModels
             }
             
             // Update editor on UI thread
-            Execute.OnUIThread(() =>
+            // Use Background priority so WPF Render frames (spinner animation) are not starved
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 var editor = GetEditor();
-                // put contents in edit window
-                editor.Dispatcher.Invoke(() =>
-                {
-                    editor.Document.BeginUpdate();
-                    editor.Document.Text = fileContents;
-                    editor.Document.EndUpdate();
-                });
-            });
+                editor.Document.BeginUpdate();
+                editor.Document.Text = fileContents;
+                editor.Document.EndUpdate();
+            }, DispatcherPriority.Background);
         }
 
         public new string DisplayName
@@ -3861,6 +3884,7 @@ namespace DaxStudio.UI.ViewModels
         }
         private bool _canPaste = true;
         private bool _isLoadingFile;
+        private Task _loadFileTask;
         public bool CanPaste
         {
             get { return _canPaste; }

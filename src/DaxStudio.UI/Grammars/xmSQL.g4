@@ -79,7 +79,7 @@ selectItem
     | callbackExpr alias?
     | tableColumnRef CALLBACKDATAID? alias?
     | EXPR_AT_REF     // @$Expr0 reference
-    | expression       // catch-all for complex expressions
+    | expression alias?  // catch-all for complex expressions (e.g., SIMPLEINDEXN(...) AS alias)
     ;
 
 // Optional select item alias: AS [name] or AS 'name'
@@ -140,14 +140,14 @@ filterPredicate
     | tableColumnRef BETWEEN filterValue AND filterValue            // 'T'[C] BETWEEN v1 AND v2
     | tableColumnRef ININDEX tableColumnRef                         // 'T1'[C1] ININDEX '$T'[C2]
     | coalesceFilter                                                 // PFCASTCOALESCE/COALESCE(col) = val
-    | (PFCASTCOALESCE | COALESCE) LPAREN LPAREN expression RPAREN RPAREN  // COALESCE((expr))
     | tableColumnRef CALLBACKDATAID                                  // callback in filter
     | LPAREN tableColumnRef (COMMA tableColumnRef)* RPAREN IN LBRACE tupleList RBRACE  // (col1, col2) IN {(v1,v2), ...}
+    | LPAREN filterPredicate RPAREN                                  // parenthesized predicate
     | expression                                                     // catch-all for unknown filter patterns
     ;
 
 coalesceFilter
-    : (PFCASTCOALESCE | COALESCE) LPAREN tableColumnRef (AS IDENTIFIER)? RPAREN 
+    : (PFCASTCOALESCE | COALESCE) LPAREN tableRef (BRACKETED_NAME | DOT BRACKETED_NAME) (AS IDENTIFIER)? RPAREN
       comparisonOp 
       (COALESCE LPAREN)? filterValue RPAREN?
     ;
@@ -285,10 +285,10 @@ QUOTED_TABLE_NAME
     : '\'' (~['\r\n])+ '\''
     ;
 
-// Bracketed name: [ColumnName], [$SemijoinProjection], etc.
-// Contains everything between [ and ]
+// Bracketed name: [ColumnName], [$SemijoinProjection], [CallbackDataID('T'[Col])], etc.
+// Supports one level of nested brackets for callback expressions
 BRACKETED_NAME
-    : '[' (~[\]\r\n])+ ']'
+    : '[' ( ~('[' | ']' | '\r' | '\n') | '[' ~(']' | '\r' | '\n')* ']' )+ ']'
     ;
 
 // String literals (double-quoted)

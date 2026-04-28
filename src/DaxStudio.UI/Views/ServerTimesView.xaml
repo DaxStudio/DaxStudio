@@ -122,7 +122,7 @@
                 <Setter Property="Margin" Value="2 2" />
             </Style>
 
-            <Style x:Key="TimelineCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DefaultDataGridCellStyle}">
+            <Style x:Key="TimelineCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource DsDataGridCellStyle}">
                 <Setter Property="ToolTip">
                     <Setter.Value>
                         <Grid>

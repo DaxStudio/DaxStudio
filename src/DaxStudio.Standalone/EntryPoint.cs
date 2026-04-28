@@ -63,6 +63,8 @@ namespace DaxStudio.Standalone
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
 
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
+
             //ConsoleHandler.RedirectToParent();
 
             // Setup logging, default to information level to start with to log the startup and key system information
@@ -70,9 +72,6 @@ namespace DaxStudio.Standalone
 
             ConfigureLogging(levelSwitch);
             Log.Information("============ DaxStudio Startup =============");
-
-            // Default web requests like AAD Auth to use windows credentials for proxy auth
-            System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
 
             // check if the config file has been set to force software rendering
             bool.TryParse(ConfigurationManager.AppSettings["ForceSoftwareRendering"], out var forceSoftwareRendering);
@@ -90,9 +89,6 @@ namespace DaxStudio.Standalone
 
             var settingProvider = IoC.Get<ISettingProvider>();
             if (App.Args().Reset) settingProvider.Reset();
-
-            AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-
                 
             // force control tooltips to display even if disabled
             ToolTipService.ShowOnDisabledProperty.OverrideMetadata(
@@ -138,10 +134,20 @@ namespace DaxStudio.Standalone
             // only used for testing of crash reporting UI
             if (App.Args().TriggerCrashTest) throw new ArgumentException("Test Exception triggered by command line argument");
 
-            JumpListHelper.ConfigureJumpList(App);
-
             if (!App.Args().ShowHelp)
             {
+                // Default web requests like AAD Auth to use windows credentials for proxy auth
+                // Queued at Background priority so the dispatcher processes it after the
+                // first frame renders, avoiding a potential WPAD proxy auto-detection delay
+                // blocking the UI from appearing.
+                // Similarly we can configure the jumplist on a background thread rather than blocking the UI
+                App.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,
+                    new System.Action(() =>
+                    {
+                        System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+                        JumpListHelper.ConfigureJumpList(App);
+                    }));
+
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
                 App.Run();
@@ -275,10 +281,8 @@ namespace DaxStudio.Standalone
         private static void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             if (Application.Current?.Dispatcher?.HasShutdownStarted??true) return;
-            var msg = "DAX Studio Standalone TaskSchedulerOnUnobservedException";
-            //e.Exception.InnerExceptions
             e.SetObserved();
-            LogFatalCrash(e.Exception, msg, _options);
+            Log.Error(e.Exception, "{class} {method} {message}", nameof(EntryPoint), nameof(TaskSchedulerOnUnobservedTaskException), "Unobserved task exception");
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)

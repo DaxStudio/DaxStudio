@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.UI.Events;
@@ -211,7 +211,7 @@ namespace DaxStudio.UI.ViewModels
         [JsonIgnore]
         public long? DisplayDuration => Convert.ToInt64((EndTime - StartTime).TotalMilliseconds);
 
-        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
+        public TraceStorageEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables, HashSet<string> dateColumnIds = null)
         {
             Options = options;
             RowNumber = rowNumber;
@@ -223,7 +223,7 @@ namespace DaxStudio.UI.ViewModels
             TextData = ev.TextData;
             ObjectName = ev.ObjectName;
 
-            FormatQuery(remapColumns, remapTables);
+            FormatQuery(remapColumns, remapTables, dateColumnIds);
 
             // Skip Duration/Cpu Time for Cache Match
             if (ClassSubclass.Subclass != DaxStudioTraceEventSubclass.VertiPaqCacheExactMatch)
@@ -242,7 +242,7 @@ namespace DaxStudio.UI.ViewModels
         /// Formats the query text based on current Options. Can be called again to
         /// re-apply formatting after options change (e.g., toggling simplify/format settings).
         /// </summary>
-        public void FormatQuery(Dictionary<string, string> remapColumns = null, Dictionary<string, string> remapTables = null)
+        public void FormatQuery(Dictionary<string, string> remapColumns = null, Dictionary<string, string> remapTables = null, HashSet<string> dateColumnIds = null)
         {
             switch (Class)
             {
@@ -275,8 +275,10 @@ namespace DaxStudio.UI.ViewModels
                             out long antlrRows,
                             out long antlrBytes,
                             out bool antlrHasSize,
+                            Options.ReplaceXmSqlDatesWithIsoFormat,
                             remapColumns,
-                            remapTables);
+                            remapTables,
+                            dateColumnIds);
 
                         if (antlrResult != null)
                         {
@@ -315,6 +317,12 @@ namespace DaxStudio.UI.ViewModels
                                     .RemoveDoubleBracketsInCallbacks()
                                     .FormatIndexSize()
                                 : queryRemapped;
+
+                    // Convert OA date values in COALESCE filters to ISO dates
+                    if (Options.ReplaceXmSqlDatesWithIsoFormat)
+                    {
+                        Query = Query.ConvertCoalesceDatesToIso();
+                    }
                     break;
             }
 
@@ -351,8 +359,8 @@ namespace DaxStudio.UI.ViewModels
     public class ExecutionMetricsTraceEngineEvent: TraceStorageEngineEvent {
         public ExecutionMetricsTraceEngineEvent() { }
 
-        public ExecutionMetricsTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables)
-            : base(ev, rowNumber, options, remapColumns, remapTables)
+        public ExecutionMetricsTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables, HashSet<string> dateColumnIds = null)
+            : base(ev, rowNumber, options, remapColumns, remapTables, dateColumnIds)
         {
             TextData = ev.TextData;
         }
@@ -421,8 +429,8 @@ namespace DaxStudio.UI.ViewModels
 
         public RewriteTraceEngineEvent() { }
 
-        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables) 
-            : base(ev, rowNumber, options, remapColumns, remapTables) {
+        public RewriteTraceEngineEvent(DaxStudioTraceEventArgs ev, int rowNumber, IGlobalOptions options, Dictionary<string, string> remapColumns, Dictionary<string, string> remapTables, HashSet<string> dateColumnIds = null) 
+            : base(ev, rowNumber, options, remapColumns, remapTables, dateColumnIds) {
             TextData = ev.TextData;
         }
         
@@ -593,6 +601,21 @@ namespace DaxStudio.UI.ViewModels
         {
             return xmSqlTotalValues.Replace(xmSqlQuery, FormatNumber);
         }
+
+        // Regex to find numeric literals inside COALESCE(...) in the fallback (non-ANTLR) path
+        private static readonly Regex CoalesceDatePattern = new Regex(
+            @"(?<=COALESCE\s*\(\s*)-?\d+(?:\.\d+)?(?=\s*\))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// In the regex-based fallback path, annotates numeric values inside COALESCE(number)
+        /// with an ISO date comment if they fall within a plausible OLE Automation date range.
+        /// </summary>
+        public static string ConvertCoalesceDatesToIso(this string xmSqlQuery)
+        {
+            return CoalesceDatePattern.Replace(xmSqlQuery, m =>
+                XmSqlFormattingVisitor.TryConvertOADateToIso(m.Value));
+        }
         public static string HighlightXmSqlTokens(this string xmSqlQuery, MatchEvaluator evaluator )
         {
             return xmSqlKeywords.Replace(xmSqlQuery, evaluator);
@@ -723,6 +746,7 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; set; }
         public Dictionary<string, string> RemapColumnNames { get; set; }
         public Dictionary<string, string> RemapTableNames { get; set; }
+        public HashSet<string> DateColumnIds { get; set; }
 
         [ImportingConstructor]
         public ServerTimesViewModel(IEventAggregator eventAggregator, ServerTimingDetailsViewModel serverTimingDetails
@@ -731,6 +755,7 @@ namespace DaxStudio.UI.ViewModels
             _storageEngineEvents = new BindableCollection<TraceStorageEngineEvent>();
             RemapColumnNames = new Dictionary<string, string>();
             RemapTableNames = new Dictionary<string, string>();
+            DateColumnIds = new HashSet<string>();
             Options = options;
             // Use global option as a default but doesn't change it at runtime
             StorageEventTimelineStyle = options.StorageEventHeatmapStyle;
@@ -786,6 +811,8 @@ namespace DaxStudio.UI.ViewModels
 
         public bool ReplaceXmSqlTableNames => Options.ReplaceXmSqlTableNames;
 
+        public bool ReplaceXmSqlDatesWithIsoFormat => Options.ReplaceXmSqlDatesWithIsoFormat;
+
         public bool ShowTotalDirectQueryDuration => Options.ShowTotalDirectQueryDuration;
 
         public bool ShowStorageEngineNetParallelDuration => Options.ShowStorageEngineNetParallelDuration;
@@ -816,6 +843,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(nameof(HighlightXmSqlCallbacks));
             NotifyOfPropertyChange(nameof(SimplifyXmSqlSyntax));
             NotifyOfPropertyChange(nameof(ReplaceXmSqlColumnNames));
+            NotifyOfPropertyChange(nameof(ReplaceXmSqlDatesWithIsoFormat));
             NotifyOfPropertyChange(nameof(StorageEventHeatmapHeight));
             NotifyOfPropertyChange(nameof(StorageEventTimelineStyle));
             NotifyOfPropertyChange(nameof(TimelineVerticalMargin));
@@ -846,7 +874,7 @@ namespace DaxStudio.UI.ViewModels
                     if (singleEvent.ActivityId == _queryEndActivityId && !string.IsNullOrEmpty(_queryEndActivityId))
                     {
                         _queryEndActivityId = string.Empty;
-                        AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(singleEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                        AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(singleEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
                         NotifyOfPropertyChange(nameof(StorageEngineEvents));
                     }
                     break;
@@ -1166,7 +1194,7 @@ namespace DaxStudio.UI.ViewModels
 
                             }
                             UpdateTimelineTotalDuration(traceEvent);
-                            AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
 
                             break;
                         case DaxStudioTraceEventClass.DirectQueryEnd:
@@ -1177,14 +1205,14 @@ namespace DaxStudio.UI.ViewModels
                             StorageEngineCpu += traceEvent.CpuTime;
                             StorageEngineQueryCount++;
                             UpdateTimelineTotalDuration(traceEvent);
-                            AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
                             break;
 
                         case DaxStudioTraceEventClass.AggregateTableRewriteQuery:
-                            AllStorageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            AllStorageEngineEvents.Add(new RewriteTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
                             break;
                         case DaxStudioTraceEventClass.ExecutionMetrics:
-                            //AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            //AllStorageEngineEvents.Add(new ExecutionMetricsTraceEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
                             break;
                         case DaxStudioTraceEventClass.QueryEnd:
 
@@ -1204,7 +1232,7 @@ namespace DaxStudio.UI.ViewModels
 
                             VertipaqCacheMatches++;
                             UpdateTimelineTotalDuration(traceEvent);
-                            AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                            AllStorageEngineEvents.Add(new TraceStorageEngineEvent(traceEvent, AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
                             break;
                     }
                 }
@@ -1216,7 +1244,7 @@ namespace DaxStudio.UI.ViewModels
                                             (e.Class == DaxStudioTraceEventClass.VertiPaqSEQueryEnd && (e.Subclass == DaxStudioTraceEventSubclass.VertiPaqScan || e.Subclass == DaxStudioTraceEventSubclass.BatchVertiPaqScan)) 
                                             || e.Class == DaxStudioTraceEventClass.DirectQueryEnd).Sum(e => e.Duration)??0;
 
-                AllStorageEngineEvents.Add(new TraceStorageEngineEvent(new DaxStudioTraceEventArgs("Total", "NotAvailable", totalSEDuration, 0, string.Empty, string.Empty, QueryStartDateTime), AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames));
+                AllStorageEngineEvents.Add(new TraceStorageEngineEvent(new DaxStudioTraceEventArgs("Total", "NotAvailable", totalSEDuration, 0, string.Empty, string.Empty, QueryStartDateTime), AllStorageEngineEvents.Count + 1, Options, RemapColumnNames, RemapTableNames, DateColumnIds));
                 */
 
                 // New calculation for parallel SE queries (2022-10-03) Marco Russo
@@ -1796,7 +1824,12 @@ namespace DaxStudio.UI.ViewModels
             AllStorageEngineEvents.Apply(se =>
             {
                 se.HighlightQuery = se.QueryRichText?.ContainsCallback() ?? false;
-                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData ?? se.Query); }
+                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd  
+                    && se.ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL 
+                    && _globalOptions.FormatDirectQuerySql) 
+                { 
+                    se.QueryRichText = SqlFormatter.FormatSql(se.TextData ?? se.Query); 
+                }
             });
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 4)
@@ -1808,7 +1841,6 @@ namespace DaxStudio.UI.ViewModels
             // Run query similarity grouping on pasted/loaded data (only if column is visible)
             if (ShowQueryGroupColumn) _ = RunQueryGroupingAsync();
         }
-
 
         #endregion
 
@@ -2229,13 +2261,14 @@ namespace DaxStudio.UI.ViewModels
                 var events = _storageEngineEvents.ToList();
                 var remapColumns = RemapColumnNames;
                 var remapTables = RemapTableNames;
+                var dateColIds = DateColumnIds;
 
                 await Task.Run(() =>
                 {
                     int processedCount = 0;
                     foreach (var evt in events)
                     {
-                        evt.FormatQuery(remapColumns, remapTables);
+                        evt.FormatQuery(remapColumns, remapTables, dateColIds);
 
                         processedCount++;
                         if (processedCount % 50 == 0)

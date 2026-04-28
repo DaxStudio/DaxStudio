@@ -143,6 +143,7 @@ namespace DaxStudio.Interfaces
         bool ReplaceXmSqlColumnNames { get; set; }
         bool ReplaceXmSqlTableNames { get; set; }
         bool FormatXmSql { get; set; }
+        bool ReplaceXmSqlDatesWithIsoFormat { get; set; }
         bool FormatDirectQuerySql { get; set; }
         bool SendMetadataToQueryBuilderIfOpen { get; set; }
 

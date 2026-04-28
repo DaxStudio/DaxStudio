@@ -419,10 +419,15 @@ namespace DaxStudio.UI.Utils
             var coalesceCtx = pred.coalesceFilter();
             if (coalesceCtx != null)
             {
-                var tcRef = coalesceCtx.tableColumnRef();
-                if (tcRef != null)
+                var coalesceTableRef = coalesceCtx.tableRef();
+                var bracketedName = coalesceCtx.BRACKETED_NAME();
+                if (coalesceTableRef != null && bracketedName != null)
                 {
-                    var tc = GetTableColumn(tcRef);
+                    var table = GetTableName(coalesceTableRef);
+                    var column = GetBracketedContent(bracketedName);
+                    var tc = (!string.IsNullOrEmpty(table) && !string.IsNullOrEmpty(column))
+                        ? ((string Table, string Column)?)(table, column)
+                        : null;
                     if (tc != null)
                     {
                         var resolved = ResolveToPhysical(tc.Value.Table, tc.Value.Column);

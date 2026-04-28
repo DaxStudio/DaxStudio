@@ -36,7 +36,8 @@
   <Color name="Dark.Parenthesis"     foreground="#636363" />
   
   <RuleSet ignoreCase="true">
-		<Span color="Comment" multiline="false">
+	<!-- comments -->
+	<Span color="Comment" multiline="false">
       <Begin>//</Begin>
     </Span>
     <Span color="Comment" multiline="false">
@@ -53,7 +54,7 @@
       <RuleSet>
         <Span begin="\\" end="." />
       </RuleSet>
-		</Span>
+	</Span>
   
     <Span color="Identifier">
 			<Begin>'</Begin>
@@ -425,6 +426,7 @@
       <Word>DESC</Word>
       <Word>EVALUATE</Word>
       <Word>FROM</Word>
+	  <Word>FUNCTION</Word>
       <Word>IN</Word>
       <Word>MEASURE</Word>
       <Word>NONE</Word>
@@ -460,7 +462,6 @@
     </Keywords>
    
     <Rule color="Numbers">[\d\w_]+(?=(\s*\())</Rule>
-    
 		<Rule color="Numbers">\b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?</Rule>
 	</RuleSet>
   

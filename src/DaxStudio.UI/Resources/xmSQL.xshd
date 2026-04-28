@@ -6,6 +6,7 @@
   <Color name="Identifier" foreground="#333333" />
   <Color name="String"     foreground="#D93124" />
   <Color name="NumericLiteral" foreground="#EE7F18" />
+  <Color name="Comment" foreground="#39A03B" />
   
   <!-- Light theme colors -->
   <Color name="Light.Keyword"    foreground="#035ACA" fontWeight="bold" />
@@ -14,6 +15,7 @@
   <Color name="Light.Identifier" foreground="#333333" />
   <Color name="Light.String"     foreground="#D93124" />
   <Color name="Light.NumericLiteral" foreground="#EE7F18" />
+  <Color name="Light.Comment" foreground="#39A03B" />
   
   <!-- Dark theme colors -->
   <Color name="Dark.Keyword"    foreground="#0095FF" fontWeight="bold" />
@@ -22,8 +24,15 @@
   <Color name="Dark.Identifier" foreground="#FFFFFF" />
   <Color name="Dark.String"     foreground="#E44444" />
   <Color name="Dark.NumericLiteral" foreground="#EE7F18" />
+  <Color name="Dark.Comment" foreground="#86C573" />
 
   <RuleSet ignoreCase="true">
+    <!-- Block comments: /* ... */ -->
+    <Span color="Comment" multiline="true">
+      <Begin>/\*</Begin>
+      <End>\*/</End>
+    </Span>
+
     <!-- Callback expressions in brackets: highlights entire [CallbackName ...] including nested brackets -->
     <Rule color="Callback">
       \[(CallbackDataID|EncodeCallback|LogAbsValueCallback|RoundValueCallback|MinMaxColumnPositionCallback|Cond)\b[^\[\]]*(?:\[[^\]]*\][^\[\]]*)*\]

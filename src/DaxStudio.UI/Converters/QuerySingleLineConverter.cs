@@ -12,12 +12,17 @@ namespace DaxStudio.UI.Converters {
         static Regex setRemoval = new Regex(searchSet, RegexOptions.Compiled);
         static Regex tabRemoval = new Regex(searchTab, RegexOptions.Compiled);
 
+        private const int MaxDisplayLength = 500;
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             var sc = value as string;
             if (sc != null) {
+                // Truncate before applying regex to avoid freezing on very large queries
+                bool truncated = sc.Length > MaxDisplayLength;
+                if (truncated) sc = sc.Substring(0, MaxDisplayLength);
                 string s1 = setRemoval.Replace(sc, "");
                 string s2 = tabRemoval.Replace(s1, " ");
-                return s2.Trim();
+                return truncated ? s2.Trim() + " …" : s2.Trim();
             }
             return System.Windows.Data.Binding.DoNothing;
         }

@@ -656,6 +656,7 @@ namespace DaxStudio.UI.Utils.Intellisense
                 // Keywords
                 tmpData.Add(new DaxCompletionData(this, "EVALUATE", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MEASURE", 200.0));
+                tmpData.Add(new DaxCompletionData(this, "FUNCTION", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "MPARAMETER", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "COLUMN", 200.0));
                 tmpData.Add(new DaxCompletionData(this, "TABLE", 200.0));

@@ -283,5 +283,389 @@ namespace DaxStudio.Tests
             Assert.IsTrue(result.Contains("Estimated size: rows = 4,940"), "Should have formatted estimated rows");
             Assert.IsTrue(result.Contains("bytes = 59,280"), "Should have formatted estimated bytes");
         }
+
+        // ==================== DATE CONVERSION TESTS ====================
+
+        [TestMethod]
+        public void TryConvertOADateToIso_DateOnly_AppendsComment()
+        {
+            // 46087.000000 = 2026-03-06
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("46087.000000");
+            Assert.AreEqual("46087.000000 /* 2026-03-06 */", result);
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_DateWithTime_AppendsDateTimeComment()
+        {
+            // 46087.5 = 2026-03-06 12:00:00
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("46087.500000");
+            Assert.AreEqual("46087.500000 /* 2026-03-06 12:00:00 */", result);
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_IntegerDate_AppendsComment()
+        {
+            // 46023 = 2026-01-01
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("46023");
+            Assert.IsTrue(result.StartsWith("46023 /* 20"), "Should append date comment for integer value");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_OutOfRange_ReturnsOriginal()
+        {
+            // 100000 is way beyond 2099
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("100000.000000");
+            Assert.AreEqual("100000.000000", result, "Out-of-range value should not be converted");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_SmallNumber_ReturnsOriginal()
+        {
+            // 5 is not a plausible date filter
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("5");
+            // 5 is in range (> 366 is the minimum), so it should NOT be converted
+            Assert.AreEqual("5", result, "Small number below range should not be converted");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_NonNumeric_ReturnsOriginal()
+        {
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("'hello'");
+            Assert.AreEqual("'hello'", result, "Non-numeric value should be returned unchanged");
+        }
+
+        [TestMethod]
+        public void TryConvertOADateToIso_NegativeNumber_ReturnsOriginal()
+        {
+            var result = XmSqlFormattingVisitor.TryConvertOADateToIso("-100.000000");
+            Assert.AreEqual("-100.000000", result, "Negative number should not be converted");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_CoalesceFilterWithDates()
+        {
+            // Single xmSQL predicate with PFCASTCOALESCE and COALESCE-wrapped date value
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (16)].[Calendar Date (167)] AS [Date (16)$Calendar Date (167)]\r\n"
+                + "FROM [Date (16)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (16)].[Calendar Date (167)] AS  REAL ) >= COALESCE(46087.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("46087.000000"), "Should still contain original numeric value");
+            Assert.IsTrue(result.Contains("/* 2026-03-06 */"), "Should contain ISO date comment for 46087");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDatesDisabled_NoDateComments()
+        {
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (16)].[Calendar Date (167)] AS [Date (16)$Calendar Date (167)]\r\n"
+                + "FROM [Date (16)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (16)].[Calendar Date (167)] AS  REAL ) >= COALESCE(46087.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: false);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsFalse(result.Contains("/*"), "Should not contain date comments when convertDates is false");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_InListWithDates()
+        {
+            // IN list with date values
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (13)].[Date (69)] AS [Date (13)$Date (69)]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t[Date (13)].[Date (69)] IN (40593.000000, 40174.000000, 38732.000000);";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            // All three values should have date comments
+            Assert.IsTrue(result.Contains("/* 2011-02-19 */"), "Should annotate 40593");
+            Assert.IsTrue(result.Contains("/* 2009-12-27 */"), "Should annotate 40174");
+        }
+
+        [TestMethod]
+        public void Formatter_CoalesceWithCallbackAndVand_ParsesCompletely()
+        {
+            // Regression test: COALESCE wrapping a callback expression followed by VAND
+            // was losing the callback content and the second predicate entirely.
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)],\r\n"
+                + "SUM([Internet Sales (28)].[Sales Amount (142)]) AS [$Measure0]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "\tLEFT OUTER JOIN [Product (19)] ON [Internet Sales (28)].[Product Id (127)]=[Product (19)].[Product Id (93)]\r\n"
+                + "WHERE\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount])]"
+                + "(PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) > COALESCE(501.000000)) VAND\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount])]"
+                + "(PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) < COALESCE(2501.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // Both predicates should be present (VAND was being dropped)
+            Assert.IsTrue(result.Contains("VAND"), "Should contain VAND between predicates");
+
+            // Both comparison values should be present
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain first comparison value");
+            Assert.IsTrue(result.Contains("2501.000000"), "Should contain second comparison value");
+
+            // The callback expression should not be empty
+            Assert.IsTrue(result.Contains("CallbackDataID"), "Should contain CallbackDataID in output");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_NonDateColumn_NoAnnotation()
+        {
+            // Sales Amount is NOT a date column — should NOT get date annotations
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Internet Sales (28)].[Sales Amount (142)] AS REAL ) >= COALESCE(501.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain numeric value");
+            Assert.IsFalse(result.Contains("/*"), "Non-date column should NOT have date comment");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_WithMetadataSet_UsesMetadata()
+        {
+            // The metadata set says column ID "167" is a date column
+            var dateIds = new System.Collections.Generic.HashSet<string> { "167" };
+
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (16)].[Calendar Date (167)] AS [Date (16)$Calendar Date (167)]\r\n"
+                + "FROM [Date (16)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (16)].[Calendar Date (167)] AS REAL ) >= COALESCE(46087.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true,
+                dateColumnIds: dateIds);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("/* 2026-03-06 */"), "Should annotate date value when metadata confirms date column");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_WithMetadataSet_NonDateColumnIgnored()
+        {
+            // The metadata set does NOT contain "142" (Sales Amount)
+            var dateIds = new System.Collections.Generic.HashSet<string> { "167" };
+
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Internet Sales (28)].[Sales Amount (142)] AS REAL ) >= COALESCE(501.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true,
+                dateColumnIds: dateIds);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain numeric value");
+            Assert.IsFalse(result.Contains("/*"), "Metadata says this is NOT a date column - no annotation");
+        }
+
+        [TestMethod]
+        public void Formatter_ConvertDates_InListWithDateColumn_AnnotatesValues()
+        {
+            // IN list on a date column — values should be annotated
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "SELECT\r\n"
+                + "[Date (13)].[Date (69)] AS [Date (13)$Date (69)]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t[Date (13)].[Date (69)] IN (40593.000000, 40174.000000);";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+            // Column name "Date" contains "date" → name heuristic triggers annotation
+            Assert.IsTrue(result.Contains("/* 2011-02-19 */"), "Should annotate date values in IN list");
+        }
+
+        [TestMethod]
+        public void Formatter_PfcastCoalesceFilter_PreservesCoalesceWrapping()
+        {
+            // Regression: COALESCE wrapping the value was dropped when PFCASTCOALESCE started the filter
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "DEFINE TABLE [$TTable2] := SELECT\r\n"
+                + "SIMPLEINDEXN([Date (13)].[Date (69)]) AS [$SemijoinProjection]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) > COALESCE(40969.000000)) VAND\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) < COALESCE(40998.000000));";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // COALESCE wrapping must be preserved
+            Assert.IsTrue(result.Contains("COALESCE ( 40969.000000"), "Should preserve COALESCE wrapping around first value");
+            Assert.IsTrue(result.Contains("COALESCE ( 40998.000000"), "Should preserve COALESCE wrapping around second value");
+
+            // Both predicates with VAND
+            Assert.IsTrue(result.Contains("VAND"), "Should contain VAND between predicates");
+
+            // Date annotations (name heuristic: "Date" contains "date")
+            Assert.IsTrue(result.Contains("/*"), "Date column should have date annotations");
+        }
+
+        [TestMethod]
+        public void Formatter_ParenthesizedCallbackCoalesceWithVand_ParsesCompletely()
+        {
+            // Regression: (COALESCE([CallbackDataID(...)](...)) > COALESCE(value)) was losing content
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "DEFINE TABLE [$TTable1] := SELECT\r\n"
+                + "[Product (19)].[Color (101)] AS [Product (19)$Color (101)],\r\n"
+                + "SUM([Internet Sales (28)].[Sales Amount (142)]) AS [$Measure0]\r\n"
+                + "FROM [Internet Sales (28)]\r\n"
+                + "\tLEFT OUTER JOIN [Date (13)] ON [Internet Sales (28)].[Order Date (147)]=[Date (13)].[Date (69)]\r\n"
+                + "\tLEFT OUTER JOIN [Product (19)] ON [Internet Sales (28)].[Product Id (127)]=[Product (19)].[Product Id (93)]\r\n"
+                + "WHERE\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount]])](PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) > COALESCE(501.000000)) VAND\r\n"
+                + "\t(COALESCE([CallbackDataID('Internet Sales'[Sales Amount]])](PFDATAID( [Internet Sales (28)].[Sales Amount (142)] ))) < COALESCE(2501.000000)) VAND\r\n"
+                + "\t[Date (13)].[Date (69)] ININDEX [$TTable2].[$SemijoinProjection];";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out _, out _, out _,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // Both filter values must be present (not lost)
+            Assert.IsTrue(result.Contains("501.000000"), "Should contain first filter value");
+            Assert.IsTrue(result.Contains("2501.000000"), "Should contain second filter value");
+
+            // All three VAND clauses preserved
+            int vandCount = System.Text.RegularExpressions.Regex.Matches(result, "VAND").Count;
+            Assert.AreEqual(2, vandCount, "Should have 2 VAND operators between 3 predicates");
+
+            // ININDEX clause preserved
+            Assert.IsTrue(result.Contains("ININDEX"), "Should contain ININDEX clause");
+
+            // Non-date values should NOT get date annotations
+            Assert.IsFalse(result.Contains("/* 1901"), "Sales Amount values should not get date annotations");
+        }
+
+        [TestMethod]
+        public void Formatter_DefineTableWithSimpleindexn_PreservesFromClause()
+        {
+            // Regression: SIMPLEINDEXN(...) AS alias in a DEFINE TABLE's SELECT list
+            // caused the FROM clause table reference to be lost because the expression
+            // catch-all in selectItem didn't support aliases.
+            string xmSql = "SET DC_KIND=\"AUTO\";\r\n"
+                + "DEFINE TABLE [$TTable2] := SELECT\r\n"
+                + "SIMPLEINDEXN([Date (13)].[Date (69)]) AS [$SemijoinProjection]\r\n"
+                + "FROM [Date (13)]\r\n"
+                + "WHERE\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) > COALESCE(40969.000000)) VAND\r\n"
+                + "\t(PFCASTCOALESCE( [Date (13)].[Date (69)] AS  REAL ) < COALESCE(40998.000000));\r\n"
+                + "\r\n\r\n"
+                + "[Estimated size (volume, marshalling bytes): 3712, 464]";
+
+            var result = AntlrXmSqlFormatter.Format(
+                xmSql,
+                format: true,
+                simplify: true,
+                out long rows,
+                out long bytes,
+                out bool hasSize,
+                convertDates: true);
+
+            Assert.IsNotNull(result, "Formatter should return a non-null result");
+
+            // FROM clause must have the table name
+            Assert.IsTrue(result.Contains("FROM 'Date'"), "FROM clause must contain the table name");
+
+            // SIMPLEINDEXN function preserved
+            Assert.IsTrue(result.Contains("SIMPLEINDEXN"), "Should contain SIMPLEINDEXN function");
+
+            // Column reference format: 'Table'[Column] without spurious DOT
+            Assert.IsFalse(result.Contains("'Date'.[Date]"), "Should not have DOT between table and column");
+            Assert.IsTrue(result.Contains("'Date'[Date]"), "Should use 'Table'[Column] format");
+
+            // COALESCE wrapping preserved for PFCASTCOALESCE
+            Assert.IsTrue(result.Contains("COALESCE ( 40969.000000"), "Should preserve COALESCE wrapping around first value");
+            Assert.IsTrue(result.Contains("COALESCE ( 40998.000000"), "Should preserve COALESCE wrapping around second value");
+
+            // Date annotations present (name heuristic: "Date" contains "date")
+            Assert.IsTrue(result.Contains("/* 2012-03-01 */"), "Should annotate first date value");
+            Assert.IsTrue(result.Contains("/* 2012-03-30 */"), "Should annotate second date value");
+
+            // Both VAND predicates present
+            Assert.IsTrue(result.Contains("VAND"), "Should contain VAND between predicates");
+
+            // Estimated size extracted
+            Assert.IsTrue(hasSize, "Should extract estimated size");
+            Assert.AreEqual(3712, rows, "Estimated rows");
+            Assert.AreEqual(464, bytes, "Estimated bytes");
+        }
     }
 }

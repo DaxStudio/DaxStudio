@@ -1,5 +1,6 @@
 ﻿using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
+using DaxStudio.Tests.Helpers;
 using DaxStudio.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -70,7 +71,7 @@ WHERE
 
 
 Estimated size: rows = 37  bytes = 592
-";
+".NormalizeNewline();
 
             // With AvalonEdit syntax highlighting, QueryRichText stores plain text (no marker codes)
             var options = Substitute.For<IGlobalOptions>();
@@ -85,7 +86,7 @@ Estimated size: rows = 37  bytes = 592
             var evnt = new TraceStorageEngineEvent(args, 1, options, null, null);
 
             // QueryRichText should now contain the query without marker codes
-            Assert.AreEqual(expectedAntlr, evnt.QueryRichText);
+            Assert.AreEqual(expectedAntlr, evnt.QueryRichText.NormalizeNewline());
             // HighlightQuery should be true since the query contains MinMaxColumnPositionCallback
             Assert.IsTrue(evnt.HighlightQuery);
 
@@ -118,7 +119,7 @@ WHERE
 
 
 [Estimated size (volume, marshalling bytes): 1, 12]
-";
+".NormalizeNewline();
 
 // ANTLR formatter expected output
             string expectedAntlr = @"SET DC_KIND=""AUTO"";
@@ -132,11 +133,11 @@ FROM 'Trip'
 WHERE
     'Trip'[passenger_count] = 1 VAND
     ( 'Dropoff Location'[DropOffLocationID], 'Trip'[passenger_count] ) IN { ( 1, 1 ) } VAND
-    COALESCE (  ( PFDATAID ( 'Pickup Location'[Pickup Service Zone] ) = 6 )  ) ;
+    COALESCE ( ( PFDATAID ( 'Pickup Location'[Pickup Service Zone] ) = 6 ) ) ;
 
 
 Estimated size: rows = 1  bytes = 12
-";
+".NormalizeNewline();
 
             // With AvalonEdit syntax highlighting, QueryRichText stores plain text (no marker codes)
             var options = Substitute.For<IGlobalOptions>();
@@ -165,7 +166,7 @@ Estimated size: rows = 1  bytes = 12
             var evnt = new TraceStorageEngineEvent(args, 1, options, remapColumns, remapTables);
 
             // QueryRichText should now contain the query without marker codes
-            Assert.AreEqual(expectedAntlr, evnt.QueryRichText);
+            Assert.AreEqual(expectedAntlr, evnt.QueryRichText.NormalizeNewline());
             // HighlightQuery should be false since this query does not contain any callback patterns
             Assert.IsFalse(evnt.HighlightQuery);
 
