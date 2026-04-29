@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Tests
 {
@@ -135,6 +136,112 @@ namespace DaxStudio.CommandLine.Tests
             Assert.IsNull(validationResult.Message);
         }
 
+        // The following tests verify that values containing characters which are
+        // significant inside a connection string (';', '=', single/double quotes,
+        // leading/trailing whitespace) are escaped correctly when FullConnectionString
+        // is built from individual Server/Database/UserID/Password parameters.
+        // We round-trip through OleDbConnectionStringBuilder to assert the value
+        // can be parsed back to its original form, regardless of which quoting
+        // form (single/double quotes) the builder picks.
+
+        private static string ParseValue(string connectionString, string key)
+        {
+            var builder = new OleDbConnectionStringBuilder(connectionString);
+            return builder.ContainsKey(key) ? (string)builder[key] : null;
+        }
+
+        [TestMethod]
+        public void Database_with_semicolon_should_be_quoted_in_connection_string()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Foo;Bar"
+            };
+
+            Assert.AreEqual("Foo;Bar", ParseValue(settings.FullConnectionString, "Initial Catalog"));
+            Assert.AreEqual("localhost", ParseValue(settings.FullConnectionString, "Data Source"));
+        }
+
+        [TestMethod]
+        public void Database_with_single_quote_should_round_trip()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "O'Brien"
+            };
+
+            Assert.AreEqual("O'Brien", ParseValue(settings.FullConnectionString, "Initial Catalog"));
+        }
+
+        [TestMethod]
+        public void Database_with_double_quote_should_round_trip()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "weird\"name"
+            };
+
+            Assert.AreEqual("weird\"name", ParseValue(settings.FullConnectionString, "Initial Catalog"));
+        }
+
+        [TestMethod]
+        public void Database_with_equals_sign_should_round_trip()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Foo=Bar"
+            };
+
+            Assert.AreEqual("Foo=Bar", ParseValue(settings.FullConnectionString, "Initial Catalog"));
+        }
+
+        [TestMethod]
+        public void Server_with_semicolon_should_be_quoted_in_connection_string()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "weird;server",
+                Database = "Adventure Works"
+            };
+
+            Assert.AreEqual("weird;server", ParseValue(settings.FullConnectionString, "Data Source"));
+            Assert.AreEqual("Adventure Works", ParseValue(settings.FullConnectionString, "Initial Catalog"));
+        }
+
+        [TestMethod]
+        public void Password_with_semicolon_should_be_quoted_in_connection_string()
+        {
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                UserID = "alice",
+                Password = "p;ss\"wo'rd"
+            };
+
+            Assert.AreEqual("p;ss\"wo'rd", ParseValue(settings.FullConnectionString, "Password"));
+            Assert.AreEqual("alice", ParseValue(settings.FullConnectionString, "User ID"));
+        }
+
+        [TestMethod]
+        public void Plain_server_and_database_should_produce_unquoted_connection_string()
+        {
+            // Regression check: a value with no special characters at all should
+            // round-trip cleanly and not have any extraneous keys added.
+            var settings = new FileCommand.Settings
+            {
+                Server = "localhost",
+                Database = "AdventureWorks"
+            };
+
+            Assert.AreEqual("Data Source=localhost;Initial Catalog=AdventureWorks", settings.FullConnectionString);
+        }
+
     }
 }
+
 

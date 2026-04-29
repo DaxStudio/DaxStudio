@@ -38,21 +38,27 @@ namespace DaxStudio.CommandLine.Commands
         public string PowerBIFileName { get; set; }
 
         public string FullConnectionString { get {
-                
+
                 string user = GetPropertyOrEnvironmentVariable(nameof(UserID), UserID, "DSCMD_USER");
                 string pass = GetPropertyOrEnvironmentVariable(nameof(Password), Password, "DSCMD_PASSWORD");
 
-                string userParam = !string.IsNullOrEmpty(user) ? $"User ID={user};":string.Empty;
-                string passParam = !string.IsNullOrEmpty(pass) ? $"Password={pass};" : string.Empty;
+                // Always build the connection string through OleDbConnectionStringBuilder
+                // so that values containing special characters (';', '=', '"', leading/
+                // trailing whitespace) are quoted correctly and any embedded single
+                // quotes are doubled per the connection-string grammar.
+                var builder = string.IsNullOrEmpty(ConnectionString)
+                    ? new OleDbConnectionStringBuilder()
+                    : new OleDbConnectionStringBuilder(ConnectionString);
 
-                // if the connectionstring property is set use that
-                if (string.IsNullOrEmpty(ConnectionString)) 
-                    return $"Data Source={Server};Initial Catalog={Database};{userParam}{passParam}";
+                if (string.IsNullOrEmpty(ConnectionString))
+                {
+                    if (!string.IsNullOrEmpty(Server)) builder["Data Source"] = Server;
+                    if (!string.IsNullOrEmpty(Database)) builder["Initial Catalog"] = Database;
+                }
 
-                var builder = new OleDbConnectionStringBuilder(ConnectionString);
                 if (!builder.ContainsKey("User ID") && !string.IsNullOrEmpty(user))
                     builder["User ID"] = user;
-                if (!builder.ContainsKey("Password") && !builder.ContainsKey("Pwd") && !string.IsNullOrEmpty(user))
+                if (!builder.ContainsKey("Password") && !builder.ContainsKey("Pwd") && !string.IsNullOrEmpty(pass))
                     builder["Password"] = pass;
 
                 return builder.ToString();
