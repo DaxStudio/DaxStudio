@@ -6,13 +6,14 @@
     <AnalysisLevel>latest-minimum</AnalysisLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <OutputPath>..\..\src\bin\$(Configuration)\</OutputPath>
+    <OutputPath>..\..\src\bin\$(Configuration)\$(TargetFramework)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <OutputPath>..\..\Release\bin\</OutputPath>
+    <OutputPath>..\..\Release\bin\$(TargetFramework)\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="5.2.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
