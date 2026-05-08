@@ -80,10 +80,28 @@ namespace DaxStudio.UI.ViewModels
         private bool HistoryFilter(object queryHistoryEvent)
         {
             var qhe = queryHistoryEvent as QueryHistoryEvent;
-            var connection = CurrentDocument?.Connection;
-            return qhe != null 
-                && (string.Equals( qhe.ServerName, connection?.ServerNameForHistory??string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByServer)
-                && (string.Equals( qhe.DatabaseName, connection != null && connection.IsConnected ? connection.Database?.Caption ?? string.Empty : string.Empty, StringComparison.OrdinalIgnoreCase) || !IsFilteredByDatabase);
+            if (qhe == null) return false;
+            try
+            {
+                var conn = CurrentDocument?.Connection;
+                var server = conn?.ServerNameForHistory ?? string.Empty;
+                var database = conn?.Database?.Caption ?? string.Empty;
+                return (string.Equals(qhe.ServerName, server, StringComparison.OrdinalIgnoreCase) || !IsFilteredByServer)
+                    && (string.Equals(qhe.DatabaseName, database, StringComparison.OrdinalIgnoreCase) || !IsFilteredByDatabase);
+            }
+            catch (Exception ex)
+            {
+                // The connection can be in a transient state during a reconnect or
+                // database change (e.g. _dmvConnection has just been reassigned but
+                // not yet re-opened). A throw from this filter would abort the
+                // entire CollectionView.Refresh() pass; instead show the row and
+                // let the next DatabaseChangedEvent re-evaluate the filter once
+                // the connection has stabilised.
+                Log.Warning(ex, Common.Constants.LogMessageTemplate,
+                    nameof(QueryHistoryPaneViewModel), nameof(HistoryFilter),
+                    "Connection in transient state, deferring filter");
+                return true;
+            }
         }
 
         public ICollectionView QueryHistory => _queryHistory;
