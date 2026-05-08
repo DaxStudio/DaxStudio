@@ -6,10 +6,10 @@
     <AnalysisLevel>latest-minimum</AnalysisLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <OutputPath>..\..\src\bin\$(Configuration)\$(TargetFramework)\</OutputPath>
+    <OutputPath>..\..\src\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <OutputPath>..\..\Release\bin\$(TargetFramework)\</OutputPath>
+    <OutputPath>..\..\Release\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="5.2.1" />

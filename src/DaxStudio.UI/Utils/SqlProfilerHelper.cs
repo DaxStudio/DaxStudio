@@ -1,5 +1,4 @@
-﻿using Microsoft.Expression.Shapes;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace DaxStudio.UI.Utils
 {
