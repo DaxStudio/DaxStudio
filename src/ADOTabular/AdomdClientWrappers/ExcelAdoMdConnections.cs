@@ -21,9 +21,11 @@ namespace ADOTabular.AdomdClientWrappers
         private static string _excelAdomdClientAssemblyPath;
 
         [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern uint GetModuleFileName([In] IntPtr hModule, [Out] char[] lpFilename, [In, MarshalAs(UnmanagedType.U4)] int nSize);
 
         [DllImport("Kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
         private static string RetrieveAdomdClientAssemblyPath()
