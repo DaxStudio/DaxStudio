@@ -20,6 +20,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
@@ -37,7 +38,16 @@ namespace DaxStudio.Common
 {
     public static class EntraIdHelper
     {
-        private const string MicrosoftAccountOnlyQueryParameter = "msafed=0"; // Restrict logins to only AAD based organizational accounts
+
+        // Dictionary form required by the non-obsolete MSAL WithExtraQueryParameters overload.
+        // The bool indicates whether the parameter should be included in the token cache key.
+        private static readonly IDictionary<string, (string value, bool includeInCacheKey)> MicrosoftAccountOnlyQueryParameters
+            = new Dictionary<string, (string value, bool includeInCacheKey)>
+            {
+                ["msafed"] = ("0", false)
+            };
+        // Shared HttpClient for outbound HTTPS calls (replaces obsolete WebClient/HttpWebRequest usage).
+        private static readonly HttpClient _httpClient = new HttpClient();
         private static IPublicClientApplication _clientApp;
         //private static string ClientId = "90fd9dec-463e-4e03-8cbe-8f0baa9bb7e8";
         //private static string ClientId = "7f67af8a-fedc-4b08-8b4e-37c4d127b6cf";  // PBI Desktop Client ID
@@ -93,7 +103,7 @@ namespace DaxStudio.Common
                         .WithAccount(firstAccount)
                         .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                                                           //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
+                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                         .WithPrompt(Prompt.SelectAccount)
                         .ExecuteAsync();
                     options.LastUsedUPN = authResult.Account.Username;
@@ -172,7 +182,7 @@ namespace DaxStudio.Common
             _clientApp = PublicClientApplicationBuilder.Create(clientId)
                 //.WithAuthority($"{Instance}{Tenant}")
                 .WithAuthority(authority)
-                .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
+                .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                 .WithDefaultRedirectUri()
                 .WithBroker(brokerOptions)
                 .Build();
@@ -227,7 +237,7 @@ namespace DaxStudio.Common
                 var authResult = await app.AcquireTokenInteractive(scope)
                             .WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                                                               //.WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
-                            .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
+                            .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                             .WithPrompt(Prompt.SelectAccount)
                             .ExecuteAsync();
                 options.LastUsedUPN = authResult.Account.Username;
@@ -238,7 +248,6 @@ namespace DaxStudio.Common
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(PromptForAccountAsync), "Error getting user token interactively");
                 throw;
-                return (null, null);
             }
         }
 
@@ -276,17 +285,17 @@ namespace DaxStudio.Common
             Log.Verbose(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(GetAuthenticationInformation), "Getting authentication information from remote config");
             if (remoteSecurityConfig == null)
             {
-                using (WebClient webClient = new WebClient())
+                try
                 {
-                    try
-                    {
-                        using (Stream info = (Stream)new MemoryStream(webClient.DownloadData("https://global.asazure.windows.net/ASAzureSecurityConfig.xml")))
-                            remoteSecurityConfig = DeserializeAuthenticationInformation(info);
-                    }
-                    catch (WebException ex)
-                    {
-                        remoteSecurityConfig = new AuthenticationInformationRecord[0];
-                    }
+                    // Synchronous wait is acceptable here since callers of GetAuthenticationInformation are synchronous.
+                    byte[] data = _httpClient.GetByteArrayAsync("https://global.asazure.windows.net/ASAzureSecurityConfig.xml")
+                                             .GetAwaiter().GetResult();
+                    using (Stream info = new MemoryStream(data))
+                        remoteSecurityConfig = DeserializeAuthenticationInformation(info);
+                }
+                catch (HttpRequestException)
+                {
+                    remoteSecurityConfig = new AuthenticationInformationRecord[0];
                 }
             }
             return remoteSecurityConfig;
@@ -396,13 +405,8 @@ namespace DaxStudio.Common
             var parts = serverName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             var host = parts.Length > 1 ? parts[1] : string.Empty;
             var server = parts.Length > 2 ? parts[2].Replace(":rw", string.Empty) : string.Empty;
-            ServicePointManager.SecurityProtocol &= ~SecurityProtocolType.Ssl3;
-            var method = "POST";
-            Uri uri = new Uri($"https://{host}/webapi/ClusterResolve"); //?api-version=2020-04-01");
-            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
-            httpWebRequest.Method = method;
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.UserAgent = "ADOMD.NET";
+            // SSL 3.0 is disabled by default on supported .NET runtimes; explicit removal is no longer required.
+            Uri uri = new Uri($"https://{host}/webapi/ClusterResolve");
 
             NameResolutionRequest requestContent = new NameResolutionRequest
             {
@@ -412,27 +416,29 @@ namespace DaxStudio.Common
             };
 
             var requestSerializer = new DataContractJsonSerializer(typeof(NameResolutionRequest));
-            //using (Stream requestStream = httpWebRequest.GetRequestStream())
-            //    requestSerializer.WriteObject(requestStream, (object)requestContent);
+            byte[] requestBytes;
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 requestSerializer.WriteObject((Stream)memoryStream, (object)requestContent);
-                memoryStream.Seek(0L, SeekOrigin.Begin);
-                httpWebRequest.ContentLength = memoryStream.Length;
-                using (Stream requestStream = httpWebRequest.GetRequestStream())
-                    memoryStream.CopyTo(requestStream);
+                requestBytes = memoryStream.ToArray();
             }
 
-            using (var response1 = (HttpWebResponse)httpWebRequest.GetResponse())
+            using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
-                if (response1.StatusCode != HttpStatusCode.OK)
-                {
-                    throw new WebException($"Unexpected response status code: {response1.StatusCode}");
-                }
-                var responseSerializer = new DataContractJsonSerializer(typeof(NameResolutionResult));
-                using (Stream responseStream = response1.GetResponseStream())
-                    return ((NameResolutionResult)responseSerializer.ReadObject(responseStream)).TenantId;
+                request.Headers.UserAgent.ParseAdd("ADOMD.NET");
+                request.Content = new ByteArrayContent(requestBytes);
+                request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
+                using (var response = _httpClient.SendAsync(request).GetAwaiter().GetResult())
+                {
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        throw new HttpRequestException($"Unexpected response status code: {response.StatusCode}");
+                    }
+                    var responseSerializer = new DataContractJsonSerializer(typeof(NameResolutionResult));
+                    using (Stream responseStream = response.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                        return ((NameResolutionResult)responseSerializer.ReadObject(responseStream)).TenantId;
+                }
             }
         }
 
@@ -533,7 +539,7 @@ namespace DaxStudio.Common
                         .WithAccount(firstAccount)
                         //.WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                         .WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
-                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameter)
+                        .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                         .WithPrompt(Prompt.SelectAccount)
                         .ExecuteAsync().Result;
 
