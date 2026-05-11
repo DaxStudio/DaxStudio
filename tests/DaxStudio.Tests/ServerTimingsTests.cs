@@ -1,22 +1,14 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
-using DaxStudio.QueryTrace;
 using DaxStudio.Tests.Helpers;
-using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.Tabular;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System;
-using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Windows;
 using System.Windows.Media;
-using System.Xml;
-using amo = Microsoft.AnalysisServices;
 
 
 namespace DaxStudio.Tests
