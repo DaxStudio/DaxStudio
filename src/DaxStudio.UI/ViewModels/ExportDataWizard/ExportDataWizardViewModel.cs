@@ -79,7 +79,7 @@ namespace DaxStudio.UI.ViewModels
             Document = document ?? throw new ArgumentNullException(nameof(document));
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             Options = options;
-            EventAggregator.SubscribeOnPublishedThread(this);
+            EventAggregator.SubscribeOnUIThread(this);
 
             // check connection state
             if (Document.Connection == null)

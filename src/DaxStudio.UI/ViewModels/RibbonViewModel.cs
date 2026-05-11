@@ -95,7 +95,7 @@ namespace DaxStudio.UI.ViewModels
         public RibbonViewModel(IDaxStudioHost host, IEventAggregator eventAggregator, IWindowManager windowManager, IGlobalOptions options, ISettingProvider settingProvider)
         {
             _eventAggregator = eventAggregator;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
             _host = host;
             _windowManager = windowManager;
             SettingProvider = settingProvider;
@@ -1572,7 +1572,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         // todo - get viewmodel from IoC container
                         perfDataWindow = IoC.Get<PowerBIPerformanceDataViewModel>(); // new PowerBIPerformanceDataViewModel(_eventAggregator, Options);
-                        _eventAggregator.SubscribeOnPublishedThread(perfDataWindow);
+                        _eventAggregator.SubscribeOnUIThread(perfDataWindow);
                         this.ActiveDocument.ToolWindows.Add(perfDataWindow);
                     } 
                     else
@@ -1615,7 +1615,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             var capdiagDialog = new CaptureDiagnosticsViewModel(this, Options, _eventAggregator);
-            _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
+            _eventAggregator.SubscribeOnUIThread(capdiagDialog);
             await _windowManager.ShowDialogBoxAsync(capdiagDialog);
             _eventAggregator.Unsubscribe(capdiagDialog);
         }

@@ -32,7 +32,7 @@ namespace DaxStudio.UI.Model
             Contract.Requires(eventAggregator != null, "The eventAggregator paramter must not be null");
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
             QueryHistory = new BindableCollection<QueryHistoryEvent>();
 
             _queryHistoryPath = ApplicationPaths.QueryHistoryPath;
@@ -40,20 +40,23 @@ namespace DaxStudio.UI.Model
             
         }
 
-        private void EnsureQueryHistoryFolderExists()
+        private async Task EnsureQueryHistoryFolderExistsAsync()
         {
-            if (!Directory.Exists(_queryHistoryPath))
+            await Task.Run(() =>
             {
-                Log.Debug("{class} {method} {message} {value}", nameof(GlobalQueryHistory), nameof(EnsureQueryHistoryFolderExists), "Creating Query History Path", _queryHistoryPath);
-                try
+                if (!Directory.Exists(_queryHistoryPath))
                 {
-                    Directory.CreateDirectory(_queryHistoryPath);
+                    Log.Debug("{class} {method} {message} {value}", nameof(GlobalQueryHistory), nameof(EnsureQueryHistoryFolderExistsAsync), "Creating Query History Path", _queryHistoryPath);
+                    try
+                    {
+                        Directory.CreateDirectory(_queryHistoryPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(EnsureQueryHistoryFolderExistsAsync), $"Error creating query history folder: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(EnsureQueryHistoryFolderExists), $"Error creating query history folder: {ex.Message}");
-                }
-            }
+            });
         }
 
         private async Task LoadHistoryFilesAsync()
@@ -65,53 +68,65 @@ namespace DaxStudio.UI.Model
                 _isLoaded = true;
             }
 
-            await Task.Run(async () =>
-                {
-                    int errorCnt = 0;
-                    FileInfo[] fileList = null;
+            var result = await LoadHistoryFilesFromDiskAsync();
+            QueryHistory.AddRange(result.History);
 
-                    Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
-                                                
+            if (result.ErrorCount > 0) { await _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {result.ErrorCount} error{(result.ErrorCount == 1 ? " has" : "s have")} been written to the log file")); }
+            Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + result.FileCount + " files)");
+        }
+
+        private async Task<LoadHistoryResult> LoadHistoryFilesFromDiskAsync()
+        {
+            int errorCnt = 0;
+            FileInfo[] fileList = null;
+            var tempHist = new List<QueryHistoryEvent>(_globalOptions.QueryHistoryMaxItems);
+
+            Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "Start Load");
+                                                 
+            try
+            {
+                fileList = await Task.Run(() =>
+                {
+                    DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
+                    return d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
+                }).ConfigureAwait(false);
+
+                Log.Debug(Constants.LogMessageTemplate, nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Starting load of {fileList.Length} history files");
+
+                foreach (var fileInfo in fileList)
+                {
                     try
                     {
-                        DirectoryInfo d = new DirectoryInfo(_queryHistoryPath);
-                        fileList = d.GetFiles("*-query-history.json", SearchOption.TopDirectoryOnly);
-                        Log.Debug(Constants.LogMessageTemplate, nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Starting load of {fileList.Length} history files");
-                        List<QueryHistoryEvent> tempHist = new List<QueryHistoryEvent>(_globalOptions.QueryHistoryMaxItems);
-                        foreach (var fileInfo in fileList)
-                        {
-                            try
-                            {
-                                using (StreamReader file = File.OpenText(fileInfo.FullName))
-                                {
-                                    JsonSerializer serializer = new JsonSerializer();
-                                    QueryHistoryEvent queryHistory = (QueryHistoryEvent)serializer.Deserialize(file, typeof(QueryHistoryEvent));
-                                    tempHist.Add(queryHistory);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading History file: {fileInfo.FullName}, Message: {ex.Message}");
-                                errorCnt++;
-                            }
-                        }
-                        QueryHistory.AddRange(tempHist);
+                        var queryHistory = await LoadHistoryFileAsync(fileInfo.FullName).ConfigureAwait(false);
+                        tempHist.Add(queryHistory);
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading query history files: {ex.Message}");
+                        Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading History file: {fileInfo.FullName}, Message: {ex.Message}");
+                        errorCnt++;
                     }
-                    finally
-                    {
-                        _isLoaded = true;
-                    }
-                    
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{class} {method} {message}", nameof(GlobalQueryHistory), nameof(LoadHistoryFilesAsync), $"Error loading query history files: {ex.Message}");
+            }
+            finally
+            {
+                _isLoaded = true;
+            }
 
-                    if (errorCnt > 0) { await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {errorCnt} error{(errorCnt == 1 ? " has" : "s have")} been written to the log file")); }
-                    Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + fileList?.Length + " files)");
-                    
-                });
-            
+            return new LoadHistoryResult(tempHist, errorCnt, fileList?.Length ?? 0);
+        }
+
+        private async Task<QueryHistoryEvent> LoadHistoryFileAsync(string filePath)
+        {
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
+            using (var reader = new StreamReader(stream))
+            {
+                var json = await reader.ReadToEndAsync().ConfigureAwait(false);
+                return JsonConvert.DeserializeObject<QueryHistoryEvent>(json);
+            }
         }
 
 
@@ -136,7 +151,11 @@ namespace DaxStudio.UI.Model
         {
             try
             {
-                File.WriteAllText(UniqueFilePath(message), Newtonsoft.Json.JsonConvert.SerializeObject(message));
+                using (var stream = new FileStream(UniqueFilePath(message), FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+                using (var writer = new StreamWriter(stream))
+                {
+                    await writer.WriteAsync(JsonConvert.SerializeObject(message)).ConfigureAwait(false);
+                }
             }
             catch( Exception ex)
             {
@@ -182,10 +201,24 @@ namespace DaxStudio.UI.Model
 
         public async Task LoadQueryHistoryAsync()
         {
-            EnsureQueryHistoryFolderExists();
+            await EnsureQueryHistoryFolderExistsAsync();
             await LoadHistoryFilesAsync();
         }
 
         public BindableCollection<QueryHistoryEvent> QueryHistory { get; }
+
+        private class LoadHistoryResult
+        {
+            public LoadHistoryResult(List<QueryHistoryEvent> history, int errorCount, int fileCount)
+            {
+                History = history;
+                ErrorCount = errorCount;
+                FileCount = fileCount;
+            }
+
+            public List<QueryHistoryEvent> History { get; }
+            public int ErrorCount { get; }
+            public int FileCount { get; }
+        }
     }
 }

@@ -503,7 +503,7 @@ namespace DaxStudio.UI.ViewModels
             var daxQueries = list.Where(qe => qe.QueryType == "DAX" || qe.QueryType == "MDX").Cast<IQueryTextProvider>();
 
             var capdiagDialog = new CaptureDiagnosticsViewModel(Ribbon, _globalOptions, _eventAggregator, daxQueries);
-            _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
+            _eventAggregator.SubscribeOnUIThread(capdiagDialog);
             await _windowManager.ShowDialogBoxAsync(capdiagDialog);
             _eventAggregator.Unsubscribe(capdiagDialog);
         }

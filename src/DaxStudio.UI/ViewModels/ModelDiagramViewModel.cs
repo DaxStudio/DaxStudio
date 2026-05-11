@@ -61,7 +61,7 @@ namespace DaxStudio.UI.ViewModels
             _eventAggregator = eventAggregator;
             _metadataProvider = metadataProvider;
             _options = options;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
         }
 
         #region ToolWindowBase Implementation
@@ -82,7 +82,7 @@ namespace DaxStudio.UI.ViewModels
         protected override Task OnActivatedAsync(CancellationToken cancellationToken)
         {
             // Re-subscribe in case we were previously closed and unsubscribed
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
             NotifyOfPropertyChange(() => ShowDebugButton);
             return base.OnActivatedAsync(cancellationToken);
         }

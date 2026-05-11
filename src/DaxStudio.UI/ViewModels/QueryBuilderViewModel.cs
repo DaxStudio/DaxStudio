@@ -114,7 +114,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (IsVisible)
             {
-                EventAggregator.SubscribeOnPublishedThread(this);
+                EventAggregator.SubscribeOnUIThread(this);
                 SetRunStyle();
             }
             else
@@ -163,7 +163,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _isEnabled = value;
-                if (_isEnabled) EventAggregator.SubscribeOnPublishedThread(this);
+                if (_isEnabled) EventAggregator.SubscribeOnUIThread(this);
                 else EventAggregator.Unsubscribe(this);
                 NotifyOfPropertyChange();
             }

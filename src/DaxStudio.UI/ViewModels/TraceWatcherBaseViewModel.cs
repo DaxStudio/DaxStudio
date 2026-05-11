@@ -210,7 +210,7 @@ namespace DaxStudio.UI.ViewModels
 
                     if (value)
                     {
-                        _eventAggregator.SubscribeOnPublishedThread(this);
+                        _eventAggregator.SubscribeOnUIThread(this);
                         if (!ShouldStartTrace()) {
                             _isChecked = false;
                             NotifyOfPropertyChange();

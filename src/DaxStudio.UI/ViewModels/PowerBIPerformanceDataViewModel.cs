@@ -263,7 +263,7 @@ namespace DaxStudio.UI.ViewModels
             var list = this.PerformanceDataView.Cast<IQueryTextProvider>();
 
             var capdiagDialog = new CaptureDiagnosticsViewModel(Ribbon, Options, _eventAggregator, list);
-            _eventAggregator.SubscribeOnPublishedThread(capdiagDialog);
+            _eventAggregator.SubscribeOnUIThread(capdiagDialog);
             await _windowManager.ShowDialogBoxAsync(capdiagDialog);
             _eventAggregator.Unsubscribe(capdiagDialog);
         }

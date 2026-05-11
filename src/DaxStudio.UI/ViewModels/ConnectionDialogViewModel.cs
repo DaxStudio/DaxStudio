@@ -56,7 +56,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 _eventAggregator = eventAggregator;
-                _eventAggregator.SubscribeOnPublishedThread(this);
+                _eventAggregator.SubscribeOnUIThread(this);
                 _connectionString = connectionString;
                 _activeDocument = document;
                 SettingProvider = settingProvider;
@@ -960,7 +960,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 browseWorkspacesDialog = new BrowseWorkspacesViewModel(Options);
-                _eventAggregator.SubscribeOnPublishedThread(browseWorkspacesDialog);
+                _eventAggregator.SubscribeOnUIThread(browseWorkspacesDialog);
 
                 await _windowManager.ShowDialogBoxAsync(browseWorkspacesDialog, settings: new Dictionary<string, object>
                 {

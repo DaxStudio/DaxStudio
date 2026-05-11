@@ -77,7 +77,7 @@ namespace DaxStudio.UI.ViewModels
             AutoSaver = autoSaver;
             ThemeManager = themeManager;
             _eventAggregator = eventAggregator;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
 
             Tabs = (DocumentTabViewModel)conductor;
             Tabs.ConductWith(this);

@@ -30,7 +30,7 @@ namespace DaxStudio.UI.Model
             _port = port;
             _baseUri = new Uri($"http://localhost:{port}/");
             _eventAggregator = eventAggregator;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
         }
 
         internal HttpClient GetHttpClient()

@@ -61,7 +61,7 @@ namespace DaxStudio.UI.ViewModels
             _windowManager = windowManager;
             _eventAggregator = eventAggregator;
             _options = options;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
             AutoSaver = autoSaver;
             Ribbon = ribbonViewModel;
             _host = host;

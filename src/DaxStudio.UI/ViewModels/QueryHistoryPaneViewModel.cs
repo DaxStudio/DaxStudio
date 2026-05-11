@@ -38,7 +38,7 @@ namespace DaxStudio.UI.ViewModels
             _globalHistory = globalHistory;
             _globalOptions = options;
             _eventAggregator = eventAggregator;
-            _eventAggregator.SubscribeOnPublishedThread(this);            
+            _eventAggregator.SubscribeOnUIThread(this);            
             _queryHistory = new ListCollectionView(globalHistory.QueryHistory);
             //_queryHistory.PageSize = 50;
             CurrentDocument = currentDocument;

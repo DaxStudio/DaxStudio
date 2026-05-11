@@ -24,7 +24,7 @@ namespace DaxStudio.UI.ViewModels
         public StatusBarViewModel(IEventAggregator eventAggregator, IGlobalOptions options)
         {
             _eventAggregator = eventAggregator;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
             Options = options;
         }
 

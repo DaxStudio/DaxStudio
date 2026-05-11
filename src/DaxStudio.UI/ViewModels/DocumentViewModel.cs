@@ -1067,22 +1067,22 @@ namespace DaxStudio.UI.ViewModels
             if (_isSubscribed) return;
 
 
-            _eventAggregator.SubscribeOnPublishedThread(this);
-            _eventAggregator.SubscribeOnPublishedThread(Connection);
-            _eventAggregator.SubscribeOnPublishedThread(IntellisenseProvider);
-            _eventAggregator.SubscribeOnPublishedThread(MeasureExpressionEditor.IntellisenseProvider);
-            _eventAggregator.SubscribeOnPublishedThread(HelpWatermark);
+            _eventAggregator.SubscribeOnUIThread(this);
+            _eventAggregator.SubscribeOnUIThread(Connection);
+            _eventAggregator.SubscribeOnUIThread(IntellisenseProvider);
+            _eventAggregator.SubscribeOnUIThread(MeasureExpressionEditor.IntellisenseProvider);
+            _eventAggregator.SubscribeOnUIThread(HelpWatermark);
             if (TraceWatchers != null)
             {
                 foreach (var tw in TraceWatchers)
                 {
-                    _eventAggregator.SubscribeOnPublishedThread(tw);
+                    _eventAggregator.SubscribeOnUIThread(tw);
                 }
             }
             foreach (var w in this.ToolWindows)
             {
                 if (w is QueryHistoryPaneViewModel) { continue; }
-                _eventAggregator.SubscribeOnPublishedThread(w);
+                _eventAggregator.SubscribeOnUIThread(w);
             }
             _isSubscribed = true;
             Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SubscribeAll), $"Subscribed to all events for: {DisplayName} ({AutoSaveId})");

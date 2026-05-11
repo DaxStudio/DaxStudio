@@ -57,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
             _analysis = new XmSqlAnalysis();
             _eventAggregator = eventAggregator;
             _serverTimingDetails = serverTimingDetails;
-            _eventAggregator.SubscribeOnPublishedThread(this);
+            _eventAggregator.SubscribeOnUIThread(this);
             // Initialize heat map mode from persisted options
             _heatMapMode = Options.SEDependenciesHeatMapMode;
         }

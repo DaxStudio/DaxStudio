@@ -33,7 +33,7 @@ namespace DaxStudio.UI.ViewModels
         public BenchmarkViewModel(IEventAggregator eventAggregator, DocumentViewModel document, RibbonViewModel ribbon, IGlobalOptions options)
         {
             EventAggregator = eventAggregator;
-            EventAggregator.SubscribeOnPublishedThread(this);
+            EventAggregator.SubscribeOnUIThread(this);
             Document = document;
             Ribbon = ribbon;
             Options = options;
