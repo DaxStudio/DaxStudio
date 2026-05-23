@@ -169,6 +169,10 @@ namespace DaxStudio.CommandLine
                             .WithDescription("Returns an access token that can be used to run other commands without repeated authentication prompts")
                             .WithExample(new[] { "accesstoken", "-s", "asazure://australiasoutheast.asazure.windows.net/myserver", "-d", "\"Adventure Works\"" })
                             .WithExample(new[] { "accesstoken", "-c", "\"Data Source=asazure://australiasoutheast.asazure.windows.net/myserver;Initial Catalog=Adventure Works\"" });
+
+            config.AddCommand<BenchmarkCommand>("benchmark")
+                .WithDescription("Runs a DAX query benchmark with cold and warm cache timings")
+                .WithExample(new[] { "benchmark", "c:\\temp\\results.csv", "-s", "localhost\\tabular", "-d", "\"Adventure Works\"", "-f", "query.dax", "--cold", "5", "--warm", "5" });
 #if DEBUG
                 // Custom Trace
                 config.AddCommand<CustomTraceCommand>("customtrace")

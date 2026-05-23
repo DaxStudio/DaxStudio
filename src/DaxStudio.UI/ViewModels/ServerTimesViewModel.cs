@@ -1824,7 +1824,12 @@ namespace DaxStudio.UI.ViewModels
             AllStorageEngineEvents.Apply(se =>
             {
                 se.HighlightQuery = se.QueryRichText?.ContainsCallback() ?? false;
-                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd) { se.QueryRichText = SqlFormatter.FormatSql(se.TextData ?? se.Query); }
+                if (se.Class == DaxStudioTraceEventClass.DirectQueryEnd  
+                    && se.ClassSubclass.QueryLanguage == DaxStudioTraceEventClassSubclass.Language.SQL 
+                    && _globalOptions.FormatDirectQuerySql) 
+                { 
+                    se.QueryRichText = SqlFormatter.FormatSql(se.TextData ?? se.Query); 
+                }
             });
             // update timeline total Duration if this is an older file format
             if (m.FileFormatVersion <= 4)
@@ -1836,7 +1841,6 @@ namespace DaxStudio.UI.ViewModels
             // Run query similarity grouping on pasted/loaded data (only if column is visible)
             if (ShowQueryGroupColumn) _ = RunQueryGroupingAsync();
         }
-
 
         #endregion
 

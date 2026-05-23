@@ -206,16 +206,12 @@ namespace DaxStudio.UI.ViewModels
                 {
                     LogicalQueryPlanText = traceEvent.TextData;
                     PrepareLogicalQueryPlan(traceEvent.TextData);
-                    NotifyOfPropertyChange(() => LogicalQueryPlanRows);
-                    NotifyOfPropertyChange(() => LogicalQueryPlanTree);
                 }
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.DAXQueryPlan
                     && traceEvent.EventSubclass == DaxStudioTraceEventSubclass.DAXVertiPaqPhysicalPlan)
                 {
                     PhysicalQueryPlanText = traceEvent.TextData;
                     PreparePhysicalQueryPlan(traceEvent.TextData);
-                    NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
-                    NotifyOfPropertyChange(() => PhysicalQueryPlanTree);
                 }
                 if (traceEvent.EventClass == DaxStudioTraceEventClass.QueryBegin)
                 {
@@ -228,11 +224,20 @@ namespace DaxStudio.UI.ViewModels
                     RequestID = traceEvent.RequestId;
                     CommandText = traceEvent.TextData;
                     TotalDuration = traceEvent.Duration;
-                    NotifyOfPropertyChange(() => TotalDuration);
+                    
                 }
             }
-            NotifyOfPropertyChange(nameof(CanExport));
-            NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
+
+            Execute.OnUIThread(() =>
+            {
+                NotifyOfPropertyChange(() => PhysicalQueryPlanRows);
+                NotifyOfPropertyChange(() => LogicalQueryPlanRows);
+                NotifyOfPropertyChange(() => PhysicalQueryPlanTree);
+                NotifyOfPropertyChange(() => LogicalQueryPlanTree);
+                NotifyOfPropertyChange(() => TotalDuration);
+                NotifyOfPropertyChange(nameof(CanExport));
+                NotifyOfPropertyChange(nameof(CanShowTraceDiagnostics));
+            });
         }
 
         public override void OnReset()
@@ -316,15 +321,23 @@ namespace DaxStudio.UI.ViewModels
             BindableCollection<T> queryPlanTree)
             where T : QueryPlanRow, IQueryPlanTreeNode<T>
         {
+            // Build the tree into a temporary list of roots first, so each root has
+            // its full Children sub-tree populated before we notify the bound
+            // collection. We then Add each fully-built root individually to
+            // queryPlanTree, which raises a real per-item Add notification on the
+            // CollectionView. This is important because the bound TreeGrid only
+            // walks Children (a plain List<T> without change notifications) when it
+            // first realizes the row, and because suppressing notifications and
+            // raising a single Reset (via Refresh) caused the DataGrid to lose its
+            // content after AvalonDock auto-hide round-trips.
+            var roots = new List<T>();
             Stack<T> parents = new Stack<T>();
             T prevItem = default;
             foreach (var item in queryPlanRows)
             {
                 if (item.Level == 0)
                 {
-                    queryPlanTree.IsNotifying = false;
-                    queryPlanTree.Add(item);
-                    queryPlanTree.IsNotifying = true;
+                    roots.Add(item);
                 }
                 else if (item.Level == (prevItem?.Level ?? 0))
                 {
@@ -350,9 +363,11 @@ namespace DaxStudio.UI.ViewModels
                 }
                 prevItem = item;
             }
-            
-            // Notify the UI that the collection has changed after adding items with notifications disabled
-            queryPlanTree.Refresh();
+
+            foreach (var root in roots)
+            {
+                queryPlanTree.Add(root);
+            }
         }
 
         public override string TraceStatusText

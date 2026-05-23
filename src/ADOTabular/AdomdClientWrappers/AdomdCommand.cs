@@ -59,7 +59,7 @@ namespace ADOTabular.AdomdClientWrappers
 
         public void Cancel()
         {
-            _command.Cancel();
+            _command?.Cancel();
         }
 
         public Microsoft.AnalysisServices.AdomdClient.AdomdParameterCollection Parameters => _command.Parameters;

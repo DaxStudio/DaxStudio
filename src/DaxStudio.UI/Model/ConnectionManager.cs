@@ -256,7 +256,16 @@ namespace DaxStudio.UI.Model
             _connection?.ConnectionStringWithInitialCatalog ?? string.Empty;
 
         public ADOTabularDatabase Database => _dmvRetry.Execute(() => {
-            return _dmvConnection?.Database;
+            // Capture the current connection reference once - the field can be
+            // reassigned by the retry policies on a background thread while a
+            // consumer (e.g. the QueryHistory pane filter) is reading the
+            // property. We must not throw NRE if the connection is null or has
+            // not finished re-opening yet, otherwise callers like
+            // ICollectionView.Refresh() will abort their filter pass.
+            var dmv = _dmvConnection;
+            if (dmv == null || dmv.State != ConnectionState.Open) return null;
+            try { return dmv.Database; }
+            catch (NullReferenceException) { return null; }
         });
         public string DatabaseName
         {
@@ -264,7 +273,12 @@ namespace DaxStudio.UI.Model
             {
                 try
                 {
-                    return _dmvRetry.Execute(() => _dmvConnection?.Database?.Name ?? string.Empty);
+                    return _dmvRetry.Execute(() =>
+                    {
+                        var dmv = _dmvConnection;
+                        if (dmv == null || dmv.State != ConnectionState.Open) return string.Empty;
+                        return dmv.Database?.Name ?? string.Empty;
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -841,7 +855,7 @@ namespace DaxStudio.UI.Model
                 if (_connection?.Database != null)
                     ModelList = _dmvConnection.Database.Models;
 
-                _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
+                PublishDatabaseChangedWhenStable();
             }
 
         }
@@ -862,7 +876,7 @@ namespace DaxStudio.UI.Model
                     {
                         ModelList = _dmvConnection.Database.Models;
                     }
-                    _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
+                    PublishDatabaseChangedWhenStable();
                 }
             }
 
@@ -1154,7 +1168,7 @@ namespace DaxStudio.UI.Model
                     }
                     //Database = _dmvConnection.Database;
                     ModelList = _dmvConnection.Database?.Models;
-                    _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent());
+                    PublishDatabaseChangedWhenStable();
                 }, context);
             }
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - end" );
@@ -1173,7 +1187,7 @@ namespace DaxStudio.UI.Model
         {
             IsConnecting = true;
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
-            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent(this));
 
             if (message.ServerType == ServerType.Offline)
             {
@@ -1184,7 +1198,7 @@ namespace DaxStudio.UI.Model
             else
             {
                 await OpenOnlineConnectionAsync(message, uniqueId);
-                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent());
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent(this));
             }
 
             await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
@@ -1263,6 +1277,49 @@ namespace DaxStudio.UI.Model
             return newToken;
 
         }
+
+        // Defer publishing DatabaseChangedEvent until both the query and dmv
+        // connections are fully Open. The Polly retry policies in this class can
+        // tear down and rebuild a connection on a background thread, leaving a
+        // brief window where _connection or _dmvConnection is non-null but in a
+        // Closed/Connecting state. Handlers of DatabaseChangedEvent (e.g. the
+        // QueryHistory pane filter) read Connection.Database during that window
+        // and previously threw NullReferenceException. Waiting briefly for both
+        // connections to stabilise lets handlers see a consistent state.
+        private const int DatabaseChangedStableTimeoutMs = 2000;
+        private const int DatabaseChangedPollIntervalMs = 50;
+
+        private void PublishDatabaseChangedWhenStable()
+        {
+            // Fire-and-forget: don't block the caller (which may itself be
+            // running inside a Polly retry action on the UI thread).
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var deadline = DateTime.UtcNow.AddMilliseconds(DatabaseChangedStableTimeoutMs);
+                    while (!IsConnected && DateTime.UtcNow < deadline)
+                    {
+                        await Task.Delay(DatabaseChangedPollIntervalMs).ConfigureAwait(false);
+                    }
+
+                    if (!IsConnected)
+                    {
+                        Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                            nameof(PublishDatabaseChangedWhenStable),
+                            $"Connections did not stabilise within {DatabaseChangedStableTimeoutMs}ms; publishing DatabaseChangedEvent anyway");
+                    }
+
+                    await _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent()).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(PublishDatabaseChangedWhenStable), "Error publishing DatabaseChangedEvent");
+                }
+            });
+        }
+
         private string UpdateApplicationName(string connectionString, Guid uniqueId)
         {
             var builder = new OleDbConnectionStringBuilder(connectionString);

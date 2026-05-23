@@ -131,12 +131,6 @@
     <Reference Include="NSubstitute, Version=5.3.0.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NSubstitute.5.3.0\lib\net462\NSubstitute.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTelemetry.PersistentStorage.Abstractions, Version=1.0.2.792, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OpenTelemetry.PersistentStorage.Abstractions.1.0.2\lib\net462\OpenTelemetry.PersistentStorage.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenTelemetry.PersistentStorage.FileSystem, Version=1.0.2.792, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\OpenTelemetry.PersistentStorage.FileSystem.1.0.2\lib\net462\OpenTelemetry.PersistentStorage.FileSystem.dll</HintPath>
-    </Reference>
     <Reference Include="Spectre.Console, Version=0.0.0.0, Culture=neutral, PublicKeyToken=170fe27f8af98a30, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Spectre.Console.0.54.0\lib\netstandard2.0\Spectre.Console.dll</HintPath>
     </Reference>
@@ -198,6 +192,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BenchmarkCommandTests.cs" />
     <Compile Include="CommandLineParameterTests.cs" />
     <Compile Include="ListTypeConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -757,7 +757,7 @@ namespace DaxStudio.UI.ViewModels
                             var totalRows = dtRows.Rows[0].Field<long>(0);
                             _currentTable.TotalRows = totalRows;
 
-                            using (var _ = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
+                            using (var statusMsg = new StatusBarMessage(Document, $"Exporting {table.Caption}"))
                             {
 
                                 for (long batchRows = 0; batchRows < totalRows; batchRows += MaxBatchSize)
@@ -789,10 +789,18 @@ namespace DaxStudio.UI.ViewModels
                                                 sqlBulkCopy.DestinationTableName = _sqlTableName;
                                                 sqlBulkCopy.BatchSize = 5000;
                                                 sqlBulkCopy.NotifyAfter = 5000;
-                                                sqlBulkCopy.SqlRowsCopied += SqlBulkCopy_SqlRowsCopied;
+                                                sqlBulkCopy.SqlRowsCopied += (sender, e) =>
+                                                {
+                                                    if (CancelRequested)
+                                                    {
+                                                        e.Abort = true;
+                                                    }
+                                                    statusMsg.Update($"Exporting Table {_currentTableIdx} of {_totalTableCnt} : {_sqlTableName} ({(e.RowsCopied + _sqlBatchRows):N0} rows)");
+                                                    _currentTable.RowCount = e.RowsCopied + _sqlBatchRows;
+                                                    Document.RefreshElapsedTime();
+                                                };
                                                 sqlBulkCopy.EnableStreaming = true;
-                                                await sqlBulkCopy.WriteToServerAsync(reader,
-                                                    _cancellationTokenSource.Token);
+                                                await sqlBulkCopy.WriteToServerAsync(reader);
 
                                                 //WaitForTaskPollingForCancellation(_cancellationTokenSource, task);
 
@@ -934,18 +942,6 @@ namespace DaxStudio.UI.ViewModels
                 }
                 if (task.IsCompleted || task.IsCanceled || task.IsFaulted) { break;  }
             }
-        }
-
-        private void SqlBulkCopy_SqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
-        {
-            //if (CancelRequested)
-            //{
-            //    e.Abort = true;
-            //    cancellationTokenSource.Cancel();
-            //}
-            var _ = new StatusBarMessage(Document, $"Exporting Table {_currentTableIdx} of {_totalTableCnt} : {_sqlTableName} ({(e.RowsCopied + _sqlBatchRows ):N0} rows)");
-            _currentTable.RowCount = e.RowsCopied + _sqlBatchRows;
-            Document.RefreshElapsedTime();
         }
 
         private void EnsureSQLTableExists(SqlConnection conn, string sqlTableName, AdomdDataReader reader, bool truncateTable)

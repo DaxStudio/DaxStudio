@@ -49,6 +49,13 @@ namespace DaxStudio.UI.ViewModels
         private const int SAMPLE_ROWS = 5;
         private CancellationTokenSource _columnTooltipCts;
 
+        // Server/database identity at the time we last reacted to a
+        // ConnectionOpenedEvent. Used to suppress the metadata wipe when the
+        // "new" connection actually points at the same server+database (e.g.
+        // certain reconnect / reopen flows).
+        private string _lastServerName;
+        private string _lastDatabaseName;
+
         [ImportingConstructor]
         public MetadataPaneViewModel(IMetadataProvider metadataProvider, IEventAggregator eventAggregator, DocumentViewModel document, IGlobalOptions globalOptions) 
             : base( eventAggregator)
@@ -1179,14 +1186,39 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ConnectionOpenedEvent message, CancellationToken cancellationToken)
         {
-            //IsBusy = true;
-            //NotifyOfPropertyChange(nameof(Databases));
-            
+            // ConnectionOpenedEvent is broadcast through the global event
+            // aggregator and is therefore received by every MetadataPaneViewModel.
+            // Each pane should only react to events raised by its own document's
+            // ConnectionManager, otherwise opening a connection on a different
+            // document (e.g. the temporary document spawned by Capture
+            // Diagnostics) would blank this pane's metadata even though our
+            // connection has not changed.
+            if (message.Source != null && !ReferenceEquals(message.Source, _metadataProvider))
+            {
+                return Task.CompletedTask;
+            }
+
+            // Even when the event came from our own ConnectionManager, only
+            // wipe the metadata if the new connection actually points at a
+            // different server or database. Reconnecting to the same place
+            // (e.g. when Capture Diagnostics re-opens our connection) should
+            // leave the existing metadata intact.
+            var newServer = ActiveDocument?.Connection?.ServerName ?? string.Empty;
+            var newDatabase = ActiveDocument?.Connection?.DatabaseName ?? string.Empty;
+            if (string.Equals(newServer, _lastServerName, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(newDatabase, _lastDatabaseName, StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.CompletedTask;
+            }
+
+            _lastServerName = newServer;
+            _lastDatabaseName = newDatabase;
+
             ModelList?.Clear();
             Databases.Clear();
             SelectedModel = null;
             SelectedDatabase = null;
-            
+
             return Task.CompletedTask;
         }
 
