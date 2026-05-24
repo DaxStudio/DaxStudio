@@ -26,6 +26,7 @@ using DaxStudio.Interfaces.Enums;
 using System.Windows.Threading;
 using System.Windows.Shell;
 using DaxStudio.Core.Model;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

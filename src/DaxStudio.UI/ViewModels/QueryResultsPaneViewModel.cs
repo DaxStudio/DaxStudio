@@ -22,6 +22,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

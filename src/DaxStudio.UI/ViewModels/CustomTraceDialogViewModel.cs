@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DaxStudio.Core.Model;
+using DaxStudio.Core.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {

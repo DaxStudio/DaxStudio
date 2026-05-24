@@ -1,10 +1,11 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

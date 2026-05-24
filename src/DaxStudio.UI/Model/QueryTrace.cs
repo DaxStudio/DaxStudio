@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +11,7 @@ using DaxStudio.UI.ViewModels;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

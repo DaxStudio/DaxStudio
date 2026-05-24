@@ -1,7 +1,7 @@
-﻿using DaxStudio.UI.Converters;
+using DaxStudio.Core.Converters;
 using System.ComponentModel;
 
-namespace DaxStudio.UI.Enums
+namespace DaxStudio.Core.Enums
 {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum CustomTraceOutput

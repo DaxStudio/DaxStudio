@@ -35,6 +35,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using DaxStudio.Core.Model;
+using DaxStudio.Core.Converters;
 
 namespace DaxStudio.UI.ViewModels
 {

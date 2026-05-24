@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DaxStudio.Core.Model;
+using DaxStudio.Core.Enums;
 
 namespace DaxStudio.CommandLine.Commands
 {
@@ -116,7 +117,7 @@ namespace DaxStudio.CommandLine.Commands
                     customTracer.Document = doc;
                     customTracer.Template = settings.Template;
                     customTracer.OutputFile = settings.File;
-                    customTracer.SetTraceOutput(UI.Enums.CustomTraceOutput.FileAndGrid);
+                    customTracer.SetTraceOutput(CustomTraceOutput.FileAndGrid);
                     customTracer.IsChecked = true;
 
                     }

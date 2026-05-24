@@ -1,9 +1,10 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using System;
 using System.Data;
 using System.IO.Packaging;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

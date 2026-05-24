@@ -1,10 +1,11 @@
-﻿using DaxStudio.UI.Converters;
+using DaxStudio.UI.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Core.Converters;
 
 namespace DaxStudio.UI.Enums
 {

@@ -1,6 +1,7 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using System.Linq;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Extensions
 {

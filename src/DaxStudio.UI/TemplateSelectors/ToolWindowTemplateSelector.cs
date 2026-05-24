@@ -1,7 +1,8 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.TemplateSelectors
 {

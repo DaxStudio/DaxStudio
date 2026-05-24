@@ -2,6 +2,7 @@ using System.Linq;
 using DaxStudio.UI.Interfaces;
 using AvalonDock.Layout;
 using DaxStudio.UI.ViewModels;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

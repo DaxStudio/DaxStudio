@@ -24,6 +24,7 @@
   <!-- Project references -->
   <ItemGroup>
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
+    <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />
   </ItemGroup>
 
   <!-- Package references -->

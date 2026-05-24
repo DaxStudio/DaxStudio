@@ -1,23 +1,22 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using System.Threading.Tasks;
 using DaxStudio.QueryTrace.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
 using System.Threading;
 
-namespace DaxStudio.UI.Interfaces
+namespace DaxStudio.Core.Interfaces
 {
-    public interface ITraceWatcher : IToolWindow, 
+    public interface ITraceWatcher : IToolWindow,
         IHandle<UpdateGlobalOptions>,
         IHandle<TraceChangedEvent>,
         IHandle<TraceChangingEvent>
     {
         IDaxDocument Document { get; set; }
         //List<DaxStudioTraceEventClass> MonitoredEvents { get; }
-        
+
         void Reset();
         bool IsEnabled { get; set; }
         bool IsChecked { get; set; }
@@ -38,7 +37,5 @@ namespace DaxStudio.UI.Interfaces
         string KeyTip { get; }
         Task StopTraceAsync();
         void StopTrace();
-
     }
-
 }

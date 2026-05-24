@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Events
 {

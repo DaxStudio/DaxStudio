@@ -28,6 +28,7 @@ using Windows.UI.Core;
 #endif
 using Fluent;
 using Microsoft.PowerBI.Api.Models;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

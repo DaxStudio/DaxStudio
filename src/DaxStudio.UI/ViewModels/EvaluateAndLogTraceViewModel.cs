@@ -26,6 +26,7 @@ using DaxStudio.UI.JsonConverters;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
 using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ViewModels
 {

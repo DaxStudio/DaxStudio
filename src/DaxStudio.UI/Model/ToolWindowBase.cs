@@ -1,8 +1,9 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Utils;
 using System;
 using System.Windows.Media;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

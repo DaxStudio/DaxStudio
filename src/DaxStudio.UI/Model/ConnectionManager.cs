@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
 using System.Threading.Tasks;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

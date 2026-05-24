@@ -24,6 +24,7 @@ using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Enums;
 using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
 using DaxStudio.Core.Model;
+using DaxStudio.Core.Enums;
 
 namespace DaxStudio.UI.ViewModels
 {
