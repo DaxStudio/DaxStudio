@@ -72,6 +72,7 @@ using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using Constants = DaxStudio.Common.Constants;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 using Timer = System.Timers.Timer;
+using DaxStudio.Core.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {

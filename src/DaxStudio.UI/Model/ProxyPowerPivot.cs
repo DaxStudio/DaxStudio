@@ -14,6 +14,7 @@ using DaxStudio.UI.Extensions;
 using ADOTabular.Enums;
 using DaxStudio.UI.Interfaces;
 using System.Threading;
+using DaxStudio.Core.Extensions;
 
 namespace DaxStudio.UI.Model
 {

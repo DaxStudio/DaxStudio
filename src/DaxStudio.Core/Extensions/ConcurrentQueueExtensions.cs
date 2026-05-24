@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Core.Extensions
 {
     public static class ConcurrentQueueExtensions
     {

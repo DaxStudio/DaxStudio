@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.Interfaces;
 using DaxStudio.Core.Interfaces;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class TraceWatcherToggleEvent
     {

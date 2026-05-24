@@ -1,4 +1,4 @@
-﻿namespace DaxStudio.UI.Events
+﻿namespace DaxStudio.Core.Events
 {
     public class QueryStartedEvent
     {

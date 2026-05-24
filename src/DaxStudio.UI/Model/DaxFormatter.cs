@@ -17,6 +17,7 @@ using System.Security.Cryptography;
 using System.Text;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
+using DaxStudio.Core.Extensions;
 
 namespace DaxStudio.UI.Model
 {

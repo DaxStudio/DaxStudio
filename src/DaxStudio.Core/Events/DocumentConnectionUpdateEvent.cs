@@ -1,13 +1,9 @@
-using System;
 using DaxStudio.Interfaces;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Caliburn.Micro;
-using DaxStudio.UI.Interfaces;
 using ADOTabular;
 using DaxStudio.Core.Interfaces;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class DocumentConnectionUpdateEvent
     {
