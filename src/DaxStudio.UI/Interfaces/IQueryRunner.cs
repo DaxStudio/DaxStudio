@@ -2,7 +2,6 @@
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -48,7 +47,7 @@ namespace DaxStudio.UI.Interfaces
 
         IGlobalOptions Options { get; }
         //ADOTabular.ADOTabularConnection Connection { get; }
-        ConnectionManager Connection { get; }
+        DaxStudio.Core.Connections.ConnectionManager Connection { get; }
         void OutputQueryError(string errorMessage);
         void ClearQueryError();
         void ClearQueryResults();

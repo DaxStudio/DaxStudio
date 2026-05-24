@@ -15,7 +15,7 @@ namespace DaxStudio.UI.Extensions
 {
     public static class DataReaderExtensions
     {
-        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv, string autoDateFormat, ConnectionManager connection)
+        public static DataSet ConvertToDataSet(this ADOTabular.AdomdClientWrappers.AdomdDataReader reader, bool autoFormat, bool IsSessionsDmv, string autoDateFormat, DaxStudio.Core.Connections.ConnectionManager connection)
         {
             ADOTabular.ADOTabularColumn daxCol;
             DataSet ds = new DataSet();

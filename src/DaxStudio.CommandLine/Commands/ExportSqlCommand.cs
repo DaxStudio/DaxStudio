@@ -7,7 +7,7 @@ using Caliburn.Micro;
 using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
 using DaxStudio.CommandLine.UIStubs;
-using DaxStudio.UI.Model;
+using DaxStudio.Core.Connections;
 using DaxStudio.UI.ViewModels;
 using Serilog;
 using Spectre.Console;

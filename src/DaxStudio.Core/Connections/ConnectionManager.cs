@@ -1,0 +1,1585 @@
+﻿using ADOTabular;
+using ADOTabular.AdomdClientWrappers;
+using ADOTabular.Enums;
+using ADOTabular.MetadataInfo;
+using Caliburn.Micro;
+using DaxStudio.Interfaces;
+using DaxStudio.Core.Events;
+using Polly;
+using Polly.Retry;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using DaxStudio.Common.Enums;
+using System.Xml.XPath;
+using System.IO;
+using System.Data.OleDb;
+using TOM = Microsoft.AnalysisServices;
+using System.Xml;
+using ADOTabular.Interfaces;
+using DaxStudio.Common;
+using ADOTabular.Extensions;
+using DaxStudio.Core.Extensions;
+using System.Threading;
+
+namespace DaxStudio.Core.Connections
+{
+
+    // TODO - load metadata/tables from a different connection so that someone can type in the main window
+    // TODO - add retry logic around queries and metadata refresh
+    // TODO - flush metadata on connection failure
+    // TODO - cache functions and dmvs unless we change the connection
+
+    /// <summary>
+    /// The purpose of the ConnectionManager is to centralize all the connection handling into one place
+    /// This allows for consistent retry policies and allows us to use a secondary connection for things 
+    /// like metadata refreshes.
+    /// </summary>
+    public class ConnectionManager : IConnectionManager
+        , IDmvProvider
+        , IFunctionProvider
+        , IConnection
+        , IModelIntellisenseProvider
+        , IDisposable
+    {
+        public bool IsConnecting { get; private set; }
+
+        protected ADOTabularConnection _connection;
+        protected ADOTabularConnection _dmvConnection;
+        protected readonly IEventAggregator _eventAggregator;
+        protected RetryPolicy _retry;
+        private RetryPolicy _dmvRetry;
+        private static readonly IEnumerable<string> _keywords;
+        private static readonly Regex guidRegex = new Regex("([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})", RegexOptions.Compiled);
+        public event EventHandler AfterReconnect;
+#pragma warning disable CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
+        private string processModelTemplate = @"
+<Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+  <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>3728f81b-7e47-4c69-b519-c5b3060c2a33</DatabaseID>
+    <Model>
+      <xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:sql=""urn:schemas-microsoft-com:xml-sql"">
+        <xs:element>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type=""row""/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:complexType name=""row"">
+          <xs:sequence>
+            <xs:element name=""RefreshType"" type=""xs:long"" sql:field=""RefreshType"" minOccurs=""0""/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:schema>
+      <row xmlns=""urn:schemas-microsoft-com:xml-analysis:rowset"">
+        <RefreshType>3</RefreshType>
+      </row>
+    </Model>
+  </Refresh>
+  <SequencePoint xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>3728f81b-7e47-4c69-b519-c5b3060c2a33</DatabaseID>
+  </SequencePoint>
+</Batch>
+";
+#pragma warning restore CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
+
+#pragma warning disable CS0414 // The field 'ConnectionManager.processTableTemplate' is assigned but its value is never used
+        private string processTableTemplate = @"
+<Batch Transaction=""true"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+  <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>Adventure Works</DatabaseID>
+    <Tables>
+      <xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:sql=""urn:schemas-microsoft-com:xml-sql"">
+        <xs:element>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type=""row""/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:complexType name=""row"">
+          <xs:sequence>
+            <xs:element name=""ID"" type=""xs:unsignedLong"" sql:field=""ID"" minOccurs=""0""/>
+            <xs:element name=""ID.Table"" type=""xs:string"" sql:field=""ID.Table"" minOccurs=""0""/>
+            <xs:element name=""RefreshType"" type=""xs:long"" sql:field=""RefreshType"" minOccurs=""0""/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:schema>
+      <row xmlns=""urn:schemas-microsoft-com:xml-analysis:rowset"">
+        <ID>22</ID>
+        <RefreshType>8</RefreshType>
+      </row>
+    </Tables>
+  </Refresh>
+  <SequencePoint xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>Adventure Works</DatabaseID>
+  </SequencePoint>
+</Batch>
+";
+#pragma warning restore CS0414 // The field 'ConnectionManager.processModelTemplate' is assigned but its value is never used
+        static ConnectionManager()
+        {
+            _keywords = new List<string>()
+            {   "COLUMN",
+                "DEFINE",
+                "EVALUATE",
+                "MEASURE",
+                "MPARAMETER",
+                "ORDER BY",
+                "RETURN",
+                "TABLE",
+                "VAR" };
+        }
+        public ConnectionManager(IEventAggregator eventAggregator)
+        {
+            _eventAggregator = eventAggregator;
+            ConfigureRetryPolicy();
+        }
+
+        public IEnumerable<string> AllFunctions => _connection.AllFunctions;
+
+        public IEnumerable<string> Keywords => _keywords;
+        public string ApplicationName => _connection?.ApplicationName ?? "DAX Studio";
+
+        public void Cancel()
+        {
+            _connection.Cancel();
+        }
+
+        //public ConnectionManager Clone()
+        //{
+        //    var newConn = new ConnectionManager(_eventAggregator);
+        //    newConn.ConnectAsync(new ConnectEvent(ConnectionStringWithInitialCatalog, IsPowerPivot, ApplicationName, FileName??String.Empty, this.ServerType, false));
+        //    return newConn;
+        //}
+
+        public void Close()
+        {
+            Close(false);
+        }
+
+        public void Close(bool closeSession)
+        {
+            if (_connection != null)
+            {
+                if (_connection.State != ConnectionState.Closed && _connection.State != ConnectionState.Broken)
+                {
+                    _connection.Close(closeSession);
+                }
+            }
+            if (_dmvConnection != null)
+            {
+                if (_dmvConnection.State != ConnectionState.Closed && _dmvConnection.State != ConnectionState.Broken)
+                {
+                    _dmvConnection.Close(closeSession);
+                }
+            }
+        }
+
+        private void ConfigureRetryPolicy()
+        {
+            _retry = Policy
+                .HandleInner<Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException>()
+                .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200),
+                    (exception, timespan, retryCount, context) =>
+                    {
+                        var contextDb = context.GetDatabaseName();
+                        var currentDb = contextDb ?? Database?.Name ?? string.Empty;
+                        
+                        // cache the AccessToken
+                        var accessTokenCopy = _connection.AccessToken;
+                        var onAccessTokenExpiredCopy = _connection.OnAccessTokenExpired;
+                        
+                        _connection.Close(true); // force the connection closed and close the session
+
+                        _connection = new ADOTabularConnection(_connection.ConnectionString, _connection.Type);
+                        if (accessTokenCopy.IsNotNull())
+                        {
+                            _connection.AccessToken = accessTokenCopy;
+                            _connection.OnAccessTokenExpired = onAccessTokenExpiredCopy;
+                        }
+                        _connection.ChangeDatabase(currentDb);
+
+                        _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_connection.SessionId));
+                        var msg =
+                            $"A connection error occurred: {exception.Message}\nAttempting to reconnect (retry: {retryCount})";
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                        Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                            "RetryPolicy", msg);
+
+                        // trigger any after retry code
+                        if (AfterReconnect != null) { AfterReconnect(this, EventArgs.Empty); }
+                    });
+
+            _dmvRetry = Policy
+                .HandleInner<Microsoft.AnalysisServices.AdomdClient.AdomdConnectionException>()
+                .WaitAndRetry(3, retryCount => TimeSpan.FromMilliseconds(200),
+                    (exception, timespan, retryCount, context) =>
+                    {
+                        var contextDb = context.GetDatabaseName();
+                        var currentDb = contextDb ?? Database?.Name ?? string.Empty;
+
+                        // cache the AccessToken
+                        var accessTokenCopy = _connection.AccessToken;
+                        var onAccessTokenExpiredCopy = _connection.OnAccessTokenExpired;
+
+                        _dmvConnection.Close(true); // force the connection closed and close the session
+
+                        _dmvConnection = new ADOTabularConnection(_dmvConnection.ConnectionString, _dmvConnection.Type);
+                        if (accessTokenCopy.IsNotNull())
+                        {
+                            _dmvConnection.AccessToken = accessTokenCopy;
+                            _dmvConnection.OnAccessTokenExpired = onAccessTokenExpiredCopy;
+                        }
+                        _dmvConnection.ChangeDatabase(currentDb);
+
+                        _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_dmvConnection.SessionId));
+                        var msg =
+                            $"A connection error occurred: {exception.Message}\nAttempting to reconnect (retry: {retryCount})";
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                        Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                            "RetryPolicy", msg);
+                    });
+        }
+
+        public string ConnectionString => _connection?.ConnectionString ?? string.Empty;
+
+        public string ConnectionStringWithInitialCatalog =>
+            _connection?.ConnectionStringWithInitialCatalog ?? string.Empty;
+
+        public ADOTabularDatabase Database => _dmvRetry.Execute(() => {
+            // Capture the current connection reference once - the field can be
+            // reassigned by the retry policies on a background thread while a
+            // consumer (e.g. the QueryHistory pane filter) is reading the
+            // property. We must not throw NRE if the connection is null or has
+            // not finished re-opening yet, otherwise callers like
+            // ICollectionView.Refresh() will abort their filter pass.
+            var dmv = _dmvConnection;
+            if (dmv == null || dmv.State != ConnectionState.Open) return null;
+            try { return dmv.Database; }
+            catch (NullReferenceException) { return null; }
+        });
+        public string DatabaseName
+        {
+            get
+            {
+                try
+                {
+                    return _dmvRetry.Execute(() =>
+                    {
+                        var dmv = _dmvConnection;
+                        if (dmv == null || dmv.State != ConnectionState.Open) return string.Empty;
+                        return dmv.Database?.Name ?? string.Empty;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(DatabaseName), "Error getting database name");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error getting database name: {ex.Message}"));
+                    return string.Empty;
+                }
+            }
+        }
+        public DaxMetadata DaxMetadataInfo {
+            get {
+                return _dmvConnection?.DaxMetadataInfo;
+            }
+        }
+        public DaxColumnsRemap DaxColumnsRemapInfo
+        {
+            get
+            {
+                ADOTabularConnection newConn = null;
+                ADOTabularConnection conn;
+                try
+                {
+                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
+                    // so that we can run the discover command to get the column remap info
+                    // Otherwise we just use the current connection
+
+                    if (_dmvConnection.IsTestingRls)
+                    {
+                        newConn = _dmvConnection.CloneWithoutRLS();
+                        conn = newConn;
+                    }
+                    else
+                    {
+                        conn = _dmvConnection;
+                    }
+
+                    var remapInfo = _dmvRetry.Execute(() =>  conn?.DaxColumnsRemapInfo);
+                    return remapInfo;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(DaxColumnsRemapInfo), "Error getting column remap information");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                        $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
+                    return new DaxColumnsRemap();
+                }
+                finally
+                {
+                    // close the temporary connection if it's not null
+                    newConn?.Close();
+                }
+
+            }
+
+        }
+
+        public DaxTablesRemap DaxTablesRemapInfo
+        {
+            get
+            {
+                ADOTabularConnection newConn = null;
+                ADOTabularConnection conn;
+                try
+                {
+                    // if the connection contains EffectiveUserName or Roles we clone it and strip those out
+                    // so that we can run the discover command to get the column remap info
+                    // Otherwise we just use the current connection
+                    if (_connection.IsTestingRls)
+                    {
+                        newConn = _dmvConnection.CloneWithoutRLS();
+                        conn = newConn;
+                    }
+                    else
+                    {
+                        conn = _dmvConnection;
+                    }
+                    var remapInfo = _dmvRetry.Execute(() => conn?.DaxTablesRemapInfo);
+                    return remapInfo;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(DaxColumnsRemapInfo), "Error getting column remap information");
+                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                        $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
+                    return new DaxTablesRemap();
+                }
+                finally
+                {
+                    // close the temporary connection if it's not null
+                    newConn?.Close();
+                }
+
+            }
+        }
+
+        #region Query Exection
+
+        public DataTable ExecuteMetadataDaxQueryDataTable(string query)
+        {
+            return _dmvRetry.Execute(() =>
+            {
+                return _dmvConnection.ExecuteDaxQueryDataTable(query);
+            });
+        }
+
+        public DataTable ExecuteDaxQueryDataTable(string query)
+        {
+            return _retry.Execute(() =>
+            {
+               return _connection.ExecuteDaxQueryDataTable(query);    
+            });
+        }
+
+        public AdomdDataReader ExecuteReader(string query, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
+        {
+            return _retry.Execute(() =>
+            {
+
+                return _connection.ExecuteReader(query, paramList);
+            });
+        }
+
+        public AdomdDataReader ExecuteReaderForPrepare(string query, List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
+        {
+            return _retry.Execute(() =>
+            {
+
+                return _connection.ExecuteReaderForPrepare(query, paramList);
+            });
+        }
+
+        public string FileName
+        {
+            get => _connection?.FileName;
+            set
+            {
+                if (_connection != null)
+                {
+                    _connection.FileName = value;
+                }
+                if (_dmvConnection != null)
+                {
+                    _dmvConnection.FileName = value;
+                }
+            }
+        }
+
+        private ADOTabularDynamicManagementViewCollection _dynamicManagementViews;
+        public ADOTabularDynamicManagementViewCollection DynamicManagementViews
+        {
+            get
+            {
+                if (_dynamicManagementViews == null && _dmvConnection != null) _dynamicManagementViews = new ADOTabularDynamicManagementViewCollection(_dmvConnection);
+                return _dynamicManagementViews;
+            }
+        }
+
+        #endregion
+
+
+        public async Task<bool> HasSchemaChangedAsync()
+        {
+            if (!this.IsConnected) return false;
+
+            return await _dmvRetry.Execute(async () =>
+            {
+                try
+                {
+                    bool hasChanged = await Task.Run(() =>
+                    {
+                        var conn = new ADOTabularConnection(this.ConnectionString, this.Type);
+                        if (this.AccessToken.IsNotNull())
+                        {
+                            conn.AccessToken = this.AccessToken;
+                            conn.OnAccessTokenExpired = this.OnAccessTokenExpired;
+                        }
+                        conn.ChangeDatabase(this.DatabaseName);
+                        if (conn.State != ConnectionState.Open) conn.Open();
+                        var dbChanges = conn.Database?.LastUpdate > _lastSchemaUpdate;
+                        _lastSchemaUpdate = conn.Database?.LastUpdate ?? DateTime.MinValue;
+                        conn.Close(true); // close and end the session
+                        conn.Dispose();
+                        return dbChanges;
+                    });
+                    return hasChanged;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(HasSchemaChangedAsync), "Error checking if schema has been changed");
+                    Close();
+                    return false;
+                }
+
+
+            });
+
+        }
+
+        public ADOTabularDatabaseCollection Databases {
+            get {
+                return _dmvConnection.Databases;
+            }
+        }
+        public bool IsAdminConnection => _connection?.ServerType != ServerType.Offline && ( _connection?.IsAdminConnection ?? false);
+
+        public bool IsConnected { get
+            {
+                if (_connection == null) return false;
+                // make sure both connections are open so that we can run queries 
+                // and return metadata information
+                return _connection.State == ConnectionState.Open && _dmvConnection.State == ConnectionState.Open;
+            }
+        }
+        public bool IsPowerBIorSSDT => _connection?.IsPowerBIorSSDT ?? false;
+        public bool IsPowerPivot {
+            get => _connection?.IsPowerPivot ?? false;
+            set
+            {
+                _connection.IsPowerPivot = value;
+                _dmvConnection.IsPowerPivot = value;
+            }
+        }
+
+        public void Open()
+        {
+            _connection.Open();
+            _dmvConnection.Open();
+        }
+        public void Refresh()
+        {
+            if (_connection?.State == ConnectionState.Open) {
+                _connection.Refresh();
+                _dmvConnection.Refresh();
+            }
+        }
+        public string ServerEdition => _connection.ServerEdition;
+        public string ServerLocation => _connection.ServerLocation;
+        public string ServerMode { get { return _connection.ServerMode; } }
+        public string ServerName => _connection?.ServerName ?? string.Empty;
+        public string ServerNameForHistory => !string.IsNullOrEmpty(FileName) ? "<Power BI>" : ServerName;
+        public string ServerVersion => _connection.ServerVersion;
+        public string SessionId => _connection.SessionId;
+        public ServerType ServerType { get => _connection?.ServerType??ServerType.AnalysisServices; 
+            private set {
+                if (_connection == null) return;
+                _connection.ServerType = value; 
+            } 
+        }
+
+        public int SPID { get { return _connection?.State != ConnectionState.Open ? 0 : _connection?.SPID??0; } }
+        public string ShortFileName => _connection.ShortFileName;
+
+        public  bool ShouldAutoRefreshMetadata( IGlobalOptions options)
+        {
+            switch (_connection.ConnectionType)
+            {
+                case ADOTabularConnectionType.Cloud:
+                    return options.AutoRefreshMetadataCloud;
+                case ADOTabularConnectionType.LocalNetwork:
+                    return options.AutoRefreshMetadataLocalNetwork;
+                case ADOTabularConnectionType.LocalMachine:
+                    return options.AutoRefreshMetadataLocalMachine;
+                default:
+                    return true;
+            }
+        }
+
+        private ADOTabularFunctionGroupCollection _functionGroups;
+        private DateTime _lastSchemaUpdate;
+
+        public ADOTabularFunctionGroupCollection FunctionGroups
+        {
+            get
+            {
+                if (_functionGroups == null && _dmvConnection != null) _functionGroups = new ADOTabularFunctionGroupCollection(_dmvConnection);
+                return _functionGroups;
+            }
+        }
+
+        public ADOTabularDatabaseCollection GetDatabases()
+        {
+            return _dmvRetry.Execute(() => {
+                return _dmvConnection.Databases;
+            });
+        }
+
+        public ADOTabularModelCollection GetModels()
+        {
+            if (_dmvConnection == null) return null;
+            if (_dmvConnection.State != ConnectionState.Open && _connection?.ServerType != ServerType.Offline) return null;
+            return _dmvRetry.Execute(() => { return _dmvConnection?.Database?.Models; });
+        }
+
+        public ADOTabularTableCollection GetTables()
+        {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "Start");
+            return _dmvRetry.Execute(() =>
+            {
+                try
+                {
+                    var tables = _dmvConnection.Database.Models[SelectedModelName].Tables;
+                    if (tables.Count == 0)
+                    {
+                        Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "No tables found in model");
+                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No tables found in model"));
+                    }
+                    return tables;
+                }
+                catch 
+                {
+                    throw;
+                }
+                finally
+                {
+                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "End");
+                }
+            });
+            
+        }
+
+        public AdomdType Type => AdomdType.AnalysisServices; // _connection.Type;
+
+        //public string SelectedDatabaseName => SelectedDatabase?.Name ?? string.Empty;
+
+        public string SelectedModelName { get; set; }
+
+        private ADOTabularConnection _sampleDataConnection;
+        private readonly object _sampleDataLock = new object();
+        public async Task UpdateColumnSampleDataAsync(ITreeviewColumn column, int sampleSize, CancellationToken cancellationToken) 
+        {
+
+            column.UpdatingSampleData = true;
+            try
+            {
+                await Task.Run(() => {
+                    // cancel any existing sample data connection
+                    _sampleDataConnection?.TryCancel();
+                    //_sampleDataConnection?.TryClose();
+
+                    if (column.SampleData.Count != 0) return; // if we already have sample data then don't do anything
+                    lock (_sampleDataLock)
+                    {
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), "Updating sample data");
+                        using (_sampleDataConnection = _dmvConnection.Clone())
+                        {
+                            var sampleData = column.InternalColumn.GetSampleData(_sampleDataConnection, sampleSize);
+                            Execute.OnUIThread(() =>
+                            {
+                                if (column.SampleData != null)
+                                {
+                                    foreach (var item in sampleData)
+                                    {
+                                        column.SampleData.Add(item);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }, cancellationToken);
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
+            }
+            catch (Exception ex)
+            {
+                var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
+                Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), errorMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
+            }
+            finally
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), "Setting UpdatingSampleData = False");
+                column.UpdatingSampleData = false;
+            }
+
+        }
+
+
+        public async Task<List<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize)
+        {
+            if (column == null) return new List<string>();
+            
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using (var newConn = _dmvConnection.Clone())
+                    {
+                        return column.GetSampleData(newConn, sampleSize);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Error getting sample data for column {ColumnName}", column.Name);
+                    return new List<string>();
+                }
+            });
+        }
+
+        public void CancelUpdatingColumnSampleData()
+        {
+            if (_sampleDataConnection != null)
+            {
+                _sampleDataConnection.Cancel();
+                _sampleDataConnection.Close();
+                _sampleDataConnection.Dispose();
+                _sampleDataConnection = null;
+            }
+        }
+
+        private ADOTabularConnection _basicStatConnection;
+        private readonly object _basicStatsLock = new object();
+        public async Task UpdateColumnBasicStatsAsync(ITreeviewColumn column, CancellationToken cancellationToken)
+        {
+
+      
+            column.UpdatingBasicStats = true;
+            try
+            {
+                await Task.Run(() => {
+                    
+                     _basicStatConnection?.TryCancel(); // cancel any existing basic stats connection
+                     //_basicStatConnection?.TryClose();
+
+                    lock (_basicStatsLock)
+                    {
+                        using (_basicStatConnection = _dmvConnection.Clone())
+                        {
+                            column.InternalColumn.UpdateBasicStats(_basicStatConnection);
+                            column.MinValue = column.InternalColumn.MinValue;
+                            column.MaxValue = column.InternalColumn.MaxValue;
+                            column.DistinctValues = column.InternalColumn.DistinctValues;
+                        }
+                    }
+                }, cancellationToken); // add cancellation token
+            }
+            catch (Microsoft.AnalysisServices.AdomdClient.AdomdErrorResponseException)
+            {
+                // An error response is expected if the tooltip is cancelled
+            }
+            catch (Exception ex)
+            {
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
+            }
+            finally
+            {
+                column.UpdatingBasicStats = false;
+            }
+        }
+
+        public void CancelUpdatingColumnBasicStats()
+        {
+            if (_basicStatConnection != null)
+            {
+                _basicStatConnection.Cancel();
+                _basicStatConnection.Close();
+                _basicStatConnection.Dispose();
+                _basicStatConnection = null;
+            }
+        }
+
+        public async Task UpdateColumnBasicStatsAsync(ADOTabularColumn column)
+        {
+            if (column == null) return;
+            await Task.Run(() =>
+            {
+                lock (_basicStatsLock)
+                {
+                    using (var conn = _dmvConnection.Clone())
+                    {
+                        column.UpdateBasicStats(conn);
+                    }
+                }
+            });
+        }
+
+        public ADOTabularModelCollection ModelList { get; set; }
+        public void Ping()
+        {
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone(true);
+                tempConn.Open();
+                tempConn.Ping();
+                tempConn.Close(false);
+            });
+        }
+
+        public void PingTrace()
+        {
+            _retry.Execute(() =>
+            {
+                var tempConn = _connection.Clone(true);
+                tempConn.Open();
+                tempConn.PingTrace();
+                tempConn.Close(false);
+            });            
+        }
+
+        public void ClearCache()
+        {
+            if (IsTestingRls)
+            {
+                var tempConn = _connection.CloneWithoutRLS();
+                //tempConn.Open();
+                var tmpDb = tempConn.Database;
+                tmpDb.ClearCache();
+                tempConn.Close();
+            }
+            else
+            {
+                var db = _connection.Database;
+                db.ClearCache();
+            }
+        }
+        public ADOTabularModel SelectedModel { get; set; }
+
+        public async Task SetSelectedModelAsync(ADOTabularModel model)
+        {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedModelAsync), "Start");
+
+            SelectedModel = model;
+            
+
+            if (SelectedModel != null)
+            {
+                SelectedModelName = model.Name;
+                if (_connection.IsMultiDimensional)
+                {
+                    if (_connection.Is2012SP1OrLater)
+                    {
+                        _connection.SetCube(SelectedModel.Name);
+                        _dmvConnection.SetCube(SelectedModel.Name);
+                    }
+                    else
+                    {
+                        await _eventAggregator.PublishOnUIThreadAsync( 
+                            new OutputMessage(MessageType.Error, 
+                                $"DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {_connection.ServerVersion}")
+                            );
+                    }
+                }
+                // This allows us to move the loading of the table/column metadata onto a background thread
+                await RefreshTablesAsync();
+            }
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedModelAsync), "End");
+        }
+
+        public void SetSelectedDatabase(ADOTabularDatabase database)
+        {
+            if (_connection != null)
+            {
+                if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline )
+                {
+                    if (Database != null && database != null && _connection.Database.Name != database.Name) 
+                    {
+                        Log.Debug("{Class} {Event} {selectedDatabase}", "MetadataPaneViewModel", "SelectedDatabase:Set (changing)", database.Name);
+                        _connection.ChangeDatabase(database.Name);
+                        _dmvConnection.ChangeDatabase(database.Name);
+
+                    }
+                    if (_dmvConnection.Database != null)
+                    {
+                        ModelList = _dmvConnection.Database.Models;
+                    }
+                }
+            }
+
+            if (Database != database)
+            {
+                if (Database != null)
+                {
+                    _connection?.ChangeDatabase(Database.Name);
+                    _dmvConnection?.ChangeDatabase(Database.Name);
+                }
+
+                if (_connection?.Database != null)
+                    ModelList = _dmvConnection.Database.Models;
+
+                PublishDatabaseChangedWhenStable();
+            }
+
+        }
+
+        public void SetSelectedDatabase(string databaseName)
+        {
+            if (_connection != null)
+            {
+                if (_connection.State == ConnectionState.Open)
+                {
+                    if (Database != null && !string.IsNullOrEmpty( databaseName) && _connection.Database.Name != databaseName) 
+                    {
+                        Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), databaseName);
+                        _connection.ChangeDatabase(databaseName);
+                        _dmvConnection.ChangeDatabase(databaseName);
+                    }
+                    if (_dmvConnection.Database != null)
+                    {
+                        ModelList = _dmvConnection.Database.Models;
+                    }
+                    PublishDatabaseChangedWhenStable();
+                }
+            }
+
+        }
+
+        public List<ADOTabularMeasure> GetAllMeasures(string filterTable = null)
+        {
+            bool allTables = (string.IsNullOrEmpty(filterTable));
+            var model = _dmvConnection.Database.Models.BaseModel;
+            var modelMeasures = (from t in model.Tables
+                                 from m in t.Measures
+                                 where (allTables || t.Caption == filterTable)
+                                 select m).ToList();
+            return modelMeasures;
+        }
+
+        // TODO get roles on dmv connection
+        public List<string> GetRoles()
+        {
+            var roleQuery = "select [Name] from $SYSTEM.TMSCHEMA_ROLES";
+            var roleTable = ExecuteMetadataDaxQueryDataTable(roleQuery);
+            var result = roleTable.AsEnumerable().Select(row => row[0].ToString()).ToList<string>();
+            return result;
+        }
+
+        public string DefineFilterDumpMeasureExpression(string tableCaption, bool allTables)
+        {
+
+            var model = _dmvConnection.Database.Models.BaseModel;
+            var distinctColumns = (from t in model.Tables
+                                    from c in t.Columns
+                                    where c.ObjectType == ADOTabularObjectType.Column
+                                        && (allTables || t.Caption == tableCaption)
+                                    select c).Distinct().ToList();
+            string measureExpression = "\r\nVAR MaxFilters = 3\r\nRETURN\r\n";
+            bool firstMeasure = true;
+            foreach (var c in distinctColumns)
+            {
+                if (!firstMeasure) measureExpression += "\r\n & ";
+                measureExpression += string.Format(@"IF ( 
+    ISFILTERED ( {0}[{1}] ), 
+    VAR ___f = FILTERS ( {0}[{1}] ) 
+    VAR ___r = COUNTROWS ( ___f ) 
+    VAR ___t = TOPN ( MaxFilters, ___f, {0}[{1}] )
+    VAR ___d = CONCATENATEX ( ___t, {0}[{1}], "", "" )
+    VAR ___x = ""{0}[{1}] = "" & ___d & IF(___r > MaxFilters, "", ... ["" & ___r & "" items selected]"") & "" "" 
+    RETURN ___x & UNICHAR(13) & UNICHAR(10)
+)", c.Table.DaxName, c.Name);
+                    firstMeasure = false;
+            }
+
+            return measureExpression;
+        }
+
+        public string ExpandDependentMeasure(string measureName, bool ignoreNonUniqueMeasureNames)
+        {
+
+            var model = _dmvConnection.Database.Models.BaseModel;
+
+            var dependentMeasures = FindDependentMeasures(measureName);
+
+            var distinctColumns = (from t in model.Tables
+                                   from c in t.Columns
+                                   where c.ObjectType == ADOTabularObjectType.Column
+                                   select c.Name).Distinct().ToList();
+
+            var finalMeasure = dependentMeasures.First(m => m.Name == measureName);
+
+            var resultExpression = finalMeasure.Expression;
+
+            bool foundDependentMeasures;
+
+            do
+            {
+                foundDependentMeasures = false;
+                foreach (var modelMeasure in dependentMeasures)
+                {
+                    var escapedName = Regex.Escape(modelMeasure.Name).Replace("]", "]]");
+                    var escapedTable = Regex.Escape(modelMeasure.Table.DaxName);
+
+                    Regex daxMeasureRegex = new Regex($@"\[{ escapedName}]|'{escapedTable}'\[{escapedName}]|{escapedTable}\[{escapedName}]");
+                    bool hasComments = modelMeasure.Expression.Contains(@"--");
+                    string newExpression = daxMeasureRegex.Replace(resultExpression, $" CALCULATE ( { modelMeasure.Expression}{(hasComments ? "\r\n" : string.Empty)})");
+
+                    if (newExpression != resultExpression)
+                    {
+                        resultExpression = newExpression;
+                        foundDependentMeasures = true;
+                        if (!ignoreNonUniqueMeasureNames)
+                        {
+                            if (distinctColumns.Contains(modelMeasure.Name))
+                            {
+                                // todo - prompt user to see whether to continue
+                                var msg = "The measure name: '" + modelMeasure.Name + "' is also used as a column name in one or more of the tables in this model";
+                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                                throw new InvalidOperationException(msg);
+                            }
+                        }
+                    }
+
+                }
+            } while (foundDependentMeasures);
+
+            return resultExpression;
+        }
+
+        public List<ADOTabularMeasure> FindDependentMeasures(string measureName)
+        {
+            if (!IsConnected)
+            {
+                // We do not support offline analysis of dependent measures
+                // By using VPAX we could implement it by using the old algorithm with search/replace
+                // but it would be better to wait for a tokenizer before implementing it
+                throw new ApplicationException("Connection required to execute FindDependentMeasures");
+            }
+
+            // New algorithm using DEPENDENCY view
+            // 
+            // TODO we could pass a query or a string as a parameter,
+            // so that if the entire query is used as a parameter we generate all the measures
+            var modelMeasures = GetAllMeasures();
+            
+            var dependentMeasures = new List<ADOTabularMeasure>();
+
+            Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
+            scanMeasures.Enqueue(modelMeasures.First(m => m.Name == measureName));
+
+            // Track user-defined functions to process separately
+            Queue<string> scanFunctions = new Queue<string>();
+            HashSet<string> processedFunctions = new HashSet<string>();
+
+            while (scanMeasures.Count > 0 || scanFunctions.Count > 0)
+            {
+                // Process measures
+                if (scanMeasures.Count > 0)
+                {
+                    var measure = scanMeasures.Dequeue();
+                    if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                    dependentMeasures.Add(measure);
+
+                    // Query for both MEASURE and FUNCTION dependencies
+                    var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+                    using (var dr = ExecuteReader(dmvDependency, null))
+                    {
+                        while (dr.Read())
+                        {
+                            var referencedObjectType = dr.GetString(0);
+                            var referencedObjectName = dr.GetString(2);
+
+                            if (referencedObjectType == "MEASURE")
+                            {
+                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
+                                {
+                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
+                                    scanMeasures.Enqueue(dependentMeasure);
+                                }
+                            }
+                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
+                            {
+                                // Add user-defined functions to be processed recursively
+                                scanFunctions.Enqueue(referencedObjectName);
+                                processedFunctions.Add(referencedObjectName);
+                            }
+                        }
+                    }
+                }
+
+                // Process user-defined functions
+                if (scanFunctions.Count > 0)
+                {
+                    var functionName = scanFunctions.Dequeue();
+
+                    // Query dependencies of the user-defined function
+                    var dmvFunctionDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{functionName.Replace("'", "''")}' AND (REFERENCED_OBJECT_TYPE = 'MEASURE' OR REFERENCED_OBJECT_TYPE = 'FUNCTION')";
+
+                    using (var dr = ExecuteReader(dmvFunctionDependency, null))
+                    {
+                        while (dr.Read())
+                        {
+                            var referencedObjectType = dr.GetString(0);
+                            var referencedObjectName = dr.GetString(2);
+
+                            if (referencedObjectType == "MEASURE")
+                            {
+                                if (!dependentMeasures.Where(item => item.Name == referencedObjectName).Any())
+                                {
+                                    var dependentMeasure = modelMeasures.First(m => m.Name == referencedObjectName);
+                                    scanMeasures.Enqueue(dependentMeasure);
+                                }
+                            }
+                            else if (referencedObjectType == "FUNCTION" && !processedFunctions.Contains(referencedObjectName))
+                            {
+                                // Recursively process nested user-defined functions
+                                scanFunctions.Enqueue(referencedObjectName);
+                                processedFunctions.Add(referencedObjectName);
+                            }
+                        }
+                    }
+                }
+            }
+            return dependentMeasures;
+        }
+
+        public List<ADOTabularMeasure> FindDependentMeasuresForQuery(string query, bool recursive)
+        {
+            if (!IsConnected)
+            {
+                // We do not support offline analysis of dependent measures
+                // By using VPAX we could implement it by using the old algorithm with search/replace
+                // but it would be better to wait for a tokenizer before implementing it
+                throw new ApplicationException("Connection required to execute FindDependentMeasures");
+            }
+
+            var modelMeasures = GetAllMeasures();
+
+            var dependentMeasures = new List<ADOTabularMeasure>();
+            Queue<ADOTabularMeasure> scanMeasures = new Queue<ADOTabularMeasure>();
+
+            // get all the measures referenced in the query
+            var dmvQuery = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE QUERY='{query.Replace("'", "''")}'";
+            using (var dr = ExecuteReader(dmvQuery, null))
+            {
+                while (dr.Read())
+                {
+                    var referencedObjectType = dr.GetString(0);
+                    if (referencedObjectType != "MEASURE") continue;
+                    var referencedMeasureName = dr.GetString(2);
+                    if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                    {
+                        var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
+                        scanMeasures.Enqueue(dependentMeasure);
+                    }
+                }
+            }
+
+            if (!recursive)
+            {
+                while (scanMeasures.Count > 0)
+                {
+                    var m = scanMeasures.Dequeue();
+                    dependentMeasures.Add(m);
+                }
+                return dependentMeasures;
+            }
+
+            // recursively get all the measures that the measures referenced in the query depend on
+            while (scanMeasures.Count > 0)
+            {
+                var measure = scanMeasures.Dequeue();
+                if (dependentMeasures.Where(item => item.Name == measure.Name).Any()) continue;
+                dependentMeasures.Add(measure);
+
+                var dmvDependency = $"SELECT REFERENCED_OBJECT_TYPE, REFERENCED_TABLE, REFERENCED_OBJECT\r\nFROM $SYSTEM.DISCOVER_CALC_DEPENDENCY\r\nWHERE OBJECT='{measure.Name.Replace("'", "''")}' AND REFERENCED_OBJECT_TYPE = 'MEASURE'";
+
+                using (var dr = ExecuteReader(dmvDependency, null))
+                {
+                    while (dr.Read())
+                    {
+                        var referencedObjectType = dr.GetString(0);
+                        if (referencedObjectType != "MEASURE") continue;
+                        // var referencedTable = dr.GetString(1);
+                        var referencedMeasureName = dr.GetString(2);
+                        if (!dependentMeasures.Where(item => item.Name == referencedMeasureName).Any())
+                        {
+                            var dependentMeasure = modelMeasures.First(m => m.Name == referencedMeasureName);
+                            scanMeasures.Enqueue(dependentMeasure);
+                        }
+                    }
+                }
+            }
+            return dependentMeasures;
+        }
+
+        public void SetSelectedDatabase(IDatabaseReference database)
+        {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - start");
+            if (_connection == null) return;
+            if (_connection.State == ConnectionState.Open || _connection.ServerType == ServerType.Offline)
+            {
+                if (Database != null && database.Name == Database.Name) return;
+
+                var context = new Polly.Context().WithDatabaseName(database?.Name??string.Empty);
+                _retry.Execute(ctx =>
+                {
+                    if (database != null) { 
+                        _dmvConnection?.ChangeDatabase(database.Name);
+                        _connection?.ChangeDatabase(database.Name);
+                    }
+                    //Database = _dmvConnection.Database;
+                    ModelList = _dmvConnection.Database?.Models;
+                    PublishDatabaseChangedWhenStable();
+                }, context);
+            }
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(SetSelectedDatabase), database.Name + " - end" );
+        }
+
+
+
+        public void Connect(IConnectEvent message)
+        {
+            var id = new Guid();
+            var msg = new ConnectEvent(message.ConnectionString, message.PowerPivotModeSelected, message.ApplicationName, message.PowerPivotModeSelected?message.WorkbookName:message.PowerBIFileName, message.ServerType, message.RefreshDatabases, message.DatabaseName, message.AccessToken);
+            ConnectAsync(msg, id).GetAwaiter().GetResult();
+        }
+
+        internal async Task ConnectAsync(ConnectEvent message, Guid uniqueId)
+        {
+            IsConnecting = true;
+            Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent(this));
+
+            if (message.ServerType == ServerType.Offline)
+            {
+                await OpenOfflineConnectionAsync(message);
+                // Don't publish ConnectionOpenedEvent again for offline connections
+                // as it would clear the metadata that was just populated by ConnectionChangedEvent
+            }
+            else
+            {
+                await OpenOnlineConnectionAsync(message, uniqueId);
+                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent(this));
+            }
+
+            await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
+            await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
+
+        }
+
+        private async Task OpenOfflineConnectionAsync(ConnectEvent message)
+        {
+
+            var vpaContent = message.VpaxContent; //Dax.Vpax.Tools.VpaxTools.ImportVpax(message.FileName);
+            _connection = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            _connection.ServerType = ServerType.Offline;
+            _connection.Visitor = new MetadataVisitorVpax(_connection, vpaContent.DaxModel, vpaContent.TomDatabase);
+
+            _dmvConnection = new ADOTabular.ADOTabularConnection(string.Empty, ADOTabular.Enums.AdomdType.AnalysisServices);
+            _dmvConnection.ServerType = ServerType.Offline;
+            _dmvConnection.Visitor = new MetadataVisitorVpax(_connection, vpaContent.DaxModel, vpaContent.TomDatabase);
+
+            ServerType = message.ServerType;
+            FileName = message.FileName??String.Empty;
+            IsPowerPivot = message.PowerPivotModeSelected;
+            //Databases.Add(_connection.Database);
+            //Database = _connection.Database;
+            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+        }
+
+        public Dictionary<string, ADOTabularColumn> Columns => _dmvConnection?.Columns;
+
+        private async Task OpenOnlineConnectionAsync(ConnectEvent message, Guid uniqueId)
+        {
+            var connectionString = UpdateApplicationName(message.ConnectionString, uniqueId);
+            _connection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
+            _dmvConnection = new ADOTabularConnection(connectionString, AdomdType.AnalysisServices);
+
+            
+            if (message.AccessToken.IsNotNull())
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), $"Setting Connection AccessToken (ExpirationTime: {message.AccessToken.ExpirationTime})");
+                _connection.AccessToken = message.AccessToken;
+                _connection.OnAccessTokenExpired = OnAccessTokenExpired;
+                _dmvConnection.AccessToken = message.AccessToken;
+                _dmvConnection.OnAccessTokenExpired = OnAccessTokenExpired;
+            }
+
+            ServerType = message.ServerType;
+            FileName = message.FileName;
+            IsPowerPivot = message.PowerPivotModeSelected;
+
+            // open the DMV connection          
+            var openDmvConnTask = _dmvConnection.OpenAsync();
+
+            // Open the main query connection
+            var openConnTask = _connection.OpenAsync();
+
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "Start open connections");
+            await Task.WhenAll(openConnTask, openDmvConnTask);
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OpenOnlineConnectionAsync), "End open connections");
+
+            // Change to the requested database after both connections are fully open
+            if (!string.IsNullOrEmpty(message.DatabaseName))
+            {
+                _connection.ChangeDatabase(message.DatabaseName);
+                _dmvConnection.ChangeDatabase(message.DatabaseName);
+            }
+
+            SetSelectedDatabase(_dmvConnection.Database);
+
+        }
+
+#if NET8_0_OR_GREATER
+        private Microsoft.AnalysisServices.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AccessToken token)
+#else
+        private Microsoft.AnalysisServices.AdomdClient.AccessToken OnAccessTokenExpired(Microsoft.AnalysisServices.AdomdClient.AccessToken token)
+#endif
+        {
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), "AccessToken Expired - refreshing token");
+            var newToken = EntraIdHelper.RefreshToken(token).GetAwaiter().GetResult();
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(OnAccessTokenExpired), $"AccessToken Refreshed - ExpirationTime: {newToken.ExpirationTime}");
+            return newToken;
+
+        }
+
+        // Defer publishing DatabaseChangedEvent until both the query and dmv
+        // connections are fully Open. The Polly retry policies in this class can
+        // tear down and rebuild a connection on a background thread, leaving a
+        // brief window where _connection or _dmvConnection is non-null but in a
+        // Closed/Connecting state. Handlers of DatabaseChangedEvent (e.g. the
+        // QueryHistory pane filter) read Connection.Database during that window
+        // and previously threw NullReferenceException. Waiting briefly for both
+        // connections to stabilise lets handlers see a consistent state.
+        private const int DatabaseChangedStableTimeoutMs = 2000;
+        private const int DatabaseChangedPollIntervalMs = 50;
+
+        private void PublishDatabaseChangedWhenStable()
+        {
+            // Fire-and-forget: don't block the caller (which may itself be
+            // running inside a Polly retry action on the UI thread).
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var deadline = DateTime.UtcNow.AddMilliseconds(DatabaseChangedStableTimeoutMs);
+                    while (!IsConnected && DateTime.UtcNow < deadline)
+                    {
+                        await Task.Delay(DatabaseChangedPollIntervalMs).ConfigureAwait(false);
+                    }
+
+                    if (!IsConnected)
+                    {
+                        Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                            nameof(PublishDatabaseChangedWhenStable),
+                            $"Connections did not stabilise within {DatabaseChangedStableTimeoutMs}ms; publishing DatabaseChangedEvent anyway");
+                    }
+
+                    await _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent()).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
+                        nameof(PublishDatabaseChangedWhenStable), "Error publishing DatabaseChangedEvent");
+                }
+            });
+        }
+
+        private string UpdateApplicationName(string connectionString, Guid uniqueId)
+        {
+            var builder = new OleDbConnectionStringBuilder(connectionString);
+            builder.TryGetValue("Application Name", out var appName);
+            if (appName == null) return connectionString;
+            appName = guidRegex.Replace((appName ?? string.Empty).ToString(), uniqueId.ToString());
+            builder["Application Name"] = appName;
+            return builder.ToString();
+        }
+
+        public async Task RefreshTablesAsync()
+        {
+            try
+            {
+                Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), "Start");
+                await Task.Factory.StartNew(() =>
+                {
+                    _retry.Execute(() =>
+                    {
+                        GetTables();
+                        IsConnecting = false;
+                        _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                var errMsg = $"Error refreshing table list: {ex.Message}";
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), errMsg);
+                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));                
+            }
+            Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), "End");
+        }
+
+
+        public bool IsTestingRls => _connection?.IsTestingRls??false;
+
+        public static bool IsPbiXmlaEndpoint(string connectionString)
+        {
+            var builder = new System.Data.OleDb.OleDbConnectionStringBuilder(connectionString);
+            var server = builder["Data Source"].ToString();
+            return server.StartsWith("powerbi://", StringComparison.InvariantCultureIgnoreCase)
+                || server.StartsWith("pbiazure://", StringComparison.InvariantCultureIgnoreCase)
+                || server.StartsWith("pbidedicated://", StringComparison.InvariantCultureIgnoreCase);
+        }
+        private object _supportedTraceEventClassesLock = new object();
+        private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> _supportedTraceEventClasses;
+        private bool disposedValue;
+
+        public Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>> SupportedTraceEventClasses
+        {
+            get
+            {
+                lock (_supportedTraceEventClassesLock) {
+                    _supportedTraceEventClasses ??= PopulateSupportedTraceEventClasses();
+                }
+                return _supportedTraceEventClasses;
+
+            }
+        }
+
+        private Dictionary<DaxStudioTraceEventClass,HashSet<TOM.TraceColumn>> PopulateSupportedTraceEventClasses()
+        {
+            var result = new Dictionary<DaxStudioTraceEventClass, HashSet<TOM.TraceColumn>>();
+            using (var dr = ExecuteReader("SELECT * FROM $SYSTEM.DISCOVER_TRACE_EVENT_CATEGORIES", null))
+            {
+                while (dr.Read())
+                {
+                    var xml = dr.GetString(0);
+                    using (var sr = new StringReader(xml))
+                    using (var xr = new XmlTextReader(new StringReader(xml)))
+                    {
+                        XPathDocument xPath = new XPathDocument(xr);
+                        var nav = xPath.CreateNavigator();
+                        var iter = nav.Select("/EVENTCATEGORY/EVENTLIST/EVENT/ID");
+                        while (iter.MoveNext())
+                        {
+                            var columns = new HashSet<TOM.TraceColumn>();
+                            var iter2 = iter.Current.Select("../EVENTCOLUMNLIST/EVENTCOLUMN/ID");
+                            while (iter2.MoveNext())
+                            {
+                                columns.Add((TOM.TraceColumn)iter2.Current.ValueAsInt);
+                            }
+                            
+                            result.Add((DaxStudioTraceEventClass)iter.Current.ValueAsInt, columns);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public bool TryGetColumn(string tablename, string columnname, out ADOTabularColumn column)
+        {
+            if (tablename != null 
+                && columnname != null 
+                && _dmvConnection.Database.Models.BaseModel.Tables.TryGetValue(tablename, out var table))
+            {
+                return table.Columns.TryGetValue(columnname, out column);
+            }
+            column = null;
+            return false;
+        }
+
+        public async Task ProcessDatabaseAsync(string refreshType)
+        {
+//            var refreshCommand = $@"
+//{{  
+//    ""refresh"": {{
+//        ""type"": ""{refreshType}"",  
+//        ""objects"": [
+//            {{
+//                ""database"": ""{_connection.Database.Name}""
+//            }}  
+//        ]  
+//    }}
+//}}";
+            var refreshCommand = $@"
+<Process xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">  
+  <Object>  
+    <DatabaseID>{_dmvConnection.Database.Id}</DatabaseID>  
+  </Object>  
+  <Type>{refreshType}</Type>  
+</Process>
+";
+
+            refreshCommand = $@"<Batch Transaction=""false"" xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">
+  <Refresh xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>{_dmvConnection.Database.Id}</DatabaseID>
+    <Model>
+      <xs:schema xmlns:xs=""http://www.w3.org/2001/XMLSchema"" xmlns:sql=""urn:schemas-microsoft-com:xml-sql"">
+        <xs:element>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type=""row""/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:complexType name=""row"">
+          <xs:sequence>
+            <xs:element name=""RefreshType"" type=""xs:long"" sql:field=""RefreshType"" minOccurs=""0""/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:schema>
+      <row xmlns=""urn:schemas-microsoft-com:xml-analysis:rowset"">
+        <RefreshType>3</RefreshType>
+      </row>
+    </Model>
+  </Refresh>
+  <SequencePoint xmlns=""http://schemas.microsoft.com/analysisservices/2014/engine"">
+    <DatabaseID>aafa360c-734a-471d-b2b3-ba56dfe88121</DatabaseID>
+  </SequencePoint>
+</Batch>";
+
+            await Task.Run(() =>
+            {
+                var server = new TOM.Server();
+                var db = server.Databases[_dmvConnection.Database.Id];
+                db.Model.RequestRefresh(Microsoft.AnalysisServices.Tabular.RefreshType.Full);
+                db.Model.SaveChanges();
+                server.Disconnect();
+            });
+//            await Task.Run(() => _dmvConnection.ExecuteNonQuery(refreshCommand));
+        }
+
+        public async Task ProcessTableAsync(string tableName)
+        {
+            var refreshType = "defragment";
+//            var refreshCommand = $@"
+//{{  
+//    ""refresh"": {{
+//        ""type"": ""{refreshType}"",  
+//        ""objects"": [
+//            {{
+//                ""database"": ""{_connection.Database.Name}"",
+//                ""table"": ""{tableName}""
+//            }}  
+//        ]  
+//    }}
+//}}";
+            var refreshCommand = $@"
+<Process xmlns=""http://schemas.microsoft.com/analysisservices/2003/engine"">  
+  <Object>  
+    <DatabaseID>{_dmvConnection.Database.Id}</DatabaseID>  
+    <Table></Table>
+  </Object>  
+  <Type>{refreshType}</Type>  
+</Process>
+";
+            await Task.Run(() => _dmvConnection.ExecuteNonQuery(refreshCommand));
+            return;
+
+        }
+
+        public DataSet DiscoverQueryDependencies(string queryText)
+        {
+            var restriction = new AdomdRestriction("QUERY", queryText);
+            var restrictions = new AdomdRestrictionCollection() { restriction};
+            DataSet ds =  _connection.GetSchemaDataSet("DISCOVER_CALC_DEPENDENCY", restrictions);
+            DataTable t = ds.Tables[0];
+            List<ADOTabularMeasure> measures = new List<ADOTabularMeasure>();
+            foreach (DataRow row in t.Rows)
+            {
+                var refObjType = row["REFERENCED_OBJECT_TYPE"].ToString();
+                if (refObjType == "MEASURE" || refObjType == "FUNCTION")
+                {
+                    measures.AddRange(FindDependentMeasures(row["REFERENCED_OBJECT"].ToString()));
+                    
+                }
+            }
+            foreach (var m in measures)
+            {
+                t.Rows.Add(new[] { "QUERY", "MEASURE", m.Table.Name, m.Name, m.Expression });
+            }
+
+            return ds;
+        }
+
+#if NET8_0_OR_GREATER
+        public Microsoft.AnalysisServices.AccessToken AccessToken { get => _connection.AccessToken; }
+#else
+        public Microsoft.AnalysisServices.AdomdClient.AccessToken AccessToken { get => _connection.AccessToken; }
+#endif
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _connection?.Dispose();
+                    _dmvConnection?.Dispose();
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~ConnectionManager()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+    }
+
+}

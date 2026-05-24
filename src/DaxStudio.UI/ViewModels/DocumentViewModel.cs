@@ -1329,6 +1329,7 @@ namespace DaxStudio.UI.ViewModels
         public bool IsClosing { get; private set; }
 
         public ConnectionManager Connection { get; }
+        DaxStudio.Core.Connections.ConnectionManager IQueryRunner.Connection => Connection;
 
         private async Task UpdateConnectionsAsync(ConnectEvent message)
         {

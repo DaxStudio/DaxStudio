@@ -7,7 +7,7 @@ using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
-using DaxStudio.UI.Model;
+using DaxStudio.Core.Connections;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices.AdomdClient;
 using Serilog;

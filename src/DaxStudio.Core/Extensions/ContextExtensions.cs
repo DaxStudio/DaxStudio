@@ -1,6 +1,6 @@
 ﻿using Polly;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Core.Extensions
 {
     public static class ContextExtensions
     {

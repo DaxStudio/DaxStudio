@@ -7,6 +7,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Connections;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices.AdomdClient;
@@ -59,7 +60,7 @@ namespace DaxStudio.CommandLine.UIStubs
 
         public IGlobalOptions Options { get; }
 
-        public ConnectionManager Connection { get; private set; }
+        public DaxStudio.Core.Connections.ConnectionManager Connection { get; private set; }
 
         public void ActivateOutput()
         {
@@ -76,7 +77,7 @@ namespace DaxStudio.CommandLine.UIStubs
         public global::ADOTabular.AdomdClientWrappers.AdomdDataReader ExecuteDataReaderQuery(string daxQuery, System.Collections.Generic.List<Microsoft.AnalysisServices.AdomdClient.AdomdParameter> paramList)
         {
             System.Diagnostics.Debug.WriteLine("Execute Data Reader");
-            Connection = new ConnectionManager(EventAggregator);
+            Connection = new DaxStudio.Core.Connections.ConnectionManager(EventAggregator);
             var msg = new ConnectEvent() { 
                 ConnectionString = ConnectionStringWithInitialCatalog,
                 AccessToken = this.AccessToken

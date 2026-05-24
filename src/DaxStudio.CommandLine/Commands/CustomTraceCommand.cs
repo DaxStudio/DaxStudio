@@ -2,6 +2,7 @@
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Connections;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Serilog;
@@ -93,7 +94,7 @@ namespace DaxStudio.CommandLine.Commands
             await AnsiConsole.Status().StartAsync("Starting Trace...", async ctx =>
                 {
                     statusContext = ctx;
-                    var connMgr = new ConnectionManager(EventAggregator);
+                    var connMgr = new DaxStudio.Core.Connections.ConnectionManager(EventAggregator);
                     var connEvent = new ConnectEvent()
                     {
                         ConnectionString = $"Data Source={settings.Server};Initial Catalog={settings.Database}",
