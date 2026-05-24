@@ -60,6 +60,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Label Content="Server:" Margin="0, 5"/>
             <TextBox x:Name="ServerName" Grid.Column="1" Margin="5,5" Padding="3"/>
@@ -85,7 +86,9 @@
             <Label Content="Schema:" Grid.Row="7" Margin="0, 5"/>
             <TextBox x:Name="Schema" Grid.Row="7" Grid.Column="1" Margin="5,5" Padding="3"/>
             <CheckBox Content="Re-create tables before inserting data" IsChecked="{Binding TruncateTables}" Grid.Row="8" Grid.Column="1" Margin="5"/>
-            <Button Style="{StaticResource LinkButton}" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Right" x:Name="ManualConnectionString" cal:Message.Attach="[Event Click] = [Action ManualConnectionString]" Content="Edit Connection String"></Button>
+            <CheckBox Content="Trust server certificate" IsChecked="{Binding TrustServerCertificate}" Grid.Row="9" Grid.Column="1" Margin="5"
+                      ToolTip="Skip validation of the SQL Server TLS certificate chain. Required for servers that use a self-signed certificate (e.g. default SQL Server 2022/2025 installs)."/>
+            <Button Style="{StaticResource LinkButton}" Grid.Row="10" Grid.Column="1" HorizontalAlignment="Right" x:Name="ManualConnectionString" cal:Message.Attach="[Event Click] = [Action ManualConnectionString]" Content="Edit Connection String"></Button>
         </Grid>
         
         <StackPanel Orientation="Vertical" Grid.Row="4">

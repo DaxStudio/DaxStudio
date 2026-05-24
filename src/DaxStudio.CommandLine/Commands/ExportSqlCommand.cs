@@ -39,7 +39,12 @@ namespace DaxStudio.CommandLine.Commands
             [CommandOption("-r|--recreate-tables")]
             public bool ReCreateTables { get; set; }
 
-            
+            [CommandOption("--trust-server-certificate")]
+            [DefaultValue(true)]
+            [Description("Trust the SQL Server TLS certificate without validating its chain. Required for servers using a self-signed certificate (e.g. default SQL Server 2022/2025 installs). Defaults to true.")]
+            public bool TrustServerCertificate { get; set; } = true;
+
+
         }
 
         static List<SelectedTable> SelectedTables = new List<SelectedTable>();
@@ -93,6 +98,7 @@ namespace DaxStudio.CommandLine.Commands
                         var doc = new CmdLineDocument(connMgr, metadataPane);
                         var vm = new ExportDataWizardViewModel(EventAggregator, doc, null);
                         vm.ExportType = UI.Enums.ExportDataType.SqlTables;
+                        vm.TrustServerCertificate = settings.TrustServerCertificate;
 
 
                         var tables = settings.Tables;

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -178,6 +178,7 @@ namespace DaxStudio.UI.ViewModels
         public SecureString SecurePassword { get; set; } = new SecureString();
         public SqlAuthenticationType AuthenticationType { get; set; } = SqlAuthenticationType.Windows;
         public string SqlConnectionString { get; set; }
+        public bool TrustServerCertificate { get; set; } = true;
         public string CsvDelimiter { get; set; } = ",";
         public bool CsvQuoteStrings { get; set; } = true;
         public string OutputFolder { get; set; } = "";
@@ -736,6 +737,20 @@ namespace DaxStudio.UI.ViewModels
         {
             try
             {
+                // If the supplied connection string did not explicitly set TrustServerCertificate,
+                // apply the wizard option. Microsoft.Data.SqlClient defaults Encrypt=true so connecting
+                // to servers with self-signed certificates (e.g. default SQL Server 2022/2025 installs)
+                // will otherwise fail with "The certificate chain was issued by an authority that is not trusted".
+                if (TrustServerCertificate)
+                {
+                    var connBuilder = new SqlConnectionStringBuilder(sqlConnStr);
+                    if (!connBuilder.ContainsKey("TrustServerCertificate"))
+                    {
+                        connBuilder.TrustServerCertificate = true;
+                        sqlConnStr = connBuilder.ConnectionString;
+                    }
+                }
+
                 Document.QueryStopWatch.Start();
                 using (var conn = new SqlConnection(sqlConnStr))
                 {
@@ -805,7 +820,7 @@ namespace DaxStudio.UI.ViewModels
                                                 //WaitForTaskPollingForCancellation(_cancellationTokenSource, task);
 
                                                 // update the currentTable with the final row count
-                                                _currentTable.RowCount = sqlBulkCopy.RowsCopiedCount() + batchRows;
+                                                _currentTable.RowCount = sqlBulkCopy.RowsCopied64 + batchRows;
 
                                                 if (CancelRequested)
                                                 {

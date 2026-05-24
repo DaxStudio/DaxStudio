@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using System.Security;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
@@ -62,6 +62,16 @@ namespace DaxStudio.UI.ViewModels
             set => Wizard.TruncateTables = value;
         }
 
+        public bool TrustServerCertificate
+        {
+            get => Wizard.TrustServerCertificate;
+            set
+            {
+                Wizard.TrustServerCertificate = value;
+                NotifyOfPropertyChange(() => TrustServerCertificate);
+            }
+        }
+
         public SqlAuthenticationType AuthenticationType {
             get => Wizard.AuthenticationType;
             set {
@@ -102,7 +112,8 @@ namespace DaxStudio.UI.ViewModels
             {
                 ApplicationName = "DAX Studio", 
                 DataSource = ServerName, 
-                InitialCatalog = Database
+                InitialCatalog = Database,
+                TrustServerCertificate = TrustServerCertificate
             };
 
             if (AuthenticationType == SqlAuthenticationType.Windows)

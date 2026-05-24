@@ -16,6 +16,7 @@ namespace DaxStudio.UI.Interfaces
         SecureString SecurePassword { get; set; }
         SqlAuthenticationType AuthenticationType { get; set; }
         string SqlConnectionString { get; set; }
+        bool TrustServerCertificate { get; set; }
         string CsvDelimiter { get; set; }
         bool CsvQuoteStrings { get; set; }
         string OutputFolder { get; set; }

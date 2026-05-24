@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DaxStudio.UI.Extensions;
-using System.Data.SqlClient;
 using DaxStudio.Interfaces.Enums;
 
 namespace DaxStudio.UI.Model
