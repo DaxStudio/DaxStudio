@@ -16,6 +16,7 @@ using System;
 using System.IO.Packaging;
 using System.Windows.Media;
 using System.Xml;
+using DaxStudio.Core;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;

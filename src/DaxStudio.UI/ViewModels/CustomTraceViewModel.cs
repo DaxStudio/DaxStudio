@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System;
 using System.IO.Packaging;
+using DaxStudio.Core;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Utils;
 using Serilog;

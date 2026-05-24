@@ -15,6 +15,8 @@ using DAXEditorControl;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Controls.PropertyGrid;
+using DaxStudio.Core;
+using DaxStudio.Core.Vpax;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Enums;
@@ -5003,7 +5005,7 @@ namespace DaxStudio.UI.ViewModels
                 if (dlg.FilterIndex == 2)
                 {
                     // if this is an ovpax file get the dictionary
-                    dictFilePath = ModelAnalyzer.GetDictPathForOvpax(filename);
+                    dictFilePath = VpaxDictHelper.GetDictPathForOvpax(filename);
                 }
 
                 ImportAnalysisData(filename, dictFilePath);

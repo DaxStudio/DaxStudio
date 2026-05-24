@@ -1,4 +1,4 @@
-﻿namespace DaxStudio.UI.Utils
+﻿namespace DaxStudio.Core
 {
     public class DaxxFormat
     {

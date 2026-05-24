@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using DaxStudio.Core;
+using DaxStudio.Core.Vpax;
 using DaxStudio.UI.Interfaces;
 using System.IO.Packaging;
 using DaxStudio.UI.Utils;
@@ -408,7 +410,7 @@ namespace DaxStudio.UI.ViewModels
                 await Task.Run(() =>
                 {
                     Dax.ViewVpaExport.Model viewVpa = new Dax.ViewVpaExport.Model(ViewModel.Model);
-                    ModelAnalyzer.ExportExistingModelToVPAX(fileName,dictionaryPath,inputDictionaryPath, ViewModel.Model, viewVpa, Database);
+                    DaxStudio.Core.Vpax.ModelAnalyzer.ExportExistingModelToVPAX(fileName,dictionaryPath,inputDictionaryPath, ViewModel.Model, viewVpa, Database);
                 });
             }
             catch (Exception ex)

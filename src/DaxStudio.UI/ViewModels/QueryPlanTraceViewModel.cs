@@ -6,6 +6,7 @@ using DaxStudio.Controls.Model;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Events;
+using DaxStudio.Core;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;

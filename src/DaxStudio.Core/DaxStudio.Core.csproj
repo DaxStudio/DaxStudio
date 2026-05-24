@@ -26,4 +26,12 @@
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
   </ItemGroup>
 
+  <!-- Package references -->
+  <ItemGroup>
+    <PackageReference Include="Dax.Model.Extractor" Version="1.12.0" />
+    <PackageReference Include="Dax.ViewVpaExport" Version="1.12.0" />
+    <PackageReference Include="Dax.Vpax" Version="1.12.0" />
+    <PackageReference Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
+  </ItemGroup>
+
 </Project>

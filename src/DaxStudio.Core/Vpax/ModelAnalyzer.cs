@@ -1,14 +1,11 @@
 ﻿using System.IO;
+using Dax.Metadata;
+using Dax.Vpax.Obfuscator;
+using Dax.Vpax.Obfuscator.Common;
 using Dax.Vpax.Tools;
 using static Dax.Vpax.Tools.VpaxTools;
-using Dax.Vpax.Obfuscator.Common;
-using Dax.Vpax.Obfuscator;
-using System.Windows;
-using ModernWpf.Controls;
-using System.Windows.Forms;
-using Dax.Metadata;
 #nullable enable
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Vpax
 {
 
     public static class ModelAnalyzer
@@ -91,34 +88,6 @@ namespace DaxStudio.UI.Utils
         {
             if (!filename.EndsWith(ovpaxExtension, System.StringComparison.OrdinalIgnoreCase)) { return string.Empty; }
             return Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + dictExtension);
-        }
-
-        public static string GetDictPathForOvpax(string filename)
-        {
-            var dictFilePath = GetDefaultDictFile(filename);
-
-            // check if multiple dict files exist
-            var allDictFiles = Directory.GetFiles(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(dictFilePath) + "*.dict");
-
-            // only 1 file matches the pattern so return that
-            if (allDictFiles.Length == 1 && File.Exists(dictFilePath)) return dictFilePath;
-
-            // if the default dict file does not exist ask the user
-            var dlg = new OpenFileDialog()
-            {
-                InitialDirectory= Path.GetDirectoryName(filename),
-                FileName = Path.GetFileNameWithoutExtension(dictFilePath) + "*.dict",
-                Title = "Select the .dict file to use",
-                Filter = "Obfuscation Dictionary|*.dict",
-                DefaultExt = ".dict",
-                Multiselect = false
-            };
-
-            if (dlg.ShowDialog() == DialogResult.OK)
-            { return dlg.FileName; }
-
-            // if the dialog was cancelled then return an empty string
-            return string.Empty;
         }
     }
 }

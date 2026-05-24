@@ -3,6 +3,7 @@ using Spectre.Console.Cli;
 using System.ComponentModel;
 using Spectre.Console;
 using Caliburn.Micro;
+using DaxStudio.Core.Vpax;
 using DaxStudio.UI.Utils;
 using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
@@ -40,7 +41,7 @@ namespace DaxStudio.CommandLine.Commands
                     if (this.OutputFile.EndsWith(".ovpax", System.StringComparison.OrdinalIgnoreCase) && _dictionaryPath == string.Empty)
                     {
                         // calculate dictionary path
-                        return ModelAnalyzer.GetDictPathForOvpax(OutputFile);
+                        return VpaxDictHelper.GetDictPathForOvpax(OutputFile);
                     }
                     return _dictionaryPath;
                 } 
