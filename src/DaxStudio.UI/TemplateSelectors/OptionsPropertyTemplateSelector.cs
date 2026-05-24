@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using DaxStudio.Controls.PropertyGrid;
+using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.UI.TemplateSelectors
 {

@@ -5,6 +5,7 @@ using DaxStudio.CommandLine.Help;
 using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.Common.Extensions;
+using DaxStudio.Core.Options;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
@@ -34,14 +35,14 @@ namespace DaxStudio.CommandLine
         {
 
             var settingProvider = SettingsProviderFactory.GetSettingProvider();
-            Options = new OptionsViewModel(EventAggregator, settingProvider);
+            Options = new OptionsModel(EventAggregator, settingProvider);
             Options.Initialize();
 
             // Create a type registrar and register any dependencies.
             // A type registrar is an adapter for a DI framework.
             var registrations = new ServiceCollection();
             registrations.AddSingleton<IEventAggregator, EventAggregator>();
-            registrations.AddSingleton<IGlobalOptions, OptionsViewModel>();
+            registrations.AddSingleton<IGlobalOptions, OptionsModel>();
             registrations.AddSingleton(typeof(ISettingProvider), settingProvider);
             var registrar = new TypeRegistrar(registrations);
             var verboseLogging = IsVerbose(args);

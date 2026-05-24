@@ -1,6 +1,6 @@
 using System;
 
-namespace DaxStudio.Controls.PropertyGrid
+namespace DaxStudio.Interfaces.Attributes
 {
     /// <summary>
     /// Specifies that a property should only be displayed if the specified environment variable exists and has a non-zero value.

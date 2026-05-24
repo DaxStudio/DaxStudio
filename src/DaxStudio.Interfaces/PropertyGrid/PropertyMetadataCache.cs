@@ -5,8 +5,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using DaxStudio.Interfaces.Attributes;
 
-namespace DaxStudio.Controls.PropertyGrid
+namespace DaxStudio.Interfaces.PropertyGrid
 {
     /// <summary>
     /// Caches reflected property metadata and compiled expression-tree delegates per type.

@@ -8,6 +8,7 @@ using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Core.Connections;
+using DaxStudio.Core.Options;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices.AdomdClient;
@@ -33,7 +34,7 @@ namespace DaxStudio.CommandLine.UIStubs
 
             ConnectionStringWithInitialCatalog = settings.FullConnectionString;
             _settingProvider = SettingsProviderFactory.GetSettingProvider();
-            Options = new OptionsViewModel(EventAggregator, _settingProvider);
+            Options = new OptionsModel(EventAggregator, _settingProvider);
             // this supports interactive Entra Auth if needed
             if (AccessTokenHelper.IsAccessTokenNeeded(ConnectionStringWithInitialCatalog)) {
             AccessToken = AccessTokenHelper.GetAccessToken(ConnectionStringWithInitialCatalog);

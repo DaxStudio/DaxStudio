@@ -1,6 +1,6 @@
 ﻿using DaxStudio.Interfaces.Enums;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class ChangeThemeEvent
     {

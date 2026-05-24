@@ -1,5 +1,6 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using Dax.Metadata;
+using DaxStudio.Core.Events;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using System.Windows.Forms;
@@ -56,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
                 _options.VpaxSampleReferentialIntegrityViolations = VpaxSampleReferentialIntegrityViolations;
                 _options.VpaxDontShowOptionsDialog = VpaxDontShowOptionsDialog;
                 _options.VpaxStatsColumnBatchSize = VpaxStatsColumnBatchSize;
-                await _eventAggregator.PublishOnUIThreadAsync(new Events.UpdateGlobalOptions());
+                await _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
             }
             Result = DialogResult.OK;
             await TryCloseAsync();

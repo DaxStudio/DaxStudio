@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace DaxStudio.UI.JsonConverters
+namespace DaxStudio.Core.JsonConverters
 {
     public class VersionConverter : JsonConverter<Version>
     {

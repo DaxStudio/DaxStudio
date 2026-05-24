@@ -1,6 +1,7 @@
 using System;
+using DaxStudio.Interfaces.Attributes;
 
-namespace DaxStudio.Controls.PropertyGrid
+namespace DaxStudio.Interfaces.PropertyGrid
 {
     /// <summary>
     /// Holds pre-extracted attribute metadata and compiled delegates for a single property.

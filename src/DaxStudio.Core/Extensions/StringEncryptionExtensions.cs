@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Security;
 using System.Runtime.InteropServices;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Core.Extensions
 {
     public static class StringEncryptionExtensions
     {

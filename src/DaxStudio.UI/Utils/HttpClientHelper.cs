@@ -1,7 +1,8 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
+using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Extensions;
 using Serilog;
 using System;

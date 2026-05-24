@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Threading;
 using System.Linq;
+using DaxStudio.Interfaces.PropertyGrid;
 
 namespace DaxStudio.Controls.PropertyGrid
 {

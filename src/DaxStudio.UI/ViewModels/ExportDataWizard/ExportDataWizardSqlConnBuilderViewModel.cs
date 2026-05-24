@@ -1,7 +1,8 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Security;
 using DaxStudio.Core.Exports;
 using DaxStudio.UI.Enums;
+using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Extensions;
 
 namespace DaxStudio.UI.ViewModels

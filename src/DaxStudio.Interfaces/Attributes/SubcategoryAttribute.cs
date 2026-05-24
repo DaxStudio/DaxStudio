@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DaxStudio.Controls.PropertyGrid
+namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class SubcategoryAttribute: Attribute

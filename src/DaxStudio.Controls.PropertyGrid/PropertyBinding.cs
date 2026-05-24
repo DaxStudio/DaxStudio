@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using DaxStudio.Interfaces.Attributes;
 
 namespace DaxStudio.Controls.PropertyGrid
 {

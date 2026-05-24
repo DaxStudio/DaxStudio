@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Extensions;
+using DaxStudio.Core.Extensions;
+using DaxStudio.UI.Extensions;
 using System.Reflection;
 using System.Security;
 using System.Windows;

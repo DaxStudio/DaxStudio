@@ -1,4 +1,4 @@
-﻿using DaxStudio.UI.Extensions;
+using DaxStudio.Core.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.JsonConverters
+namespace DaxStudio.Core.JsonConverters
 {
     public class SecureStringConverter : JsonConverter<SecureString>
     {
