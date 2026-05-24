@@ -4,6 +4,7 @@ using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.Threading;
 

@@ -8,6 +8,7 @@ using DaxStudio.UI.Extensions;
 using System.Text;
 using DaxStudio.Common;
 using System.IO;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.Windows;
 using DaxStudio.UI.Model;

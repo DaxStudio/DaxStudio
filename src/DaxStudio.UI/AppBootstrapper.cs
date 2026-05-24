@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using DaxStudio.UI.ViewModels;
@@ -17,6 +17,7 @@ using Serilog;
 using System.Windows.Input;
 using DaxStudio.UI.Triggers;
 using DaxStudio.UI.Utils;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;

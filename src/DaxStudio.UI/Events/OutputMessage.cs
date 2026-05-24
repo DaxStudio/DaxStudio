@@ -1,6 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using DaxStudio.Core.Events;
 using DaxStudio.UI.ViewModels;
-using System;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -8,7 +7,7 @@ using System.Windows.Input;
 namespace DaxStudio.UI.Events
 {
 
-    public class LocationOutputMessage :OutputMessage  { 
+    public class LocationOutputMessage : OutputMessage  {
         public LocationOutputMessage(MessageType messageType, string text, int row, int column): base(messageType, text) {
 
             Row = row;
@@ -39,16 +38,16 @@ namespace DaxStudio.UI.Events
                         ToolTip = $"Go to location ({Row},{Column})",
                         Cursor = Cursors.Hand
                     };
-                    var parent = Parent;
+                    var parent = Parent as OutputPaneViewModel;
                     var self = this;
-                    hlink.Click += (s, e) => parent.GotoLocation.Execute(self);
+                    hlink.Click += (s, e) => parent?.GotoLocation.Execute(self);
                     para.Inlines.Add(hlink);
                     para.Inlines.Add(" ");
                 }
 
                 Run run = new Run(Text);
                 para.Inlines.Add(run);
-                
+
                 return doc;
             }
         }
@@ -92,12 +91,12 @@ namespace DaxStudio.UI.Events
                         ToolTip = $"Open {FolderPath}",
                         Cursor = Cursors.Hand
                     };
-                    var parent = Parent;
+                    var parent = Parent as OutputPaneViewModel;
                     var self = this;
-                    hlink.Click += (s, e) => parent.OpenFolder.Execute(self);
+                    hlink.Click += (s, e) => parent?.OpenFolder.Execute(self);
                     para.Inlines.Add(new LineBreak());
                     para.Inlines.Add(hlink);
-                    
+
                 }
 
                 return doc;
@@ -105,60 +104,4 @@ namespace DaxStudio.UI.Events
         }
 
     }
-
-
-    public class OutputMessage : PropertyChangedBase
-    {
-        private readonly double _durationMs = double.NaN;
-        internal OutputMessage() { }
-        // constructor for syntax errors
-
-        public OutputMessage(MessageType messageType, string text, double durationMs) : this (messageType,text)
-        {
-            _durationMs = durationMs;
-        }
-
-
-        public OutputMessage(MessageType messageType, string text)
-        {
-            Text = text;
-            MessageType = messageType;
-            Start = DateTime.Now;
-            _durationMs = double.NaN;
-        }
-        public OutputPaneViewModel Parent { get; set; }
-        public bool ActivateOutput { get; set; }
-        
-        public string Text { get; set; }
-        public DateTime Start { get; set; }
-        public MessageType MessageType { get; set; }
-
-
-        public double DurationMs { get { return _durationMs; } }
-        public string DurationString {
-            get
-            {
-                if (double.IsNaN(_durationMs ))
-                    return string.Empty;
-                return _durationMs.ToString("#,##0");
-            }
-        }
-
-        public string DurationTooltip { 
-            get {
-                if (double.IsNaN( DurationMs )) return string.Empty;
-                return $"{DurationString} ms  ({TimeSpan.FromMilliseconds(DurationMs):h\\:mm\\:ss\\.fff})"; 
-            } 
-        }
-
-    }
-
-    public enum MessageType
-    {
-        Information
-        ,Warning
-        ,Error
-        ,Success
-    }
-     
 }

@@ -1,12 +1,6 @@
-﻿using ADOTabular;
-using DaxStudio.UI.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ADOTabular;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class FunctionsLoadedEvent
     {

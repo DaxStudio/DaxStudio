@@ -3,6 +3,7 @@ using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows;
 using Caliburn.Micro;
 using Serilog;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model

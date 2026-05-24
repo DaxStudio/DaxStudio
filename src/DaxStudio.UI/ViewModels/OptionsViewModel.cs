@@ -20,6 +20,7 @@ using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.Interfaces.Enums;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;

@@ -1,16 +1,14 @@
-﻿using ADOTabular.Enums;
+using ADOTabular.Enums;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #endif
-using System;
 using System.Collections.Generic;
 using System.Text;
 using static Dax.Vpax.Tools.VpaxTools;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class ConnectEvent : IConnectEvent
     {
@@ -49,7 +47,13 @@ namespace DaxStudio.UI.Events
         public bool RefreshDatabases { get; }
         public VpaxContent VpaxContent { get; }
 
-        public List<ITraceWatcher> ActiveTraces { get; set; }
+        /// <summary>
+        /// Active trace watchers carried with the connect event. Typed as
+        /// <see cref="object"/> so this event can live in the Core layer
+        /// without depending on the UI <c>ITraceWatcher</c> interface.
+        /// UI handlers should cast each entry to <c>ITraceWatcher</c>.
+        /// </summary>
+        public IList<object> ActiveTraces { get; set; }
         public string WorkbookName { get; set; }
         public string PowerBIFileName { get; set; }
         public AccessToken AccessToken { get; private set; }

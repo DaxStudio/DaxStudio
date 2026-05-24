@@ -2,6 +2,7 @@
 using ADOTabular;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.ComponentModel;
 using System.Windows.Data;

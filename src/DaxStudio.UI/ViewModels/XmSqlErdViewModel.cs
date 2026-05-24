@@ -1,4 +1,4 @@
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using Dax.ViewModel;
 using DaxStudio.Common;
 using DaxStudio.Common.Enums;
@@ -6,6 +6,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.Parsers;
 using DaxStudio.QueryTrace;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;

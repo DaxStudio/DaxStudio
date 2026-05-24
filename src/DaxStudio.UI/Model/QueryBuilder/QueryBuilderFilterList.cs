@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Serilog;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model

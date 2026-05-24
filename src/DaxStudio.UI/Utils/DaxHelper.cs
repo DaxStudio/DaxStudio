@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using Serilog;
 using DaxStudio.UI.Model;

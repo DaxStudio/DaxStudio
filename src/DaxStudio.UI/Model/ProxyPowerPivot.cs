@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using Newtonsoft.Json;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using Serilog;
 using System.Diagnostics.Contracts;

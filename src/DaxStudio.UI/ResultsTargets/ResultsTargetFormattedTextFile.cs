@@ -1,6 +1,7 @@
 ﻿using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;

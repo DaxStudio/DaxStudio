@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.UI.Enums;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System;
 using System.Collections.Generic;

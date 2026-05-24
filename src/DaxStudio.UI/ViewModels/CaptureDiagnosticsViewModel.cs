@@ -1,6 +1,7 @@
 ﻿using AsyncAwaitBestPractices;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;

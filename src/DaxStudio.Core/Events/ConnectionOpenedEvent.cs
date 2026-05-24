@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class ConnectionOpenedEvent
     {
@@ -16,7 +16,7 @@ namespace DaxStudio.UI.Events
         }
 
         /// <summary>
-        /// The <see cref="DaxStudio.UI.Model.ConnectionManager"/> instance that
+        /// The ConnectionManager instance that
         /// raised this event. Handlers should ignore events whose Source is not
         /// their own connection so that opening a connection on one document
         /// (e.g. the temporary document spawned by Capture Diagnostics) does

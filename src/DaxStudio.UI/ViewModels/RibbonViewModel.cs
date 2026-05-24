@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;

@@ -2,6 +2,7 @@
 using System.ComponentModel.Composition;
 using AvalonDock;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using Microsoft.Win32;
 using Serilog;

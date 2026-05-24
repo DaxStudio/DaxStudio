@@ -15,6 +15,7 @@ using DaxStudio.UI.Extensions;
 
 using System.Security.Cryptography;
 using System.Text;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 
 namespace DaxStudio.UI.Model

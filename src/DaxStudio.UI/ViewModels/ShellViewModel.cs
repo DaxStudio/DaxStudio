@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Model;

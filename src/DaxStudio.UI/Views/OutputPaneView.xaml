@@ -12,6 +12,7 @@
              xmlns:extenders="clr-namespace:DaxStudio.UI.AttachedProperties"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties" xmlns:events="clr-namespace:DaxStudio.UI.Events"
+             xmlns:coreEvents="clr-namespace:DaxStudio.Core.Events;assembly=DaxStudio.Core"
                                mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="300">
     <UserControl.Resources>
@@ -141,7 +142,7 @@
                         </FlowDocumentScrollViewer>
 
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type events:OutputMessage}">
+                    <DataTemplate DataType="{x:Type coreEvents:OutputMessage}">
                         <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
                         <TextBlock TextWrapping="Wrap" 
                                ap:BrushBindingHelper.ForegroundResourceKey="{Binding MessageType, Converter={StaticResource OutputColor},Mode=OneTime}"

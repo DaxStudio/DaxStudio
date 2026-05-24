@@ -8,6 +8,7 @@ using System.Media;
 using System.Text.RegularExpressions;
 using DaxStudio.UI.Extensions;
 using Serilog;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.Common;
 using System.Threading.Tasks;

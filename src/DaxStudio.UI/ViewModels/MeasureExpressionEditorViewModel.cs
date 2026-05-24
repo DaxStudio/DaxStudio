@@ -15,6 +15,7 @@ using System.Windows;
 using DaxStudio.UI.Utils.Intellisense;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.Linq;
 using System.Threading.Tasks;

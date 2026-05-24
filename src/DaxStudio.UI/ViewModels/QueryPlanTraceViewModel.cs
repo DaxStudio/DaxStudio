@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using Caliburn.Micro;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls;
 using DaxStudio.Controls.Model;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.Core;
 using DaxStudio.UI.Extensions;

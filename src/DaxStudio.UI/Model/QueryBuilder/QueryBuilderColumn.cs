@@ -4,6 +4,7 @@ using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using Microsoft.AnalysisServices.Tabular;
 using Newtonsoft.Json;

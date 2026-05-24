@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
@@ -270,7 +271,7 @@ namespace DaxStudio.UI.ViewModels
 
         public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
-            CanCaptureDiagnostics = message.Document.Connection.IsConnected;
+            CanCaptureDiagnostics = (message.Document as DocumentViewModel)?.Connection?.IsConnected ?? false;
             return Task.CompletedTask;
         }
 

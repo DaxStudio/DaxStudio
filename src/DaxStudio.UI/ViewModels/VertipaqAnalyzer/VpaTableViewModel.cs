@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DaxStudio.Interfaces;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 

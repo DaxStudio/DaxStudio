@@ -20,6 +20,7 @@ using DaxStudio.Core.Vpax;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Enums;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -1368,7 +1369,7 @@ namespace DaxStudio.UI.ViewModels
                         // re-connect any traces that were previously active
                         if (message.ActiveTraces != null)
                         {
-                            foreach (var traceWatcher in message.ActiveTraces)
+                            foreach (ITraceWatcher traceWatcher in message.ActiveTraces)
                             {
                                 traceWatcher.IsChecked = true;
                             }

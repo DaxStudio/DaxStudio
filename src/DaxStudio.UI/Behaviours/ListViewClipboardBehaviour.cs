@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Events;
+﻿using DaxStudio.Core.Events;
+using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using System.Text;
 using System.Windows;

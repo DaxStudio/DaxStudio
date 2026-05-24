@@ -4,6 +4,7 @@ using DaxStudio.QueryTrace;
 using System.Threading.Tasks;
 using DaxStudio.QueryTrace.Interfaces;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.Threading;
 

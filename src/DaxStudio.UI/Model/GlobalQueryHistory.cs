@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.ComponentModel.Composition;
 using System.IO;

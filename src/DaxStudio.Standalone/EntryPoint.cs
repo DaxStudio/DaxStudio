@@ -7,6 +7,7 @@ using DaxStudio.UI.Utils;
 using DaxStudio.Common;
 using System.Windows.Controls;
 using Caliburn.Micro;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using System.Threading.Tasks;

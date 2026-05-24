@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-minimum</AnalysisLevel>
@@ -28,11 +28,18 @@
 
   <!-- Package references -->
   <ItemGroup>
+    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
     <PackageReference Include="Dax.Model.Extractor" Version="1.12.0" />
     <PackageReference Include="Dax.ViewVpaExport" Version="1.12.0" />
     <PackageReference Include="Dax.Vpax" Version="1.12.0" />
     <PackageReference Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
     <PackageReference Include="Parquet.Net" Version="[5.4.0]" />
+    <PackageReference Include="Polly" Version="8.6.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DaxStudio.UI" />
+    <InternalsVisibleTo Include="DaxStudio.Tests" />
   </ItemGroup>
 
 </Project>

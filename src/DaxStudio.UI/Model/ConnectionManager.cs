@@ -4,6 +4,7 @@ using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using Polly;
@@ -1488,7 +1489,7 @@ namespace DaxStudio.UI.Model
             }
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, this.DatabaseName, this.AccessToken);
-            connEvent.ActiveTraces = activeTraces;
+            connEvent.ActiveTraces = activeTraces?.Cast<object>().ToList();
             await _eventAggregator.PublishOnUIThreadAsync(connEvent);
             
 
@@ -1509,7 +1510,7 @@ namespace DaxStudio.UI.Model
             builder.Remove("EffectiveUsername");
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, DatabaseName, AccessToken);
-            connEvent.ActiveTraces = activeTraces;
+            connEvent.ActiveTraces = activeTraces?.Cast<object>().ToList();
             _eventAggregator.PublishOnUIThreadAsync(connEvent);
 
         }

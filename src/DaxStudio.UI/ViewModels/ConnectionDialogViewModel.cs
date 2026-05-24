@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Media;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.Threading.Tasks;
 using DaxStudio.UI.Views;

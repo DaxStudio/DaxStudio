@@ -1,9 +1,10 @@
-namespace DaxStudio.UI.Model
+﻿namespace DaxStudio.UI.Model
 {
     using Caliburn.Micro;
     using DaxStudio.Common;
     using DaxStudio.Interfaces;
-    using DaxStudio.UI.Events;
+    using DaxStudio.Core.Events;
+using DaxStudio.UI.Events;
     using DaxStudio.UI.Utils;
     using Extensions;
     using Newtonsoft.Json.Linq;
