@@ -142,7 +142,7 @@ namespace DaxStudio.UI.ViewModels
             }).ContinueWith(t => {
                 // we should only come here if we got an exception
                 Log.Error(t.Exception, "Error getting PowerBI/SSDT instances: {message}", t.Exception.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {t.Exception.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error getting PowerBI/SSDT instances: {t.Exception.Message}"));
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -448,7 +448,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex,"{class} {method} {message}",nameof(ConnectionDialogViewModel),nameof(BuildPowerBIDesignerConnection),ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occured while trying to connect to Power BI Desktop/SSDT : {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"The following error occured while trying to connect to Power BI Desktop/SSDT : {ex.Message}"));
             }
 
             return string.Format("Data Source=localhost:{0};{1}{2}{3}{4}{5}{6}{7}"
@@ -580,13 +580,13 @@ namespace DaxStudio.UI.ViewModels
                 
                 var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType), PowerPivotModeSelected ? WorkbookName : powerBIFileName, serverType, false, string.Empty, token);
                 Log.Debug("{Class} {Method} {@ConnectEvent}", "ConnectionDialogViewModel", "Connect", connEvent);
-                await _eventAggregator.PublishOnUIThreadAsync(connEvent);
+                await _eventAggregator.PublishAsync(connEvent);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error Connecting using: {connStr}", "ConnectionDialogViewModel", "Connect", connectionString);
                 _activeDocument.OutputError(String.Format("Could not connect to '{0}': {1}", PowerPivotModeSelected?"Power Pivot model":DataSource, ex.Message));
-                await _eventAggregator.PublishOnUIThreadAsync(new CancelConnectEvent());
+                await _eventAggregator.PublishAsync(new CancelConnectEvent());
             }
             finally
             {
@@ -602,7 +602,7 @@ namespace DaxStudio.UI.ViewModels
         public void Cancel()
         {
             _eventAggregator.Unsubscribe(this);
-            _eventAggregator.PublishOnUIThreadAsync(new CancelConnectEvent());
+            _eventAggregator.PublishAsync(new CancelConnectEvent());
         }
 
         protected override void OnViewLoaded(object view)
@@ -720,7 +720,7 @@ namespace DaxStudio.UI.ViewModels
                         // when enumerating cultures
                         // see: https://social.msdn.microsoft.com/Forums/ie/en-US/671bc463-932d-4a9e-bba1-3e5898b9100d/culture-4096-0x1000-is-an-invalid-culture-identifier-culturenotfoundexception?forum=csharpgeneral
                         Log.Warning(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(LocaleOptions), ex.Message);
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"An error occurred reading the system locales: {ex.Message}"));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"An error occurred reading the system locales: {ex.Message}"));
                     }
                 }
                 return _locales;
@@ -762,7 +762,7 @@ namespace DaxStudio.UI.ViewModels
                     if (text.Contains(";")) {
                         var msg = "Detected paste of a string with semi-colons, attempting to parse out the \"Data Source\" and \"Initial Catalog\" properties";
                         Log.Information(Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted), msg);
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, msg));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, msg));
 
                         var props = SplitConnectionString(text);
 
@@ -775,7 +775,7 @@ namespace DaxStudio.UI.ViewModels
                         // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
                         if (props.ContainsKey("Initial Catalog"))
                         {
-                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
+                            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
                             InitialCatalog = props["Initial Catalog"];
                             e.CancelCommand();
                         }
@@ -786,7 +786,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var msg = $"Error processing paste into DataSource: {ex.Message}";
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(OnDataSourcePasted),msg);
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
                 }
             }
             else
@@ -858,7 +858,7 @@ namespace DaxStudio.UI.ViewModels
                 ConnectionWarning = $"Error connecting to server: {ex.Message}";
                 var msg = $"Error refreshing database list for Initial Catalog: {ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(RefreshDatabases), msg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             } 
             finally
             {
@@ -982,7 +982,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionDialogViewModel), nameof(BrowseWorkspaces), ex.Message);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error browsing workspaces: {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error browsing workspaces: {ex.Message}"));
             }
             finally
             {

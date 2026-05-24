@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
@@ -116,7 +116,7 @@ namespace DaxStudio.UI.ViewModels
         {
             Log.Information("{class} {method} {message}", "ShellViewModel", "RecoverAutoSavedFiles", $"Found {autoSaveInfo.Values.Count} auto save index files");
             // show recovery dialog
-            await _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
+            await _eventAggregator.PublishAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
             
         }
 
@@ -148,7 +148,7 @@ namespace DaxStudio.UI.ViewModels
         private void OnApplicationActivated(object sender, EventArgs e)
         {
             Log.Debug("{class} {method}", "ShellViewModel", "OnApplicationActivated");
-            _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent());
+            _eventAggregator.PublishAsync(new ApplicationActivatedEvent());
         }
 
         
@@ -174,7 +174,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex){
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(UpdateFlagClick), $"Error launching download url: '{VersionChecker?.DownloadUrl?.ToString()}'");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,"Unable to open the download url, please go to https://daxstudio.org to get the latest version"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error,"Unable to open the download url, please go to https://daxstudio.org to get the latest version"));
             }
         }
 
@@ -217,7 +217,7 @@ namespace DaxStudio.UI.ViewModels
         protected override async Task OnActivatedAsync(CancellationToken cancellationToken)
         {
             await base.OnActivatedAsync(cancellationToken);
-            await _eventAggregator.PublishOnUIThreadAsync(new ApplicationActivatedEvent(),cancellationToken);
+            await _eventAggregator.PublishAsync(new ApplicationActivatedEvent(),cancellationToken);
         }
 
         HwndSource hwndSource;
@@ -248,7 +248,7 @@ namespace DaxStudio.UI.ViewModels
             }
 
             ResetInputBindings();
-            _eventAggregator.PublishOnBackgroundThreadAsync(new LoadQueryHistoryAsyncEvent());
+            _eventAggregator.PublishAsync(new LoadQueryHistoryAsyncEvent());
             
         }
 
@@ -297,15 +297,15 @@ namespace DaxStudio.UI.ViewModels
 
         public void CopyPasteServerTimings()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CopyPasteServerTimingsEvent(includeHeader: true));
+            _eventAggregator.PublishAsync(new CopyPasteServerTimingsEvent(includeHeader: true));
         }
         public void CopyPasteServerTimingsData()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CopyPasteServerTimingsEvent(includeHeader: false));
+            _eventAggregator.PublishAsync(new CopyPasteServerTimingsEvent(includeHeader: false));
         }
         public void CopySEQuery()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CopySEQueryEvent());
+            _eventAggregator.PublishAsync(new CopySEQueryEvent());
         }
 
         public void ToggleResultsPane()
@@ -320,7 +320,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CopyWithHeaders()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CopyWithHeadersEvent());
+            _eventAggregator.PublishAsync(new CopyWithHeadersEvent());
         }
 
         public void ResetInputBindings()
@@ -334,7 +334,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error setting key binding: {ex.Message} Position: {ex.StackTrace}";
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ShellViewModel), nameof(ResetInputBindings), msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
 
@@ -490,37 +490,37 @@ namespace DaxStudio.UI.ViewModels
 
         public void NewDocument()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
+            _eventAggregator.PublishAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
         }
 
         public void NewDocumentWithCurrentConnection()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget,Ribbon.ActiveDocument));
+            _eventAggregator.PublishAsync(new NewDocumentEvent(Ribbon.SelectedTarget,Ribbon.ActiveDocument));
         }
 
         public void OpenDocument()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new OpenFileEvent() );
+            _eventAggregator.PublishAsync(new OpenFileEvent() );
         }
 
         public void SelectionToUpper()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+            _eventAggregator.PublishAsync(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
 
         public void SelectionToLower()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+            _eventAggregator.PublishAsync(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
 
         public void UncommentSelection()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(false));
+            _eventAggregator.PublishAsync(new CommentEvent(false));
         }
 
         public void CommentSelection()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(true));
+            _eventAggregator.PublishAsync(new CommentEvent(true));
         }
 
         public void Undo()
@@ -564,38 +564,38 @@ namespace DaxStudio.UI.ViewModels
 
         public void ToggleComment()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new ToggleCommentEvent());
+            _eventAggregator.PublishAsync(new ToggleCommentEvent());
         }
 
         public void SelectWord()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new EditorHotkeyEvent( EditorHotkey.SelectWord));
+            _eventAggregator.PublishAsync(new EditorHotkeyEvent( EditorHotkey.SelectWord));
         }
 
         public void MoveLineUp()
         {
             try
             {
-                _eventAggregator.PublishOnUIThreadAsync(new EditorHotkeyEvent(EditorHotkey.MoveLineUp));
+                _eventAggregator.PublishAsync(new EditorHotkeyEvent(EditorHotkey.MoveLineUp));
             }
             catch(Exception ex)
             {
                 var msg = $"Error moving editor line up: {ex.Message}";
                 Log.Error(ex, nameof(ShellViewModel), nameof(MoveLineUp), msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
         public void MoveLineDown()
         {
             try
             {
-                _eventAggregator.PublishOnUIThreadAsync(new EditorHotkeyEvent(EditorHotkey.MoveLineDown));
+                _eventAggregator.PublishAsync(new EditorHotkeyEvent(EditorHotkey.MoveLineDown));
             }
             catch (Exception ex)
             {
                 var msg = $"Error moving editor line down: {ex.Message}";
                 Log.Error(ex, nameof(ShellViewModel), nameof(MoveLineDown), msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
         #endregion
@@ -620,7 +620,7 @@ namespace DaxStudio.UI.ViewModels
             ThemeManager.SetTheme(message.Theme);
             //if (message.Theme == "Dark") SetDarkTheme();
             //else SetLightTheme();
-            _eventAggregator.PublishOnUIThreadAsync(new ThemeChangedEvent());
+            _eventAggregator.PublishAsync(new ThemeChangedEvent());
             return Task.CompletedTask;
         }
 
@@ -674,11 +674,11 @@ namespace DaxStudio.UI.ViewModels
 
                 if (!string.IsNullOrEmpty(app.Args().FileName))
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(app.Args().FileName));
+                    _eventAggregator.PublishAsync(new OpenDaxFileEvent(app.Args().FileName));
                 }
                 else
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(null));
+                    _eventAggregator.PublishAsync(new NewDocumentEvent(null));
                 }
                 Application.Current.MainWindow.Activate();
                 handled = true;
@@ -754,7 +754,7 @@ namespace DaxStudio.UI.ViewModels
                 && Options.EnablePasteFileOnExistingWindow
                 ? (object) new PasteDaxFileEvent(files[0])            
                 : (object) new OpenDaxFileEvent(files[0]);
-            await _eventAggregator.PublishOnUIThreadAsync(targetEvent);
+            await _eventAggregator.PublishAsync(targetEvent);
             
 
             // TODO we should look at looping over all files, but currently this does not work,

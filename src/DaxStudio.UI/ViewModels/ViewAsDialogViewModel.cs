@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.UI.Enums;
 using DaxStudio.Core.Events;
@@ -51,7 +51,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(ViewAsDialogViewModel),"ctor",ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,$"Error attempting to populate the Role list for the View As dialogue\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error,$"Error attempting to populate the Role list for the View As dialogue\n{ex.Message}"));
             }
         }
 

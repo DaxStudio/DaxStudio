@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
@@ -82,7 +82,7 @@ namespace DaxStudio.UI.Utils {
                     }
                     else
                     {
-                        //await _eventAggregator.PublishOnUIThreadAsync(new StopAutoSaveTimerEvent());
+                        //await _eventAggregator.PublishAsync(new StopAutoSaveTimerEvent());
                         closeCanOccur = await Evaluate(closeable);
                         return new CloseResult<IScreen>(closeCanOccur, closeable);
                     }
@@ -90,7 +90,7 @@ namespace DaxStudio.UI.Utils {
                 else
                 {
                     //    callback(true, new List<IScreen>());
-                    await _eventAggregator.PublishOnUIThreadAsync(new StopAutoSaveTimerEvent());
+                    await _eventAggregator.PublishAsync(new StopAutoSaveTimerEvent());
                     closeCanOccur = await Evaluate(closeable);
                     return new CloseResult<IScreen>(closeCanOccur, closeable);
                 }

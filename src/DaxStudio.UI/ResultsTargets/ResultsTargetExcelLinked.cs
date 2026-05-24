@@ -50,7 +50,7 @@ namespace DaxStudio.UI.ResultsTargets
         {
             _isPowerBIOrSSDTConnection = message.IsPowerBIorSSDT;
             NotifyOfPropertyChange(() => IsEnabled);
-            await _eventAggregator.PublishOnUIThreadAsync(new RefreshOutputTargetsEvent());
+            await _eventAggregator.PublishAsync(new RefreshOutputTargetsEvent());
             return; 
         }
 
@@ -58,7 +58,7 @@ namespace DaxStudio.UI.ResultsTargets
         {
             _isPowerBIOrSSDTConnection = message.Document.Connection?.IsPowerBIorSSDT ?? false;
             NotifyOfPropertyChange(() => IsEnabled);
-            await _eventAggregator.PublishOnUIThreadAsync(new RefreshOutputTargetsEvent());
+            await _eventAggregator.PublishAsync(new RefreshOutputTargetsEvent());
         }
         #endregion
 

@@ -133,7 +133,7 @@ namespace DaxStudio.UI.ViewModels
             get => _selectedRunStyle;
             set { _selectedRunStyle = value;
                 NotifyOfPropertyChange(() => SelectedRunStyle);
-                _eventAggregator?.PublishOnUIThreadAsync(new RunStyleChangedEvent(SelectedRunStyle));
+                _eventAggregator?.PublishAsync(new RunStyleChangedEvent(SelectedRunStyle));
                 //RunQuery(); // TODO if we change run styles should we immediately run the query with the new style??
             } }
         public IGlobalOptions Options { get; private set; }
@@ -141,18 +141,18 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task NewQuery()
         {
-            await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget));
+            await _eventAggregator.PublishAsync(new NewDocumentEvent(SelectedTarget));
         }
 
         public void NewQueryWithCurrentConnection(bool copyContent = false)
         {
             if (ActiveDocument == null) return;
-            _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent)).ContinueWith((precedent) => { 
+            _eventAggregator.PublishAsync(new NewDocumentEvent(SelectedTarget, ActiveDocument, copyContent)).ContinueWith((precedent) => { 
                 if (precedent.IsFaulted)
                 {
                     var msg = "Error opening new document with current connection";
                     Log.Error(precedent.Exception, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(NewQueryWithCurrentConnection), msg);
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"{msg}\n{precedent.Exception.Message}"));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"{msg}\n{precedent.Exception.Message}"));
                 }
             });
         }
@@ -163,7 +163,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CommentSelection()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(true));
+            _eventAggregator.PublishAsync(new CommentEvent(true));
         }
 
         public string CommentSelectionTitle => $"Comment ({Options.HotkeyCommentSelection})";
@@ -231,14 +231,14 @@ namespace DaxStudio.UI.ViewModels
 
         public void UncommentSelection()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CommentEvent(false));
+            _eventAggregator.PublishAsync(new CommentEvent(false));
         }
         public string UncommentSelectionTitle => $"Uncomment ({Options.HotkeyUnCommentSelection})";
         public bool CanToUpper => ActiveDocument != null;
 
         public void ToUpper()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
+            _eventAggregator.PublishAsync(new SelectionChangeCaseEvent(ChangeCase.ToUpper));
         }
         public string ToUpperTitle => $"To Upper ({Options.HotkeyToUpper})";
 
@@ -246,7 +246,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void ToLower()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new SelectionChangeCaseEvent(ChangeCase.ToLower));
+            _eventAggregator.PublishAsync(new SelectionChangeCaseEvent(ChangeCase.ToLower));
         }
         public string ToLowerTitle => $"To Lower ({Options.HotkeyToLower})";
         public void RunQuery()
@@ -260,7 +260,7 @@ namespace DaxStudio.UI.ViewModels
 
             var runStyle = SelectedRunStyle;
             runStyle.ClearCache = ClearCacheAuto;
-            _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(SelectedTarget, runStyle) );
+            _eventAggregator.PublishAsync(new RunQueryEvent(SelectedTarget, runStyle) );
 
         }
         public string RunQueryTitle => $"Run Query ({Options.HotkeyRunQuery})";
@@ -317,7 +317,7 @@ namespace DaxStudio.UI.ViewModels
 
         public void CancelQuery()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CancelQueryEvent());
+            _eventAggregator.PublishAsync(new CancelQueryEvent());
         }
 
         public bool CanCancelQuery => !CanRunQuery && (ActiveDocument != null && ActiveDocument.IsConnected);
@@ -398,7 +398,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(Exit), "Error closing application");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error closing application: {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error closing application: {ex.Message}"));
             }
 
         }
@@ -436,13 +436,13 @@ namespace DaxStudio.UI.ViewModels
                 // Load the file (FileOpenedEvent will be published by DocumentViewModel.LoadFile on completion)
                 await Dispatcher.CurrentDispatcher.InvokeAsync(async () =>
                 {
-                    await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(fileName));
+                    await _eventAggregator.PublishAsync(new OpenDaxFileEvent(fileName));
                 }, DispatcherPriority.Background);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(Open), "Error opening file");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening file: {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error opening file: {ex.Message}"));
                 if (backstage != null)
                     backstage.IsOpen = false;
                 IsLoadingRecentFile = false;
@@ -515,7 +515,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(()=>SelectedTarget);
                 if (!_isDocumentActivating)
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new QueryResultsPaneMessageEvent(_selectedTarget));
+                    _eventAggregator.PublishAsync(new QueryResultsPaneMessageEvent(_selectedTarget));
                 }
                 if (_selectedTarget is IActivateResults) { ActiveDocument?.ActivateResults(); }
                 
@@ -573,7 +573,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => ServerTimingsChecked);
             NotifyOfPropertyChange(() => ServerTimingDetails);
 
-            _eventAggregator.PublishOnUIThreadAsync(new DocumentActivatedEvent(message.Document), cancellationToken: cancellationToken);
+            _eventAggregator.PublishAsync(new DocumentActivatedEvent(message.Document), cancellationToken: cancellationToken);
             return Task.CompletedTask;
         }
 
@@ -782,7 +782,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // any errors should be swallowed
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(GetVersionInfoUrlEncoded), "Error encoding bug report body");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error,
                     $"Error encoding bug report body: {ex.Message}"));
             }
 
@@ -812,7 +812,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error Launching {method}", "RibbonViewModel", "LinkToDaxStudioWiki");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("The following error occurred while trying to open the {1}: {0}", ex.Message, name)));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, string.Format("The following error occurred while trying to open the {1}: {0}", ex.Message, name)));
             }
         }
 
@@ -836,7 +836,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<ApplicationActivatedEvent>", "Error Activating Application");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Activating Application:\n{ex.Message}"), cancellationToken);
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Activating Application:\n{ex.Message}"), cancellationToken);
             }
             finally
             {
@@ -859,7 +859,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error updating trace status\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceChangingEvent>" , msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg), cancellationToken);
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg), cancellationToken);
             }
             return Task.CompletedTask;
         }
@@ -876,7 +876,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error updating trace status:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceChangedEvent>", msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg), cancellationToken);
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg), cancellationToken);
             }
             return Task.CompletedTask;
         }
@@ -890,7 +890,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<DocumentConnectionUpdateEvent>", "Error updating the current connection");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error updating the current connection\n{ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error updating the current connection\n{ex.Message}"));
             }
            
         }
@@ -903,7 +903,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<ConnectFailedEvent>", "Error updating the current connection");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error handling the failed connection attempt\n{ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error handling the failed connection attempt\n{ex.Message}"));
             }
 
         }
@@ -988,7 +988,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error enabling trace:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<TraceWatcherToggleEvent>", msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
             return Task.CompletedTask;
         }
@@ -1011,7 +1011,7 @@ namespace DaxStudio.UI.ViewModels
             }
             catch (Exception ex)
             {
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error adding file to Windows JumpList: {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Error adding file to Windows JumpList: {ex.Message}"));
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(AddToRecentFiles), "Error adding file to JumpList");
             }
 
@@ -1044,7 +1044,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error opening file\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), "Handle<FileOpenedEvent>", msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
             return Task.CompletedTask;
         }
@@ -1059,7 +1059,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error saving file:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel),"Handle<FileSavedEvent>", msg);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
             return Task.CompletedTask;
         }
@@ -1093,13 +1093,13 @@ namespace DaxStudio.UI.ViewModels
                 // Load the file - this will happen async
                 await Dispatcher.CurrentDispatcher.InvokeAsync( async () =>
                 {
-                await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file.FullPath));
+                await _eventAggregator.PublishAsync(new OpenDaxFileEvent(file.FullPath));
                 }, DispatcherPriority.Background);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(OpenRecentFile), "Error opening recent file");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening file: {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error opening file: {ex.Message}"));
                 
                 // Make sure to clean up on error
                 if (backstage != null)
@@ -1138,7 +1138,7 @@ namespace DaxStudio.UI.ViewModels
         //    // Load file on UI thread (required for WPF operations)
         //    // but with lower priority so backstage closes first
         //    await Dispatcher.CurrentDispatcher.InvokeAsync(
-        //        async () => await _eventAggregator.PublishOnUIThreadAsync(new OpenDaxFileEvent(file.FullPath)),
+        //        async () => await _eventAggregator.PublishAsync(new OpenDaxFileEvent(file.FullPath)),
         //        DispatcherPriority.Background
         //    );
 
@@ -1158,7 +1158,7 @@ namespace DaxStudio.UI.ViewModels
                 RecentFiles.Remove(file);
             }
             Log.Warning("{class} {method} {message}", "RibbonViewModel", "RecentFileNoLongerExists", $"The following entry in the recent file list no longer exists '{file.FullPath}'");
-            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following entry in the recent file list no longer exists '{file.FullPath}'"));
+            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"The following entry in the recent file list no longer exists '{file.FullPath}'"));
             return true;
         }
 
@@ -1325,7 +1325,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!isExisting)
                 {
                     System.Diagnostics.Debug.WriteLine($"[ModelDiagram] Publishing ShowToolWindowEvent BEFORE load");
-                    _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
+                    _eventAggregator.PublishAsync(new ShowToolWindowEvent(diagramViewModel));
                     System.Diagnostics.Debug.WriteLine($"[ModelDiagram] ShowToolWindowEvent published");
                 }
 
@@ -1351,7 +1351,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No model data available. Please connect to a model or open a file with VPA data."));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "No model data available. Please connect to a model or open a file with VPA data."));
                     return;
                 }
 
@@ -1359,13 +1359,13 @@ namespace DaxStudio.UI.ViewModels
                 // Only publish if we haven't already shown it above (for existing windows being reactivated)
                 if (isExisting)
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(diagramViewModel));
+                    _eventAggregator.PublishAsync(new ShowToolWindowEvent(diagramViewModel));
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(RibbonViewModel), nameof(ShowModelDiagram), "Error showing Model Diagram");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error showing Model Diagram\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error showing Model Diagram\n{ex.Message}"));
             }
         }
 
@@ -1396,7 +1396,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", nameof(RibbonViewModel), nameof(ExportAllData), ex.Message);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Exporting All Data: {ex.Message}"));
             }
         }
 
@@ -1433,7 +1433,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchSqlProfiler", "Error launching SQL Profiler");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, "Error Launching SQL Profiler: " + ex.Message));
             }
         }
 
@@ -1454,7 +1454,7 @@ namespace DaxStudio.UI.ViewModels
             } catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "RibbonViewModel", "LaunchExcel", ex.Message);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, "Error Launching Excel: " + ex.Message));
 
             }
         }
@@ -1479,17 +1479,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void SaveLayout()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new DockManagerSaveLayout());
+            _eventAggregator.PublishAsync(new DockManagerSaveLayout());
         }
 
         public void LoadLayout()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new DockManagerLoadLayout(false));
+            _eventAggregator.PublishAsync(new DockManagerLoadLayout(false));
         }
 
         public void ResetLayout()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new DockManagerLoadLayout(true));
+            _eventAggregator.PublishAsync(new DockManagerLoadLayout(true));
         }
 
         private UITheme _theme = UITheme.Auto; // default to auto theme
@@ -1503,7 +1503,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     _theme = value;
                     Options.Theme = _theme;
-                    _eventAggregator.PublishOnUIThreadAsync(new ChangeThemeEvent(_theme));
+                    _eventAggregator.PublishAsync(new ChangeThemeEvent(_theme));
                     NotifyOfPropertyChange(() => Theme);
                     NotifyOfPropertyChange(() => ThemeImageResource);
                 }
@@ -1603,11 +1603,11 @@ namespace DaxStudio.UI.ViewModels
 
         public async void RunBenchmark()
         {
-            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.QueryBenchmark));
+            await _eventAggregator.PublishAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.QueryBenchmark));
         }
         public async void RunServerFEBenchmark()
         {
-            await _eventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.ServerFEBenchmark));
+            await _eventAggregator.PublishAsync(new RunQueryEvent(this.SelectedTarget, this.SelectedRunStyle, RunQueryEvent.BenchmarkTypes.ServerFEBenchmark));
         }
 
         public async void CaptureDiagnostics()

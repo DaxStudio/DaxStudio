@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using System;
@@ -85,7 +85,7 @@ namespace DaxStudio.UI.Model
                 _overridenMeasureExpression = value;
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(IsModelItem));
-                _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                _eventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -120,7 +120,7 @@ namespace DaxStudio.UI.Model
 
         public void DuplicateMeasure()
         {
-            _eventAggregator.PublishOnUIThreadAsync(new DuplicateMeasureEvent(this));
+            _eventAggregator.PublishAsync(new DuplicateMeasureEvent(this));
         }
 
         private SortDirection _sortDirection = SortDirection.ASC;
@@ -132,7 +132,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(SortDescription));
                 NotifyOfPropertyChange(nameof(SortDirectionImageResource));
-                _eventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                _eventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             }
         }
 

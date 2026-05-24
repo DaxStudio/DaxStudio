@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.Core.Events;
@@ -70,7 +70,7 @@ namespace DaxStudio.UI.Model
             }
             catch (Exception ex)
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
             }
             finally
             {
@@ -147,7 +147,7 @@ namespace DaxStudio.UI.Model
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, this.DatabaseName, this.AccessToken);
             connEvent.ActiveTraces = activeTraces?.Cast<object>().ToList();
-            await _eventAggregator.PublishOnUIThreadAsync(connEvent);
+            await _eventAggregator.PublishAsync(connEvent);
         }
 
         private bool SupportsActAs()
@@ -166,7 +166,7 @@ namespace DaxStudio.UI.Model
 
             var connEvent = new ConnectEvent(builder.ConnectionString, IsPowerPivot, this.ApplicationName, FileName, ServerType, true, DatabaseName, AccessToken);
             connEvent.ActiveTraces = activeTraces?.Cast<object>().ToList();
-            _eventAggregator.PublishOnUIThreadAsync(connEvent);
+            _eventAggregator.PublishAsync(connEvent);
         }
     }
 }

@@ -150,7 +150,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CustomTraceViewModel), nameof(ProcessSingleEvent), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while processing trace events:\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"The following error occurred while processing trace events:\n{ex.Message}"));
             }
         }
 
@@ -256,7 +256,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             sb.AppendLine();
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
+            _eventAggregator.PublishAsync(new SendTextToEditor(sb.ToString()));
         }
 
         public override void CopyResults()
@@ -314,7 +314,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".customTrace";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             LoadJson(data);
         }
@@ -363,7 +363,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.CustomTrace, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
@@ -424,7 +424,7 @@ namespace DaxStudio.UI.ViewModels
         public void TextDoubleClick(TraceEvent refreshEvent)
         {
             if (refreshEvent == null) return; // if the user clicked on an empty query exit here
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
+            _eventAggregator.PublishAsync(new SendTextToEditor($"// {refreshEvent.EventClass} - {refreshEvent.EventSubClass}\n{refreshEvent.Text}"));
         }
 #endregion
 

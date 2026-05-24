@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using Caliburn.Micro;
 using Dax.ViewModel;
 using DaxStudio.Interfaces;
@@ -2183,7 +2183,7 @@ namespace DaxStudio.UI.ViewModels
                 Log.Error(ex, "{class} {method} {message}", nameof(ModelDiagramViewModel), nameof(LoadFromVpaModel), ex.Message);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading Model Diagram from offline data: {ex.Message}"));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error loading Model Diagram from offline data: {ex.Message}"));
                 });
             }
             finally
@@ -4795,7 +4795,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_selectedTable != null)
             {
-                _eventAggregator.PublishOnUIThreadAsync(new NavigateToMetadataItemEvent(_selectedTable.TableName));
+                _eventAggregator.PublishAsync(new NavigateToMetadataItemEvent(_selectedTable.TableName));
             }
         }
 

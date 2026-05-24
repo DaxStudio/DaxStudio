@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
@@ -1278,7 +1278,7 @@ namespace DaxStudio.UI.ViewModels
                     QueryHistoryEvent.SEDurationMs = StorageEngineDuration;
                     QueryHistoryEvent.ServerDurationMs = TotalDuration;
 
-                    _eventAggregator.PublishOnUIThreadAsync(QueryHistoryEvent);
+                    _eventAggregator.PublishAsync(QueryHistoryEvent);
                 }
 
                 // if we have 
@@ -1287,7 +1287,7 @@ namespace DaxStudio.UI.ViewModels
 
                 // send notification to BenchmarkViewModel
                 Log.Debug(Constants.LogMessageTemplate, nameof(ServerTimesModel), nameof(ProcessResults), "Publishing ServerTimings event for other view models to consume");
-                _eventAggregator.PublishOnUIThreadAsync(new ServerTimingsEvent(this));
+                _eventAggregator.PublishAsync(new ServerTimingsEvent(this));
 
                 //}
                 //else
@@ -1741,7 +1741,7 @@ namespace DaxStudio.UI.ViewModels
         {
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.ServerTimings, UriKind.Relative));
             if (!package.PartExists(uri)) return;
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {
@@ -1784,7 +1784,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".serverTimings";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
 
             LoadJson(data);
@@ -2101,7 +2101,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel), nameof(CopySEQuery), "Error copying SE Query text");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error copying SE query text\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error copying SE query text\n{ex.Message}"));
             }
         }
 
@@ -2132,7 +2132,7 @@ namespace DaxStudio.UI.ViewModels
                 var erdViewModel = new XmSqlErdViewModel(_eventAggregator, ServerTimingDetails);
                 
                 // Show the tool window first so user sees loading indicator immediately
-                _eventAggregator.PublishOnUIThreadAsync(new ShowToolWindowEvent(erdViewModel));
+                _eventAggregator.PublishAsync(new ShowToolWindowEvent(erdViewModel));
                 
                 // Start async analysis - the view will show progress and update when complete
                 erdViewModel.AnalyzeEvents(AllStorageEngineEvents);
@@ -2140,7 +2140,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel), nameof(ShowQueryDependencies), "Error showing Query Dependencies");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error showing Storage Engine Dependencies\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error showing Storage Engine Dependencies\n{ex.Message}"));
             }
         }
 
@@ -2192,7 +2192,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if (tableNames.Count == 0)
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                         "No table references found in Storage Engine queries."));
                     return;
                 }
@@ -2202,14 +2202,14 @@ namespace DaxStudio.UI.ViewModels
                     tableNames.Count, string.Join(", ", tableNames));
 
                 // Publish event to filter Model Diagram to these tables
-                _eventAggregator.PublishOnUIThreadAsync(
+                _eventAggregator.PublishAsync(
                     new ShowTablesInModelDiagramEvent(tableNames, includeRelated: false));
             }
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ServerTimesViewModel),
                     nameof(ShowInModelDiagram), "Error showing tables in Model Diagram");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error,
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error,
                     $"Error showing tables in Model Diagram\n{ex.Message}"));
             }
         }
@@ -2307,7 +2307,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 textResult = CopyResultsForCommentsData();
             }
-            _eventAggregator.PublishOnUIThreadAsync(new PasteServerTimingsEvent(message.IncludeHeader, textResult), cancellationToken);
+            _eventAggregator.PublishAsync(new PasteServerTimingsEvent(message.IncludeHeader, textResult), cancellationToken);
             return Task.CompletedTask;
         }
 

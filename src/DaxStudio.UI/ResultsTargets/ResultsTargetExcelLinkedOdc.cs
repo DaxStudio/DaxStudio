@@ -54,14 +54,14 @@ namespace DaxStudio.UI.ResultsTargets
         {
             _isPowerBIOrSSDTConnection = message.IsPowerBIorSSDT;
             NotifyOfPropertyChange(() => IsEnabled);
-            await _eventAggregator.PublishOnUIThreadAsync(new RefreshOutputTargetsEvent());
+            await _eventAggregator.PublishAsync(new RefreshOutputTargetsEvent());
         }
 
         public async Task HandleAsync(ActivateDocumentEvent message, CancellationToken cancellationToken)
         {
             _isPowerBIOrSSDTConnection = message.Document.Connection?.IsPowerBIorSSDT ?? false;
             NotifyOfPropertyChange(() => IsEnabled);
-            await _eventAggregator.PublishOnUIThreadAsync(new RefreshOutputTargetsEvent());
+            await _eventAggregator.PublishAsync(new RefreshOutputTargetsEvent());
         }
         #endregion
 

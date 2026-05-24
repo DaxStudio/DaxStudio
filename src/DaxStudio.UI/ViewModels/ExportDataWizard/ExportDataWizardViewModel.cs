@@ -123,7 +123,7 @@ namespace DaxStudio.UI.ViewModels
                 }
                 else
                 {
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Skipping tables '{t.Caption}' as it has no columns to export"));
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Skipping tables '{t.Caption}' as it has no columns to export"));
                 }
             }
         }
@@ -265,7 +265,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "ExportDataDialogViewModel", "Export", "Error exporting all data from model");
-                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error when attempting to export all data - {ex.Message}"));
             }
         }
 
@@ -280,7 +280,7 @@ namespace DaxStudio.UI.ViewModels
 
             var selectedTables = Tables.Where(t => t.IsSelected).ToList();
             exceptionFound = await ExportDataToParquetFilesAsync(outputPath, selectedTables);
-            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+            await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
             Document.QueryStopWatch.Reset();
         }
 
@@ -304,7 +304,7 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var table in selectedTables)
                 {
-                    await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(table));
+                    await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(table));
 
                     tableCnt++;
                     try
@@ -344,8 +344,8 @@ namespace DaxStudio.UI.ViewModels
                         table.Status = ExportStatus.Error;
                         exceptionFound = true;
                         Log.Error(ex, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToParquetFilesAsync), "Error while exporting model to parquet");
-                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
-                        await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                        await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
+                        await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
                     }
 
                 }
@@ -358,11 +358,11 @@ namespace DaxStudio.UI.ViewModels
                     if (CancelRequested)
                     {
                         var completeCnt = Tables.Count(t => t.Status == ExportStatus.Done);
-                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
+                        await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
                     }
                     else
                     {
-                        await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
+                        await EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
                     }
                 }
             });
@@ -424,7 +424,7 @@ namespace DaxStudio.UI.ViewModels
                         // if cancel has been requested do not write any more files
                         if (CancelRequested)
                         {
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
                             table.Status = ExportStatus.Cancelled;
                             MarkWaitingTablesAsSkipped();
 
@@ -448,7 +448,7 @@ namespace DaxStudio.UI.ViewModels
 
             rowBuffer = ParquetExporter.ResetBuffers(fields,bufferRowCount);
 
-            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", table.DaxName + ".parquet")));
+            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", table.DaxName + ".parquet")));
 
             if (CancelRequested)
             {
@@ -485,7 +485,7 @@ namespace DaxStudio.UI.ViewModels
 
             var selectedTables = Tables.Where(t => t.IsSelected).ToList();
             exceptionFound = await ExportDataToCsvFilesAsync(outputPath, selectedTables);
-            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+            await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
             Document.QueryStopWatch.Reset();
         }
 
@@ -512,7 +512,7 @@ namespace DaxStudio.UI.ViewModels
 
                 foreach (var table in selectedTables)
                 {
-                    EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(table));
+                    EventAggregator.PublishAsync(new ExportStatusUpdateEvent(table));
 
                     tableCnt++;
                     try
@@ -610,7 +610,7 @@ namespace DaxStudio.UI.ViewModels
                                         // if cancel has been requested do not write any more files
                                         if (CancelRequested)
                                         {
-                                            EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                            EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
                                             table.Status = ExportStatus.Cancelled;
                                             MarkWaitingTablesAsSkipped();
 
@@ -630,7 +630,7 @@ namespace DaxStudio.UI.ViewModels
                                     }
                                 } // end of batch
 
-                                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", table.DaxName + ".csv")));
+                                EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", table.DaxName + ".csv")));
 
                                 if (CancelRequested)
                                 {
@@ -652,8 +652,8 @@ namespace DaxStudio.UI.ViewModels
                         table.Status = ExportStatus.Error;
                         exceptionFound = true;
                         Log.Error(ex, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToCSV), "Error while exporting model to CSV");
-                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
-                        EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                        EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Exporting '{table.DaxName}':  {ex.Message}"));
+                        EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
                     }
 
                 }
@@ -666,11 +666,11 @@ namespace DaxStudio.UI.ViewModels
                     if (CancelRequested)
                     {
                         var completeCnt = Tables.Count(t => t.Status == ExportStatus.Done);
-                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
+                        EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
                     }
                     else
                     {
-                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
+                        EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(tableCnt), Document.QueryStopWatch.ElapsedMilliseconds));
                     }
                 }
             });
@@ -689,7 +689,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var warning = $"Exporting table '{caption}' as '{newName}' due to characters that are illegal in a file name.";
                 Log.Warning("{class} {method} {message}", "ExportDataWizardViewModel", "CleanNameOfIllegalChars", warning);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,warning));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,warning));
             }
             return newName;
         }
@@ -765,7 +765,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         try
                         {
-                            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(table));
+                            await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(table));
 
                             _currentTable = table;
                             _currentTable.Status = ExportStatus.Exporting;
@@ -850,14 +850,14 @@ namespace DaxStudio.UI.ViewModels
                             // jump out of table loop if we have been cancelled
                             if (CancelRequested)
                             {
-                                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
                                 // mark an tables not yet exported as skipped
                                 MarkWaitingTablesAsSkipped();
 
                                 break;
                             }
 
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", _sqlTableName)));
+                            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, ExportTableMsg.Format(table.RowCount, table.RowCount == 1 ? "" : "s", _sqlTableName)));
                             _currentTable.Status = ExportStatus.Done;
                         }
                         catch (TaskCanceledException)
@@ -865,7 +865,7 @@ namespace DaxStudio.UI.ViewModels
                             _currentTable.Status = ExportStatus.Error;
                             var msg = $"Export Operation Cancelled for table: {table.Caption}";
                             Log.Warning(Constants.LogMessageTemplate, nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), msg);
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
                         }
                         catch (InvalidOperationException ex2)
                         {
@@ -874,8 +874,8 @@ namespace DaxStudio.UI.ViewModels
                             var innerEx = ex2.GetLeafException();
                             var msg = $"Error exporting data from {_currentTable.DaxName} to SQL Server Table: {innerEx.Message}";
                             Log.Error(innerEx, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), msg);
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
-                            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
+                            await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
                             MarkWaitingTablesAsSkipped();
                             break;
                         }
@@ -886,13 +886,13 @@ namespace DaxStudio.UI.ViewModels
                             string extraMessage = string.Empty;
                             Log.Error(innerEx, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), innerEx.Message);
                             if (!truncateTables) extraMessage = "\nIf you are inserting into an existing table the column names, the order of the column and the datatypes must match with those in the tabular model or you may get strange errors";
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {innerEx.Message}{extraMessage}"));
-                            await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server Table: {innerEx.Message}{extraMessage}"));
+                            await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
                         }
 
                         if (CancelRequested)
                         {
-                            await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
+                            await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Data Export Cancelled"));
                             // mark an tables not yet exported as skipped
                             MarkWaitingTablesAsSkipped();
 
@@ -901,15 +901,15 @@ namespace DaxStudio.UI.ViewModels
                     } // end foreach table
                 }
                 Document.QueryStopWatch.Stop();
-                await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
                 if (CancelRequested)
                 {
                     var completeCnt = Tables.Count(t => t.Status == ExportStatus.Done);
-                    await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, _currentTableIdx), Document.QueryStopWatch.ElapsedMilliseconds));
+                    await EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, ExportIncompleteMsg.Format(completeCnt, _currentTableIdx), Document.QueryStopWatch.ElapsedMilliseconds));
                 }
                 else
                 {
-                    await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(_currentTableIdx), Document.QueryStopWatch.ElapsedMilliseconds));
+                    await EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, ExportCompleteMsg.Format(_currentTableIdx), Document.QueryStopWatch.ElapsedMilliseconds));
                 }
 
                 Document.QueryStopWatch.Reset();
@@ -920,8 +920,8 @@ namespace DaxStudio.UI.ViewModels
                 if (_currentTable == null && _totalTableCnt > 0) { _currentTable = selectedTables.FirstOrDefault(); }
                 if (_currentTable != null) { _currentTable.Status = ExportStatus.Error; }
                 Log.Error(ex, "{class} {method} {message}", nameof(ExportDataWizardViewModel), nameof(ExportDataToSQLServer), ex.Message);
-                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
-                await EventAggregator.PublishOnUIThreadAsync(new ExportStatusUpdateEvent(_currentTable, true));
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error exporting data to SQL Server: {ex.Message}"));
+                await EventAggregator.PublishAsync(new ExportStatusUpdateEvent(_currentTable, true));
             }
             finally
             {

@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,7 +72,7 @@ namespace DaxStudio.UI.Model
             var result = await LoadHistoryFilesFromDiskAsync();
             QueryHistory.AddRange(result.History);
 
-            if (result.ErrorCount > 0) { await _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {result.ErrorCount} error{(result.ErrorCount == 1 ? " has" : "s have")} been written to the log file")); }
+            if (result.ErrorCount > 0) { await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Not all Query History records could be loaded, {result.ErrorCount} error{(result.ErrorCount == 1 ? " has" : "s have")} been written to the log file")); }
             Log.Debug("{class} {method} {message}", "GlobalQueryHistory", "LoadHistoryFilesAsync", "End Load (" + result.FileCount + " files)");
         }
 

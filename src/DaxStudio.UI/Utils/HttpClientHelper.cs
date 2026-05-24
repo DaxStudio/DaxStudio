@@ -108,7 +108,7 @@ namespace DaxStudio.UI.Utils
             } catch (Exception ex)
             {
                 Log.Error(ex, "{message} {class} {message}", nameof(HttpClientHelper), nameof(InitializeAsync), ex.Message);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "An error occurred trying to auto detect your web proxy"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, "An error occurred trying to auto detect your web proxy"));
                 return this;
             }
             
@@ -214,7 +214,7 @@ namespace DaxStudio.UI.Utils
                 }
                 catch (Exception ex)
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
                     Log.Error("{class} {method} {message} {stacktrace}", nameof(HttpClientHelper), nameof(GetProxy), ex.Message, ex.StackTrace );
                     UseSystemProxy();
                 }

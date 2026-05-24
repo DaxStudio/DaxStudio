@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.UI.Enums;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
@@ -48,7 +48,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange(nameof(FilterType));
                 NotifyOfPropertyChange(nameof(ShowFilterValue));
                 NotifyOfPropertyChange(nameof(ShowFilterValue2));
-                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -118,7 +118,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValueIsValid));
                 NotifyOfPropertyChange(nameof(FilterValueValidationMessage));
-                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             } 
         }
 
@@ -142,7 +142,7 @@ namespace DaxStudio.UI.Model
                 if (_filterValueIsParameter && FilterType == FilterType.In) FilterType = FilterType.Is;
                 if (_filterValueIsParameter && FilterType == FilterType.NotIn) FilterType = FilterType.IsNot;
                 NotifyOfPropertyChange(nameof(FilterTypes));
-                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             } 
         }
 
@@ -217,7 +217,7 @@ namespace DaxStudio.UI.Model
                 NotifyOfPropertyChange();
                 NotifyOfPropertyChange(nameof(FilterValue2IsValid));
                 NotifyOfPropertyChange(nameof(FilterValue2ValidationMessage));
-                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             }
         }
 
@@ -237,7 +237,7 @@ namespace DaxStudio.UI.Model
                 if (_filterValue2IsParameter && !value && !FilterValue2.StartsWith("@")) { FilterValue2 = "@" + FilterValue2; }
                 _filterValue2IsParameter = value;
                 NotifyOfPropertyChange();
-                EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+                EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
             }
         }
 

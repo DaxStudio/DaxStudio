@@ -56,7 +56,7 @@ namespace DaxStudio.UI
                 if (sf.GetMethod().Name == "GetLineByOffset")
                 {
                     var eventAggregator = _container.GetExportedValue<IEventAggregator>();
-                    if (eventAggregator != null) eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
+                    if (eventAggregator != null) eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Editor syntax highlighting attempted to scan byond the end of the current line"));
                     Log.Warning(e.Exception, "{class} {method} AvalonEdit TextDocument.GetLineByOffset: {message}", "EntryPoint", "Main", "Argument out of range exception");
                     e.Handled = true;
                     return;

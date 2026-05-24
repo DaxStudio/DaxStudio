@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
@@ -125,7 +125,7 @@ namespace DaxStudio.UI.ViewModels
             Column.MeasureExpression = MeasureExpression.Text;
             Column.Caption = MeasureName;
             Document.QueryBuilder.IsEnabled = true;
-            EventAggregator.PublishOnUIThreadAsync(new QueryBuilderUpdateEvent());
+            EventAggregator.PublishAsync(new QueryBuilderUpdateEvent());
         }
 
         public void CancelMeasureExpression()

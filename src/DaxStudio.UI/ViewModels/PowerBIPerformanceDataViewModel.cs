@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
@@ -156,12 +156,12 @@ namespace DaxStudio.UI.ViewModels
                     }
                     CalculateFooterItem();
                     CanCaptureDiagnostics = Ribbon?.ActiveDocument?.Connection?.IsConnected ?? false;
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"Power BI Performance Data Loaded"));
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} {message}", "PowerBIPerformanceDataViewModel", "FileName.set", ex.Message);
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Loading Power BI Performance Data: {ex.Message}"));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Loading Power BI Performance Data: {ex.Message}"));
                 }
                 finally
                 {
@@ -206,7 +206,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             sb.AppendLine();
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
+            _eventAggregator.PublishAsync(new SendTextToEditor(sb.ToString()));
         }
 
         public void ClearFilters()
@@ -244,7 +244,7 @@ namespace DaxStudio.UI.ViewModels
             queryHeader += $"// Row Count       : {perfData.RowCount}\n";
             queryHeader += $"// =================\n";
             queryHeader += perfData.QueryText;
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(queryHeader + "\n"));
+            _eventAggregator.PublishAsync(new SendTextToEditor(queryHeader + "\n"));
         }
 
         private bool _showFilters;
@@ -317,7 +317,7 @@ namespace DaxStudio.UI.ViewModels
             } 
             catch (Exception ex)
             {
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while trying to export: {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"The following error occurred while trying to export: {ex.Message}"));
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(PowerBIPerformanceDataViewModel), nameof(Export), "Error during export");
             }
         }
@@ -383,7 +383,7 @@ namespace DaxStudio.UI.ViewModels
                     // check if we have reached the limit of an xlsx file
                     if (iRowCnt >= 999999)
                     {
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Results truncated, reached the maximum row limit for an Excel file"));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Results truncated, reached the maximum row limit for an Excel file"));
                         break;
                     }
 

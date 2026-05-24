@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -39,7 +39,7 @@ namespace DaxStudio.UI.ViewModels
             if (item != null)
             {
                 e.Handled = true;
-                EventAggregator.PublishOnUIThreadAsync(new SendTabularObjectToEditor(item));
+                EventAggregator.PublishAsync(new SendTabularObjectToEditor(item));
             }
         }
 

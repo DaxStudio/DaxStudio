@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -88,7 +88,7 @@ namespace DaxStudio.UI.ViewModels
             catch( Exception ex)
             {
                 Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(Run), ex.Message);
-                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
                 _stopwatch?.Stop();
             }
         }
@@ -143,7 +143,7 @@ namespace DaxStudio.UI.ViewModels
 
             if (!_benchmarkingPassComplete)
             {
-                await EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
+                await EventAggregator.PublishAsync(new RunQueryEvent(TimerRunTarget, _currentRunStyle));
             }
 
             // if we have completed the runs with ViewAs On
@@ -223,7 +223,7 @@ namespace DaxStudio.UI.ViewModels
             if (dt == null) {
                 var msg = "Unable to calculate the benchmark summary as the details table is empty";
                 Log.Error(Common.Constants.LogMessageTemplate, nameof(BenchmarkViewModel), nameof(CalculateBenchmarkSummary), msg);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
                 return; 
             }
 
@@ -353,7 +353,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, nameof(BenchmarkViewModel), "HandleAsync<ServerTimingsEvent>", "Error Adding timings to details table");
-                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Adding timings to details table\n{ex.Message}"));
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Adding timings to details table\n{ex.Message}"));
             }
 
             Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");

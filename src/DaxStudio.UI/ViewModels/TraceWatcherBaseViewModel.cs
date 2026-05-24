@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
@@ -72,7 +72,7 @@ namespace DaxStudio.UI.ViewModels
 
         public  void HideTrace(object obj)
         {
-            _eventAggregator.PublishOnUIThreadAsync(new CloseTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new CloseTraceWindowEvent(this));
         }
         
 
@@ -109,7 +109,7 @@ namespace DaxStudio.UI.ViewModels
             Log.Verbose("{class} {method} {message}", GetSubclassName(), nameof(ProcessAllEvents), "starting ProcessResults");
             if (!IsPaused) ProcessResults();
             IsBusy = false;
-            _eventAggregator.PublishOnUIThreadAsync(new QueryTraceCompletedEvent(this));
+            _eventAggregator.PublishAsync(new QueryTraceCompletedEvent(this));
         }
 
         private void ResetTimeout()
@@ -220,7 +220,7 @@ namespace DaxStudio.UI.ViewModels
                         StartTraceAsync().SafeFireAndForget(onException: ex =>
                         {
                             Log.Error(ex, Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(IsChecked), "error setting IsChecked");
-                            _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error starting trace: {ex.Message}"));
+                            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error starting trace: {ex.Message}"));
                         });
                     }
                     else
@@ -237,7 +237,7 @@ namespace DaxStudio.UI.ViewModels
                         //}); ;
                     }
 
-                    _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, value));
+                    _eventAggregator.PublishAsync(new TraceWatcherToggleEvent(this, value));
                     Log.Verbose("{Class} {Event} IsChecked:{IsChecked}", GetSubclassName(), nameof(IsChecked), value);
                 }
             }
@@ -392,7 +392,7 @@ namespace DaxStudio.UI.ViewModels
         {
             await Task.Run(async () =>
             {
-                await _eventAggregator.PublishOnBackgroundThreadAsync(new TraceChangingEvent(this,QueryTraceStatus.Starting));
+                await _eventAggregator.PublishAsync(new TraceChangingEvent(this,QueryTraceStatus.Starting));
                 try
                 {
                     ErrorMessage = string.Empty;
@@ -402,11 +402,11 @@ namespace DaxStudio.UI.ViewModels
                     if (_tracer == null)
                     {
                         // the creation of the trace was cancelled
-                        await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
+                        await _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
                         IsChecked = false;
                         return;
                     }
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, true));
+                    await _eventAggregator.PublishAsync(new TraceWatcherToggleEvent(this, true));
                     Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync),
                         $"Starting Tracer - {this.TraceSuffix}");
                     await _tracer.StartAsync(_globalOptions.TraceStartupTimeout);
@@ -415,7 +415,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StartTraceAsync), "Error Starting Trace");
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                    await _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
                     IsBusy = false;
                 }
 
@@ -472,7 +472,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(Export), "Error Exporting Trace Details");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Exporting Trace Details: {ex.Message}"));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Exporting Trace Details: {ex.Message}"));
                 }
             }
         }
@@ -548,10 +548,10 @@ namespace DaxStudio.UI.ViewModels
             if(!Events.Any(ev => ev.EventClass == DaxStudioTraceEventClass.QueryEnd)) {
                 Reset();
                 var msg = "Trace Stopped: QueryEnd event not received - End Event timeout exceeded. You could try increasing this timeout in the Options";
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                     msg));
                 Log.Warning(Constants.LogMessageTemplate,GetSubclassName(), nameof(QueryEndEventTimeout), msg + $" ({Events.Count} events in collection)");
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
             }
         }
 
@@ -574,7 +574,7 @@ namespace DaxStudio.UI.ViewModels
                 if (!Connection.IsConnected)
                 {
                     var msg = "Cannot start trace, the current window is not connected";
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
                     Log.Error(Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(CreateTracer), msg);
                     return;
                 }
@@ -616,14 +616,14 @@ namespace DaxStudio.UI.ViewModels
                 {
                     Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), innerEx.Message, innerEx.StackTrace);
                 }
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.GetAllMessages()));
+                _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, ex.GetAllMessages()));
             }
             catch (Exception ex)
             {
                 Log.Error("{class} {method} {message} {stackTrace}", GetSubclassName(), nameof(CreateTracer), ex.Message, ex.StackTrace);
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, ex.Message));
+                _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, ex.Message));
             }
         }
 
@@ -669,7 +669,7 @@ namespace DaxStudio.UI.ViewModels
             Execute.OnUIThread(() => {
                 Document.OutputMessage($"{Title} Trace Started");
                 this.IsEnabled = true;
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Started));
+                _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Started));
             });
         }
 
@@ -682,7 +682,7 @@ namespace DaxStudio.UI.ViewModels
             IsRecording = false;
             IsBusy = false;
             ResetTimeout();
-            _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+            _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
         }
 
         public void StopTrace()
@@ -701,7 +701,7 @@ namespace DaxStudio.UI.ViewModels
                 _tracer?.Dispose();
                 _tracer = null;
                 ErrorMessage = string.Empty;
-                _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
+                _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
             }
             catch (Exception ex)
             {
@@ -713,19 +713,19 @@ namespace DaxStudio.UI.ViewModels
         {
             await Task.Run(async () =>
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new TraceChangingEvent(this, QueryTraceStatus.Stopping));
+                await _eventAggregator.PublishAsync(new TraceChangingEvent(this, QueryTraceStatus.Stopping));
                 try
                 {
                     StopTrace();
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceWatcherToggleEvent(this, false));
+                    await _eventAggregator.PublishAsync(new TraceWatcherToggleEvent(this, false));
                     Log.Verbose(Common.Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync),
                         "Stopping Tracer");
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
+                    await _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Stopped));
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, Constants.LogMessageTemplate, GetSubclassName(), nameof(StopTraceAsync), "Error Stopping Trace");
-                    await _eventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
+                    await _eventAggregator.PublishAsync(new TraceChangedEvent(this, QueryTraceStatus.Error));
                 }
             }).ConfigureAwait(false);
         }

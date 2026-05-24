@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Composition;
+using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
@@ -118,12 +118,12 @@ namespace DaxStudio.UI.ViewModels
         {
             if (queryHistoryEvent == null) return;  // exit here silently if no history event is selected
             if (!string.IsNullOrEmpty(queryHistoryEvent.QueryBuilderJson))
-                _eventAggregator.PublishOnUIThreadAsync(new LoadQueryBuilderEvent(queryHistoryEvent.QueryBuilderJson));
+                _eventAggregator.PublishAsync(new LoadQueryBuilderEvent(queryHistoryEvent.QueryBuilderJson));
             else
             {
                 var text = queryHistoryEvent.QueryText;
                 if (!string.IsNullOrWhiteSpace(queryHistoryEvent.Parameters)) text += $"\n{queryHistoryEvent.Parameters}";
-                _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(text));
+                _eventAggregator.PublishAsync(new SendTextToEditor(text));
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Caliburn.Micro;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls;
@@ -513,7 +513,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".queryPlans";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             LoadJson(data);
         }
@@ -552,7 +552,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.QueryPlan, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {

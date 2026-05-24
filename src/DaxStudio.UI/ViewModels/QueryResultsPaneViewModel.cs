@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
@@ -209,7 +209,7 @@ namespace DaxStudio.UI.ViewModels
             set
             {
                 _selectedWorksheet = value;
-                _eventAggregator.PublishOnBackgroundThreadAsync(new SetSelectedWorksheetEvent(_selectedWorksheet));
+                _eventAggregator.PublishAsync(new SetSelectedWorksheetEvent(_selectedWorksheet));
             }
         }
         private DocumentViewModel _document;
@@ -228,7 +228,7 @@ namespace DaxStudio.UI.ViewModels
 
         public async Task HandleAsync(NewDocumentEvent message, CancellationToken cancellationToken)
         {
-            await _eventAggregator.PublishOnUIThreadAsync(new QueryResultsPaneMessageEvent(message.Target));
+            await _eventAggregator.PublishAsync(new QueryResultsPaneMessageEvent(message.Target));
             if (message.Target is IActivateResults) { this.Activate(); }
             //ResultsIcon = message.Target.Icon;
             //ResultsMessage = message.Target.Message;
@@ -542,12 +542,12 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 Clipboard.SetText(ErrorMessage);
-                _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, "Error message copied to clipboard"));
             }
             catch (Exception ex)
             {
                 var msg = $"Unable to copy error message to clipboard: {ex.Message}";
-                _eventAggregator.PublishOnCurrentThreadAsync(new OutputMessage(MessageType.Error, msg));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
                 Log.Error(Constants.LogMessageTemplate, nameof(QueryResultsPaneViewModel), nameof(CopyError), msg);
             }
             
@@ -603,7 +603,7 @@ namespace DaxStudio.UI.ViewModels
                     // only offset the column if the error is on line 1
                     columnOffset = SelectionLocation.Line == 1 ? SelectionLocation.Column -1: 0;
                 }
-                _eventAggregator.PublishOnUIThreadAsync(
+                _eventAggregator.PublishAsync(
                     new NavigateToLocationEvent(ErrorLocation.Line + lineOffset
                                                , ErrorLocation.Column + columnOffset));
             }

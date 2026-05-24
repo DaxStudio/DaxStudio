@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dax.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -189,7 +189,7 @@ namespace DaxStudio.UI.ViewModels
         private bool _isExpanded = false;
         public bool IsExpanded { get => _isExpanded;
             set { _isExpanded = value;
-                _eventAggregator.PublishOnUIThreadAsync(new VpaViewExpandedEvent());
+                _eventAggregator.PublishAsync(new VpaViewExpandedEvent());
             } }
         public long RelationshipMaxToCardinality { get; }
 

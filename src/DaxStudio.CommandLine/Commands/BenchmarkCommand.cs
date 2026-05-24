@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
@@ -93,7 +93,7 @@ namespace DaxStudio.CommandLine.Commands
             bool silent = settings.Silent;
 
             // Install a SynchronizationContext so that Caliburn.Micro's
-            // PublishOnUIThreadAsync works in the CLI (no WPF dispatcher).
+            // PublishAsync works in the CLI (no WPF dispatcher).
             // Without this, ServerTimingsEvent may not be delivered to our handler.
             if (SynchronizationContext.Current == null)
                 SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());

@@ -1,4 +1,4 @@
-﻿using ADOTabular.Interfaces;
+using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
@@ -88,12 +88,12 @@ namespace DaxStudio.UI.ViewModels
 
         private void SetRunStyle()
         {
-            EventAggregator.PublishOnUIThreadAsync(new SetRunStyleEvent(RunStyleIcons.RunBuilder));
+            EventAggregator.PublishAsync(new SetRunStyleEvent(RunStyleIcons.RunBuilder));
         }
 
         private void UnsetRunStyle()
         {
-            EventAggregator.PublishOnUIThreadAsync(new SetRunStyleEvent(RunStyleIcons.RunOnly));
+            EventAggregator.PublishAsync(new SetRunStyleEvent(RunStyleIcons.RunOnly));
         }
 
         private void ShowAutoGenerateWarning()
@@ -202,7 +202,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(QueryText), ex.Message);
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
                 }
                 return string.Empty;
             } 
@@ -222,7 +222,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(QueryText), ex.Message);
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error generating query: {ex.Message}"));
                 }
                 return string.Empty;
             }
@@ -265,7 +265,7 @@ namespace DaxStudio.UI.ViewModels
         // ReSharper disable once UnusedMember.Global
         public void RunQuery() {
             if (! CheckForCrossjoins() )
-                EventAggregator.PublishOnUIThreadAsync(new RunQueryEvent(Document.SelectedTarget, Document.SelectedRunStyle) { QueryProvider = this });
+                EventAggregator.PublishAsync(new RunQueryEvent(Document.SelectedTarget, Document.SelectedRunStyle) { QueryProvider = this });
         }
 
         private bool CheckForCrossjoins()
@@ -281,12 +281,12 @@ namespace DaxStudio.UI.ViewModels
 
         public void SendTextToEditor()
         {
-            EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(QueryTextWithDefaultDelimiter,false,true));
+            EventAggregator.PublishAsync(new SendTextToEditor(QueryTextWithDefaultDelimiter,false,true));
         }
 
         public void ClearEditor()
         {
-            EventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(string.Empty , false, true));
+            EventAggregator.PublishAsync(new SendTextToEditor(string.Empty , false, true));
         }
 
         public bool CanAutoGenerate => IsConnectedToAModelWithTables;
@@ -304,7 +304,7 @@ namespace DaxStudio.UI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(CanAddNewMeasure), "Error checking if the model has any tables");
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while checking if your model has any tables:\n{ex.Message}"));                    
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"The following error occurred while checking if your model has any tables:\n{ex.Message}"));                    
                 }
 
                 return false;
@@ -324,7 +324,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var msg = $"The following error occurred while getting count of tables for the selected model: {ex.Message }";
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(IsConnectedToAModelWithTables), msg);
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
                 }
                 return false;
             }
@@ -340,7 +340,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = "Cannot add a new measure if the model has no tables";
                 Log.Warning(nameof(QueryBuilderViewModel), nameof(AddNewMeasure), msg);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,msg ));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,msg ));
                 return;
             }
             
@@ -354,7 +354,7 @@ namespace DaxStudio.UI.ViewModels
             SelectedIndex = Columns.Count - 1;
             Columns.EditNewMeasure(newMeasure);
             IsEnabled = false;
-            //EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(newMeasure));
+            //EventAggregator.PublishAsync(new ShowMeasureExpressionEditor(newMeasure));
             SetRunStyle();
         }
 
@@ -442,7 +442,7 @@ namespace DaxStudio.UI.ViewModels
             if (Columns.Contains(column.InternalColumn))
             {
                 // write warning and return
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder columns a second time"));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder columns a second time"));
                 return;
             }
             Columns.Add(column.InternalColumn);
@@ -457,7 +457,7 @@ namespace DaxStudio.UI.ViewModels
             if (Filters.Contains(column.InternalColumn))
             {
                 // write warning and return
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder filters a second time"));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Cannot add the {column.InternalColumn.Caption} column to the query builder filters a second time"));
                 return;
             }
             Filters.Add(column.InternalColumn);
@@ -495,7 +495,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"The following error occurred while attempting to load the Query Builder from your saved file:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderViewModel), nameof(LoadJson), msg);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
                 return;
             }
         }

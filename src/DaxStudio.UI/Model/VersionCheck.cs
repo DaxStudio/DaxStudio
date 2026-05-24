@@ -1,4 +1,4 @@
-﻿namespace DaxStudio.UI.Model
+namespace DaxStudio.UI.Model
 {
     using Caliburn.Micro;
     using DaxStudio.Common;
@@ -95,7 +95,7 @@ using DaxStudio.UI.Events;
                 catch (Exception ex)
                 {
                     Log.Error("{class} {method} {error}", "VersionCheck", "worker_DoWork", ex.Message);
-                    _eventAggregator.PublishOnUIThreadAsync(new ErrorEventArgs(ex));
+                    _eventAggregator.PublishAsync(new ErrorEventArgs(ex));
                 }
 
                 CheckVersion();
@@ -103,7 +103,7 @@ using DaxStudio.UI.Events;
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error while checking for updates: {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Error while checking for updates: {ex.Message}"));
             }
             finally
             {
@@ -119,7 +119,7 @@ using DaxStudio.UI.Events;
             {
                 if (!VersionIsLatest && ServerVersion != DismissedVersion && !ServerVersion.IsNotSet())
                 {
-                    _eventAggregator.PublishOnUIThreadAsync(new NewVersionEvent(ServerVersion, DownloadUrl));
+                    _eventAggregator.PublishAsync(new NewVersionEvent(ServerVersion, DownloadUrl));
                 }
             }
             catch (Exception ex)
@@ -214,7 +214,7 @@ using DaxStudio.UI.Events;
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), $"Error parsing CurrentVersion.json: {ex.Message}");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
             }
             finally
             {

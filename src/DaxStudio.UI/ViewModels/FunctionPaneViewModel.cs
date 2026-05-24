@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -80,7 +80,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FunctionPaneViewModel), nameof(ApplyFilter), ex.Message);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Filtering Functions: {ex.Message}"));
             }
         }
 
@@ -93,7 +93,7 @@ namespace DaxStudio.UI.ViewModels
         public Task HandleAsync(ConnectionChangedEvent message, CancellationToken cancellationToken)
         {
             NotifyOfPropertyChange(() => FunctionGroups);
-            //EventAggregator.PublishOnUIThreadAsync(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
+            //EventAggregator.PublishAsync(new FunctionsLoadedEvent(Document, _functionProvider.FunctionGroups));
             return Task.CompletedTask;
         }
 

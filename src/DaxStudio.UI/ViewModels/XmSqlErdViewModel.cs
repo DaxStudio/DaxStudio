@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using Dax.ViewModel;
 using DaxStudio.Common;
 using DaxStudio.Common.Enums;
@@ -2547,7 +2547,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (_analysis == null || _analysis.Tables.Count == 0)
             {
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                     "No table references found. Run a query with Server Timings first."));
                 return;
             }
@@ -2557,7 +2557,7 @@ namespace DaxStudio.UI.ViewModels
                 nameof(XmSqlErdViewModel), nameof(ShowInModelDiagram),
                 tableNames.Count, string.Join(", ", tableNames));
 
-            _eventAggregator.PublishOnUIThreadAsync(
+            _eventAggregator.PublishAsync(
                 new ShowTablesInModelDiagramEvent(tableNames, includeRelated: false));
         }
 

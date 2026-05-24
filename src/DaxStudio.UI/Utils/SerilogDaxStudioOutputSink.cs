@@ -1,4 +1,4 @@
-﻿using Serilog.Core;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 using System;
@@ -37,7 +37,7 @@ namespace DaxStudio.UI.Utils
                 try
                 {
                     this.EventAggregator = IoC.Get<IEventAggregator>();
-                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Information, "Output Event Sink Started"));
+                    EventAggregator.PublishAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Information, "Output Event Sink Started"));
                 }
                 catch { }
             }
@@ -52,12 +52,12 @@ namespace DaxStudio.UI.Utils
                 var text = sr.ToString().Trim();
 
                 if (logEvent.Level == LogEventLevel.Error || logEvent.Level == LogEventLevel.Fatal)
-                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Error, text));
+                    EventAggregator.PublishAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Error, text));
                 else if (logEvent.Level == LogEventLevel.Warning)
-                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Warning, text));
+                    EventAggregator.PublishAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Warning, text));
                 else
                 {
-                    EventAggregator.PublishOnUIThreadAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Information, text));
+                    EventAggregator.PublishAsync(new DaxStudio.Core.Events.OutputMessage(DaxStudio.Core.Events.MessageType.Information, text));
                 }
             }
         }

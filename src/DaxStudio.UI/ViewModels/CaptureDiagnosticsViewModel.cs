@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
@@ -107,13 +107,13 @@ namespace DaxStudio.UI.ViewModels
               RunAsync().SafeFireAndForget(onException: ex =>
               {
                   Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "ctor", "error running diagnostic capture");
-                  EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error starting diagnostic capture: {ex.Message}"));
+                  EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error starting diagnostic capture: {ex.Message}"));
               });
             }
             else
             {
                 Log.Warning(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No QueryText found");
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No query text found to execute"));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "No query text found to execute"));
                 MessageBox.Show( "No query text was found to execute","DAX Studio - Capture Diagnostics", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 FailAllOperations();
                 CanClose = true;
@@ -142,14 +142,14 @@ namespace DaxStudio.UI.ViewModels
                 RunAsync().SafeFireAndForget(onException: ex =>
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "ctor", "error running diagnostic capture");
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error starting diagnostic capture: {ex.Message}"));
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error starting diagnostic capture: {ex.Message}"));
                 });
 
             }
             else
             {
                 Log.Warning(Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), "CTOR", "No Queries found to execute");
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No queries found to execute"));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "No queries found to execute"));
                 FailAllOperations();
                 CanClose = true;
                 Close();
@@ -360,7 +360,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 var errMsg = $"Error starting traces: {ex.Message}";
-                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, errMsg));
                 Log.Error(ex,Common.Constants.LogMessageTemplate, nameof(CaptureDiagnosticsViewModel), nameof(StartTracesAsync), errMsg);
             }
         }
@@ -370,7 +370,7 @@ namespace DaxStudio.UI.ViewModels
             if (trace == null) return;
 
             if (trace.IsChecked)
-                await EventAggregator.PublishOnUIThreadAsync(new TraceChangedEvent(trace, QueryTrace.Interfaces.QueryTraceStatus.Started));
+                await EventAggregator.PublishAsync(new TraceChangedEvent(trace, QueryTrace.Interfaces.QueryTraceStatus.Started));
             else
                 trace.IsChecked = true;
         }
@@ -473,7 +473,7 @@ namespace DaxStudio.UI.ViewModels
             // if this document is dedicated to capturing the diagnostics update it with the current query.
             if (hasNewDocument) _newDocument.EditorText = runQueryEvent.QueryProvider.QueryText;
 
-            await EventAggregator.PublishOnUIThreadAsync(runQueryEvent);
+            await EventAggregator.PublishAsync(runQueryEvent);
 
         }
 

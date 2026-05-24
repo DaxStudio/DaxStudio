@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
@@ -188,12 +188,12 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 ClipboardManager.SetText(ServerName);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"Copied Server Name: \"{ServerName}\" to clipboard"));
             }
             catch(Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "StatusBarViewModel", "CopyServerNameToClipboard", "Error copying server name to clipboard:\n" + ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error copying server name to clipboard:\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error copying server name to clipboard:\n{ex.Message}"));
             }
         }
 

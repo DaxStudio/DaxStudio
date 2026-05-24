@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -106,7 +106,7 @@ ROW (
             catch (Exception ex)
             {
                 Log.Error(ex, DaxStudio.Common.Constants.LogMessageTemplate, nameof(BenchmarkServerFEViewModel), nameof(Run), ex.Message);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"An error occurred while attempting to run the benchmark: {ex.Message}"));
                 _stopwatch?.Stop();
             }
         }
@@ -152,7 +152,7 @@ ROW (
             {
                 var queryEvent = new RunQueryEvent(TimerRunTarget);
                 queryEvent.QueryProvider = new BenchmarkFEQuery();
-                EventAggregator.PublishOnUIThreadAsync(queryEvent);
+                EventAggregator.PublishAsync(queryEvent);
             }
 
             if (_currentRun >= CalculatedRuns)
@@ -288,7 +288,7 @@ ROW (
             catch (Exception ex)
             {
                 Log.Error(ex, nameof(BenchmarkServerFEViewModel), "HandleAsync<ServerTimingsEvent>", "Error Adding timings to details table");
-                await EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Adding timings to details table\n{ex.Message}"));
+                await EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Adding timings to details table\n{ex.Message}"));
             }
 
             Debug.WriteLine($"TimingEvent Received: {message.TotalDuration}ms");

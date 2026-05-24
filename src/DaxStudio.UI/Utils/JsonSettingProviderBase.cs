@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using comm= DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
@@ -60,7 +60,7 @@ namespace DaxStudio.UI.Utils
                             var msg =
                                 $"An error occurred attempting to write to settings.json: {exception.Message}\n(retry: {retryCount})";
                             // TODO - pass in IEventAggregator instance
-                            //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                            //_eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
                             Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(JsonSettingProviderBase),
                                 "RetryPolicy", msg);
                         }

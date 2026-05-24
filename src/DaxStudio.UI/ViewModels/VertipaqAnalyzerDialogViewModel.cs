@@ -57,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
                 _options.VpaxSampleReferentialIntegrityViolations = VpaxSampleReferentialIntegrityViolations;
                 _options.VpaxDontShowOptionsDialog = VpaxDontShowOptionsDialog;
                 _options.VpaxStatsColumnBatchSize = VpaxStatsColumnBatchSize;
-                await _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
+                await _eventAggregator.PublishAsync(new UpdateGlobalOptions());
             }
             Result = DialogResult.OK;
             await TryCloseAsync();

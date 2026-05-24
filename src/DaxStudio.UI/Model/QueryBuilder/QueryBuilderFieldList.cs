@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using ADOTabular.Interfaces;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
@@ -82,7 +82,7 @@ namespace DaxStudio.UI.Model
                 if (!Items.Any(sort => sort.DaxName == sortCol.DaxName))
                 {
                     Items.Add(sortCol);
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
+                    EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"{col.OrderBy.DaxName} was added to the Query Builder because it is the OrderBy column for {col.DaxName}"));
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace DaxStudio.UI.Model
                     if (!Items.Any(item => item.DaxName == groupCol.DaxName))
                     {
                         Items.Add(groupCol);
-                        EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"{grpCol.DaxName} was added to the Query Builder because it is a GroupBy column for {col.DaxName}"));
+                        EventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"{grpCol.DaxName} was added to the Query Builder because it is a GroupBy column for {col.DaxName}"));
                     }
                 }
             }
@@ -143,12 +143,12 @@ namespace DaxStudio.UI.Model
 
         public void EditNewMeasure(QueryBuilderColumn measure)
         {
-            EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(measure, true));
+            EventAggregator.PublishAsync(new ShowMeasureExpressionEditor(measure, true));
         }
 
         public void EditMeasure(QueryBuilderColumn measure)
         {
-            EventAggregator.PublishOnUIThreadAsync(new ShowMeasureExpressionEditor(measure, false));
+            EventAggregator.PublishAsync(new ShowMeasureExpressionEditor(measure, false));
         }
 
         public void ChangeSortDirection(QueryBuilderColumn column)

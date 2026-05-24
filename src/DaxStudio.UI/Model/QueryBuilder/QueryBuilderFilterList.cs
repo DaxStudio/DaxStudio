@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using ADOTabular.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
@@ -64,7 +64,7 @@ namespace DaxStudio.UI.Model
             {
                 var msg = $"Error adding Filter to Query Builder: {ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(QueryBuilderFilterList), nameof(Add), msg);
-                EventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                EventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
@@ -82,7 +82,7 @@ namespace DaxStudio.UI.ViewModels
                     {
                         var msg = (LocationOutputMessage)param;
                         Debug.WriteLine($"Goto location ({msg.Row},{msg.Column})");
-                        _eventAggregator.PublishOnUIThreadAsync(new NavigateToLocationEvent(msg.Row, msg.Column));
+                        _eventAggregator.PublishAsync(new NavigateToLocationEvent(msg.Row, msg.Column));
 
                     });
                 }

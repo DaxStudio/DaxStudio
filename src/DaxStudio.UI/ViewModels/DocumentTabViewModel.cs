@@ -92,7 +92,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     // if there are no auto-save files to recover, start the auto save timer
                     Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
-                    await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+                    await _eventAggregator.PublishAsync(new StartAutoSaveTimerEvent());
                 }
 
                 // if a filename was passed in on the command line open it
@@ -106,7 +106,7 @@ namespace DaxStudio.UI.ViewModels
                 if (Items.Count == 0 && !recoveringFiles)
                 {
                     Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
-                    await _eventAggregator.PublishOnUIThreadAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
+                    await _eventAggregator.PublishAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
                 }
 
             }
@@ -121,7 +121,7 @@ namespace DaxStudio.UI.ViewModels
         {
             Log.Information("{class} {method} {message}", nameof(DocumentTabViewModel), nameof(RecoverAutoSavedFilesAsync), $"Found {autoSaveInfo.Values.Count} auto save index files");
             // show recovery dialog
-            await _eventAggregator.PublishOnUIThreadAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
+            await _eventAggregator.PublishAsync(new AutoSaveRecoveryEvent(autoSaveInfo));
 
         }
 
@@ -136,7 +136,7 @@ namespace DaxStudio.UI.ViewModels
                 var docs = GetChildren();
                 if (!docs.Any() && newItem is DocumentViewModel doc && doc.IsClosing ) { return; }
                 docs.Apply(i => ((DocumentViewModel)i).IsFocused = false);
-                await _eventAggregator.PublishOnUIThreadAsync(new SetFocusEvent());
+                await _eventAggregator.PublishAsync(new SetFocusEvent());
 
                 Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Finished setting ActiveDocument");
                 await base.ChangeActiveItemAsync(newItem, closePrevious, cancellationToken);
@@ -144,7 +144,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(ChangeActiveItemAsync), "Error Changing Active Item");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Setting Active Document\n{ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Setting Active Document\n{ex.Message}"));
                 
             }
             
@@ -176,7 +176,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error pasting DAX file in current document: {ex.Message}";
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(PasteQueryDocumentAsync), msg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
 
@@ -202,7 +202,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"Error creating new document: {ex.Message}";
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(NewQueryDocumentAsync), msg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
 
@@ -226,13 +226,13 @@ namespace DaxStudio.UI.ViewModels
 
                     file.ShouldOpen = false;
 
-                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
+                    await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"Recovering File: '{file.DisplayName}'"));
 
                     Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "RecoverAutoSaveFile", $"Finished AutoSave Recovery for {file.DisplayName} ({file.AutoSaveId})");
                 }
                 catch (Exception ex)
                 {
-                    await _eventAggregator.PublishOnUIThreadAsync( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
+                    await _eventAggregator.PublishAsync( new  OutputMessage( MessageType.Error, $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}"));
                     Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(RecoverAutoSaveFileAsync), $"Error recovering: '{file.OriginalFileName}({file.AutoSaveId})'\n{ex.Message}");
                 }
             }
@@ -254,7 +254,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} {message}", "DocumentTabViewModel", "OpenFileInNewWindow", ex.Message);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while attempting to open '{fileName}': {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"The following error occurred while attempting to open '{fileName}': {ex.Message}"));
             }
         }
 
@@ -287,7 +287,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OpenNewBlankDocumentAsync), "Error opening new document");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error opening new document\n{ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error opening new document\n{ex.Message}"));
             }
 
         }
@@ -328,7 +328,7 @@ namespace DaxStudio.UI.ViewModels
         {
             if (ActiveDocument?.IsConnectionDialogOpen??false)
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new RefreshConnectionDialogEvent());
+                await _eventAggregator.PublishAsync(new RefreshConnectionDialogEvent());
                 return;
             }
             await NewQueryDocumentAsync("", message.ActiveDocument, message.CopyContent);
@@ -352,7 +352,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 // Open document 
                 var fileName = dlg.FileName;
-                await _eventAggregator.PublishOnUIThreadAsync(new FileOpenedEvent(fileName));
+                await _eventAggregator.PublishAsync(new FileOpenedEvent(fileName));
                 await NewQueryDocumentAsync(fileName);
             }
             
@@ -387,7 +387,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(TabClosing), "Error while closing a tab");
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error closing document:\n{ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error closing document:\n{ex.Message}"));
             }
             finally
             {
@@ -404,7 +404,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 Log.Debug("{class} {method} {message}", "DocumentTabViewModel", "TabClosing", "All documents closed");
                 //ActiveDocument = null;
-                await _eventAggregator.PublishOnUIThreadAsync(new AllDocumentsClosedEvent());
+                await _eventAggregator.PublishAsync(new AllDocumentsClosedEvent());
             }
 
             // remove this document from the autosave index
@@ -555,7 +555,7 @@ namespace DaxStudio.UI.ViewModels
                 AutoSaver.CleanUpRecoveredFiles();
 
                 // Now that any files have been recovered start the auto save timer
-                await _eventAggregator.PublishOnUIThreadAsync(new StartAutoSaveTimerEvent());
+                await _eventAggregator.PublishAsync(new StartAutoSaveTimerEvent());
 
             }
         }

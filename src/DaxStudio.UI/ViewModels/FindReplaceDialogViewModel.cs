@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using ICSharpCode.AvalonEdit.Document;
 using DAXEditorControl;
 using System;
@@ -188,7 +188,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, "FindReplaceDialogViewModel", "FindText", ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to find text: ${ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error trying to find text: ${ex.Message}"));
             }
         }
 
@@ -274,7 +274,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceTextViaRegex), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
             }
         }
 
@@ -302,7 +302,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceTextDirectly), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error trying to replace text: ${ex.Message}"));
             }
         }
 
@@ -323,7 +323,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(FindReplaceDialogViewModel), nameof(ReplaceAllText), ex.Message);
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error Replacing All Text: {ex.Message}" ));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error Replacing All Text: {ex.Message}" ));
             }
 
         }

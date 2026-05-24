@@ -101,7 +101,7 @@ namespace DaxStudio.UI.ResultsTargets
 
                                 if (moreResults)
                                 {
-                                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "Output to Clipboard only copies the first table of results"));
+                                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Output to Clipboard only copies the first table of results"));
                                     while (reader.NextResult())
                                     {
                                         // loop thru 

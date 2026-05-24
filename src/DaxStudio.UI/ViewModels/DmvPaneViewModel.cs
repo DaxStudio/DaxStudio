@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ADOTabular;
 using Caliburn.Micro;
 using System.ComponentModel.Composition;
@@ -57,7 +57,7 @@ namespace DaxStudio.UI.ViewModels
             NotifyOfPropertyChange(() => DmvQueries);
 
             // notify the intellisense provider that the dmv list may need updating
-            //EventAggregator.PublishOnUIThreadAsync(new DmvsLoadedEvent(Document, _dmvProvider.DynamicManagementViews));
+            //EventAggregator.PublishAsync(new DmvsLoadedEvent(Document, _dmvProvider.DynamicManagementViews));
             return Task.CompletedTask;
         }
 

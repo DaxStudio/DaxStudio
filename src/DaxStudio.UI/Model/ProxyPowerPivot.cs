@@ -1,4 +1,4 @@
-﻿using DaxStudio.Interfaces;
+using DaxStudio.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -149,7 +149,7 @@ namespace DaxStudio.UI.Model
                 }
                 catch (Exception ex)
                 {
-                    //_eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
+                    //_eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, string.Format("Error getting Worksheet list from Excel ({0})",ex.Message)));
                     doc?.OutputError(string.Format("Error getting Worksheet list from Excel ({0})", ex.Message));
                 }
                 

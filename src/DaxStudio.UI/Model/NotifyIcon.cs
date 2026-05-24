@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Windows;
 using Caliburn.Micro;
@@ -66,7 +66,7 @@ namespace DaxStudio.UI.Model
                 catch (Exception ex)
                 {
                     Log.Error(ex, "{class} {method} {message}", nameof(NotifyIcon), nameof(icon_TrayBalloonTipClicked), "Unable to open log folder");
-                    EventAggregator.PublishOnUIThreadAsync(new OutputMessage( MessageType.Error, $"Unable to open log folder: '{DownloadUrl}'\n{ex.Message}"));
+                    EventAggregator.PublishAsync(new OutputMessage( MessageType.Error, $"Unable to open log folder: '{DownloadUrl}'\n{ex.Message}"));
                 }
             }
         

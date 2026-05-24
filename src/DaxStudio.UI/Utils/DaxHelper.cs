@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -111,7 +111,7 @@ namespace DaxStudio.UI.Utils
             } catch (Exception ex)
             {
                 Log.Error(ex, "{class} {method} Error merging query parameters", "DaxHelper", "ParseParams");
-                eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "The Following Error occurred while trying to parse a parameter block: " + ex.Message));
+                eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, "The Following Error occurred while trying to parse a parameter block: " + ex.Message));
             }
             
         }

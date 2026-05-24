@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
@@ -359,7 +359,7 @@ namespace DaxStudio.UI.ViewModels
 
             }
             sb.AppendLine();
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(sb.ToString()));
+            _eventAggregator.PublishAsync(new SendTextToEditor(sb.ToString()));
         }
 
 
@@ -384,7 +384,7 @@ namespace DaxStudio.UI.ViewModels
         public void QueryDoubleClick(QueryEvent query)
         {
             if (query == null) return; // it the user clicked on an empty query exit here
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
+            _eventAggregator.PublishAsync(new SendTextToEditor(query.Query + "\n", query.DatabaseName));
         }
 
         #region ISaveState methods
@@ -405,7 +405,7 @@ namespace DaxStudio.UI.ViewModels
             filename = filename + ".allQueries";
             if (!File.Exists(filename)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             string data = File.ReadAllText(filename);
             LoadJson(data);
         }
@@ -436,7 +436,7 @@ namespace DaxStudio.UI.ViewModels
             var uri = PackUriHelper.CreatePartUri(new Uri(DaxxFormat.AllQueries, UriKind.Relative));
             if (!package.PartExists(uri)) return;
 
-            _eventAggregator.PublishOnUIThreadAsync(new ShowTraceWindowEvent(this));
+            _eventAggregator.PublishAsync(new ShowTraceWindowEvent(this));
             var part = package.GetPart(uri);
             using (TextReader tr = new StreamReader(part.GetStream()))
             {

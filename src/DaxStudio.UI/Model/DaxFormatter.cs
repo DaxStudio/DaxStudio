@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -330,7 +330,7 @@ namespace DaxStudio.UI.Model
             {
                 Log.Error("{class} {method} {error}", "DaxFormatter", "PrimeConnectionAsync",
                     $"Error getting redirect location: {ex1.Message}");
-                await eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                await eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                     $"An error occurred while checking the connection to daxformatter.com\n\t{ex1.Message}"));
             }
 

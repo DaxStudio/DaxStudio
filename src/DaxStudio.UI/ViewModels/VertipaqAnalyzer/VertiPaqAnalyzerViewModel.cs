@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Composition;
+using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
@@ -98,7 +98,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => SummaryViewModel);
                 IsBusy = false;
                 // Pass the VpaModel in the event so other views can enrich their data
-                _eventAggregator.PublishOnUIThreadAsync(new ViewMetricsCompleteEvent(_viewModel));
+                _eventAggregator.PublishAsync(new ViewMetricsCompleteEvent(_viewModel));
             }
         }
 
@@ -303,7 +303,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(LoadPackage), "Error saving vpax data to daxx file");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error saving vpax data to daxx file\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error saving vpax data to daxx file\n{ex.Message}"));
             }
         }
 
@@ -332,7 +332,7 @@ namespace DaxStudio.UI.ViewModels
             catch( Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(LoadPackage), "Error loading vpax data from daxx file");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error loading vpax data from daxx file\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error loading vpax data from daxx file\n{ex.Message}"));
             }
         }
 
@@ -404,7 +404,7 @@ namespace DaxStudio.UI.ViewModels
                 {
                     var msg = "There is no Metrics Data to export";
                     Log.Error(Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
-                    await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                    await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
                     return;
                 }
 
@@ -418,7 +418,7 @@ namespace DaxStudio.UI.ViewModels
             {
                 var msg = $"The following error occured while trying to export to a vpax file:\n{ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportAnalysisDataAsync), msg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, msg));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, msg));
             }
         }
 
@@ -496,7 +496,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VertiPaqAnalyzerViewModel), nameof(ExportMeasures), "Error exporting measures");
-                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"The following error occurred while exporting measures: {ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"The following error occurred while exporting measures: {ex.Message}"));
             }
         }
 
@@ -524,7 +524,7 @@ namespace DaxStudio.UI.ViewModels
             var rel = args as VpaRelationshipViewModel;
             if (rel == null) return;
             System.Diagnostics.Debug.WriteLine(rel.RiViolationQuery);
-            _eventAggregator.PublishOnUIThreadAsync(new SendTextToEditor(rel.RiViolationQuery));
+            _eventAggregator.PublishAsync(new SendTextToEditor(rel.RiViolationQuery));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.MetadataInfo;
@@ -205,10 +205,10 @@ namespace DaxStudio.Core.Connections
                         }
                         _connection.ChangeDatabase(currentDb);
 
-                        _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_connection.SessionId));
+                        _eventAggregator.PublishAsync(new ReconnectEvent(_connection.SessionId));
                         var msg =
                             $"A connection error occurred: {exception.Message}\nAttempting to reconnect (retry: {retryCount})";
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
                         Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                             "RetryPolicy", msg);
 
@@ -238,10 +238,10 @@ namespace DaxStudio.Core.Connections
                         }
                         _dmvConnection.ChangeDatabase(currentDb);
 
-                        _eventAggregator.PublishOnUIThreadAsync(new ReconnectEvent(_dmvConnection.SessionId));
+                        _eventAggregator.PublishAsync(new ReconnectEvent(_dmvConnection.SessionId));
                         var msg =
                             $"A connection error occurred: {exception.Message}\nAttempting to reconnect (retry: {retryCount})";
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
                         Log.Warning(exception, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                             "RetryPolicy", msg);
                     });
@@ -280,7 +280,7 @@ namespace DaxStudio.Core.Connections
                 catch (Exception ex)
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(DatabaseName), "Error getting database name");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, $"Error getting database name: {ex.Message}"));
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error getting database name: {ex.Message}"));
                     return string.Empty;
                 }
             }
@@ -319,7 +319,7 @@ namespace DaxStudio.Core.Connections
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxColumnsRemap();
                 }
@@ -360,7 +360,7 @@ namespace DaxStudio.Core.Connections
                 {
                     Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager),
                         nameof(DaxColumnsRemapInfo), "Error getting column remap information");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
+                    _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning,
                         $"Unable to get column re-map information, this will mean that some of the xmSQL simplification cannot be done\nThis may be caused by connection parameters like Roles and EffectiveUserName that alter the permissions:\n {ex.Message}"));
                     return new DaxTablesRemap();
                 }
@@ -582,7 +582,7 @@ namespace DaxStudio.Core.Connections
                     if (tables.Count == 0)
                     {
                         Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(GetTables), "No tables found in model");
-                        _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, "No tables found in model"));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "No tables found in model"));
                     }
                     return tables;
                 }
@@ -646,7 +646,7 @@ namespace DaxStudio.Core.Connections
             {
                 var errorMsg = $"Error populating tooltip sample data: {ex.Message}";
                 Log.Warning(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(UpdateColumnSampleDataAsync), errorMsg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, errorMsg));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, errorMsg));
             }
             finally
             {
@@ -721,7 +721,7 @@ namespace DaxStudio.Core.Connections
             }
             catch (Exception ex)
             {
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, $"Error populating tooltip basic statistics data: {ex.Message}"));
             }
             finally
             {
@@ -815,7 +815,7 @@ namespace DaxStudio.Core.Connections
                     }
                     else
                     {
-                        await _eventAggregator.PublishOnUIThreadAsync( 
+                        await _eventAggregator.PublishAsync( 
                             new OutputMessage(MessageType.Error, 
                                 $"DAX Studio can only connect to Multi-Dimensional servers running 2012 SP1 CU4 (11.0.3368.0) or later, this server reports a version number of {_connection.ServerVersion}")
                             );
@@ -974,7 +974,7 @@ namespace DaxStudio.Core.Connections
                             {
                                 // todo - prompt user to see whether to continue
                                 var msg = "The measure name: '" + modelMeasure.Name + "' is also used as a column name in one or more of the tables in this model";
-                                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, msg));
+                                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, msg));
                                 throw new InvalidOperationException(msg);
                             }
                         }
@@ -1190,7 +1190,7 @@ namespace DaxStudio.Core.Connections
         {
             IsConnecting = true;
             Log.Verbose(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(ConnectAsync), $"ConnectionString: {message.ConnectionString}/n  ServerType: {message.ServerType}");
-            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent(this));
+            await _eventAggregator.PublishAsync(new ConnectionOpenedEvent(this));
 
             if (message.ServerType == ServerType.Offline)
             {
@@ -1201,11 +1201,11 @@ namespace DaxStudio.Core.Connections
             else
             {
                 await OpenOnlineConnectionAsync(message, uniqueId);
-                await _eventAggregator.PublishOnUIThreadAsync(new ConnectionOpenedEvent(this));
+                await _eventAggregator.PublishAsync(new ConnectionOpenedEvent(this));
             }
 
-            await _eventAggregator.PublishOnBackgroundThreadAsync(new DmvsLoadedEvent(DynamicManagementViews));
-            await _eventAggregator.PublishOnBackgroundThreadAsync(new FunctionsLoadedEvent(FunctionGroups));
+            await _eventAggregator.PublishAsync(new DmvsLoadedEvent(DynamicManagementViews));
+            await _eventAggregator.PublishAsync(new FunctionsLoadedEvent(FunctionGroups));
 
         }
 
@@ -1226,7 +1226,7 @@ namespace DaxStudio.Core.Connections
             IsPowerPivot = message.PowerPivotModeSelected;
             //Databases.Add(_connection.Database);
             //Database = _connection.Database;
-            await _eventAggregator.PublishOnUIThreadAsync(new ConnectionChangedEvent(null, false));
+            await _eventAggregator.PublishAsync(new ConnectionChangedEvent(null, false));
         }
 
         public Dictionary<string, ADOTabularColumn> Columns => _dmvConnection?.Columns;
@@ -1317,7 +1317,7 @@ namespace DaxStudio.Core.Connections
                             $"Connections did not stabilise within {DatabaseChangedStableTimeoutMs}ms; publishing DatabaseChangedEvent anyway");
                     }
 
-                    await _eventAggregator.PublishOnUIThreadAsync(new DatabaseChangedEvent()).ConfigureAwait(false);
+                    await _eventAggregator.PublishAsync(new DatabaseChangedEvent()).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1348,7 +1348,7 @@ namespace DaxStudio.Core.Connections
                     {
                         GetTables();
                         IsConnecting = false;
-                        _eventAggregator.PublishOnUIThreadAsync(new TablesRefreshedEvent());
+                        _eventAggregator.PublishAsync(new TablesRefreshedEvent());
                     });
                 });
             }
@@ -1356,7 +1356,7 @@ namespace DaxStudio.Core.Connections
             {
                 var errMsg = $"Error refreshing table list: {ex.Message}";
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), errMsg);
-                await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, errMsg));                
+                await _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, errMsg));                
             }
             Log.Debug(Common.Constants.LogMessageTemplate, nameof(ConnectionManager), nameof(RefreshTablesAsync), "End");
         }
