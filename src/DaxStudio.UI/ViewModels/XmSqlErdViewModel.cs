@@ -4,6 +4,7 @@ using DaxStudio.Common;
 using DaxStudio.Common.Enums;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
+using DaxStudio.Parsers;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
@@ -2776,7 +2777,7 @@ namespace DaxStudio.UI.ViewModels
                             try
                             {
                                 // Run the full DirectQuery parser
-                                var dqParser = new Utils.DirectQuerySqlParser(evt.TextData);
+                                var dqParser = new DaxStudio.Parsers.DirectQuerySqlParser(evt.TextData);
                                 dqParser.Parse();
                                 sb.AppendLine(dqParser.GetDiagnostics());
                                 

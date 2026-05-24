@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>..\..\Release\bin\</OutputPath>
+  </PropertyGroup>
+
+  <!-- Linked files from parent directory -->
+  <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs" Link="Properties\CommonAssemblyInfo.cs" />
+    <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
+  </ItemGroup>
+
+  <!-- ANTLR4 grammar files -->
+  <ItemGroup>
+    <None Remove="Grammars\*.g4" />
+    <Antlr4 Include="Grammars\xmSQL.g4">
+      <Visitor>true</Visitor>
+      <Listener>false</Listener>
+      <Package>DaxStudio.Parsers.Grammars.Generated</Package>
+    </Antlr4>
+    <Antlr4 Include="Grammars\DirectQuerySql.g4">
+      <Visitor>true</Visitor>
+      <Listener>false</Listener>
+      <Package>DaxStudio.Parsers.Grammars.Generated</Package>
+    </Antlr4>
+  </ItemGroup>
+
+  <!-- NuGet package references -->
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+    <PackageReference Include="Antlr4BuildTasks" Version="12.14.0" PrivateAssets="all" IncludeAssets="build" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+  </ItemGroup>
+
+</Project>

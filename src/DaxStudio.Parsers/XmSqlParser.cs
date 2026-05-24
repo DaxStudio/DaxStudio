@@ -1,11 +1,10 @@
-using DaxStudio.UI.Model;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Parses xmSQL queries from Server Timing events to extract table, column, and relationship information.

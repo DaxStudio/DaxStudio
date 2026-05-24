@@ -38,6 +38,7 @@
     <ProjectReference Include="..\..\src\DAXEditor\DaxStudio.DAXEditor.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.Common\DaxStudio.Common.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj" />
     <ProjectReference Include="..\..\src\DaxStudio.Standalone\DaxStudio.Standalone.csproj" />

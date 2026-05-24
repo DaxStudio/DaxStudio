@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Serilog;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Represents a block (parenthesized subquery) in a SQL statement.

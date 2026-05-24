@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using DaxStudio.UI.Model;
 using Serilog;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Multi-pass parser for DirectQuery SQL statements.

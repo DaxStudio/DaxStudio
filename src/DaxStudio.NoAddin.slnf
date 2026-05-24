@@ -12,6 +12,7 @@
       "DaxStudio.Controls.PropertyGrid\\DaxStudio.Controls.PropertyGrid.csproj",
       "DaxStudio.FileIcons\\DaxStudio.FileIcons.csproj",
       "DaxStudio.Interfaces\\DaxStudio.Interfaces.csproj",
+      "DaxStudio.Parsers\\DaxStudio.Parsers.csproj",
       "DaxStudio.QueryTrace\\DaxStudio.QueryTrace.csproj",
       "DaxStudio.QueryTrace.Excel\\DaxStudio.QueryTrace.Excel.csproj",
       "DaxStudio.SqlFormatter\\DaxStudio.SqlFormatter.csproj",

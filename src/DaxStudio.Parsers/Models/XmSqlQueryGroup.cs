@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Represents a group of structurally similar xmSQL queries.

@@ -1,4 +1,4 @@
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Represents the structural fingerprint of a single xmSQL query.

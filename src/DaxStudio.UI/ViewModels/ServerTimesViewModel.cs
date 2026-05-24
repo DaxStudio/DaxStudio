@@ -21,6 +21,7 @@ using System.IO.Packaging;
 using System;
 using System.Globalization;
 using DaxStudio.Common;
+using DaxStudio.Parsers;
 using DaxStudio.UI.Utils;
 using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;

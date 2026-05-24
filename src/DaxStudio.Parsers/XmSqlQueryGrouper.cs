@@ -1,6 +1,5 @@
 using Antlr4.Runtime;
-using DaxStudio.UI.Grammars.Generated;
-using DaxStudio.UI.Model;
+using DaxStudio.Parsers.Grammars.Generated;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -8,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Groups xmSQL queries by structural similarity using ANTLR-based fingerprinting.

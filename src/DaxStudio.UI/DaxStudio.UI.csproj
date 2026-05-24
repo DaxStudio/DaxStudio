@@ -135,25 +135,8 @@
     <Resource Include="Resources\daxstudio-logo_250x250_lighter.png" />
   </ItemGroup>
 
-  <!-- ANTLR4 grammar files -->
-  <ItemGroup>
-    <None Remove="Grammars\*.g4" />
-    <Antlr4 Include="Grammars\xmSQL.g4">
-      <Visitor>true</Visitor>
-      <Listener>false</Listener>
-      <Package>DaxStudio.UI.Grammars.Generated</Package>
-    </Antlr4>
-    <Antlr4 Include="Grammars\DirectQuerySql.g4">
-      <Visitor>true</Visitor>
-      <Listener>false</Listener>
-      <Package>DaxStudio.UI.Grammars.Generated</Package>
-    </Antlr4>
-  </ItemGroup>
-
   <!-- NuGet package references -->
   <ItemGroup>
-    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
-    <PackageReference Include="Antlr4BuildTasks" Version="12.14.0" PrivateAssets="all" IncludeAssets="build" />
     <PackageReference Include="AsyncAwaitBestPractices" Version="10.0.0" />
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
@@ -196,13 +179,11 @@
     <ProjectReference Include="..\DaxStudio.Controls.DataGridFilter\DaxStudio.Controls.DataGridFilter.csproj" />
     <ProjectReference Include="..\DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj" />
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
+    <ProjectReference Include="..\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />
     <ProjectReference Include="..\DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj" />
     <ProjectReference Include="..\UnitComboLib\DaxStudio.UnitComboLib.csproj" />
   </ItemGroup>
-
-  <!-- Ensure ANTLR-generated files are available before WPF XAML compilation -->
-  <Target Name="EnsureAntlrBeforeWpf" BeforeTargets="MarkupCompilePass1" DependsOnTargets="Antlr4Compile;Antlr4CompileAddFilesGenerated" Condition="'@(Antlr4)' != ''" />
 
   <!-- Custom target for assembly aliases -->
   <Target Name="ApplyAlias" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">

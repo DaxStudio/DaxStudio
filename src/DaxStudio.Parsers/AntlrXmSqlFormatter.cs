@@ -1,12 +1,12 @@
 using Antlr4.Runtime;
-using DaxStudio.UI.Grammars.Generated;
+using DaxStudio.Parsers.Grammars.Generated;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// ANTLR-based xmSQL formatter that replaces the regex chain in TraceStorageEngineExtensions.

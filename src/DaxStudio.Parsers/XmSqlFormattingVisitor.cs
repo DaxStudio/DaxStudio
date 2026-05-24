@@ -1,18 +1,18 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using DaxStudio.UI.Grammars.Generated;
+using DaxStudio.Parsers.Grammars.Generated;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// ANTLR visitor that walks an xmSQL parse tree and emits formatted, simplified text.
     /// Replaces the regex chain in TraceStorageEngineExtensions for formatting and simplification.
     /// </summary>
-    internal class XmSqlFormattingVisitor : xmSQLBaseVisitor<object>
+    public class XmSqlFormattingVisitor : xmSQLBaseVisitor<object>
     {
         private readonly StringBuilder _sb = new StringBuilder();
         private readonly bool _simplify;
@@ -952,7 +952,7 @@ namespace DaxStudio.UI.Utils
         /// appends an ISO 8601 date comment (e.g., "46087.000000 /* 2026-03-06 */").
         /// Returns the original text unchanged if the value is not a plausible OA date.
         /// </summary>
-        internal static string TryConvertOADateToIso(string text)
+        public static string TryConvertOADateToIso(string text)
         {
             if (double.TryParse(text, System.Globalization.NumberStyles.Float,
                 System.Globalization.CultureInfo.InvariantCulture, out double oaDate))

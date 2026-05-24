@@ -1,14 +1,13 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;
-using DaxStudio.UI.Grammars.Generated;
-using DaxStudio.UI.Model;
+using DaxStudio.Parsers.Grammars.Generated;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DqParser = DaxStudio.UI.Grammars.Generated.DirectQuerySqlParser;
+using DqParser = DaxStudio.Parsers.Grammars.Generated.DirectQuerySqlParser;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// ANTLR4-based implementation of the xmSQL and DirectQuery SQL parser.

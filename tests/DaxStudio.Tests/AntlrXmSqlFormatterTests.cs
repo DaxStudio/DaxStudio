@@ -1,6 +1,6 @@
 using Antlr4.Runtime;
-using DaxStudio.UI.Grammars.Generated;
-using DaxStudio.UI.Utils;
+using DaxStudio.Parsers.Grammars.Generated;
+using DaxStudio.Parsers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DaxStudio.Tests

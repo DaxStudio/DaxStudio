@@ -1,8 +1,7 @@
-using DaxStudio.UI.Model;
 using System.Collections.Generic;
-using static DaxStudio.UI.Utils.XmSqlParser;
+using static DaxStudio.Parsers.XmSqlParser;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Interface for xmSQL and DirectQuery SQL parsing.

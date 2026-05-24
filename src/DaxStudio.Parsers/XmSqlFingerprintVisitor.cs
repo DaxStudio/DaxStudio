@@ -1,13 +1,12 @@
 using Antlr4.Runtime.Tree;
-using DaxStudio.UI.Grammars.Generated;
-using DaxStudio.UI.Model;
+using DaxStudio.Parsers.Grammars.Generated;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Lightweight ANTLR visitor that extracts structural elements from an xmSQL parse tree

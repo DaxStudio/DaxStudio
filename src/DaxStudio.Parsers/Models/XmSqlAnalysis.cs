@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// Represents the complete analysis of xmSQL queries from Server Timing events.

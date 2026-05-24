@@ -1,14 +1,13 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using DaxStudio.UI.Grammars.Generated;
-using DaxStudio.UI.Model;
+using DaxStudio.Parsers.Grammars.Generated;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DqParser = DaxStudio.UI.Grammars.Generated.DirectQuerySqlParser;
+using DqParser = DaxStudio.Parsers.Grammars.Generated.DirectQuerySqlParser;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Parsers
 {
     /// <summary>
     /// ANTLR visitor that walks the DirectQuery SQL parse tree and populates an XmSqlAnalysis.
