@@ -7,6 +7,7 @@ using DaxStudio.Interfaces.Enums;
 using DaxStudio.Parsers;
 using DaxStudio.QueryTrace;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Trace;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;

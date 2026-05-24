@@ -1,16 +1,14 @@
-﻿using DaxStudio.UI.Interfaces;
 using PoorMansTSqlFormatterLib.Interfaces;
 using PoorMansTSqlFormatterLib.ParseStructure;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Trace
 {
     
 
-    internal static class SqlFormatter 
+    internal static class SqlFormatter
     {
         #region ISqlFormatProvider
         

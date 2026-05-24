@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Model {
+namespace DaxStudio.Core.Trace {
     
     public class DaxStudioTraceEventClassSubclass {
         public enum Language

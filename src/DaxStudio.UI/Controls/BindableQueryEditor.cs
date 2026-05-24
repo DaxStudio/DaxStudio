@@ -3,6 +3,7 @@ using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;
 using ICSharpCode.AvalonEdit;
 using System.Windows;
+using DaxStudio.Core.Trace;
 
 namespace DaxStudio.UI.Controls
 {

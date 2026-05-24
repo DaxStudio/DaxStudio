@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows.Data;
 using Microsoft.AnalysisServices;
 using DaxStudio.QueryTrace;
 using DaxStudio.UI.Model;
 using DaxStudio.Common.Enums;
+using DaxStudio.Core.Trace;
 
 namespace DaxStudio.UI.Converters {
     class EventClassSubclassConverter : IValueConverter {

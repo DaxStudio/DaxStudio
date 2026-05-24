@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Trace;
 using DaxStudio.UI.ViewModels;
 using System;
 

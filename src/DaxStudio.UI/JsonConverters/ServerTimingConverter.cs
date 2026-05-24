@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.ViewModels;
+﻿using DaxStudio.Core.Trace;
+using DaxStudio.UI.ViewModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

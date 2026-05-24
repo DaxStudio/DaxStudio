@@ -9,6 +9,7 @@
              xmlns:primitives="http://schemas.modernwpf.com/2019"   
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"    
              xmlns:vm="clr-namespace:DaxStudio.UI.ViewModels"
+             xmlns:trace="clr-namespace:DaxStudio.Core.Trace;assembly=DaxStudio.Core"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:ctrl="clr-namespace:DaxStudio.UI.Controls"
              xmlns:cal="http://caliburnmicro.com" xmlns:Fluent="urn:fluent-ribbon"
@@ -43,7 +44,7 @@
             <controls:BindingProxy x:Key="ShowObjectName" Data="{Binding ShowObjectName, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue={x:Static Visibility.Collapsed}}"/>
             <controls:BindingProxy x:Key="ShowQueryGroupColumn" Data="{Binding ShowQueryGroupColumn, Converter={StaticResource BoolToCollapsedConverter}, FallbackValue={x:Static Visibility.Collapsed}}"/>
 
-            <DataTemplate x:Key="QueryGroupTooltipTemplate" DataType="{x:Type vm:QueryGroupSummary}">
+            <DataTemplate x:Key="QueryGroupTooltipTemplate" DataType="{x:Type trace:QueryGroupSummary}">
                 <Grid Margin="8 4 8 8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -210,7 +211,7 @@
 
             <!-- Data Templates -->
         
-            <DataTemplate  DataType="{x:Type vm:TraceStorageEngineEvent}">
+            <DataTemplate  DataType="{x:Type trace:TraceStorageEngineEvent}">
                 <DockPanel LastChildFill="True">
                     <ctrl:BindableQueryEditor Padding="5,5,5,5"
                                              MinWidth="200"
@@ -240,7 +241,7 @@
                 </DockPanel>
             </DataTemplate>
 
-            <DataTemplate  DataType="{x:Type vm:ExecutionMetricsTraceEngineEvent}">
+            <DataTemplate  DataType="{x:Type trace:ExecutionMetricsTraceEngineEvent}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <StackPanel Orientation="Vertical">
                     <DataGrid ItemsSource="{Binding Properties}" AutoGenerateColumns="False" >
@@ -253,7 +254,7 @@
                 </ScrollViewer>
             </DataTemplate>
 
-            <DataTemplate  DataType="{x:Type vm:RewriteTraceEngineEvent}">
+            <DataTemplate  DataType="{x:Type trace:RewriteTraceEngineEvent}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <StackPanel Margin="5">
                     <TextBlock Margin="0 0 0 5" FontWeight="DemiBold" Padding="3" 

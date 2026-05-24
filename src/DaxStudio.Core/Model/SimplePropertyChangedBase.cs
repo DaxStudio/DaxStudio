@@ -2,7 +2,7 @@
 using System.ComponentModel;
 
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Model
 {
     public class SimplePropertyChangedBase : INotifyPropertyChanged
     {
