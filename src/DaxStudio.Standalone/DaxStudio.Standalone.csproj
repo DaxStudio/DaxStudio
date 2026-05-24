@@ -6,6 +6,12 @@
     <ApplicationIcon>DaxStudio.ico</ApplicationIcon>
     <UseWPF>true</UseWPF>
     <Version>$(AssemblyVersion)</Version>
+    <!-- Ensure MSBuild emits binding redirects into DaxStudio.exe.config for the
+         net472 target so transitive assembly version mismatches (e.g.
+         System.Diagnostics.DiagnosticSource brought in by Serilog) resolve to
+         the version actually deployed to the output folder. -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\$(Configuration)\</OutputPath>
