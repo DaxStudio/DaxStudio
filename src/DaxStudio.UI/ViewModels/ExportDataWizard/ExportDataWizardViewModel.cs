@@ -2,6 +2,8 @@
 using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
+using DaxStudio.Core.Exports;
+using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Converters;
 using DaxStudio.UI.Enums;
@@ -15,6 +17,7 @@ using Parquet;
 using Parquet.Schema;
 using Serilog;
 using System;
+using ParquetExporter = DaxStudio.Core.Exports.ParquetExporter;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;

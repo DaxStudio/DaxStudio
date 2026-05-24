@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Exports;
 using DaxStudio.UI.Enums;
 using System;
 using System.Collections.Generic;

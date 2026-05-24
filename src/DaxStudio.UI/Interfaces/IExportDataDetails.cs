@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Enums;
+using DaxStudio.Core.Exports;
+using DaxStudio.UI.Enums;
 using DaxStudio.UI.ViewModels;
 using System.Collections.ObjectModel;
 using System.Security;

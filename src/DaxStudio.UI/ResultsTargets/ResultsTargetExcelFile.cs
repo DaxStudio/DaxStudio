@@ -1,5 +1,6 @@
 ﻿using ADOTabular;
 using Caliburn.Micro;
+using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Security;
+using DaxStudio.Core.Exports;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Extensions;
 

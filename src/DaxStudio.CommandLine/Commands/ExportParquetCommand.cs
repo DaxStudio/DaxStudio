@@ -85,7 +85,7 @@ namespace DaxStudio.CommandLine.Commands
                         var metadataPane = new CmdLineMetadataPane();
                         var doc = new CmdLineDocument(connMgr, metadataPane);
                         var vm = new ExportDataWizardViewModel(EventAggregator, doc, null);
-                        vm.ExportType = UI.Enums.ExportDataType.ParquetFolder;
+                        vm.ExportType = DaxStudio.Core.Exports.ExportDataType.ParquetFolder;
 
 
                         var tables = settings.Tables;
@@ -140,7 +140,7 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     ProgressTasks[i].MaxValue = SelectedTables[i].TotalRows;
                     ProgressTasks[i].Value = SelectedTables[i].RowCount;
-                    if (SelectedTables[i].Status == UI.Enums.ExportStatus.Exporting)
+                    if (SelectedTables[i].Status == DaxStudio.Core.Exports.ExportStatus.Exporting)
                     {
                         ProgressTasks[i].IsIndeterminate(false);
                         ProgressTasks[i].StartTask();

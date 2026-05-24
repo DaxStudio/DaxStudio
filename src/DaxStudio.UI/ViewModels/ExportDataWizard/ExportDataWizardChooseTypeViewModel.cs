@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using DaxStudio.Core.Exports;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -10,9 +11,9 @@ namespace DaxStudio.UI.ViewModels
         public ExportDataWizardChooseTypeViewModel(ExportDataWizardViewModel wizard):base(wizard)
         {
             ExportTypes = new List<ExportTypes>();
-            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "CSV Files", ExportType = Enums.ExportDataType.CsvFolder, ImageResource = "csvDrawingImage" });
-            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "Parquet Files", ExportType = Enums.ExportDataType.ParquetFolder, ImageResource = "parquetDrawingImage" });
-            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "SQL Tables", ExportType = Enums.ExportDataType.SqlTables, ImageResource = "results_tableDrawingImage" });
+            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "CSV Files", ExportType = ExportDataType.CsvFolder, ImageResource = "csvDrawingImage" });
+            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "Parquet Files", ExportType = ExportDataType.ParquetFolder, ImageResource = "parquetDrawingImage" });
+            ExportTypes.Add(new ViewModels.ExportTypes() { Name = "SQL Tables", ExportType = ExportDataType.SqlTables, ImageResource = "results_tableDrawingImage" });
         }
 
         public List<ExportTypes> ExportTypes { get; }
@@ -35,13 +36,13 @@ namespace DaxStudio.UI.ViewModels
             Wizard.ExportType = SelectedItem.ExportType;
             switch (Wizard.ExportType)
             {
-                case Enums.ExportDataType.CsvFolder:
+                case ExportDataType.CsvFolder:
                     NextPage = ExportDataWizardPage.ChooseCsvFolder;
                     break;
-                case Enums.ExportDataType.ParquetFolder:
+                case ExportDataType.ParquetFolder:
                     NextPage = ExportDataWizardPage.ChooseParquetFolder;
                     break;
-                case Enums.ExportDataType.SqlTables:
+                case ExportDataType.SqlTables:
                     NextPage = ExportDataWizardPage.BuildSqlConnection;
                     break;
                 default:
@@ -52,13 +53,13 @@ namespace DaxStudio.UI.ViewModels
         }
 
         public async void ExportToCsv() {
-            Wizard.ExportType = Enums.ExportDataType.CsvFolder;
+            Wizard.ExportType = ExportDataType.CsvFolder;
             NextPage = ExportDataWizardPage.ChooseCsvFolder;
             await TryCloseAsync();
         }
         public async void ExportToSql()
         {
-            Wizard.ExportType = Enums.ExportDataType.SqlTables;
+            Wizard.ExportType = ExportDataType.SqlTables;
             NextPage = ExportDataWizardPage.BuildSqlConnection;
             await TryCloseAsync ();
         }
@@ -68,7 +69,7 @@ namespace DaxStudio.UI.ViewModels
     {
         public string Name { get; set; }
         public string ImageResource { get; set; }
-        public Enums.ExportDataType ExportType { get; set; }
+        public ExportDataType ExportType { get; set; }
 
     }
 }

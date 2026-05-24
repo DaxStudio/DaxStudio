@@ -1,4 +1,4 @@
-﻿namespace DaxStudio.UI.Enums
+namespace DaxStudio.Core.Exports
 {
     public enum ExportStatus
     {

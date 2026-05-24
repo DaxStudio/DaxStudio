@@ -97,7 +97,7 @@ namespace DaxStudio.CommandLine.Commands
                         var metadataPane = new CmdLineMetadataPane();
                         var doc = new CmdLineDocument(connMgr, metadataPane);
                         var vm = new ExportDataWizardViewModel(EventAggregator, doc, null);
-                        vm.ExportType = UI.Enums.ExportDataType.SqlTables;
+                        vm.ExportType = DaxStudio.Core.Exports.ExportDataType.SqlTables;
                         vm.TrustServerCertificate = settings.TrustServerCertificate;
 
 
@@ -155,7 +155,7 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     ProgressTasks[i].MaxValue = SelectedTables[i].TotalRows;
                     ProgressTasks[i].Value = SelectedTables[i].RowCount;
-                    if (SelectedTables[i].Status == UI.Enums.ExportStatus.Exporting)
+                    if (SelectedTables[i].Status == DaxStudio.Core.Exports.ExportStatus.Exporting)
                     {
                         ProgressTasks[i].IsIndeterminate(false);
                         ProgressTasks[i].StartTask();
