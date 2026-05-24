@@ -13,6 +13,7 @@ namespace DaxStudio.UI.Model
     using System.ComponentModel.Composition;
     using System.IO;
     using System.Net;
+    using System.Net.Http;
 
     [Export(typeof(IVersionCheck)), PartCreationPolicy(CreationPolicy.Shared)]
     public class VersionCheck : PropertyChangedBase, IVersionCheck
@@ -24,7 +25,7 @@ namespace DaxStudio.UI.Model
         
         private readonly BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;
-        private WebRequestFactory _webRequestFactory;
+        private HttpClientHelper _webRequestFactory;
         private Uri _downloadUrl = new Uri( Constants.DownloadUrl);
         private readonly IGlobalOptions _globalOptions;
 
@@ -82,8 +83,8 @@ namespace DaxStudio.UI.Model
                 {
                     if (_webRequestFactory == null)
                     {
-                        Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Creating WebRequestFactory");
-                        _webRequestFactory = WebRequestFactory.CreateAsync(_globalOptions, _eventAggregator).Result;
+                        Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Creating HttpClientHelper");
+                        _webRequestFactory = HttpClientHelper.CreateAsync(_globalOptions, _eventAggregator).Result;
                     }
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Starting Population of version information from Github");
                     PopulateServerVersionFromGithub(_webRequestFactory);
@@ -169,59 +170,81 @@ namespace DaxStudio.UI.Model
 
 
         // This code runs async in a background worker
-        private void PopulateServerVersionFromGithub(WebRequestFactory wrf)
+        private void PopulateServerVersionFromGithub(HttpClientHelper wrf)
         {
             Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Start");
 
-            using (System.Net.WebClient http = wrf.CreateWebClient())
+            // Use the shared HttpClient; do NOT dispose it (owned by HttpClientHelper).
+            HttpClient http = wrf.CreateHttpClient();
+
+            string json;
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Starting download of CurrentVersion.json");
+            var versionUri = new Uri(HttpClientHelper.CurrentGithubVersionUrl);
+            var result = DownloadVersionJson(http, versionUri);
+
+            if (result.StatusCode == HttpStatusCode.ProxyAuthenticationRequired && HttpClientHelper.Proxy != null)
             {
-                
-                string json = "";
+                // Retry once with default credentials on the existing proxy
+                Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Re-trying download of CurrentVersion.json with proxy auth");
+                HttpClientHelper.Proxy.Credentials = CredentialCache.DefaultCredentials;
+                // Reset the shared client so it picks up the new proxy credentials on its next handler build.
+                HttpClientHelper.ResetProxy();
+                HttpClient retryHttp = wrf.CreateHttpClient();
+                result = DownloadVersionJson(retryHttp, versionUri);
+            }
 
-                try
-                {
-                    //#if DEBUG
-                    //                    json = File.ReadAllText(@"..\..\..\src\CurrentReleaseVersion.json");
-                    //#else
-                    Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Starting download of CurrentVersion.json");
-                    json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
-//#endif           
-                }
-                catch (System.Net.WebException wex)
-                {
-                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError &&  ((HttpWebResponse)wex.Response).StatusCode == HttpStatusCode.ProxyAuthenticationRequired )
-                    {
-                        Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Re-trying download of CurrentVersion.json with proxy auth");
-                        // assume proxy auth error and re-try with current user credentials
-                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-                        json = http.DownloadString(new Uri(WebRequestFactory.CurrentGithubVersionUrl));
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+            if (!result.IsSuccess)
+            {
+                throw new HttpRequestException($"Failed to download CurrentVersion.json. Status: {(int)result.StatusCode} {result.StatusCode}");
+            }
 
-                JObject jobj = JObject.Parse(json);
-                try
-                {
-                    _productionVersion = Version.Parse((string)jobj["Version"]);
-                    _productionDownloadUrl = new Uri((string)jobj["DownloadUrl"]);
+            json = result.Body;
 
-                    ServerVersionType = "Production";
-                    _globalOptions.CurrentDownloadVersion = _productionVersion;
-                    DownloadUrl = _productionDownloadUrl;
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), $"Error parsing CurrentVersion.json: {ex.Message}");
-                    _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
-                }
-                finally
-                {
-                    UpdateCompleteCallback?.Invoke(this, null);
-                }
-                Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Finish");
+            JObject jobj = JObject.Parse(json);
+            try
+            {
+                _productionVersion = Version.Parse((string)jobj["Version"]);
+                _productionDownloadUrl = new Uri((string)jobj["DownloadUrl"]);
+
+                ServerVersionType = "Production";
+                _globalOptions.CurrentDownloadVersion = _productionVersion;
+                DownloadUrl = _productionDownloadUrl;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), $"Error parsing CurrentVersion.json: {ex.Message}");
+                _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning, $"The following error occurred while checking if there is an updated release available: {ex.Message}"));
+            }
+            finally
+            {
+                UpdateCompleteCallback?.Invoke(this, null);
+            }
+            Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Finish");
+        }
+
+        private readonly struct VersionJsonResult
+        {
+            public VersionJsonResult(HttpStatusCode statusCode, string body)
+            {
+                StatusCode = statusCode;
+                Body = body;
+            }
+            public HttpStatusCode StatusCode { get; }
+            public string Body { get; }
+            public bool IsSuccess => (int)StatusCode >= 200 && (int)StatusCode < 300;
+        }
+
+        private static VersionJsonResult DownloadVersionJson(HttpClient http, Uri uri)
+        {
+            // SendAsync lets us inspect the status code directly (e.g. 407 ProxyAuthenticationRequired)
+            // instead of parsing it out of an HttpRequestException message.
+            using (var request = new HttpRequestMessage(HttpMethod.Get, uri))
+            using (var response = http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
+            {
+                var body = response.Content != null
+                    ? response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+                    : string.Empty;
+                return new VersionJsonResult(response.StatusCode, body);
             }
         }
 

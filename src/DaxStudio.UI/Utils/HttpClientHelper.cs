@@ -5,6 +5,7 @@ using DaxStudio.UI.Extensions;
 using Serilog;
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -13,12 +14,14 @@ using System.Threading;
 namespace DaxStudio.UI.Utils
 {
 
-    public class WebRequestFactory: IHandle<UpdateGlobalOptions>
+    public class HttpClientHelper: IHandle<UpdateGlobalOptions>
     {
-        static WebRequestFactory()
+        static HttpClientHelper()
         {
-            // Force the use of TLS1.2
+#if NET472
+            // Force the use of TLS1.2 (modern .NET defaults to TLS1.2+ already)
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+#endif
             NetworkChange.NetworkAvailabilityChanged
                         += NetworkChange_NetworkAvailabilityChanged;
         }
@@ -30,6 +33,14 @@ namespace DaxStudio.UI.Utils
         private static IWebProxy _proxy;
         private static bool _proxySet;
         private static readonly object ProxyLock = new object();
+
+        // Shared HttpClient instances. Per Microsoft guidance, HttpClient should be reused
+        // for the lifetime of the application to avoid socket exhaustion. We keep one client
+        // per redirect mode and rebuild them when the proxy is reset (see ResetSharedHttpClients).
+        // Callers MUST NOT dispose these instances.
+        private static readonly object HttpClientLock = new object();
+        private static HttpClient _sharedHttpClient;          // AllowAutoRedirect = true
+        private static HttpClient _sharedNoRedirectHttpClient; // AllowAutoRedirect = false
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
         public const string DaxTextFormatUri = "https://www.daxformatter.com/api/daxformatter/DaxTextFormat";
@@ -45,17 +56,17 @@ namespace DaxStudio.UI.Utils
         private static bool _isNetworkOnline;
         private static IEventAggregator _eventAggregator;
 
-        public static async Task<WebRequestFactory> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        public static async Task<HttpClientHelper> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
-            var wrf = new WebRequestFactory();
-            await wrf.InitializeAsync(globalOptions, eventAggregator).ConfigureAwait(false);
-            return wrf;
+            var helper = new HttpClientHelper();
+            await helper.InitializeAsync(globalOptions, eventAggregator).ConfigureAwait(false);
+            return helper;
         }
 
-        private WebRequestFactory() { }
+        private HttpClientHelper() { }
 
         //[ImportingConstructor]
-        private async Task<WebRequestFactory> InitializeAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        private async Task<HttpClientHelper> InitializeAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             _globalOptions = globalOptions;
             _eventAggregator = eventAggregator;
@@ -63,7 +74,7 @@ namespace DaxStudio.UI.Utils
 
                 await Task.Run(() =>
                 {
-                   Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "start");
+                   Log.Verbose("{class} {method} {message}", nameof(HttpClientHelper), nameof(InitializeAsync), "start");
 
 
                    try
@@ -72,7 +83,7 @@ namespace DaxStudio.UI.Utils
                    }
                    catch
                    {
-                       Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to InternetGetConnectedState failed");
+                       Log.Error("{class} {method} {message}", nameof(HttpClientHelper), nameof(InitializeAsync), "call to InternetGetConnectedState failed");
                        _isNetworkOnline = NetworkInterface.GetIsNetworkAvailable();
                    }
 
@@ -82,19 +93,19 @@ namespace DaxStudio.UI.Utils
                        if (Proxy == null  )
                            Proxy = GetProxy(DaxTextFormatUri);
                    }
-                   catch (WebException)
+                   catch (Exception)
                    {
-                       Log.Error("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "call to GetProxy failed");
+                       Log.Error("{class} {method} {message}", nameof(HttpClientHelper), nameof(InitializeAsync), "call to GetProxy failed");
                        _isNetworkOnline = false;
                    }
 
-                   Log.Verbose("{class} {method} {message}", "WebRequestFactory", "InitializeAsync", "end");
+                   Log.Verbose("{class} {method} {message}", nameof(HttpClientHelper), nameof(InitializeAsync), "end");
 
                }).ConfigureAwait(false);
                 return this;
             } catch (Exception ex)
             {
-                Log.Error(ex, "{message} {class} {message}", "WebRequestFactory", "InitializeAsync", ex.Message);
+                Log.Error(ex, "{message} {class} {message}", nameof(HttpClientHelper), nameof(InitializeAsync), ex.Message);
                 await _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "An error occurred trying to auto detect your web proxy"));
                 return this;
             }
@@ -107,34 +118,75 @@ namespace DaxStudio.UI.Utils
             try
             {
                 _isNetworkOnline = e.IsAvailable;
-                Log.Information("{class} {method} {message}", nameof(WebRequestFactory), nameof(NetworkChange_NetworkAvailabilityChanged), $"Network Availability Changed event fired IsAvailable={e.IsAvailable}");
+                Log.Information("{class} {method} {message}", nameof(HttpClientHelper), nameof(NetworkChange_NetworkAvailabilityChanged), $"Network Availability Changed event fired IsAvailable={e.IsAvailable}");
                 // refresh proxy
                 Proxy = GetProxy(DaxTextFormatUri);
             }
             catch(Exception ex)
             {
-                Log.Error(ex, "{class} {method} {message}","WebRequestFactory","NetworkChange_NetworkAvailabilityChanged", ex.Message);
+                Log.Error(ex, "{class} {method} {message}", nameof(HttpClientHelper), nameof(NetworkChange_NetworkAvailabilityChanged), ex.Message);
             }
         }
 
-        public HttpWebRequest Create(string uri)
+        /// <summary>
+        /// Returns a shared <see cref="HttpClient"/> configured with the current proxy settings
+        /// and the requested redirect behavior. Callers MUST NOT dispose the returned instance;
+        /// it is owned by <see cref="HttpClientHelper"/> and reused for the lifetime of the app
+        /// (or until the proxy is reset via <see cref="ResetProxy"/>).
+        /// <para>
+        /// The shared client has <see cref="HttpClient.Timeout"/> set to <see cref="Timeout.InfiniteTimeSpan"/>;
+        /// callers needing a per-request timeout must use <see cref="CancellationTokenSource"/>.
+        /// </para>
+        /// </summary>
+        public HttpClient CreateHttpClient(bool allowAutoRedirect = true)
         {
-            return Create(new Uri(uri));
-        }
-
-        public HttpWebRequest Create(Uri uri) {
-            var wr = (HttpWebRequest)WebRequest.Create(uri);
-            wr.Proxy = Proxy;
-            return wr;
-        }
-
-        public WebClient CreateWebClient()
-        {
-            var wc = new WebClient
+            lock (HttpClientLock)
             {
-                Proxy = Proxy
+                if (allowAutoRedirect)
+                {
+                    if (_sharedHttpClient == null)
+                    {
+                        _sharedHttpClient = BuildHttpClient(allowAutoRedirect: true);
+                    }
+                    return _sharedHttpClient;
+                }
+                else
+                {
+                    if (_sharedNoRedirectHttpClient == null)
+                    {
+                        _sharedNoRedirectHttpClient = BuildHttpClient(allowAutoRedirect: false);
+                    }
+                    return _sharedNoRedirectHttpClient;
+                }
+            }
+        }
+
+        private static HttpClient BuildHttpClient(bool allowAutoRedirect)
+        {
+            var handler = new HttpClientHandler
+            {
+                Proxy = Proxy,
+                UseProxy = Proxy != null,
+                AllowAutoRedirect = allowAutoRedirect,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
-            return wc;
+            return new HttpClient(handler)
+            {
+                // Per-request timeouts should be enforced via CancellationToken so a single
+                // shared client can serve callers with different timeout requirements.
+                Timeout = Timeout.InfiniteTimeSpan
+            };
+        }
+
+        private static void ResetSharedHttpClients()
+        {
+            lock (HttpClientLock)
+            {
+                _sharedHttpClient?.Dispose();
+                _sharedHttpClient = null;
+                _sharedNoRedirectHttpClient?.Dispose();
+                _sharedNoRedirectHttpClient = null;
+            }
         }
 
         #region private methods
@@ -161,7 +213,7 @@ namespace DaxStudio.UI.Utils
                 catch (Exception ex)
                 {
                     _eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Error, "Error connecting to HTTP Proxy specified in File > Options: " + ex.Message));
-                    Log.Error("{class} {method} {message} {stacktrace}", "WebRequestFactory", "GetProxy", ex.Message, ex.StackTrace );
+                    Log.Error("{class} {method} {message} {stacktrace}", nameof(HttpClientHelper), nameof(GetProxy), ex.Message, ex.StackTrace );
                     UseSystemProxy();
                 }
             }
@@ -189,23 +241,28 @@ namespace DaxStudio.UI.Utils
         {
             if (proxy == null) return false;
 
-            try {
-                var wr = WebRequest.CreateHttp(new Uri(CurrentGithubVersionUrl));
-                wr.Proxy = proxy;
-                var _ = wr.GetResponse();
-                
-                return false;
-            }
-            catch (WebException wex)
+            try
             {
-                if (wex.Status == WebExceptionStatus.ProtocolError 
-                    || wex.Status == WebExceptionStatus.NameResolutionFailure 
-                    || wex.Status == WebExceptionStatus.ConnectFailure)
+                var handler = new HttpClientHandler
                 {
-                    return true;
+                    Proxy = proxy,
+                    UseProxy = true
+                };
+                using (var client = new HttpClient(handler))
+                {
+                    // Synchronous wait is acceptable here as this runs during initialization on a background thread.
+                    using (var response = client.GetAsync(new Uri(CurrentGithubVersionUrl)).GetAwaiter().GetResult())
+                    {
+                        // Any successful (or non-407) response means the proxy doesn't require explicit credentials.
+                        return response.StatusCode == HttpStatusCode.ProxyAuthenticationRequired;
+                    }
                 }
-                Log.Error("{class} {method} {message}", "WebRequestFactory", "RequiresProxyCredentials", wex.Message);
-                throw;
+            }
+            catch (HttpRequestException hex)
+            {
+                Log.Error("{class} {method} {message}", nameof(HttpClientHelper), nameof(RequiresProxyCredentials), hex.Message);
+                // Treat connection/name-resolution failures the same way as the old WebException path.
+                return true;
             }
         }
 
@@ -222,6 +279,9 @@ namespace DaxStudio.UI.Utils
                 _proxy = null;
                 _proxySet = false;
             }
+            // The cached HttpClient instances reference the previous proxy via their HttpClientHandler,
+            // so they must be torn down whenever the proxy is reset; CreateHttpClient will rebuild them on next use.
+            ResetSharedHttpClients();
         }
 
         public static IWebProxy Proxy

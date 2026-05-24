@@ -496,7 +496,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyAddressEnabled);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ProxyUseSystem), value, _isInitializing, this);
-                WebRequestFactory.ResetProxy();
+                HttpClientHelper.ResetProxy();
             }
         }
 
@@ -518,7 +518,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyAddress);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ProxyAddress), value, _isInitializing, this);
-                WebRequestFactory.ResetProxy();
+                HttpClientHelper.ResetProxy();
             }
         }
 
@@ -556,7 +556,7 @@ namespace DaxStudio.UI.ViewModels
                 NotifyOfPropertyChange(() => ProxyUser);
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 SettingProvider.SetValue(nameof(ProxyUser), value, _isInitializing, this);
-                WebRequestFactory.ResetProxy();
+                HttpClientHelper.ResetProxy();
             }
         }
 
@@ -576,7 +576,7 @@ namespace DaxStudio.UI.ViewModels
                 _eventAggregator.PublishOnUIThreadAsync(new UpdateGlobalOptions());
                 //SettingProvider.SetValueAsync<string>("ProxyPassword", value.Encrypt(), _isInitializing);
                 SetProxySecurePassword(value);
-                WebRequestFactory.ResetProxy();
+                HttpClientHelper.ResetProxy();
             }
         }
 

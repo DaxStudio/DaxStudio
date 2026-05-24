@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Serilog;
 using DaxStudio.UI.Utils;
@@ -96,8 +98,10 @@ namespace DaxStudio.UI.Model
 
         static DaxFormatterProxy()
         {
-            // force the use of TLS 1.2
+#if NET472
+            // force the use of TLS 1.2 (modern .NET defaults to TLS1.2+ already)
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+#endif
         }
 
         private static string redirectUrl;  // cache the redirected URL
@@ -183,7 +187,7 @@ namespace DaxStudio.UI.Model
         public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator, bool formatAlternateStyle )
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
-            string output = await CallDaxFormatterAsync(WebRequestFactory.DaxTextFormatUri, query, serverDbInfo, globalOptions, eventAggregator, formatAlternateStyle);
+            string output = await CallDaxFormatterAsync(HttpClientHelper.DaxTextFormatUri, query, serverDbInfo, globalOptions, eventAggregator, formatAlternateStyle);
             var res2 = new DaxFormatterResult();
             JsonConvert.PopulateObject(output, res2);
             Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatDaxAsync", "End");
@@ -236,32 +240,27 @@ namespace DaxStudio.UI.Model
                 Uri originalUri = new Uri(uri);
                 string actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
 
-                //var webRequestFactory = IoC.Get<WebRequestFactory>();
-                var webRequestFactory = await WebRequestFactory.CreateAsync( globalOptions, eventAggregator);
-                var wr = webRequestFactory.Create(new Uri(actualUrl));
+                var webRequestFactory = await HttpClientHelper.CreateAsync(globalOptions, eventAggregator);
 
-                wr.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
-                wr.ContentType = "application/json";
-                wr.Method = "POST";
-                wr.Accept = "application/json, text/javascript, */*; q=0.01";
-                wr.Headers.Add("Accept-Encoding", "gzip,deflate");
-                wr.Headers.Add("Accept-Language", "en-US,en;q=0.8");
-                wr.ContentType = "application/json; charset=UTF-8";
-                wr.AutomaticDecompression = DecompressionMethods.GZip;
-
-                string output = "";
-                using (var strm = await wr.GetRequestStreamAsync())
+                // Use the shared HttpClient; do NOT dispose it. Per-request timeout is enforced via CancellationToken.
+                var httpClient = webRequestFactory.CreateHttpClient();
+                string output;
+                using (var timeoutCts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds())))
+                using (var request = new HttpRequestMessage(HttpMethod.Post, new Uri(actualUrl)))
                 {
-                    strm.Write(data1, 0, data1.Length);
+                    request.Headers.Accept.ParseAdd("application/json, text/javascript, */*; q=0.01");
+                    request.Headers.AcceptEncoding.ParseAdd("gzip");
+                    request.Headers.AcceptEncoding.ParseAdd("deflate");
+                    request.Headers.AcceptLanguage.ParseAdd("en-US,en;q=0.8");
 
-                    using (var resp = wr.GetResponse())
+                    var byteContent = new ByteArrayContent(data1);
+                    byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "UTF-8" };
+                    request.Content = byteContent;
+
+                    using (var resp = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token).ConfigureAwait(false))
                     {
-                        //var outStrm = new System.IO.Compression.GZipStream(resp.GetResponseStream(), System.IO.Compression.CompressionMode.Decompress);
-                        var outStrm = resp.GetResponseStream();
-                        using (var reader = new System.IO.StreamReader(outStrm))
-                        {
-                            output = await reader.ReadToEndAsync();
-                        }
+                        resp.EnsureSuccessStatusCode();
+                        output = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
                     }
                 }
 
@@ -292,28 +291,31 @@ namespace DaxStudio.UI.Model
                 
                 if (redirectHost == null)
                 {
-                    // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
-                    // The following 2 requests are doing manual POST re-direct
-                    //var webRequestFactory = IoC.Get<WebRequestFactory>();
-                    WebRequestFactory webRequestFactory =
-                        await WebRequestFactory.CreateAsync(globalOptions, eventAggregator);
-                    var redirectRequest = webRequestFactory.Create(uri) as HttpWebRequest;
+                    // www.daxformatter.com redirects request to another site.  HttpClient does redirect with GET. It fails, since the web service works only with POST.
+                    // Disable automatic redirect so we can capture the Location header and POST to the real endpoint.
+                    HttpClientHelper webRequestFactory =
+                        await HttpClientHelper.CreateAsync(globalOptions, eventAggregator);
 
-                    redirectRequest.AllowAutoRedirect = false;
-                    redirectRequest.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
                     try
                     {
-                        using (var netResponse = await redirectRequest.GetResponseAsync())
+                        // Use the shared non-redirect HttpClient; do NOT dispose it.
+                        var redirectClient = webRequestFactory.CreateHttpClient(allowAutoRedirect: false);
+                        using (var timeoutCts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds())))
+                        using (var redirectResponse = await redirectClient.GetAsync(new Uri(uri), HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token).ConfigureAwait(false))
                         {
-                            var redirectResponse = (HttpWebResponse) netResponse;
-                            redirectUrl = redirectResponse.Headers["Location"];
-                            var redirectUri = new Uri(redirectUrl);
+                            if (redirectResponse.Headers.Location != null)
+                            {
+                                var redirectUri = redirectResponse.Headers.Location.IsAbsoluteUri
+                                    ? redirectResponse.Headers.Location
+                                    : new Uri(new Uri(uri), redirectResponse.Headers.Location);
 
-                            // set the shared redirectHost variable
-                            redirectHost = redirectUri.Host;
-                            Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter",
-                                "CallDaxFormatterAsync", uri.ToString());
-                            System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
+                                redirectUrl = redirectUri.ToString();
+                                // set the shared redirectHost variable
+                                redirectHost = redirectUri.Host;
+                                Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter",
+                                    "CallDaxFormatterAsync", uri.ToString());
+                                System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -336,7 +338,7 @@ namespace DaxStudio.UI.Model
         }
         public static async Task PrimeConnectionAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
-            await PrimeConnectionAsync(WebRequestFactory.DaxTextFormatUri, globalOptions, eventAggregator);
+            await PrimeConnectionAsync(HttpClientHelper.DaxTextFormatUri, globalOptions, eventAggregator);
         }
         
     }

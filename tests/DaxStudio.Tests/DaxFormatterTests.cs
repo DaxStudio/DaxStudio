@@ -7,6 +7,11 @@ using DaxStudio.Tests.Mocks;
 using DaxStudio.Interfaces;
 using NSubstitute;
 
+// These tests are all marked [Ignore] and exist as historical scratch-pads exercising the legacy
+// WebRequest / HttpWebRequest APIs against daxformatter.com. Suppress the obsolete-API warnings
+// here rather than rewriting the tests, since they are not executed in CI.
+#pragma warning disable SYSLIB0014 // WebRequest, HttpWebRequest, ServicePoint and WebClient are obsolete
+
 namespace DaxStudio.Tests
 {
     [TestClass]
@@ -225,8 +230,8 @@ ORDER BY
             mockGlobalOptions.ProxyUseSystem.Returns(true);
             //var mockGlobalOptions = new MockGlobalOptions() { ProxyUseSystem = true };
             var mockEventAggregator = new MockEventAggregator();
-            //var webReqFac = new UI.Utils.WebRequestFactory(mockGlobalOptions, mockEventAggregator);
-            var webReqFac = await UI.Utils.WebRequestFactory.CreateAsync(mockGlobalOptions, mockEventAggregator).ConfigureAwait(false);
+            //var webReqFac = new UI.Utils.HttpClientHelper(mockGlobalOptions, mockEventAggregator);
+            var webReqFac = await UI.Utils.HttpClientHelper.CreateAsync(mockGlobalOptions, mockEventAggregator).ConfigureAwait(false);
             //var daxFmtProxy = IoC.BuildUp(webReqFac);
             var qry = "EVALUATE FILTER(Customer, Customer[Username] = \"Test\\User\")" ;
             var expectedQry = "EVALUATE\r\nFILTER ( Customer, Customer[Username] = \"Test\\User\" )";
@@ -237,3 +242,4 @@ ORDER BY
         }
     }
 }
+#pragma warning restore SYSLIB0014
