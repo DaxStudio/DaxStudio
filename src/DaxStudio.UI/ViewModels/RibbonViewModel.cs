@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.Core.Events;
@@ -25,6 +25,7 @@ using ADOTabular;
 using DaxStudio.Interfaces.Enums;
 using System.Windows.Threading;
 using System.Windows.Shell;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {

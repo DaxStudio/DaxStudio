@@ -1,5 +1,6 @@
-﻿using DaxStudio.UI.Interfaces;
+using DaxStudio.UI.Interfaces;
 using System;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.CommandLine.UIStubs
 {

@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using Caliburn.Micro;
 using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DaxStudio.Core.Interfaces;
 using static LargeXlsx.XlsxAlignment;
 
 namespace DaxStudio.UI.ResultsTargets

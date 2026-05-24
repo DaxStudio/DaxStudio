@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -22,6 +22,7 @@ using System.Windows.Input;
 using System.Threading;
 using DaxStudio.UI.Model;
 using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.Core.Model;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #endif

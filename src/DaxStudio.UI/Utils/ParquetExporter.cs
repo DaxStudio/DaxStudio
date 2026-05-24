@@ -9,6 +9,7 @@ using System.Data;
 using System.IO;
 using System.Threading.Tasks;
 using DataColumn = Parquet.Data.DataColumn;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Utils
 {

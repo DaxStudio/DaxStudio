@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
@@ -23,6 +23,7 @@ using DaxStudio.Common.Enums;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Enums;
 using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {

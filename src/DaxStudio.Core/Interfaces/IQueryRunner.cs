@@ -1,22 +1,12 @@
-﻿using ADOTabular.AdomdClientWrappers;
+using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Interfaces
+namespace DaxStudio.Core.Interfaces
 {
-    public enum OutputTarget
-    {
-        Grid,
-        Timer,
-        Linked,
-        Static,
-        File,
-        Clipboard
-    }
     public interface IQueryRunner
     {
         string QueryText { get; }

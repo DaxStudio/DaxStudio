@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
@@ -9,6 +9,7 @@ using Serilog;
 using DaxStudio.UI.Extensions;
 using System.Data;
 using DaxStudio.Common.Extensions;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {

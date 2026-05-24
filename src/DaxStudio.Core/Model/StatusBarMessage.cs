@@ -1,6 +1,6 @@
 ﻿using DaxStudio.Interfaces;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Model
 {
     public class StatusBarMessage : IStatusBarMessage
     {

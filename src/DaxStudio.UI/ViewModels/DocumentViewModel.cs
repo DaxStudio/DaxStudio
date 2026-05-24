@@ -1,4 +1,4 @@
-﻿using ADOTabular;
+using ADOTabular;
 using ADOTabular.AdomdClientWrappers;
 using ADOTabular.Enums;
 using ADOTabular.Extensions;
@@ -65,6 +65,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using UnitComboLib.Unit.Screen;
 using UnitComboLib.ViewModel;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using Constants = DaxStudio.Common.Constants;

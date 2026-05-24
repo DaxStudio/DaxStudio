@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DaxStudio.UI.Interfaces
+namespace DaxStudio.Interfaces
 {
     public interface IDaxStudioHost : IDisposable
     {

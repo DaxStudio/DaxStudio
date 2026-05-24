@@ -1,7 +1,7 @@
 ﻿using DaxStudio.Common.Enums;
 using System.Collections.Generic;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Model
 {
     public class CustomTraceTemplate
     { 

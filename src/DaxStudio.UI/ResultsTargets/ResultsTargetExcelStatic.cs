@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.Composition;
+using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using System.Data;
 using Serilog;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {

@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.CommandLine.Helpers;
 using DaxStudio.CommandLine.Interfaces;
 using DaxStudio.Common;
@@ -12,6 +12,8 @@ using DaxStudio.Core.Options;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices.AdomdClient;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
 #if NET8_0_OR_GREATER
 using AccessToken = Microsoft.AnalysisServices.AccessToken;
 #endif

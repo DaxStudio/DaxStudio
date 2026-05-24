@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.Common.Enums;
 using DaxStudio.Interfaces;
@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {

@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using System.Windows;
 using DaxStudio.Common;
 using DaxStudio.UI.Interfaces;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.Standalone
 {

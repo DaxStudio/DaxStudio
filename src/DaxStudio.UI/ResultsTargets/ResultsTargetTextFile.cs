@@ -1,4 +1,4 @@
-﻿using DaxStudio.Common;
+using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
@@ -12,6 +12,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {

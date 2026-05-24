@@ -1,7 +1,8 @@
-﻿
+
 using DaxStudio.Interfaces;
 using System;
 using System.Threading.Tasks;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Interfaces
 {

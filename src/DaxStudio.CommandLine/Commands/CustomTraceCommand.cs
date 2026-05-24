@@ -1,4 +1,4 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.CommandLine.Commands
 {

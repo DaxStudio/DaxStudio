@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.Composition;
+using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using DaxStudio.UI.Interfaces;
 using System;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {

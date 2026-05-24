@@ -1,4 +1,4 @@
-﻿using ADOTabular.AdomdClientWrappers;
+using ADOTabular.AdomdClientWrappers;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
@@ -16,6 +16,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.Model
 {

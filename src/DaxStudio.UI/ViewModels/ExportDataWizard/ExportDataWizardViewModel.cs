@@ -1,4 +1,4 @@
-﻿using ADOTabular.AdomdClientWrappers;
+using ADOTabular.AdomdClientWrappers;
 using Caliburn.Micro;
 using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
@@ -34,6 +34,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {

@@ -5,7 +5,7 @@ using ADOTabular;
 using DaxStudio;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Interfaces
+namespace DaxStudio.Interfaces
 {
     public interface IDaxStudioProxy : IDisposable
     {

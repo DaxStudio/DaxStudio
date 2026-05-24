@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.Composition;
+using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using DaxStudio.Interfaces;
 using System.Diagnostics;
@@ -12,6 +12,7 @@ using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
 using System.Windows;
 using DaxStudio.UI.Model;
+using DaxStudio.Core.Interfaces;
 
 namespace DaxStudio.UI.ResultsTargets
 {

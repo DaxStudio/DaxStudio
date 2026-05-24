@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.Composition;
 using AvalonDock;
 using Caliburn.Micro;
@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using AvalonDock.Controls;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
+using DaxStudio.Core.Model;
 
 namespace DaxStudio.UI.ViewModels
 {
