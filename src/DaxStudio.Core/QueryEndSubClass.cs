@@ -1,5 +1,5 @@
 ﻿
-namespace DaxStudio.UI.Enums
+namespace DaxStudio.Core
 {
     public enum QueryEndSubClass
     {

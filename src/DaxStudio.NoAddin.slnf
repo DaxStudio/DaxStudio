@@ -10,6 +10,7 @@
       "DaxStudio.Common\\DaxStudio.Common.csproj",
       "DaxStudio.Controls.DataGridFilter\\DaxStudio.Controls.DataGridFilter.csproj",
       "DaxStudio.Controls.PropertyGrid\\DaxStudio.Controls.PropertyGrid.csproj",
+      "DaxStudio.Core\\DaxStudio.Core.csproj",
       "DaxStudio.FileIcons\\DaxStudio.FileIcons.csproj",
       "DaxStudio.Interfaces\\DaxStudio.Interfaces.csproj",
       "DaxStudio.Parsers\\DaxStudio.Parsers.csproj",

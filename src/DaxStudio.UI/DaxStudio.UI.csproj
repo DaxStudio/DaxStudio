@@ -178,6 +178,7 @@
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
     <ProjectReference Include="..\DaxStudio.Controls.DataGridFilter\DaxStudio.Controls.DataGridFilter.csproj" />
     <ProjectReference Include="..\DaxStudio.Controls.PropertyGrid\DaxStudio.Controls.PropertyGrid.csproj" />
+    <ProjectReference Include="..\DaxStudio.Core\DaxStudio.Core.csproj" />
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
     <ProjectReference Include="..\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />
