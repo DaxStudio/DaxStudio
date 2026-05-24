@@ -1,8 +1,5 @@
-﻿using Caliburn.Micro;
+using Caliburn.Micro;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,27 +12,12 @@ namespace DaxStudio.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public void Publish(object message, Action<System.Action> marshal)
-        {
-            // do nothing
-        }
-
-        public void Subscribe(object subscriber)
+        public void Subscribe(object subscriber, Func<Func<Task>, Task> marshal)
         {
             // do nothing
         }
 
         public void Unsubscribe(object subscriber)
-        {
-            // do nothing
-        }
-
-        public void PublishOnUIThread(object message)
-        {
-            // do nothing
-        }
-
-        public void Subscribe(object subscriber, Func<Func<Task>, Task> marshal)
         {
             // do nothing
         }
