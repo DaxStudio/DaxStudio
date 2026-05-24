@@ -667,9 +667,7 @@ namespace DaxStudio.UI.ViewModels
 
                 // do something with our message
                 var app = Application.Current;
-#if NET472
                 app.ReadCommandLineArgs(rawmessage);
-#endif
 
                 _host.Proxy.Port = app.Args().Port;
 

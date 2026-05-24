@@ -2,16 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
+using DaxStudio.Common.Cli;
 using DaxStudio.Common.Extensions;
-#if NET472
-using Fclp;
-#endif
 using Serilog;
+using Spectre.Console.Cli;
 
 namespace DaxStudio.Common
 {
@@ -260,74 +260,134 @@ namespace DaxStudio.Common
             }
         }
 
-#if NET472
         public void Parse(string[] args)
         {
+            if (args == null) return;
 
-            var p = new FluentCommandLineParser();
-            p.Setup<int>('p', "port")
-                .Callback(port => this.Port = port);
+            // Detect a help request up front so the launcher (EntryPoint.Main)
+            // can skip starting the WPF UI. Spectre will still do the actual
+            // help rendering via DaxStudioHelpProvider below.
+            var helpRequested = IsHelpRequested(args);
+            if (helpRequested)
+            {
+                this.ShowHelp = true;
+                Log.Information(Constants.LogMessageTemplate, nameof(CmdLineArgs), nameof(Parse), "Printing CommandLine Help");
+            }
 
-            p.Setup<bool>('l', "log")
-                .Callback(log => this.LoggingEnabledByCommandLine = log)
-                .WithDescription("Enable Debug Logging")
-                .SetDefault(false);
-
-            p.Setup<string>('f', "file")
-                .Callback(file => this.FileName = file)
-                .WithDescription("Name of file to open");
-#if DEBUG
-            // only include the crashtest parameter on debug builds
-            p.Setup<bool>('c', "crashtest")
-                .Callback(crashTest => this.TriggerCrashTest = crashTest)
-                .SetDefault(false);
-#endif
-            p.Setup<string>('s', "server")
-                .Callback(server => this.Server = server)
-                .WithDescription("Server to connect to");
-
-            p.Setup<string>('d', "database")
-                .Callback(database => this.Database = database)
-                .WithDescription("Database to connect to");
-
-            p.Setup<bool>('r', "reset")
-                .Callback(reset => this.Reset = reset)
-                .WithDescription("Reset user preferences to the default settings");
-
-            p.Setup<bool>("nopreview")
-                .Callback(nopreview => this.NoPreview = nopreview)
-                .WithDescription("Hides version information");
-
-            p.Setup<string>('u', "uri")
-                .Callback(uri => this.ParseUri(uri))
-                .WithDescription("used by the daxstudio:// uri handler");
-
-
-            p.SetupHelp("?", "help")
-                .Callback(text =>
+            try
+            {
+                var app = new CommandApp<LaunchCommand>();
+                app.Configure(config =>
                 {
-                    Log.Information(Constants.LogMessageTemplate, nameof(CmdLineArgs), nameof(Parse), "Printing CommandLine Help");
-                    Version ver = Assembly.GetExecutingAssembly().GetName().Version;
-                    string formattedHelp = HelpFormatter.Format(p.Options);
-                    Console.WriteLine("");
-                    Console.WriteLine($"DAX Studio {ver.ToString(3)} (build {ver.Revision})");
-                    Console.WriteLine("--------------------------------");
-                    Console.WriteLine("");
-                    Console.WriteLine("Supported command line parameters:");
-                    Console.WriteLine(formattedHelp);
-                    Console.WriteLine("");
-                    Console.WriteLine("Note: parameters can either be passed with a short name or a long name form");
-                    Console.WriteLine("eg.  DaxStudio -f myfile.dax");
-                    Console.WriteLine("     DaxStudio --file myfile.dax");
-                    Console.WriteLine("");
-                    //app.Args().HelpText = text;
-                    this.ShowHelp = true;
+                    config.PropagateExceptions();
+                    config.SetHelpProvider(new DaxStudioHelpProvider(config.Settings));
                 });
-
-            p.Parse(args);
-
+                using (LaunchContext.Use(this))
+                {
+                    var normalized = NormalizeArgs(SkipFirstArgIfExecutablePath(args));
+                    if (helpRequested)
+                    {
+                        // Force Spectre's help branch regardless of which help
+                        // syntax the user typed (-?, /?, /help, -h, etc.).
+                        normalized = new[] { "--help" };
+                    }
+                    app.Run(normalized);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(CmdLineArgs), nameof(Parse), "Failed to parse command line arguments");
+            }
         }
+
+        // Option names that the launcher recognises. Used by NormalizeArgs to
+        // translate DOS-style /option syntax into Spectre's POSIX -o/--option
+        // form without accidentally rewriting file paths.
+        private static readonly HashSet<string> KnownShortOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "p", "l", "f", "s", "d", "r", "u",
+#if DEBUG
+            "c",
 #endif
+        };
+
+        private static readonly HashSet<string> KnownLongOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "port", "log", "file", "server", "database", "reset", "nopreview", "uri",
+#if DEBUG
+            "crashtest",
+#endif
+        };
+
+        private static string[] NormalizeArgs(string[] args)
+        {
+            if (args == null || args.Length == 0) return args;
+
+            var result = new string[args.Length];
+            for (var i = 0; i < args.Length; i++)
+            {
+                result[i] = NormalizeArg(args[i]);
+            }
+            return result;
+        }
+
+        private static string NormalizeArg(string arg)
+        {
+            if (string.IsNullOrEmpty(arg) || arg[0] != '/') return arg;
+
+            // Split on the first '=' so /server=localhost also normalizes.
+            var equalsIndex = arg.IndexOf('=');
+            var name = equalsIndex > 0 ? arg.Substring(1, equalsIndex - 1) : arg.Substring(1);
+            var tail = equalsIndex > 0 ? arg.Substring(equalsIndex) : string.Empty;
+
+            // Only translate when the name matches a known option to avoid
+            // mangling forward-slash file paths.
+            if (KnownLongOptions.Contains(name))
+            {
+                return "--" + name.ToLowerInvariant() + tail;
+            }
+            if (name.Length == 1 && KnownShortOptions.Contains(name))
+            {
+                return "-" + name.ToLowerInvariant() + tail;
+            }
+
+            return arg;
+        }
+
+        private static readonly HashSet<string> HelpTokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "-?", "/?", "--?",
+            "-h", "/h", "--h",
+            "-help", "/help", "--help",
+        };
+
+        /// <summary>
+        /// Returns true when any of the supplied command-line tokens is a
+        /// recognised help request (eg. -?, /?, /help, --help). Exposed so
+        /// startup code can decide whether to attach a console window before
+        /// the parser actually runs.
+        /// </summary>
+        public static bool IsHelpRequested(string[] args)
+        {
+            if (args == null) return false;
+            return args.Any(a => a != null && HelpTokens.Contains(a));
+        }
+
+        private static string[] SkipFirstArgIfExecutablePath(string[] args)
+        {
+            // Environment.GetCommandLineArgs() includes the executable path as
+            // the first element; Spectre.Console.Cli expects raw arguments only.
+            if (args.Length == 0) return args;
+            var first = args[0];
+            if (!string.IsNullOrEmpty(first)
+                && (first.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                    || first.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)))
+            {
+                return args.Skip(1).ToArray();
+            }
+            return args;
+        }
+
         public void Clear()
         {
             _argDict.Clear();

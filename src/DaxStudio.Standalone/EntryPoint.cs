@@ -57,7 +57,18 @@ namespace DaxStudio.Standalone
         [STAThread]
         public static void Main()
         {
-            
+            // DaxStudio.exe is a WPF (Windows subsystem) executable, so it has no
+            // console of its own. When the user is asking for help we attach to
+            // the parent process's console so that Spectre's rendered help text
+            // is visible. We only do this when help was requested so the normal
+            // launch path stays clean.
+            var startupArgs = Environment.GetCommandLineArgs();
+            var helpRequested = CmdLineArgs.IsHelpRequested(startupArgs);
+            if (helpRequested)
+            {
+                ConsoleHandler.RedirectToParent();
+            }
+
             // add unhandled exception handler
             App.DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
@@ -84,8 +95,7 @@ namespace DaxStudio.Standalone
 
             _eventAggregator = bootstrapper.GetEventAggregator();
             // read command line arguments
-            string[] args = Environment.GetCommandLineArgs();
-            App.ReadCommandLineArgs(args);
+            App.ReadCommandLineArgs(startupArgs);
 
             var settingProvider = IoC.Get<ISettingProvider>();
             if (App.Args().Reset) settingProvider.Reset();
@@ -151,6 +161,15 @@ namespace DaxStudio.Standalone
                 // Launch the User Interface
                 Log.Information("Launching User Interface");
                 App.Run();
+            }
+            else if (helpRequested)
+            {
+                // When a WPF (windowed-subsystem) exe attaches to a parent
+                // console the shell has already returned its prompt, so its
+                // next prompt redraws on top of our last line. Posting an
+                // Enter to the console window forces the shell to render a
+                // fresh prompt on its own line after the help text.
+                ConsoleHandler.PostEnterToParentConsole();
             }
 
             levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Information;
@@ -429,9 +448,7 @@ namespace DaxStudio.Standalone
         private static void ReadCommandLineArgs(this Application app, string[] args)
         {
             app.Args().Clear();
-#if NET472
             Application.Current.Args().Parse(args);
-#endif
         }
 
 
