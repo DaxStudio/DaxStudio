@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Trace;
 using DaxStudio.Interfaces;
 using DaxStudio.Tests.Helpers;
 using DaxStudio.UI.Utils;

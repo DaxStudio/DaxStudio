@@ -9,6 +9,7 @@ using Serilog;
 using DaxStudio.UI.Utils;
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
+using DaxStudio.Core.Utils;
 using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using DaxStudio.UI.Extensions;

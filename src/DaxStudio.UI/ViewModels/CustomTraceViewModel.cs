@@ -14,8 +14,10 @@ using DaxStudio.Core.Trace;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Events;
+using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
+using System.ComponentModel;
 using DataGridExtensions = DaxStudio.Controls.DataGridFilter.DataGridExtensions;
 
 namespace DaxStudio.UI.ViewModels

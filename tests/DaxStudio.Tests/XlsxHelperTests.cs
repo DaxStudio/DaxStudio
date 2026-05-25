@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Utils;
+﻿using DaxStudio.Core.ResultsTargets;
+using DaxStudio.UI.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

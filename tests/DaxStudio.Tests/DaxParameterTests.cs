@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using DaxStudio.Core.Model;
+using DaxStudio.Core.Utils;
 using DaxStudio.UI.Utils;
 using System.Text;
 using DaxStudio.UI.Model;

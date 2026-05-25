@@ -1,4 +1,5 @@
 ﻿using DaxStudio.CommandLine.Interfaces;
+using DaxStudio.Core.Utils;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -129,7 +130,7 @@ namespace DaxStudio.CommandLine.Commands
                 .SpinnerStyle(Style.Parse("green bold"))
                 .Start("Scanning for running instances of Power BI Desktop...", ctx =>
                 {
-                    var instances = UI.Utils.PowerBIHelper.GetLocalInstances(false, true);
+                    var instances = PowerBIHelper.GetLocalInstances(false, true);
                 
                     foreach (var instance in instances)
                     {

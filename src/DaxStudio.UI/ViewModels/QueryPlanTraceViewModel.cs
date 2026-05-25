@@ -3,6 +3,7 @@ using Caliburn.Micro;
 using DaxStudio.Common.Enums;
 using DaxStudio.Controls;
 using DaxStudio.Controls.Model;
+using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Core.Events;

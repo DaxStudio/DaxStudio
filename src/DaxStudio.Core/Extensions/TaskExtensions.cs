@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Core.Extensions
 {
     public static class TaskExtensions
     {

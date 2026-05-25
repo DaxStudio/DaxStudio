@@ -1,5 +1,6 @@
 using DaxStudio.Common;
 using DaxStudio.Core.Extensions;
+using DaxStudio.Core.Utils;
 using DaxStudio.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;

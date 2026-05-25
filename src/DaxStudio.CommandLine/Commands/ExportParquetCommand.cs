@@ -8,7 +8,7 @@ using DaxStudio.CommandLine.Converters;
 using DaxStudio.CommandLine.Extensions;
 using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.Core.Connections;
-using DaxStudio.UI.ViewModels;
+using DaxStudio.Core.Exports;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -84,8 +84,7 @@ namespace DaxStudio.CommandLine.Commands
                         Log.Information($"Connected to Tabular Server: {settings.Server}");
                         var metadataPane = new CmdLineMetadataPane();
                         var doc = new CmdLineDocument(connMgr, metadataPane);
-                        var vm = new ExportDataWizardViewModel(EventAggregator, doc, null);
-                        vm.ExportType = DaxStudio.Core.Exports.ExportDataType.ParquetFolder;
+                        var vm = new ExportDataWizardModel(EventAggregator, doc);
 
 
                         var tables = settings.Tables;
@@ -140,7 +139,7 @@ namespace DaxStudio.CommandLine.Commands
                 {
                     ProgressTasks[i].MaxValue = SelectedTables[i].TotalRows;
                     ProgressTasks[i].Value = SelectedTables[i].RowCount;
-                    if (SelectedTables[i].Status == DaxStudio.Core.Exports.ExportStatus.Exporting)
+                    if (SelectedTables[i].Status == ExportStatus.Exporting)
                     {
                         ProgressTasks[i].IsIndeterminate(false);
                         ProgressTasks[i].StartTask();

@@ -45,8 +45,7 @@ namespace DaxStudio.CommandLine.Commands
             EventAggregator = eventAggregator;
             Options = options;
             WindowManager = null;
-            var dialog = new CustomTraceDialogViewModel(Options);
-            Templates = dialog.Templates;
+            Templates = CustomTraceTemplateLoader.LoadTemplates();
         }
 
         public override ValidationResult Validate(CommandContext context, Settings settings)
@@ -67,7 +66,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, settings);
         }
         private StatusContext statusContext;
-        private static CustomTraceViewModel customTracer;
+        private static CustomTraceModel customTracer;
 
         public override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings, CancellationToken cancellationToken)
         {
@@ -150,7 +149,7 @@ namespace DaxStudio.CommandLine.Commands
 
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var vm = sender as CustomTraceViewModel;
+            var vm = sender as CustomTraceModel;
             if (vm == null) return;
 
             switch (e.PropertyName)

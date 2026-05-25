@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Model;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Utils;

@@ -25,6 +25,5 @@
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
     <ProjectReference Include="..\DaxStudio.Core\DaxStudio.Core.csproj" />
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
-    <ProjectReference Include="..\DaxStudio.UI\DaxStudio.UI.csproj" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
-﻿using DaxStudio.UI.ViewModels;
+﻿using DaxStudio.Core.Exports;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class ExportStatusUpdateEvent
     {

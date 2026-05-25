@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Model;
+using DaxStudio.Core.Model;
+using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using System.Text;
 

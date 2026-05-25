@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management;
 
-namespace DaxStudio.UI.Extensions
+namespace DaxStudio.Core.Extensions
 {
     public static class ProcessExtensions
     {

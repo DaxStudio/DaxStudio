@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Utils;
 using DaxStudio.UI.Extensions;
 using System.Threading.Tasks;

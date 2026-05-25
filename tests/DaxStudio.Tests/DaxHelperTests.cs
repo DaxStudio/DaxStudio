@@ -1,4 +1,5 @@
 ﻿using DaxStudio.Tests.Assertions;
+using DaxStudio.Core.Model;
 using DaxStudio.UI.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

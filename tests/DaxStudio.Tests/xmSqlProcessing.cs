@@ -1,4 +1,5 @@
-﻿using DaxStudio.Interfaces;
+using DaxStudio.Core.Trace;
+using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.Tests.Helpers;
 using DaxStudio.UI.ViewModels;

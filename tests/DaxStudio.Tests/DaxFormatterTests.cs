@@ -231,7 +231,7 @@ ORDER BY
             //var mockGlobalOptions = new MockGlobalOptions() { ProxyUseSystem = true };
             var mockEventAggregator = new MockEventAggregator();
             //var webReqFac = new UI.Utils.HttpClientHelper(mockGlobalOptions, mockEventAggregator);
-            var webReqFac = await UI.Utils.HttpClientHelper.CreateAsync(mockGlobalOptions, mockEventAggregator).ConfigureAwait(false);
+            var webReqFac = await DaxStudio.Core.Utils.HttpClientHelper.CreateAsync(mockGlobalOptions, mockEventAggregator).ConfigureAwait(false);
             //var daxFmtProxy = IoC.BuildUp(webReqFac);
             var qry = "EVALUATE FILTER(Customer, Customer[Username] = \"Test\\User\")" ;
             var expectedQry = "EVALUATE\r\nFILTER ( Customer, Customer[Username] = \"Test\\User\" )";

@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Interfaces;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.Interfaces;

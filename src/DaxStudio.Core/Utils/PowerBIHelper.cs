@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Serilog;
-using DaxStudio.UI.Extensions;
+using DaxStudio.Core.Extensions;
 using System.Security.Principal;
 using DaxStudio.Common;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Utils
 {
     public enum EmbeddedSSASIcon
     {

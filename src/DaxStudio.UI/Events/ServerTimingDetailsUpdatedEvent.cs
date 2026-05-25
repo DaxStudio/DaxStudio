@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.ViewModels;
+﻿using DaxStudio.Core.Trace;
+using DaxStudio.UI.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

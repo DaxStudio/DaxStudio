@@ -16,12 +16,17 @@ using DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Controls.PropertyGrid;
 using DaxStudio.Core;
+using DaxStudio.Core.Enums;
+using DaxStudio.Core.Trace;
 using DaxStudio.Core.Vpax;
 using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Enums;
 using DaxStudio.UI.Enums;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Utils;
 using DaxStudio.UI.Events;
+using DaxStudio.Core.Extensions;
+using DaxStudio.Core.Utils;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
@@ -5010,7 +5015,7 @@ namespace DaxStudio.UI.ViewModels
                 if (dlg.FilterIndex == 2)
                 {
                     // if this is an ovpax file get the dictionary
-                    dictFilePath = VpaxDictHelper.GetDictPathForOvpax(filename);
+                    dictFilePath = DaxStudio.UI.Utils.VpaxDictHelper.GetDictPathForOvpax(filename);
                 }
 
                 ImportAnalysisData(filename, dictFilePath);

@@ -1,4 +1,5 @@
-﻿using DaxStudio.Tests.Assertions;
+using DaxStudio.Core.Trace;
+using DaxStudio.Tests.Assertions;
 using DaxStudio.UI.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PoorMansTSqlFormatterLib.Interfaces;

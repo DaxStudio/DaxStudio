@@ -6,6 +6,7 @@ using DaxStudio.Interfaces;
 using DaxStudio.UI.Enums;
 using DaxStudio.Core.Events;
 using DaxStudio.UI.Events;
+using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;

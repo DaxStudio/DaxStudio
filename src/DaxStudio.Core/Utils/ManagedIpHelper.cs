@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Utils
 {
 
 

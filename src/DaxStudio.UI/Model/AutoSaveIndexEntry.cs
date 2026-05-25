@@ -1,4 +1,5 @@
-﻿using DaxStudio.Interfaces;
+using DaxStudio.Core.Enums;
+using DaxStudio.Interfaces;
 using Newtonsoft.Json;
 using System;
 using Caliburn.Micro;

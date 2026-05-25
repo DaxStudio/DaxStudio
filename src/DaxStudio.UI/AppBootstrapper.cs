@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using DaxStudio.UI.ViewModels;
+using DaxStudio.Core.Settings;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;

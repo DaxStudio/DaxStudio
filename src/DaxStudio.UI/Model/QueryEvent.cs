@@ -1,4 +1,6 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
 using DaxStudio.UI.Enums;
 using DaxStudio.UI.Interfaces;
 using Microsoft.AnalysisServices.AdomdClient;

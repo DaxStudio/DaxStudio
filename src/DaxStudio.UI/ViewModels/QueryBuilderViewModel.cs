@@ -17,6 +17,8 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 using DaxStudio.Core;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
 using DaxStudio.UI.JsonConverters;
 using DaxStudio.UI.Utils;
 using System.Windows.Media;

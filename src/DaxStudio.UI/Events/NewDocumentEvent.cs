@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
 using DaxStudio.UI.ViewModels;
 using System;

@@ -2,6 +2,7 @@ using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace.Interfaces;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Extensions;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
@@ -27,6 +28,7 @@ using System.Windows.Threading;
 using System.Windows.Shell;
 using DaxStudio.Core.Model;
 using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Trace;
 
 namespace DaxStudio.UI.ViewModels
 {

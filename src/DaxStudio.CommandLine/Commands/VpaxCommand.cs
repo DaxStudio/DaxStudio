@@ -4,7 +4,6 @@ using System.ComponentModel;
 using Spectre.Console;
 using Caliburn.Micro;
 using DaxStudio.Core.Vpax;
-using DaxStudio.UI.Utils;
 using System.Reflection;
 using DaxStudio.CommandLine.Infrastructure;
 using Dax.Metadata;

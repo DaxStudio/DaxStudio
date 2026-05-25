@@ -24,12 +24,20 @@
 
   <!-- Project references -->
   <ItemGroup>
-    <ProjectReference Include="..\ADOTabular\ADOTabular.csproj" />
+    <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj" />
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
     <ProjectReference Include="..\DaxStudio.Parsers\DaxStudio.Parsers.csproj" />
     <ProjectReference Include="..\DaxStudio.QueryTrace\DaxStudio.QueryTrace.csproj" />
     <ProjectReference Include="..\DaxStudio.SqlFormatter\DaxStudio.SqlFormatter.csproj" />
+  </ItemGroup>
+
+  <!-- Framework references -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="System.Management" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <PackageReference Include="System.Management" Version="9.0.0" />
   </ItemGroup>
 
   <!-- Package references -->
@@ -42,6 +50,7 @@
     <PackageReference Include="Dax.Vpax" Version="1.12.0" />
     <PackageReference Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
     <PackageReference Include="LargeXlsx" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="Parquet.Net" Version="[5.4.0]" />
     <PackageReference Include="Polly" Version="8.6.6" />
     <PackageReference Include="System.ComponentModel.Composition" Version="9.0.3" />

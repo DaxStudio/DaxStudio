@@ -1,4 +1,5 @@
-﻿using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.UI.Interfaces;
 using System.Collections.Generic;
 
 namespace DaxStudio.UI.Model

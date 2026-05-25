@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
 using DaxStudio.UI.Events;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.Interfaces;
