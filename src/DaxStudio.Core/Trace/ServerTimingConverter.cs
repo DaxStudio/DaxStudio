@@ -1,10 +1,9 @@
-﻿using DaxStudio.Core.Trace;
-using DaxStudio.UI.ViewModels;
+using DaxStudio.Core.Trace;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace DaxStudio.UI.JsonConverters
+namespace DaxStudio.Core.Trace
 {
     public class ServerTimingConverter:JsonConverter
     {

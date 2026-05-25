@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using DaxStudio.Interfaces;
 using Newtonsoft.Json;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class QueryHistoryEvent:IQueryHistoryEvent, INotifyPropertyChanged
     {

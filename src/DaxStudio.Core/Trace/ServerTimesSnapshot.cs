@@ -1,11 +1,9 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.Core.Trace;
-using DaxStudio.UI.ViewModels;
 using System;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Trace
 {
-    public class ServerTimesModel
+    public class ServerTimesSnapshot
     {
         // 7 - added ObjectName
         // 8 - added ErrorMessage

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DaxStudio.UI.Events
+namespace DaxStudio.Core.Events
 {
     public class ServerTimingsEvent : IServerTimes
     {
