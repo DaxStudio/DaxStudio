@@ -249,6 +249,13 @@ namespace DaxStudio.UI.ViewModels
 
             ResetInputBindings();
             _eventAggregator.PublishAsync(new LoadQueryHistoryAsyncEvent());
+
+            // Signal once-only initialization workflows (auto-save recovery, opening
+            // a blank document, opening a command-line file). This must happen AFTER
+            // the window is loaded so that dialogs render on top of the main UI and
+            // any documents activated as a result get their views attached to the
+            // visual tree.
+            _eventAggregator.PublishAsync(new ShellInitializedEvent());
             
         }
 

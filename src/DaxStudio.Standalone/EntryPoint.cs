@@ -391,58 +391,87 @@ namespace DaxStudio.Standalone
             }
         }
 
+        private static int _inUnhandledExceptionHandler;
+
         private static void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            if ((Application.Current?.Dispatcher?.HasShutdownStarted??false))
+            // Reentrancy guard: if the handler itself (or any code it invokes) throws another
+            // unhandled exception on the dispatcher, we must not recurse back into ourselves —
+            // doing so risks stack overflow, hangs in the crash-reporter, or a runaway loop of
+            // crash dialogs. Mark the exception handled and fail fast instead.
+            if (System.Threading.Interlocked.Exchange(ref _inUnhandledExceptionHandler, 1) != 0)
             {
-                Log.Error(e.Exception, nameof(EntryPoint), nameof(App_DispatcherUnhandledException), "Error during shutdown");
-                App?.Shutdown(3);
+                try
+                {
+                    Log.Fatal(e.Exception, "{class} {method} Reentrant unhandled dispatcher exception — terminating immediately",
+                        nameof(EntryPoint), nameof(App_DispatcherUnhandledException));
+                }
+                catch
+                {
+                    // intentionally swallowed — we're already in a fatal failure path
+                }
+                e.Handled = true;
+                Environment.FailFast("DAX Studio: reentrant unhandled dispatcher exception", e.Exception);
                 return;
             }
 
-            if (e.Exception is System.Runtime.InteropServices.COMException comException)
+            try
             {
-                
-                switch (comException.ErrorCode)
+                if ((Application.Current?.Dispatcher?.HasShutdownStarted??false))
                 {
-                    case -2147221037: // Data on clipboard is invalid (Exception from HRESULT: 0x800401D3 (CLIPBRD_E_BAD_DATA))
-                        e.Handled = true;
-                        _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_BAD_DATA Error - Clipboard operation failed, please try again"));
-                        _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_BAD_DATA");
-                        return;
-                    case -2147221040: // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf DataGrid can't access clipboard 
-                        e.Handled = true;
-                        _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_CANT_OPEN Error - Clipboard operation failed, please try again"));
-                        _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
-                        return;
-                    case unchecked((int)0x8001010E)://2147549454): // 0x_8001_010E:
-                        e.Handled = true;
-                        _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "RPC_E_WRONG_THREAD Error - Clipboard operation failed, please try again"));
-                        _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "RPC_E_WRONG_THREAD");
-                        return;
-                    default:
-                        if (e.Exception.Message == "A drag operation is already in progress")
-                        {
-                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, $"{e.Exception.Message}\nPlease retry the operation"));
-                            _log.Warning(e.Exception, "{class} {method} COM Error while doing DragDrop: {message}", "EntryPoint", "App_DispatcherUnhandledException", e.Exception.Message);
-                            return;
-                        }
-
-                        // for all other unhandled Exceptions we log them and exit here as we don't know if the app is in a valid state
-                        Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
-                        LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
-                        e.Handled = true;
-                        
-                        Application.Current.Shutdown(1);
-                        break;
+                    Log.Error(e.Exception, nameof(EntryPoint), nameof(App_DispatcherUnhandledException), "Error during shutdown");
+                    App?.Shutdown(3);
+                    return;
                 }
 
+                if (e.Exception is System.Runtime.InteropServices.COMException comException)
+                {
+                
+                    switch (comException.ErrorCode)
+                    {
+                        case -2147221037: // Data on clipboard is invalid (Exception from HRESULT: 0x800401D3 (CLIPBRD_E_BAD_DATA))
+                            e.Handled = true;
+                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_BAD_DATA Error - Clipboard operation failed, please try again"));
+                            _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_BAD_DATA");
+                            return;
+                        case -2147221040: // catch 0x800401D0 (CLIPBRD_E_CANT_OPEN) errors when wpf DataGrid can't access clipboard 
+                            e.Handled = true;
+                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "CLIPBRD_E_CANT_OPEN Error - Clipboard operation failed, please try again"));
+                            _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "CLIPBRD_E_CANT_OPEN");
+                            return;
+                        case unchecked((int)0x8001010E)://2147549454): // 0x_8001_010E:
+                            e.Handled = true;
+                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "RPC_E_WRONG_THREAD Error - Clipboard operation failed, please try again"));
+                            _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "RPC_E_WRONG_THREAD");
+                            return;
+                        default:
+                            if (e.Exception.Message == "A drag operation is already in progress")
+                            {
+                                _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, $"{e.Exception.Message}\nPlease retry the operation"));
+                                _log.Warning(e.Exception, "{class} {method} COM Error while doing DragDrop: {message}", "EntryPoint", "App_DispatcherUnhandledException", e.Exception.Message);
+                                return;
+                            }
+
+                            // for all other unhandled Exceptions we log them and exit here as we don't know if the app is in a valid state
+                            Log.Fatal(e.Exception, "{class} {method} Unhandled exception", "EntryPoint", "App_DispatcherUnhandledException");
+                            LogFatalCrash(e.Exception, "DAX Studio Standalone DispatcherUnhandledException Unhandled COM Exception",_options);
+                            e.Handled = true;
+                        
+                            Application.Current.Shutdown(1);
+                            break;
+                    }
+
+                }
+                else
+                {
+                    LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash",_options);
+                    e.Handled = true;
+                    App?.Shutdown(3);
+                }
             }
-            else
+            finally
             {
-                LogFatalCrash(e.Exception, "DAX Studio Standalone App_DispatcherUnhandledException crash",_options);
-                e.Handled = true;
-                App?.Shutdown(3);
+                System.Threading.Interlocked.Exchange(ref _inUnhandledExceptionHandler, 0);
             }
         }
 

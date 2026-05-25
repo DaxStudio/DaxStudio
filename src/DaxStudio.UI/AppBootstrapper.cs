@@ -108,9 +108,16 @@ namespace DaxStudio.UI
                     typeof(FrameworkElement),
                     new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
 
-	            var catalog = new AggregateCatalog(
-	                AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()
-	                );
+				var catalog = new AggregateCatalog(
+					new AssemblyCatalog(typeof(DaxStudio.UI.ViewModels.DocumentViewModel).Assembly),
+					new AssemblyCatalog(typeof(DaxStudio.Core.Trace.ServerTimingDetailsViewModel).Assembly),
+					// The host assembly (DaxStudio.Standalone or DaxStudio.ExcelAddin)
+					// exports IDaxStudioHost; without it ShellViewModel and any other
+					// parts that import IDaxStudioHost (e.g. RibbonViewModel) will be
+					// rejected by MEF, which surfaces as
+					// "Could not locate any instances of contract DaxStudio.UI.IShell".
+					new AssemblyCatalog(_hostAssembly)
+					);
 	            //_container = new CompositionContainer(catalog,true);
                 _container = new CompositionContainer(catalog, true);
 	            var batch = new CompositionBatch();
@@ -245,6 +252,7 @@ namespace DaxStudio.UI
                 new[] {
                     Assembly.GetExecutingAssembly()
                     ,hostAssembly
+                    ,typeof(DaxStudio.Core.Trace.ServerTimingDetailsViewModel).Assembly,
                 };
         }
 

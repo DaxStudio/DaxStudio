@@ -1,6 +1,6 @@
 ﻿using DaxStudio.UI.Interfaces;
+using Serilog;
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,9 +19,27 @@ namespace DaxStudio.UI.Controls
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            _viewModel = this.DataContext as IZoomable;
-            Debug.Assert(_viewModel != null, $"The view model '{DataContext.GetType() }' does not support IZoomable");
-            if (_viewModel == null) return;
+            // Detach from the previous DataContext (if any) so we don't leak handlers
+            if (_viewModel != null)
+            {
+                _viewModel.OnScaleChanged -= ViewModel_OnScaleChanged;
+                _viewModel = null;
+            }
+
+            _viewModel = e.NewValue as IZoomable;
+            if (_viewModel == null)
+            {
+                if (e.NewValue != null)
+                {
+                    // Soft check: log instead of asserting so that view models which
+                    // legitimately don't need zooming (or which lost IZoomable during a
+                    // refactor) don't bring down the app via a Debug.Assert dialog.
+                    Log.Warning("{class} {method} The view model '{viewModelType}' bound to {controlType} does not implement IZoomable; zoom support disabled for this view.",
+                        nameof(ZoomableUserControl), nameof(OnDataContextChanged),
+                        e.NewValue.GetType().FullName, this.GetType().FullName);
+                }
+                return;
+            }
             _viewModel.OnScaleChanged += ViewModel_OnScaleChanged;
         }
 
@@ -42,7 +60,6 @@ namespace DaxStudio.UI.Controls
 
         public void OnPreviewMouseWheel(object sender, MouseWheelEventArgs args)
         {
-            Debug.Assert(_viewModel != null);
             if (_viewModel == null) return;
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {

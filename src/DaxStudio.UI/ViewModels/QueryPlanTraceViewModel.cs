@@ -767,8 +767,22 @@ namespace DaxStudio.UI.ViewModels
             var existingRootItems = new BindableCollection<PhysicalQueryPlanRow>();
             existingRootItems.AddRange(PhysicalQueryPlanTree);
             _drillinStack.Push(existingRootItems);
+
+            // Suppress per-operation change notifications and raise a single Reset
+            // via Refresh() at the end so the TreeGrid rebinds the whole list cleanly.
+            // Without this the separate Clear + Add notifications can be coalesced or
+            // skipped by the virtualizing TreeGrid mid-render and leave the UI showing
+            // the pre-drill state. Mirrors the pattern used by DrillOut below.
+            PhysicalQueryPlanTree.IsNotifying = false;
             this.PhysicalQueryPlanTree.Clear();
             this.PhysicalQueryPlanTree.Add(selectedNode);
+            PhysicalQueryPlanTree.IsNotifying = true;
+            PhysicalQueryPlanTree.Refresh();
+
+            // Clear the selection so that successive drill-in clicks without an explicit
+            // re-selection don't re-drill into the same (now-root) node and look like a
+            // no-op to the user. CanDrillIn becomes false until a new row is selected.
+            SelectedPhysicalQueryPlanRow = null;
         }
 
         public bool CanDrillOut(object source)

@@ -11,7 +11,6 @@ using Fluent;
 
 namespace DaxStudio.UI.ViewModels
 {
-    [InheritedExport(typeof(ITraceWatcher)), PartCreationPolicy(CreationPolicy.NonShared)]
     public abstract class TraceWatcherBaseViewModel
         : TraceWatcherBaseModel
         , IZoomable

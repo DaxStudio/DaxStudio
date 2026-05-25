@@ -25,13 +25,29 @@ namespace DaxStudio.UI.ViewModels
     public class CustomTraceViewModel
         : CustomTraceModel,
         ISaveState,
-        IViewAware
+        IViewAware,
+        IZoomable
     {
         [ImportingConstructor]
         public CustomTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager)
             : base(eventAggregator, globalOptions, windowManager)
         {
         }
+
+        #region IZoomable
+        public event EventHandler OnScaleChanged;
+        private double _scale = 1;
+        public double Scale
+        {
+            get => _scale;
+            set
+            {
+                _scale = value;
+                NotifyOfPropertyChange();
+                OnScaleChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        #endregion
 
         public override bool ShouldStartTrace()
         {

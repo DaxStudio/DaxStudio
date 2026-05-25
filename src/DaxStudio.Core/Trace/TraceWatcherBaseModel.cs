@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ using Timer = System.Timers.Timer;
 
 namespace DaxStudio.Core.Trace
 {
+    [InheritedExport(typeof(ITraceWatcher)), PartCreationPolicy(CreationPolicy.NonShared)]
     public abstract class TraceWatcherBaseModel
         : Screen
         , IToolWindow

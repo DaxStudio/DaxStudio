@@ -34,6 +34,7 @@ namespace DaxStudio.UI.ViewModels
         , IHandle<OpenDaxFileEvent>
         , IHandle<PasteDaxFileEvent>
         , IHandle<RecoverNextAutoSaveFileEvent>
+        , IHandle<ShellInitializedEvent>
         , IHandle<UpdateGlobalOptions>
         , IDocumentWorkspace
     {
@@ -73,6 +74,17 @@ namespace DaxStudio.UI.ViewModels
         
         protected override async Task OnInitializedAsync(CancellationToken cancellationToken)
         {
+            await base.OnInitializedAsync(cancellationToken);
+            // The initial recovery / blank-document / command-line-file workflow used
+            // to run here, but Caliburn calls OnInitializedAsync BEFORE the shell's
+            // view has loaded, so dialogs would render before the main UI and any
+            // activated document's view would never be attached to the visual tree.
+            // It now runs in HandleAsync(ShellInitializedEvent) which is published
+            // from ShellViewModel.OnViewLoaded once the window is fully wired up.
+        }
+
+        public async Task HandleAsync(ShellInitializedEvent message, CancellationToken cancellationToken)
+        {
             try
             {
                 var recoveringFiles = false;
@@ -84,36 +96,34 @@ namespace DaxStudio.UI.ViewModels
                 // check for auto-saved files and offer to recover them
                 if (filesToRecover.Any())
                 {
-                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Found auto-save files, beginning recovery");
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(HandleAsync), "Found auto-save files, beginning recovery");
                     recoveringFiles = true;
                     await RecoverAutoSavedFilesAsync(autoSaveInfo);
                 }
                 else
                 {
                     // if there are no auto-save files to recover, start the auto save timer
-                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Starting auto-save timer");
-                    await _eventAggregator.PublishAsync(new StartAutoSaveTimerEvent());
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(HandleAsync), "Starting auto-save timer");
+                    await _eventAggregator.PublishAsync(new StartAutoSaveTimerEvent(), cancellationToken);
                 }
 
                 // if a filename was passed in on the command line open it
                 if (!string.IsNullOrEmpty(_host.CommandLineFileName))
                 {
-                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", $"Opening file from command line: '{_host.CommandLineFileName}'");
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(HandleAsync), $"Opening file from command line: '{_host.CommandLineFileName}'");
                     await NewQueryDocumentAsync(_host.CommandLineFileName);
                 }
 
                 // if no tabs are open at this point and we are not recovering auto-save file then, open a blank document
                 if (Items.Count == 0 && !recoveringFiles)
                 {
-                    Log.Debug(Constants.LogMessageTemplate, nameof(ShellViewModel), "ctor", "Opening a new blank query window");
-                    await _eventAggregator.PublishAsync(new NewDocumentEvent(Ribbon.SelectedTarget));
+                    Log.Debug(Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(HandleAsync), "Opening a new blank query window");
+                    await _eventAggregator.PublishAsync(new NewDocumentEvent(Ribbon.SelectedTarget), cancellationToken);
                 }
-
             }
             catch (Exception ex)
             {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(OnInitializeAsync), "Error Initializing DocumentTabs");
-
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(DocumentTabViewModel), nameof(HandleAsync), "Error during shell-initialized startup workflow");
             }
         }
 

@@ -35,6 +35,7 @@ namespace DaxStudio.UI.ViewModels
             , IServerTimes
             , ITraceDiagnostics
             , IViewAware
+            , IZoomable
             , IHandle<ThemeChangedEvent>
             , IHandle<CopySEQueryEvent>
             , IHandle<CopyPasteServerTimingsEvent>
@@ -46,6 +47,21 @@ namespace DaxStudio.UI.ViewModels
         {
             this.ViewAttached += ServerTimesViewModel_ViewAttached;
         }
+
+        #region IZoomable
+        public event EventHandler OnScaleChanged;
+        private double _scale = 1;
+        public double Scale
+        {
+            get => _scale;
+            set
+            {
+                _scale = value;
+                NotifyOfPropertyChange();
+                OnScaleChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        #endregion
 
         private void ServerTimesViewModel_ViewAttached(object sender, ViewAttachedEventArgs e)
         {
