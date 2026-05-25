@@ -2,10 +2,11 @@
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using Spectre.Console;
-using DaxStudio.UI.Interfaces;
+using DaxStudio.Core.Interfaces;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices.AdomdClient;
-using DaxStudio.UI.Model;
+using DaxStudio.Core.Model;
+using DaxStudio.Core.ResultsTargets;
 using System;
 using System.IO;
 using DaxStudio.Interfaces.Enums;
@@ -80,7 +81,7 @@ namespace DaxStudio.CommandLine.Commands
             }
 
             QueryRunner runner = new QueryRunner(settings);
-            var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
+            var target = new ResultsTargetTextFile();
 
             if (settings.FileType == TextFileType.Unknown)
             {

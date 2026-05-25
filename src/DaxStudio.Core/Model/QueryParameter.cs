@@ -3,9 +3,8 @@ using DaxStudio.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Documents;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Model
 {
     public class QueryParameter: PropertyChangedBase
     {

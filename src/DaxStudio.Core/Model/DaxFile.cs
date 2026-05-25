@@ -1,10 +1,10 @@
 ﻿using DaxStudio.Interfaces;
-using DaxStudio.UI.Enums;
+using DaxStudio.Core.Enums;
 using Newtonsoft.Json;
 using System.IO;
 using System.Runtime.Serialization;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Model
 {
     [DataContract]
     public class DaxFile: IDaxFile

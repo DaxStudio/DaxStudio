@@ -1,9 +1,9 @@
 ﻿using Caliburn.Micro;
-using DaxStudio.UI.Utils;
+using DaxStudio.Core.Utils;
 using System;
 using System.Collections.Generic;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Model
 {
     public class QueryInfo
     {

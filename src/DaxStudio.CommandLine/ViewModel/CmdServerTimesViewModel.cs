@@ -1,15 +1,14 @@
 using Caliburn.Micro;
+using DaxStudio.Core.Trace;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.CommandLine.ViewModel
 {
     /// <summary>
-    /// CLI-compatible subclass of ServerTimesViewModel.
-    /// Follows the CmdCustomTraceViewModel pattern — all timing logic
-    /// (FE/SE gap analysis, ProcessResults) stays in the base class.
+    /// CLI-compatible subclass of ServerTimesModel.
+    /// Provides no-op overrides for UI-only operations that are abstract on the Core base.
     /// </summary>
-    internal class CmdServerTimesViewModel : ServerTimesViewModel
+    internal class CmdServerTimesViewModel : ServerTimesModel
     {
         public CmdServerTimesViewModel(IEventAggregator eventAggregator,
             ServerTimingDetailsViewModel serverTimingDetails,
@@ -17,5 +16,7 @@ namespace DaxStudio.CommandLine.ViewModel
             : base(eventAggregator, serverTimingDetails, options, windowManager)
         {
         }
+
+        public override void CopyResults() { }
     }
 }

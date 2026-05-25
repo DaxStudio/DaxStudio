@@ -1,10 +1,8 @@
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Utils;
+using DaxStudio.Core.Exports;
+using DaxStudio.Core.Extensions;
 using Newtonsoft.Json;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -14,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DaxStudio.Core.Interfaces;
 
-namespace DaxStudio.UI.ResultsTargets
+namespace DaxStudio.Core.ResultsTargets
 {
     internal enum ExportMode
     {
@@ -131,7 +129,7 @@ namespace DaxStudio.UI.ResultsTargets
                             switch(exportMode)
                             {
                                 case ExportMode.Parquet:
-                                    await ParquetExporter.ExportDataReaderToParquetInChunksAsync(runner, fileName, reader, statusProgress);
+                                    await ParquetExporterRunner.ExportDataReaderToParquetInChunksAsync(runner, fileName, reader, statusProgress);
                                     break;
                                 case ExportMode.Json:
                                     WriteToJsonFile(runner, fileName, reader, statusProgress);

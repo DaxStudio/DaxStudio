@@ -1,10 +1,10 @@
 ﻿using Caliburn.Micro;
+using DaxStudio.Core.Trace;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.ViewModels;
 
 namespace DaxStudio.CommandLine.ViewModel
 {
-    internal class CmdCustomTraceViewModel : CustomTraceViewModel
+    internal class CmdCustomTraceViewModel : CustomTraceModel
     {
         public CmdCustomTraceViewModel(IEventAggregator eventAggregator, IGlobalOptions globalOptions, IWindowManager windowManager) : base(eventAggregator, globalOptions, windowManager)
         {
@@ -14,5 +14,7 @@ namespace DaxStudio.CommandLine.ViewModel
         {
             return true;
         }
+
+        public override void CopyAll() { }
     }
 }

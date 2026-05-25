@@ -1,7 +1,7 @@
 ﻿using LargeXlsx;
 using static LargeXlsx.XlsxAlignment;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.ResultsTargets
 {
     internal static class XlsxHelper
     {

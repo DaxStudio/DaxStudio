@@ -1,11 +1,9 @@
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Utils;
 using System.IO;
 using System.Reflection;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Settings
 {
     public static class SettingsProviderFactory
     {

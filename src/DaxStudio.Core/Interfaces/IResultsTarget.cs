@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using DaxStudio.Core.Interfaces;
 
-namespace DaxStudio.UI.Interfaces
+namespace DaxStudio.Core.Interfaces
 {
     public interface IResultsTarget
     {

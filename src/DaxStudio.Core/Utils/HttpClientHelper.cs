@@ -1,9 +1,7 @@
 using Caliburn.Micro;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
 using DaxStudio.Core.Extensions;
-using DaxStudio.UI.Extensions;
 using Serilog;
 using System;
 using System.Net;
@@ -13,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Utils
 {
 
     public class HttpClientHelper: IHandle<UpdateGlobalOptions>

@@ -2,9 +2,8 @@
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System;
-using DaxStudio.UI.Model;
+using DaxStudio.Core.Model;
 using System.Linq;
-using DaxStudio.UI.Interfaces;
 using System.ComponentModel.Composition;
 using DaxStudio.Common;
 using DaxStudio.Interfaces;
@@ -15,7 +14,7 @@ using System.Globalization;
 using System.Reflection;
 using Serilog;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Settings
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     //[Export(typeof(ISettingProvider))]

@@ -4,11 +4,10 @@ using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
 using DaxStudio.QueryTrace;
 using DaxStudio.QueryTrace.Interfaces;
-using DaxStudio.UI.Interfaces;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
+using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Trace;
 using DaxStudio.Core.Connections;
-using DaxStudio.UI.ViewModels;
 using Microsoft.AnalysisServices.AdomdClient;
 using Serilog;
 using Spectre.Console;
@@ -509,7 +508,7 @@ namespace DaxStudio.CommandLine.Commands
         /// ProcessResults() completes — signals that IServerTimes properties
         /// on ServerTimesViewModel are now populated with fresh data.
         /// </summary>
-        private class TraceCompletedHandler : IHandle<UI.Events.QueryTraceCompletedEvent>
+        private class TraceCompletedHandler : IHandle<QueryTraceCompletedEvent>
         {
             private readonly ITraceWatcher _traceWatcher;
             private readonly System.Action _callback;
@@ -518,7 +517,7 @@ namespace DaxStudio.CommandLine.Commands
                 _traceWatcher = traceWatcher;
                 _callback = callback;
             }
-            public Task HandleAsync(UI.Events.QueryTraceCompletedEvent message, CancellationToken cancellationToken)
+            public Task HandleAsync(QueryTraceCompletedEvent message, CancellationToken cancellationToken)
             {
                 if (!ReferenceEquals(message.Trace, _traceWatcher)) return Task.CompletedTask;
                 _callback();

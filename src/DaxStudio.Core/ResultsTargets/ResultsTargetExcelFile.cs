@@ -3,10 +3,6 @@ using Caliburn.Micro;
 using DaxStudio.Core.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Extensions;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Utils;
 using LargeXlsx;
 using System;
 using System.ComponentModel.Composition;
@@ -18,7 +14,7 @@ using System.Threading.Tasks;
 using DaxStudio.Core.Interfaces;
 using static LargeXlsx.XlsxAlignment;
 
-namespace DaxStudio.UI.ResultsTargets
+namespace DaxStudio.Core.ResultsTargets
 {
     [Export(typeof(IResultsTarget))]
     public class ResultsTargetExcelFile : IResultsTarget

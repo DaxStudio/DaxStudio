@@ -1,7 +1,7 @@
 ﻿using DaxStudio.Common;
 using System;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Settings
 {
     public class JsonSettingProviderAppData : JsonSettingProviderBase
     {

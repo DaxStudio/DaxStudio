@@ -3,8 +3,8 @@ using DaxStudio.CommandLine.UIStubs;
 using DaxStudio.CommandLine.ViewModel;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Connections;
-using DaxStudio.UI.Model;
-using DaxStudio.UI.ViewModels;
+using DaxStudio.Core.Model;
+using DaxStudio.Core.Trace;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -14,7 +14,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DaxStudio.Core.Model;
 using DaxStudio.Core.Enums;
 
 namespace DaxStudio.CommandLine.Commands

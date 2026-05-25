@@ -1,6 +1,5 @@
 using DaxStudio.Core.Exports;
 using DaxStudio.Interfaces;
-using DaxStudio.UI.Interfaces;
 using Parquet;
 using Parquet.Schema;
 using System;
@@ -11,9 +10,9 @@ using System.Threading.Tasks;
 using DataColumn = Parquet.Data.DataColumn;
 using DaxStudio.Core.Interfaces;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Exports
 {
-    public static class ParquetExporter
+    public static class ParquetExporterRunner
     {
         public static async Task ExportDataReaderToParquetInChunksAsync(IQueryRunner runner, string outputPath, IDataReader reader, IStatusBarMessage statusProgress, int chunkSize = 1000000)
         {

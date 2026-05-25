@@ -37,6 +37,8 @@
             </ResourceDictionary>
         </conv:ResourceLookupConverter>
 
+        <conv:FolderOutputMessageToDocumentConverter x:Key="FolderOutputMessageToDocument" />
+
         <Style TargetType="{x:Type GridViewColumnHeader}" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}">
             <Setter Property="Background" Value="{DynamicResource Theme.Brush.MenuBar.Back}"/>
             <Setter Property="Foreground" Value="{DynamicResource Theme.Brush.Default.Fore}"/>
@@ -102,24 +104,8 @@
                     </ContextMenu>
                 </ListView.ContextMenu>
                 <ListView.Resources>
-                    <DataTemplate DataType="{x:Type events:FolderOutputMessage}">
-                        <!--<controls:BindableRichTextBox 
-                            VerticalAlignment="Top"
-                            Margin="0,0,2,2"
-                            Padding="0"
-                            HorizontalAlignment="Stretch"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            IsDocumentEnabled="True"
-                            IsReadOnly="True"
-                            IsReadOnlyCaretVisible="True"
-                            Foreground="{DynamicResource Theme.Brush.Default.Fore}"
-                            Document="{Binding Document, Mode=OneTime}"
-                            MaxHeight="100"
-                            VerticalScrollBarVisibility="Disabled"
-                            >
-                        </controls:BindableRichTextBox>-->
-                        <FlowDocumentScrollViewer Document="{Binding Document}"
+                    <DataTemplate DataType="{x:Type coreEvents:FolderOutputMessage}">
+                        <FlowDocumentScrollViewer Document="{Binding Converter={StaticResource FolderOutputMessageToDocument}}"
                                                   Margin="0,2"
                                                   VerticalAlignment="Top"
                                                   VerticalScrollBarVisibility="Auto"

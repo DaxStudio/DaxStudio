@@ -4,11 +4,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Caliburn.Micro;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
 using Serilog;
-using DaxStudio.UI.Model;
+using DaxStudio.Core.Model;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Utils
 {
     public static class DaxHelper
     {

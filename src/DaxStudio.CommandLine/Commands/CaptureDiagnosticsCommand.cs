@@ -1,5 +1,6 @@
-﻿using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.Model;
+﻿using DaxStudio.Core.Interfaces;
+using DaxStudio.Core.Model;
+using DaxStudio.Core.ResultsTargets;
 using Serilog;
 using Spectre.Console.Cli;
 using System.Collections.Generic;
@@ -43,11 +44,8 @@ namespace DaxStudio.CommandLine.Commands
             }
             // export to csv
 
-            //var ribbon = new UI.ViewModels.RibbonViewModel(host, eventAggregator, windowManager, options, settings);
-            //var vm = new DaxStudio.UI.ViewModels.CaptureDiagnosticsViewModel(ribbon, options, eventAggregator);
-
             var runner = new QueryRunner(settings);
-            var target = new DaxStudio.UI.ResultsTargets.ResultsTargetTextFile();
+            var target = new ResultsTargetTextFile();
             target.OutputResultsAsync(runner, settings, settings.Out).Wait();
             Log.Information("Finished CSV command");
             return 0;

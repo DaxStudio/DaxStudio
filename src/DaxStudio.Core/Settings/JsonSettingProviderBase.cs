@@ -3,10 +3,8 @@ using comm= DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
 using DaxStudio.Core.Events;
-using DaxStudio.UI.Events;
-using DaxStudio.UI.Interfaces;
-using DaxStudio.UI.JsonConverters;
-using DaxStudio.UI.Model;
+using DaxStudio.Core.JsonConverters;
+using DaxStudio.Core.Model;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
@@ -19,7 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace DaxStudio.UI.Utils
+namespace DaxStudio.Core.Settings
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     public abstract class JsonSettingProviderBase : ISettingProvider
