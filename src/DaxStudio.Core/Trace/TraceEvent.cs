@@ -4,7 +4,7 @@ using DaxStudio.QueryTrace;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace DaxStudio.UI.Model
+namespace DaxStudio.Core.Trace
 {
     public class TraceEvent
     {
