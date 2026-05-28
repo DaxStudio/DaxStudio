@@ -35,8 +35,8 @@ namespace DaxStudio.ExcelAddin
                 levelSwitch.MinimumLevel = LogEventLevel.Verbose;
 #endif
 
-                if (System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey1)
-                    || System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey2))
+                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift)
+                    || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightShift))
                 {
                     loggingKeyDown = true;
                     _debugLogEnabled = true;

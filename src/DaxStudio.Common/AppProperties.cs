@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaxStudio.Common
+﻿namespace DaxStudio.Common
 {
     public static class AppProperties
     {
@@ -20,13 +15,5 @@ namespace DaxStudio.Common
         internal const string Query = "Query";
         internal const string FromUri = "FromUri";
 
-        public static CmdLineArgs _args;
-
-        public static CmdLineArgs Args(this System.Windows.Application app)
-        {
-            return new CmdLineArgs(app.Properties);
-            //if (_args == null) _args = new CmdLineArgs(app);
-            //return _args;
-        }
     }
 }

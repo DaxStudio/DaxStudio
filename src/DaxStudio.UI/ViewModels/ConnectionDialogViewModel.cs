@@ -573,7 +573,7 @@ namespace DaxStudio.UI.ViewModels
 
                 if ((serverType == ServerType.AzureAnalysisServices || serverType == ServerType.PowerBIService))
                 {
-                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    IntPtr? hwnd = WindowHandleHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var tokenScope = serverType == ServerType.AzureAnalysisServices ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
                     var ( authResult,context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, tokenScope, DataSource);
                     token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);

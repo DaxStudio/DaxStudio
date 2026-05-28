@@ -13,9 +13,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Interop;
-using System.Windows;
-using System.Windows.Controls;
 using DaxStudio.Common.Interfaces;
 using Microsoft.Win32.SafeHandles;
 using System.Net.Http;
@@ -29,7 +26,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using Microsoft.PowerBI.Api.Models.Credentials;
 
-namespace DaxStudio.Common
+namespace DaxStudio.UI.Utils
 {
 
     public struct Workspace

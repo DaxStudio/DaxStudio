@@ -423,7 +423,7 @@ namespace DaxStudio.UI.ViewModels
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token
-                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    IntPtr? hwnd = WindowHandleHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var (authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
                     token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
                 }
@@ -1568,7 +1568,7 @@ namespace DaxStudio.UI.ViewModels
                 if (server.RequiresEntraAuth())
                 {
                     // prompt for access token
-                    IntPtr? hwnd = EntraIdHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                    IntPtr? hwnd = WindowHandleHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
                     var scopeType = server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
                     var (authResult,context) = EntraIdHelper.PromptForAccountAsync(hwnd, Options, scopeType, server).Result;
                     token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);

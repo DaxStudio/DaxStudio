@@ -215,8 +215,8 @@ namespace DaxStudio.Standalone
             Log.Logger = _log;
 
             // check if user is holding shift key down
-            bool isLoggingKeyDown = (System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey1)
-                                     || System.Windows.Input.Keyboard.IsKeyDown(Constants.LoggingHotKey2));
+            bool isLoggingKeyDown = (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift)
+                                     || System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightShift));
 
             App.Args().LoggingEnabledByHotKey = isLoggingKeyDown;
 

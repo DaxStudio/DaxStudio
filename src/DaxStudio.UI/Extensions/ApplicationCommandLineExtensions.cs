@@ -2,7 +2,7 @@ using System.Windows;
 
 namespace DaxStudio.Common.Extensions
 {
-    public static class ApplicationExtensions
+    public static class ApplicationCommandLineExtensions
     {
         public static void ReadCommandLineArgs(this Application app, string[] args)
         {
@@ -11,4 +11,3 @@ namespace DaxStudio.Common.Extensions
         }
     }
 }
-

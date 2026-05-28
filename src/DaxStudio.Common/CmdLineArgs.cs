@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using System.Windows;
 using DaxStudio.Common.Cli;
 using DaxStudio.Common.Extensions;
 using Serilog;

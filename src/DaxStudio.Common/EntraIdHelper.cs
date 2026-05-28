@@ -27,9 +27,6 @@ using System.Runtime.Serialization.Json;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Interop;
 using System.Xml;
 using Tom = Microsoft.AnalysisServices;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
@@ -569,12 +566,6 @@ namespace DaxStudio.Common
                 return asazureScope;
             else
                 return powerbiScope;
-        }
-
-        public static IntPtr? GetHwnd(ContentControl view)
-        {
-            HwndSource hwnd = PresentationSource.FromVisual(view) as HwndSource;
-            return hwnd?.Handle;
         }
 
     }
