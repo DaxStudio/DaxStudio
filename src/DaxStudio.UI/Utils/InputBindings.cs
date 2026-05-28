@@ -51,10 +51,10 @@ namespace DaxStudio.UI.Utils
                     _stash.Push(binding);
                     _inputBindings.Add(binding);
                 }
-                catch (NotSupportedException ex)
+                catch (Exception ex)
                 {
                     Log.Warning(ex, Constants.LogMessageTemplate, nameof(InputBindings), nameof(RegisterCommands),
-                        $"Skipping unsupported hotkey '{inputBindingCommand.GestureModifier} + {inputBindingCommand.GestureKey}'");
+                        $"Skipping hotkey '{inputBindingCommand.GestureModifier} + {inputBindingCommand.GestureKey}' due to registration error");
                 }
             }
         }
