@@ -1431,7 +1431,7 @@ namespace DaxStudio.UI.ViewModels
             try
             {
                 var serverName = ActiveDocument.Connection.ServerName;
-                System.Diagnostics.Process.Start(_sqlProfilerCommand, $" /A {serverName}");
+                System.Diagnostics.Process.Start(_sqlProfilerCommand, $"/A {SqlProfilerHelper.QuoteArgument(serverName)}");
             }
             catch (Exception ex)
             {
