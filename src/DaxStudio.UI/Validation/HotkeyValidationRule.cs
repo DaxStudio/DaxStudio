@@ -1,5 +1,4 @@
-﻿using DaxStudio.Common.Extensions;
-using DaxStudio.Interfaces;
+﻿using DaxStudio.Interfaces;
 using DaxStudio.Interfaces.Attributes;
 using DaxStudio.UI.Controls;
 using DaxStudio.UI.Extensions;
@@ -56,37 +55,14 @@ namespace DaxStudio.UI.Validation
         {
             var msg = string.Empty;
             string hotkey = value?.ToString()??string.Empty;
-            if (!hotkey.Contains('+') )
+            if (!HotkeyBindingValidator.TryValidate(hotkey, out msg))
             {
-                if (!hotkey.IsFunctionKey())
-                {
-                    msg = $"Cannot set a single character Hotkey '{hotkey}'";
-                    this.Wrapper.Options.HotkeyWarningMessage = msg;
-                    // rollback to original value
-                    BindingOperations.GetBindingExpressionBase(
-                        ((Control)this.Wrapper.HotkeyEditorControl), HotkeyEditorControl.HotkeyProperty).UpdateTarget();
+                this.Wrapper.Options.HotkeyWarningMessage = msg;
+                // rollback to original value
+                BindingOperations.GetBindingExpressionBase(
+                    ((Control)this.Wrapper.HotkeyEditorControl), HotkeyEditorControl.HotkeyProperty).UpdateTarget();
 
-                    return new ValidationResult(false, msg);
-                }
-            }
-            var hotkeyParts = hotkey.Split('+');
-            if (hotkeyParts.Length == 2)
-            {
-                var modifier = hotkeyParts[0].Trim();
-                var key = hotkeyParts[1].Trim();
-                if ( modifier.Contains("shift", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    if (key.Length == 1 && char.IsLetter(key[0]))
-                    {
-                        msg = $"Cannot set a hotkey for '{hotkey}'";
-                        this.Wrapper.Options.HotkeyWarningMessage = msg;
-                        // rollback to original value
-                        BindingOperations.GetBindingExpressionBase(
-                            ((Control)this.Wrapper.HotkeyEditorControl), HotkeyEditorControl.HotkeyProperty).UpdateTarget();
-
-                        return new ValidationResult(false, msg);
-                    }
-                }
+                return new ValidationResult(false, msg);
             }
             
             var props = this.Wrapper.Options.GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);

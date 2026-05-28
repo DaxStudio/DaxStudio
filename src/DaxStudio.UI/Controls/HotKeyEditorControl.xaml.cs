@@ -173,6 +173,26 @@ namespace DaxStudio.UI.Controls
         private void HotkeyTextBox_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeValidation();
+            ValidateCurrentValue();
+        }
+
+        private void ValidateCurrentValue()
+        {
+            var bindingExpression = BindingOperations.GetBindingExpression(this, HotkeyProperty);
+            if (bindingExpression == null) return;
+
+            var validationRule = bindingExpression.ParentBinding?.ValidationRules?.OfType<HotkeyValidationRule>().FirstOrDefault();
+            if (validationRule == null) return;
+
+            var validationResult = validationRule.Validate(Hotkey, System.Globalization.CultureInfo.CurrentCulture);
+            if (validationResult.IsValid)
+            {
+                System.Windows.Controls.Validation.ClearInvalid(bindingExpression);
+                return;
+            }
+
+            System.Windows.Controls.Validation.MarkInvalid(bindingExpression,
+                new ValidationError(validationRule, bindingExpression, validationResult.ErrorContent, null));
         }
     }
 

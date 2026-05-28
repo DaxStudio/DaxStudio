@@ -1,4 +1,5 @@
 ﻿using DaxStudio.UI.Model;
+using DaxStudio.UI.Validation;
 using System;
 using System.Globalization;
 using System.Reflection;
@@ -24,6 +25,10 @@ namespace DaxStudio.UI.Utils
         private readonly Action<object> _executeDelegate;
         private Func<object, bool> _canExecutePredicate;
 
+        public string HotkeyText { get; }
+        public string ValidationError { get; private set; }
+        public bool IsValidHotkey => string.IsNullOrEmpty(ValidationError);
+
         public Key GestureKey { get; set; }
         public ModifierKeys GestureModifier { get; set; }
         public MouseAction MouseGesture { get; set; }
@@ -40,9 +45,25 @@ namespace DaxStudio.UI.Utils
             _executeDelegate = x => myAction();
             _canExecutePredicate = x => true;
 
-            var hotkey = new Hotkey(hotKey);
-            GestureKey = hotkey.Key;
-            GestureModifier = hotkey.Modifiers;
+            HotkeyText = hotKey ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(HotkeyText)) return;
+
+            if (!HotkeyBindingValidator.TryValidate(HotkeyText, out var validationMessage))
+            {
+                ValidationError = validationMessage;
+                return;
+            }
+
+            try
+            {
+                var hotkey = new Hotkey(HotkeyText);
+                GestureKey = hotkey.Key;
+                GestureModifier = hotkey.Modifiers;
+            }
+            catch
+            {
+                ValidationError = $"Cannot set a hotkey for '{HotkeyText}'";
+            }
 
             //ParseKeyString(hotKey);
         }

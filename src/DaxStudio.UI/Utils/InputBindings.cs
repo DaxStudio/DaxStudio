@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using DaxStudio.Common;
+using DaxStudio.UI.Validation;
+using Serilog;
 
 namespace DaxStudio.UI.Utils
 {
@@ -23,10 +26,36 @@ namespace DaxStudio.UI.Utils
         {
             foreach (var inputBindingCommand in inputBindingCommands)
             {
-                var binding = new KeyBinding(inputBindingCommand, inputBindingCommand.GestureKey, inputBindingCommand.GestureModifier);
+                if (!inputBindingCommand.IsValidHotkey)
+                {
+                    Log.Warning(Constants.LogMessageTemplate, nameof(InputBindings), nameof(RegisterCommands),
+                        $"Skipping invalid hotkey '{inputBindingCommand.HotkeyText}': {inputBindingCommand.ValidationError}");
+                    continue;
+                }
 
-                _stash.Push(binding);
-                _inputBindings.Add(binding);
+                if (!HotkeyBindingValidator.IsSupportedForRegistration(inputBindingCommand.GestureKey, inputBindingCommand.GestureModifier))
+                {
+                    // Key.None means "no hotkey assigned", so this is expected when a hotkey is cleared.
+                    if (inputBindingCommand.GestureKey != Key.None)
+                    {
+                        Log.Warning(Constants.LogMessageTemplate, nameof(InputBindings), nameof(RegisterCommands),
+                            $"Skipping unsupported hotkey '{inputBindingCommand.GestureModifier} + {inputBindingCommand.GestureKey}'");
+                    }
+                    continue;
+                }
+
+                try
+                {
+                    var binding = new KeyBinding(inputBindingCommand, inputBindingCommand.GestureKey, inputBindingCommand.GestureModifier);
+
+                    _stash.Push(binding);
+                    _inputBindings.Add(binding);
+                }
+                catch (NotSupportedException ex)
+                {
+                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(InputBindings), nameof(RegisterCommands),
+                        $"Skipping unsupported hotkey '{inputBindingCommand.GestureModifier} + {inputBindingCommand.GestureKey}'");
+                }
             }
         }
 
