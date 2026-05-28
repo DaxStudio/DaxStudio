@@ -9,6 +9,7 @@
              xmlns:local="clr-namespace:DaxStudio.UI.Resources" 
              xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
              d:DesignWidth="980"
             
              mc:Ignorable="d">
@@ -689,6 +690,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
@@ -714,10 +716,30 @@
                                        Margin="0 0 0 8"
                                        Grid.Row="2" >Recent Documents</Label>
 
+                                <TextBox x:Name="RecentFilesSearch"
+                                         Grid.Row="3"
+                                         Text="{Binding RecentFilesFilter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                         ui:ControlHelper.PlaceholderText="Search recent files…"
+                                         MinWidth="400"
+                                         MaxWidth="700"
+                                         HorizontalAlignment="Left"
+                                         Margin="0 0 25 8"
+                                         PreviewKeyDown="RecentFilesSearch_PreviewKeyDown">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource SearchBoxStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RecentFiles.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+
                                         <ListView x:Name="RecentFiles" 
                                                   Style="{StaticResource DaxStudioListViewNoSelectionStyle}"
                                                   DataContext="{Binding}" 
-                                                  ItemsSource="{Binding Path=RecentFiles, Mode=TwoWay}" 
+                                                  ItemsSource="{Binding Path=RecentFilesView}" 
                                                   Margin="0 0 0 0" 
                                                   Padding="0 0 25 0"
                                                   MinWidth="400"
@@ -725,7 +747,7 @@
                                                   HorizontalAlignment="Left"
                                                   BorderBrush="Transparent" 
                                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                                  Grid.Row="3"
+                                                  Grid.Row="4"
                                                   HorizontalContentAlignment="Stretch"
                                                   cal:Message.Attach="[Event MouseLeftButtonUp] = [Action OpenRecentFile(RecentFiles.SelectedItem, $view)]"
                                                   >

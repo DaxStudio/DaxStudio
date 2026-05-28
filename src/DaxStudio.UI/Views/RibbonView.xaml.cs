@@ -2,6 +2,7 @@
 using DaxStudio.UI.ViewModels;
 using Serilog;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace DaxStudio.UI.Views
 {
@@ -90,6 +91,15 @@ namespace DaxStudio.UI.Views
             {
                 Log.Error("{class} {method} {message}", nameof(RibbonView), nameof(RunStyles_Click), "Unable to get an instance of RibbonViewModel");
             }
+        }
+
+        private void RecentFilesSearch_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape) return;
+            if (!(sender is TextBox tb) || string.IsNullOrEmpty(tb.Text)) return;
+
+            tb.Text = string.Empty;
+            e.Handled = true;
         }
     }
 }

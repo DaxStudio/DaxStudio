@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.ComponentModel;
 using System.Net;
 using System.Reflection;
@@ -112,6 +113,8 @@ namespace DaxStudio.UI.ViewModels
             CanPaste = true;
             _sqlProfilerCommand = SqlProfilerHelper.GetSqlProfilerLaunchCommand();
             RecentFiles = SettingProvider.GetFileMRUList();
+            RecentFilesView = CollectionViewSource.GetDefaultView(RecentFiles);
+            RecentFilesView.Filter = RecentFileFilterPredicate;
             InitRunStyles();
             ClearCacheAuto = Options.SetClearCacheAsDefaultRunStyle;
         }
@@ -450,6 +453,7 @@ namespace DaxStudio.UI.ViewModels
                     backstage.IsOpen = false;
                 IsLoadingRecentFile = false;
                 _backstageToClose = null;
+                RecentFilesFilter = string.Empty;
             }
         }
 
@@ -998,6 +1002,32 @@ namespace DaxStudio.UI.ViewModels
 
         public ObservableCollection<IDaxFile> RecentFiles { get; set; }
 
+        public ICollectionView RecentFilesView { get; private set; }
+
+        private string _recentFilesFilter = string.Empty;
+        public string RecentFilesFilter
+        {
+            get => _recentFilesFilter;
+            set
+            {
+                if (_recentFilesFilter == value) return;
+                _recentFilesFilter = value ?? string.Empty;
+                NotifyOfPropertyChange(nameof(RecentFilesFilter));
+                RecentFilesView?.Refresh();
+            }
+        }
+
+        private bool RecentFileFilterPredicate(object item)
+        {
+            var filter = _recentFilesFilter;
+            if (string.IsNullOrWhiteSpace(filter)) return true;
+            if (!(item is DaxFile file)) return true;
+
+            return (file.FileAndExtension?.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
+                || (file.Folder?.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
+                || (file.FullPath?.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
         internal void OnClose()
         {
             //SettingProvider.SaveFileMRUList(null, this.RecentFiles);
@@ -1041,6 +1071,7 @@ namespace DaxStudio.UI.ViewModels
                     _backstageToClose.IsOpen = false;
                     _backstageToClose = null;
                     IsLoadingRecentFile = false;
+                    RecentFilesFilter = string.Empty;
                 }
             }
             catch (Exception ex)
@@ -1109,6 +1140,7 @@ namespace DaxStudio.UI.ViewModels
                     backstage.IsOpen = false;
                 IsLoadingRecentFile = false;
                 _backstageToClose = null;
+                RecentFilesFilter = string.Empty;
             }
         }
 
