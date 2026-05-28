@@ -16,3 +16,9 @@ including any new features. The master branch only contains the code for the las
 (we merge from develop to master when doing a public release)
 
 See the following for details about [debugging](debugging) DAX Studio
+
+## Releasing Dax Studio
+
+See [`docs/release-process.md`](docs/release-process.md) for the stable and
+preview release processes, including the `CurrentReleaseVersion.json` schema and
+how users opt in to preview builds.

@@ -34,6 +34,8 @@ using DaxStudio.UI.Events;
 
         private Version _productionVersion;
         private Uri _productionDownloadUrl;
+        private Version _preReleaseVersion;
+        private Uri _preReleaseDownloadUrl;
         private string _serverVersionType;
         private bool _isCheckRunning;
         private bool _isAutomaticCheck;
@@ -206,12 +208,16 @@ using DaxStudio.UI.Events;
             JObject jobj = JObject.Parse(json);
             try
             {
-                _productionVersion = Version.Parse((string)jobj["Version"]);
-                _productionDownloadUrl = new Uri((string)jobj["DownloadUrl"]);
+                var selection = SelectServerVersion(jobj, IsPreviewBuild, _globalOptions.ShowPreReleaseNotifications);
 
-                ServerVersionType = "Production";
-                _globalOptions.CurrentDownloadVersion = _productionVersion;
-                DownloadUrl = _productionDownloadUrl;
+                _productionVersion = selection.ProductionVersion;
+                _productionDownloadUrl = selection.ProductionDownloadUrl;
+                _preReleaseVersion = selection.PreReleaseVersion;
+                _preReleaseDownloadUrl = selection.PreReleaseDownloadUrl;
+
+                ServerVersionType = selection.ServerVersionType;
+                _globalOptions.CurrentDownloadVersion = selection.EffectiveVersion;
+                DownloadUrl = selection.EffectiveDownloadUrl;
             }
             catch (Exception ex)
             {
@@ -223,6 +229,110 @@ using DaxStudio.UI.Events;
                 UpdateCompleteCallback?.Invoke(this, null);
             }
             Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Finish");
+        }
+
+        /// <summary>
+        /// True when this build was compiled with the PREVIEW (or DEBUG) symbol, indicating
+        /// the user is already running a pre-release build and should be auto-opted-in to
+        /// pre-release notifications.
+        /// </summary>
+        internal static bool IsPreviewBuild
+        {
+            get
+            {
+#if PREVIEW || DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        internal readonly struct ServerVersionSelection
+        {
+            public ServerVersionSelection(
+                Version productionVersion,
+                Uri productionDownloadUrl,
+                Version preReleaseVersion,
+                Uri preReleaseDownloadUrl,
+                Version effectiveVersion,
+                Uri effectiveDownloadUrl,
+                string serverVersionType)
+            {
+                ProductionVersion = productionVersion;
+                ProductionDownloadUrl = productionDownloadUrl;
+                PreReleaseVersion = preReleaseVersion;
+                PreReleaseDownloadUrl = preReleaseDownloadUrl;
+                EffectiveVersion = effectiveVersion;
+                EffectiveDownloadUrl = effectiveDownloadUrl;
+                ServerVersionType = serverVersionType;
+            }
+            public Version ProductionVersion { get; }
+            public Uri ProductionDownloadUrl { get; }
+            public Version PreReleaseVersion { get; }
+            public Uri PreReleaseDownloadUrl { get; }
+            public Version EffectiveVersion { get; }
+            public Uri EffectiveDownloadUrl { get; }
+            public string ServerVersionType { get; }
+        }
+
+        /// <summary>
+        /// Parses the CurrentReleaseVersion.json payload and selects which server-side version
+        /// should be surfaced to the user. The PreRelease block is only considered when the
+        /// caller is opted-in (either running a PREVIEW-compiled build or has explicitly
+        /// enabled ShowPreReleaseNotifications). When both are available we surface the
+        /// higher of the two so that preview-build users are still pulled forward to a newer
+        /// stable release.
+        /// </summary>
+        internal static ServerVersionSelection SelectServerVersion(JObject jobj, bool isPreviewBuild, bool showPreReleaseNotifications)
+        {
+            if (jobj == null) throw new ArgumentNullException(nameof(jobj));
+
+            var productionVersion = Version.Parse((string)jobj["Version"]);
+            var productionDownloadUrl = new Uri((string)jobj["DownloadUrl"]);
+
+            Version preReleaseVersion = null;
+            Uri preReleaseDownloadUrl = null;
+            var preReleaseToken = jobj["PreRelease"];
+            if (preReleaseToken != null && preReleaseToken.Type == JTokenType.Object)
+            {
+                var preReleaseVersionString = (string)preReleaseToken["Version"];
+                var preReleaseUrlString = (string)preReleaseToken["DownloadUrl"];
+                if (!string.IsNullOrWhiteSpace(preReleaseVersionString))
+                {
+                    preReleaseVersion = Version.Parse(preReleaseVersionString);
+                }
+                if (!string.IsNullOrWhiteSpace(preReleaseUrlString))
+                {
+                    preReleaseDownloadUrl = new Uri(preReleaseUrlString);
+                }
+            }
+
+            var optedIn = isPreviewBuild || showPreReleaseNotifications;
+            var preReleaseIsNewer = optedIn
+                                    && preReleaseVersion != null
+                                    && preReleaseVersion.CompareTo(productionVersion) > 0;
+
+            if (preReleaseIsNewer)
+            {
+                return new ServerVersionSelection(
+                    productionVersion,
+                    productionDownloadUrl,
+                    preReleaseVersion,
+                    preReleaseDownloadUrl,
+                    preReleaseVersion,
+                    preReleaseDownloadUrl ?? productionDownloadUrl,
+                    "Preview");
+            }
+
+            return new ServerVersionSelection(
+                productionVersion,
+                productionDownloadUrl,
+                preReleaseVersion,
+                preReleaseDownloadUrl,
+                productionVersion,
+                productionDownloadUrl,
+                "Production");
         }
 
         private readonly struct VersionJsonResult

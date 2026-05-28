@@ -933,7 +933,12 @@ namespace DaxStudio.Core.Options
             }
         }
 
+        [Category("Defaults")]
+        [Subcategory("Notifications")]
+        [DisplayName("Show Pre-Release Notifications")]
+        [Description("When enabled, DAX Studio will notify you when a new pre-release (preview) build is available, in addition to stable releases. Pre-release builds may contain new features that are still being tested.")]
         [DataMember, DefaultValue(false)]
+        [SortOrder(0)]
         public bool ShowPreReleaseNotifications {
             get => _showPreReleaseNotifications;
             set

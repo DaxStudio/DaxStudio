@@ -14,6 +14,7 @@ jobs:
   winget:
     name: Publish winget package
     runs-on: windows-latest
+    if: ${{ github.event.release.prerelease == false }}
     steps:
       - name: Submit package to Windows Package Manager Community Repository
         run: |
