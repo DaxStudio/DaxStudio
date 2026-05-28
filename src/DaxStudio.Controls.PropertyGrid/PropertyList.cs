@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,6 +18,15 @@ namespace DaxStudio.Controls.PropertyGrid
     {
         //public event EventHandler SourceChanged;
         private  ListCollectionView _cvs;
+        private int _updateVersion;
+        private INotifyPropertyChanged _sourcePropertyChangedNotifier;
+
+        private sealed class SourceUpdateSnapshot
+        {
+            public ObservableCollection<PropertyBindingBase> Properties { get; set; }
+            public Dictionary<string, Action> EnabledChangedFuncs { get; set; }
+            public INotifyPropertyChanged SourceAsNotifyPropertyChanged { get; set; }
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -175,73 +186,47 @@ namespace DaxStudio.Controls.PropertyGrid
         private Dictionary<string, Action> onEnabledChangedFuncs = new Dictionary<string, Action>();
         protected virtual async Task UpdateSource(object newSource)
         {
+            var updateVersion = Interlocked.Increment(ref _updateVersion);
             var totalSw = Stopwatch.StartNew();
 
-            await Task.Run(() =>
+            if (_sourcePropertyChangedNotifier != null)
             {
-                var sw = Stopwatch.StartNew();
-                var props = new System.Collections.ObjectModel.ObservableCollection<PropertyBindingBase>();
+                _sourcePropertyChangedNotifier.PropertyChanged -= OnSourcePropertyChanged;
+                _sourcePropertyChangedNotifier = null;
+            }
 
-                var npc = newSource as INotifyPropertyChanged;
-                if ( npc != null){
-                    npc.PropertyChanged += OnSourcePropertyChanged;
-                }
+            if (newSource == null)
+            {
+                onEnabledChangedFuncs = new Dictionary<string, Action>();
+                _cvs = null;
+                ItemsSource = null;
+                ActiveSearchText = string.Empty;
+                Debug.WriteLine("PropertyList.UpdateSource: Source was null, view cleared");
+                return;
+            }
 
-                var cachedEntries = PropertyMetadataCache.GetMetadata(newSource.GetType());
-                Debug.WriteLine($"PropertyList.UpdateSource: GetMetadata took {sw.ElapsedMilliseconds}ms, {cachedEntries.Length} entries");
+            var snapshot = await Task.Run(() => BuildSourceUpdateSnapshot(newSource));
 
-                sw.Restart();
-                foreach (var entry in cachedEntries)
-                {
-                    // Environment variable check remains dynamic (env vars can change between dialog opens)
-                    if (!string.IsNullOrEmpty(entry.EnvironmentVariableName))
-                    {
-                        var envValue = Environment.GetEnvironmentVariable(entry.EnvironmentVariableName);
-                        if (string.IsNullOrWhiteSpace(envValue) || envValue.Trim() != "1")
-                        {
-                            continue;
-                        }
-                    }
+            if (updateVersion != _updateVersion)
+            {
+                Debug.WriteLine("PropertyList.UpdateSource: Ignored stale update");
+                return;
+            }
 
-                    var binding = new PropertyBinding<object>();
+            onEnabledChangedFuncs = snapshot.EnabledChangedFuncs;
+            _sourcePropertyChangedNotifier = snapshot.SourceAsNotifyPropertyChanged;
+            if (_sourcePropertyChangedNotifier != null)
+            {
+                _sourcePropertyChangedNotifier.PropertyChanged += OnSourcePropertyChanged;
+            }
 
-                    binding.DisplayName = entry.DisplayName;
-                    if (entry.Category != null) binding.Category = entry.Category;
-                    binding.Description = entry.Description;
-                    binding.Subcategory = entry.Subcategory;
-                    binding.SortOrder = entry.SortOrder;
-                    binding.MinValue = entry.MinValue;
-                    binding.MaxValue = entry.MaxValue;
-                    binding.PropertyType = entry.PropertyType;
-                    binding.EnumDisplay = entry.EnumDisplay;
-
-                    // Use compiled delegates instead of PropertyInfo.GetValue/SetValue
-                    var compiledGetter = entry.CompiledGetter;
-                    var compiledSetter = entry.CompiledSetter;
-                    binding.GetValue = () => compiledGetter(newSource);
-                    if (compiledSetter != null)
-                    {
-                        binding.SetValue = (value) => compiledSetter(newSource, value);
-                    }
-
-                    if (entry.HasEnabledProperty)
-                    {
-                        var compiledEnabledGetter = entry.CompiledEnabledGetter;
-                        binding.GetValueEnabled = () => compiledEnabledGetter(newSource);
-                        onEnabledChangedFuncs.Add(entry.EnabledPropertyName, binding.OnEnabledChanged);
-                    }
-
-                    props.Add(binding);
-                }
-                Debug.WriteLine($"PropertyList.UpdateSource: Building {props.Count} bindings took {sw.ElapsedMilliseconds}ms");
-
-                sw.Restart();
-                _cvs = (ListCollectionView)CollectionViewSource.GetDefaultView(props);
-                PropertyGroupDescription groupDescription = new PropertyGroupDescription("Subcategory");
-                _cvs.GroupDescriptions.Add(groupDescription);
-                _cvs.CustomSort = new GenericComparer<PropertyBindingBase>();
-                Debug.WriteLine($"PropertyList.UpdateSource: CollectionView setup took {sw.ElapsedMilliseconds}ms");
-            });
+            var viewSw = Stopwatch.StartNew();
+            _cvs = (ListCollectionView)CollectionViewSource.GetDefaultView(snapshot.Properties);
+            _cvs.GroupDescriptions.Clear();
+            _cvs.GroupDescriptions.Add(new PropertyGroupDescription("Subcategory"));
+            _cvs.CustomSort = new GenericComparer<PropertyBindingBase>();
+            viewSw.Stop();
+            Debug.WriteLine($"PropertyList.UpdateSource: CollectionView setup took {viewSw.ElapsedMilliseconds}ms");
 
             var filterSw = Stopwatch.StartNew();
             RefreshFilter();
@@ -257,9 +242,86 @@ namespace DaxStudio.Controls.PropertyGrid
                             $"total: {totalSw.ElapsedMilliseconds}ms");
         }
 
+        private static SourceUpdateSnapshot BuildSourceUpdateSnapshot(object newSource)
+        {
+            var sw = Stopwatch.StartNew();
+            var props = new ObservableCollection<PropertyBindingBase>();
+            var enabledChangedFuncs = new Dictionary<string, Action>(StringComparer.Ordinal);
+
+            var cachedEntries = PropertyMetadataCache.GetMetadata(newSource.GetType());
+            Debug.WriteLine($"PropertyList.UpdateSource: GetMetadata took {sw.ElapsedMilliseconds}ms, {cachedEntries.Length} entries");
+
+            sw.Restart();
+            foreach (var entry in cachedEntries)
+            {
+                // Environment variable check remains dynamic (env vars can change between dialog opens)
+                if (!string.IsNullOrEmpty(entry.EnvironmentVariableName))
+                {
+                    var envValue = Environment.GetEnvironmentVariable(entry.EnvironmentVariableName);
+                    if (string.IsNullOrWhiteSpace(envValue) || envValue.Trim() != "1")
+                    {
+                        continue;
+                    }
+                }
+
+                var binding = new PropertyBinding<object>();
+
+                binding.DisplayName = entry.DisplayName;
+                if (entry.Category != null) binding.Category = entry.Category;
+                binding.Description = entry.Description;
+                binding.Subcategory = entry.Subcategory;
+                binding.SortOrder = entry.SortOrder;
+                binding.MinValue = entry.MinValue;
+                binding.MaxValue = entry.MaxValue;
+                binding.PropertyType = entry.PropertyType;
+                binding.EnumDisplay = entry.EnumDisplay;
+
+                // Use compiled delegates instead of PropertyInfo.GetValue/SetValue
+                var compiledGetter = entry.CompiledGetter;
+                var compiledSetter = entry.CompiledSetter;
+                binding.GetValue = () => compiledGetter(newSource);
+                if (compiledSetter != null)
+                {
+                    binding.SetValue = (value) => compiledSetter(newSource, value);
+                }
+
+                if (entry.HasEnabledProperty)
+                {
+                    var compiledEnabledGetter = entry.CompiledEnabledGetter;
+                    binding.GetValueEnabled = () => compiledEnabledGetter(newSource);
+
+                    if (enabledChangedFuncs.TryGetValue(entry.EnabledPropertyName, out var existingHandler))
+                    {
+                        enabledChangedFuncs[entry.EnabledPropertyName] = existingHandler + binding.OnEnabledChanged;
+                    }
+                    else
+                    {
+                        enabledChangedFuncs.Add(entry.EnabledPropertyName, binding.OnEnabledChanged);
+                    }
+                }
+
+                props.Add(binding);
+            }
+            Debug.WriteLine($"PropertyList.UpdateSource: Building {props.Count} bindings took {sw.ElapsedMilliseconds}ms");
+
+            return new SourceUpdateSnapshot
+            {
+                Properties = props,
+                EnabledChangedFuncs = enabledChangedFuncs,
+                SourceAsNotifyPropertyChanged = newSource as INotifyPropertyChanged
+            };
+        }
+
         private void OnSourcePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnSourcePropertyChanged(sender, e)));
+                return;
+            }
+
             Action onEnabledChanged;
+            if (e == null || string.IsNullOrEmpty(e.PropertyName)) return;
             onEnabledChangedFuncs.TryGetValue(e.PropertyName, out onEnabledChanged);
             onEnabledChanged?.Invoke();
         }
