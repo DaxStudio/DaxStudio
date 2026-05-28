@@ -23,6 +23,7 @@ using System.Configuration;
 using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Windows.Shell;
+using System.ComponentModel;
 #if NET472
 using Windows.Management.Update;
 #endif
@@ -305,10 +306,35 @@ namespace DaxStudio.Standalone
             Log.Error(e.Exception, "{class} {method} {message}", nameof(EntryPoint), nameof(TaskSchedulerOnUnobservedTaskException), "Unobserved task exception");
         }
 
+        private static bool IsInvalidWindowHandleGetMessage(Exception ex)
+        {
+            const int ErrorInvalidWindowHandle = 1400;
+            if (!(ex is Win32Exception win32Exception) || win32Exception.NativeErrorCode != ErrorInvalidWindowHandle)
+                return false;
+
+            var stackTrace = ex.StackTrace ?? string.Empty;
+            return stackTrace.Contains("MS.Win32.UnsafeNativeMethods.GetMessageW", StringComparison.Ordinal)
+                && stackTrace.Contains("System.Windows.Threading.Dispatcher.GetMessage", StringComparison.Ordinal);
+        }
+
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             string msg = "DAX Studio Standalone CurrentDomainOnUnhandledException";
             Exception ex = e.ExceptionObject as Exception;
+
+            if (ex == null)
+            {
+                App?.Shutdown(2);
+                return;
+            }
+
+            if (IsInvalidWindowHandleGetMessage(ex))
+            {
+                Log.Warning(ex, "{class} {method} Ignoring known WPF invalid HWND exception while shutting down",
+                    nameof(EntryPoint), nameof(CurrentDomainOnUnhandledException));
+                App?.Shutdown(0);
+                return;
+            }
 
             if ((Application.Current?.Dispatcher?.HasShutdownStarted ?? false))
             {
@@ -318,7 +344,8 @@ namespace DaxStudio.Standalone
             }
 
             // check that we are not already shutting down
-            if (!ex.StackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl") 
+            var stackTrace = ex.StackTrace ?? string.Empty;
+            if (!stackTrace.Contains("System.Windows.Threading.Dispatcher.ShutdownImpl", StringComparison.Ordinal) 
                 && !(Application.Current?.Dispatcher?.HasShutdownStarted??true))
                     LogFatalCrash(ex, msg, _options);
             
@@ -461,6 +488,17 @@ namespace DaxStudio.Standalone
                             break;
                     }
 
+                }
+                else if (e.Exception is UnauthorizedAccessException
+                    && e.Exception.StackTrace != null
+                    && e.Exception.StackTrace.Contains("GridViewColumnHeader.GetCursor"))
+                {
+                    // Known WPF framework bug: temp cursor file deletion fails due to permissions/locking
+                    e.Handled = true;
+                    _log.Warning(e.Exception, "{class} {method} {message}", "EntryPoint",
+                        "App_DispatcherUnhandledException",
+                        "WPF GridViewColumnHeader cursor temp file access denied (non-fatal)");
+                    return;
                 }
                 else
                 {
