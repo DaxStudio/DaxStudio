@@ -427,12 +427,15 @@ namespace DaxStudio.UI.ViewModels
                     var (authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, server.IsAsAzure() ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI, server);
                     token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
                 }
+
+                var isLocalHostInstance = server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase);
+
                 await _eventAggregator.PublishAsync(new ConnectEvent($"Data Source={server}{initialCatalog}",
                                                                         false,
                                                                         string.Empty,
-                                                                        database,
-                                                                        server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase) ? ADOTabular.Enums.ServerType.PowerBIDesktop : ADOTabular.Enums.ServerType.AnalysisServices,
-                                                                        server.Trim().StartsWith("localhost:", StringComparison.OrdinalIgnoreCase),
+                                                                        isLocalHostInstance? database?? string.Empty: string.Empty,
+                                                                        isLocalHostInstance ? ADOTabular.Enums.ServerType.PowerBIDesktop : ADOTabular.Enums.ServerType.AnalysisServices,
+                                                                        isLocalHostInstance,
                                                                         database ?? string.Empty
                                                                         , token));
                 await _eventAggregator.PublishAsync(new SetFocusEvent());
