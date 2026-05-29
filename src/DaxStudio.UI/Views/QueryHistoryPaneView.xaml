@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:cal="clr-namespace:Caliburn.Micro;assembly=Caliburn.Micro.Platform"
              xmlns:ap="clr-namespace:DaxStudio.UI.AttachedProperties"
-                              xmlns:aero="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
                               xmlns:controls="clr-namespace:DaxStudio.UI.Controls"
                               xmlns:conv="clr-namespace:DaxStudio.UI.Converters"
                               xmlns:clr="clr-namespace:System;assembly=mscorlib"
@@ -69,11 +68,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             
-                                <aero:DataGridHeaderBorder Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,0,0">
+                                <Border Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="0,0,0,0">
 
                                     <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
-                                </aero:DataGridHeaderBorder>
+                                </Border>
                                 <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" IsChecked="{Binding Path=DataContext.IsFilteredByServer, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" ToolTip="Filter by current server" Margin="2"
                                               Padding="1">
          
@@ -119,11 +118,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <aero:DataGridHeaderBorder Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" IsClickable="{TemplateBinding CanUserSort}" IsPressed="{TemplateBinding IsPressed}" IsHovered="{TemplateBinding IsMouseOver}" Padding="{TemplateBinding Padding}" SortDirection="{TemplateBinding SortDirection}" SeparatorBrush="{TemplateBinding SeparatorBrush}" SeparatorVisibility="{TemplateBinding SeparatorVisibility}" Margin="0,0,0,0">
+                            <Border Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="0,0,0,0">
 
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
 
-                            </aero:DataGridHeaderBorder>
+                            </Border>
                             <ToggleButton Name="FilterToggle" Grid.Column="1" Width="21" Height="21" Visibility="Visible" 
                                           IsChecked="{Binding Path=DataContext.IsFilteredByDatabase, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" 
                                           Padding="1"

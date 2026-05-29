@@ -2,7 +2,7 @@
   "profiles": {
     "DaxStudio.Standalone": {
       "commandName": "Project",
-      "commandLineArgs": "/server=localhost /database=\"adventure works\""
+      "commandLineArgs": "--server localhost --database \"adventure works\""
     }
   }
 }
