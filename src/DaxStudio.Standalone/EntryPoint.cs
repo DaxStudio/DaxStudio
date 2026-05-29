@@ -471,6 +471,22 @@ namespace DaxStudio.Standalone
                             _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning, "RPC_E_WRONG_THREAD Error - Clipboard operation failed, please try again"));
                             _log.Warning(e.Exception, "{class} {method} COM Error while accessing clipboard: {message}", "EntryPoint", "App_DispatcherUnhandledException", "RPC_E_WRONG_THREAD");
                             return;
+                        // WPF MIL composition / render-thread failures. These are raised by the
+                        // WPF render thread (driver glitch / TDR, GPU pressure, DPI or monitor
+                        // change, sleep/wake/RDP transitions) — not by application code. WPF
+                        // can usually re-create the render target on the next paint, so swallow
+                        // them with a warning instead of shutting the whole app down.
+                        case unchecked((int)0x88980406): // UCEERR_RENDERTHREADFAILURE
+                        case unchecked((int)0x88980403): // UCEERR_DISPLAYSTATEINVALID
+                        case unchecked((int)0x88980404): // UCEERR_NOTIFICATIONSDROPPED
+                            e.Handled = true;
+                            _log.Warning(e.Exception,
+                                "{class} {method} WPF render-thread COM failure (non-fatal, allowing recovery): {hresult}",
+                                "EntryPoint", "App_DispatcherUnhandledException",
+                                $"0x{comException.ErrorCode:X8}");
+                            _eventAggregator?.PublishAsync(new OutputMessage(MessageType.Warning,
+                                "A graphics rendering error occurred. If this happens repeatedly, please update your video driver or restart DAX Studio."));
+                            return;
                         default:
                             if (e.Exception.Message == "A drag operation is already in progress")
                             {
@@ -498,6 +514,22 @@ namespace DaxStudio.Standalone
                     _log.Warning(e.Exception, "{class} {method} {message}", "EntryPoint",
                         "App_DispatcherUnhandledException",
                         "WPF GridViewColumnHeader cursor temp file access denied (non-fatal)");
+                    return;
+                }
+                else if (e.Exception is InvalidOperationException
+                    && e.Exception.StackTrace != null
+                    && e.Exception.StackTrace.Contains("Caliburn.Micro.WindowConductor")
+                    && (e.Exception.Message?.Contains("while a Window is closing") ?? false))
+                {
+                    // Known Caliburn.Micro race: the conductor's async Closing continuation
+                    // reaches Window.Close() after WPF has already started closing the window
+                    // (typically during shutdown or when two close paths overlap). The window
+                    // is closing anyway, so the exception is meaningless — swallow it to avoid
+                    // producing a cascading crash dialog on top of an in-flight close.
+                    e.Handled = true;
+                    _log.Warning(e.Exception, "{class} {method} {message}", "EntryPoint",
+                        "App_DispatcherUnhandledException",
+                        "Caliburn.Micro WindowConductor close race (non-fatal)");
                     return;
                 }
                 else
