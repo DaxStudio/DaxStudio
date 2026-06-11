@@ -96,8 +96,6 @@ namespace DaxStudio.UI.Model
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
         }
 
-        private static string redirectUrl;  // cache the redirected URL
-        private static string redirectHost;
         //public static async Task FormatQuery(DocumentViewModel doc, DAXEditor.DAXEditor editor)
         //{
         //    Log.Debug("{class} {method} {event}", "DaxFormatter", "FormatQuery", "Start");
@@ -227,14 +225,9 @@ namespace DaxStudio.UI.Model
 
                 
 
-                await PrimeConnectionAsync(uri, globalOptions,eventAggregator);
-
-                Uri originalUri = new Uri(uri);
-                string actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
-
                 //var webRequestFactory = IoC.Get<WebRequestFactory>();
                 var webRequestFactory = await WebRequestFactory.CreateAsync( globalOptions, eventAggregator);
-                var wr = webRequestFactory.Create(new Uri(actualUrl));
+                var wr = webRequestFactory.Create(new Uri(uri));
 
                 wr.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
                 wr.ContentType = "application/json";
@@ -274,66 +267,5 @@ namespace DaxStudio.UI.Model
             }
         }
 
-        public static async Task PrimeConnectionAsync(string uri, IGlobalOptions globalOptions, IEventAggregator eventAggregator)
-        {
-            
-            Log.Debug("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "Start");
-            try
-            {
-                if (globalOptions.BlockExternalServices)
-                {
-                    Log.Debug(Common.Constants.LogMessageTemplate, nameof(DaxFormatterProxy), nameof(PrimeConnectionAsync), "Skipping Priming Connection to DaxFormatter.com as External Services are blocked in options");
-                    return;
-                }
-                
-                if (redirectHost == null)
-                {
-                    // www.daxformatter.com redirects request to another site.  HttpWebRequest does redirect with GET.  It fails, since the web service works only with POST
-                    // The following 2 requests are doing manual POST re-direct
-                    //var webRequestFactory = IoC.Get<WebRequestFactory>();
-                    WebRequestFactory webRequestFactory =
-                        await WebRequestFactory.CreateAsync(globalOptions, eventAggregator);
-                    var redirectRequest = webRequestFactory.Create(uri) as HttpWebRequest;
-
-                    redirectRequest.AllowAutoRedirect = false;
-                    redirectRequest.Timeout = globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds();
-                    try
-                    {
-                        using (var netResponse = await redirectRequest.GetResponseAsync())
-                        {
-                            var redirectResponse = (HttpWebResponse) netResponse;
-                            redirectUrl = redirectResponse.Headers["Location"];
-                            var redirectUri = new Uri(redirectUrl);
-
-                            // set the shared redirectHost variable
-                            redirectHost = redirectUri.Host;
-                            Log.Debug("{class} {method} Redirected to: {redirectUrl}", "DaxFormatter",
-                                "CallDaxFormatterAsync", uri.ToString());
-                            System.Diagnostics.Debug.WriteLine("Host: " + redirectUri.Host);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error("{class} {method} {error}", "DaxFormatter", "PrimeConnectionAsync",
-                            $"Error getting redirect response: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex1)
-            {
-                Log.Error("{class} {method} {error}", "DaxFormatter", "PrimeConnectionAsync",
-                    $"Error getting redirect location: {ex1.Message}");
-                await eventAggregator.PublishOnUIThreadAsync(new OutputMessage(MessageType.Warning,
-                    $"An error occurred while checking the connection to daxformatter.com\n\t{ex1.Message}"));
-            }
-
-            Log.Debug("{class} {method} {event}", "DaxFormatter", "PrimeConnectionAsync", "End");
-
-        }
-        public static async Task PrimeConnectionAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
-        {
-            await PrimeConnectionAsync(WebRequestFactory.DaxTextFormatUri, globalOptions, eventAggregator);
-        }
-        
     }
 }
