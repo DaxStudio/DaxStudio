@@ -147,7 +147,9 @@ namespace DaxStudio.ExcelAddin
         internal bool IsExcel2013OrLater
         {
             get {
-                return float.Parse(_app.Version, CultureInfo.InvariantCulture) >= 15;
+                double excelVer;
+                double.TryParse(_app.Version, NumberStyles.Number, CultureInfo.InvariantCulture, out excelVer);
+                return excelVer > 15 || excelVer == 0;
             }
         }
 
