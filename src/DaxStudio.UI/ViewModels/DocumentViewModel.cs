@@ -26,7 +26,6 @@ using DaxStudio.Core.Events;
 using DaxStudio.Core.Utils;
 using DaxStudio.UI.Events;
 using DaxStudio.Core.Extensions;
-using DaxStudio.Core.Utils;
 using DaxStudio.UI.Extensions;
 using DaxStudio.UI.Interfaces;
 using DaxStudio.UI.Model;
@@ -77,7 +76,6 @@ using Adomd = Microsoft.AnalysisServices.AdomdClient;
 using Constants = DaxStudio.Common.Constants;
 using FocusManager = DaxStudio.UI.Utils.FocusManager;
 using Timer = System.Timers.Timer;
-using DaxStudio.Core.Extensions;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -303,7 +301,7 @@ namespace DaxStudio.UI.ViewModels
 
             await LoadStateAsync();
             State = DocumentState.Loaded;
-            _eventAggregator.PublishAsync(new RecoverNextAutoSaveFileEvent());
+            await _eventAggregator.PublishAsync(new RecoverNextAutoSaveFileEvent());
         }
 
         public IQueryHistoryEvent CurrentQueryInfo => _currentQueryDetails;
@@ -898,7 +896,7 @@ namespace DaxStudio.UI.ViewModels
                 .Where(a => a.ContentId != "metadata" && !a.IsAutoHidden && !a.IsHidden && !a.Parent.Children.OfType<LayoutAnchorable>().Any(b => b.ContentId == "metadata"))
                 .ToList();
 
-            if (visibleNonMetadata.Any())
+            if (visibleNonMetadata.Count != 0)
             {
                 // HIDE: ToggleAutoHide() auto-hides the entire parent LayoutAnchorablePane group,
                 // so we only need to call it once per parent group to avoid toggle/untoggle.

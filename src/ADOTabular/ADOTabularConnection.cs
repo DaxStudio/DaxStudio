@@ -714,7 +714,7 @@ namespace ADOTabular
                                                          }, true);
                 string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
 
-                using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
+                using (XmlTextReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
                 {
                     if (rdr.NameTable != null)
                     {
@@ -760,7 +760,7 @@ namespace ADOTabular
                                                      }, true);
             string metadata = ds.Tables[0].Rows[0]["METADATA"].ToString();
 
-            using (XmlReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
+            using (XmlTextReader rdr = new XmlTextReader(new StringReader(metadata)) { DtdProcessing = DtdProcessing.Prohibit })
             {
                 if (rdr.NameTable != null)
                 {
@@ -824,7 +824,7 @@ namespace ADOTabular
             {
                 return;
             }
-            if (_runningCommand?.Connection?.State != ConnectionState.Open) return;
+            if (_runningCommand.Connection?.State != ConnectionState.Open) return;
 
             _runningCommand.Cancel();
 
@@ -919,8 +919,8 @@ namespace ADOTabular
             get
             {
                 if (Properties == null) return "";
-                if (!Properties.ContainsKey("Application Name")) return "";
-                return Properties["Application Name"];
+                if (!Properties.TryGetValue("Application Name", out string value)) return "";
+                return value;
             }
         }
 
@@ -974,7 +974,7 @@ namespace ADOTabular
 
         public bool IsAdminConnection => SPID != -1 || IsTestingRls;
 
-        public bool IsTestingRls { get; private set; } = false;
+        public bool IsTestingRls { get; private set; } 
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "These properties are not critical so we just set them to empty strings on any exception")]
         private void UpdateServerProperties()
@@ -1027,7 +1027,7 @@ namespace ADOTabular
         /// Checks if the connection string contains any of the RLS testing parameters
         /// </summary>
         /// <returns>bool</returns>
-        public bool HasRlsParameters(string connectionString)
+        public static bool HasRlsParameters(string connectionString)
         {
             var builder = new OleDbConnectionStringBuilder(connectionString);
             foreach (var param in rlsParameters)

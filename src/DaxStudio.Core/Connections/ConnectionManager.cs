@@ -1327,7 +1327,7 @@ namespace DaxStudio.Core.Connections
             });
         }
 
-        private string UpdateApplicationName(string connectionString, Guid uniqueId)
+        private static string UpdateApplicationName(string connectionString, Guid uniqueId)
         {
             var builder = new OleDbConnectionStringBuilder(connectionString);
             builder.TryGetValue("Application Name", out var appName);
