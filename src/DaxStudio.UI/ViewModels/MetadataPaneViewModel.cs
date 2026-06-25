@@ -653,6 +653,17 @@ namespace DaxStudio.UI.ViewModels
             SelectedDatabase = DatabasesView.Where(db => db.Name == databaseName).FirstOrDefault();
         }
 
+        internal async Task ChangeDatabaseAsync(string databaseName)
+        {
+            if (_metadataProvider.IsConnected && DatabasesView.Count == 0)
+            {
+                // RefreshDatabases() runs the DBSCHEMA_CATALOGS DMV query which is a blocking
+                // network round-trip, so keep it off the UI thread to avoid freezing the UI.
+                await Task.Run(() => RefreshDatabases());
+            }
+            SelectedDatabase = DatabasesView.Where(db => db.Name == databaseName).FirstOrDefault();
+        }
+
         #region Measure Definition Methods
 
         private string ExpandDependentMeasure(ADOTabularColumn column)

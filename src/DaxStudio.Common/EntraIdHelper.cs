@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Tom = Microsoft.AnalysisServices;
 using Adomd = Microsoft.AnalysisServices.AdomdClient;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DaxStudio.Common
 {
@@ -56,6 +57,15 @@ namespace DaxStudio.Common
         //private static string Instance = "https://login.microsoftonline.com/common/oauth2/nativeclient";
         private static readonly string[] powerbiScope = new [] { "https://analysis.windows.net/powerbi/api/.default" };
         private static readonly string[] asazureScope = new [] { "https://*.asazure.windows.net/.default" };
+        private static readonly string[] graphScope = new [] { "https://graph.microsoft.com/User.Read" };
+
+        // Microsoft Graph Command Line Tools - a Microsoft first-party PUBLIC client that registers a
+        // WAM/broker-compatible redirect URI, so it works with our .WithBroker() + .WithDefaultRedirectUri()
+        // setup and can silently reuse the Windows account. (Other well-known ids such as Microsoft Office
+        // do NOT register a compatible public-client redirect and make WAM return 'IncorrectConfiguration'.)
+        // The ADOMD/Power BI client id is not authorized for Microsoft Graph, so reusing it fails the same way.
+        private static readonly string GraphClientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e";
+        private static IPublicClientApplication _graphClientApp;
 
         public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
         {
@@ -117,6 +127,68 @@ namespace DaxStudio.Common
 
 
             return authResult;
+        }
+
+        /// <summary>
+        /// SILENTLY acquires a Microsoft Graph token for an account that already signed in for the
+        /// Power BI scope. The Power BI/ADOMD client id is not authorized for Microsoft Graph (WAM
+        /// returns 'IncorrectConfiguration'), so this uses a separate Graph-capable first-party client
+        /// built WITH the WAM broker. Because the broker shares Windows accounts across apps, it can
+        /// reuse the same signed-in account via SSO without prompting. This NEVER prompts the user
+        /// (no interactive/consent UI), so it returns null whenever a token cannot be obtained purely
+        /// silently (e.g. consent has not yet been granted for this client) - the token is optional.
+        /// </summary>
+        public static async Task<AuthenticationResult> AcquireGraphTokenSilentAsync(IAccount account)
+        {
+            try
+            {
+                var app = await GetGraphClientAppAsync();
+
+                // Prefer the account from the Power BI sign-in; fall back to the broker's OS account
+                // (the PBI client signs in through WAM, so the account is shared at the Windows level).
+                var graphAccount = account
+                    ?? (await app.GetAccountsAsync()).FirstOrDefault()
+                    ?? PublicClientApplication.OperatingSystemAccount;
+
+                return await app.AcquireTokenSilent(graphScope, graphAccount).ExecuteAsync();
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                // Interaction/consent would be required - skip rather than prompting just for an avatar.
+                Log.Warning(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireGraphTokenSilentAsync),
+                    "Could not silently acquire a Microsoft Graph token");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(AcquireGraphTokenSilentAsync),
+                    "Error acquiring Microsoft Graph token");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Builds (and caches) the public client application used for Microsoft Graph. It uses a
+        /// Graph-capable first-party client id and the WAM broker so it can silently reuse the
+        /// Windows account that signed in for Power BI.
+        /// </summary>
+        private static async Task<IPublicClientApplication> GetGraphClientAppAsync()
+        {
+            if (_graphClientApp != null) return _graphClientApp;
+
+            var brokerOptions = new BrokerOptions(BrokerOptions.OperatingSystems.Windows);
+
+            _graphClientApp = PublicClientApplicationBuilder.Create(GraphClientId)
+                .WithAuthority(DefaultAuthority)
+                .WithDefaultRedirectUri()
+                .WithBroker(brokerOptions)
+                .Build();
+
+            // Share the same on-disk MSAL cache as the rest of the application.
+            MsalCacheHelper cacheHelper = await CreateCacheHelperAsync();
+            cacheHelper.RegisterCache(_graphClientApp.UserTokenCache);
+
+            return _graphClientApp;
         }
 
         /// <summary>
@@ -352,7 +424,11 @@ namespace DaxStudio.Common
 
         public static string GetTenantIdFromServerName(string serverName)
         {
-            if (serverName.StartsWith("asazure://", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(serverName))
+            {
+                return string.Empty;
+            }
+            else if (serverName.StartsWith("asazure://", StringComparison.OrdinalIgnoreCase))
             {
                 return GetTenantForAsAzure(serverName);
             }

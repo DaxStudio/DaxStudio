@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.IO;
 using Microsoft.Identity.Client;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -22,7 +25,12 @@ namespace DaxStudio.UI.ViewModels
 {
     class BrowseWorkspacesViewModel : BaseDialogViewModel
     {
+        // Default Power BI server name used to resolve authentication information when prompting
+        // for an account (matches the default used by EntraIdHelper.CreateDefaultContext).
+        private const string PowerBIServerName = "powerbi://api.powerbi.com";
+
         private AuthenticationResult _authResult;
+        private AccessTokenContext _authContext;
         private IntPtr? _viewHwnd;
         private PowerBIEnvironment _environment;
         
@@ -40,8 +48,11 @@ namespace DaxStudio.UI.ViewModels
         public IGlobalOptions Options { get; }
         public ICollectionView WorkspacesView { get; }
 
-        private Workspace _selectedWorkspace;
-        public Workspace SelectedWorkspace { get => _selectedWorkspace; set {
+        // Workspace is a value type (struct), so this must be nullable - otherwise the ListView's
+        // SelectedItem binding throws when it tries to write null (no selection), which WPF surfaces
+        // as a red validation adorner around the list.
+        private Workspace? _selectedWorkspace;
+        public Workspace? SelectedWorkspace { get => _selectedWorkspace; set {
                 _selectedWorkspace = value;
                 NotifyOfPropertyChange(nameof(CanConnect));
             } 
@@ -50,6 +61,12 @@ namespace DaxStudio.UI.ViewModels
         public bool IsListEnabled { get; set; } = true;
 
         public AuthenticationResult AuthenticationResult { get => _authResult; }
+
+        /// <summary>
+        /// The token context used to authenticate the workspace list. This is exposed so the caller
+        /// can reuse the same account/token to establish the connection without prompting again.
+        /// </summary>
+        public AccessTokenContext AuthenticationContext { get => _authContext; }
         
         public PowerBIEnvironment Environment 
         { 
@@ -64,8 +81,8 @@ namespace DaxStudio.UI.ViewModels
         
         public string EnvironmentName => _environment?.Name ?? "Power BI";
         
-        private string _userAvatar;
-        public string UserAvatar
+        private ImageSource _userAvatar;
+        public ImageSource UserAvatar
         {
             get => _userAvatar;
             private set
@@ -76,7 +93,7 @@ namespace DaxStudio.UI.ViewModels
             }
         }
         
-        public bool HasAvatar => !string.IsNullOrEmpty(UserAvatar);
+        public bool HasAvatar => UserAvatar != null;
 
         public bool UserFilter(object db)
         {
@@ -128,14 +145,32 @@ namespace DaxStudio.UI.ViewModels
 
         private async Task GetWorkspacesAsync(IntPtr? hwnd, bool switchAccount)
         {
-            
+
             // first get the authentication token
             AccountStatus = "Connecting...";
+            // Clear any avatar from a previous account so we fall back to the default icon while
+            // (re)connecting. LoadUserAvatarAsync will repopulate it only if the new photo loads.
+            UserAvatar = null;
             AccessTokenContext context = EntraIdHelper.CreateDefaultContext(AccessTokenScope.PowerBI);
             // getting workspaces only requires PowerBI scope, so we can use the same token for switching accounts
             if (switchAccount)
             {
-                (_authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, AccessTokenScope.PowerBI, string.Empty);
+                try
+                {
+                    // PromptForAccountAsync requires a valid server name to resolve the authentication
+                    // information - passing an empty string causes 'new Uri(string.Empty)' to throw and
+                    // the interactive sign-in prompt is never shown. Use the default Power BI server name.
+                    (_authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, AccessTokenScope.PowerBI, PowerBIServerName);
+                }
+                catch (Exception ex)
+                {
+                    // the user cancelled the sign-in prompt (or it failed) - stay on the current view
+                    Log.Warning(ex, Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(GetWorkspacesAsync),
+                        "Interactive sign-in was cancelled or failed while switching accounts");
+                    AccountStatus = string.Empty;
+                    AccountName = _authResult?.Account?.Username ?? string.Empty;
+                    return;
+                }
             }
             else
             {
@@ -147,6 +182,10 @@ namespace DaxStudio.UI.ViewModels
                 AccountStatus = string.Empty;
                 return; 
             }
+
+            // remember the context that authenticated this account so the caller can reuse the
+            // same token to connect without prompting the user a second time.
+            _authContext = context;
 
 
             IsBusy = true;
@@ -221,14 +260,11 @@ namespace DaxStudio.UI.ViewModels
                 Log.Debug(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
                     $"Loading avatar for {_authResult.Account.Username}");
 
-                var avatar = await PbiServiceHelper.GetAccountAvatarAsync();
-                    //_authResult, 
-                    //_authResult.Account.Username, 
-                    //_environment);
+                var avatarBytes = await PbiServiceHelper.GetAccountAvatarAsync(_authResult.Account);
                 
-                if (!string.IsNullOrEmpty(avatar))
+                if (avatarBytes != null && avatarBytes.Length > 0)
                 {
-                    UserAvatar = avatar;
+                    UserAvatar = CreateImageSource(avatarBytes);
                     Log.Debug(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
                         "Successfully loaded user avatar");
                 }
@@ -238,6 +274,25 @@ namespace DaxStudio.UI.ViewModels
                 // Don't fail if avatar can't be loaded, just log it
                 Log.Warning(ex, Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(LoadUserAvatarAsync), 
                     $"Failed to load user avatar: {ex.Message}");
+            }
+        }
+
+        private static ImageSource CreateImageSource(byte[] imageBytes)
+        {
+            // Build a frozen BitmapImage so it can be safely assigned from a background thread.
+            // BitmapCacheOption.OnLoad fully loads the image during EndInit so the stream can be disposed.
+            using (var stream = new MemoryStream(imageBytes))
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                // Decode at a higher resolution than the 32px display size so the image stays sharp
+                // on high-DPI displays instead of being upscaled from a small thumbnail.
+                bitmap.DecodePixelWidth = 96;
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
             }
         }
 
@@ -305,17 +360,17 @@ namespace DaxStudio.UI.ViewModels
 
         public void Connect()
         {
-            if (SelectedWorkspace.Id == Guid.Empty || string.IsNullOrEmpty(SelectedWorkspace.Name))
+            if (SelectedWorkspace == null || SelectedWorkspace.Value.Id == Guid.Empty || string.IsNullOrEmpty(SelectedWorkspace.Value.Name))
             {
                 ErrorMessage = "Please select a workspace to connect to.";
                 return;
             }
-            
+
             // Log the connection string that will be generated
-            var connectionString = SelectedWorkspace.GetConnectionString(_environment);
+            var connectionString = SelectedWorkspace.Value.GetConnectionString(_environment);
             Log.Information(Constants.LogMessageTemplate, nameof(BrowseWorkspacesViewModel), nameof(Connect), 
-                $"Connecting to workspace '{SelectedWorkspace.Name}' using connection string: {connectionString}");
-            
+                $"Connecting to workspace '{SelectedWorkspace.Value.Name}' using connection string: {connectionString}");
+
             Result = System.Windows.Forms.DialogResult.OK;
             this.TryCloseAsync();
         }
@@ -327,10 +382,10 @@ namespace DaxStudio.UI.ViewModels
         {
             get
             {
-                if (SelectedWorkspace.Id == Guid.Empty || string.IsNullOrEmpty(SelectedWorkspace.Name))
+                if (SelectedWorkspace == null || SelectedWorkspace.Value.Id == Guid.Empty || string.IsNullOrEmpty(SelectedWorkspace.Value.Name))
                     return string.Empty;
-                
-                return SelectedWorkspace.GetConnectionString(_environment);
+
+                return SelectedWorkspace.Value.GetConnectionString(_environment);
             }
         }
 
@@ -340,7 +395,7 @@ namespace DaxStudio.UI.ViewModels
             await GetWorkspacesAsync(_viewHwnd, false);
         }
 
-        public bool CanConnect => SelectedWorkspace.Id != Guid.Empty && !string.IsNullOrEmpty(SelectedWorkspace.Name);
+        public bool CanConnect => SelectedWorkspace.HasValue && SelectedWorkspace.Value.Id != Guid.Empty && !string.IsNullOrEmpty(SelectedWorkspace.Value.Name);
 
         public override void Close()
         {

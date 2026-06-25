@@ -21,9 +21,6 @@ using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Globalization;
 using Microsoft.PowerBI.Api.Models.Credentials;
 
 namespace DaxStudio.UI.Utils
@@ -302,18 +299,18 @@ namespace DaxStudio.UI.Utils
         /// Gets the user's avatar/profile photo from Microsoft Graph API
         /// This requires a token with the User.Read or User.ReadBasic.All scope
         /// </summary>
-        /// <param name="userPrincipalName">The user's UPN (email), or "me" for the current user</param>
-        /// <returns>Base64 encoded image string with data URI prefix (e.g., "data:image/png;base64,...")</returns>
-        public static async Task<string> GetAccountAvatarAsync(string userPrincipalName = "me")
+        /// <param name="account">The account returned by the Power BI sign-in.</param>
+        /// <returns>The raw bytes of the user's profile photo, or null if no photo is available</returns>
+        public static async Task<byte[]> GetAccountAvatarAsync(IAccount account)
         {
             try
             {
-                // Get a token specifically for Microsoft Graph
-                var graphToken = await GetGraphTokenAsync();
+                // Reuse the Power BI sign-in's account to silently obtain a Microsoft Graph token (no prompt).
+                var graphToken = await EntraIdHelper.AcquireGraphTokenSilentAsync(account);
                 if (graphToken == null)
                 {
                     Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync),
-                        "Unable to acquire Microsoft Graph token");
+                        "Unable to acquire a Microsoft Graph token - the user avatar will not be shown");
                     return null;
                 }
 
@@ -321,39 +318,28 @@ namespace DaxStudio.UI.Utils
                 {
                     httpClient.DefaultRequestHeaders.Accept.Clear();
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", graphToken.AccessToken);
-                    
-                    // Use "me" or specific user UPN
-                    var userId = string.IsNullOrEmpty(userPrincipalName) ? "me" : userPrincipalName;
-                    var requestUri = $"https://graph.microsoft.com/v1.0/users/{userId}/photo/$value";
-                    
+
                     Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
                         $"Requesting user avatar from Microsoft Graph");
-                    
-                    using (var response = await httpClient.GetAsync(requestUri).ConfigureAwait(false))
+
+                    // Request a larger, fixed-size photo so it stays crisp when scaled on high-DPI
+                    // displays. Not every mailbox has every size, so fall back to the default photo.
+                    // The token was issued for this account, so '/me' is correct and only needs User.Read.
+                    var imageBytes = await TryGetPhotoAsync(httpClient, "https://graph.microsoft.com/v1.0/me/photos/120x120/$value").ConfigureAwait(false)
+                                     ?? await TryGetPhotoAsync(httpClient, "https://graph.microsoft.com/v1.0/me/photo/$value").ConfigureAwait(false);
+
+                    if (imageBytes != null)
                     {
-                        if (response.IsSuccessStatusCode)
-                        {
-                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                            using (var bitmap = new Bitmap(stream))
-                            using (var memoryStream = new MemoryStream())
-                            {
-                                bitmap.Save(memoryStream, bitmap.RawFormat);
-                                var imageBase64String = Convert.ToBase64String(memoryStream.ToArray());
-                                var imageMimeType = GetMimeType(bitmap);
-                                var encodedImage = string.Format(CultureInfo.InvariantCulture, 
-                                    "data:{0};base64,{1}", imageMimeType, imageBase64String);
-                                
-                                Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
-                                    "Successfully retrieved user avatar from Microsoft Graph");
-                                
-                                return encodedImage;
-                            }
-                        }
-                        
-                        Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
-                            $"Failed to get user avatar from Microsoft Graph: {response.StatusCode}");
-                        return null;
+                        Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
+                            "Successfully retrieved user avatar from Microsoft Graph");
                     }
+                    else
+                    {
+                        Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetAccountAvatarAsync), 
+                            "No user avatar available from Microsoft Graph");
+                    }
+
+                    return imageBytes;
                 }
             }
             catch (Exception ex)
@@ -362,96 +348,21 @@ namespace DaxStudio.UI.Utils
                     $"Error retrieving user avatar from Microsoft Graph: {ex.Message}");
                 return null;
             }
-            
-            static string GetMimeType(Bitmap bitmap)
-            {
-                return ImageCodecInfo.GetImageDecoders()
-                    .FirstOrDefault((c) => c.FormatID == bitmap.RawFormat.Guid)?.MimeType 
-                    ?? "image/png";
-            }
         }
 
-        private static IPublicClientApplication _graphClientApp;
-        
         /// <summary>
-        /// Gets an authentication token for Microsoft Graph API
+        /// Requests a single Microsoft Graph profile-photo endpoint, returning the image bytes on
+        /// success or null if the photo (or that size) is not available.
         /// </summary>
-        private static async Task<AuthenticationResult> GetGraphTokenAsync()
+        private static async Task<byte[]> TryGetPhotoAsync(HttpClient httpClient, string requestUri)
         {
-            try
+            using (var response = await httpClient.GetAsync(requestUri).ConfigureAwait(false))
             {
-                // Create a separate MSAL client for Microsoft Graph if it doesn't exist
-                if (_graphClientApp == null)
-                {
-                    var authority = "https://login.microsoftonline.com/organizations";
-                    // Use Microsoft's well-known Graph Explorer client ID which has Graph API permissions
-                    // This is a public client app ID that Microsoft provides for Graph API access
-                    var clientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e"; // Microsoft Graph Command Line Tools
-                    
-                    // Don't use WAM broker for Graph API calls to avoid configuration issues
-                    // WAM requires the app to be specifically configured in Azure AD
-                    _graphClientApp = PublicClientApplicationBuilder.Create(clientId)
-                        .WithAuthority(authority)
-                        .WithDefaultRedirectUri()
-                        .Build();
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
-                    // Use the same cache as the main application
-                    var storageProperties = new StorageCreationPropertiesBuilder(
-                        "DaxStudio.msalcache.bin",
-                        MsalCacheHelper.UserRootDirectory)
-                        .Build();
-
-                    var cacheHelper = await MsalCacheHelper.CreateAsync(
-                        storageProperties,
-                        new TraceSource("MSAL.CacheTrace"))
-                        .ConfigureAwait(false);
-
-                    cacheHelper.RegisterCache(_graphClientApp.UserTokenCache);
-                }
-
-                var accounts = await _graphClientApp.GetAccountsAsync();
-                var firstAccount = accounts.FirstOrDefault();
-
-                // Use specific scope instead of .default to avoid permission issues
-                var graphScope = new[] { "User.Read" };
-
-                if (firstAccount != null)
-                {
-                    // Try silent authentication first
-                    try
-                    {
-                        return await _graphClientApp.AcquireTokenSilent(graphScope, firstAccount).ExecuteAsync();
-                    }
-                    catch (MsalUiRequiredException)
-                    {
-                        Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
-                            "Silent token acquisition failed, attempting interactive authentication");
-                        
-                        // Try interactive authentication as a fallback
-                        try
-                        {
-                            return await _graphClientApp.AcquireTokenInteractive(graphScope)
-                                .WithAccount(firstAccount)
-                                .WithPrompt(Prompt.NoPrompt) // Try without prompting first
-                                .ExecuteAsync();
-                        }
-                        catch
-                        {
-                            Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
-                                "Interactive authentication without prompt failed");
-                            return null;
-                        }
-                    }
-                }
-
-                Log.Warning(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
-                    "No cached account found for Microsoft Graph");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(GetGraphTokenAsync),
-                    $"Error acquiring Graph token: {ex.Message}");
+                Log.Debug(Constants.LogMessageTemplate, nameof(PbiServiceHelper), nameof(TryGetPhotoAsync), 
+                    $"Photo request returned {response.StatusCode} for {requestUri}");
                 return null;
             }
         }

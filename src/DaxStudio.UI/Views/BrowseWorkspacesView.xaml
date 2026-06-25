@@ -177,8 +177,8 @@ Padding="10 24 10 16">
                                 
                                 <Image Grid.Column="2" 
                                        Source="{DynamicResource premiumDrawingImage}" 
-                                       Width="16" Height="16" 
-                                       Margin="8 0 0 0" 
+                                       Width="12" Height="12" 
+                                       Margin="8 4 0 0" 
                                        VerticalAlignment="Center"
                                        Visibility="{Binding IsOnPremiumCapacity, Converter={StaticResource BoolToVisibilityConverter}}" 
                                        ToolTip="Premium Workspace"/>
@@ -236,6 +236,7 @@ Padding="10 24 10 16">
                                 <Image Source="{Binding UserAvatar}" 
                                        Width="32" Height="32" 
                                        Margin="0 0 12 0"
+                                       RenderOptions.BitmapScalingMode="HighQuality"
                                        Visibility="{Binding HasAvatar, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <Image.Clip>
                                         <EllipseGeometry Center="16,16" RadiusX="16" RadiusY="16"/>

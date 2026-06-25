@@ -268,8 +268,6 @@ namespace DaxStudio.UI.ViewModels
 
             HelpWatermark = new HelpWatermarkViewModel();
 
-            var t = DaxFormatterProxy.PrimeConnectionAsync(Options, _eventAggregator);
-            t.FireAndForget();
         }
 
         public HelpWatermarkViewModel HelpWatermark { get; set; }
@@ -2557,7 +2555,7 @@ namespace DaxStudio.UI.ViewModels
                         {
                             try
                             {
-                                MetadataPane.ChangeDatabase(message.DatabaseName);
+                                await MetadataPane.ChangeDatabaseAsync(message.DatabaseName);
                                 OutputMessage($"Current Database changed to '{message.DatabaseName}'");
                             }
                             catch (Exception ex)
@@ -3577,7 +3575,10 @@ namespace DaxStudio.UI.ViewModels
             CurrentWorkbookName = message.PowerPivotModeSelected ? message.FileName : String.Empty;
 
             Log.Verbose(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Getting Databases");
-            Databases = Connection.Databases.ToBindableCollection();
+            // Reading the database list (and the current Database below) runs the DBSCHEMA_CATALOGS
+            // DMV which is a blocking network round-trip. Pre-warm the catalog caches and build the
+            // bindable list on a background thread so the UI thread is not blocked.
+            Databases = await Task.Run(() => Connection.Databases.ToBindableCollection());
 
             if (Connection == null)
             { ServerName = "<Not Connected>"; }
@@ -3636,7 +3637,9 @@ namespace DaxStudio.UI.ViewModels
                     // Switch connections to the selected database before metadata loads
                     if (!string.IsNullOrEmpty(selectedDatabaseName))
                     {
-                        Connection.SetSelectedDatabase(selectedDatabaseName);
+                        // SetSelectedDatabase reads the Connection.Database getter which can run the
+                        // DBSCHEMA_CATALOGS DMV, so run it on a background thread to avoid blocking the UI.
+                        await Task.Run(() => Connection.SetSelectedDatabase(selectedDatabaseName));
                     }
                 }
             }
@@ -3654,10 +3657,11 @@ namespace DaxStudio.UI.ViewModels
             // has the correct database selected in its UI
             if (Connection != null && Connection.IsConnected)
             {
-                var dbName = Connection.Database?.Name;
+                // Connection.Database can run the DBSCHEMA_CATALOGS DMV, so read the name off-thread.
+                var dbName = await Task.Run(() => Connection.Database?.Name);
                 if (!string.IsNullOrEmpty(dbName) && MetadataPane?.SelectedDatabase?.Caption != dbName)
                 {
-                    MetadataPane.ChangeDatabase(dbName);
+                    await MetadataPane.ChangeDatabaseAsync(dbName);
                 }
             }
 

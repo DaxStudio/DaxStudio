@@ -47,6 +47,14 @@ namespace DaxStudio.UI.ViewModels
         private ISettingProvider SettingProvider { get; }
         private readonly IWindowManager _windowManager;
 
+        // When the user picks a workspace via the "Browse Workspaces" dialog they have already
+        // signed in to acquire the workspace list. We capture that token here so the connection can
+        // be established with the same account without prompting again. These are cleared whenever the
+        // DataSource is edited manually, so a hand-typed XMLA endpoint still prompts interactively.
+        private AuthenticationResult _browseAuthResult;
+        private AccessTokenContext _browseAuthContext;
+        private string _browseDataSource;
+
 
         public ConnectionDialogViewModel(string connectionString
             , IDaxStudioHost host
@@ -319,6 +327,12 @@ namespace DaxStudio.UI.ViewModels
                 { _dataSource = RecentServers[0]; }
                 return  _dataSource; } 
             set{ _dataSource=CleanDataSourceName(value);
+                // Any change to the data source invalidates a token captured from the Browse Workspaces
+                // dialog. The Browse path re-populates these fields immediately after setting DataSource,
+                // so a hand-typed endpoint falls back to interactive prompting.
+                _browseAuthResult = null;
+                _browseAuthContext = null;
+                _browseDataSource = null;
                 NotifyOfPropertyChange(nameof( DataSource));
                 NotifyOfPropertyChange(nameof(ShowConnectionWarning));
                 NotifyOfPropertyChange(nameof(CanConnect));
@@ -573,11 +587,24 @@ namespace DaxStudio.UI.ViewModels
 
                 if ((serverType == ServerType.AzureAnalysisServices || serverType == ServerType.PowerBIService))
                 {
-                    IntPtr? hwnd = WindowHandleHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
-                    var tokenScope = serverType == ServerType.AzureAnalysisServices ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
-                    var ( authResult,context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, tokenScope, DataSource);
-                    token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
-                    Log.Debug("Attempting connection with token for user: {User}", authResult.Account.Username);
+                    // If this data source was chosen via the Browse Workspaces dialog, reuse the token
+                    // that was already acquired there so we don't prompt the user a second time. A
+                    // hand-typed endpoint (or any edit to DataSource) clears these fields and falls
+                    // through to the interactive prompt below.
+                    if (_browseAuthResult != null && _browseAuthContext != null
+                        && string.Equals(_browseDataSource, DataSource, StringComparison.OrdinalIgnoreCase))
+                    {
+                        token = EntraIdHelper.CreateAccessToken(_browseAuthResult.AccessToken, _browseAuthResult.ExpiresOn, _browseAuthContext);
+                        Log.Debug("Reusing token from Browse Workspaces for user: {User}", _browseAuthResult.Account.Username);
+                    }
+                    else
+                    {
+                        IntPtr? hwnd = WindowHandleHelper.GetHwnd((System.Windows.Controls.ContentControl)this.GetView());
+                        var tokenScope = serverType == ServerType.AzureAnalysisServices ? AccessTokenScope.AsAzure : AccessTokenScope.PowerBI;
+                        var (authResult, context) = await EntraIdHelper.PromptForAccountAsync(hwnd, Options, tokenScope, DataSource);
+                        token = EntraIdHelper.CreateAccessToken(authResult.AccessToken, authResult.ExpiresOn, context);
+                        Log.Debug("Attempting connection with token for user: {User}", authResult.Account.Username);
+                    }
                 }
                 
                 var connEvent = new ConnectEvent(connectionString, PowerPivotModeSelected, GetApplicationName(ConnectionType), PowerPivotModeSelected ? WorkbookName : powerBIFileName, serverType, false, string.Empty, token);
@@ -975,10 +1002,23 @@ namespace DaxStudio.UI.ViewModels
                     { "AllowsTransparency",true}
                 });
 
-                if (browseWorkspacesDialog.Result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrEmpty(browseWorkspacesDialog.SelectedWorkspace.Name))
+                if (browseWorkspacesDialog.Result == System.Windows.Forms.DialogResult.OK && browseWorkspacesDialog.SelectedWorkspace.HasValue && !string.IsNullOrEmpty(browseWorkspacesDialog.SelectedWorkspace.Value.Name))
                 {
                     // Set the data source to the selected workspace
-                    DataSource = $"powerbi://api.powerbi.com/v1.0/myorg/{browseWorkspacesDialog.SelectedWorkspace.Name}";
+                    DataSource = $"powerbi://api.powerbi.com/v1.0/myorg/{browseWorkspacesDialog.SelectedWorkspace.Value.Name}";
+
+                    // Capture the account/token used to view the workspace list so Connect() can reuse
+                    // it without prompting again. Record the DataSource it applies to so we only reuse
+                    // the token for this exact endpoint (setting DataSource above cleared these fields).
+                    _browseAuthResult = browseWorkspacesDialog.AuthenticationResult;
+                    _browseAuthContext = browseWorkspacesDialog.AuthenticationContext;
+                    _browseDataSource = DataSource;
+
+                    // The selected workspace is an XMLA (powerbi://) endpoint, which is a Server-mode
+                    // connection. Connect immediately using the captured token so the connection is
+                    // established before the token can expire, rather than just populating the server box.
+                    ServerModeSelected = true;
+                    Connect();
                 }
             }
             catch (Exception ex)
