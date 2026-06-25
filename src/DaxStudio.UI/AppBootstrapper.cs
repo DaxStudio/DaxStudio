@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows;
 using DaxStudio.UI.ViewModels;
 using DaxStudio.Core.Settings;
+using DaxStudio.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -44,6 +45,14 @@ namespace DaxStudio.UI
         protected override async void OnStartup(object sender, StartupEventArgs e)
         {
             AssemblyLoader.PreJitControls();
+
+            // Warm up the shared HttpClientHelper singleton so the first DAX formatter / version-check
+            // request doesn't pay for proxy detection. Fire-and-forget — failures are already logged
+            // inside InitializeAsync and surfaced via IEventAggregator.
+            _ = HttpClientHelper.CreateAsync(
+                _container.GetExportedValue<IGlobalOptions>(),
+                _container.GetExportedValue<IEventAggregator>());
+
             await DisplayRootViewForAsync<IShell>(null);
         }
 

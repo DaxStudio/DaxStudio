@@ -43,7 +43,7 @@ namespace DaxStudio.Core.Utils
         private static HttpClient _sharedNoRedirectHttpClient; // AllowAutoRedirect = false
         // Urls
         //Single API that returns formatted DAX as as string and error list (empty formatted DAX string if there are errors)
-        public const string DaxTextFormatUri = "https://www.daxformatter.com/api/daxformatter/DaxTextFormat";
+        public const string DaxTextFormatUri = "https://api.daxformatter.com/api/daxtextformat";
 
 #if DEBUG
         public const string CurrentGithubVersionUrl = "https://raw.githubusercontent.com/DaxStudio/DaxStudio/develop/src/CurrentReleaseVersion.json";
@@ -56,11 +56,68 @@ namespace DaxStudio.Core.Utils
         private static bool _isNetworkOnline;
         private static IEventAggregator _eventAggregator;
 
-        public static async Task<HttpClientHelper> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        // Singleton state. HttpClientHelper wraps process-wide static state (proxy, shared HttpClients,
+        // event-aggregator subscription) so callers must always observe the same instance. The Task is
+        // cached on first call; later callers receive the same Task<HttpClientHelper> instantly.
+        // Subsequent globalOptions/eventAggregator arguments are ignored (first-caller-wins).
+        private static readonly object InitLock = new object();
+        private static Task<HttpClientHelper> _initTask;
+
+        /// <summary>
+        /// Returns the shared <see cref="HttpClientHelper"/> singleton, initializing it on first call.
+        /// Subsequent invocations return the cached instance; the <paramref name="globalOptions"/> and
+        /// <paramref name="eventAggregator"/> arguments are ignored after the first successful call.
+        /// Use <see cref="ResetForTests"/> to clear the cached singleton in unit-test scenarios.
+        /// </summary>
+        public static Task<HttpClientHelper> CreateAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
+        {
+            var existing = _initTask;
+            if (existing != null) return existing;
+            lock (InitLock)
+            {
+                if (_initTask == null)
+                {
+                    _initTask = CreateAndInitializeAsync(globalOptions, eventAggregator);
+                }
+                return _initTask;
+            }
+        }
+
+        private static async Task<HttpClientHelper> CreateAndInitializeAsync(IGlobalOptions globalOptions, IEventAggregator eventAggregator)
         {
             var helper = new HttpClientHelper();
             await helper.InitializeAsync(globalOptions, eventAggregator).ConfigureAwait(false);
+            // Wire the singleton up to the event aggregator exactly once so UpdateGlobalOptions
+            // notifications actually trigger ResetProxy() via the IHandle<UpdateGlobalOptions> contract.
+            eventAggregator?.SubscribeOnPublishedThread(helper);
             return helper;
+        }
+
+        /// <summary>
+        /// Test-only hook that clears the cached singleton, unsubscribes from the event aggregator,
+        /// and tears down cached proxy / shared <see cref="HttpClient"/> state so the next call to
+        /// <see cref="CreateAsync"/> performs a full re-initialization. Not intended for production use.
+        /// </summary>
+        public static void ResetForTests()
+        {
+            Task<HttpClientHelper> capturedInitTask;
+            IEventAggregator capturedAggregator;
+            lock (InitLock)
+            {
+                capturedInitTask = _initTask;
+                capturedAggregator = _eventAggregator;
+                _initTask = null;
+            }
+            if (capturedInitTask != null
+                && capturedInitTask.Status == TaskStatus.RanToCompletion
+                && capturedAggregator != null)
+            {
+                try { capturedAggregator.Unsubscribe(capturedInitTask.Result); }
+                catch { /* ignore unsubscribe errors during teardown */ }
+            }
+            ResetProxy();
+            _globalOptions = null;
+            _eventAggregator = null;
         }
 
         private HttpClientHelper() { }
@@ -138,7 +195,7 @@ namespace DaxStudio.Core.Utils
         /// callers needing a per-request timeout must use <see cref="CancellationTokenSource"/>.
         /// </para>
         /// </summary>
-        public HttpClient CreateHttpClient(bool allowAutoRedirect = true)
+        public static HttpClient GetHttpClient(bool allowAutoRedirect = true)
         {
             lock (HttpClientLock)
             {

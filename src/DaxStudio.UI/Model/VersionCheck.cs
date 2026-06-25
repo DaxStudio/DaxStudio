@@ -92,7 +92,7 @@ using DaxStudio.UI.Events;
                         _webRequestFactory = HttpClientHelper.CreateAsync(_globalOptions, _eventAggregator).Result;
                     }
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Starting Population of version information from Github");
-                    PopulateServerVersionFromGithub(_webRequestFactory);
+                    PopulateServerVersionFromGithub();
                     Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(BackgroundGetGitHubVersion), "Updating Version Status");
 
                 }
@@ -175,12 +175,12 @@ using DaxStudio.UI.Events;
 
 
         // This code runs async in a background worker
-        private void PopulateServerVersionFromGithub(HttpClientHelper wrf)
+        private void PopulateServerVersionFromGithub()
         {
             Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Start");
 
             // Use the shared HttpClient; do NOT dispose it (owned by HttpClientHelper).
-            HttpClient http = wrf.CreateHttpClient();
+            HttpClient http = HttpClientHelper.GetHttpClient();
 
             string json;
             Log.Information(Common.Constants.LogMessageTemplate, nameof(VersionCheck), nameof(PopulateServerVersionFromGithub), "Starting download of CurrentVersion.json");
@@ -194,7 +194,7 @@ using DaxStudio.UI.Events;
                 HttpClientHelper.Proxy.Credentials = CredentialCache.DefaultCredentials;
                 // Reset the shared client so it picks up the new proxy credentials on its next handler build.
                 HttpClientHelper.ResetProxy();
-                HttpClient retryHttp = wrf.CreateHttpClient();
+                HttpClient retryHttp = HttpClientHelper.GetHttpClient();
                 result = DownloadVersionJson(retryHttp, versionUri);
             }
 
