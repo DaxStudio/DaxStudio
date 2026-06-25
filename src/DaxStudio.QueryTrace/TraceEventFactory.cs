@@ -13,6 +13,7 @@ namespace DaxStudio.QueryTrace
         private static List<TraceColumn> desiredColumns = new List<TraceColumn>() {
             TraceColumn.ActivityID,
             TraceColumn.ApplicationName,
+            TraceColumn.ApplicationContext,
             TraceColumn.CpuTime,
             TraceColumn.CurrentTime,
             TraceColumn.DatabaseName,

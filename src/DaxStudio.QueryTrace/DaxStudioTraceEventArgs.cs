@@ -2,6 +2,7 @@
 using Microsoft.AnalysisServices;
 using System;
 using System.Globalization;
+using System.Windows.Forms;
 
 namespace DaxStudio.QueryTrace
 {
@@ -41,6 +42,7 @@ namespace DaxStudio.QueryTrace
                     Duration = e.Duration;
                     StartTime = e.StartTime;
                     NTUserName = e.NTUserName;
+                    ApplicationContext = e[TraceColumn.ApplicationContext]?.ToString();
                     EndTime = e.EndTime;
                     CpuTime = e.CpuTime;
                     break;
@@ -272,7 +274,7 @@ namespace DaxStudio.QueryTrace
         public DateTime EndTime { get; set; }
         public DateTime StartTime { get; set; }
         public string DatabaseName { get; set; }
-
+        public string ApplicationContext { get; set; }
         public string DatabaseFriendlyName { get; set; }
         // ReSharper disable once InconsistentNaming
         public string RequestID { get; set; }
