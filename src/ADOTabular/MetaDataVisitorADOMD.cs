@@ -9,7 +9,7 @@ namespace ADOTabular
 {
     public class MetaDataVisitorADOMD : IMetaDataVisitor
     {
-        private readonly IADOTabularConnection _conn;
+        private readonly ADOTabularConnection _conn;
 
         public MetaDataVisitorADOMD(ADOTabularConnection conn) 
         {
@@ -194,7 +194,7 @@ namespace ADOTabular
             
             // Add format string definitions if available
             DataTable dtFormatStringDefinitions = null;
-            int.TryParse(conn.Database.CompatibilityLevel, out int iCompatLevel);
+            _ = int.TryParse(conn.Database.CompatibilityLevel, out int iCompatLevel);
             // FormatString definitions are only available in compat level 1470 or above
             if (conn.DynamicManagementViews.Any(dmv => dmv.Name == "TMSCHEMA_FORMAT_STRING_DEFINITIONS") && iCompatLevel >= 1470)
             {

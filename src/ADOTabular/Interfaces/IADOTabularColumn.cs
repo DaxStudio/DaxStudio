@@ -10,7 +10,7 @@ namespace ADOTabular.Interfaces
         string MaxValue { get; }
         long DistinctValues { get; }
         void UpdateBasicStats(ADOTabularConnection connection);
-        List<string> GetSampleData(ADOTabularConnection connection, int sampleSize);
+        ICollection<string> GetSampleData(ADOTabularConnection connection, int sampleSize);
         Type SystemType { get; }
         DataType DataType { get; }
         MetadataImages MetadataImage { get; }

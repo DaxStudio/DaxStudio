@@ -29,8 +29,8 @@ namespace DaxStudio.CheckerApp
             try
             {
                 checker = new Checker(Output);
-                checker.SetFusionLoggingState(menuToggleFusionLogging);
-                checker.SetVSTOLoggingState(menuToggleVSTOLogging);
+                Checker.SetFusionLoggingState(menuToggleFusionLogging);
+                Checker.SetVSTOLoggingState(menuToggleVSTOLogging);
                 checker.ShowVersionInfo();
                 checker.CheckOSInfo();
                 checker.CheckScreenInfo();
@@ -77,12 +77,12 @@ namespace DaxStudio.CheckerApp
 
         private void OnToggleFusionLoggingMenuClick(object sender, RoutedEventArgs e)
         {
-            checker.ToggleFusionLogging(menuToggleFusionLogging.IsChecked);
+            Checker.ToggleFusionLogging(menuToggleFusionLogging.IsChecked);
         }
 
         private void OnToggleVSTOLoggingMenuClick(object sender, RoutedEventArgs e)
         {
-            checker.ToggleVSTOLogging(this.menuToggleVSTOLogging.IsChecked);
+            Checker.ToggleVSTOLogging(this.menuToggleVSTOLogging.IsChecked);
         }
 
         private void OnOpenFusionLogFolderMenuClick(object sender, RoutedEventArgs e)

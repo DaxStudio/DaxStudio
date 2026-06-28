@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AnalysisServices.Tabular;
 using Microsoft.Identity.Client;
+using System.Collections.ObjectModel;
 
 namespace ADOTabular
 {
@@ -284,7 +285,7 @@ namespace ADOTabular
                 };
         }
 
-        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
+        public ICollection<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
 
             if (connection == null || connection.ServerType == Enums.ServerType.Offline) return new List<string>() { "<Not Connected>" };

@@ -3,7 +3,7 @@
 namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class EnumDisplayAttribute: Attribute
+    public sealed class EnumDisplayAttribute: Attribute
     {
         public EnumDisplayAttribute(EnumDisplayOptions enumDisplay)
         {

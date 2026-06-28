@@ -12,21 +12,27 @@ namespace DaxStudio.Standalone
         internal static class NativeMethods
         {
             [DllImport("kernel32.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern bool AttachConsole(uint dwProcessId);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern uint GetFileType(SafeFileHandle handle);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern bool GetConsoleMode(IntPtr hConsoleHandle, out int mode);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern IntPtr GetStdHandle(int nStdHandle);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
 
             [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern IntPtr CreateFile(
                 string lpFileName,
                 uint dwDesiredAccess,
@@ -37,9 +43,11 @@ namespace DaxStudio.Standalone
                 IntPtr hTemplateFile);
 
             [DllImport("kernel32.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern bool CloseHandle(IntPtr hObject);
 
             [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern bool WriteConsoleInput(
                 IntPtr hConsoleInput,
                 INPUT_RECORD[] lpBuffer,
@@ -89,12 +97,12 @@ namespace DaxStudio.Standalone
             //const int FileTypeRemote = 0x8000;
             //const int FileTypeUnknown = 0x0000;
 
-            var handle = new SafeFileHandle(ioHandle, ownsHandle: false);
-
-            var type = NativeMethods.GetFileType(handle);
-            if (type == FileTypeDisk || type == FileTypePipe)
-                return true;
-
+            using (var handle = new SafeFileHandle(ioHandle, ownsHandle: false))
+            {
+                var type = NativeMethods.GetFileType(handle);
+                if (type == FileTypeDisk || type == FileTypePipe)
+                    return true;
+            }
             //return !GetConsoleMode(ioHandle, out var num);
             return false;
         }

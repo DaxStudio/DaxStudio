@@ -657,7 +657,7 @@ namespace DaxStudio.Core.Connections
         }
 
 
-        public async Task<List<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize)
+        public async Task<ICollection<string>> GetColumnSampleData(ADOTabularColumn column, int sampleSize)
         {
             if (column == null) return new List<string>();
             

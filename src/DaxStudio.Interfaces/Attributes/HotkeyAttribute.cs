@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class HotkeyAttribute : Attribute
+    public sealed class HotkeyAttribute : Attribute
     {
     }
 }

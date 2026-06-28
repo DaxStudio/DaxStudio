@@ -33,7 +33,7 @@ namespace DaxStudio.UI.Model
             // do nothing
         }
 
-        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
+        public ICollection<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
             // return empty list
             return new List<string>();

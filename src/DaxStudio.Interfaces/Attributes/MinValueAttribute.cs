@@ -3,7 +3,7 @@
 namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class MinValueAttribute: Attribute
+    public sealed class MinValueAttribute: Attribute
     {
         public MinValueAttribute(double minValue)
         {

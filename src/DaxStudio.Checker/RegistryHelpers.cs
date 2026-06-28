@@ -4,16 +4,20 @@ using System.Linq;
 
 namespace DaxStudio.CheckerApp
 {
-    public static class RegistryHelpers
+    internal static class RegistryHelpers
     {
-        public static IEnumerable<string> GetRegValueNames(RegistryView view, string regPath,
+        internal static IEnumerable<string> GetRegValueNames(RegistryView view, string regPath,
                                   RegistryHive hive = RegistryHive.LocalMachine)
         {
-            return RegistryKey.OpenBaseKey(hive, view)
-                             ?.OpenSubKey(regPath)?.G‌​etValueNames();
+
+            using (var key = RegistryKey.OpenBaseKey(hive, view))
+            using (var subkey = key?.OpenSubKey(regPath))
+            {
+                return subkey?.GetValueNames();
+            }   
         }
 
-        public static IEnumerable<string> GetAllRegValueNames(string regPath,
+        internal static IEnumerable<string> GetAllRegValueNames(string regPath,
                                           RegistryHive hive = RegistryHive.LocalMachine)
         {
             var reg64 = GetRegValueNames(RegistryView.Registry64, regPath, hive);
@@ -25,8 +29,11 @@ namespace DaxStudio.CheckerApp
         public static object GetRegValue(RegistryView view, string regPath, string valueName,
                                          RegistryHive hive = RegistryHive.LocalMachine)
         {
-            return RegistryKey.OpenBaseKey(hive, view)
-                               ?.OpenSubKey(regPath)?.G‌​etValue(valueName);
+            using (var key = RegistryKey.OpenBaseKey(hive, view))
+            using (var subkey = key?.OpenSubKey(regPath))
+            {
+                return subkey?.G‌​etValue(valueName);
+            }
         }
 
         public static object GetRegValue(string regPath, string valueName,

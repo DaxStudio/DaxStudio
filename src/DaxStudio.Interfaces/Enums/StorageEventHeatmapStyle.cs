@@ -13,7 +13,7 @@ namespace DaxStudio.Interfaces.Enums
         [Description("Full Height")] FullHeight
     }
 
-    public static class Extensions
+    public static class EnumExtensions
     {
         public static T Next<T>(this T src) where T : struct
         {

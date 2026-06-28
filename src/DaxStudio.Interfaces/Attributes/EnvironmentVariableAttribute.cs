@@ -6,7 +6,7 @@ namespace DaxStudio.Interfaces.Attributes
     /// Specifies that a property should only be displayed if the specified environment variable exists and has a non-zero value.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class EnvironmentVariableAttribute : Attribute
+    public sealed class EnvironmentVariableAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the EnvironmentVariableAttribute class with the specified environment variable name.

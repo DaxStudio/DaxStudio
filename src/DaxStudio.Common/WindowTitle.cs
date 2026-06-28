@@ -10,26 +10,10 @@ namespace DaxStudio.Common
     public static class WindowTitle
     {
 
-
-        //static void Main(string[] args)
-        //{
-        //    var p = Process.GetProcessById(3484);
-        //    var h = p.MainWindowHandle;
-
-        //    string s = GetWindowTextTimeout(h, 100 /*msec*/);
-
-        //}
-
-
-
-
         const int WM_GETTEXT = 0x000D;
         const int WM_GETTEXTLENGTH = 0x000E;
 
-
-
-
-        private static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        private static List<IntPtr> EnumerateProcessWindowHandles(int processId)
         {
             var handles = new List<IntPtr>();
 

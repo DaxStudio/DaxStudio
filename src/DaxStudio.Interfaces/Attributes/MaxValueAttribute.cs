@@ -3,7 +3,7 @@
 namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class MaxValueAttribute: Attribute
+    public sealed class MaxValueAttribute: Attribute
     {
         public MaxValueAttribute(double maxValue)
         {

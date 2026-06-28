@@ -655,12 +655,12 @@ namespace DaxStudio.UI.ViewModels
                  
             
             // If our message
-            if (msg == common.NativeMethods.WM_COPYDATA)
+            if (msg == common.NativeMethods.WMCOPYDATA)
             {
                 // msg.LParam contains a pointer to the COPYDATASTRUCT struct
-                common.NativeMethods.COPYDATASTRUCT dataStruct =
-                    (common.NativeMethods.COPYDATASTRUCT)Marshal.PtrToStructure(
-                    lParam, typeof(common.NativeMethods.COPYDATASTRUCT));
+                common.COPYDATASTRUCT dataStruct =
+                    (common.COPYDATASTRUCT)Marshal.PtrToStructure(
+                    lParam, typeof(common.COPYDATASTRUCT));
 
                 // Create a byte array to hold the data
                 byte[] bytes = new byte[dataStruct.cbData];

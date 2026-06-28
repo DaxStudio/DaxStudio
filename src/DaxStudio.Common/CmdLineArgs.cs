@@ -304,17 +304,17 @@ namespace DaxStudio.Common
         // form without accidentally rewriting file paths.
         private static readonly HashSet<string> KnownShortOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "p", "l", "f", "s", "d", "r", "u",
+            "P", "L", "F", "S", "D", "R", "U",
 #if DEBUG
-            "c",
+            "C",
 #endif
         };
 
         private static readonly HashSet<string> KnownLongOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "port", "log", "file", "server", "database", "reset", "nopreview", "uri",
+            "PORT", "LOG", "FILE", "SERVER", "DATABASE", "RESET", "NOPREVIEW", "URI",
 #if DEBUG
-            "crashtest",
+            "CRASHTEST",
 #endif
         };
 
@@ -343,11 +343,11 @@ namespace DaxStudio.Common
             // mangling forward-slash file paths.
             if (KnownLongOptions.Contains(name))
             {
-                return "--" + name.ToLowerInvariant() + tail;
+                return "--" + name.ToUpperInvariant() + tail;
             }
             if (name.Length == 1 && KnownShortOptions.Contains(name))
             {
-                return "-" + name.ToLowerInvariant() + tail;
+                return "-" + name.ToUpperInvariant() + tail;
             }
 
             return arg;

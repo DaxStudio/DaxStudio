@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using DaxStudio.Common;
-using constants = DaxStudio.Common.Constants;
+using Constants = DaxStudio.Common.Constants;
 using System.Runtime.InteropServices;
 using static DaxStudio.Common.NativeMethods;
 
@@ -46,14 +46,14 @@ namespace DaxStudio.Launcher
         {
             try
             {
-                Log.Information(constants.LogMessageTemplate, nameof(Startup), nameof(LaunchNewProcess), $"Launching: {_appPath} Args: {args}");
+                Log.Information(Constants.LogMessageTemplate, nameof(Startup), nameof(LaunchNewProcess), $"Launching: {_appPath} Args: {args}");
                 var startInfo = new ProcessStartInfo(_appPath, args.QuoteStringArgs());
 
                 Process.Start(startInfo);
             }
             catch(Exception ex)
             {
-                Log.Error(ex, constants.LogMessageTemplate, nameof(Startup), nameof(LaunchNewProcess), "Error starting daxstudio.exe process");
+                Log.Error(ex, Constants.LogMessageTemplate, nameof(Startup), nameof(LaunchNewProcess), "Error starting daxstudio.exe process");
                 MessageBox.Show($"The following error occurred trying to open DAX Studio\n\n{ex.Message}", "DAX Studio Launcher");
             }
         }
@@ -63,7 +63,7 @@ namespace DaxStudio.Launcher
             var config = new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(levelSwitch);
 
-            var logPath = Path.Combine(ApplicationPaths.LogPath, constants.LauncherLogFileName);
+            var logPath = Path.Combine(ApplicationPaths.LogPath, Constants.LauncherLogFileName);
             config.WriteTo.File(logPath
                 , rollingInterval: RollingInterval.Day
             );

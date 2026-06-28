@@ -3,7 +3,7 @@
 namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class SortOrderAttribute: Attribute
+    public sealed class SortOrderAttribute: Attribute
     {
         public SortOrderAttribute(int sortOrder)
         {

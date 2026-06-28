@@ -3,7 +3,7 @@
 namespace DaxStudio.Interfaces.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class SubcategoryAttribute: Attribute
+    public sealed class SubcategoryAttribute: Attribute
     {
         public SubcategoryAttribute(string subcategory)
         {

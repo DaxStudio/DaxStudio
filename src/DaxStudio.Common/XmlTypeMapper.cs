@@ -8,7 +8,7 @@ namespace DaxStudio.Common
 
 
 
-    public class XmlTypeMapper
+    public sealed class XmlTypeMapper
     {
         private static readonly Hashtable xmlTypes = new Hashtable();
         private static readonly Hashtable systemTypes = new Hashtable();

@@ -24,6 +24,8 @@ using DaxStudio.Common.Extensions;
 using System.IO.Pipes;
 using System.Windows.Shell;
 using System.ComponentModel;
+using System.Globalization;
+
 #if NET472
 using Windows.Management.Update;
 #endif
@@ -206,10 +208,11 @@ namespace DaxStudio.Standalone
             var logPath = Path.Combine(ApplicationPaths.LogPath, Constants.StandaloneLogFileName);
             config.WriteTo.File(logPath
                 , rollingInterval: RollingInterval.Day
+                , formatProvider: CultureInfo.InvariantCulture
                 );
 #if DEBUG
             // if we are debugging write to the log window
-            config.WriteTo.DaxStudioOutput();
+            config.WriteTo.DaxStudioOutput(formatProvider: CultureInfo.InvariantCulture);
 #endif
             _log = config.CreateLogger();
             Log.Logger = _log;

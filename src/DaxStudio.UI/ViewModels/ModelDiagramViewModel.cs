@@ -7386,7 +7386,7 @@ namespace DaxStudio.UI.ViewModels
                 // Notify tooltip that we're loading (shows "Loading..." state)
                 NotifyOfPropertyChange(nameof(Tooltip));
                 
-                var samples = await _metadataProvider.GetColumnSampleData(_column, SAMPLE_ROWS).ConfigureAwait(false);
+                var samples = (List<string>)await _metadataProvider.GetColumnSampleData(_column, SAMPLE_ROWS).ConfigureAwait(false);
                 _sampleData = samples ?? new List<string>();
             }
             catch (Exception ex)

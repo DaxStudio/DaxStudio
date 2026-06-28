@@ -57,8 +57,20 @@ namespace DaxStudio.Common
             cds.dwData = (IntPtr)100;
             cds.lpData = ptrData;
             cds.cbData = dataSize;
-
-            Common.NativeMethods.SendMessage(hwnd, Common.NativeMethods.WM_COPYDATA, 0, ref cds);
+            IntPtr result = IntPtr.Zero;
+            try
+            {
+                result = Common.NativeMethods.SendMessage(hwnd, Common.NativeMethods.WMCOPYDATA, 0, ref cds);
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem(ptrData);
+            }
+            if ((int)result == 0)
+            {
+                // The message was NOT sent successfully
+                throw new Exception($"Error sending WM_COPYDATA message. ({(int)result})");
+            }
         }
     }
 }

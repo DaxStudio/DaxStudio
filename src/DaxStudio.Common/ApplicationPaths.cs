@@ -10,7 +10,11 @@ namespace DaxStudio.Common
             //To get the location the assembly normally resides on disk or the install directory
             var ass = System.Reflection.Assembly.GetEntryAssembly();
             if (ass == null) ass = System.Reflection.Assembly.GetExecutingAssembly();
+#if NET472
             string path = ass.CodeBase.Replace("file:///","");
+#else
+            string path = ass.Location;
+#endif
             var directory = Path.GetDirectoryName(path);
             BinPortableFile = Path.Combine(directory, @"bin\.portable");
             PortableFile = Path.Combine(directory, @".portable");

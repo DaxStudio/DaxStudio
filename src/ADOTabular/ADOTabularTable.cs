@@ -134,7 +134,7 @@ namespace ADOTabular
             try
             {
                 using var dt = connection.ExecuteDaxQueryDataTable(qry);
-                long.TryParse(dt.Rows[0][0].ToString(), out var rows);
+                _ = long.TryParse(dt.Rows[0][0].ToString(), out var rows);
                 RowCount = rows;
             }
             catch

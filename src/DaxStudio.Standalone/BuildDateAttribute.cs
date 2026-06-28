@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace DaxStudio.Standalone
 {
     [AttributeUsage(AttributeTargets.Assembly)]
-    internal class BuildDateAttribute: Attribute
+    internal sealed class BuildDateAttribute: Attribute
     {
         public BuildDateAttribute(string value)
         {

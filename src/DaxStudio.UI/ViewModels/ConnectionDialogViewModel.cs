@@ -236,7 +236,7 @@ namespace DaxStudio.UI.ViewModels
                 // if data source = $Embedded$ then mark Ppvt option as selected 
                 var dataSrc = _connectionProperties["Data Source"];
 
-                if (_ppvtRegex.Match(dataSrc).Success) // if we are connected to PowerPivot
+                if (_ppvtRegex.IsMatch(dataSrc)) // if we are connected to PowerPivot
                 {
                     PowerBIModeSelected = false;
                     ServerModeSelected = false;
@@ -796,16 +796,16 @@ namespace DaxStudio.UI.ViewModels
                         var props = SplitConnectionString(text);
 
                         // update the DataSource property if we found a "Data Source=" in the pasted string
-                        if (props.ContainsKey("Data Source") && text.Contains("Data Source=",StringComparison.OrdinalIgnoreCase))
+                        if (props.TryGetValue("Data Source", out string value) && text.Contains("Data Source=",StringComparison.OrdinalIgnoreCase))
                         {
-                            DataSource = props["Data Source"];
+                            DataSource = value;
                             e.CancelCommand();
                         }
                         // update the InitialCatalog property if we found a "Initial Cataloge=" in the pasted string
-                        if (props.ContainsKey("Initial Catalog"))
+                        if (props.TryGetValue("Initial Catalog", out string value1))
                         {
-                            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{ props["Initial Catalog"]}\""));
-                            InitialCatalog = props["Initial Catalog"];
+                            _eventAggregator.PublishAsync(new OutputMessage(MessageType.Information, $"Setting the \"Initial Catalog\" property in the Advanced Options to \"{value1}\""));
+                            InitialCatalog = value1;
                             e.CancelCommand();
                         }
                         //TODO - should we attempt to assign other properties?

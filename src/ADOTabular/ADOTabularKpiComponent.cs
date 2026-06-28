@@ -48,7 +48,7 @@ namespace ADOTabular
             // Do Nothing
         }
 
-        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
+        public ICollection<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
             // Do Nothing
             return null;

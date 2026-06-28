@@ -16,7 +16,7 @@ using System.Xml;
 namespace DaxStudio.CheckerApp
 {
 
-    public enum ExcelVersion
+    internal enum ExcelVersion
     {
         Excel2010 = 13,
         Excel2013 = 14,
@@ -25,7 +25,7 @@ namespace DaxStudio.CheckerApp
         Excelv17  = 17,
     }
 
-    public class Checker
+    internal class Checker
     {
         private readonly List<Version> AdomdVersions = new List<Version>();
 
@@ -40,6 +40,8 @@ namespace DaxStudio.CheckerApp
 
         #region Public Properties
         public RichTextBox Output { get { return _output; } }
+
+        private static readonly char[] trimChars = new char[] { '"' };
         #endregion
 
         #region Constructor
@@ -50,18 +52,18 @@ namespace DaxStudio.CheckerApp
         #endregion
 
         #region Menu Functions
-        internal void SetFusionLoggingState(MenuItem menuItem)
+        internal static void SetFusionLoggingState(MenuItem menuItem)
         {
             var isFusionLogEnabled = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Fusion", "LogFailures", 0) as int?;
             menuItem.IsChecked = isFusionLogEnabled != 0;
         }
 
-        internal void SetVSTOLoggingState(MenuItem menuItem)
+        internal static void SetVSTOLoggingState(MenuItem menuItem)
         {
             menuItem.IsChecked = (Environment.GetEnvironmentVariable("VSTO_SUPPRESSDISPLAYALERTS") == "0");
         }
 
-        internal void ToggleVSTOLogging(bool isChecked)
+        internal static void ToggleVSTOLogging(bool isChecked)
         {
             // ren SET from cmdline
             var startInfo = new ProcessStartInfo();
@@ -74,7 +76,7 @@ namespace DaxStudio.CheckerApp
             if (proc.ExitCode != 0) MessageBox.Show($"An Error occurred while setting VSTO_SUPPRESSDISPLAYALERTS environment variable. You may have to try setting this manually");
         }
 
-        internal void ToggleFusionLogging(bool isChecked)
+        internal static void ToggleFusionLogging(bool isChecked)
         {
             // run reg process
             //var currentPath = Assembly.GetEntryAssembly().Location;
@@ -253,8 +255,11 @@ namespace DaxStudio.CheckerApp
                     Output.AppendRange("      WARN > ").Bold().Color("Orange");
                     Output.AppendLine("DAX Studio registry 'Path' value not found.");
                     str = DEFAULT_DAX_STUDIO_PATH;
-
+#if NET472
                     string path = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+#else
+                    string path = new Uri(Assembly.GetExecutingAssembly().Location).LocalPath;
+#endif 
                     var directory = Path.GetDirectoryName(path);
                     str = Path.Combine(directory, "daxstudio.exe");
                     Output.AppendIndentedLine($"  Attempting to use current path: {str}");
@@ -317,7 +322,7 @@ namespace DaxStudio.CheckerApp
         // Sourced from: CheckFor45PlusVersion function at
         // https://github.com/jmalarcon/DotNetVersions/blob/7bb9069d239d63ddc71ca7dba2eb44cde93248f0/Program.cs#L138
 
-        private string Get45PlusVersion(int releaseKey)
+        private static string Get45PlusVersion(int releaseKey)
         {
             if (releaseKey >= 528040)
                 return "4.8";
@@ -496,7 +501,7 @@ namespace DaxStudio.CheckerApp
             }
         }
 
-        #endregion
+#endregion
 
         #region Helper Functions
 
@@ -519,7 +524,7 @@ namespace DaxStudio.CheckerApp
             return excelArch;
         }
 
-        public enum MachineType
+        internal enum MachineType
         {
             Native = 0, 
             x86 = 0x014c, 
@@ -528,16 +533,16 @@ namespace DaxStudio.CheckerApp
             Unknown = 0xFFFF
         }
 
-        public static MachineType GetMachineType(string fileName)
+        internal static MachineType GetMachineType(string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) return MachineType.Unknown;
 
             const int PE_POINTER_OFFSET = 60;
             const int MACHINE_OFFSET = 4;
             byte[] data = new byte[4096];
-            using (Stream s = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            using (FileStream s = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                s.Read(data, 0, 4096);
+                _ = s.Read(data, 0, 4096);
             }
             // dos header is 64 bytes, last element, long (4 bytes) is the address of the PE header
             int PE_HEADER_ADDR = BitConverter.ToInt32(data, PE_POINTER_OFFSET);
@@ -574,7 +579,7 @@ namespace DaxStudio.CheckerApp
         {
             if (path.EndsWith("\"", StringComparison.InvariantCultureIgnoreCase))
             {
-                return (path.TrimStart(new char[] { '"' }).TrimEnd(new char[] { '"' }) + ".config");
+                return (path.TrimStart(trimChars).TrimEnd(trimChars) + ".config");
             }
             return (path + ".config");
         }
@@ -717,13 +722,17 @@ namespace DaxStudio.CheckerApp
         internal static string StripRootPath(string name, string rootPath) =>
             name.Substring((name.IndexOf(rootPath, StringComparison.InvariantCultureIgnoreCase) + rootPath.Length) + 1);
 
-        internal string GetCurrentPath()
+        internal static string GetCurrentPath()
         {
-            string path = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+#if NET472
+            string path = new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+#else
+            string path = Assembly.GetExecutingAssembly().Location;
+#endif
             return Path.GetDirectoryName(path);
         }
 
-        internal bool IsInPortableMode() {
+        internal static bool IsInPortableMode() {
             var directory = GetCurrentPath();
 
             // check for .portable file in bin folder

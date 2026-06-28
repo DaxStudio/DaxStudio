@@ -43,7 +43,7 @@ namespace DaxStudio.Common.Extensions
 
         public static bool Contains(this string input, string searchFor, StringComparison comparison)
         {
-            return input.IndexOf(searchFor, comparison) >= 0;
+            return input.Contains(searchFor,StringComparison.OrdinalIgnoreCase);
         }
 
         public static string Format(this string input, params object[] args)
@@ -53,8 +53,9 @@ namespace DaxStudio.Common.Extensions
 
         public static bool IsFunctionKey(this string input)
         {
+            if (input == null) return false;
             if (input.Length <= 1) return false;
-            if (!input.StartsWith("F")) return false;
+            if (!input.StartsWith("F", StringComparison.OrdinalIgnoreCase)) return false;
             return input.Substring(1).IsNumeric();
         }
 
@@ -79,7 +80,7 @@ namespace DaxStudio.Common.Extensions
             }
             if (url.StartsWith(scheme, StringComparison.InvariantCultureIgnoreCase) && url.Length > scheme.Length + "://".Length)
             {
-                return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.InvariantCultureIgnoreCase) == 0;
+                return string.Compare(url, scheme.Length, "://", 0, "://".Length, StringComparison.OrdinalIgnoreCase) == 0;
             }
             return false;
         }

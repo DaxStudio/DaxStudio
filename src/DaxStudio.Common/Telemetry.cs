@@ -24,18 +24,20 @@ namespace DaxStudio.Common
 
         private static TelemetryClient GetAppInsightsClient()
         {
-            var config = new TelemetryConfiguration();
-            config.InstrumentationKey = TelemetryKey;
-            config.TelemetryChannel = new Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.ServerTelemetryChannel();
-            config.TelemetryChannel.DeveloperMode = Debugger.IsAttached;
-    #if DEBUG
-            config.TelemetryChannel.DeveloperMode = true;
-    #endif
-            TelemetryClient client = new TelemetryClient(config);
-            client.Context.Component.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            client.Context.Session.Id = Guid.NewGuid().ToString();
-            client.Context.User.Id = (Environment.UserName + Environment.MachineName).GetHashCode().ToString();
-            return client;
+            using (var config = new TelemetryConfiguration())
+            {
+                config.ConnectionString = $"InstrumentationKey={TelemetryKey}";
+                config.TelemetryChannel = new Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.ServerTelemetryChannel();
+                config.TelemetryChannel.DeveloperMode = Debugger.IsAttached;
+#if DEBUG
+                config.TelemetryChannel.DeveloperMode = true;
+#endif
+                TelemetryClient client = new TelemetryClient(config);
+                client.Context.Component.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                client.Context.Session.Id = Guid.NewGuid().ToString();
+                client.Context.User.Id = (Environment.UserName + Environment.MachineName).GetHashCode().ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return client;
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Any errors while tracking events should be ignored")]

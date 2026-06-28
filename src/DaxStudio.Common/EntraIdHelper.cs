@@ -64,7 +64,7 @@ namespace DaxStudio.Common
         // setup and can silently reuse the Windows account. (Other well-known ids such as Microsoft Office
         // do NOT register a compatible public-client redirect and make WAM return 'IncorrectConfiguration'.)
         // The ADOMD/Power BI client id is not authorized for Microsoft Graph, so reusing it fails the same way.
-        private static readonly string GraphClientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e";
+        private const string GraphClientId = "14d82eec-204b-4c2f-b7e8-296a70dab67e";
         private static IPublicClientApplication _graphClientApp;
 
         public static async Task<AuthenticationResult> AcquireTokenAsync(IntPtr? hwnd, IHaveLastUsedUPN options, AccessTokenScope tokenScope,AccessTokenContext context)
@@ -78,7 +78,7 @@ namespace DaxStudio.Common
             // if the user signed-in before, try to get that account info from the cache
             if (!string.IsNullOrEmpty(options.LastUsedUPN))
             {
-                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, options.LastUsedUPN, StringComparison.CurrentCultureIgnoreCase));
+                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, options.LastUsedUPN, StringComparison.OrdinalIgnoreCase));
             }
 
             // try to get the first account from the cache
@@ -335,6 +335,7 @@ namespace DaxStudio.Common
 
         private static AuthenticationInformationRecord[] remoteSecurityConfig;
         private static AuthenticationInformationRecord[] embeddedSecurityConfig;
+        private static readonly char[] separator = new[] { '/' };
 
         private static AuthenticationInformationRecord[] GetAuthenticationInformation(        
             bool isEmbeddedInfo)
@@ -357,14 +358,13 @@ namespace DaxStudio.Common
                 try
                 {
                     // Synchronous wait is acceptable here since callers of GetAuthenticationInformation are synchronous.
-                    byte[] data = _httpClient.GetByteArrayAsync("https://global.asazure.windows.net/ASAzureSecurityConfig.xml")
-                                             .GetAwaiter().GetResult();
+                    byte[] data = _httpClient.GetByteArrayAsync(new Uri("https://global.asazure.windows.net/ASAzureSecurityConfig.xml")).Result;
                     using (Stream info = new MemoryStream(data))
                         remoteSecurityConfig = DeserializeAuthenticationInformation(info);
                 }
                 catch (HttpRequestException)
                 {
-                    remoteSecurityConfig = new AuthenticationInformationRecord[0];
+                    remoteSecurityConfig = Array.Empty<AuthenticationInformationRecord>();
                 }
             }
             return remoteSecurityConfig;
@@ -405,7 +405,7 @@ namespace DaxStudio.Common
                     if (string.IsNullOrWhiteSpace(record.ResourceId))
                     {
                         Log.Debug(Constants.LogMessageTemplate, nameof(EntraIdHelper), nameof(TryFindAuthenticationInformation), $"No Resource found in config for {dataSource}, generating from dataSource");
-                        record.ResourceId = string.Format("https://{0}", dataSource.Host);
+                        record.ResourceId = string.Format(CultureInfo.InvariantCulture, "https://{0}", dataSource.Host);
                     }
                     else
                     {
@@ -445,7 +445,7 @@ namespace DaxStudio.Common
         private static string GetTenantForPowerBI(string serverName)
         {
             //Look for a guid in the serverName
-            var parts = serverName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = serverName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
 
             var match = regexGuid.Match(serverName);
             if (match.Success)
@@ -475,7 +475,7 @@ namespace DaxStudio.Common
 	            "tenantId": "d2d5283f-21bf-4fb9-bfa1-1e91215840c1"
             }
             */
-            var parts = serverName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = serverName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             var host = parts.Length > 1 ? parts[1] : string.Empty;
             var server = parts.Length > 2 ? parts[2].Replace(":rw", string.Empty) : string.Empty;
             // SSL 3.0 is disabled by default on supported .NET runtimes; explicit removal is no longer required.
@@ -502,7 +502,7 @@ namespace DaxStudio.Common
                 request.Content = new ByteArrayContent(requestBytes);
                 request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
-                using (var response = _httpClient.SendAsync(request).GetAwaiter().GetResult())
+                using (var response = _httpClient.SendAsync(request).Result)
                 {
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
@@ -591,7 +591,7 @@ namespace DaxStudio.Common
             // if the user signed-in before, try to get that account info from the cache
             if (!string.IsNullOrEmpty(lastUpn))
             {
-                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.CurrentCultureIgnoreCase));
+                firstAccount = accounts.FirstOrDefault(acct => string.Equals(acct.Username, lastUpn, StringComparison.OrdinalIgnoreCase));
             }
 
             var scope = token.UserContext.Scope;
@@ -599,7 +599,7 @@ namespace DaxStudio.Common
             try
             {
                 if (firstAccount == null) throw new MsalUiRequiredException("UserNotFoundInCache", "User not found in cache");
-                authResult = app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync().Result;
+                authResult = await app.AcquireTokenSilent(scope, firstAccount).ExecuteAsync().ConfigureAwait(false);
 
             }
             catch (MsalUiRequiredException)
@@ -608,13 +608,13 @@ namespace DaxStudio.Common
 
                 try
                 {
-                    authResult = app.AcquireTokenInteractive(scope)
+                    authResult = await app.AcquireTokenInteractive(scope)
                         .WithAccount(firstAccount)
                         //.WithParentActivityOrWindow(hwnd) // optional, used to center the browser on the window
                         .WithParentActivityOrWindow(Process.GetCurrentProcess().MainWindowHandle)
                         .WithExtraQueryParameters(MicrosoftAccountOnlyQueryParameters)
                         .WithPrompt(Prompt.SelectAccount)
-                        .ExecuteAsync().Result;
+                        .ExecuteAsync().ConfigureAwait(false);
 
                 }
                 catch (MsalException msalex)

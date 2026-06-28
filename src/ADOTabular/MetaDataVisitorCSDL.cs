@@ -197,15 +197,11 @@ namespace ADOTabular
                 var dimName = dimUName.Substring(1, dimUName.Length - 2); // remove square brackets
                 var hierName = row["HIERARCHY_NAME"].ToString();
                 Dictionary<string, string> hd;
-                if (!_hierStructure.ContainsKey(dimName))
+                if (!_hierStructure.TryGetValue(dimName, out hd))
                 {
                     hd = new Dictionary<string, string>();
 
                     _hierStructure.Add(dimName, hd);
-                }
-                else
-                {
-                    hd = _hierStructure[dimName];
                 }
                 hd.Add(hierName, row["STRUCTURE_TYPE"].ToString());
             }
@@ -274,13 +270,13 @@ namespace ADOTabular
             Log.Debug("{class} {method} {message}", nameof(MetaDataVisitorCSDL), nameof(GenerateTablesFromXmlReader), "End GenerateTablesFromXmlReader call");
         }
 
-        private void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
+        private static void GetCSDLVersion(XmlReader rdr, ADOTabularTableCollection tabs)
         {
             var version = rdr.GetAttribute("Version", "http://schemas.microsoft.com/sqlbi/2010/10/edm/extensions");
             tabs.Model.CSDLVersion = Convert.ToDouble(version, System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        private void UpdateTomRelationships(ADOTabularTable table)
+        private static void UpdateTomRelationships(ADOTabularTable table)
         {
             var tomTable = table.Model.TOMModel.Tables[table.Name];
             
@@ -303,7 +299,7 @@ namespace ADOTabular
             }
         }
 
-        private RelationshipEndCardinality getCardinality(string multiplicity)
+        private static RelationshipEndCardinality getCardinality(string multiplicity)
         {
             return multiplicity switch
             {
@@ -314,7 +310,7 @@ namespace ADOTabular
             };
         }
 
-        private CrossFilteringBehavior getCrossFilteringBehavior(string crossFilterDirection)
+        private static CrossFilteringBehavior getCrossFilteringBehavior(string crossFilterDirection)
         {
             return crossFilterDirection switch
             {
@@ -1098,7 +1094,7 @@ namespace ADOTabular
             return _variations;
         }
 
-        private void ProcessDisplayFolder(XmlReader rdr, ADOTabularTable table, IADOTabularFolderReference parent)
+        private static void ProcessDisplayFolder(XmlReader rdr, ADOTabularTable table, IADOTabularFolderReference parent)
         {
             var folderReference = "";
             string folderCaption = null;
@@ -1355,10 +1351,10 @@ namespace ADOTabular
         {
             if (_hierStructure == null) return "";
             if (_hierStructure.Count == 0) return "";
-            if (!_hierStructure.ContainsKey(table.Caption)) return "";
-            if (!_hierStructure[table.Caption].ContainsKey(hierCap ?? hierName)) return "";
+            if (!_hierStructure.TryGetValue(table.Caption, out Dictionary<string, string> value)) return "";
+            if (!value.ContainsKey(hierCap ?? hierName)) return "";
             
-            return _hierStructure[table.Caption][hierCap ?? hierName];
+            return value[hierCap ?? hierName];
         }
 
         SortedDictionary<string, ADOTabularColumn> IMetaDataVisitor.Visit(ADOTabularColumnCollection columns)

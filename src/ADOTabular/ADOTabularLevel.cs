@@ -52,7 +52,7 @@ namespace ADOTabular
             Column.UpdateBasicStats(connection);
         }
 
-        public List<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
+        public ICollection<string> GetSampleData(ADOTabularConnection connection, int sampleSize)
         {
             return Column.GetSampleData(connection, sampleSize);
         }

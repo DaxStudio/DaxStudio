@@ -178,9 +178,19 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  
+	<!-- default local build -->
   <PropertyGroup>
     <SignManifests>true</SignManifests>
+	  <ManifestCertificateThumbprint>CE33B7BD154C50AAB6E1675D0227DD60C6DB27A8</ManifestCertificateThumbprint>
   </PropertyGroup>
+	
+  <!-- CI build -->
+  <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
+	  <SignManifests>false</SignManifests>
+	  <ManifestCertificateThumbprint></ManifestCertificateThumbprint>
+  </PropertyGroup>
+	
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|AnyCPU'">
     <OutputPath>bin\Release64\</OutputPath>
     <DefineConstants>VSTO40;TRACE</DefineConstants>
@@ -600,9 +610,6 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>DaxStudio.ExcelAddin.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>CE33B7BD154C50AAB6E1675D0227DD60C6DB27A8</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>

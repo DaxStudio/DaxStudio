@@ -30,7 +30,7 @@ namespace DaxStudio.Standalone
         public Assembly Resolve(string name)
         {
             bool addToCache = false;
-            if (_assemblies.ContainsKey(name)) return _assemblies[name];
+            if (_assemblies.TryGetValue(name, out Assembly value)) return value;
             // double lock before adding an assembly to the cache to make 100% sure we are threadsafe
             lock (_mutex)
             {
@@ -53,7 +53,7 @@ namespace DaxStudio.Standalone
 
         private Assembly AddAssemblyToCache(string name)
         {
-            if (_assemblies.ContainsKey(name)) return _assemblies[name];
+            if (_assemblies.TryGetValue(name, out Assembly value)) return value;
             if (name.StartsWith("Microsoft.AnalysisServices,", StringComparison.InvariantCultureIgnoreCase) 
                 || name.StartsWith("Microsoft.AnalysisServices.AdomdClient,", StringComparison.InvariantCultureIgnoreCase) 
                 || name.StartsWith("Microsoft.AnalysisServices.Core,", StringComparison.InvariantCultureIgnoreCase))
