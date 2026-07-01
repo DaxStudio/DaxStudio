@@ -1,9 +1,11 @@
 ﻿using ADOTabular;
+using Caliburn.Micro;
 using DaxStudio.UI.Utils;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace DaxStudio.UI.ViewModels
 {
@@ -48,7 +50,10 @@ namespace DaxStudio.UI.ViewModels
                 _searchCriteria = value;
                 NotifyOfPropertyChange(nameof(SearchCriteria));
                 NotifyOfPropertyChange(nameof(HasSearchCriteria));
-                DatabasesView.Refresh();
+                Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    DatabasesView.Refresh();
+                });
                 SelecteFirstDatabase();
             }
         }

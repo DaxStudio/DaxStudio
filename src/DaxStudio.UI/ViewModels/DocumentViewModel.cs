@@ -3612,9 +3612,16 @@ namespace DaxStudio.UI.ViewModels
                         Log.Debug(Constants.LogMessageTemplate, nameof(DocumentViewModel), nameof(SetupConnectionAsync), "Start Showing Database Dialog");
                         try
                         {
-                            var dialog = new DatabaseDialogViewModel(Connection.Databases);
+                            // The DatabaseDialogViewModel constructor creates a CollectionView via
+                            // CollectionViewSource.GetDefaultView(...). A CollectionView takes on the
+                            // Dispatcher affinity of the thread that creates it, so it MUST be created on
+                            // the UI thread. SetupConnectionAsync can resume on a thread-pool thread after
+                            // its 'await Task.Run(...)' calls, so construct the dialog inside the UI
+                            // Dispatcher to guarantee the view is bound to the UI thread.
+                            DatabaseDialogViewModel dialog = null;
                             await Application.Current.Dispatcher.InvokeAsync(async () =>
                             {
+                                dialog = new DatabaseDialogViewModel(Connection.Databases);
                                 await _windowManager.ShowDialogBoxAsync(dialog);
                             });
 
@@ -4605,7 +4612,7 @@ namespace DaxStudio.UI.ViewModels
                     var model = Connection?.SelectedModel;
                     if (model == null)
                     {
-                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Cannot open Model Diagram: no model selected."));
+                        _eventAggregator.PublishAsync(new OutputMessage(MessageType.Warning, "Cannot open Model Diagram: no model selected."),cancellationToken);
                         return Task.CompletedTask;
                     }
 
@@ -4636,7 +4643,7 @@ namespace DaxStudio.UI.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, Common.Constants.LogMessageTemplate, nameof(DocumentViewModel), "HandleAsync(ShowTablesInModelDiagramEvent)", ex.Message);
-                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error opening Model Diagram\n{ex.Message}"));
+                _eventAggregator.PublishAsync(new OutputMessage(MessageType.Error, $"Error opening Model Diagram\n{ex.Message}"), cancellationToken);
             }
 
             return Task.CompletedTask;
