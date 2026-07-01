@@ -186,10 +186,12 @@
   </PropertyGroup>
 	
   <!-- CI build -->
+<!--
   <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
 	  <SignManifests>false</SignManifests>
 	  <ManifestCertificateThumbprint></ManifestCertificateThumbprint>
   </PropertyGroup>
+-->
 	
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|AnyCPU'">
     <OutputPath>bin\Release64\</OutputPath>
