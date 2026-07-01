@@ -163,10 +163,8 @@ namespace DaxStudio.UI.Utils
                 throw new NotSupportedException("multiple calls are not supported");
             }
 
-            if (_owner != null)
-            {
-                _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, System.Threading.Thread.CurrentThread.ManagedThreadId);// AppDomain.GetCurrentThreadId());
-            }
+            _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, Environment.CurrentManagedThreadId);// AppDomain.GetCurrentThreadId());
+
         }
 
         private static IntPtr MessageBoxHookProc(int nCode, IntPtr wParam, IntPtr lParam)

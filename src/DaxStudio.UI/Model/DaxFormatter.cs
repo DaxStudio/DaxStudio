@@ -107,7 +107,6 @@ namespace DaxStudio.UI.Model
 #endif
         }
 
-        private static string redirectHost;
         public static async Task<DaxFormatterResult> FormatDaxAsync(string query, ServerDatabaseInfo serverDbInfo, IGlobalOptions globalOptions, IEventAggregator eventAggregator, bool formatAlternateStyle )
         {
             Log.Verbose("{class} {method} {query}", "DaxFormatter", "FormatDaxAsync:Begin", query);
@@ -159,8 +158,8 @@ namespace DaxStudio.UI.Model
 
                 
 
-                Uri originalUri = new Uri(uri);
-                string actualUrl = new UriBuilder(originalUri.Scheme, redirectHost, originalUri.Port, originalUri.PathAndQuery).ToString();
+                Uri actualUri = new Uri(uri);
+                
 
                 var webRequestFactory = await HttpClientHelper.CreateAsync(globalOptions, eventAggregator);
 
@@ -168,7 +167,7 @@ namespace DaxStudio.UI.Model
                 var httpClient = HttpClientHelper.GetHttpClient();
                 string output;
                 using (var timeoutCts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(globalOptions.DaxFormatterRequestTimeout.SecondsToMilliseconds())))
-                using (var request = new HttpRequestMessage(HttpMethod.Post, new Uri(actualUrl)))
+                using (var request = new HttpRequestMessage(HttpMethod.Post, actualUri))
                 {
                     request.Headers.Accept.ParseAdd("application/json, text/javascript, */*; q=0.01");
                     request.Headers.AcceptEncoding.ParseAdd("gzip");
