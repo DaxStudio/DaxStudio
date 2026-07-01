@@ -332,22 +332,23 @@ namespace DaxStudio.Common
 
         private static string NormalizeArg(string arg)
         {
+            if (string.IsNullOrEmpty(arg) || arg[0] == '-') return arg.ToLowerInvariant();
             if (string.IsNullOrEmpty(arg) || arg[0] != '/') return arg;
 
             // Split on the first '=' so /server=localhost also normalizes.
             var equalsIndex = arg.IndexOf('=');
-            var name = equalsIndex > 0 ? arg.Substring(1, equalsIndex - 1) : arg.Substring(1);
+            var name = equalsIndex > 0 ? arg.Substring(1, equalsIndex - 1).ToLowerInvariant() : arg.Substring(1).ToLowerInvariant();
             var tail = equalsIndex > 0 ? arg.Substring(equalsIndex) : string.Empty;
 
             // Only translate when the name matches a known option to avoid
             // mangling forward-slash file paths.
             if (KnownLongOptions.Contains(name))
             {
-                return "--" + name.ToUpperInvariant() + tail;
+                return "--" + name + tail;
             }
             if (name.Length == 1 && KnownShortOptions.Contains(name))
             {
-                return "-" + name.ToUpperInvariant() + tail;
+                return "-" + name + tail;
             }
 
             return arg;

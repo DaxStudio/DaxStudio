@@ -111,6 +111,14 @@ namespace DaxStudio.Tests
         }
 
         [TestMethod]
+        public void Parse_ServerLongFormUppercase_SetsServer()
+        {
+            var args = NewArgs();
+            args.Parse(new[] { "--SERVER", "localhost" });
+            Assert.AreEqual("localhost", args.Server);
+        }
+
+        [TestMethod]
         public void Parse_DatabaseShortForm_SetsDatabase()
         {
             var args = NewArgs();
@@ -219,6 +227,14 @@ namespace DaxStudio.Tests
         {
             var args = NewArgs();
             args.Parse(new[] { "/server", "localhost" });
+            Assert.AreEqual("localhost", args.Server);
+        }
+
+        [TestMethod]
+        public void Parse_DosStyleLongOptionMixedCase_SetsServer()
+        {
+            var args = NewArgs();
+            args.Parse(new[] { "/SeRvEr", "localhost" });
             Assert.AreEqual("localhost", args.Server);
         }
 
