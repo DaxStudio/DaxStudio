@@ -18,6 +18,11 @@
     <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Also embed the icon as a WPF resource so MainWindow.xaml Icon="DaxStudioChecker.ico"
+         can be resolved at runtime. ApplicationIcon alone only sets the EXE's Win32 icon. -->
+    <Resource Include="DaxStudioChecker.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="System.Drawing" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="System.Windows.Forms" Condition="'$(TargetFramework)' == 'net472'" />

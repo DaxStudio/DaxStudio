@@ -4,6 +4,11 @@
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
     <EnforceCodeStyleInBuild>False</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-minimum</AnalysisLevel>
+    <!-- Auto-generate binding redirects for net472 from the resolved dependency graph.
+         GenerateBindingRedirectsOutputType is required because this is a library (test)
+         project, so the redirects are written to the test assembly's .dll.config. -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\..\src\bin\$(Configuration)\</OutputPath>

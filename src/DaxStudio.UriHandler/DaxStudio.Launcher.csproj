@@ -3,6 +3,10 @@
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <!-- Emit binding redirects into DaxStudio.Launcher.exe.config for net472 automatically
+         from the resolved dependency graph, so shared-output assembly versions stay in sync
+         without hand-maintained redirects. -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>..\bin\Debug\</OutputPath>
