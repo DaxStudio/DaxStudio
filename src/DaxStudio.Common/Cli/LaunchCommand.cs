@@ -10,7 +10,7 @@ namespace DaxStudio.Common.Cli
     /// </summary>
     internal sealed class LaunchCommand : Command<LaunchSettings>
     {
-        public override int Execute(CommandContext context, LaunchSettings settings, System.Threading.CancellationToken cancellationToken)
+        protected override int Execute(CommandContext context, LaunchSettings settings, System.Threading.CancellationToken cancellationToken)
         {
             var args = LaunchContext.Current;
             if (args == null)

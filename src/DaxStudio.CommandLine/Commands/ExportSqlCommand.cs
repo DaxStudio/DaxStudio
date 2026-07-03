@@ -61,7 +61,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, (Settings)settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken) 
+        protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken) 
         {
             
             Log.Information("Starting EXPORT SQL Command");

@@ -47,12 +47,12 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, (Settings)settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
-            Log.Information("Starting [yellow]EXPORT CSV[/] Command");
+            Log.Information("Starting [yellow]EXPORT PARQUET[/] Command");
             var HasError = false;
-            //AnsiConsole.MarkupLine("Starting [yellow]EXPORTCSV[/] Command...");
+            //AnsiConsole.MarkupLine("Starting [yellow]EXPORTPARQUET[/] Command...");
 
             // Show progress
             await AnsiConsole.Progress()
@@ -125,7 +125,7 @@ namespace DaxStudio.CommandLine.Commands
                         Log.Error(ex,"Error: {message}",ex.Message);
                         HasError = true;
                     }
-                });
+                }).ConfigureAwait(false);
 
             if (HasError) return 1;
             else return 0;

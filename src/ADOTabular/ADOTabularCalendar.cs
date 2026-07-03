@@ -16,6 +16,6 @@ namespace ADOTabular
         public string Description { get => $"{Name} calendar"; }
         public string Caption { get => Name; }
         public string DaxName { get => $"'{Name}'"; }
-        public MetadataImages MetadataImage { get => MetadataImages.Calendar; }
+        public static MetadataImages MetadataImage { get => MetadataImages.Calendar; }
     }
 }

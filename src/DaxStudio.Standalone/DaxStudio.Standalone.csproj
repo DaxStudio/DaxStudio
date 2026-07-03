@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <OutputType>WinExe</OutputType>
@@ -38,12 +38,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
-    <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.Settings.AppSettings" Version="3.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Caliburn.Micro" />
+    <PackageReference Include="Microsoft.AnalysisServices" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Settings.AppSettings" />
+    <PackageReference Include="Serilog.Sinks.File" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
@@ -59,4 +59,8 @@
   <Target Name="WriteBuildDate" BeforeTargets="BeforeBuild">
     <WriteLinesToFile File="$(ProjectDir)Resources\BuildDate.txt" Lines="$([System.DateTime]::UtcNow.ToString('s'))" Overwrite="true" />
   </Target>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+  </ItemGroup>
 </Project>

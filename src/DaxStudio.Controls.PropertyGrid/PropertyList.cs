@@ -37,7 +37,7 @@ namespace DaxStudio.Controls.PropertyGrid
 
         private static async void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            await ((PropertyList)d).UpdateSource(e.NewValue);
+            await ((PropertyList)d).UpdateSource(e.NewValue).ConfigureAwait(true);
         }
 
 
@@ -205,7 +205,7 @@ namespace DaxStudio.Controls.PropertyGrid
                 return;
             }
 
-            var snapshot = await Task.Run(() => BuildSourceUpdateSnapshot(newSource));
+            var snapshot = await Task.Run(() => BuildSourceUpdateSnapshot(newSource)).ConfigureAwait(true);
 
             if (updateVersion != _updateVersion)
             {

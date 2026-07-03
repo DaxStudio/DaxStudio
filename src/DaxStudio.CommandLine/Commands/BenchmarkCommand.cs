@@ -70,7 +70,7 @@ namespace DaxStudio.CommandLine.Commands
             Options = options;
         }
 
-        public override ValidationResult Validate(CommandContext context, Settings settings)
+        protected override ValidationResult Validate(CommandContext context, Settings settings)
         {
             if (string.IsNullOrWhiteSpace(settings.OutputFile))
                 return ValidationResult.Error("You must specify an output file path");
@@ -87,7 +87,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting Benchmark command");
             bool silent = settings.Silent;

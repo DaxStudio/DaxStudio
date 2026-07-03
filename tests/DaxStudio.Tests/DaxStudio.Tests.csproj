@@ -14,24 +14,23 @@
     <OutputPath>..\..\Release\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
-    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
-    <PackageReference Include="Dax.Model.Extractor" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewModel" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewVpaExport" Version="1.12.0" />
-    <PackageReference Include="Dax.Vpax" Version="1.12.0" />
-    <PackageReference Include="Humanizer" Version="3.0.10" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
-    <PackageReference Include="System.Memory" Version="4.6.3" />
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-    <PackageReference Include="System.ValueTuple" Version="4.6.2" />
+    <PackageReference Include="AvalonEdit" />
+    <PackageReference Include="Caliburn.Micro" />
+    <PackageReference Include="Dax.Model.Extractor" />
+    <PackageReference Include="Dax.ViewModel" />
+    <PackageReference Include="Dax.ViewVpaExport" />
+    <PackageReference Include="Dax.Vpax" />
+    <PackageReference Include="Humanizer" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Runtime" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="System.ValueTuple" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ADOTabular\DaxStudio.ADOTabular.csproj" />

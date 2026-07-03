@@ -81,7 +81,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context,(Settings)settings);
         }
 
-        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             VersionInfo.Output();
             AnsiConsole.MarkupLine("Starting VPAX command");

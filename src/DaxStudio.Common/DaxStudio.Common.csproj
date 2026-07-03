@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -19,21 +19,21 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CrashReporter.NET.Official" Version="1.6.0" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.53.1" />
-    <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
-    <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.23.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.201">
+    <PackageReference Include="CrashReporter.NET.Official" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Microsoft.AnalysisServices" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.83.1" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.1" />
-    <PackageReference Include="Microsoft.PowerBI.Api" Version="5.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="System.Drawing.Common" Version="9.0.3" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
+    <PackageReference Include="Microsoft.PowerBI.Api" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="System.Drawing.Common" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
   </ItemGroup>
 
   <!-- Custom MSBuild task to extract ASAzureSecurityConfig.xml from AdomdClient (only run once, not per TFM) -->
@@ -99,4 +99,9 @@
       ]]></Code>
     </Task>
   </UsingTask>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" Condition="'$(TargetFramework)' == 'net472'" />
+  </ItemGroup>
 </Project>

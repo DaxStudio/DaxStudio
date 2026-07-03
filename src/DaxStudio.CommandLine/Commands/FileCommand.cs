@@ -60,7 +60,7 @@ namespace DaxStudio.CommandLine.Commands
 
         }
 
-        public override ValidationResult Validate(CommandContext context, Settings settings)
+        protected override ValidationResult Validate(CommandContext context, Settings settings)
         {
             
             if (string.IsNullOrWhiteSpace(settings.OutputFile)) return ValidationResult.Error("You must specify an Out option");
@@ -70,7 +70,7 @@ namespace DaxStudio.CommandLine.Commands
 
         
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
             Log.Information("Starting File command");

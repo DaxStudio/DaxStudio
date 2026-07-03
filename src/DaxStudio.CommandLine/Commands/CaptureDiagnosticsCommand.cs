@@ -35,7 +35,7 @@ namespace DaxStudio.CommandLine.Commands
             public QueryInfo QueryInfo { get => new QueryInfo(Query, null); set => throw new System.NotImplementedException(); }
         }
 
-        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting Capture Diagnostics command");
             if (settings.File != null && settings.Query == null)

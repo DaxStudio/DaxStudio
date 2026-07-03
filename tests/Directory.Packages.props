@@ -1,0 +1,4 @@
+<Project>
+  <!-- Import shared central package versions from src directory (mirrors Directory.Build.props) -->
+  <Import Project="..\src\Directory.Packages.props" />
+</Project>

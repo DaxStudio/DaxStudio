@@ -24,7 +24,7 @@ using DaxStudio.UI.Events;
 
         //private const int CHECK_EVERY_DAYS = 3;
         private const int CHECK_SECONDS_AFTER_STARTUP = 15;
-        private const int CHECK_EVERY_HOURS = 24;
+        private const int CHECK_EVERY_HOURS = 2;
         
         private readonly BackgroundWorker worker = new BackgroundWorker();
         private readonly IEventAggregator _eventAggregator;

@@ -85,7 +85,7 @@ _insightProvider = insightProvider;
             _text = calendar.DaxName;
             _content = calendar.Caption;
             _description = string.IsNullOrEmpty(calendar.Description) ? null : calendar.Description;
-            _imageResource = GetImageResource(calendar.MetadataImage);
+            _imageResource = GetImageResource(ADOTabular.ADOTabularCalendar.MetadataImage);
             _priority = 100.0;
             _insightProvider = insightProvider;
         }

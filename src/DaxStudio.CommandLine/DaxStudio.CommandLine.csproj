@@ -11,19 +11,23 @@
     <OutputPath>..\..\Release\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageReference Include="Serilog.Sinks.Spectre" Version="0.5.0" />
-    <PackageReference Include="Spectre.Console" Version="0.54.0" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.53.1" />
+    <PackageReference Include="Microsoft.AnalysisServices" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Spectre" />
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="Spectre.Console.Cli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ADOTabular\DaxStudio.ADOTabular.csproj" />
     <ProjectReference Include="..\DaxStudio.Common\DaxStudio.Common.csproj" />
     <ProjectReference Include="..\DaxStudio.Core\DaxStudio.Core.csproj" />
     <ProjectReference Include="..\DaxStudio.Interfaces\DaxStudio.Interfaces.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 </Project>

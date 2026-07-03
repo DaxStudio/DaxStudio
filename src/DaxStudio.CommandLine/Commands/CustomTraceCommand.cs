@@ -48,7 +48,7 @@ namespace DaxStudio.CommandLine.Commands
             Templates = CustomTraceTemplateLoader.LoadTemplates();
         }
 
-        public override ValidationResult Validate(CommandContext context, Settings settings)
+        protected override ValidationResult Validate(CommandContext context, Settings settings)
         {
 
             // Check if this is a known template
@@ -68,7 +68,7 @@ namespace DaxStudio.CommandLine.Commands
         private StatusContext statusContext;
         private static CustomTraceModel customTracer;
 
-        public override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, CustomTraceCommand.Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting [yellow]Custom Trace[/] Command");
 

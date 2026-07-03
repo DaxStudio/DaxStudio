@@ -303,6 +303,7 @@ namespace DaxStudio.Core.Settings
                 {
                     DateTime dateVal = DateTime.Parse(attrDefaultVal.Value.ToString(), CultureInfo.InvariantCulture);
                     if (val != null) _ = DateTime.TryParse(val.ToString(), out dateVal);
+                    if (val.ToString().EndsWith("Z")) dateVal = dateVal.ToUniversalTime();
                     prop.SetValue(options, dateVal);
                 }
                 else if (prop.PropertyType == typeof(double))

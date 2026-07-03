@@ -158,7 +158,7 @@ namespace ADOTabular
 
         public async Task OpenAsync()
         {
-            await Task.Run(() => Open());
+            await Task.Run(() => Open()).ConfigureAwait(true);
         }
 
         public void Open()

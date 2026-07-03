@@ -58,14 +58,14 @@ namespace DaxStudio.CommandLine.Commands
             EventAggregator = eventAggregator;
         }
 
-        public override ValidationResult Validate(CommandContext context, XlsxCommand.Settings settings)
+        protected override ValidationResult Validate(CommandContext context, XlsxCommand.Settings settings)
         {
             if (string.IsNullOrWhiteSpace(settings.Query) && string.IsNullOrWhiteSpace(settings.File))
             { return ValidationResult.Error("You must specify either <query> or <file>"); }
             return base.Validate(context, settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             Log.Information("Starting XLSX command");
             if (settings.File != null && settings.Query == null)
@@ -73,20 +73,21 @@ namespace DaxStudio.CommandLine.Commands
                 settings.Query = System.IO.File.ReadAllText(settings.File);
             }
             // export to xlsx
-            var host = new CmdLineHost();
-            var runner = new QueryRunner(settings);
-            var target = new ResultsTargetExcelFile(host, EventAggregator);
+            using (var host = new CmdLineHost())
+            {
+                var runner = new QueryRunner(settings);
+                var target = new ResultsTargetExcelFile(host, EventAggregator);
 
-            await AnsiConsole.Status()
-                .AutoRefresh(true)
-                .Spinner(Spinner.Known.Star)
-                .SpinnerStyle(Style.Parse("green bold"))
-                .StartAsync("Exporting to file...", async ctx =>
-                {   
-                    await target.OutputResultsAsync(runner, settings, settings.OutputFile);
-                });
-       
-            
+                await AnsiConsole.Status()
+                    .AutoRefresh(true)
+                    .Spinner(Spinner.Known.Star)
+                    .SpinnerStyle(Style.Parse("green bold"))
+                    .StartAsync("Exporting to file...", async ctx =>
+                    {
+                        await target.OutputResultsAsync(runner, settings, settings.OutputFile).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
+
+            }
             Log.Information("Finished XLSX command");
             return 0;
         }

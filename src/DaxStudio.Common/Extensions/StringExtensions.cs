@@ -43,7 +43,7 @@ namespace DaxStudio.Common.Extensions
 
         public static bool Contains(this string input, string searchFor, StringComparison comparison)
         {
-            return input.Contains(searchFor,StringComparison.OrdinalIgnoreCase);
+            return input.IndexOf(searchFor, comparison) >= 0;
         }
 
         public static string Format(this string input, params object[] args)

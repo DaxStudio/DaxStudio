@@ -14,9 +14,9 @@
     <Compile Include="..\CommonAssemblyVersion.cs" Link="Properties\CommonAssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Unofficial.Excel.Amo" Version="11.0.2832.12" Aliases="ExcelAmo">
+    <PackageReference Include="Caliburn.Micro" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Unofficial.Excel.Amo" Aliases="ExcelAmo">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>

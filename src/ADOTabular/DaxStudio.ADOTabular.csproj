@@ -11,19 +11,23 @@
     <OutputPath>..\..\Release\bin\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Dax.Model.Extractor" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewModel" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewVpaExport" Version="1.12.0" />
-    <PackageReference Include="Dax.Vpax" Version="1.12.0" />
-    <PackageReference Include="Microsoft.AnalysisServices" Version="19.113.2" />
-    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" Version="19.113.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.201">
+    <PackageReference Include="Dax.Model.Extractor" />
+    <PackageReference Include="Dax.ViewModel" />
+    <PackageReference Include="Dax.ViewVpaExport" />
+    <PackageReference Include="Dax.Vpax" />
+    <PackageReference Include="Microsoft.AnalysisServices" />
+    <PackageReference Include="Microsoft.AnalysisServices.AdomdClient" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="System.Buffers" Version="4.6.1" />
-    <PackageReference Include="System.ValueTuple" Version="4.6.2" />
-    <PackageReference Include="System.Data.OleDb" Version="9.0.3" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="System.Buffers" />
+    <PackageReference Include="System.ValueTuple" />
+    <PackageReference Include="System.Data.OleDb" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
 </Project>

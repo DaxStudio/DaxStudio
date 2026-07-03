@@ -13,12 +13,12 @@ namespace DaxStudio.CommandLine.Commands
             // No specific settings for this command
         }
 
-        public override ValidationResult Validate(CommandContext context, Settings settings)
+        protected override ValidationResult Validate(CommandContext context, Settings settings)
         {
             // No validation needed for this command
             return ValidationResult.Success();
         }
-        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {            
             var accessToken = AccessTokenHelper.GetAccessToken(settings.FullConnectionString);
             Console.Write(accessToken.Token);

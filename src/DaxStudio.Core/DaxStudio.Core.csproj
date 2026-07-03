@@ -37,28 +37,29 @@
     <Reference Include="System.Management" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-    <PackageReference Include="System.Management" Version="9.0.0" />
+    <PackageReference Include="System.Management" />
   </ItemGroup>
 
   <!-- Package references -->
   <ItemGroup>
-    <PackageReference Include="AsyncAwaitBestPractices" Version="10.0.0" />
-    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
-    <PackageReference Include="CsvHelper" Version="33.1.0" />
-    <PackageReference Include="Dax.Model.Extractor" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewVpaExport" Version="1.12.0" />
-    <PackageReference Include="Dax.Vpax" Version="1.12.0" />
-    <PackageReference Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
-    <PackageReference Include="LargeXlsx" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
-    <PackageReference Include="Parquet.Net" Version="[5.4.0]" />
-    <PackageReference Include="Polly" Version="8.6.6" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="9.0.3" />
+    <PackageReference Include="AsyncAwaitBestPractices" />
+    <PackageReference Include="Caliburn.Micro" />
+    <PackageReference Include="CsvHelper" />
+    <PackageReference Include="Dax.Model.Extractor" />
+    <PackageReference Include="Dax.ViewVpaExport" />
+    <PackageReference Include="Dax.Vpax" />
+    <PackageReference Include="Dax.Vpax.Obfuscator" />
+    <PackageReference Include="LargeXlsx" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Parquet.Net" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="System.ComponentModel.Composition" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="DaxStudio.UI" />
     <InternalsVisibleTo Include="DaxStudio.Tests" />
   </ItemGroup>
+
 
 </Project>

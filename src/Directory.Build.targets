@@ -25,7 +25,8 @@
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <ItemGroup Condition="'$(ProjectTypeGuids)' == ''">
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.3" PrivateAssets="all" />
+    <!-- Version is managed centrally in src\Directory.Packages.props -->
+    <PackageReference Include="System.Resources.Extensions" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Fix incorrect SuggestedBindingRedirects from System.Resources.Extensions package

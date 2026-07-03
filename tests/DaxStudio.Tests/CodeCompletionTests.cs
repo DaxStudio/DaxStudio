@@ -108,6 +108,50 @@ namespace DaxStudio.Tests
             Assert.AreEqual("EVALUATE Dim_Date", doc.Text);
         }
 
+
+        [TestMethod]
+        public void TestCodeCompletionWithNumbersInName()
+        {
+            var testLine = "EVALUATE Dim1";
+            var mockIp = Substitute.For<IInsightProvider>();
+            mockIp.ShowInsight("FILTER");
+            var compData = new DaxCompletionData(mockIp, "Dim1Date", 1.0);
+
+            var mockDocLine = Substitute.For<IDocumentLine>();
+            var mockTextLocation = new TextLocation(0, testLine.Length);
+
+            mockDocLine.Length.Returns(testLine.Length);
+
+            var mockDoc = Substitute.For<IDocument>();
+            mockDoc.Text.Returns(testLine);
+            //mockDoc.Object.Text = testLine;
+            mockDoc.GetLineByOffset(testLine.Length - 1).Returns(mockDocLine);
+            mockDoc.GetLocation(testLine.Length - 1).Returns(mockTextLocation);
+            mockDoc.GetText(0, testLine.Length).Returns(testLine);
+            mockDoc.TextLength.Returns(testLine.Length);
+
+            mockDoc.When(x => x.Replace(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string>()))
+                .Do(callInfo =>
+                {
+                    int offset = callInfo.ArgAt<int>(0);
+                    int length = callInfo.ArgAt<int>(1);
+                    string src = callInfo.ArgAt<string>(2);
+
+                    var start = mockDoc.Text.Substring(0, offset);
+                    var end = mockDoc.Text.Substring(offset + length);
+                    mockDoc.Text = start + src + end;
+                });
+            var mockSegment = Substitute.For<ISegment>();
+            mockSegment.EndOffset.Returns(testLine.Length);
+
+            var e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, new TextComposition(null, null, "a"));
+            IDocument doc = mockDoc;
+            ISegment seg = mockSegment;
+            compData.CompleteInternal(doc, seg, e);
+
+            Assert.AreEqual("EVALUATE Dim1Date", doc.Text);
+        }
+
         [TestMethod]
         public void TestFunctionCompletion() {
             var line = "CALCULATE FILVALUES([MyColumn])";

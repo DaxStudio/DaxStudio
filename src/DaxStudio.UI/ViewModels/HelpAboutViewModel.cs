@@ -35,6 +35,7 @@ namespace DaxStudio.UI.ViewModels
             VersionChecker = checker;
             VersionChecker.UpdateStartingCallback += this.VersionUpdateStarting;
             VersionChecker.UpdateCompleteCallback += this.VersionUpdateComplete;
+            checker.CheckVersion();
 
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetEntryAssembly();
             Version version = assembly?.GetName().Version;

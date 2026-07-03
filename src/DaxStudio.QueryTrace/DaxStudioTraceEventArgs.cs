@@ -2,7 +2,6 @@
 using Microsoft.AnalysisServices;
 using System;
 using System.Globalization;
-using System.Windows.Forms;
 
 namespace DaxStudio.QueryTrace
 {

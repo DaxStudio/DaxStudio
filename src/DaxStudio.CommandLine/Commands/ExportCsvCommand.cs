@@ -47,7 +47,7 @@ namespace DaxStudio.CommandLine.Commands
             return base.Validate(context, (Settings)settings);
         }
 
-        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             
             Log.Information("Starting [yellow]EXPORT CSV[/] Command");
@@ -125,7 +125,7 @@ namespace DaxStudio.CommandLine.Commands
                         Log.Error(ex,"Error: {message}",ex.Message);
                         HasError = true;
                     }
-                });
+                }).ConfigureAwait(false);
 
             if (HasError) return 1;
             else return 0;

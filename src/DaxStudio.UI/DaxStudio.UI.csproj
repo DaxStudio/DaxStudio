@@ -40,7 +40,7 @@
     <Reference Include="System.Management" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <PackageReference Include="System.Management" Version="9.0.3" />
+    <PackageReference Include="System.Management" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -135,35 +135,35 @@
 
   <!-- NuGet package references -->
   <ItemGroup>
-    <PackageReference Include="AsyncAwaitBestPractices" Version="10.0.0" />
-    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
-    <PackageReference Include="Caliburn.Micro" Version="5.0.258" />
-    <PackageReference Include="CsvHelper" Version="33.1.0" />
-    <PackageReference Include="Dax.Model.Extractor" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewModel" Version="1.12.0" />
-    <PackageReference Include="Dax.ViewVpaExport" Version="1.12.0" />
-    <PackageReference Include="Dax.Vpax" Version="1.12.0" />
-    <PackageReference Include="Dax.Vpax.Obfuscator" Version="1.2.1" />
-    <PackageReference Include="DaxStudio.Controls" Version="0.1.6" />
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.72.1" />
-    <PackageReference Include="Dirkster.NumericUpDownLib" Version="3.4.0" />
-    <PackageReference Include="Expression.Blend.Sdk" Version="1.0.2" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="Fluent.Ribbon" Version="9.0.4" />
-    <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
-    <PackageReference Include="Humanizer" Version="3.0.10" />
-    <PackageReference Include="LargeXlsx" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Expression.Drawing" Version="3.0.0" Condition="'$(TargetFramework)' == 'net472'" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.1" />
-    <PackageReference Include="Microsoft.PowerBI.Api" Version="5.0.0" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
-    <PackageReference Include="Parquet.Net" Version="[5.4.0]" />
-    <PackageReference Include="Polly" Version="8.6.6" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="9.0.3" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="AsyncAwaitBestPractices" />
+    <PackageReference Include="AvalonEdit" />
+    <PackageReference Include="Caliburn.Micro" />
+    <PackageReference Include="CsvHelper" />
+    <PackageReference Include="Dax.Model.Extractor" />
+    <PackageReference Include="Dax.ViewModel" />
+    <PackageReference Include="Dax.ViewVpaExport" />
+    <PackageReference Include="Dax.Vpax" />
+    <PackageReference Include="Dax.Vpax.Obfuscator" />
+    <PackageReference Include="DaxStudio.Controls" />
+    <PackageReference Include="Dirkster.AvalonDock" />
+    <PackageReference Include="Dirkster.NumericUpDownLib" />
+    <PackageReference Include="Expression.Blend.Sdk" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Fluent.Ribbon" />
+    <PackageReference Include="gong-wpf-dragdrop" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
+    <PackageReference Include="Humanizer" />
+    <PackageReference Include="LargeXlsx" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" />
+    <PackageReference Include="Microsoft.Expression.Drawing" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
+    <PackageReference Include="Microsoft.PowerBI.Api" />
+    <PackageReference Include="ModernWpfUI" />
+    <PackageReference Include="Parquet.Net" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="System.ComponentModel.Composition" Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+    <PackageReference Include="System.Net.Http" />
   </ItemGroup>
 
   <!-- Project references -->
@@ -193,5 +193,9 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="System.Text.Encodings.Web" VersionOverride="10.0.9" Condition="'$(TargetFramework)' == 'net472'" />
+  </ItemGroup>
 
 </Project>
