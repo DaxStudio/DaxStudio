@@ -61,10 +61,19 @@ namespace DaxStudio.UI.Utils
             {
                 if (pos < _caretOffset && _endOffset == 0)
                 {
+                    var previousState = _state;
                     _state = newState;
+                    // Letters and digits are both part of a single word/identifier
+                    // (e.g. "Dim1"), so a transition between the Letter and Digit states
+                    // should keep the original start of the word rather than resetting
+                    // it to the position of the digit.
+                    bool stayingWithinWord =
+                        (previousState == LineState.Letter && newState == LineState.Digit)
+                        || (previousState == LineState.Digit && newState == LineState.Letter);
                     if ((_state == LineState.Column && newState == LineState.ColumnClosed)
                         || (_state == LineState.Table && newState == LineState.TableClosed)
-                        || (_state == LineState.Measure && newState == LineState.MeasureClosed))
+                        || (_state == LineState.Measure && newState == LineState.MeasureClosed)
+                        || stayingWithinWord)
                     {
                         // don't reset startOffset
                     }
