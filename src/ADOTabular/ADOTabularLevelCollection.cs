@@ -15,10 +15,6 @@ namespace ADOTabular
         {
             _table = table;
             _adoTabConn = adoTabConn;
-            //if (_cols == null)
-            //{
-            //    _cols = _adoTabConn.Visitor.Visit(this);
-            //}
         }
 
         public ADOTabularTable Table {
@@ -34,7 +30,7 @@ namespace ADOTabular
         {
             _lvls.Clear();
         }
-        private readonly Dictionary<string, ADOTabularLevel> _lvls;
+        private readonly Dictionary<string, ADOTabularLevel> _lvls = new Dictionary<string, ADOTabularLevel>();
  
         public ADOTabularLevel this[string index]
         {

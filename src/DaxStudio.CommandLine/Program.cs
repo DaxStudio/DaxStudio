@@ -1,6 +1,5 @@
 ﻿using Caliburn.Micro;
 using DaxStudio.CommandLine.Commands;
-using DaxStudio.CommandLine.Extensions;
 using DaxStudio.CommandLine.Help;
 using DaxStudio.CommandLine.Infrastructure;
 using DaxStudio.CommandLine.UIStubs;
@@ -13,7 +12,6 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using Spectre.Console;
 using Spectre.Console.Cli;
 using System;
 using System.Collections.Generic;
@@ -41,7 +39,7 @@ namespace DaxStudio.CommandLine
             var registrations = new ServiceCollection();
             registrations.AddSingleton<IEventAggregator, EventAggregator>();
             registrations.AddSingleton<IGlobalOptions, OptionsModel>();
-            registrations.AddSingleton(typeof(ISettingProvider), settingProvider);
+            registrations.AddSingleton<ISettingProvider>(settingProvider);
             var registrar = new TypeRegistrar(registrations);
             var verboseLogging = IsVerbose(args);
             ConfigureLogging(verboseLogging);

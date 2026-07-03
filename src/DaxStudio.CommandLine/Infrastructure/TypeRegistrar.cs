@@ -4,7 +4,7 @@ using Spectre.Console.Cli;
 
 namespace DaxStudio.CommandLine.Infrastructure
 {
-    public sealed class TypeRegistrar : ITypeRegistrar
+    internal sealed class TypeRegistrar : ITypeRegistrar
     {
         private readonly IServiceCollection _builder;
 
