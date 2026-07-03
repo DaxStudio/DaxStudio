@@ -68,7 +68,7 @@
 	<PackageVersion Include="System.Collections.Immutable" Version="9.0.10" />
 	<PackageVersion Include="System.ComponentModel.Composition" Version="10.0.9" />
 	<PackageVersion Include="System.Data.OleDb" Version="10.0.9" />
-	<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
+	<PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.9" />
 	<PackageVersion Include="System.Drawing.Common" Version="10.0.9" />
 	<PackageVersion Include="System.Management" Version="10.0.9" />
 	<PackageVersion Include="System.Memory" Version="4.6.3" />
@@ -78,11 +78,12 @@
 	<PackageVersion Include="System.Resources.Extensions" Version="9.0.3" />
 	<PackageVersion Include="System.Runtime" Version="4.3.1" />
 	<PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-	<!-- Central version used by most projects; DaxStudio.CommandLine overrides to 10.0.9
-		 via VersionOverride because its Microsoft.Extensions.* 10.0.9 graph requires it. -->
-	<PackageVersion Include="System.Text.Encodings.Web" Version="10.0.5" />
-	<PackageVersion Include="System.Text.Json" Version="10.0.5" />
-	<PackageVersion Include="System.Threading.Channels" Version="10.0.5" />
+	<!-- Shared framework assemblies kept on a single version (10.0.9) across every project so
+		 that generated binding redirects match the DLLs deployed to the shared output folder.
+		 The packages.config Excel add-in also references 10.0.9, so all consumers agree. -->
+	<PackageVersion Include="System.Text.Encodings.Web" Version="10.0.9" />
+	<PackageVersion Include="System.Text.Json" Version="10.0.9" />
+	<PackageVersion Include="System.Threading.Channels" Version="10.0.9" />
 	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 	<PackageVersion Include="System.ValueTuple" Version="4.6.2" />
 	<PackageVersion Include="Unofficial.Excel.Amo" Version="11.0.2832.12" />
