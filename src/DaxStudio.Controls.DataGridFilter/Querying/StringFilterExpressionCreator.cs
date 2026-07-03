@@ -94,7 +94,7 @@ namespace DaxStudio.Controls.DataGridFilter.Querying
                     && function != StringExpressionFunction.Undefined
                     && !string.IsNullOrEmpty(expressionValue))
                 {
-                    string expressionValueCopy = String.Copy(expressionValue);
+                    string expressionValueCopy = expressionValue;
 
                     expressionValueCopy = expressionValueCopy.Replace(WildcardAnyString, String.Empty);
 

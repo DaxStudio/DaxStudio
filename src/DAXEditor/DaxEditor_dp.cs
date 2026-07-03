@@ -281,7 +281,7 @@ namespace DAXEditorControl
         /// <param name="e"></param>
         private static void OnCurrentLineBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is DAXEditor view && e != null)
+            if (d is DAXEditor view)
             {
                 if (e.NewValue is SolidColorBrush newValue)
                 {
@@ -295,7 +295,6 @@ namespace DAXEditorControl
         private static void OnConvertTabsToSpacesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
 
             var convertTabsToSpaces = e.NewValue as bool?;
 
@@ -306,7 +305,6 @@ namespace DAXEditorControl
         private static void OnIndentationSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
 
             var indentSize = e.NewValue as int?;
             if (indentSize < 1) indentSize = 1;
@@ -357,7 +355,6 @@ namespace DAXEditorControl
         private static void OnShowSpacesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
 
             view.Options.ShowSpaces = (bool)e.NewValue;
         }
@@ -376,7 +373,6 @@ namespace DAXEditorControl
         private static void OnShowTabsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
 
             view.Options.ShowTabs = (bool)e.NewValue;
         }
@@ -395,7 +391,6 @@ namespace DAXEditorControl
         private static void OnShowBoxForControlCharactersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
 
             view.Options.ShowBoxForControlCharacters = (bool)e.NewValue;
         }
@@ -413,7 +408,7 @@ namespace DAXEditorControl
         private static void OnNonPrintableCharacterBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
+
             if ( e.NewValue is SolidColorBrush b)
             {
                 if (b.Color == Colors.Transparent) return; // do nothing 
@@ -434,7 +429,6 @@ namespace DAXEditorControl
         private static void OnShowEndOfLineChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is DAXEditor view)) return;
-            if (e == null) return;
 
             view.Options.ShowEndOfLine = (bool)e.NewValue;
         }

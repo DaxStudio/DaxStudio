@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Dax.Metadata;
 using Dax.Vpax.Obfuscator;
 using Dax.Vpax.Obfuscator.Common;
@@ -86,6 +87,8 @@ namespace DaxStudio.Core.Vpax
 
         public static string GetDefaultDictFile(string filename)
         {
+            if (string.IsNullOrEmpty(filename))
+                throw new ArgumentException("Filename cannot be null or empty", nameof(filename));
             if (!filename.EndsWith(ovpaxExtension, System.StringComparison.OrdinalIgnoreCase)) { return string.Empty; }
             return Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + dictExtension);
         }

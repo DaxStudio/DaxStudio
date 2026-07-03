@@ -1,10 +1,7 @@
-using ADOTabular;
-using comm= DaxStudio.Common;
+using Comm = DaxStudio.Common;
 using DaxStudio.Common.Extensions;
 using DaxStudio.Interfaces;
-using DaxStudio.Core.Events;
 using DaxStudio.Core.JsonConverters;
-using DaxStudio.Core.Model;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
@@ -118,7 +115,7 @@ namespace DaxStudio.Core.Settings
         public void SetValue(string subKey, DateTime value, bool isInitializing, object options, string propertyName)
         {
                 if (isInitializing) return;
-                _optionsDict[subKey] = value.ToString(comm.Constants.IsoDateFormat, CultureInfo.InvariantCulture);
+                _optionsDict[subKey] = value.ToString(Comm.Constants.IsoDateFormat, CultureInfo.InvariantCulture);
                 // write json file
                 SaveSettingsFile();
         }
@@ -154,7 +151,7 @@ namespace DaxStudio.Core.Settings
             if (existingItem == null)
             {
                 Options.RecentFiles.Insert(0, file);
-                while (Options.RecentFiles.Count > comm.Constants.MaxRecentFiles)
+                while (Options.RecentFiles.Count > Comm.Constants.MaxRecentFiles)
                 {
                     Options.RecentFiles.RemoveAt(Options.RecentFiles.Count - 1);
                 }
@@ -190,7 +187,7 @@ namespace DaxStudio.Core.Settings
                 {
                     // server does not exist in list, so insert it as the first item
                     Options.RecentServers.Insert(0, currentServer);
-                    while (Options.RecentServers.Count > comm.Constants.MaxMruSize)
+                    while (Options.RecentServers.Count > Comm.Constants.MaxMruSize)
                     {
                         Options.RecentServers.RemoveAt(Options.RecentServers.Count - 1);
                     }

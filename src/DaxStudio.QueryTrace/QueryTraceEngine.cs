@@ -15,9 +15,8 @@ using ADOTabular.Enums;
 using Trace = Microsoft.AnalysisServices.Trace;
 using DaxStudio.Common.Enums;
 using DaxStudio.Common.Extensions;
-using Microsoft.AspNet.SignalR.Client;
-using ADOTabular.Extensions;
-using DaxStudio.Common;
+using System.Globalization;
+
 
 namespace DaxStudio.QueryTrace
 {
@@ -112,7 +111,6 @@ namespace DaxStudio.QueryTrace
         private string _sessionId;
         private int _spid;
         private Timer _startingTimer;
-        private List<DaxStudioTraceEventArgs> _capturedEvents = new List<DaxStudioTraceEventArgs>();
         private readonly IGlobalOptionsBase _globalOptions;
         private readonly object _connectionLockObj = new object();
         private readonly bool _filterForCurrentSession;
@@ -123,6 +121,8 @@ namespace DaxStudio.QueryTrace
 
         public QueryTraceEngine(IConnectionManager connectionManager, List<DaxStudioTraceEventClass> events, IGlobalOptions globalOptions, bool filterForCurrentSession, string powerBiFileName, string suffix)
         {
+            if (connectionManager == null) throw new ArgumentNullException(nameof(connectionManager));
+
             Log.Verbose("{class} {method} {event} connectionString: {connectionString}", "QueryTraceEngine", "<Constructor>", "Start", connectionManager.ConnectionString);
             _globalOptions = globalOptions;
             _connectionManager = connectionManager;
@@ -243,6 +243,7 @@ namespace DaxStudio.QueryTrace
             var filterXml =
                 $"<Equal xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\"><ColumnID>{(int) TraceColumn.Spid}</ColumnID><Value>{spid}</Value></Equal>";
             var doc = new XmlDocument();
+            doc.XmlResolver = null; // Prevent XXE attacks
             doc.LoadXml(filterXml);
             return doc;
         }
@@ -260,7 +261,7 @@ namespace DaxStudio.QueryTrace
                         "</Or>" +
                         "<Equal><ColumnID>{6}</ColumnID><Value>{7}</Value></Equal>" +
                         "</Or>";
-            var filterXml = string.Format(
+            var filterXml = string.Format(CultureInfo.InvariantCulture,
                 filterTemplate
                 , (int)TraceColumn.SessionID
                 , sessionId
@@ -272,6 +273,7 @@ namespace DaxStudio.QueryTrace
                 ,(int)TraceEventClass.ExecutionMetrics
                 );
             var doc = new XmlDocument();
+            doc.XmlResolver = null; // Prevent XXE attacks
             doc.LoadXml(filterXml);
             return doc;
         }
@@ -552,7 +554,7 @@ namespace DaxStudio.QueryTrace
             }
         }
 
-        private bool IsInternalQuery(string textData)
+        private static bool IsInternalQuery(string textData)
         {
             return textData.Contains(Constants.InternalQueryHeader);
         }
