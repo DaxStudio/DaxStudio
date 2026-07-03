@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("DaxStudio.CommandLine")]
 [assembly: AssemblyDescription("DAX Studio command line")]
-
+[assembly: InternalsVisibleTo("DaxStudio.Tests")]
+[assembly: InternalsVisibleTo("DaxStudio.CommandLine.Tests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

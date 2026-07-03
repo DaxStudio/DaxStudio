@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using Spectre.Console.Cli;
 using System.Data.OleDb;
 
 namespace DaxStudio.CommandLine.Tests
@@ -130,7 +131,7 @@ namespace DaxStudio.CommandLine.Tests
             };
             var validationResult = settings.Validate();
             var accessTokenCommand = new AccessTokenCommand();
-            var cmdValidationResult = accessTokenCommand.Validate(null , settings);
+            var cmdValidationResult = ((ICommand)accessTokenCommand).Validate(null , settings);
             Assert.IsTrue(validationResult.Successful, validationResult.Message);
             Assert.IsTrue(cmdValidationResult.Successful, cmdValidationResult.Message);
             Assert.IsNull(validationResult.Message);

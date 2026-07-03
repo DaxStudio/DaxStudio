@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DaxStudio.CommandLine.Commands;
+using Spectre.Console.Cli;
 
 namespace DaxStudio.CommandLine.Tests
 {
@@ -16,10 +17,12 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_settings_with_server_database_should_succeed()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv"
+            };
 
             var result = settings.Validate();
             Assert.IsTrue(result.Successful, result.Message);
@@ -28,9 +31,11 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_settings_with_connectionstring_should_succeed()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.ConnectionString = "Data Source=localhost;Initial Catalog=Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
+            var settings = new BenchmarkCommand.Settings
+            {
+                ConnectionString = "Data Source=localhost;Initial Catalog=Adventure Works",
+                OutputFile = "c:\\temp\\results.csv"
+            };
 
             var result = settings.Validate();
             Assert.IsTrue(result.Successful, result.Message);
@@ -39,9 +44,11 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_settings_only_servername_should_fail()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.OutputFile = "c:\\temp\\results.csv";
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                OutputFile = "c:\\temp\\results.csv"
+            };
 
             var result = settings.Validate();
             Assert.IsFalse(result.Successful);
@@ -51,10 +58,12 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_settings_server_with_connectionstring_should_fail()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.ConnectionString = "Data Source=localhost";
-            settings.OutputFile = "c:\\temp\\results.csv";
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                ConnectionString = "Data Source=localhost",
+                OutputFile = "c:\\temp\\results.csv"
+            };
 
             var result = settings.Validate();
             Assert.IsFalse(result.Successful);
@@ -64,9 +73,11 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_settings_only_database_should_fail()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
+            var settings = new BenchmarkCommand.Settings
+            {
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv"
+            };
 
             var result = settings.Validate();
             Assert.IsFalse(result.Successful);
@@ -76,12 +87,14 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_validate_requires_file_or_query()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv"
+            };
 
-            var result = CreateCommand().Validate(null, settings);
+            var result = ((ICommand)CreateCommand()).Validate(null, settings);
             Assert.IsFalse(result.Successful);
             Assert.AreEqual("You must specify either a --file or --query option", result.Message);
         }
@@ -89,14 +102,16 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_validate_rejects_file_and_query_together()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
-            settings.File = "query.dax";
-            settings.Query = "EVALUATE ROW(\"x\", 1)";
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv",
+                File = "query.dax",
+                Query = "EVALUATE ROW(\"x\", 1)"
+            };
 
-            var result = CreateCommand().Validate(null, settings);
+            var result = ((ICommand)CreateCommand()).Validate(null, settings);
             Assert.IsFalse(result.Successful);
             Assert.AreEqual("You cannot specify both --file and --query", result.Message);
         }
@@ -104,15 +119,17 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_validate_rejects_both_run_counts_zero()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
-            settings.Query = "EVALUATE ROW(\"x\", 1)";
-            settings.ColdRuns = 0;
-            settings.WarmRuns = 0;
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv",
+                Query = "EVALUATE ROW(\"x\", 1)",
+                ColdRuns = 0,
+                WarmRuns = 0
+            };
 
-            var result = CreateCommand().Validate(null, settings);
+            var result = ((ICommand)CreateCommand()).Validate(null, settings);
             Assert.IsFalse(result.Successful);
             Assert.AreEqual("You must run at least one cold or warm iteration", result.Message);
         }
@@ -120,14 +137,16 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_validate_rejects_negative_cold()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
-            settings.Query = "EVALUATE ROW(\"x\", 1)";
-            settings.ColdRuns = -1;
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv",
+                Query = "EVALUATE ROW(\"x\", 1)",
+                ColdRuns = -1
+            };
 
-            var result = CreateCommand().Validate(null, settings);
+            var result = ((ICommand)CreateCommand()).Validate(null, settings);
             Assert.IsFalse(result.Successful);
             Assert.AreEqual("--cold must be >= 0", result.Message);
         }
@@ -135,14 +154,16 @@ namespace DaxStudio.CommandLine.Tests
         [TestMethod]
         public void Benchmark_validate_rejects_negative_warm()
         {
-            var settings = new BenchmarkCommand.Settings();
-            settings.Server = "localhost";
-            settings.Database = "Adventure Works";
-            settings.OutputFile = "c:\\temp\\results.csv";
-            settings.Query = "EVALUATE ROW(\"x\", 1)";
-            settings.WarmRuns = -1;
+            var settings = new BenchmarkCommand.Settings
+            {
+                Server = "localhost",
+                Database = "Adventure Works",
+                OutputFile = "c:\\temp\\results.csv",
+                Query = "EVALUATE ROW(\"x\", 1)",
+                WarmRuns = -1
+            };
 
-            var result = CreateCommand().Validate(null, settings);
+            var result = ((ICommand)CreateCommand()).Validate(null, settings);
             Assert.IsFalse(result.Successful);
             Assert.AreEqual("--warm must be >= 0", result.Message);
         }

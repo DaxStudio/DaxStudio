@@ -50,7 +50,7 @@ namespace DaxStudio.Tests
         
         public void CheckVersion()
         {
-            throw new NotImplementedException();
+            // do Nothing
         }
 
         public Version DismissedVersion
